@@ -1,0 +1,4 @@
+POST        /register/                      @controllers.Main.register
+POST        /update/:registrationId/        @controllers.Main.update(registrationId: models.RegistrationId)
+POST        /push/                          @controllers.Main.push
+GET         /healthcheck/                   @controllers.Main.healthCheck
