@@ -8,6 +8,10 @@ import java.net.URI;
 import java.net.URLEncoder;
 
 public class SasTokenGenerator {
+    /**
+     * From [[https://github.com/Azure/azure-notificationhubs-java-backend/blob/master/NotificationHubs/src/com/windowsazure/messaging/NamespaceManager.java#L233]]
+     * Licensed under Apache License 2.0 - [[https://github.com/Azure/azure-notificationhubs-java-backend/blob/master/LICENSE]]
+     */
     public static String generateSasToken(String sasKeyName, String sasKeyValue, URI uri) {
         String targetUri;
         try {
