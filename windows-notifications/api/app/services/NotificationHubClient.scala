@@ -41,7 +41,11 @@ final class NotificationHubClient @Inject()(apiConfiguration: ApiConfiguration, 
     }
   }
 
-  def fetchSomeRegistrations: Future[String] = {
+  /**
+   * This is used for health-checking only
+   * @return the title of the feed if it succeeds
+   */
+  def fetchRegistrationsListEndpoint: Future[HubResult[String]] = {
     Async.async {
       processResponse {
         Async.await {
@@ -49,7 +53,10 @@ final class NotificationHubClient @Inject()(apiConfiguration: ApiConfiguration, 
             .withHeaders("Authorization" -> notificationHub.ListRegistrations.authHeader)
             .get()
         }
-      }.toString
+      } match {
+        case Left(fault) => fault
+        case Right(xml) => Successful((xml \ "title").text)
+      }
     }
   }
 

@@ -1,12 +1,10 @@
 package services
 
-import gu.msnotifications.RegistrationId
-
-sealed trait HubResult[T]
+sealed trait HubResult[+T]
 
 object HubResult {
 
-  case class Successful[T](registrationId: RegistrationId) extends HubResult[T]
+  case class Successful[T](value: T) extends HubResult[T]
 
   sealed trait Failure[T] extends HubResult[T]
 

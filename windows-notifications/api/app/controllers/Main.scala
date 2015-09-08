@@ -3,6 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import gu.msnotifications.{RegistrationId, WindowsRegistration}
+import org.scalactic.{Good, Bad}
 import play.api.Logger
 import play.api.libs.json.{Json, Writes}
 import play.api.libs.ws.WSClient
@@ -22,12 +23,21 @@ final class Main @Inject()(wsClient: WSClient,
 
   import msNotificationsConfiguration._
 
-  def healthCheck = Action {
-    if (notificationHubOR.isGood) {
-      Ok("Good")
-    } else {
-      logger.error(s"Configuration is invalid: $notificationHubOR")
-      InternalServerError("Configuration invalid")
+  def healthCheck = Action.async {
+    Async.async {
+      notificationHubOR match {
+        case Good(_) =>
+          Async.await(notificationHubClient.fetchRegistrationsListEndpoint) match {
+            case Successful("Registrations") =>
+              Ok("Good")
+            case other =>
+              logger.error(s"Registrations fetch failed: $other")
+              InternalServerError("Failed to list registrations")
+          }
+        case Bad(reason) =>
+          logger.error(s"Configuration is invalid: $notificationHubOR")
+          InternalServerError("Configuration invalid")
+      }
     }
   }
 
@@ -47,7 +57,7 @@ final class Main @Inject()(wsClient: WSClient,
   }
 
   def fetchSome = Action.async {
-    notificationHubClient.fetchSomeRegistrations.map(xml => Ok(xml))
+    notificationHubClient.fetchRegistrationsListEndpoint.map(xml => Ok(xml.toString))
   }
 
   def register = Action.async(BodyParsers.parse.json[WindowsRegistration]) { request =>
