@@ -2,8 +2,7 @@ package services
 
 import javax.inject.Inject
 
-import gu.msnotifications.RawWindowsRegistration
-import models.RegistrationId
+import gu.msnotifications.{RegistrationId, RawWindowsRegistration}
 import play.api.libs.ws.{WSClient, WSResponse}
 import services.HubResult.{Successful, ServiceParseFailed, ServiceError}
 
@@ -20,8 +19,8 @@ final class NotificationHubClient @Inject()(apiConfiguration: ApiConfiguration, 
       processRegistrationResponse {
         Async.await {
           wsClient
-            .url(notificationHub.registrationsPostUrl)
-            .withHeaders("Authorization" -> notificationHub.registrationsAuthorizationHeader)
+            .url(notificationHub.PostRegistrations.url)
+            .withHeaders("Authorization" -> notificationHub.PostRegistrations.authHeader)
             .post(rawWindowsRegistration.toXml)
         }
       }
@@ -29,15 +28,47 @@ final class NotificationHubClient @Inject()(apiConfiguration: ApiConfiguration, 
   }
 
   def update(registrationId: RegistrationId, rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationId]] = {
+    val updateRegistration = notificationHub.UpdateRegistration(registrationId)
     Async.async {
       processRegistrationResponse {
         Async.await {
           wsClient
-            .url(notificationHub.registrationUrl(registrationId.registrationId))
-            .withHeaders("Authorization" -> notificationHub.registrationAuthorizationHeader(registrationId.registrationId))
+            .url(updateRegistration.url)
+            .withHeaders("Authorization" -> updateRegistration.authHeader)
             .post(rawWindowsRegistration.toXml)
         }
       }
+    }
+  }
+
+  def fetchSomeRegistrations: Future[String] = {
+    Async.async {
+      processResponse {
+        Async.await {
+          wsClient.url(notificationHub.ListRegistrations.url)
+            .withHeaders("Authorization" -> notificationHub.ListRegistrations.authHeader)
+            .get()
+        }
+      }.toString
+    }
+  }
+
+  private def processResponse(response: WSResponse): Either[HubResult[Nothing], scala.xml.Elem] = {
+    Try(response.xml).toOption match {
+      case None =>
+        Left {
+          if (response.status != 200)
+            ServiceError(
+              reason = response.statusText,
+              code = response.status
+            )
+          else ServiceParseFailed(
+            body = response.body,
+            reason = "Failed to find any XML"
+          )
+        }
+      case Some(xml) =>
+        Right(response.xml)
     }
   }
 

@@ -1,6 +1,6 @@
 package services
 
-import models.RegistrationId
+import gu.msnotifications.RegistrationId
 
 sealed trait HubResult[T]
 

@@ -2,8 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
-import gu.msnotifications.WindowsRegistration
-import models.RegistrationId
+import gu.msnotifications.{RegistrationId, WindowsRegistration}
 import play.api.Logger
 import play.api.libs.json.{Json, Writes}
 import play.api.libs.ws.WSClient
@@ -45,6 +44,10 @@ final class Main @Inject()(wsClient: WSClient,
         logger.error(message = s"Failed to parse body due to: $reason; body = $body")
         InternalServerError(reason)
     }
+  }
+
+  def fetchSome = Action.async {
+    notificationHubClient.fetchSomeRegistrations.map(xml => Ok(xml))
   }
 
   def register = Action.async(BodyParsers.parse.json[WindowsRegistration]) { request =>

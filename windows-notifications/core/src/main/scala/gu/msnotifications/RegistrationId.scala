@@ -1,4 +1,4 @@
-package models
+package gu.msnotifications
 
 case class RegistrationId(registrationId: String)
 

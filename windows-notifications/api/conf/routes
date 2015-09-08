@@ -1,4 +1,5 @@
 POST        /register/                      @controllers.Main.register
-POST        /update/:registrationId/        @controllers.Main.update(registrationId: models.RegistrationId)
+POST        /update/:registrationId/        @controllers.Main.update(registrationId: gu.msnotifications.RegistrationId)
 POST        /push/                          @controllers.Main.push
 GET         /healthcheck/                   @controllers.Main.healthCheck
+GET         /some/                          @controllers.Main.fetchSome

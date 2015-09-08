@@ -10,14 +10,21 @@ case class NotificationHub(namespace: String, notificationHub: String, secretKey
 
   def notificationsHubUrl = s"""https://$namespace.servicebus.windows.net/$notificationHub"""
 
-  def registrationsPostUrl = s"""$notificationsHubUrl/registrations/?api-version=2015-01"""
+  case object PostRegistrations {
+    def url = s"""$notificationsHubUrl/registrations/?api-version=2015-01"""
+    def authHeader = authorizationHeader(new URI(url))
+  }
 
-  def registrationsAuthorizationHeader = authorizationHeader(new URI(registrationsPostUrl))
+  case class UpdateRegistration(registrationId: RegistrationId) {
+    // todo sanitise input here
+    def url = s"""$notificationsHubUrl/registration/${registrationId.registrationId}?api-version=2015-01"""
+    def authHeader = authorizationHeader(new URI(url))
+  }
 
-  /** Need to sanitise the input here **/
-  def registrationUrl(registrationId: String) = s"""$notificationsHubUrl/registration/$registrationId"""
-
-  def registrationAuthorizationHeader(registrationId: String) = authorizationHeader(new URI(registrationUrl(registrationId)))
+  case object ListRegistrations {
+    def url = s"""$notificationsHubUrl/registrations/?api-version=2015-01"""
+    def authHeader = authorizationHeader(new URI(url))
+  }
 
   case class ResponseParser(xml: scala.xml.Elem) {
 

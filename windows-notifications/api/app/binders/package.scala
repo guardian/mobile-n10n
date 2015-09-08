@@ -1,4 +1,4 @@
-import models.RegistrationId
+import gu.msnotifications.RegistrationId
 import play.api.mvc.PathBindable
 
 import scala.language.implicitConversions
