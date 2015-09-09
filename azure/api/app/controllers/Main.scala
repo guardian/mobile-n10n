@@ -2,20 +2,19 @@ package controllers
 
 import javax.inject.Inject
 
-import gu.msnotifications.{RegistrationId, WindowsRegistration}
+import gu.msnotifications._
 import org.scalactic.{Good, Bad}
 import play.api.Logger
 import play.api.libs.json.{Json, Writes}
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, BodyParsers, Controller, Result}
-import services.HubResult.{ServiceError, ServiceParseFailed, Successful}
+import HubResult.{ServiceError, ServiceParseFailed, Successful}
 import services._
 import scala.async.Async
 import scala.concurrent.ExecutionContext
 
 final class Main @Inject()(wsClient: WSClient,
-                           msNotificationsConfiguration: ApiConfiguration,
-                           notificationHubClient: NotificationHubClient)(
+                           msNotificationsConfiguration: ApiConfiguration)(
                             implicit executionContext: ExecutionContext
                             ) extends Controller {
 
@@ -45,8 +44,8 @@ final class Main @Inject()(wsClient: WSClient,
 
   def processHubResult[T](result: HubResult[T])(implicit tjs: Writes[T]): Result = {
     result match {
-      case Successful(registrationId) =>
-        Ok(Json.toJson(registrationId))
+      case Successful(json) =>
+        Ok(Json.toJson(json))
       case ServiceError(reason, code) =>
         logger.error(message = s"Service error code $code: $reason")
         Status(code.toInt)(s"Upstream service failed with code $code.")
@@ -54,10 +53,6 @@ final class Main @Inject()(wsClient: WSClient,
         logger.error(message = s"Failed to parse body due to: $reason; body = $body")
         InternalServerError(reason)
     }
-  }
-
-  def fetchSome = Action.async {
-    notificationHubClient.fetchRegistrationsListEndpoint.map(xml => Ok(xml.toString))
   }
 
   def register = Action.async(BodyParsers.parse.json[WindowsRegistration]) { request =>
@@ -72,7 +67,22 @@ final class Main @Inject()(wsClient: WSClient,
     }
   }
 
-  def push = TODO
+  def push = Action.async(BodyParsers.parse.json[AzureXmlPush]) { request =>
+    Async.async {
+      Async.await {
+        notificationHubClient.sendPush(request.body)
+      } match {
+        case Successful(_) =>
+          Ok("Ok")
+        case ServiceError(reason, code) =>
+          logger.error(message = s"Service error code $code: $reason")
+          Status(code.toInt)(s"Upstream service failed with code $code.")
+        case ServiceParseFailed(body, reason) =>
+          logger.error(message = s"Failed to parse body due to: $reason; body = $body")
+          InternalServerError(reason)
+      }
+    }
+  }
 
   def update(registrationId: RegistrationId) = Action.async(BodyParsers.parse.json[WindowsRegistration]) { request =>
     Async.async {

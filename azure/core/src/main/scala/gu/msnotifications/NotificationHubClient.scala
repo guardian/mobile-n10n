@@ -1,40 +1,81 @@
-package services
+package gu.msnotifications
 
-import javax.inject.Inject
-
-import gu.msnotifications.{RegistrationId, RawWindowsRegistration}
+import gu.msnotifications.HubResult.{ServiceError, ServiceParseFailed, Successful}
 import play.api.libs.ws.{WSClient, WSResponse}
-import services.HubResult.{Successful, ServiceParseFailed, ServiceError}
 
 import scala.async.Async
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-final class NotificationHubClient @Inject()(apiConfiguration: ApiConfiguration, wsClient: WSClient)(implicit executionContext: ExecutionContext) {
+/**
+ * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
+ */
+final class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient)(implicit executionContext: ExecutionContext) {
 
-  import apiConfiguration.notificationHub
+  import notificationHubConnection._
+
+  private case class ResponseParser(xml: scala.xml.Elem) {
+
+    def error: Option[(Int, String)] = {
+      for {
+        code <- xml \ "Code"
+        detail <- xml \ "Detail"
+      } yield code.text.toInt -> detail.text
+    }.headOption
+
+  }
+
+  private case class RegistrationResponseParser(xml: scala.xml.Elem) {
+
+    def error = ResponseParser(xml).error
+
+    def registrationId: Option[String] = {
+      (xml \\ "RegistrationId").map(_.text).headOption
+    }
+
+  }
 
   def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationId]] = {
+    val uri = s"""$notificationsHubUrl/registrations/?api-version=2015-01"""
     Async.async {
       processRegistrationResponse {
         Async.await {
           wsClient
-            .url(notificationHub.PostRegistrations.url)
-            .withHeaders("Authorization" -> notificationHub.PostRegistrations.authHeader)
+            .url(uri)
+            .withHeaders("Authorization" -> authorizationHeader(uri))
             .post(rawWindowsRegistration.toXml)
         }
       }
     }
   }
 
+  def sendPush(azureWindowsPush: AzureXmlPush): Future[HubResult[Unit]] = {
+    val uri = s"""$notificationsHubUrl/messages/?api-version=2015-01"""
+    Async.async {
+      processResponse {
+        Async.await {
+          wsClient
+            .url(uri)
+            .withHeaders("X-WNS-Type" -> azureWindowsPush.wnsType)
+            .withHeaders("Authorization" -> authorizationHeader(uri))
+            .withHeaders(azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toSeq :_*)
+            .post(azureWindowsPush.xml)
+        }
+      } match {
+        case Left(fault) => fault
+        case Right(xml) => Successful(())
+      }
+    }
+  }
+
   def update(registrationId: RegistrationId, rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationId]] = {
-    val updateRegistration = notificationHub.UpdateRegistration(registrationId)
+    val uri = s"""$notificationsHubUrl/registration/${registrationId.registrationId}?api-version=2015-01"""
     Async.async {
       processRegistrationResponse {
         Async.await {
           wsClient
-            .url(updateRegistration.url)
-            .withHeaders("Authorization" -> updateRegistration.authHeader)
+            .url(uri)
+            .withHeaders("Authorization" -> authorizationHeader(uri))
             .post(rawWindowsRegistration.toXml)
         }
       }
@@ -46,11 +87,12 @@ final class NotificationHubClient @Inject()(apiConfiguration: ApiConfiguration, 
    * @return the title of the feed if it succeeds
    */
   def fetchRegistrationsListEndpoint: Future[HubResult[String]] = {
+    val url = s"""$notificationsHubUrl/registrations/?api-version=2015-01"""
     Async.async {
       processResponse {
         Async.await {
-          wsClient.url(notificationHub.ListRegistrations.url)
-            .withHeaders("Authorization" -> notificationHub.ListRegistrations.authHeader)
+          wsClient.url(url)
+            .withHeaders("Authorization" -> authorizationHeader(url))
             .get()
         }
       } match {
@@ -92,7 +134,7 @@ final class NotificationHubClient @Inject()(apiConfiguration: ApiConfiguration, 
           reason = "Failed to find any XML"
         )
       case Some(xml) =>
-        val parser = notificationHub.RegistrationResponseParser(xml)
+        val parser = RegistrationResponseParser(xml)
         parser.registrationId match {
           case Some(updatedRegistrationId) =>
             Successful(RegistrationId(updatedRegistrationId))

@@ -6,17 +6,9 @@ import org.scalactic._
 /**
  * Response Codes @ [[https://msdn.microsoft.com/en-us/library/azure/dn223265.aspx]]
  */
-
 case class ConnectionString(connectionString: String) {
 
   private case class Endpoint(uri: URI) {
-    def namespaceO = {
-      val hostMatch = s"""(.*)\\.servicebus\\.windows\\.net""".r
-      PartialFunction.condOpt(uri.getHost) {
-        case hostMatch(host) => host
-      }
-    }
-
     def queryParameters = {
       val queryParametersMatch = s"""([^=]+)=(.*)""".r
       uri.getPath.split(";").collect {
@@ -32,23 +24,21 @@ case class ConnectionString(connectionString: String) {
     }
   }
 
-  def buildNotificationHub(notificationHubName: String): NotificationHub Or Every[ErrorMessage] = {
+  def buildNotificationHub(notificationHubName: String): NotificationHubConnection Or Every[ErrorMessage] = {
     {
       for {
         endpoint <- endpointO
-        namespace <- endpoint.namespaceO
         queryParameters = endpoint.queryParameters
         keyName <- queryParameters.get("SharedAccessKeyName")
         key <- queryParameters.get("SharedAccessKey")
-      } yield NotificationHub(
-        namespace = namespace,
-        notificationHub = notificationHubName,
+      } yield NotificationHubConnection(
+        notificationsHubUrl = s"https://${endpoint.uri.getHost}/$notificationHubName",
         secretKeyName = keyName,
         secretKey = key
       )
     } match {
       case Some(notificationHub) => Good(notificationHub)
-      case None => Bad(One("Unable to parse the connection string to build a notification hub. Check the tests for the right format."))
+      case None => Bad(One("Unable to parse the connection string to build a notification hub. See the tests for the right format."))
     }
   }
 }
