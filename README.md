@@ -1,8 +1,12 @@
 # mobile-n10n
+mobile-n10n or "mobile-notification" is our next generation of push-notification services.
+This project will focus on connecting directly to cloud providers (Azure, GCM) and act as an interface to it.
 
-Next generation of notifications
+## Modules
+ * registration: Handles the registration requests received from the device, and redirect them to the correct provider
+ * common: The common stuff
 
-## azure
+## Registration
 
 The Play configuration file must contain:
 ```
