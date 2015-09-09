@@ -67,7 +67,7 @@ Or an error code if a failure with body string being the reason
 
 
 ```
-POST /push/
+POST /push/?api-key=api-key
 Content-type: application/json
 
 {
@@ -81,7 +81,9 @@ Content-type: application/json
 
 Returns no relevant content - could return an error code however.
 
-The topics are matched with OR.
+The topics are matched with AND - this can be easily changed however. Or we could restrict it all to just one topic.
+
+As this is an external API it does need hardening - ie input data needs to be validated.
 
 ## Authors
 * William Narmontas

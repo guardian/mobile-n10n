@@ -14,20 +14,8 @@ case class WindowsRegistration(channelUri: String, userId: UserId, topics: Set[T
 
 }
 
-case class UserId(userId: String)
-
-object UserId {
-  val safeUserId = """[a-zA-Z0-9]+""".r
-  implicit val readsUserId = new Reads[UserId] {
-    override def reads(json: JsValue): JsResult[UserId] = json match {
-      case JsString(userId@safeUserId()) => JsSuccess(UserId(userId))
-      case _ => JsError(ValidationError(s"User ID not valid, must match regex '${safeUserId.regex}'"))
-    }
-  }
-}
 
 object WindowsRegistration {
-
 
   import play.api.libs.json._
   import play.api.libs.functional.syntax._

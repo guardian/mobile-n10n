@@ -10,33 +10,30 @@ import scala.util.Try
 /**
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
  */
-final class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient)(implicit executionContext: ExecutionContext) {
+final class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
+                                 (implicit executionContext: ExecutionContext) {
 
   import notificationHubConnection._
 
-  private case class ResponseParser(xml: scala.xml.Elem) {
-
-    def error: Option[(Int, String)] = {
-      for {
-        code <- xml \ "Code"
-        detail <- xml \ "Detail"
-      } yield code.text.toInt -> detail.text
-    }.headOption
-
-  }
-
-  private case class RegistrationResponseParser(xml: scala.xml.Elem) {
-
-    def error = ResponseParser(xml).error
-
-    def registrationId: Option[String] = {
-      (xml \\ "RegistrationId").map(_.text).headOption
-    }
-
-  }
 
   def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationId]] = {
     val uri = s"""$notificationsHubUrl/registrations/?api-version=2015-01"""
+    Async.async {
+      processRegistrationResponse {
+        Async.await {
+          wsClient
+            .url(uri)
+            .withHeaders("Authorization" -> authorizationHeader(uri))
+            .post(rawWindowsRegistration.toXml)
+        }
+      }
+    }
+  }
+
+  def update(registrationId: RegistrationId,
+             rawWindowsRegistration: RawWindowsRegistration
+              ): Future[HubResult[RegistrationId]] = {
+    val uri = s"""$notificationsHubUrl/registration/${registrationId.registrationId}?api-version=2015-01"""
     Async.async {
       processRegistrationResponse {
         Async.await {
@@ -57,8 +54,9 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
           wsClient
             .url(uri)
             .withHeaders("X-WNS-Type" -> azureWindowsPush.wnsType)
+            .withHeaders("ServiceBusNotification-Format" -> "windows")
             .withHeaders("Authorization" -> authorizationHeader(uri))
-            .withHeaders(azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toSeq :_*)
+            .withHeaders(azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toSeq: _*)
             .post(azureWindowsPush.xml)
         }
       } match {
@@ -68,23 +66,10 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
     }
   }
 
-  def update(registrationId: RegistrationId, rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationId]] = {
-    val uri = s"""$notificationsHubUrl/registration/${registrationId.registrationId}?api-version=2015-01"""
-    Async.async {
-      processRegistrationResponse {
-        Async.await {
-          wsClient
-            .url(uri)
-            .withHeaders("Authorization" -> authorizationHeader(uri))
-            .post(rawWindowsRegistration.toXml)
-        }
-      }
-    }
-  }
-
   /**
-   * This is used for health-checking only
-   * @return the title of the feed if it succeeds
+   * This is used for health-checking only: return the title of the feed,
+   * which is expected to be 'Registrations'.
+   * @return the title of the feed if it succeeds getting one
    */
   def fetchRegistrationsListEndpoint: Future[HubResult[String]] = {
     val url = s"""$notificationsHubUrl/registrations/?api-version=2015-01"""
@@ -147,6 +132,28 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
             }
         }
     }
+  }
+
+
+  private case class ResponseParser(xml: scala.xml.Elem) {
+
+    def error: Option[(Int, String)] = {
+      for {
+        code <- xml \ "Code"
+        detail <- xml \ "Detail"
+      } yield code.text.toInt -> detail.text
+    }.headOption
+
+  }
+
+  private case class RegistrationResponseParser(xml: scala.xml.Elem) {
+
+    def error = ResponseParser(xml).error
+
+    def registrationId: Option[String] = {
+      (xml \\ "RegistrationId").map(_.text).headOption
+    }
+
   }
 
 }

@@ -18,6 +18,8 @@ final class Main @Inject()(wsClient: WSClient,
                             implicit executionContext: ExecutionContext
                             ) extends Controller {
 
+  import msNotificationsConfiguration.WriteAction
+
   private val logger = Logger("main")
 
   import msNotificationsConfiguration._
@@ -67,7 +69,7 @@ final class Main @Inject()(wsClient: WSClient,
     }
   }
 
-  def push = Action.async(BodyParsers.parse.json[AzureXmlPush]) { request =>
+  def push = WriteAction.async(BodyParsers.parse.json[AzureXmlPush]) { request =>
     Async.async {
       Async.await {
         notificationHubClient.sendPush(request.body)
@@ -84,17 +86,18 @@ final class Main @Inject()(wsClient: WSClient,
     }
   }
 
-  def update(registrationId: RegistrationId) = Action.async(BodyParsers.parse.json[WindowsRegistration]) { request =>
-    Async.async {
-      processHubResult {
-        Async.await {
-          notificationHubClient.update(
-            registrationId = registrationId,
-            rawWindowsRegistration = request.body.toRaw
-          )
+  def update(registrationId: RegistrationId) =
+    Action.async(BodyParsers.parse.json[WindowsRegistration]) { request =>
+      Async.async {
+        processHubResult {
+          Async.await {
+            notificationHubClient.update(
+              registrationId = registrationId,
+              rawWindowsRegistration = request.body.toRaw
+            )
+          }
         }
       }
     }
-  }
 
 }
