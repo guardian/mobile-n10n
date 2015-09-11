@@ -57,18 +57,6 @@ final class Main @Inject()(wsClient: WSClient,
     }
   }
 
-  def register = Action.async(BodyParsers.parse.json[WindowsRegistration]) { request =>
-    Async.async {
-      processHubResult {
-        Async.await {
-          notificationHubClient.register(
-            rawWindowsRegistration = request.body.toRaw
-          )
-        }
-      }
-    }
-  }
-
   def push = WriteAction.async(BodyParsers.parse.json[AzureXmlPush]) { request =>
     Async.async {
       Async.await {
@@ -86,7 +74,7 @@ final class Main @Inject()(wsClient: WSClient,
     }
   }
 
-  def update(registrationId: RegistrationId) =
+  def register(registrationId: RegistrationId) =
     Action.async(BodyParsers.parse.json[WindowsRegistration]) { request =>
       Async.async {
         processHubResult {
