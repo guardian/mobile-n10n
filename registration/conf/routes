@@ -1,4 +1,3 @@
-POST        /register/                      @controllers.Main.register
-POST        /update/:registrationId/        @controllers.Main.update(registrationId: gu.msnotifications.RegistrationId)
+POST        /update/:registrationId/        @controllers.Main.register(registrationId: gu.msnotifications.RegistrationId)
 POST        /push/                          @controllers.Main.push
 GET         /healthcheck/                   @controllers.Main.healthCheck
