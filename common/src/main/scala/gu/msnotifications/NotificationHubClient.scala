@@ -1,6 +1,6 @@
 package gu.msnotifications
 
-import gu.msnotifications.HubResult.{ServiceError, ServiceParseFailed, Successful}
+import gu.msnotifications.HubFailure.{HubServiceError, HubParseFailed}
 import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.async.Async
@@ -15,6 +15,7 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
 
   import notificationHubConnection._
 
+  type HubResult[T] = Either[HubFailure, T]
 
   def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationId]] = {
     val uri = s"""$notificationsHubUrl/registrations/?api-version=2015-01"""
@@ -59,10 +60,7 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
             .withHeaders(azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toSeq: _*)
             .post(azureWindowsPush.xml)
         }
-      } match {
-        case Left(fault) => fault
-        case Right(xml) => Successful(())
-      }
+      }.right.map(_ => ())
     }
   }
 
@@ -80,26 +78,24 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
             .withHeaders("Authorization" -> authorizationHeader(url))
             .get()
         }
-      } match {
-        case Left(fault) => fault
-        case Right(xml) => Successful((xml \ "title").text)
-      }
+      }.right.map(xml => (xml \ "title").text)
     }
   }
 
-  private def processResponse(response: WSResponse): Either[HubResult[Nothing], scala.xml.Elem] = {
+  private def processResponse(response: WSResponse): HubResult[scala.xml.Elem] = {
     Try(response.xml).toOption match {
       case None =>
         Left {
           if (response.status != 200)
-            ServiceError(
+            HubServiceError(
               reason = response.statusText,
               code = response.status
             )
-          else ServiceParseFailed(
-            body = response.body,
-            reason = "Failed to find any XML"
-          )
+          else
+            HubParseFailed(
+              body = response.body,
+              reason = "Failed to find any XML"
+            )
         }
       case Some(xml) =>
         Right(response.xml)
@@ -109,31 +105,35 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
   private def processRegistrationResponse(response: WSResponse): HubResult[RegistrationId] = {
     Try(response.xml).toOption match {
       case None =>
-        if (response.status != 200)
-          ServiceError(
-            reason = response.statusText,
-            code = response.status
-          )
-        else ServiceParseFailed(
-          body = response.body,
-          reason = "Failed to find any XML"
-        )
+        Left {
+          if (response.status != 200)
+            HubServiceError(
+              reason = response.statusText,
+              code = response.status
+            )
+          else
+            HubParseFailed(
+              body = response.body,
+              reason = "Failed to find any XML"
+            )
+        }
       case Some(xml) =>
         val parser = RegistrationResponseParser(xml)
         parser.registrationId match {
           case Some(updatedRegistrationId) =>
-            Successful(RegistrationId(updatedRegistrationId))
+            Right(RegistrationId(updatedRegistrationId))
           case None =>
-            parser.error match {
-              case Some((code, description)) =>
-                ServiceError(reason = description, code = code)
-              case None =>
-                ServiceParseFailed(body = response.body, reason = "Received in valid XML")
+            Left {
+              parser.error match {
+                case Some((code, description)) =>
+                  HubServiceError(reason = description, code = code)
+                case None =>
+                  HubParseFailed(body = response.body, reason = "Received in valid XML")
+              }
             }
         }
     }
   }
-
 
   private case class ResponseParser(xml: scala.xml.Elem) {
 

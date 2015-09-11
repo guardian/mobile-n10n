@@ -2,13 +2,13 @@ package controllers
 
 import javax.inject.Inject
 
+import gu.msnotifications.HubFailure.{HubServiceError, HubParseFailed}
 import gu.msnotifications._
 import org.scalactic.{Good, Bad}
 import play.api.Logger
 import play.api.libs.json.{Json, Writes}
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, BodyParsers, Controller, Result}
-import HubResult.{ServiceError, ServiceParseFailed, Successful}
 import services._
 import scala.async.Async
 import scala.concurrent.ExecutionContext
@@ -20,6 +20,8 @@ final class Main @Inject()(wsClient: WSClient,
 
   import msNotificationsConfiguration.WriteAction
 
+  type HubResult[T] = Either[HubFailure, T]
+
   private val logger = Logger("main")
 
   import msNotificationsConfiguration._
@@ -29,7 +31,7 @@ final class Main @Inject()(wsClient: WSClient,
       notificationHubOR match {
         case Good(_) =>
           Async.await(notificationHubClient.fetchRegistrationsListEndpoint) match {
-            case Successful("Registrations") =>
+            case Right("Registrations") =>
               Ok("Good")
             case other =>
               logger.error(s"Registrations fetch failed: $other")
@@ -46,12 +48,12 @@ final class Main @Inject()(wsClient: WSClient,
 
   def processHubResult[T](result: HubResult[T])(implicit tjs: Writes[T]): Result = {
     result match {
-      case Successful(json) =>
+      case Right(json) =>
         Ok(Json.toJson(json))
-      case ServiceError(reason, code) =>
+      case Left(HubServiceError(reason, code)) =>
         logger.error(message = s"Service error code $code: $reason")
         Status(code.toInt)(s"Upstream service failed with code $code.")
-      case ServiceParseFailed(body, reason) =>
+      case Left(HubParseFailed(body, reason)) =>
         logger.error(message = s"Failed to parse body due to: $reason; body = $body")
         InternalServerError(reason)
     }
@@ -62,12 +64,12 @@ final class Main @Inject()(wsClient: WSClient,
       Async.await {
         notificationHubClient.sendPush(request.body)
       } match {
-        case Successful(_) =>
+        case Right(_) =>
           Ok("Ok")
-        case ServiceError(reason, code) =>
+        case Left(HubServiceError(reason, code)) =>
           logger.error(message = s"Service error code $code: $reason")
           Status(code.toInt)(s"Upstream service failed with code $code.")
-        case ServiceParseFailed(body, reason) =>
+        case Left(HubParseFailed(body, reason)) =>
           logger.error(message = s"Failed to parse body due to: $reason; body = $body")
           InternalServerError(reason)
       }
