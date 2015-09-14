@@ -1,0 +1,20 @@
+#!/bin/bash
+
+JAVA_CMD=java
+[ -n "$JDK_HOME" ] && JAVA_CMD=$JDK_HOME/bin/java
+echo "Using Java command: $JAVA_CMD"
+
+SBT_BOOT_DIR=$HOME/.sbt/boot/
+
+if [ ! -d "$SBT_BOOT_DIR" ]; then
+  mkdir -p $SBT_BOOT_DIR
+fi
+
+cat /dev/null | $JAVA_CMD -Xmx1G -XX:MaxMetaspaceSize=250m -XX:+UseCompressedOops \
+    -Dsbt.log.noformat=true \
+    -Dbuild.configuation.name="$TEAMCITY_BUILDCONF_NAME" \
+    -Dbuild.number="$BUILD_NUMBER" \
+    -Dbuild.vcs.number="$BUILD_VCS_NUMBER" \
+    -Dsbt.boot.directory=$SBT_BOOT_DIR \
+    -Dfile.encoding=UTF8 \
+    -jar sbt-launch.jar "$@"

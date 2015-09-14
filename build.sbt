@@ -1,3 +1,5 @@
+import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
+
 lazy val common = project.settings(
   libraryDependencies ++= Seq(
     json,
@@ -8,12 +10,15 @@ lazy val common = project.settings(
 
 lazy val registration = project.
   dependsOn(common).
-  enablePlugins(PlayScala).
+  enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging).
   settings(
     fork in run := true,
-    routesImport += "binders._"
+    routesImport += "binders._",
+    riffRaffPackageType := (packageZipTarball in config("universal")).value
   )
 
 lazy val root = (project in file(".")).
   dependsOn(registration, common).
   aggregate(registration, common)
+
+addCommandAlias("dist", ";riffRaffArtifact")
