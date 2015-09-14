@@ -14,7 +14,8 @@ lazy val registration = project.
   settings(
     fork in run := true,
     routesImport += "binders._",
-    riffRaffPackageType := (packageZipTarball in config("universal")).value
+    riffRaffPackageType := (packageZipTarball in config("universal")).value,
+    version := "1.0-SNAPSHOT"
   )
 
 lazy val root = (project in file(".")).
