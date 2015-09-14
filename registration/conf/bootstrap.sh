@@ -37,7 +37,7 @@ __END__
 wget https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py
 python ./awslogs-agent-setup.py -n -r $region -c awslogs.conf
 
-cp /$APP-1.0-SNAPSHOT/conf/init.conf /etc/init/registration.conf
+cp /$apptag-1.0-SNAPSHOT/conf/init.conf /etc/init/registration.conf
 
 start registration
 
