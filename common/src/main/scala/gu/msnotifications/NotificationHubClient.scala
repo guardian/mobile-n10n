@@ -1,6 +1,7 @@
 package gu.msnotifications
 
 import gu.msnotifications.HubFailure.{HubParseFailed, HubServiceError}
+import models.MobileRegistration
 import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,15 +27,19 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
     .url(uri)
     .withHeaders("Authorization" -> authorizationHeader(uri))
 
-  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationId]] = {
+  def register(registration: MobileRegistration): Future[HubResult[WNSRegistrationId]] = {
+    register(RawWindowsRegistration.fromMobileRegistration(registration))
+  }
+
+  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[WNSRegistrationId]] = {
     request(s"$notificationsHubUrl/registrations/?api-version=2015-01")
       .post(rawWindowsRegistration.toXml)
       .map(processRegistrationResponse)
   }
 
-  def update(registrationId: RegistrationId,
+  def update(registrationId: WNSRegistrationId,
              rawWindowsRegistration: RawWindowsRegistration
-              ): Future[HubResult[RegistrationId]] = {
+              ): Future[HubResult[WNSRegistrationId]] = {
     request(s"$notificationsHubUrl/registration/${registrationId.registrationId}?api-version=2015-01")
       .post(rawWindowsRegistration.toXml)
       .map(processRegistrationResponse)
@@ -78,7 +83,7 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
     }
   }
 
-  private def processRegistrationResponse(response: WSResponse): HubResult[RegistrationId] = {
+  private def processRegistrationResponse(response: WSResponse): HubResult[WNSRegistrationId] = {
     processResponse(response).flatMap { xml =>
       val parser = RegistrationResponseParser(xml)
       parser.registrationId.toRightDisjunction {
@@ -89,10 +94,9 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
 
   private case class RegistrationResponseParser(xml: scala.xml.Elem) {
 
-    def registrationId: Option[RegistrationId] = {
-      (xml \\ "RegistrationId").map(_.text).headOption.map(RegistrationId.apply)
+    def registrationId: Option[WNSRegistrationId] = {
+      (xml \\ "RegistrationId").map(_.text).headOption.map(WNSRegistrationId.apply)
     }
-
   }
 
 }
