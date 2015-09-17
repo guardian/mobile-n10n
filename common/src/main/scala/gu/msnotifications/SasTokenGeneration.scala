@@ -30,5 +30,3 @@ object SasTokenGeneration {
   }
 
 }
-
-case class SasTokenError(e: Throwable)
