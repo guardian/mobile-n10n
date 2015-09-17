@@ -6,9 +6,6 @@ import javax.crypto.spec.SecretKeySpec
 
 import org.apache.commons.codec.binary.Base64
 
-import scala.util.control.NonFatal
-import scalaz.\/
-
 object SasTokenGeneration {
 
   val expiresInMins = 60
