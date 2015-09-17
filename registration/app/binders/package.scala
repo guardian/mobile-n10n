@@ -18,7 +18,7 @@ package object binders {
         strBindable.bind(
           key = key,
           value = value
-        ).right.flatMap(v => RegistrationId.fromString(v))
+        ).right.flatMap(v => RegistrationId.fromString(v).toEither)
       }
     }
 

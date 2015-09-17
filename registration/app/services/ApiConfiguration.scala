@@ -2,33 +2,33 @@ package services
 
 import javax.inject.Inject
 
-import gu.msnotifications.{NotificationHubClient, ConnectionString, NotificationHubConnection}
+import gu.msnotifications.{NotificationHubClient, ConnectionSettings}
 import play.api.Configuration
-import org.scalactic._
-import org.scalactic.Accumulation._
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Results, Result, Request, ActionBuilder}
 
 import scala.concurrent.{Future, ExecutionContext}
+import scalaz.\/
+
+case class ErrorMessage(message: String)
 
 final class ApiConfiguration @Inject()(configuration: Configuration, wsClient: WSClient)
                                       (implicit executionContext: ExecutionContext) {
 
-  private def getConfigurationProperty(name: String): String Or One[ErrorMessage] = {
+  private def getConfigurationProperty(name: String): ErrorMessage \/ String  = {
     configuration.getString(name) match {
-      case Some(value) => Good(value)
-      case None => Bad(One(s"Could not find property $name"))
+      case Some(value) => \/.right(value)
+      case None => \/.left(ErrorMessage("Could not find property $name"))
     }
   }
 
-  def notificationHubOR = {
-    withGood(
-      getConfigurationProperty("gu.msnotifications.connectionstring").map(ConnectionString.apply),
-      getConfigurationProperty("gu.msnotifications.hubname")
-    ) { (connectionString, hubName) => connectionString.buildNotificationHub(hubName) }
-  }.flatMap(identity) // scalactic is missing .flatten?
+  def notificationHubOR = for {
+    connectionString <- getConfigurationProperty("gu.msnotifications.connectionstring")
+    hubName <- getConfigurationProperty("gu.msnotifications.hubname")
+    settings <- ConnectionSettings.fromString(connectionString).leftMap(failure => ErrorMessage(failure.reason))
+  } yield settings.buildNotificationHub(hubName)
 
-  private def notificationHub = notificationHubOR.get
+  private def notificationHub = notificationHubOR.fold(error => throw new Exception(error.message), identity)
 
   def notificationHubClient = new NotificationHubClient(notificationHub, wsClient)
 
