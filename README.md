@@ -88,7 +88,3 @@ Returns no relevant content - could return an error code however.
 The topics are matched with AND - this can be easily changed however. Or we could restrict it all to just one topic.
 
 As this is an external API it does need hardening - ie input data needs to be validated.
-
-## Authors
-* William Narmontas
-* Alexandre Dufournet
