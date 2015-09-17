@@ -22,48 +22,33 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
   import notificationHubConnection._
   import NotificationHubClient.HubResult
 
-  def post(uri: String, data: scala.xml.Elem, headers: List[(String, String)] = Nil) = {
-    wsClient
-      .url(uri)
-      .withHeaders("Authorization" -> authorizationHeader(uri))
-      .withHeaders(headers: _*)
-      .post(data)
-  }
-
-  def get(uri: String, headers: List[(String, String)] = Nil) = {
-    wsClient
-      .url(uri)
-      .withHeaders("Authorization" -> authorizationHeader(uri))
-      .withHeaders(headers: _*)
-      .get()
-  }
+  private def request(uri: String) = wsClient
+    .url(uri)
+    .withHeaders("Authorization" -> authorizationHeader(uri))
 
   def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationId]] = {
-    post(
-      uri = s"""$notificationsHubUrl/registrations/?api-version=2015-01""",
-      data = rawWindowsRegistration.toXml
-    ).map(processRegistrationResponse)
+    request(s"$notificationsHubUrl/registrations/?api-version=2015-01")
+      .post(rawWindowsRegistration.toXml)
+      .map(processRegistrationResponse)
   }
 
   def update(registrationId: RegistrationId,
              rawWindowsRegistration: RawWindowsRegistration
               ): Future[HubResult[RegistrationId]] = {
-    post(
-      uri = s"""$notificationsHubUrl/registration/${registrationId.registrationId}?api-version=2015-01""",
-      data = rawWindowsRegistration.toXml
-    ).map(processRegistrationResponse)
+    request(s"$notificationsHubUrl/registration/${registrationId.registrationId}?api-version=2015-01")
+      .post(rawWindowsRegistration.toXml)
+      .map(processRegistrationResponse)
   }
 
   def sendPush(azureWindowsPush: AzureXmlPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
 
-    post(
-      uri = s"""$notificationsHubUrl/messages/?api-version=2015-01""",
-      data = azureWindowsPush.xml,
-      headers = ("X-WNS-Type" -> azureWindowsPush.wnsType) ::
-        ("ServiceBusNotification-Format" -> "windows") ::
-        serviceBusTags
-    ).map(processResponse).map(_.map(_ => ()))
+    request(s"$notificationsHubUrl/messages/?api-version=2015-01")
+      .withHeaders("X-WNS-Type" -> azureWindowsPush.wnsType)
+      .withHeaders("ServiceBusNotification-Format" -> "windows")
+      .withHeaders(serviceBusTags: _*)
+      .post(azureWindowsPush.xml)
+      .map(processResponse).map(_.map(_ => ()))
   }
 
   /**
@@ -72,7 +57,8 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
    * @return the title of the feed if it succeeds getting one
    */
   def fetchRegistrationsListEndpoint: Future[HubResult[String]] = {
-    get(s"""$notificationsHubUrl/registrations/?api-version=2015-01""")
+    request(s"$notificationsHubUrl/registrations/?api-version=2015-01")
+      .get()
       .map(processResponse)
       .map(_.map(xml => (xml \ "title").text))
   }
