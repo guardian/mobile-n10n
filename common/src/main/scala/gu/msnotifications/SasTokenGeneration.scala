@@ -14,7 +14,7 @@ object SasTokenGeneration {
    * From [[https://github.com/Azure/azure-notificationhubs-java-backend/blob/master/NotificationHubs/src/com/windowsazure/messaging/NamespaceManager.java#L233]]
    * Licensed under Apache License 2.0 - [[https://github.com/Azure/azure-notificationhubs-java-backend/blob/master/LICENSE]]
    */
-  def generateSasToken(sasKeyName: String, sasKeyValue: String, uri: String) = {
+  def generateSasToken(sasKeyName: String, sasKeyValue: String, uri: String): String = {
     val targetUri = URLEncoder.encode(uri.toLowerCase, "UTF-8").toLowerCase
     val expires = (System.currentTimeMillis + (expiresInMins * 60 * 1000)) / 1000
     val rawHmac = {
