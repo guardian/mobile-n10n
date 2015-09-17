@@ -7,7 +7,7 @@ object UserId {
   val safeUserId = """[a-zA-Z0-9]+""".r
   implicit val readsUserId = new Reads[UserId] {
     override def reads(json: JsValue): JsResult[UserId] = json match {
-      case JsString(userId@safeUserId()) => JsSuccess(UserId(userId))
+      case JsString(userId @ safeUserId()) => JsSuccess(UserId(userId))
       case _ => JsError(ValidationError(s"User ID not valid, must match regex '${safeUserId.regex}'"))
     }
   }

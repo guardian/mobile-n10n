@@ -11,7 +11,6 @@ case class WindowsRegistration(channelUri: String, userId: UserId, topics: Set[T
       tags = topics.map(_.toUri) + s"User_$userId"
     )
   }
-
 }
 
 
