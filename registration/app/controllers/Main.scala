@@ -67,7 +67,7 @@ final class Main @Inject()(wsClient: WSClient,
   def push = WriteAction.async(BodyJson[Push]) { request =>
     Async.async {
       Async.await {
-        notificationHubClient.sendPush(AzureXmlPush.fromPush(request.body))
+        notificationHubClient.sendNotification(AzureXmlPush.fromPush(request.body))
       } match {
         case \/-(_) =>
           Ok("Ok")
