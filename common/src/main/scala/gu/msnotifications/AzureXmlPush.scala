@@ -1,11 +1,10 @@
 package gu.msnotifications
 
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
+import models.{Push, Topic}
 
 case class AzureXmlPush(wnsType: String, xml: scala.xml.Elem, topics: Option[Set[Topic]]) {
   def tagQuery: Option[String] = topics.map { set =>
-    set.map(_.toUri).mkString("(", " && ", ")")
+    set.map(_.toWNSUri).mkString("(", " && ", ")")
   }
 }
 
@@ -15,18 +14,5 @@ object AzureXmlPush {
    */
   val validTypes = Set("wns/toast", "wns/badge", "wns/tile")
 
-  implicit val topicReads = Json.reads[Topic]
-
-  implicit val reads = (
-    (__ \ "wnsType").read[String] and
-      (__ \ "topics").readNullable[Set[Topic]] and
-      (__ \ "xml").read[String]
-    ) { (wnsType, topics, xml) =>
-    AzureXmlPush(
-      wnsType = wnsType,
-      topics = topics,
-      xml = scala.xml.XML.loadString(xml)
-    )
-  }
-
+  def fromPush(p: Push) = AzureXmlPush(p.wnsType, p.xml, p.topics)
 }

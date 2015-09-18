@@ -2,16 +2,18 @@ package controllers
 
 import javax.inject.Inject
 
-import gu.msnotifications.HubFailure.{HubServiceError, HubParseFailed}
+import gu.msnotifications.HubFailure.{HubInvalidConnectionString, HubServiceError, HubParseFailed}
 import gu.msnotifications._
+import models.{Push, WindowsMobile, MobileRegistration}
 import play.api.Logger
 import play.api.libs.json.{Json, Writes}
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, BodyParsers, Controller, Result}
 import services._
 import scala.async.Async
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 import scalaz.{-\/, \/-}
+import BodyParsers.parse.{json => BodyJson}
 
 final class Main @Inject()(wsClient: WSClient,
                            msNotificationsConfiguration: ApiConfiguration)(
@@ -56,13 +58,16 @@ final class Main @Inject()(wsClient: WSClient,
       case -\/(HubParseFailed(body, reason)) =>
         logger.error(message = s"Failed to parse body due to: $reason; body = $body")
         InternalServerError(reason)
+      case -\/(HubInvalidConnectionString(reason)) =>
+        logger.error(message = s"Failed due to invalid connection string: $reason")
+        InternalServerError(reason)
     }
   }
 
-  def push = WriteAction.async(BodyParsers.parse.json[AzureXmlPush]) { request =>
+  def push = WriteAction.async(BodyJson[Push]) { request =>
     Async.async {
       Async.await {
-        notificationHubClient.sendPush(request.body)
+        notificationHubClient.sendPush(AzureXmlPush.fromPush(request.body))
       } match {
         case \/-(_) =>
           Ok("Ok")
@@ -72,22 +77,18 @@ final class Main @Inject()(wsClient: WSClient,
         case -\/(HubParseFailed(body, reason)) =>
           logger.error(message = s"Failed to parse body due to: $reason; body = $body")
           InternalServerError(reason)
+        case -\/(HubInvalidConnectionString(reason)) =>
+          logger.error(message = s"Failed due to invalid connection string: $reason")
+          InternalServerError(reason)
       }
     }
   }
 
-  def register(registrationId: RegistrationId) =
-    Action.async(BodyParsers.parse.json[WindowsRegistration]) { request =>
-      Async.async {
-        processHubResult {
-          Async.await {
-            notificationHubClient.update(
-              registrationId = registrationId,
-              rawWindowsRegistration = request.body.toRaw
-            )
-          }
-        }
-      }
+  def register = Action.async(BodyJson[MobileRegistration]) { request =>
+    if (request.body.platform == WindowsMobile) {
+      notificationHubClient.register(request.body).map(processHubResult(_))
+    } else {
+      Future.successful(InternalServerError("Platform not supported"))
     }
-
+  }
 }
