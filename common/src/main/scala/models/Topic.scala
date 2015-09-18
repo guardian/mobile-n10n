@@ -18,14 +18,14 @@ object TopicTypes {
 
 object TopicType {
   import TopicTypes._
-  def fromString(s: String): Option[TopicType] = s match {
-    case "content" => Some(Content)
-    case "tag-contributor" => Some(TagContributor)
-    case "tag-keyword" => Some(TagKeyword)
-    case "tag-series" => Some(TagSeries)
-    case "tag-blog" => Some(TagBlog)
-    case "football-team" => Some(FootballTeam)
-    case "football-match" => Some(FootballMatch)
+  def fromString(s: String): Option[TopicType] = PartialFunction.condOpt(s) {
+    case "content" => Content
+    case "tag-contributor" => TagContributor
+    case "tag-keyword" => TagKeyword
+    case "tag-series" => TagSeries
+    case "tag-blog" => TagBlog
+    case "football-team" => FootballTeam
+    case "football-match" => FootballMatch
   }
 
   implicit val jf = new Format[TopicType] {
