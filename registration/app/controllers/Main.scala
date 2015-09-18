@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import gu.msnotifications.HubFailure.{HubInvalidConnectionString, HubServiceError, HubParseFailed}
 import gu.msnotifications._
-import models.{Push, WindowsMobile, MobileRegistration}
+import models.{ApiResponse, Push, WindowsMobile, MobileRegistration}
 import play.api.Logger
 import play.api.libs.json.{Json, Writes}
 import play.api.libs.ws.WSClient
@@ -48,10 +48,10 @@ final class Main @Inject()(wsClient: WSClient,
     }
   }
 
-  private def processHubResult[T](result: HubResult[T])(implicit tjs: Writes[T]): Result = {
+  private def processHubResult[T](result: HubResult[T]): Result = {
     result match {
       case \/-(json) =>
-        Ok(Json.toJson(json))
+        Ok(Json.toJson(ApiResponse("success")))
       case -\/(HubServiceError(reason, code)) =>
         logger.error(message = s"Service error code $code: $reason")
         Status(code.toInt)(s"Upstream service failed with code $code.")

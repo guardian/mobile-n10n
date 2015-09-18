@@ -27,22 +27,22 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
     .url(uri)
     .withHeaders("Authorization" -> authorizationHeader(uri))
 
-  def register(registration: MobileRegistration): Future[HubResult[WNSRegistrationId]] = {
+  def register(registration: MobileRegistration): Future[HubResult[RegistrationResponse]] = {
     register(RawWindowsRegistration.fromMobileRegistration(registration))
   }
 
-  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[WNSRegistrationId]] = {
+  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
     request(s"$notificationsHubUrl/registrations/?api-version=2015-01")
       .post(rawWindowsRegistration.toXml)
-      .map(processRegistrationResponse)
+      .map(RegistrationResponse.fromWSResponse)
   }
 
   def update(registrationId: WNSRegistrationId,
              rawWindowsRegistration: RawWindowsRegistration
-              ): Future[HubResult[WNSRegistrationId]] = {
+              ): Future[HubResult[RegistrationResponse]] = {
     request(s"$notificationsHubUrl/registration/${registrationId.registrationId}?api-version=2015-01")
       .post(rawWindowsRegistration.toXml)
-      .map(processRegistrationResponse)
+      .map(RegistrationResponse.fromWSResponse)
   }
 
   def sendPush(azureWindowsPush: AzureXmlPush): Future[HubResult[Unit]] = {
@@ -53,7 +53,7 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
       .withHeaders("ServiceBusNotification-Format" -> "windows")
       .withHeaders(serviceBusTags: _*)
       .post(azureWindowsPush.xml)
-      .map(processResponse).map(_.map(_ => ()))
+      .map(XmlResponse.fromWSResponse).map(_.map(_ => ()))
   }
 
   /**
@@ -64,39 +64,8 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
   def fetchRegistrationsListEndpoint: Future[HubResult[String]] = {
     request(s"$notificationsHubUrl/registrations/?api-version=2015-01")
       .get()
-      .map(processResponse)
-      .map(_.map(xml => (xml \ "title").text))
-  }
-
-  private def processResponse(response: WSResponse): HubResult[scala.xml.Elem] = {
-    Try(response.xml).toOption.toRightDisjunction {
-      if (response.status != 200)
-        HubServiceError(
-          reason = response.statusText,
-          code = response.status
-        )
-      else
-        HubParseFailed(
-          body = response.body,
-          reason = "Failed to find any XML"
-        )
-    }
-  }
-
-  private def processRegistrationResponse(response: WSResponse): HubResult[WNSRegistrationId] = {
-    processResponse(response).flatMap { xml =>
-      val parser = RegistrationResponseParser(xml)
-      parser.registrationId.toRightDisjunction {
-        HubServiceError.fromXml(xml) getOrElse HubParseFailed(body = response.body, reason = "Received in valid XML")
-      }
-    }
-  }
-
-  private case class RegistrationResponseParser(xml: scala.xml.Elem) {
-
-    def registrationId: Option[WNSRegistrationId] = {
-      (xml \\ "RegistrationId").map(_.text).headOption.map(WNSRegistrationId.apply)
-    }
+      .map(XmlResponse.fromWSResponse)
+      .map(_.map(xml => (xml.xml \ "title").text))
   }
 
 }
