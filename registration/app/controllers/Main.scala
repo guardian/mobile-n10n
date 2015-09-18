@@ -27,7 +27,11 @@ final class Main @Inject()(wsClient: WSClient,
 
   import msNotificationsConfiguration._
 
-  def healthCheck = Action.async {
+  def healthCheck = Action {
+    Ok("Good")
+  }
+
+  def dependencies = Action.async {
     Async.async {
       notificationHubOR match {
         case \/-(_) =>
