@@ -12,7 +12,7 @@ import scalaz.\/
 
 case class ErrorMessage(message: String)
 
-final class ApiConfiguration @Inject()(configuration: Configuration, wsClient: WSClient)
+final class RegistrationConfiguration @Inject()(configuration: Configuration, wsClient: WSClient)
                                       (implicit executionContext: ExecutionContext) {
 
   private def getConfigurationProperty(name: String): ErrorMessage \/ String  = {

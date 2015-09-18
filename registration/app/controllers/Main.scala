@@ -16,7 +16,7 @@ import scalaz.{-\/, \/-}
 import BodyParsers.parse.{json => BodyJson}
 
 final class Main @Inject()(wsClient: WSClient,
-                           msNotificationsConfiguration: ApiConfiguration)(
+                           msNotificationsConfiguration: RegistrationConfiguration)(
                             implicit executionContext: ExecutionContext
                             ) extends Controller {
 

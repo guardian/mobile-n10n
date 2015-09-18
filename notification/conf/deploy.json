@@ -1,0 +1,28 @@
+{
+  "defaultStacks": [ "mobile-notifications" ],
+  "packages": {
+    "notification": {
+      "type": "autoscaling",
+      "data": {
+        "secondsToWait": 900,
+        "port": 18080,
+        "healthcheckGrace": 20,
+        "warmupGrace": 30,
+        "bucket": "mobile-notifications-dist",
+        "healthcheck_paths": ["/healthcheck"],
+        "publicReadAcl": false
+      }
+    }
+  },
+  "recipes":{
+    "default": {
+      "depends" : ["artifactUpload", "deploy"]
+    },
+    "deploy": {
+      "actionsBeforeApp": ["notification.deploy"]
+    },
+    "artifactUpload": {
+      "actionsBeforeApp": ["notification.uploadArtifacts"]
+    }
+  }
+}
