@@ -4,7 +4,6 @@ import javax.inject.Inject
 
 import gu.msnotifications.HubFailure.{HubServiceError, HubParseFailed}
 import gu.msnotifications._
-import org.scalactic.{Good, Bad}
 import play.api.Logger
 import play.api.libs.json.{Json, Writes}
 import play.api.libs.ws.WSClient
@@ -12,6 +11,7 @@ import play.api.mvc.{Action, BodyParsers, Controller, Result}
 import services._
 import scala.async.Async
 import scala.concurrent.ExecutionContext
+import scalaz.{-\/, \/-}
 
 final class Main @Inject()(wsClient: WSClient,
                            msNotificationsConfiguration: ApiConfiguration)(
@@ -19,8 +19,7 @@ final class Main @Inject()(wsClient: WSClient,
                             ) extends Controller {
 
   import msNotificationsConfiguration.WriteAction
-
-  type HubResult[T] = Either[HubFailure, T]
+  import NotificationHubClient.HubResult
 
   private val logger = Logger("main")
 
@@ -33,31 +32,28 @@ final class Main @Inject()(wsClient: WSClient,
   def dependencies = Action.async {
     Async.async {
       notificationHubOR match {
-        case Good(_) =>
-          Async.await(notificationHubClient.fetchRegistrationsListEndpoint) match {
-            case Right("Registrations") =>
-              Ok("Good")
-            case other =>
-              logger.error(s"Registrations fetch failed: $other")
-              InternalServerError("Failed to list registrations")
-          }
-        case Bad(reason) =>
+        case \/-(_) =>
+          Async.await(notificationHubClient.fetchRegistrationsListEndpoint) map { _ =>
+            Ok("Good")
+          } leftMap { other =>
+            logger.error(s"Registrations fetch failed: $other")
+            InternalServerError("Failed to list registrations")
+          } merge
+        case -\/(reason) =>
           logger.error(s"Configuration is invalid: $notificationHubOR")
           InternalServerError("Configuration invalid")
       }
     }
   }
 
-  implicit val registrationIdWrites = Json.writes[RegistrationId]
-
-  def processHubResult[T](result: HubResult[T])(implicit tjs: Writes[T]): Result = {
+  private def processHubResult[T](result: HubResult[T])(implicit tjs: Writes[T]): Result = {
     result match {
-      case Right(json) =>
+      case \/-(json) =>
         Ok(Json.toJson(json))
-      case Left(HubServiceError(reason, code)) =>
+      case -\/(HubServiceError(reason, code)) =>
         logger.error(message = s"Service error code $code: $reason")
         Status(code.toInt)(s"Upstream service failed with code $code.")
-      case Left(HubParseFailed(body, reason)) =>
+      case -\/(HubParseFailed(body, reason)) =>
         logger.error(message = s"Failed to parse body due to: $reason; body = $body")
         InternalServerError(reason)
     }
@@ -68,12 +64,12 @@ final class Main @Inject()(wsClient: WSClient,
       Async.await {
         notificationHubClient.sendPush(request.body)
       } match {
-        case Right(_) =>
+        case \/-(_) =>
           Ok("Ok")
-        case Left(HubServiceError(reason, code)) =>
+        case -\/(HubServiceError(reason, code)) =>
           logger.error(message = s"Service error code $code: $reason")
           Status(code.toInt)(s"Upstream service failed with code $code.")
-        case Left(HubParseFailed(body, reason)) =>
+        case -\/(HubParseFailed(body, reason)) =>
           logger.error(message = s"Failed to parse body due to: $reason; body = $body")
           InternalServerError(reason)
       }

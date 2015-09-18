@@ -14,7 +14,7 @@ class TopicSpec extends WordSpec with Matchers with OptionValues {
     "encode and decode a pretty topic" in {
       val topicUri = prettyTopic.toUri
       info(s"Topic $prettyTopic has URI: $topicUri")
-      topicUri should fullyMatch regex """[0-9a-zA-Z\/:-]+"""
+      topicUri should fullyMatch regex """[0-9a-zA-Z\/:-=]+"""
       Topic.fromUri(topicUri).value shouldBe prettyTopic
     }
   }

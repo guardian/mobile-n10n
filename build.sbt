@@ -4,7 +4,8 @@ lazy val common = project.settings(
   libraryDependencies ++= Seq(
     json,
     ws,
-    "com.microsoft.azure" % "azure-servicebus" % "0.7.0"
+    "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
+    "org.scalaz" %% "scalaz-core" % "7.1.0"
   )
 )
 
