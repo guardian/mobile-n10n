@@ -34,15 +34,6 @@ final class RegistrationConfiguration @Inject()(wsClient: WSClient)
 
   def notificationHubClient = new NotificationHubClient(notificationHub, wsClient)
 
-  def WriteAction: ActionBuilder[Request] = new ActionBuilder[Request] with Results {
-    override def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]): Future[Result] = {
-      request.getQueryString("api-key") match {
-        case Some(apiKey) if validApiKey(apiKey) => block(request)
-        case _ => Future.successful(Unauthorized("A valid API key is required."))
-      }
-    }
-  }
-
   private def validApiKey(apiKey: String): Boolean = {
     getConfigurationProperty("gu.msnotifications.admin-api-key").toOption.contains(apiKey)
   }

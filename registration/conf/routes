@@ -1,3 +1,2 @@
 POST        /register                       @controllers.Main.register
-POST        /push                           @controllers.Main.push
 GET         /healthcheck                    @controllers.Main.healthCheck
