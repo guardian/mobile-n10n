@@ -17,17 +17,17 @@ trait XmlReads[T] {
 
 object XmlParser {
   private def getXml(response: WSResponse): HubResult[scala.xml.Elem] = {
-    Try(response.xml).toOption \/> {
-      if (response.status != 200)
-        HubServiceError(
-          reason = response.statusText,
-          code = response.status
-        )
-      else
-        HubParseFailed(
-          body = response.body,
-          reason = "Failed to find any XML"
-        )
+    if (response.status >= 200 || response.status < 300)
+      Try(response.xml).toOption \/> HubParseFailed.invalidXml(response.body)
+    else
+      \/.left(parseError(response))
+  }
+
+  def parseError(response: WSResponse): HubFailure = {
+    Try(response.xml).toOption.flatMap {
+      HubServiceError.fromXml
+    } getOrElse {
+      HubServiceError.fromWSResponse(response)
     }
   }
 

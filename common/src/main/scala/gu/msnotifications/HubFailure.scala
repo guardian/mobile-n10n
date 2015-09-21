@@ -1,5 +1,7 @@
 package gu.msnotifications
 
+import play.api.libs.ws.WSResponse
+
 sealed trait HubFailure {
   def reason: String
 }
@@ -13,20 +15,22 @@ object HubFailure {
         detail <- xml \ "Detail"
       } yield HubServiceError(detail.text, code.text.toInt)
     }.headOption
+
+    def fromWSResponse(response: WSResponse) = HubServiceError(
+      reason = response.statusText,
+      code = response.status
+    )
   }
 
   case class HubServiceError(reason: String, code: Int) extends HubFailure
 
+  object HubParseFailed {
+    def invalidXml(body: String) = HubParseFailed(
+      body = body,
+      reason = "Failed to find any XML"
+    )
+  }
   case class HubParseFailed(body: String, reason: String) extends HubFailure
 
   case class HubInvalidConnectionString(reason: String) extends HubFailure
-
-  def fromResponseCode(code: Int) = code match {
-    case 400 => HubServiceError("The request is malformed", code)
-    case 401 => HubServiceError("Authorization failure. The access key was incorrect.", code)
-    case 403 => HubServiceError("Quota exceeded or message too large; message was rejected.", code)
-    case 404 => HubServiceError("No message branch at the URI.", code)
-    case 413 => HubServiceError("Requested entity too large. The message size cannot be over 64Kb.", code)
-    case _ => HubServiceError(s"Unknown error (code $code)", code)
-  }
 }

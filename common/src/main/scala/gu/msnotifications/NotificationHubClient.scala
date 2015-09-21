@@ -57,7 +57,7 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
         if (response.status == 200)
           \/.right(())
         else
-          \/.left(HubFailure.fromResponseCode(response.status))
+          \/.left(XmlParser.parseError(response))
       }
   }
 
