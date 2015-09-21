@@ -9,10 +9,10 @@ case object iOS extends Platform { override def toString = "ios" }
 case object WindowsMobile extends Platform { override def toString = "windows-mobile" }
 
 object Platform {
-  def fromString(s: String): Option[Platform] = s match {
-    case "android" => Some(Android)
-    case "ios" => Some(iOS)
-    case "windows-mobile" => Some(WindowsMobile)
+  def fromString(s: String): Option[Platform] = PartialFunction.condOpt(s) {
+    case "android" => Android
+    case "ios" => iOS
+    case "windows-mobile" => WindowsMobile
   }
 
   implicit val jf = new Format[Platform] {
