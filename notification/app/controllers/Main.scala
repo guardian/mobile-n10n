@@ -8,11 +8,10 @@ import play.api.mvc.{Action, Controller}
 import services.NotificationConfiguration
 import scala.concurrent.ExecutionContext
 
-final class Main @Inject()(wsClient: WSClient,
-  msNotificationsConfiguration: NotificationConfiguration)(
-  implicit executionContext: ExecutionContext
-  ) extends Controller {
 
+final class Main @Inject()(wsClient: WSClient, msNotificationsConfiguration: NotificationConfiguration)
+  (implicit executionContext: ExecutionContext)
+  extends Controller {
 
   private val logger = Logger("main")
 
