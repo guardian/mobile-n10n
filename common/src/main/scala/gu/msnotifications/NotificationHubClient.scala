@@ -1,13 +1,10 @@
 package gu.msnotifications
 
-import gu.msnotifications.HubFailure.{HubParseFailed, HubServiceError}
 import models.MobileRegistration
-import play.api.libs.ws.{WSClient, WSResponse}
+import play.api.libs.ws.{WSClient}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 import scalaz.\/
-import scalaz.std.option.optionSyntax._
 
 case class NotificationHubError(message: String)
 
@@ -23,37 +20,45 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
   import notificationHubConnection._
   import NotificationHubClient.HubResult
 
-  private def request(uri: String) = wsClient
-    .url(uri)
-    .withHeaders("Authorization" -> authorizationHeader(uri))
+  private def request(path: String) = {
+    val uri = s"$notificationsHubUrl$path?api-version=2015-01"
+    wsClient
+      .url(uri)
+      .withHeaders("Authorization" -> authorizationHeader(uri))
+  }
 
-  def register(registration: MobileRegistration): Future[HubResult[WNSRegistrationId]] = {
+  def register(registration: MobileRegistration): Future[HubResult[RegistrationResponse]] = {
     register(RawWindowsRegistration.fromMobileRegistration(registration))
   }
 
-  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[WNSRegistrationId]] = {
-    request(s"$notificationsHubUrl/registrations/?api-version=2015-01")
+  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
+    request("/registrations/")
       .post(rawWindowsRegistration.toXml)
-      .map(processRegistrationResponse)
+      .map(XmlParser.parse[RegistrationResponse])
   }
 
   def update(registrationId: WNSRegistrationId,
              rawWindowsRegistration: RawWindowsRegistration
-              ): Future[HubResult[WNSRegistrationId]] = {
-    request(s"$notificationsHubUrl/registration/${registrationId.registrationId}?api-version=2015-01")
+              ): Future[HubResult[RegistrationResponse]] = {
+    request(s"/registration/${registrationId.registrationId}")
       .post(rawWindowsRegistration.toXml)
-      .map(processRegistrationResponse)
+      .map(XmlParser.parse[RegistrationResponse])
   }
 
-  def sendPush(azureWindowsPush: AzureXmlPush): Future[HubResult[Unit]] = {
+  def sendNotification(azureWindowsPush: AzureXmlPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
 
-    request(s"$notificationsHubUrl/messages/?api-version=2015-01")
+    request(s"/messages/")
       .withHeaders("X-WNS-Type" -> azureWindowsPush.wnsType)
       .withHeaders("ServiceBusNotification-Format" -> "windows")
       .withHeaders(serviceBusTags: _*)
       .post(azureWindowsPush.xml)
-      .map(processResponse).map(_.map(_ => ()))
+      .map { response =>
+        if (response.status == 200)
+          \/.right(())
+        else
+          \/.left(XmlParser.parseError(response))
+      }
   }
 
   /**
@@ -62,41 +67,17 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
    * @return the title of the feed if it succeeds getting one
    */
   def fetchRegistrationsListEndpoint: Future[HubResult[String]] = {
-    request(s"$notificationsHubUrl/registrations/?api-version=2015-01")
+    request(s"/registrations/")
       .get()
-      .map(processResponse)
-      .map(_.map(xml => (xml \ "title").text))
+      .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
+      .map(_.map(_.title))
   }
 
-  private def processResponse(response: WSResponse): HubResult[scala.xml.Elem] = {
-    Try(response.xml).toOption.toRightDisjunction {
-      if (response.status != 200)
-        HubServiceError(
-          reason = response.statusText,
-          code = response.status
-        )
-      else
-        HubParseFailed(
-          body = response.body,
-          reason = "Failed to find any XML"
-        )
-    }
+  def registrationsByTag(tag: String) = {
+    request(s"/tags/$tag/registrations")
+      .get()
+      .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
   }
 
-  private def processRegistrationResponse(response: WSResponse): HubResult[WNSRegistrationId] = {
-    processResponse(response).flatMap { xml =>
-      val parser = RegistrationResponseParser(xml)
-      parser.registrationId.toRightDisjunction {
-        HubServiceError.fromXml(xml) getOrElse HubParseFailed(body = response.body, reason = "Received in valid XML")
-      }
-    }
-  }
-
-  private case class RegistrationResponseParser(xml: scala.xml.Elem) {
-
-    def registrationId: Option[WNSRegistrationId] = {
-      (xml \\ "RegistrationId").map(_.text).headOption.map(WNSRegistrationId.apply)
-    }
-  }
 
 }
