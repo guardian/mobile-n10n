@@ -2,38 +2,22 @@ package models
 
 import play.api.libs.json._
 
-case class Topic(`type`: TopicType, name: String)
+import scalaz.\/
+import scalaz.std.option.optionSyntax._
 
-sealed trait TopicType
-
-object TopicTypes {
-  case object Content extends TopicType { override def toString = "content" }
-  case object TagContributor extends TopicType { override def toString = "tag-contributor" }
-  case object TagKeyword extends TopicType { override def toString = "tag-keyword" }
-  case object TagSeries extends TopicType { override def toString = "tag-series" }
-  case object TagBlog extends TopicType { override def toString = "tag-blog" }
-  case object FootballTeam extends TopicType { override def toString = "football-team" }
-  case object FootballMatch extends TopicType { override def toString = "football-match" }
+case class Topic(`type`: TopicType, name: String) {
+  override def toString = s"${`type`}/$name"
 }
 
-object TopicType {
-  import TopicTypes._
-  def fromString(s: String): Option[TopicType] = PartialFunction.condOpt(s) {
-    case "content" => Content
-    case "tag-contributor" => TagContributor
-    case "tag-keyword" => TagKeyword
-    case "tag-series" => TagSeries
-    case "tag-blog" => TagBlog
-    case "football-team" => FootballTeam
-    case "football-match" => FootballMatch
-  }
+object Topic {
 
-  implicit val jf = new Format[TopicType] {
-    def reads(json: JsValue): JsResult[TopicType] = json match {
-      case JsString(s) => fromString(s) map { JsSuccess(_) } getOrElse JsError(s"$s is not a valid topic type")
-      case _ => JsError(s"Topic type could not be decoded")
-    }
+  implicit val jf = Json.format[Topic]
 
-    def writes(obj: TopicType): JsValue = JsString(obj.toString)
+  def fromString(s: String): String \/ Topic = {
+    val (topicType, topicName) = s.partition(_ != '/')
+    for {
+      tt <- TopicType.fromString(topicType) \/> s"Invalid topic type $topicType"
+      tn = topicName.drop(1)
+    } yield Topic(tt, tn)
   }
 }

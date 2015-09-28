@@ -1,7 +1,7 @@
 package gu.msnotifications
 
 import models.MobileRegistration
-import play.api.libs.ws.{WSClient}
+import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
@@ -45,14 +45,15 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
       .map(XmlParser.parse[RegistrationResponse])
   }
 
-  def sendNotification(azureWindowsPush: AzureXmlPush): Future[HubResult[Unit]] = {
+  def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
 
     request(s"/messages/")
       .withHeaders("X-WNS-Type" -> azureWindowsPush.wnsType)
       .withHeaders("ServiceBusNotification-Format" -> "windows")
+      .withHeaders("Content-Type" -> "application/octet-stream")
       .withHeaders(serviceBusTags: _*)
-      .post(azureWindowsPush.xml)
+      .post(azureWindowsPush.body)
       .map { response =>
         if (response.status == 200)
           \/.right(())
