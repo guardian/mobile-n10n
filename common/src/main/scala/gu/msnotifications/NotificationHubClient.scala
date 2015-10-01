@@ -1,6 +1,7 @@
 package gu.msnotifications
 
-import models.MobileRegistration
+import models.{Push, MobileRegistration}
+import notifications.providers.NotificationProvider
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,10 +16,12 @@ object NotificationHubClient {
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
  */
 final class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
-                                 (implicit executionContext: ExecutionContext) {
+                                 (implicit executionContext: ExecutionContext) extends NotificationProvider {
 
   import notificationHubConnection._
   import NotificationHubClient.HubResult
+
+  val name = "WNS"
 
   private def request(path: String) = {
     val uri = s"$notificationsHubUrl$path?api-version=2015-01"
@@ -44,6 +47,8 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
       .post(rawWindowsRegistration.toXml)
       .map(XmlParser.parse[RegistrationResponse])
   }
+
+  def sendNotification(push: Push): Future[HubResult[Unit]] = sendNotification(AzureRawPush.fromPush(push))
 
   def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList

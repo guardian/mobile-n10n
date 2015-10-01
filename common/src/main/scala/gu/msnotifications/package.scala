@@ -1,7 +1,7 @@
 package gu
 
 import java.util.Base64
-import models.{TopicType, Topic}
+import models.{UserId, TopicType, Topic}
 
 package object msnotifications {
 
@@ -11,9 +11,7 @@ package object msnotifications {
   private def decode(string: String): String =
     new String(Base64.getUrlDecoder.decode(string), "UTF-8")
 
-  implicit class WNSTopic(t: Topic) {
-    def toWNSUri: String = s"topic:${encode(t.`type`.toString)}:${encode(t.name)}"
-  }
+  case class WNSTopic(uri: String)
 
   object WNSTopic {
     def fromUri(uri: String): Option[Topic] = {
@@ -22,6 +20,14 @@ package object msnotifications {
         case regex(tpe, name) if TopicType.fromString(decode(tpe)).isDefined =>
           Topic(`type` = TopicType.fromString(decode(tpe)).get, name = decode(name))
       }
+    }
+
+    def fromTopic(t: Topic): WNSTopic = {
+      WNSTopic(s"topic:${encode(t.`type`.toString)}:${encode(t.name)}")
+    }
+
+    def fromUserId(u: UserId): WNSTopic = {
+      WNSTopic(s"user:${u.userId}")
     }
   }
 }
