@@ -30,6 +30,7 @@ lazy val notification = project.
   settings(
     fork in run := true,
     routesImport += "binders._",
+    routesImport += "models.Topic",
     riffRaffPackageType := (packageZipTarball in config("universal")).value,
     version := "1.0-SNAPSHOT"
   )

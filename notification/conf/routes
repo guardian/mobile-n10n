@@ -1,1 +1,3 @@
-GET         /healthcheck                    @controllers.Main.healthCheck
+GET         /healthcheck                        @controllers.Main.healthCheck
+POST        /push/user/:userId                  @controllers.Main.pushUser(userId)
+POST        /push/topic/*topic                  @controllers.Main.pushTopic(topic: Topic)
