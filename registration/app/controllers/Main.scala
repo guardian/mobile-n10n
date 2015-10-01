@@ -4,9 +4,9 @@ import javax.inject.Inject
 
 import gu.msnotifications.HubFailure.{HubInvalidConnectionString, HubServiceError, HubParseFailed}
 import gu.msnotifications._
-import models.{ApiResponse, Push, WindowsMobile, MobileRegistration}
+import models.{ApiResponse, WindowsMobile, MobileRegistration}
 import play.api.Logger
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, BodyParsers, Controller, Result}
 import services._
@@ -20,7 +20,6 @@ final class Main @Inject()(wsClient: WSClient,
                             implicit executionContext: ExecutionContext
                             ) extends Controller {
 
-  import msNotificationsConfiguration.WriteAction
   import NotificationHubClient.HubResult
 
   private val logger = Logger("main")
@@ -61,26 +60,6 @@ final class Main @Inject()(wsClient: WSClient,
       case -\/(HubInvalidConnectionString(reason)) =>
         logger.error(message = s"Failed due to invalid connection string: $reason")
         InternalServerError(reason)
-    }
-  }
-
-  def push = WriteAction.async(BodyJson[Push]) { request =>
-    Async.async {
-      Async.await {
-        notificationHubClient.sendNotification(AzureXmlPush.fromPush(request.body))
-      } match {
-        case \/-(_) =>
-          Ok("Ok")
-        case -\/(HubServiceError(reason, code)) =>
-          logger.error(message = s"Service error code $code: $reason")
-          Status(code.toInt)(s"Upstream service failed with code $code.")
-        case -\/(HubParseFailed(body, reason)) =>
-          logger.error(message = s"Failed to parse body due to: $reason; body = $body")
-          InternalServerError(reason)
-        case -\/(HubInvalidConnectionString(reason)) =>
-          logger.error(message = s"Failed due to invalid connection string: $reason")
-          InternalServerError(reason)
-      }
     }
   }
 

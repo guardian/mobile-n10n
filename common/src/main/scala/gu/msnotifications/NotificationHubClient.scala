@@ -1,7 +1,8 @@
 package gu.msnotifications
 
-import models.MobileRegistration
-import play.api.libs.ws.{WSClient}
+import models.{Push, MobileRegistration}
+import notifications.providers.NotificationSender
+import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
@@ -15,10 +16,12 @@ object NotificationHubClient {
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
  */
 final class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
-                                 (implicit executionContext: ExecutionContext) {
+                                 (implicit executionContext: ExecutionContext) extends NotificationSender {
 
   import notificationHubConnection._
   import NotificationHubClient.HubResult
+
+  val name = "WNS"
 
   private def request(path: String) = {
     val uri = s"$notificationsHubUrl$path?api-version=2015-01"
@@ -45,14 +48,17 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
       .map(XmlParser.parse[RegistrationResponse])
   }
 
-  def sendNotification(azureWindowsPush: AzureXmlPush): Future[HubResult[Unit]] = {
+  def sendNotification(push: Push): Future[HubResult[Unit]] = sendNotification(AzureRawPush.fromPush(push))
+
+  def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
 
     request(s"/messages/")
       .withHeaders("X-WNS-Type" -> azureWindowsPush.wnsType)
       .withHeaders("ServiceBusNotification-Format" -> "windows")
+      .withHeaders("Content-Type" -> "application/octet-stream")
       .withHeaders(serviceBusTags: _*)
-      .post(azureWindowsPush.xml)
+      .post(azureWindowsPush.body)
       .map { response =>
         if (response.status == 200)
           \/.right(())

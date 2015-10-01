@@ -1,8 +1,10 @@
 package gu.msnotifications
 
 import play.api.libs.ws.WSResponse
+import notifications.providers.Error
 
-sealed trait HubFailure {
+sealed trait HubFailure extends Error {
+  def providerName = "WNS"
   def reason: String
 }
 
