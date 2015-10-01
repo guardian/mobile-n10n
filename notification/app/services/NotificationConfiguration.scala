@@ -7,6 +7,7 @@ import play.api.libs.ws.WSClient
 import play.api.mvc.{Result, Results, Request, ActionBuilder}
 
 import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.ExecutionContext
 import com.gu.conf.ConfigurationFactory
 import scalaz.\/
 import scalaz.std.option.optionSyntax._
