@@ -1,11 +1,11 @@
 package gu.msnotifications
 
-import models.MobileRegistration
+import models.Registration
 /**
  * [[https://msdn.microsoft.com/en-us/library/microsoft.servicebus.notifications.windowsregistrationdescription.aspx]]
  */
 object RawWindowsRegistration {
-  def fromMobileRegistration(m: MobileRegistration) = {
+  def fromMobileRegistration(m: Registration) = {
     RawWindowsRegistration(
       channelUri = m.deviceId,
       tags = Set(s"user:${m.userId}")

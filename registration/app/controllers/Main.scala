@@ -4,10 +4,9 @@ import javax.inject.Inject
 
 import gu.msnotifications.HubFailure.{HubInvalidConnectionString, HubServiceError, HubParseFailed}
 import gu.msnotifications._
-import models.{ApiResponse, WindowsMobile, MobileRegistration}
+import models.{Registration, ApiResponse, WindowsMobile}
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, BodyParsers, Controller, Result}
 import services._
 import scala.async.Async
@@ -15,10 +14,9 @@ import scala.concurrent.{Future, ExecutionContext}
 import scalaz.{-\/, \/-}
 import BodyParsers.parse.{json => BodyJson}
 
-final class Main @Inject()(wsClient: WSClient,
-                           msNotificationsConfiguration: RegistrationConfiguration)(
-                            implicit executionContext: ExecutionContext
-                            ) extends Controller {
+final class Main @Inject()(msNotificationsConfiguration: RegistrationConfiguration)
+    (implicit executionContext: ExecutionContext)
+  extends Controller {
 
   import NotificationHubClient.HubResult
 
@@ -63,7 +61,7 @@ final class Main @Inject()(wsClient: WSClient,
     }
   }
 
-  def register = Action.async(BodyJson[MobileRegistration]) { request =>
+  def register = Action.async(BodyJson[Registration]) { request =>
     if (request.body.platform == WindowsMobile) {
       notificationHubClient.register(request.body).map(processHubResult(_))
     } else {

@@ -1,2 +1,2 @@
-POST        /register                       @controllers.Main.register
-GET         /healthcheck                    @controllers.Main.healthCheck
+PUT         /registrations                       @controllers.Main.register
+GET         /healthcheck                         @controllers.Main.healthCheck

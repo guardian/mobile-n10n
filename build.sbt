@@ -3,7 +3,8 @@ import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 lazy val common = project.settings(
   resolvers ++= Seq(
     "Guardian GitHub Releases" at "http://guardian.github.com/maven/repo-releases",
-    "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
+    "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots",
+    "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
   ),
   libraryDependencies ++= Seq(
     json,
