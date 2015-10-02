@@ -1,7 +1,7 @@
 package tracking
 
 import models.NotificationReport
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, Interval}
 import tracking.Repository.RepositoryResult
 
 import scala.concurrent.Future
@@ -21,9 +21,10 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
     Future.successful(db.find(_.notification.uuid == uuid) \/> RepositoryError("Notification report not found"))
   }
 
-  def getByDateRange(from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
+  def getByDateRange(from: DateTime, until: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
+    val interval = new Interval(from, until)
     Future.successful(\/.right(db.filter({report =>
-      (report.sentTime isAfter from) && (report.sentTime isBefore to)
+       interval contains report.sentTime
     }).toList))
   }
 }
