@@ -19,34 +19,13 @@ object NotificationHubClient {
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
  */
 final class NotificationHubClient(
-  notificationHubConnection: NotificationHubConnection, wsClient: WSClient, topicSubscriptionsRepository: TopicSubscriptionsRepository)
-    (implicit executionContext: ExecutionContext)
-  extends NotificationSender with NotificationRegistrar {
+  notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
+    (implicit executionContext: ExecutionContext) {
 
   import notificationHubConnection._
   import NotificationHubClient.HubResult
 
-  val name = "WNS"
-
-  override def register(registration: Registration): Future[HubResult[RegistrarResponse]] =
-    register(RawWindowsRegistration.fromMobileRegistration(registration)).map { hubResult =>
-      hubResult.map { _.toRegistrarResponse }
-    }
-
-  override def sendNotification(push: Push): Future[HubResult[NotificationReport]] = for {
-    result <- sendNotification(AzureRawPush.fromPush(push))
-    count <- getCounts(push.destination)
-  } yield {
-      result map { _ =>
-        NotificationReport(
-          sentTime = DateTime.now,
-          notification = push.notification,
-          statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))
-        )
-      }
-    }
-
-  private[this] def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
+  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
     request("/registrations/")
       .post(rawWindowsRegistration.toXml)
       .map(XmlParser.parse[RegistrationResponse])
@@ -60,12 +39,7 @@ final class NotificationHubClient(
       .map(XmlParser.parse[RegistrationResponse])
   }
 
-  private def getCounts(destination: Either[Topic, UserId]): Future[RepositoryResult[Int]] = destination match {
-    case Left(topic: Topic) => topicSubscriptionsRepository.count(topic)
-    case Right(_: UserId) => Future.successful(RepositoryResult(1))
-  }
-
-  private[this] def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
+  def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
 
     request(s"/messages/")

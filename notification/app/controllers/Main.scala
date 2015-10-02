@@ -2,25 +2,30 @@ package controllers
 
 import javax.inject.Inject
 
+import authentication.AuthenticationSupport
 import models.{UserId, Notification, Topic, Push}
 import notifications.providers.{Error => ProviderError}
 import play.Logger
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Result, Action, BodyParsers, Controller}
 import services._
-import tracking.InMemoryNotificationReportRepository
 import scala.concurrent.ExecutionContext
 import BodyParsers.parse.{json => BodyJson}
 import scala.concurrent.Future
 import scalaz.{-\/, \/-}
 
-final class Main @Inject()(wsClient: WSClient, msNotificationsConfiguration: NotificationConfiguration)
+final class Main @Inject()(
+  wsClient: WSClient,
+  configuration: Configuration,
+  notificationSenderSupport: NotificationSenderSupport,
+  notificationReportRepositorySupport: NotificationReportRepositorySupport)
   (implicit executionContext: ExecutionContext)
-  extends Controller {
+  extends Controller with AuthenticationSupport {
 
-  import msNotificationsConfiguration._
+  override def validApiKey(apiKey: String) = configuration.apiKey.toOption.contains(apiKey)
 
-  val provider = msNotificationsConfiguration.notificationHubClient
+  import notificationSenderSupport._
+  import notificationReportRepositorySupport._
 
   def handleErrors[T](result: T): Result = result match {
     case error: ProviderError => InternalServerError(error.reason)
@@ -31,7 +36,7 @@ final class Main @Inject()(wsClient: WSClient, msNotificationsConfiguration: Not
   }
 
   private def pushGeneric(push: Push) = {
-    provider.sendNotification(push) flatMap {
+    notificationSender.sendNotification(push) flatMap {
       case \/-(report) =>
         notificationReportRepository.store(report) map {
           case \/-(_) =>
