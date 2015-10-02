@@ -1,8 +1,8 @@
 package gu.msnotifications
 
 import models._
-import notifications.providers.NotificationSender
 import org.joda.time.DateTime
+import notifications.providers.{NotificationRegistrar, NotificationSender, RegistrationResponse => RegistrarResponse}
 import play.api.libs.ws.WSClient
 import tracking.Repository.RepositoryResult
 import tracking.{RepositoryResult, TopicSubscriptionsRepository}
@@ -18,26 +18,35 @@ object NotificationHubClient {
 /**
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
  */
-final class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient, topicSubscriptionsRepository: TopicSubscriptionsRepository)
-                                 (implicit executionContext: ExecutionContext) extends NotificationSender {
+final class NotificationHubClient(
+  notificationHubConnection: NotificationHubConnection, wsClient: WSClient, topicSubscriptionsRepository: TopicSubscriptionsRepository)
+    (implicit executionContext: ExecutionContext)
+  extends NotificationSender with NotificationRegistrar {
 
   import notificationHubConnection._
   import NotificationHubClient.HubResult
 
   val name = "WNS"
 
-  private def request(path: String) = {
-    val uri = s"$notificationsHubUrl$path?api-version=2015-01"
-    wsClient
-      .url(uri)
-      .withHeaders("Authorization" -> authorizationHeader(uri))
-  }
+  override def register(registration: Registration): Future[HubResult[RegistrarResponse]] =
+    register(RawWindowsRegistration.fromMobileRegistration(registration)).map { hubResult =>
+      hubResult.map { _.toRegistrarResponse }
+    }
 
-  def register(registration: MobileRegistration): Future[HubResult[RegistrationResponse]] = {
-    register(RawWindowsRegistration.fromMobileRegistration(registration))
-  }
+  override def sendNotification(push: Push): Future[HubResult[NotificationReport]] = for {
+    result <- sendNotification(AzureRawPush.fromPush(push))
+    count <- getCounts(push.destination)
+  } yield {
+      result map { _ =>
+        NotificationReport(
+          sentTime = DateTime.now,
+          notification = push.notification,
+          statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))
+        )
+      }
+    }
 
-  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
+  private[this] def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
     request("/registrations/")
       .post(rawWindowsRegistration.toXml)
       .map(XmlParser.parse[RegistrationResponse])
@@ -56,20 +65,7 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
     case Right(_: UserId) => Future.successful(RepositoryResult(1))
   }
 
-  def sendNotification(push: Push): Future[HubResult[NotificationReport]] = for {
-    result <- sendNotification(AzureRawPush.fromPush(push))
-    count <- getCounts(push.destination)
-  } yield {
-    result map { _ =>
-      NotificationReport(
-        sentTime = DateTime.now,
-        notification = push.notification,
-        statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))
-      )
-    }
-  }
-
-  def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
+  private[this] def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
 
     request(s"/messages/")
@@ -86,6 +82,12 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
       }
   }
 
+  private def request(path: String) = {
+    val uri = s"$notificationsHubUrl$path?api-version=2015-01"
+    wsClient
+      .url(uri)
+      .withHeaders("Authorization" -> authorizationHeader(uri))
+  }
   /**
    * This is used for health-checking only: return the title of the feed,
    * which is expected to be 'Registrations'.
