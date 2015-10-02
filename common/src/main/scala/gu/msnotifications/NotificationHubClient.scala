@@ -1,7 +1,7 @@
 package gu.msnotifications
 
-import models.{Push, MobileRegistration}
-import notifications.providers.NotificationSender
+import models.{Registration, Push}
+import notifications.providers.{NotificationRegistrar, NotificationSender, RegistrationResponse => RegistrarResponse}
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,26 +15,24 @@ object NotificationHubClient {
 /**
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
  */
-final class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
-                                 (implicit executionContext: ExecutionContext) extends NotificationSender {
+final class NotificationHubClient(
+  notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
+    (implicit executionContext: ExecutionContext)
+  extends NotificationSender with NotificationRegistrar {
 
   import notificationHubConnection._
   import NotificationHubClient.HubResult
 
   val name = "WNS"
 
-  private def request(path: String) = {
-    val uri = s"$notificationsHubUrl$path?api-version=2015-01"
-    wsClient
-      .url(uri)
-      .withHeaders("Authorization" -> authorizationHeader(uri))
-  }
+  override def register(registration: Registration): Future[HubResult[RegistrarResponse]] =
+    register(RawWindowsRegistration.fromMobileRegistration(registration)).map { hubResult =>
+      hubResult.map { _.toRegistrarResponse }
+    }
 
-  def register(registration: MobileRegistration): Future[HubResult[RegistrationResponse]] = {
-    register(RawWindowsRegistration.fromMobileRegistration(registration))
-  }
+  override def sendNotification(push: Push): Future[HubResult[Unit]] = sendNotification(AzureRawPush.fromPush(push))
 
-  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
+  private[this] def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
     request("/registrations/")
       .post(rawWindowsRegistration.toXml)
       .map(XmlParser.parse[RegistrationResponse])
@@ -48,9 +46,8 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
       .map(XmlParser.parse[RegistrationResponse])
   }
 
-  def sendNotification(push: Push): Future[HubResult[Unit]] = sendNotification(AzureRawPush.fromPush(push))
 
-  def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
+  private[this] def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
 
     request(s"/messages/")
@@ -67,6 +64,12 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
       }
   }
 
+  private def request(path: String) = {
+    val uri = s"$notificationsHubUrl$path?api-version=2015-01"
+    wsClient
+      .url(uri)
+      .withHeaders("Authorization" -> authorizationHeader(uri))
+  }
   /**
    * This is used for health-checking only: return the title of the feed,
    * which is expected to be 'Registrations'.
