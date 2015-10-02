@@ -5,6 +5,7 @@ import javax.inject.Inject
 import gu.msnotifications.{NotificationHubClient, ConnectionSettings}
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Result, Results, Request, ActionBuilder}
+import tracking.{InMemoryTopicSubscriptionsRepository, InMemoryNotificationReportRepository}
 
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.ExecutionContext
@@ -32,7 +33,10 @@ final class NotificationConfiguration @Inject()(wsClient: WSClient)(implicit exe
 
   private def notificationHub = notificationHubOR.fold(error => throw new Exception(error.message), identity)
 
-  def notificationHubClient = new NotificationHubClient(notificationHub, wsClient)
+  val notificationReportRepository = new InMemoryNotificationReportRepository
+  val topicSubscriptionRepository = new InMemoryTopicSubscriptionsRepository
+  
+  def notificationHubClient = new NotificationHubClient(notificationHub, wsClient, topicSubscriptionRepository)
 
   def AuthenticatedAction: ActionBuilder[Request] = new ActionBuilder[Request] with Results {
     override def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]): Future[Result] = {

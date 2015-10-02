@@ -10,6 +10,7 @@ lazy val common = project.settings(
     ws,
     "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
     "org.scalaz" %% "scalaz-core" % "7.1.0",
+    "joda-time" % "joda-time" % "2.8.2",
     "com.gu" %% "configuration" %  "4.1"
   )
 )

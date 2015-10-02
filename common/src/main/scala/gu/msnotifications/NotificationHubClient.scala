@@ -1,8 +1,11 @@
 package gu.msnotifications
 
-import models.{Push, MobileRegistration}
+import models._
 import notifications.providers.NotificationSender
+import org.joda.time.DateTime
 import play.api.libs.ws.WSClient
+import tracking.Repository.RepositoryResult
+import tracking.{RepositoryResult, TopicSubscriptionsRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
@@ -15,7 +18,7 @@ object NotificationHubClient {
 /**
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
  */
-final class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
+final class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient, topicSubscriptionsRepository: TopicSubscriptionsRepository)
                                  (implicit executionContext: ExecutionContext) extends NotificationSender {
 
   import notificationHubConnection._
@@ -48,7 +51,23 @@ final class NotificationHubClient(notificationHubConnection: NotificationHubConn
       .map(XmlParser.parse[RegistrationResponse])
   }
 
-  def sendNotification(push: Push): Future[HubResult[Unit]] = sendNotification(AzureRawPush.fromPush(push))
+  private def getCounts(destination: Either[Topic, UserId]): Future[RepositoryResult[Int]] = destination match {
+    case Left(topic: Topic) => topicSubscriptionsRepository.count(topic)
+    case Right(_: UserId) => Future.successful(RepositoryResult(1))
+  }
+
+  def sendNotification(push: Push): Future[HubResult[NotificationReport]] = for {
+    result <- sendNotification(AzureRawPush.fromPush(push))
+    count <- getCounts(push.destination)
+  } yield {
+    result map { _ =>
+      NotificationReport(
+        sentTime = DateTime.now,
+        notification = push.notification,
+        statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))
+      )
+    }
+  }
 
   def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList

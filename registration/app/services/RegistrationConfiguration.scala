@@ -5,6 +5,7 @@ import javax.inject.Inject
 import gu.msnotifications.{NotificationHubClient, ConnectionSettings}
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Results, Result, Request, ActionBuilder}
+import tracking.InMemoryTopicSubscriptionsRepository
 
 import scala.concurrent.{Future, ExecutionContext}
 import scalaz.\/
@@ -32,7 +33,8 @@ final class RegistrationConfiguration @Inject()(wsClient: WSClient)
 
   private def notificationHub = notificationHubOR.fold(error => throw new Exception(error.message), identity)
 
-  def notificationHubClient = new NotificationHubClient(notificationHub, wsClient)
+  val topicSubscriptionRepository = new InMemoryTopicSubscriptionsRepository
+  def notificationHubClient = new NotificationHubClient(notificationHub, wsClient, topicSubscriptionRepository)
 
   private def validApiKey(apiKey: String): Boolean = {
     getConfigurationProperty("gu.msnotifications.admin-api-key").toOption.contains(apiKey)
