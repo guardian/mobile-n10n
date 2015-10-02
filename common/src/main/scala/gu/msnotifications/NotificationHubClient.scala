@@ -1,8 +1,11 @@
 package gu.msnotifications
 
-import models.{Registration, Push}
+import models._
+import org.joda.time.DateTime
 import notifications.providers.{NotificationRegistrar, NotificationSender, RegistrationResponse => RegistrarResponse}
 import play.api.libs.ws.WSClient
+import tracking.Repository.RepositoryResult
+import tracking.{RepositoryResult, TopicSubscriptionsRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
@@ -16,7 +19,7 @@ object NotificationHubClient {
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
  */
 final class NotificationHubClient(
-  notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
+  notificationHubConnection: NotificationHubConnection, wsClient: WSClient, topicSubscriptionsRepository: TopicSubscriptionsRepository)
     (implicit executionContext: ExecutionContext)
   extends NotificationSender with NotificationRegistrar {
 
@@ -30,7 +33,18 @@ final class NotificationHubClient(
       hubResult.map { _.toRegistrarResponse }
     }
 
-  override def sendNotification(push: Push): Future[HubResult[Unit]] = sendNotification(AzureRawPush.fromPush(push))
+  override def sendNotification(push: Push): Future[HubResult[NotificationReport]] = for {
+    result <- sendNotification(AzureRawPush.fromPush(push))
+    count <- getCounts(push.destination)
+  } yield {
+      result map { _ =>
+        NotificationReport(
+          sentTime = DateTime.now,
+          notification = push.notification,
+          statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))
+        )
+      }
+    }
 
   private[this] def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
     request("/registrations/")
@@ -46,6 +60,10 @@ final class NotificationHubClient(
       .map(XmlParser.parse[RegistrationResponse])
   }
 
+  private def getCounts(destination: Either[Topic, UserId]): Future[RepositoryResult[Int]] = destination match {
+    case Left(topic: Topic) => topicSubscriptionsRepository.count(topic)
+    case Right(_: UserId) => Future.successful(RepositoryResult(1))
+  }
 
   private[this] def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
