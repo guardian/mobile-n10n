@@ -79,6 +79,12 @@ final class NotificationHubClient(
       .get()
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
   }
+  
+  def submitNotificationHubJob(job: NotificationHubJobRequest): Future[HubResult[AtomFeedResponse[NotificationHubJob]]] = {
+    request("/jobs")
+      .post(job.toXml)
+      .map(XmlParser.parse[AtomFeedResponse[NotificationHubJob]])
+  }
 
   def registrationsByChannelUri(channelUri: String): Future[HubResult[List[RegistrationResponse]]] = {
     request(Endpoints.Registrations)
@@ -86,5 +92,7 @@ final class NotificationHubClient(
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
       .map { hubResult => hubResult.map(_.items) }
   }
+
+
 
 }

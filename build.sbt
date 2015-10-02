@@ -16,6 +16,18 @@ lazy val common = project.settings(
   )
 )
 
+lazy val backup = project
+  .dependsOn(common)
+  .enablePlugins(RiffRaffArtifact, JavaAppPackaging)
+  .settings(
+    riffRaffPackageType := (packageZipTarball in config("universal")).value,
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" % "play-ws_2.11" % "2.4.2",
+      "com.microsoft.azure" % "azure-storage" % "3.1.0"
+    ),
+    version := "1.0-SNAPSHOT"
+  )
+
 lazy val registration = project.
   dependsOn(common).
   enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging).
@@ -49,7 +61,7 @@ lazy val report = project.
   )
 
 lazy val root = (project in file(".")).
-  dependsOn(registration, notification, report, common).
-  aggregate(registration, notification, report, common)
+  dependsOn(registration, notification, report, backup, common).
+  aggregate(registration, notification, report, backup, common)
 
 addCommandAlias("dist", ";riffRaffArtifact")
