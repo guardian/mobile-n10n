@@ -25,13 +25,10 @@ final class NotificationHubClient(
 
   val name = "WNS"
 
-  override def register(registration: Registration): Future[HubResult[RegistrarResponse]] = {
+  override def register(registration: Registration): Future[HubResult[RegistrarResponse]] =
     register(RawWindowsRegistration.fromMobileRegistration(registration)).map { hubResult =>
-      hubResult.map { hubResponse =>
-        RegistrarResponse.fromHubResponse(hubResponse)
-      }
+      hubResult.map { _.toRegistrarResponse }
     }
-  }
 
   override def sendNotification(push: Push): Future[HubResult[Unit]] = sendNotification(AzureRawPush.fromPush(push))
 

@@ -1,12 +1,12 @@
 package gu.msnotifications
 
 import gu.msnotifications.HubFailure.{HubParseFailed, HubServiceError}
+import notifications.providers.{RegistrationResponse => RegistrarResponse}
+
 import org.joda.time.DateTime
 import play.api.libs.ws.WSResponse
-
 import scala.util.Try
 import scalaz.\/
-
 import scalaz.std.option.optionSyntax._
 
 import NotificationHubClient.HubResult
@@ -64,7 +64,9 @@ object RegistrationResponse {
     } yield RegistrationResponse(registrationId, tags.toList, channelUri, expirationTime)
   }
 }
-case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime)
+case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
+  def toRegistrarResponse : RegistrarResponse = ???
+}
 
 object AtomFeedResponse {
   import Responses._
