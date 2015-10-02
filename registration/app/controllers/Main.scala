@@ -61,9 +61,9 @@ final class Main @Inject()(msNotificationsConfiguration: RegistrationConfigurati
     }
   }
 
-  def register = Action.async(BodyJson[Registration]) { request =>
+  def register(deviceId: String) = Action.async(BodyJson[Registration]) { request =>
     if (request.body.platform == WindowsMobile) {
-      notificationHubClient.register(request.body).map(processHubResult(_))
+      notificationHubClient.register(request.body.copy(deviceId = deviceId)).map(processHubResult)
     } else {
       Future.successful(InternalServerError("Platform not supported"))
     }
