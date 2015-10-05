@@ -5,8 +5,6 @@ import javax.inject.Inject
 import com.gu.conf.ConfigurationFactory
 
 import scala.concurrent.ExecutionContext
-import scalaz.\/
-import scalaz.std.option.optionSyntax._
 
 case class NotificationHubConfiguration(
   connectionString: String,
@@ -22,13 +20,10 @@ final class Configuration @Inject()()(implicit executionContext: ExecutionContex
     webappConfDirectory = "gu-conf"
   )
 
-  private def getConfigurationProperty(name: String): ErrorMessage \/ String =
-    conf.getStringProperty(name) \/> ErrorMessage(s"Could not find property $name")
+  lazy val notificationHubConfiguration = NotificationHubConfiguration(
+    connectionString = conf.getStringProperty("gu.msnotifications.connectionstring").get,
+    hubName = conf.getStringProperty("gu.msnotifications.hubname").get
+  )
 
-  lazy val notificationHubConfiguration = for {
-    connectionString <- getConfigurationProperty("gu.msnotifications.connectionstring")
-    hubName <- getConfigurationProperty("gu.msnotifications.hubname")
-  } yield NotificationHubConfiguration(connectionString, hubName)
-
-  lazy val apiKey = getConfigurationProperty("gu.msnotifications.admin-api-key")
+  lazy val apiKey = conf.getStringProperty("gu.msnotifications.admin-api-key")
 }

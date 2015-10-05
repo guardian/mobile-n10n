@@ -9,7 +9,7 @@ import scala.concurrent.ExecutionContext
 
 final class NotificationSenderSupport @Inject()(wsClient: WSClient, configuration: Configuration)(implicit executionContext: ExecutionContext) {
 
-  private val providerConf = configuration.notificationHubConfiguration.fold(error => throw new Exception(error.message), identity)
+  private val providerConf = configuration.notificationHubConfiguration
 
   val notificationSender: NotificationSender = new WindowsNotificationProvider(
     wsClient = wsClient,

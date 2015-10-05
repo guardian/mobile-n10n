@@ -20,7 +20,7 @@ final class Main @Inject()(
   (implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
 
-  override def validApiKey(apiKey: String) = configuration.apiKey.toOption.contains(apiKey)
+  override def validApiKey(apiKey: String) = configuration.apiKey.contains(apiKey)
 
   import notificationSenderSupport._
   import notificationReportRepositorySupport._
