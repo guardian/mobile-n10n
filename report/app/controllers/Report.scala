@@ -2,19 +2,23 @@ package controllers
 
 import javax.inject.Inject
 
+import authentication.AuthenticationSupport
 import org.joda.time.DateTime
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, Controller}
 import services._
 import scala.concurrent.ExecutionContext
 import scalaz.{-\/, \/-}
 
-final class Report @Inject()(wsClient: WSClient, msNotificationsConfiguration: ReportConfiguration)
+final class Report @Inject()(
+  configuration: Configuration,
+  notificationReportRepositorySupport: NotificationReportRepositorySupport)
   (implicit executionContext: ExecutionContext)
-  extends Controller {
+  extends Controller with AuthenticationSupport {
 
-  import msNotificationsConfiguration._
+  override def validApiKey(apiKey: String) = configuration.apiKey.contains(apiKey)
+
+  import notificationReportRepositorySupport._
 
   def healthCheck = Action {
     Ok("Good")

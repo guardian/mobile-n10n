@@ -6,16 +6,16 @@ import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.bind
-import play.api.libs.ws.WSClient
 import play.api.test._
-import services.ReportConfiguration
+import services.{NotificationReportRepositorySupport, Configuration}
+import tracking.InMemoryNotificationReportRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
   trait ReportTestScope extends Scope {
 
-    def notificationReport(date: String, prefix: String) = NotificationReport(
+    private def notificationReport(date: String, prefix: String) = NotificationReport(
       sentTime = DateTime.parse(date).withZone(DateTimeZone.UTC),
       notification = Notification(
         uuid = s"$prefix:uuid",
@@ -31,6 +31,8 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
       ),
       statistics = NotificationStatistics(Map(WindowsMobile -> Some(5)))
     )
+
+    val apiKey = "test"
 
     val reportsInRange = List(
       notificationReport("2015-01-01T00:00:00Z", "1"),
@@ -48,13 +50,25 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
       notificationReport("2015-01-02T00:00:00Z", "4") ::
       reportsInRange ++ recentReports
 
-    val wsClient = mock[WSClient]
-    val config = new ReportConfiguration(wsClient)
-    notificationReports foreach config.notificationReportRepository.store
+    val application = {
+      val reportController = {
+        val repository = new InMemoryNotificationReportRepository
+        notificationReports foreach repository.store
 
-    val application = new GuiceApplicationBuilder()
-      .overrides(bind[Report].toInstance(new Report(wsClient, config)))
-      .build()
+        val notificationReportRepositorySupport = mock[NotificationReportRepositorySupport]
+        notificationReportRepositorySupport.notificationReportRepository returns repository
+
+        val configuration = mock[Configuration]
+        configuration.apiKey returns Some(apiKey)
+
+        new Report(configuration, notificationReportRepositorySupport)
+      }
+
+      new GuiceApplicationBuilder()
+        .overrides(bind[Report].toInstance(reportController))
+        .build()
+    }
+
   }
 
 
@@ -62,7 +76,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
     "Return last 7 days notification reports if no date supplied" in new ReportTestScope {
       running(application) {
-        val result = route(FakeRequest(GET, s"/notifications?api-key=${config.apiKey.getOrElse("")}")).get
+        val result = route(FakeRequest(GET, s"/notifications?api-key=$apiKey")).get
 
         status(result) must equalTo(OK)
         contentType(result) must beSome("application/json")
@@ -73,7 +87,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
     "Return a list of notification reports filtered by date" in new ReportTestScope {
       running(application) {
-        val result = route(FakeRequest(GET, s"/notifications?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=${config.apiKey.getOrElse("")}")).get
+        val result = route(FakeRequest(GET, s"/notifications?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
 
         status(result) must equalTo(OK)
         contentType(result) must beSome("application/json")
