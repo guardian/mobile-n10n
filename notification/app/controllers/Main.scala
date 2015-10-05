@@ -6,7 +6,6 @@ import authentication.AuthenticationSupport
 import models.{UserId, Notification, Topic, Push}
 import notifications.providers.{Error => ProviderError}
 import play.Logger
-import play.api.libs.ws.WSClient
 import play.api.mvc.{Result, Action, BodyParsers, Controller}
 import services._
 import scala.concurrent.ExecutionContext
@@ -15,7 +14,6 @@ import scala.concurrent.Future
 import scalaz.{-\/, \/-}
 
 final class Main @Inject()(
-  wsClient: WSClient,
   configuration: Configuration,
   notificationSenderSupport: NotificationSenderSupport,
   notificationReportRepositorySupport: NotificationReportRepositorySupport)
