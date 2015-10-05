@@ -8,7 +8,7 @@ object RawWindowsRegistration {
   def fromMobileRegistration(m: Registration) = {
     RawWindowsRegistration(
       channelUri = m.deviceId,
-      tags = Set(s"user:${m.userId}")
+      tags = Tags.withUserId(m.userId).asSet
     )
   }
 }

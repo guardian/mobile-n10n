@@ -30,4 +30,15 @@ package object msnotifications {
       WNSTopic(s"user:${u.userId}")
     }
   }
+
+  case class Tags(tags: Set[String] = Set.empty) {
+    import Tags._
+    def asSet = tags
+    def findUserId: Option[UserId] = tags.find(_.startsWith(UserTagPrefix)).map(UserId(_))
+  }
+
+  object Tags {
+    val UserTagPrefix = "user:"
+    def withUserId(userId: UserId) = Tags(Set(s"${UserTagPrefix}${userId.userId}}"))
+  }
 }

@@ -1,14 +1,16 @@
 package notifications.providers
 
-import gu.msnotifications.{AzureRawPush, NotificationHubClient, ConnectionSettings, RawWindowsRegistration}
+import gu.msnotifications
+import gu.msnotifications.NotificationHubClient.HubResult
+import gu.msnotifications.{WNSRegistrationId, AzureRawPush, NotificationHubClient, ConnectionSettings, RawWindowsRegistration}
 import models._
 import org.joda.time.DateTime
 import play.api.libs.ws.WSClient
 import tracking.{RepositoryResult, InMemoryTopicSubscriptionsRepository}
 import tracking.Repository._
-
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.\/
+import scalaz.{-\/, \/-, \/}
+import scalaz.syntax.either._
 
 class WindowsNotificationProvider(wsClient: WSClient, connectionString: String, hubName: String)(implicit ec: ExecutionContext) extends NotificationRegistrar with NotificationSender {
   override val name = "WNS"
@@ -23,10 +25,23 @@ class WindowsNotificationProvider(wsClient: WSClient, connectionString: String, 
 
   private val hubClient = new NotificationHubClient(notificationHub, wsClient)
 
-  override def register(registration: Registration): Future[\/[Error, RegistrationResponse]] =
-    hubClient.register(RawWindowsRegistration.fromMobileRegistration(registration)).map { hubResult =>
-      hubResult.map { _.toRegistrarResponse }
+  override def register(registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+    def createNewRegistration = hubClient
+      .create(RawWindowsRegistration.fromMobileRegistration(registration))
+      .map(hubResultToRegistrationResponse)
+
+    def updateRegistration(registration: Registration, regId: WNSRegistrationId) = hubClient
+      .update(regId, RawWindowsRegistration.fromMobileRegistration(registration))
+      .map(hubResultToRegistrationResponse)
+
+    val channelUri = registration.deviceId
+    hubClient.registrationsByChannelUri(channelUri).flatMap {
+      case \/-(Nil) => createNewRegistration
+      case \/-(existing :: Nil) => updateRegistration(registration, existing.registration)
+      case \/-(List(_, _)) => Future { TooManyRegistrationsForChannel(channelUri).left }
+      case -\/(e: Error) => Future { e.left }
     }
+  }
 
   def sendNotification(push: Push): Future[Error \/ NotificationReport] = for {
     result <- hubClient.sendNotification(AzureRawPush.fromPush(push))
@@ -46,4 +61,14 @@ class WindowsNotificationProvider(wsClient: WSClient, connectionString: String, 
     case Right(_: UserId) => Future.successful(RepositoryResult(1))
   }
 
+  private def hubResultToRegistrationResponse(hubResult: HubResult[msnotifications.RegistrationResponse]) = hubResult.map { _.toRegistrarResponse }
+
+}
+
+sealed trait WindowsNotificationProviderError extends Error {
+  override def providerName: String = "WNS"
+}
+
+case class TooManyRegistrationsForChannel(channelUri: String) extends WindowsNotificationProviderError {
+  override def reason: String = s"Too many registration for channel $channelUri exist"
 }

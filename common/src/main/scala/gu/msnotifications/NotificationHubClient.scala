@@ -1,11 +1,6 @@
 package gu.msnotifications
 
-import models._
-import org.joda.time.DateTime
-import notifications.providers.{NotificationRegistrar, NotificationSender, RegistrationResponse => RegistrarResponse}
 import play.api.libs.ws.WSClient
-import tracking.Repository.RepositoryResult
-import tracking.{RepositoryResult, TopicSubscriptionsRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
@@ -25,8 +20,13 @@ final class NotificationHubClient(
   import notificationHubConnection._
   import NotificationHubClient.HubResult
 
-  def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
-    request("/registrations/")
+  private object Endpoints {
+    val Registrations = "/registrations"
+    val Messages = "/messages/"
+  }
+
+  def create(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
+    request(Endpoints.Registrations)
       .post(rawWindowsRegistration.toXml)
       .map(XmlParser.parse[RegistrationResponse])
   }
@@ -34,15 +34,15 @@ final class NotificationHubClient(
   def update(registrationId: WNSRegistrationId,
              rawWindowsRegistration: RawWindowsRegistration
               ): Future[HubResult[RegistrationResponse]] = {
-    request(s"/registration/${registrationId.registrationId}")
-      .post(rawWindowsRegistration.toXml)
+    request(s"${Endpoints.Registrations}${registrationId.registrationId}")
+      .put(rawWindowsRegistration.toXml)
       .map(XmlParser.parse[RegistrationResponse])
   }
 
   def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
 
-    request(s"/messages/")
+    request(Endpoints.Messages)
       .withHeaders("X-WNS-Type" -> azureWindowsPush.wnsType)
       .withHeaders("ServiceBusNotification-Format" -> "windows")
       .withHeaders("Content-Type" -> "application/octet-stream")
@@ -68,7 +68,7 @@ final class NotificationHubClient(
    * @return the title of the feed if it succeeds getting one
    */
   def fetchRegistrationsListEndpoint: Future[HubResult[String]] = {
-    request(s"/registrations/")
+    request(Endpoints.Registrations)
       .get()
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
       .map(_.map(_.title))
@@ -80,5 +80,11 @@ final class NotificationHubClient(
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
   }
 
+  def registrationsByChannelUri(channelUri: String): Future[HubResult[List[RegistrationResponse]]] = {
+    request(Endpoints.Registrations)
+      .get()
+      .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
+      .map { hubResult => hubResult.map(_.items) }
+  }
 
 }

@@ -2,27 +2,38 @@ package controllers
 
 import javax.inject.Inject
 
-import gu.msnotifications.HubFailure.{HubInvalidConnectionString, HubServiceError, HubParseFailed}
-import models.{Registration, ApiResponse, WindowsMobile}
+import gu.msnotifications.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
+import models.{ApiResponse, Registration}
+import notifications.providers
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.mvc.{Action, BodyParsers, Controller, Result}
+import play.api.mvc.BodyParsers.parse.{json => BodyJson}
+import play.api.mvc.{Action, Controller, Result}
 import services._
-import scala.concurrent.{Future, ExecutionContext}
-import scalaz.{\/, -\/, \/-}
-import BodyParsers.parse.{json => BodyJson}
-import notifications.providers
 
-final class Main @Inject()(notificationRegistrarSupport: NotificationRegistrarSupport)
+import scala.concurrent.{ExecutionContext, Future}
+import scalaz.{-\/, \/, \/-}
+
+final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport)
     (implicit executionContext: ExecutionContext)
   extends Controller {
 
-  private val logger = Logger("main")
-
   import notificationRegistrarSupport._
+
+  private val logger = Logger("main")
 
   def healthCheck = Action {
     Ok("Good")
+  }
+
+  def register(deviceId: String) = Action.async(BodyJson[Registration]) { request =>
+    val registration = request.body.copy(deviceId = deviceId)
+    val registrar = registrarFor(registration)
+
+    registrar match {
+      case -\/(msg) => Future.successful(InternalServerError(msg))
+      case \/-(r) => r.register(registration).map { processRegistrationResult }
+    }
   }
 
   private def processRegistrationResult[T](result: providers.Error \/ T): Result = {
@@ -44,11 +55,4 @@ final class Main @Inject()(notificationRegistrarSupport: NotificationRegistrarSu
     }
   }
 
-  def register(deviceId: String) = Action.async(BodyJson[Registration]) { request =>
-    if (request.body.platform == WindowsMobile) {
-      notificationRegistrar.register(request.body.copy(deviceId = deviceId)).map(processRegistrationResult)
-    } else {
-      Future.successful(InternalServerError("Platform not supported"))
-    }
-  }
 }

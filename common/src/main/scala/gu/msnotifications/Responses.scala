@@ -1,6 +1,7 @@
 package gu.msnotifications
 
 import gu.msnotifications.HubFailure.{HubParseFailed, HubServiceError}
+import models.WindowsMobile
 import notifications.providers.{RegistrationResponse => RegistrarResponse}
 
 import org.joda.time.DateTime
@@ -65,7 +66,11 @@ object RegistrationResponse {
   }
 }
 case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
-  def toRegistrarResponse : RegistrarResponse = ???
+  def toRegistrarResponse : RegistrarResponse = RegistrarResponse(
+    deviceId = channelUri,
+    WindowsMobile,
+    userId = Tags(tags.toSet).findUserId.get
+  )
 }
 
 object AtomFeedResponse {
