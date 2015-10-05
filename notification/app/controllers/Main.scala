@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import authentication.AuthenticationSupport
 import models.{UserId, Notification, Topic, Push}
-import notifications.providers.{Error => ProviderError}
+import notifications.providers
 import play.Logger
 import play.api.mvc.{Result, Action, BodyParsers, Controller}
 import services._
@@ -26,7 +26,7 @@ final class Main @Inject()(
   import notificationReportRepositorySupport._
 
   def handleErrors[T](result: T): Result = result match {
-    case error: ProviderError => InternalServerError(error.reason)
+    case error: providers.Error => InternalServerError(error.reason)
   }
 
   def healthCheck = Action {
