@@ -11,7 +11,7 @@ import services._
 import scala.concurrent.{Future, ExecutionContext}
 import scalaz.{\/, -\/, \/-}
 import BodyParsers.parse.{json => BodyJson}
-import notifications.providers.{Error => ProviderError}
+import notifications.providers
 
 final class Main @Inject()(notificationRegistrarSupport: NotificationRegistrarSupport)
     (implicit executionContext: ExecutionContext)
@@ -25,7 +25,7 @@ final class Main @Inject()(notificationRegistrarSupport: NotificationRegistrarSu
     Ok("Good")
   }
 
-  private def processRegistrationResult[T](result: ProviderError \/ T): Result = {
+  private def processRegistrationResult[T](result: providers.Error \/ T): Result = {
     result match {
       case \/-(json) =>
         Ok(Json.toJson(ApiResponse("success")))
