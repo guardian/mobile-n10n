@@ -38,8 +38,8 @@ class WindowsNotificationProvider(wsClient: WSClient, connectionString: String, 
     hubClient.registrationsByChannelUri(channelUri).flatMap {
       case \/-(Nil) => createNewRegistration
       case \/-(existing :: Nil) => updateRegistration(existing.registration)
-      case \/-(List(_, _)) => Future { TooManyRegistrationsForChannel(channelUri).left }
-      case -\/(e: Error) => Future { e.left }
+      case \/-(_ :: _ :: _) => Future.successful(TooManyRegistrationsForChannel(channelUri).left)
+      case -\/(e: Error) => Future.successful(e.left)
     }
   }
 
