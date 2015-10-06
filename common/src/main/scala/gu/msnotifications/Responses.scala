@@ -10,7 +10,6 @@ import play.api.libs.ws.WSResponse
 import scala.util.Try
 import scalaz.\/
 import scalaz.std.option.optionSyntax._
-import scalaz.syntax.either._
 
 trait XmlReads[T] {
   def reads(xml: scala.xml.Elem): HubResult[T]
@@ -67,7 +66,7 @@ object RegistrationResponse {
 }
 case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
   def toRegistrarResponse = for {
-    userId <- Tags(tags.toSet).findUserId \/> UserIdNotInTags
+    userId <- Tags(tags.toSet).findUserId \/> UserIdNotInTags()
   } yield RegistrarResponse(
       deviceId = channelUri,
       WindowsMobile,
