@@ -66,7 +66,7 @@ object RegistrationResponse {
   }
 }
 case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
-  def toRegistrarResponse : RegistrarResponse = RegistrarResponse(
+  def toRegistrarResponse: RegistrarResponse = RegistrarResponse(
     deviceId = channelUri,
     WindowsMobile,
     userId = Tags(tags.toSet).findUserId.get
