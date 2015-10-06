@@ -10,7 +10,7 @@ object Endpoint {
 case class ConnectionSettings(endpoint: Endpoint, keyName: String, key: String) {
   def buildHubConnection(hubName: String) = NotificationHubConnection(
     notificationsHubUrl = s"${endpoint.uri}/$hubName",
-    secretKeyName = keyName,
-    secretKey = key
+    sharedKeyName = keyName,
+    sharedKeyValue = key
   )
 }

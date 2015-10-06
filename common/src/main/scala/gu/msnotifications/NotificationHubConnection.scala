@@ -1,10 +1,10 @@
 package gu.msnotifications
 
-case class NotificationHubConnection(notificationsHubUrl: String, secretKeyName: String, secretKey: String) {
+case class NotificationHubConnection(notificationsHubUrl: String, sharedKeyName: String, sharedKeyValue: String) {
 
   def authorizationHeader(uri: String) = SasTokenGeneration.generateSasToken(
-    sasKeyName = secretKeyName,
-    sasKeyValue = secretKey,
+    sasKeyName = sharedKeyName,
+    sasKeyValue = sharedKeyValue,
     uri = uri
   )
 

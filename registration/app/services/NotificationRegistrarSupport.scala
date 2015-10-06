@@ -11,8 +11,8 @@ import scala.concurrent.ExecutionContext
 final class NotificationRegistrarSupport @Inject()(wsClient: WSClient, configuration: Configuration)(implicit executionContext: ExecutionContext) {
   private def hubConnection = ConnectionSettings(
     endpoint = Endpoint.parse(providerConf.endpointUri),
-    keyName =  providerConf.secretKeyName,
-    key = providerConf.secretKeyValue
+    keyName =  providerConf.sharedKeyName,
+    key = providerConf.sharedKeyValue
   ).buildHubConnection(providerConf.hubName)
 
   private val providerConf = configuration.notificationHubConfiguration
