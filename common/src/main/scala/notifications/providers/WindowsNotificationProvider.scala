@@ -1,27 +1,20 @@
 package notifications.providers
 
-import gu.msnotifications.{AzureRawPush, NotificationHubClient, ConnectionSettings, RawWindowsRegistration}
+import gu.msnotifications.{AzureRawPush, NotificationHubClient, RawWindowsRegistration}
 import models._
 import org.joda.time.DateTime
 import play.api.libs.ws.WSClient
-import tracking.{RepositoryResult, InMemoryTopicSubscriptionsRepository}
 import tracking.Repository._
+import tracking.{InMemoryTopicSubscriptionsRepository, RepositoryResult}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
 
-class WindowsNotificationProvider(wsClient: WSClient, connectionString: String, hubName: String)(implicit ec: ExecutionContext) extends NotificationRegistrar with NotificationSender {
+class WindowsNotificationProvider(wsClient: WSClient, hubClient: NotificationHubClient)(implicit ec: ExecutionContext)
+  extends NotificationRegistrar with NotificationSender {
   override val name = "WNS"
 
-  private def notificationHubOR = for {
-    settings <- ConnectionSettings.fromString(connectionString)
-  } yield settings.buildNotificationHub(hubName)
-
-  private def notificationHub = notificationHubOR.fold(error => throw new Exception(error.reason), identity)
-
   private val topicSubscriptionsRepository = new InMemoryTopicSubscriptionsRepository
-
-  private val hubClient = new NotificationHubClient(notificationHub, wsClient)
 
   override def register(registration: Registration): Future[\/[Error, RegistrationResponse]] =
     hubClient.register(RawWindowsRegistration.fromMobileRegistration(registration)).map { hubResult =>

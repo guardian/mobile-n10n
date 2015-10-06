@@ -7,8 +7,10 @@ import com.gu.conf.ConfigurationFactory
 import scala.concurrent.ExecutionContext
 
 case class NotificationHubConfiguration(
-  connectionString: String,
-  hubName: String
+  endpointUri: String,
+  hubName: String,
+  secretKeyName: String,
+  secretKeyValue: String
 )
 
 case class ErrorMessage(message: String)
@@ -21,8 +23,10 @@ final class Configuration @Inject()()(implicit executionContext: ExecutionContex
   )
 
   lazy val notificationHubConfiguration = NotificationHubConfiguration(
-    connectionString = conf.getStringProperty("gu.msnotifications.connectionstring").get,
-    hubName = conf.getStringProperty("gu.msnotifications.hubname").get
+    endpointUri= conf.getStringProperty("gu.msnotifications.endpointUri").get,
+    hubName = conf.getStringProperty("gu.msnotifications.hubname").get,
+    secretKeyName = conf.getStringProperty("gu.msnotifications.secretKeyName").get,
+    secretKeyValue = conf.getStringProperty("gu.msnotifications.secretKeyValue").get
   )
 
   lazy val apiKey = conf.getStringProperty("gu.msnotifications.admin-api-key")

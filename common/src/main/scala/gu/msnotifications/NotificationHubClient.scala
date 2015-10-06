@@ -1,11 +1,6 @@
 package gu.msnotifications
 
-import models._
-import org.joda.time.DateTime
-import notifications.providers.{NotificationRegistrar, NotificationSender, RegistrationResponse => RegistrarResponse}
 import play.api.libs.ws.WSClient
-import tracking.Repository.RepositoryResult
-import tracking.{RepositoryResult, TopicSubscriptionsRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
@@ -22,8 +17,8 @@ final class NotificationHubClient(
   notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
     (implicit executionContext: ExecutionContext) {
 
-  import notificationHubConnection._
   import NotificationHubClient.HubResult
+  import notificationHubConnection._
 
   def register(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
     request("/registrations/")
