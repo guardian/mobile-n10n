@@ -1,6 +1,5 @@
 import models.{UserId, WindowsMobile, Registration}
 import notifications.providers.{RegistrationResponse, Error, NotificationRegistrar}
-import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.bind
