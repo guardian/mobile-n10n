@@ -30,14 +30,14 @@ class WindowsNotificationProvider(wsClient: WSClient, connectionString: String, 
       .create(RawWindowsRegistration.fromMobileRegistration(registration))
       .map(hubResultToRegistrationResponse)
 
-    def updateRegistration(registration: Registration, regId: WNSRegistrationId) = hubClient
+    def updateRegistration(regId: WNSRegistrationId) = hubClient
       .update(regId, RawWindowsRegistration.fromMobileRegistration(registration))
       .map(hubResultToRegistrationResponse)
 
     val channelUri = registration.deviceId
     hubClient.registrationsByChannelUri(channelUri).flatMap {
       case \/-(Nil) => createNewRegistration
-      case \/-(existing :: Nil) => updateRegistration(registration, existing.registration)
+      case \/-(existing :: Nil) => updateRegistration(existing.registration)
       case \/-(List(_, _)) => Future { TooManyRegistrationsForChannel(channelUri).left }
       case -\/(e: Error) => Future { e.left }
     }
