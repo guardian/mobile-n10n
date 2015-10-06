@@ -21,7 +21,7 @@ final class NotificationHubClient(
   import NotificationHubClient.HubResult
 
   private object Endpoints {
-    val Registrations = "/registrations"
+    val Registrations = "/registrations/"
     val Messages = "/messages/"
   }
 

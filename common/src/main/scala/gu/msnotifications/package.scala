@@ -39,6 +39,6 @@ package object msnotifications {
 
   object Tags {
     val UserTagPrefix = "user:"
-    def withUserId(userId: UserId) = Tags(Set(s"${UserTagPrefix}${userId.userId}}"))
+    def withUserId(userId: UserId) = Tags(Set(s"${UserTagPrefix}${userId.userId}"))
   }
 }
