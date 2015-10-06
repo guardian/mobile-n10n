@@ -61,7 +61,8 @@ class WindowsNotificationProvider(wsClient: WSClient, connectionString: String, 
     case Right(_: UserId) => Future.successful(RepositoryResult(1))
   }
 
-  private def hubResultToRegistrationResponse(hubResult: HubResult[msnotifications.RegistrationResponse]) = hubResult.map { _.toRegistrarResponse }
+  private def hubResultToRegistrationResponse(hubResult: HubResult[msnotifications.RegistrationResponse]) =
+    hubResult.flatMap(_.toRegistrarResponse)
 
 }
 
@@ -71,4 +72,8 @@ sealed trait WindowsNotificationProviderError extends Error {
 
 case class TooManyRegistrationsForChannel(channelUri: String) extends WindowsNotificationProviderError {
   override def reason: String = s"Too many registration for channel $channelUri exist"
+}
+
+case class UserIdNotInTags() extends WindowsNotificationProviderError {
+  override def reason: String = "Could not find userId in response from Hub"
 }
