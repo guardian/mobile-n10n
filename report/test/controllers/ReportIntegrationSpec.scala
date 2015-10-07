@@ -12,7 +12,7 @@ import tracking.InMemoryNotificationReportRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReportIntegrationSpec extends PlaySpecification with Mockito {
-  
+
   "Report service" should {
 
     "Return last 7 days notification reports if no date supplied" in new ReportTestScope {
@@ -40,7 +40,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
   trait ReportTestScope extends Scope {
 
-    private def notificationReport(date: String, prefix: String) = NotificationReport(
+    private def notificationReport(date: String, prefix: String) = NotificationReport.create(
       sentTime = DateTime.parse(date).withZone(DateTimeZone.UTC),
       notification = Notification(
         uuid = s"$prefix:uuid",
