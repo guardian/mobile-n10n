@@ -20,7 +20,7 @@ trait BackupConfiguration {
 class BackupConfigurationFile extends BackupConfiguration {
 
   lazy val conf = ConfigurationFactory.getConfiguration(
-    applicationName = "notification",
+    applicationName = "backup",
     webappConfDirectory = "gu-conf"
   )
 
