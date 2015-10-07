@@ -12,6 +12,31 @@ import tracking.InMemoryNotificationReportRepository
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReportIntegrationSpec extends PlaySpecification with Mockito {
+  
+  "Report service" should {
+
+    "Return last 7 days notification reports if no date supplied" in new ReportTestScope {
+      running(application) {
+        val result = route(FakeRequest(GET, s"/notifications?api-key=$apiKey")).get
+
+        status(result) must equalTo(OK)
+        contentType(result) must beSome("application/json")
+        charset(result) must beSome("utf-8")
+        contentAsJson(result).as[List[NotificationReport]] mustEqual recentReports
+      }
+    }
+
+    "Return a list of notification reports filtered by date" in new ReportTestScope {
+      running(application) {
+        val result = route(FakeRequest(GET, s"/notifications?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
+
+        status(result) must equalTo(OK)
+        contentType(result) must beSome("application/json")
+        charset(result) must beSome("utf-8")
+        contentAsJson(result).as[List[NotificationReport]] mustEqual reportsInRange
+      }
+    }
+  }
 
   trait ReportTestScope extends Scope {
 
@@ -69,31 +94,5 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
         .build()
     }
 
-  }
-
-
-  "Report service" should {
-
-    "Return last 7 days notification reports if no date supplied" in new ReportTestScope {
-      running(application) {
-        val result = route(FakeRequest(GET, s"/notifications?api-key=$apiKey")).get
-
-        status(result) must equalTo(OK)
-        contentType(result) must beSome("application/json")
-        charset(result) must beSome("utf-8")
-        contentAsJson(result).as[List[NotificationReport]] mustEqual recentReports
-      }
-    }
-
-    "Return a list of notification reports filtered by date" in new ReportTestScope {
-      running(application) {
-        val result = route(FakeRequest(GET, s"/notifications?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
-
-        status(result) must equalTo(OK)
-        contentType(result) must beSome("application/json")
-        charset(result) must beSome("utf-8")
-        contentAsJson(result).as[List[NotificationReport]] mustEqual reportsInRange
-      }
-    }
   }
 }
