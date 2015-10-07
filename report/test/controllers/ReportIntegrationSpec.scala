@@ -17,7 +17,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
     "Return last 7 days notification reports if no date supplied" in new ReportTestScope {
       running(application) {
-        val result = route(FakeRequest(GET, s"/notifications?api-key=$apiKey")).get
+        val result = route(FakeRequest(GET, s"/notifications/test-type?api-key=$apiKey")).get
 
         status(result) must equalTo(OK)
         contentType(result) must beSome("application/json")
@@ -28,7 +28,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
     "Return a list of notification reports filtered by date" in new ReportTestScope {
       running(application) {
-        val result = route(FakeRequest(GET, s"/notifications?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
+        val result = route(FakeRequest(GET, s"/notifications/test-type?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
 
         status(result) must equalTo(OK)
         contentType(result) must beSome("application/json")
@@ -48,7 +48,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
         timeToLiveInSeconds = 1,
         payload = MessagePayload(
           link = Some(s"$prefix:link"),
-          `type` = Some(s"$prefix:type"),
+          `type` = Some(s"test-type"),
           ticker = Some(s"$prefix:ticker"),
           title = Some(s"$prefix:title"),
           message = Some(s"$prefix:message")
