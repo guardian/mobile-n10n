@@ -17,6 +17,10 @@ object AsyncDynamo {
   def keyLT(s: String) = new Condition()
     .withComparisonOperator(ComparisonOperator.LT)
     .withAttributeValueList(new AttributeValue(s))
+
+  def keyBetween(a: String, b: String) = new Condition()
+    .withComparisonOperator(ComparisonOperator.BETWEEN)
+    .withAttributeValueList(new AttributeValue(a), new AttributeValue(b))
 }
 
 class AsyncDynamo(client: AmazonDynamoDBAsyncClient) {
