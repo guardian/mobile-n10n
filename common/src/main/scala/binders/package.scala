@@ -1,8 +1,11 @@
 import gu.msnotifications.WNSRegistrationId
 import models.{Topic, TopicType}
-import play.api.mvc.PathBindable
+import org.joda.time.DateTime
+import play.api.mvc.{PathBindable, QueryStringBindable}
 
 import scala.language.implicitConversions
+import scala.util.{Try, Success, Failure}
+import scala.util.control.NonFatal
 
 package object binders {
 
@@ -40,4 +43,26 @@ package object binders {
       }
     }
 
+  implicit def bindDateTime(implicit strBinder: QueryStringBindable[String]) =
+    new QueryStringBindable[DateTime] {
+      override def unbind(key: String, value: DateTime): String = {
+        strBinder.unbind(
+          key = key,
+          value = value.toString
+        )
+      }
+
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String,DateTime]] = {
+        strBinder.bind(key, params).map {
+          _.right.flatMap { v =>
+            Try {
+              DateTime.parse(v)
+            } match {
+              case Success(date) => Right(date)
+              case Failure(error) => Left(error.getMessage)
+            }
+          }
+        }
+      }
+    }
 }

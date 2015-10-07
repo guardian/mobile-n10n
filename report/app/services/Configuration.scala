@@ -11,10 +11,10 @@ case class NotificationHubConfiguration(
   hubName: String
 )
 
-final class Configuration @Inject()()(implicit executionContext: ExecutionContext) {
+class Configuration @Inject()() {
 
   private lazy val conf = ConfigurationFactory.getConfiguration(
-    applicationName = "notification",
+    applicationName = "report",
     webappConfDirectory = "gu-conf"
   )
 

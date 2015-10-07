@@ -37,8 +37,19 @@ lazy val notification = project.
     version := "1.0-SNAPSHOT"
   )
 
+lazy val report = project.
+  dependsOn(common).
+  enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging).
+  settings(
+    fork in run := true,
+    routesImport += "binders._",
+    routesImport += "org.joda.time.DateTime",
+    riffRaffPackageType := (packageZipTarball in config("universal")).value,
+    version := "1.0-SNAPSHOT"
+  )
+
 lazy val root = (project in file(".")).
-  dependsOn(registration, notification, common).
-  aggregate(registration, notification, common)
+  dependsOn(registration, notification, report, common).
+  aggregate(registration, notification, report, common)
 
 addCommandAlias("dist", ";riffRaffArtifact")

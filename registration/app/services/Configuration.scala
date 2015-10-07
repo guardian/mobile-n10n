@@ -11,8 +11,6 @@ case class NotificationHubConfiguration(
   hubName: String
 )
 
-case class ErrorMessage(message: String)
-
 final class Configuration @Inject()()(implicit executionContext: ExecutionContext) {
 
   private lazy val conf = ConfigurationFactory.getConfiguration(
