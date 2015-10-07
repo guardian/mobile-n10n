@@ -11,7 +11,7 @@ case class NotificationHubConfiguration(
   hubName: String
 )
 
-class Configuration @Inject()()(implicit executionContext: ExecutionContext) {
+class Configuration @Inject()() {
 
   private lazy val conf = ConfigurationFactory.getConfiguration(
     applicationName = "report",
