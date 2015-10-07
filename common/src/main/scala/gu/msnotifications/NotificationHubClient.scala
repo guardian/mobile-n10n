@@ -17,8 +17,8 @@ final class NotificationHubClient(
   notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
     (implicit executionContext: ExecutionContext) {
 
-  import notificationHubConnection._
   import NotificationHubClient.HubResult
+  import notificationHubConnection._
 
   private object Endpoints {
     val Registrations = "/registrations/"

@@ -7,8 +7,10 @@ import com.gu.conf.ConfigurationFactory
 import scala.concurrent.ExecutionContext
 
 case class NotificationHubConfiguration(
-  connectionString: String,
-  hubName: String
+  endpointUri: String,
+  hubName: String,
+  sharedKeyName: String,
+  sharedKeyValue: String
 )
 
 final class Configuration @Inject()()(implicit executionContext: ExecutionContext) {
@@ -19,7 +21,9 @@ final class Configuration @Inject()()(implicit executionContext: ExecutionContex
   )
 
   lazy val notificationHubConfiguration = NotificationHubConfiguration(
-    connectionString = conf.getStringProperty("gu.msnotifications.connectionstring").get,
-    hubName = conf.getStringProperty("gu.msnotifications.hubname").get
+    endpointUri= conf.getStringProperty("gu.msnotifications.endpointUri").get,
+    hubName = conf.getStringProperty("gu.msnotifications.hubname").get,
+    sharedKeyName = conf.getStringProperty("gu.msnotifications.sharedKeyName").get,
+    sharedKeyValue = conf.getStringProperty("gu.msnotifications.sharedKeyValue").get
   )
 }
