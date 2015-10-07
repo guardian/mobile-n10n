@@ -1,15 +1,15 @@
 package gu.msnotifications
 
 import gu.msnotifications.HubFailure.{HubParseFailed, HubServiceError}
-import notifications.providers.{RegistrationResponse => RegistrarResponse}
-
+import gu.msnotifications.NotificationHubClient.HubResult
+import models.WindowsMobile
+import notifications.providers.{RegistrationResponse => RegistrarResponse, UserIdNotInTags}
 import org.joda.time.DateTime
 import play.api.libs.ws.WSResponse
+
 import scala.util.Try
 import scalaz.\/
 import scalaz.std.option.optionSyntax._
-
-import NotificationHubClient.HubResult
 
 trait XmlReads[T] {
   def reads(xml: scala.xml.Elem): HubResult[T]
@@ -65,7 +65,12 @@ object RegistrationResponse {
   }
 }
 case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
-  def toRegistrarResponse : RegistrarResponse = ???
+  def toRegistrarResponse = for {
+    userId <- Tags(tags.toSet).findUserId \/> UserIdNotInTags()
+  } yield RegistrarResponse(
+      deviceId = channelUri,
+      WindowsMobile,
+      userId = userId)
 }
 
 object AtomFeedResponse {

@@ -45,10 +45,4 @@ case class ConnectionSettings(endpoint: Endpoint, keyName: String, key: String) 
     secretKeyName = keyName,
     secretKey = key
   )
-
-  def authorizationHeader(uri: String) = SasTokenGeneration.generateSasToken(
-    sasKeyName = keyName,
-    sasKeyValue = key,
-    uri = uri
-  )
 }
