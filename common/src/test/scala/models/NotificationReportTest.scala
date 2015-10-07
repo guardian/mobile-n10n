@@ -14,6 +14,7 @@ class NotificationReportTest extends Specification {
         |  "sentTime": "2015-01-01T00:00:00.000Z",
         |  "uuid": "uuid",
         |  "sender": "sender",
+        |  "type": "type",
         |  "timeToLiveInSeconds": 1,
         |  "payload": {
         |    "link": "link",
