@@ -15,15 +15,21 @@ object Boot {
     val app = new GuiceApplicationLoader().load(ctx)
     val className = classTag.runtimeClass.getName
 
-    val backup = app.injector.instanceOf[T]
+    try {
+      val backup = app.injector.instanceOf[T]
 
-    Logger.info(s"Starting $className")
-    backup.execute().onComplete {
-      case Success(_) =>
-        Logger.info(s"End of $className")
-        app.stop()
-      case Failure(error) =>
-        Logger.error(error.getMessage, error)
+      Logger.info(s"Starting $className")
+      backup.execute().onComplete {
+        case Success(_) =>
+          Logger.info(s"End of $className")
+          app.stop()
+        case Failure(error) =>
+          Logger.error(error.getMessage, error)
+          app.stop()
+      }
+    } catch {
+      case e: Exception =>
+        Logger.error(e.getMessage, e)
         app.stop()
     }
   }
