@@ -1,27 +1,18 @@
 package tracking
 
-import aws.AsyncDynamo
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient
 import com.amazonaws.services.dynamodbv2.model._
 import models._
 import org.joda.time.{Interval, DateTimeZone, DateTime}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
-import org.specs2.mutable.Specification
-import org.specs2.specification.BeforeAfterAll
-import org.specs2.specification.Scope
 import tracking.Repository.RepositoryResult
 
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
 
-class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends Specification with Mockito with BeforeAfterAll {
+class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends DynamodbSpecification with Mockito {
 
-  sequential
-
-  override def beforeAll() = createTable()
-  override def afterAll() = destroyTable()
+  override val TableName = "test-table"
 
   "A DynamoNotificationReportRepository" should {
     "store and retrieve a NotificationReport" in new RepositoryScope with ExampleReports {
@@ -41,20 +32,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
     }
   }
 
-  private val TableName = "test-table"
-  private val TestEndpoint = "http://localhost:8000"
-  private val UuidField = "uuid"
-  private val SentTimeField = "sentTime"
-  private val TypeField = "type"
-  private val SentTimeIndex = "sentTime-index"
-
-  trait RepositoryScope extends Scope {
-    val asyncClient = {
-      val client = new AmazonDynamoDBAsyncClient(new DefaultAWSCredentialsProviderChain())
-      client.setEndpoint(TestEndpoint)
-      new AsyncDynamo(client)
-    }
-
+  trait RepositoryScope extends AsyncDynamoScope {
     val repository = new DynamoNotificationReportRepository(asyncClient, TableName)
     
     def afterStoringReports[T](reports: List[NotificationReport])(fn: => Future[RepositoryResult[T]]): Future[T] = {
@@ -96,36 +74,28 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
     )
   }
 
-  def createTable() = {
-    val awsClient = new AmazonDynamoDBAsyncClient(new DefaultAWSCredentialsProviderChain())
-    awsClient.setEndpoint(TestEndpoint)
+  def createTableRequest = {
+    val UuidField = "uuid"
+    val SentTimeField = "sentTime"
+    val TypeField = "type"
+    val SentTimeIndex = "sentTime-index"
 
-    val createTableRequest = {
-      val sentTimeIndex = new GlobalSecondaryIndex()
-      sentTimeIndex.setIndexName(SentTimeIndex)
-      sentTimeIndex.setKeySchema(List(
+    val sentTimeIndex = new GlobalSecondaryIndex()
+      .withIndexName(SentTimeIndex)
+      .withKeySchema(List(
         new KeySchemaElement(TypeField, KeyType.HASH),
         new KeySchemaElement(SentTimeField, KeyType.RANGE)
       ))
-      sentTimeIndex.setProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
-      sentTimeIndex.withProjection(new Projection().withProjectionType(ProjectionType.ALL))
+      .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
+      .withProjection(new Projection().withProjectionType(ProjectionType.ALL))
 
-      val req = new CreateTableRequest(TableName, List(new KeySchemaElement(UuidField, KeyType.HASH)))
-      req.setAttributeDefinitions(List(
+    new CreateTableRequest(TableName, List(new KeySchemaElement(UuidField, KeyType.HASH)))
+      .withAttributeDefinitions(List(
         new AttributeDefinition(UuidField, ScalarAttributeType.S),
         new AttributeDefinition(SentTimeField, ScalarAttributeType.S),
         new AttributeDefinition(TypeField, ScalarAttributeType.S)
       ))
-      req.setProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
-      req.setGlobalSecondaryIndexes(List(sentTimeIndex))
-      req
-    }
-    awsClient.createTable(createTableRequest)
-  }
-
-  def destroyTable() = {
-    val awsClient = new AmazonDynamoDBAsyncClient(new DefaultAWSCredentialsProviderChain())
-    awsClient.setEndpoint(TestEndpoint)
-    awsClient.deleteTable(new DeleteTableRequest(TableName))
+      .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
+      .withGlobalSecondaryIndexes(List(sentTimeIndex))
   }
 }

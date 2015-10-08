@@ -1,26 +1,16 @@
 package tracking
 
-import aws.AsyncDynamo
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient
 import com.amazonaws.services.dynamodbv2.model._
 import models.TopicTypes.TagKeyword
 import models._
 import org.specs2.concurrent.ExecutionEnv
-import org.specs2.matcher.ShouldMatchers
 import org.specs2.mock.Mockito
-import org.specs2.mutable.Specification
-import org.specs2.specification.BeforeAfterAll
-import org.specs2.specification.Scope
 
 import scala.collection.JavaConversions._
 
-class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends Specification with Mockito with ShouldMatchers with BeforeAfterAll {
+class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends DynamodbSpecification with Mockito {
 
-  sequential
-
-  override def beforeAll() = createTable()
-  override def afterAll() = destroyTable()
+  override val TableName = "test-topic-table"
 
   "A DynamoTopicSubscriptionsRepository" should {
     "increment a subscriptions counter" in new RepositoryScope {
@@ -70,34 +60,15 @@ class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends 
     }
   }
 
-  private val TableName = "test-topic-table"
-  private val TestEndpoint = "http://localhost:8000"
-  private val TopicIdField = "topicId"
-
-  trait RepositoryScope extends Scope {
-    val asyncClient = {
-      val client = new AmazonDynamoDBAsyncClient(new DefaultAWSCredentialsProviderChain())
-      client.setEndpoint(TestEndpoint)
-      new AsyncDynamo(client)
-    }
-
+  trait RepositoryScope extends AsyncDynamoScope {
     val repository = new DynamoTopicSubscriptionsRepository(asyncClient, TableName)
   }
 
-  def createTable() = {
-    val awsClient = new AmazonDynamoDBAsyncClient(new DefaultAWSCredentialsProviderChain())
-    awsClient.setEndpoint(TestEndpoint)
+  def createTableRequest = {
+    val TopicIdField = "topicId"
 
-    val req = new CreateTableRequest(TableName, List(new KeySchemaElement(TopicIdField, KeyType.HASH)))
+    new CreateTableRequest(TableName, List(new KeySchemaElement(TopicIdField, KeyType.HASH)))
       .withAttributeDefinitions(List(new AttributeDefinition(TopicIdField, ScalarAttributeType.S)))
       .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
-
-    awsClient.createTable(req)
-  }
-
-  def destroyTable() = {
-    val awsClient = new AmazonDynamoDBAsyncClient(new DefaultAWSCredentialsProviderChain())
-    awsClient.setEndpoint(TestEndpoint)
-    awsClient.deleteTable(new DeleteTableRequest(TableName))
   }
 }
