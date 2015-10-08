@@ -7,7 +7,6 @@ import com.amazonaws.services.dynamodbv2.model._
 import models._
 import org.joda.time.{Interval, DateTimeZone, DateTime}
 import org.specs2.concurrent.ExecutionEnv
-import org.specs2.matcher.ShouldMatchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeAfterAll
@@ -17,7 +16,7 @@ import tracking.Repository.RepositoryResult
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
 
-class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends Specification with Mockito with ShouldMatchers with BeforeAfterAll {
+class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends Specification with Mockito with BeforeAfterAll {
 
   sequential
 
