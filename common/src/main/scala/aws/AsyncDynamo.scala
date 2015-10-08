@@ -26,6 +26,6 @@ object AsyncDynamo {
 class AsyncDynamo(client: AmazonDynamoDBAsyncClient) {
   import AWSAsync._
   // These work but are red because Intellij is broken
-  def putItem(putItemRequest: PutItemRequest): Future[PutItemResult] = wrapAsyncMethod(client.putItemAsync, putItemRequest)
-  def query(queryRequest: QueryRequest): Future[QueryResult] = wrapAsyncMethod(client.queryAsync, queryRequest)
+  def putItem(request: PutItemRequest): Future[PutItemResult] = wrapAsyncMethod(client.putItemAsync, request)
+  def query(request: QueryRequest): Future[QueryResult] = wrapAsyncMethod(client.queryAsync, request)
 }
