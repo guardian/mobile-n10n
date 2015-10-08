@@ -40,9 +40,9 @@ package object msnotifications {
       .find(_.startsWith(UserTagPrefix))
       .map { s => UserId(s.split(':')(1)) }
 
-    def addUserId(userId: UserId) = copy(tags + s"${UserTagPrefix}${userId.userId}")
+    def withUserId(userId: UserId) = copy(tags + s"${UserTagPrefix}${userId.userId}")
 
-    def addTopics(topics: Set[Topic]) = copy(tags ++ topics.map(_.name))
+    def withTopics(topics: Set[Topic]) = copy(tags ++ topics.map(_.name))
   }
 
   object Tags {
