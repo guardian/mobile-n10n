@@ -33,12 +33,19 @@ package object msnotifications {
 
   case class Tags(tags: Set[String] = Set.empty) {
     import Tags._
+
     def asSet = tags
-    def findUserId: Option[UserId] = tags.find(_.startsWith(UserTagPrefix)).map(UserId(_))
+
+    def findUserId: Option[UserId] = tags
+      .find(_.startsWith(UserTagPrefix))
+      .map { s => UserId(s.split(':')(1)) }
+
+    def addUserId(userId: UserId) = copy(tags + s"${UserTagPrefix}${userId.userId}")
+
+    def addTopics(topics: Set[Topic]) = copy(tags ++ topics.map(_.name))
   }
 
   object Tags {
     val UserTagPrefix = "user:"
-    def withUserId(userId: UserId) = Tags(Set(s"${UserTagPrefix}${userId.userId}"))
   }
 }
