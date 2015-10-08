@@ -11,9 +11,9 @@ package object msnotifications {
   private def decode(string: String): String =
     new String(Base64.getUrlDecoder.decode(string), "UTF-8")
 
-  case class WNSTopic(uri: String)
+  case class WNSTag(uri: String)
 
-  object WNSTopic {
+  object WNSTag {
     def fromUri(uri: String): Option[Topic] = {
       val regex = s"""topic:(.*):(.*)""".r
       PartialFunction.condOpt(uri) {
@@ -22,12 +22,12 @@ package object msnotifications {
       }
     }
 
-    def fromTopic(t: Topic): WNSTopic = {
-      WNSTopic(s"topic:${encode(t.`type`.toString)}:${encode(t.name)}")
+    def fromTopic(t: Topic): WNSTag = {
+      WNSTag(s"topic:${encode(t.`type`.toString)}:${encode(t.name)}")
     }
 
-    def fromUserId(u: UserId): WNSTopic = {
-      WNSTopic(s"user:${u.userId}")
+    def fromUserId(u: UserId): WNSTag = {
+      WNSTag(s"user:${u.userId}")
     }
   }
 
@@ -42,7 +42,7 @@ package object msnotifications {
 
     def withUserId(userId: UserId) = copy(tags + s"${UserTagPrefix}${userId.userId}")
 
-    def withTopics(topics: Set[Topic]) = copy(tags ++ topics.map(_.name))
+    def withTopics(topics: Set[Topic]) = copy(tags ++ topics.map(WNSTag.fromTopic).map(_.uri))
   }
 
   object Tags {
