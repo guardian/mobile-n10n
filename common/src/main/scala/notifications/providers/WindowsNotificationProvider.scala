@@ -42,7 +42,7 @@ class WindowsNotificationProvider(wsClient: WSClient, hubClient: NotificationHub
     count <- getCounts(push.destination)
   } yield {
     result map { _ =>
-      NotificationReport(
+      NotificationReport.create(
         sentTime = DateTime.now,
         notification = push.notification,
         statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))

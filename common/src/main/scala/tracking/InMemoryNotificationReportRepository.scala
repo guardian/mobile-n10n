@@ -18,13 +18,13 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
   }
 
   def getByUuid(uuid: String): Future[RepositoryResult[NotificationReport]] = {
-    Future.successful(db.find(_.notification.uuid == uuid) \/> RepositoryError("Notification report not found"))
+    Future.successful(db.find(_.uuid == uuid) \/> RepositoryError("Notification report not found"))
   }
 
-  def getByDateRange(from: DateTime, until: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
+  def getByTypeWithDateRange(notificationType: String, from: DateTime, until: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
     val interval = new Interval(from, until)
     Future.successful(\/.right(db.filter({report =>
-       interval contains report.sentTime
+      report.`type` == notificationType && (interval contains report.sentTime)
     }).toList))
   }
 }

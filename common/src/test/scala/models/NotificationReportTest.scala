@@ -9,25 +9,26 @@ class NotificationReportTest extends Specification {
     "Serialize sentTime to an iso date string" in {
       val json = """
         |{
+
+        |  "uuid": "uuid",
         |  "sentTime": "2015-01-01T00:00:00.000Z",
-        |  "notification": {
-        |    "uuid": "uuid",
-        |    "sender": "sender",
-        |    "timeToLiveInSeconds": 1,
-        |    "payload": {
-        |      "link": "link",
-        |      "type": "type",
-        |      "ticker": "ticker",
-        |      "title": "title",
-        |      "message": "message"
-        |    }
+        |  "uuid": "uuid",
+        |  "sender": "sender",
+        |  "type": "type",
+        |  "timeToLiveInSeconds": 1,
+        |  "payload": {
+        |    "link": "link",
+        |    "type": "type",
+        |    "ticker": "ticker",
+        |    "title": "title",
+        |    "message": "message"
         |  },
         |  "statistics": {
         |    "recipients": {}
         |  }
         |}""".stripMargin
 
-      val report = NotificationReport(
+      val report = NotificationReport.create(
         sentTime = DateTime.parse("2015-01-01T00:00:00Z").withZone(DateTimeZone.UTC),
         notification = Notification(
           uuid = s"uuid",

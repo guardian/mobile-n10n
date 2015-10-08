@@ -24,8 +24,9 @@ final class Report @Inject()(
     Ok("Good")
   }
 
-  def notifications(from: Option[DateTime], until: Option[DateTime]) = AuthenticatedAction.async { request =>
-    notificationReportRepository.getByDateRange(
+  def notifications(notificationType: String, from: Option[DateTime], until: Option[DateTime]) = AuthenticatedAction.async { request =>
+    notificationReportRepository.getByTypeWithDateRange(
+      notificationType = notificationType,
       from = from.getOrElse(DateTime.now.minusDays(7)),
       until = until.getOrElse(DateTime.now)
     ) map {

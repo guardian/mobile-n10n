@@ -1,5 +1,7 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 
+localdynamodb.settings
+
 lazy val common = project.settings(
   resolvers ++= Seq(
     "Guardian GitHub Releases" at "http://guardian.github.com/maven/repo-releases",
@@ -12,6 +14,7 @@ lazy val common = project.settings(
     "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
     "org.scalaz" %% "scalaz-core" % "7.1.0",
     "joda-time" % "joda-time" % "2.8.2",
+    "com.amazonaws" % "aws-java-sdk" % "1.9.31",
     "com.gu" %% "configuration" %  "4.1"
   )
 )
@@ -53,3 +56,5 @@ lazy val root = (project in file(".")).
   aggregate(registration, notification, report, common)
 
 addCommandAlias("dist", ";riffRaffArtifact")
+
+addCommandAlias("testWithDb", ";startDynamodbLocal;test;stopDynamodbLocal")

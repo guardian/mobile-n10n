@@ -11,5 +11,5 @@ trait SentNotificationReportRepository {
 
   def getByUuid(uuid: String): Future[RepositoryResult[NotificationReport]]
 
-  def getByDateRange(from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]]
+  def getByTypeWithDateRange(notificationType: String, from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]]
 }
