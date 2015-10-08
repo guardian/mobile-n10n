@@ -17,7 +17,7 @@ import tracking.Repository.RepositoryResult
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
 
-class DynamoNotificationReportRepositoryTest(implicit ev: ExecutionEnv) extends Specification with Mockito with ShouldMatchers with BeforeAfterAll {
+class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends Specification with Mockito with ShouldMatchers with BeforeAfterAll {
 
   sequential
 
