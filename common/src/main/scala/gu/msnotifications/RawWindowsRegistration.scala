@@ -9,8 +9,8 @@ object RawWindowsRegistration {
     RawWindowsRegistration(
       channelUri = m.deviceId,
       tags = Tags()
-        .addUserId(m.userId)
-        .addTopics(m.topics)
+        .withUserId(m.userId)
+        .withTopics(m.topics)
         .asSet
     )
   }
