@@ -5,7 +5,7 @@ import play.libs.Json
 
 case class AzureRawPush(wnsType: String, body: String, tags: Option[Set[WNSTag]]) {
   def tagQuery: Option[String] = tags.map { set =>
-    set.map(_.uri).mkString("(", " && ", ")")
+    set.map(_.encodedUri).mkString("(", " && ", ")")
   }
 }
 

@@ -66,7 +66,7 @@ object RegistrationResponse {
 }
 case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
   def toRegistrarResponse = for {
-    userId <- Tags(tags.toSet).findUserId \/> UserIdNotInTags()
+    userId <- Tags.fromUris(tags.toSet).findUserId \/> UserIdNotInTags()
   } yield RegistrarResponse(
       deviceId = channelUri,
       WindowsMobile,

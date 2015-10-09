@@ -22,17 +22,19 @@ class RawWindowsRegistrationSpec extends Specification {
       rawRegistration.channelUri mustEqual registration.deviceId
       rawRegistration.tags must contain(exactly("user:windowsLooser"))
     }
+
     "be created from mobile registration with topics as tags" in {
+      val topic = Topic(`type` = FootballMatch, "arsenal-chelsea")
       val registration = Registration(
         deviceId = "device2",
         platform = WindowsMobile,
         userId = userId,
-        topics = Set(Topic(`type` = FootballMatch, "arsenal-chelsea"))
+        topics = Set(topic)
       )
 
       val rawRegistration = RawWindowsRegistration.fromMobileRegistration(registration)
 
-      rawRegistration.tags must contain("arsenal-chelsea")
+      rawRegistration.tags must contain(WNSTag.fromTopic(topic).encodedUri)
     }
   }
 
