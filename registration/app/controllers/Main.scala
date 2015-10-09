@@ -5,16 +5,18 @@ import javax.inject.Inject
 import gu.msnotifications.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
 import models.{ApiResponse, Registration}
 import notifications.providers
+import notifications.providers.NotificationRegistrar
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, Controller, Result}
 import services._
+import services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{-\/, \/, \/-}
 
-final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport)
+final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topicValidator: TopicValidator)
     (implicit executionContext: ExecutionContext)
   extends Controller {
 
@@ -28,11 +30,18 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport)
 
   def register(deviceId: String) = Action.async(BodyJson[Registration]) { request =>
     val registration = request.body.copy(deviceId = deviceId)
-    val registrar = registrarFor(registration)
 
-    registrar match {
+    def registerWith(registrar: NotificationRegistrar): Future[Result] =
+      topicValidator.removeInvalid(registration.topics) flatMap {
+        case \/-(validTopics) => registrar
+          .register(registration.copy(topics = validTopics))
+          .map { processRegistrationResult }
+        case -\/(e) => Future.successful(InternalServerError(e.reason))
+      }
+
+    registrarFor(registration) match {
       case -\/(msg) => Future.successful(InternalServerError(msg))
-      case \/-(r) => r.register(registration).map { processRegistrationResult }
+      case \/-(registrar) => registerWith(registrar)
     }
   }
 

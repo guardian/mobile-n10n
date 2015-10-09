@@ -1,6 +1,6 @@
-package models
+package gu.msnotifications
 
-import gu.msnotifications.WNSTag
+import models.Topic
 import models.TopicTypes.FootballMatch
 import org.specs2.mutable.Specification
 
