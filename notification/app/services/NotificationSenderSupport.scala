@@ -18,5 +18,5 @@ final class NotificationSenderSupport @Inject()(wsClient: WSClient, configuratio
   private val providerConf = configuration.notificationHubConfiguration
   private val hubClient = new NotificationHubClient(hubConnection, wsClient)
 
-  val notificationSender: NotificationSender = new WindowsNotificationProvider(wsClient, hubClient)
+  val notificationSender: NotificationSender = new WindowsNotificationProvider(hubClient)
 }

@@ -1,7 +1,8 @@
 package gu
 
 import java.util.Base64
-import models.{UserId, TopicType, Topic}
+
+import models.{Topic, UserId}
 
 package object msnotifications {
 
@@ -11,34 +12,40 @@ package object msnotifications {
   private def decode(string: String): String =
     new String(Base64.getUrlDecoder.decode(string), "UTF-8")
 
-  case class WNSTopic(uri: String)
+  case class WNSTag(encodedUri: String)
 
-  object WNSTopic {
-    def fromUri(uri: String): Option[Topic] = {
-      val regex = s"""topic:(.*):(.*)""".r
-      PartialFunction.condOpt(uri) {
-        case regex(tpe, name) if TopicType.fromString(decode(tpe)).isDefined =>
-          Topic(`type` = TopicType.fromString(decode(tpe)).get, name = decode(name))
-      }
+  object WNSTag {
+
+    def fromTopic(t: Topic): WNSTag = {
+      WNSTag(s"topic:${encode(t.`type`.toString)}:${encode(t.name)}")
     }
 
-    def fromTopic(t: Topic): WNSTopic = {
-      WNSTopic(s"topic:${encode(t.`type`.toString)}:${encode(t.name)}")
+    def fromUserId(u: UserId): WNSTag = {
+      WNSTag(s"user:${u.userId}")
     }
 
-    def fromUserId(u: UserId): WNSTopic = {
-      WNSTopic(s"user:${u.userId}")
-    }
   }
 
-  case class Tags(tags: Set[String] = Set.empty) {
+  case class Tags(tags: Set[WNSTag] = Set.empty) {
     import Tags._
-    def asSet = tags
-    def findUserId: Option[UserId] = tags.find(_.startsWith(UserTagPrefix)).map(UserId(_))
+
+    def asSet = tags.map(_.encodedUri)
+
+    def findUserId: Option[UserId] = tags
+      .map(_.encodedUri)
+      .find(_.matches(UserTagRegex.regex))
+      .map { case UserTagRegex(uname) => UserId(uname) }
+
+    def withUserId(userId: UserId) = copy(tags + WNSTag.fromUserId(userId))
+
+    def withTopics(topics: Set[Topic]) = copy(tags ++ topics.map(WNSTag.fromTopic))
   }
 
   object Tags {
     val UserTagPrefix = "user:"
-    def withUserId(userId: UserId) = Tags(Set(s"${UserTagPrefix}${userId.userId}"))
+    val UserTagRegex = """user:(.*)""".r
+    val TopicTagRegex = s"""topic:(.*):(.*)""".r
+
+    def fromUris(tags: Set[String]) = Tags(tags.map(WNSTag(_)))
   }
 }

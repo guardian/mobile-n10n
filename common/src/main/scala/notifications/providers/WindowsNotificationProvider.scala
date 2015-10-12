@@ -5,7 +5,6 @@ import gu.msnotifications.NotificationHubClient.HubResult
 import gu.msnotifications.{AzureRawPush, NotificationHubClient, RawWindowsRegistration, WNSRegistrationId}
 import models._
 import org.joda.time.DateTime
-import play.api.libs.ws.WSClient
 import tracking.Repository._
 import tracking.{InMemoryTopicSubscriptionsRepository, RepositoryResult}
 
@@ -13,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scalaz.syntax.either._
 import scalaz.{-\/, \/, \/-}
 
-class WindowsNotificationProvider(wsClient: WSClient, hubClient: NotificationHubClient)(implicit ec: ExecutionContext)
+class WindowsNotificationProvider(hubClient: NotificationHubClient)(implicit ec: ExecutionContext)
   extends NotificationRegistrar with NotificationSender {
   override val name = "WNS"
 

@@ -13,8 +13,7 @@ object NotificationHubClient {
 /**
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
  */
-final class NotificationHubClient(
-  notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
+class NotificationHubClient(notificationHubConnection: NotificationHubConnection, wsClient: WSClient)
     (implicit executionContext: ExecutionContext) {
 
   import NotificationHubClient.HubResult
