@@ -23,7 +23,7 @@ class AuditorWSClientSpec(implicit ev: ExecutionEnv) extends Specification with 
         case POST(p"/expired-topics") => Action {
           Results.Ok(Json.toJson(ExpiredTopicsResponse(topics.toList)))
         }
-      } { port =>
+      } { implicit port =>
         WsTestClient.withClient { client =>
           val auditorWSClient = new AuditorWSClient(client)
           val auditor = Auditor(new URL(s"http://localhost:$port"))
