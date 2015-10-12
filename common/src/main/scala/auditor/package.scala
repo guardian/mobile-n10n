@@ -13,7 +13,7 @@ package object auditor {
 
   case class AuditorGroup(auditors: Set[Auditor]) {
     def queryEach[T](query: Auditor => Future[T])(implicit ec: ExecutionContext): Future[Set[T]] =
-      Future.sequence(auditors.map(query(_)))
+      Future.sequence(auditors.map(query))
   }
 
   def mkAuditorGroup(config: AuditorGroupConfig): AuditorGroup = AuditorGroup(
