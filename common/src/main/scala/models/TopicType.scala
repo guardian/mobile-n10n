@@ -5,14 +5,14 @@ import play.api.libs.json._
 sealed trait TopicType
 
 object TopicTypes {
-  case object Breaking extends TopicType { override def toString = "breaking" }
-  case object Content extends TopicType { override def toString = "content" }
-  case object TagContributor extends TopicType { override def toString = "tag-contributor" }
-  case object TagKeyword extends TopicType { override def toString = "tag-keyword" }
-  case object TagSeries extends TopicType { override def toString = "tag-series" }
-  case object TagBlog extends TopicType { override def toString = "tag-blog" }
-  case object FootballTeam extends TopicType { override def toString = "football-team" }
-  case object FootballMatch extends TopicType { override def toString = "football-match" }
+  case object Breaking extends TopicType { override def toString: String = "breaking" }
+  case object Content extends TopicType { override def toString: String = "content" }
+  case object TagContributor extends TopicType { override def toString: String = "tag-contributor" }
+  case object TagKeyword extends TopicType { override def toString: String = "tag-keyword" }
+  case object TagSeries extends TopicType { override def toString: String = "tag-series" }
+  case object TagBlog extends TopicType { override def toString: String = "tag-blog" }
+  case object FootballTeam extends TopicType { override def toString: String = "football-team" }
+  case object FootballMatch extends TopicType { override def toString: String = "football-match" }
 }
 
 object TopicType {
