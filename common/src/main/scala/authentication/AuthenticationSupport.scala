@@ -8,7 +8,7 @@ trait AuthenticationSupport {
 
   def validApiKey(apiKey: String): Boolean
 
-  def AuthenticatedAction: ActionBuilder[Request] = new ActionBuilder[Request] with Results {
+  object AuthenticatedAction extends ActionBuilder[Request] with Results {
     override def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]): Future[Result] = {
       request.getQueryString("api-key") match {
         case Some(apiKey) if validApiKey(apiKey) => block(request)

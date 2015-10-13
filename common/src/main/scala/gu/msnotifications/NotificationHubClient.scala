@@ -73,7 +73,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .map(_.map(_.title))
   }
 
-  def registrationsByTag(tag: String) = {
+  def registrationsByTag(tag: String): Future[HubResult[AtomFeedResponse[RegistrationResponse]]] = {
     request(s"/tags/$tag/registrations")
       .get()
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])

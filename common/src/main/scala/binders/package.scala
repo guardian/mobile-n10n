@@ -43,7 +43,7 @@ package object binders {
       }
     }
 
-  implicit def bindDateTime(implicit strBinder: QueryStringBindable[String]) =
+  implicit def bindDateTime(implicit strBinder: QueryStringBindable[String]): QueryStringBindable[DateTime] =
     new QueryStringBindable[DateTime] {
       override def unbind(key: String, value: DateTime): String = {
         strBinder.unbind(

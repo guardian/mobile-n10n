@@ -65,7 +65,7 @@ object RegistrationResponse {
   }
 }
 case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
-  def toRegistrarResponse = for {
+  def toRegistrarResponse: UserIdNotInTags \/ RegistrarResponse = for {
     userId <- Tags.fromUris(tags.toSet).findUserId \/> UserIdNotInTags()
   } yield RegistrarResponse(
       deviceId = channelUri,
