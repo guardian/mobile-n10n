@@ -65,7 +65,7 @@ object RegistrationResponse {
   }
 }
 case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
-  def toRegistrarResponse: \/[UserIdNotInTags, RegistrarResponse] = {
+  def toRegistrarResponse: UserIdNotInTags \/ RegistrarResponse = {
     val tagsFromUris = Tags.fromUris(tags.toSet)
     for {
       userId <- tagsFromUris.findUserId \/> UserIdNotInTags()
