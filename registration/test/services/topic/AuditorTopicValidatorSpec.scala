@@ -25,8 +25,8 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
         validInA,
         validInB
       )
-      auditorWSClient.expiredTopics(argThat(===(auditorA)), anySetOf[Topic]) returns successful(topics - invalidTopic - validInB)
-      auditorWSClient.expiredTopics(argThat(===(auditorB)), anySetOf[Topic]) returns successful(topics - invalidTopic - validInA)
+      auditorWSClient.expiredTopics(===(auditorA), anySetOf[Topic]) returns successful(topics - invalidTopic - validInB)
+      auditorWSClient.expiredTopics(===(auditorB), anySetOf[Topic]) returns successful(topics - invalidTopic - validInA)
 
       val validTopics = topicValidator.removeInvalid(topics)
 
