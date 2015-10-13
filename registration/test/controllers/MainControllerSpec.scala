@@ -1,7 +1,9 @@
 package controllers
 
+import models.TopicTypes.FootballMatch
 import models.{Topic, Registration, UserId, WindowsMobile}
 import notifications.providers.{Error, NotificationRegistrar, RegistrationResponse}
+import org.specs2.matcher.JsonMatchers
 import org.specs2.specification.Scope
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -14,7 +16,7 @@ import scala.concurrent.Future
 import scalaz.\/
 import scalaz.syntax.either._
 
-class MainControllerSpec extends PlaySpecification {
+class MainControllerSpec extends PlaySpecification with JsonMatchers{
 
   "Registrations controller" should {
     "responds to healtcheck" in new registrations {
@@ -33,15 +35,17 @@ class MainControllerSpec extends PlaySpecification {
           |  "userId": "abcd",
           |  "platform": "windows-mobile",
           |  "topics": [
-          |    {"type": "content", "name": "science"}
+          |    {"type": "football-match", "name": "science"}
           |  ]
           |}
         """.stripMargin
 
       running(application) {
-        val result = route(FakeRequest(PUT, "/registrations/someId").withJsonBody(Json.parse(registrationJson))).get
+        val Some(result) = route(FakeRequest(PUT, "/registrations/someId").withJsonBody(Json.parse(registrationJson)))
 
         status(result) must equalTo(OK)
+        contentAsString(result) must /("topics") /# 0 /("type" -> "football-match")
+                                                      /("name" -> "science")
       }
     }
   }
@@ -62,7 +66,8 @@ class RegistrarSupportMock extends RegistrarSupport {
       RegistrationResponse(
         deviceId = "deviceAA",
         platform = WindowsMobile,
-        userId = UserId("idOfUser")
+        userId = UserId("idOfUser"),
+        topics = Set(Topic(`type` = FootballMatch, name = "match-in-response"))
       ).right
     }
   }.right

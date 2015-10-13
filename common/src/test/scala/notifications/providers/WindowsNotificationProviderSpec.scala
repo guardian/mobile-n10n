@@ -25,7 +25,8 @@ with Mockito {
       response must beEqualTo(RegistrationResponse(
         deviceId = channelUri,
         platform = WindowsMobile,
-        userId = registration.userId
+        userId = registration.userId,
+        topics = Set.empty
       ).right).await
     }
 
@@ -39,7 +40,8 @@ with Mockito {
       response must beEqualTo(RegistrationResponse(
         deviceId = channelUri,
         platform = WindowsMobile,
-        userId = registration.userId
+        userId = registration.userId,
+        topics = Set.empty
       ).right).await
     }
 

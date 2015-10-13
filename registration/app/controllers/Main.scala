@@ -5,7 +5,7 @@ import javax.inject.Inject
 import gu.msnotifications.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
 import models.{ApiResponse, Registration}
 import notifications.providers
-import notifications.providers.NotificationRegistrar
+import notifications.providers.{RegistrationResponse, NotificationRegistrar}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
@@ -35,7 +35,7 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
       topicValidator.removeInvalid(registration.topics) flatMap {
         case \/-(validTopics) => registrar
           .register(registration.copy(topics = validTopics))
-          .map { processRegistrationResult }
+          .map { processResponse }
         case -\/(e) => Future.successful(InternalServerError(e.reason))
       }
 
@@ -45,10 +45,10 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
     }
   }
 
-  private def processRegistrationResult[T](result: providers.Error \/ T): Result = {
+  private def processResponse(result: providers.Error \/ RegistrationResponse): Result = {
     result match {
-      case \/-(json) =>
-        Ok(Json.toJson(ApiResponse("success")))
+      case \/-(res) =>
+        Ok(Json.toJson(res))
       case -\/(HubServiceError(reason, code)) =>
         logger.error(message = s"Service error code $code: $reason")
         Status(code.toInt)(s"Upstream service failed with code $code.")

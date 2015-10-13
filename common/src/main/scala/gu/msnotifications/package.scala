@@ -2,7 +2,7 @@ package gu
 
 import java.util.Base64
 
-import models.{Topic, UserId}
+import models.{TopicType, Topic, UserId}
 
 package object msnotifications {
 
@@ -12,40 +12,50 @@ package object msnotifications {
   private def decode(string: String): String =
     new String(Base64.getUrlDecoder.decode(string), "UTF-8")
 
-  case class WNSTag(encodedUri: String)
+  case class Tag(encodedUri: String)
 
-  object WNSTag {
+  object Tag {
+    import Tags._
 
-    def fromTopic(t: Topic): WNSTag = {
-      WNSTag(s"topic:${encode(t.`type`.toString)}:${encode(t.name)}")
+    def fromTopic(t: Topic): Tag = {
+      Tag(s"$TopicTagPrefix${encode(t.`type`.toString)}:${encode(t.name)}")
     }
 
-    def fromUserId(u: UserId): WNSTag = {
-      WNSTag(s"user:${u.userId}")
+    def fromUserId(u: UserId): Tag = {
+      Tag(s"$UserTagPrefix${u.userId}")
     }
 
   }
 
-  case class Tags(tags: Set[WNSTag] = Set.empty) {
+  case class Tags(tags: Set[Tag] = Set.empty) {
     import Tags._
 
     def asSet = tags.map(_.encodedUri)
 
-    def findUserId: Option[UserId] = tags
-      .map(_.encodedUri)
+    def findUserId: Option[UserId] = urisInTags
       .find(_.matches(UserTagRegex.regex))
       .map { case UserTagRegex(uname) => UserId(uname) }
 
-    def withUserId(userId: UserId) = copy(tags + WNSTag.fromUserId(userId))
+    def decodedTopics: Set[Topic] = for {
+      encodedUri <- urisInTags
+      if encodedUri.matches(TopicTagRegex.regex)
+      TopicTagRegex(tt, name) = encodedUri
+      topicType <- TopicType.fromString(decode(tt))
+    } yield Topic(topicType, decode(name))
 
-    def withTopics(topics: Set[Topic]) = copy(tags ++ topics.map(WNSTag.fromTopic))
+    def withUserId(userId: UserId) = copy(tags + Tag.fromUserId(userId))
+
+    def withTopics(topics: Set[Topic]) = copy(tags ++ topics.map(Tag.fromTopic))
+
+    private[this] def urisInTags = tags.map(_.encodedUri)
   }
 
   object Tags {
     val UserTagPrefix = "user:"
+    val TopicTagPrefix = "topic:"
     val UserTagRegex = """user:(.*)""".r
-    val TopicTagRegex = s"""topic:(.*):(.*)""".r
+    val TopicTagRegex = """topic:(.*):(.*)""".r
 
-    def fromUris(tags: Set[String]) = Tags(tags.map(WNSTag(_)))
+    def fromUris(tags: Set[String]) = Tags(tags.map(Tag(_)))
   }
 }

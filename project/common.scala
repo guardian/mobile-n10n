@@ -14,6 +14,7 @@ object CommonSettingsPlugin extends AutoPlugin {
       "org.scala-lang.modules" %% "scala-xml" % "1.0.5",
       "org.scala-lang.modules" %% "scala-async" % "0.9.5",
       "org.specs2" %% "specs2-core" % "3.6.4" % Test,
+      "org.specs2" %% "specs2-matcher-extra" % "3.6.4" % Test,
       specs2 % Test
     )
   )

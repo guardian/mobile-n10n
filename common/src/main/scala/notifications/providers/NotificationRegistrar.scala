@@ -1,11 +1,11 @@
 package notifications.providers
 
-import models.{UserId, Platform, Registration}
+import models.{Topic, UserId, Platform, Registration}
 
 import scala.concurrent.Future
 import scalaz.\/
 
-case class RegistrationResponse(deviceId: String, platform: Platform, userId: UserId)
+case class RegistrationResponse(deviceId: String, platform: Platform, userId: UserId, topics: Set[Topic])
 
 object RegistrationResponse {
   import play.api.libs.json._
