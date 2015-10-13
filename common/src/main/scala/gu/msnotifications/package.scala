@@ -29,16 +29,16 @@ package object msnotifications {
   case class Tags(tags: Set[WNSTag] = Set.empty) {
     import Tags._
 
-    def asSet = tags.map(_.encodedUri)
+    def asSet: Set[String] = tags.map(_.encodedUri)
 
     def findUserId: Option[UserId] = tags
       .map(_.encodedUri)
       .find(_.matches(UserTagRegex.regex))
       .map { case UserTagRegex(uname) => UserId(uname) }
 
-    def withUserId(userId: UserId) = copy(tags + WNSTag.fromUserId(userId))
+    def withUserId(userId: UserId): Tags = copy(tags + WNSTag.fromUserId(userId))
 
-    def withTopics(topics: Set[Topic]) = copy(tags ++ topics.map(WNSTag.fromTopic))
+    def withTopics(topics: Set[Topic]): Tags = copy(tags ++ topics.map(WNSTag.fromTopic))
   }
 
   object Tags {
@@ -46,6 +46,6 @@ package object msnotifications {
     val UserTagRegex = """user:(.*)""".r
     val TopicTagRegex = s"""topic:(.*):(.*)""".r
 
-    def fromUris(tags: Set[String]) = Tags(tags.map(WNSTag(_)))
+    def fromUris(tags: Set[String]): Tags = Tags(tags.map(WNSTag(_)))
   }
 }

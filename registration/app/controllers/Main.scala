@@ -9,7 +9,7 @@ import notifications.providers.NotificationRegistrar
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
-import play.api.mvc.{Action, Controller, Result}
+import play.api.mvc.{AnyContent, Action, Controller, Result}
 import services._
 import services.topic.TopicValidator
 
@@ -24,11 +24,11 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
 
   private val logger = Logger("main")
 
-  def healthCheck = Action {
+  def healthCheck: Action[AnyContent] = Action {
     Ok("Good")
   }
 
-  def register(deviceId: String) = Action.async(BodyJson[Registration]) { request =>
+  def register(deviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
     val registration = request.body.copy(deviceId = deviceId)
 
     def registerWith(registrar: NotificationRegistrar): Future[Result] =
