@@ -5,3 +5,7 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.2")
 addSbtPlugin("com.gu" % "riffraff-artifact" % "0.6.1")
 
 addSbtPlugin("com.teambytes.sbt" % "sbt-dynamodb" % "1.1")
+
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0" excludeAll(
+  ExclusionRule(organization = "com.danieltrinh")))
+libraryDependencies += "org.scalariform" %% "scalariform" % "0.1.7"
