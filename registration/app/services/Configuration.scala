@@ -2,6 +2,7 @@ package services
 
 import javax.inject.Inject
 
+import auditor.AuditorGroupConfig
 import com.gu.conf.ConfigurationFactory
 
 import scala.concurrent.ExecutionContext
@@ -13,7 +14,7 @@ case class NotificationHubConfiguration(
   sharedKeyValue: String
 )
 
-final class Configuration @Inject()()(implicit executionContext: ExecutionContext) {
+class Configuration @Inject()()(implicit executionContext: ExecutionContext) {
 
   private lazy val conf = ConfigurationFactory.getConfiguration(
     applicationName = "registration",
@@ -25,5 +26,12 @@ final class Configuration @Inject()()(implicit executionContext: ExecutionContex
     hubName = conf.getStringProperty("gu.msnotifications.hubname").get,
     sharedKeyName = conf.getStringProperty("gu.msnotifications.sharedKeyName").get,
     sharedKeyValue = conf.getStringProperty("gu.msnotifications.sharedKeyValue").get
+  )
+
+  lazy val auditorConfiguration = AuditorGroupConfig(
+    hosts = Set(
+      conf.getStringProperty("notifications.auditor.content-notifications").get,
+      conf.getStringProperty("notifications.auditor.goal-alerts").get
+    )
   )
 }
