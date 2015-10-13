@@ -33,7 +33,7 @@ final class AuditorTopicValidator(auditorClient: AuditorWSClient, configuration:
   override def removeInvalid(topics: Set[Topic]) =
     mkAuditorGroup(configuration.auditorConfiguration)
       .queryEach { auditorClient.expiredTopics(_, topics) }
-      .map { _.flatten.right }
+      .map { expired => (topics -- expired.flatten).right }
       .recover { case _ => AuditorClientError(topics).left }
   
   case class AuditorClientError(topicsQueried: Set[Topic]) extends TopicValidatorError {

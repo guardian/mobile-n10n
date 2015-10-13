@@ -65,12 +65,17 @@ object RegistrationResponse {
   }
 }
 case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
-  def toRegistrarResponse = for {
-    userId <- Tags.fromUris(tags.toSet).findUserId \/> UserIdNotInTags()
-  } yield RegistrarResponse(
+  def toRegistrarResponse: UserIdNotInTags \/ RegistrarResponse = {
+    val tagsFromUris = Tags.fromUris(tags.toSet)
+    for {
+      userId <- tagsFromUris.findUserId \/> UserIdNotInTags()
+    } yield RegistrarResponse(
       deviceId = channelUri,
       WindowsMobile,
-      userId = userId)
+      userId = userId,
+      topics = tagsFromUris.decodedTopics
+    )
+  }
 }
 
 object AtomFeedResponse {

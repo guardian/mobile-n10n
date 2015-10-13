@@ -4,53 +4,38 @@ This project will focus on connecting directly to cloud providers (Azure, GCM) a
 
 ## Modules
  * registration: Handles the registration requests received from the device, and redirect them to the correct provider
+ * notification: Handler notification messages and redirects them to correct provider
+ * report: TODO
+ * backup: TODO
  * common: The common stuff
 
 ## Registration
 
 The Play configuration file must contain:
 ```
-gu.msnotifications.hubname="abc"
-gu.msnotifications.connectionstring="Endpoint=sb://abc-ns.servicebus.windows.net/;SharedAccessKeyName=def;SharedAccessKey=ghi="
+gu.msnotifications.endpointUri=https://servicebus-ns.servicebus.windows.net
+gu.msnotifications.hubname=nameOfNotficationHub
+gu.msnotifications.sharedKeyName=nameOfSharedKey
+gu.msnotifications.sharedKeyValue=sharedKeyActualValue
+
+notifications.auditor.content-notifications=http://content-notification-auditor.elb.amazonaws.com
+notifications.auditor.goal-alerts=hhttp://goal-alert-auditor.elb.amazonaws.com
 ```
 
-### Device registration
+### Device registration create or udpate
 
-Returns a registration ID.
+Requires a deviceId, used for updating topics or device ids.
+
+Returns an updated or created registration.
+'topics' array is validated against auditor agents ie. it may contain less elements than in original registration.
 
 ```
-POST /register/
-Content-Type: application/xml
+PUT /registrations/deviceId
+Content-Type: application/json
 
 {
-  "channelUri": "channel-uri",
-  "userId": "abcd",
-  "topics": [
-    {"type": "stuff", "name": "stuff"}
-  ]
-}
-```
-
-returns
-
-```
-{ "registrationId": "def" }
-```
-
-Or an error code if a failure with body string being the reason
-
-### Device registration updates
-
-Requires a registration ID, used for updating topics.
-
-Returns a registration ID.
-
-```
-POST /update/def/
-Content-Type: application/xml
-
-{
-  "channelUri": "channel-uri",
+  "deviceId": "wnsChannelIdOrProviderSpecificDeviceIdentifier",
+  "platform": "windows-mobile",
   "userId": "abcd",
   "topics": [
     {"type": "stuff", "name": "stuff"},
@@ -62,7 +47,14 @@ Content-Type: application/xml
 returns
 
 ```
-{ "registrationId": "def" }
+{
+  "deviceId":"deviceAA",
+  "platform":"windows-mobile",
+  "userId":"idOfUser",
+  "topics": [
+      {"type":"football-match","name":"match-in-response"}
+  ]
+}
 ```
 
 Or an error code if a failure with body string being the reason

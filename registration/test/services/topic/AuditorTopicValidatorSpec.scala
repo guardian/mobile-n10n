@@ -17,20 +17,20 @@ import scalaz.syntax.either._
 class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "Auditor Topic Validator" should {
     "return filtered list of topics from both auditors" in new validators {
-      val invalidTopic = Topic(`type` = FootballMatch, name = "invalidFromAuditorA")
-      val validInA = Topic(`type` = Content, name = "validinA")
-      val validInB = Topic(`type` = Content, name = "validInB")
+      val validTopic = Topic(`type` = FootballMatch, name = "invalidFromAuditorA")
+      val expiredInA = Topic(`type` = Content, name = "expiredInA")
+      val expiredInB = Topic(`type` = Content, name = "expiredInB")
       val topics = Set(
-        invalidTopic,
-        validInA,
-        validInB
+        validTopic,
+        expiredInA,
+        expiredInB
       )
-      auditorWSClient.expiredTopics(===(auditorA), anySetOf[Topic]) returns successful(topics - invalidTopic - validInB)
-      auditorWSClient.expiredTopics(===(auditorB), anySetOf[Topic]) returns successful(topics - invalidTopic - validInA)
+      auditorWSClient.expiredTopics(===(auditorA), anySetOf[Topic]) returns successful(Set(expiredInB))
+      auditorWSClient.expiredTopics(===(auditorB), anySetOf[Topic]) returns successful(Set(expiredInA))
 
       val validTopics = topicValidator.removeInvalid(topics)
 
-      validTopics must beEqualTo((topics - invalidTopic).right).await
+      validTopics must beEqualTo(Set(validTopic).right).await
     }
   }
 
