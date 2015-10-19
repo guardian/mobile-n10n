@@ -56,16 +56,16 @@ object NotificationHubJob {
     override def reads(xml: Elem): HubResult[NotificationHubJob] = {
       Logger.info(xml.toString())
       for {
-        jobId <- xml.getString("JobId")
-        progress <- xml.getOptionDouble("Progress")
-        jobType <- xml.getString("Type")
-        jobStatus <- xml.getOptionString("Status")
-        outputContainerUri <- xml.getString("OutputContainerUri")
-        importFileUri <- xml.getOptionString("ImportFileUri")
-        failure <- xml.getOptionString("Failure")
+        jobId <- xml.textNode("JobId")
+        progress <- xml.doubleNodeOption("Progress")
+        jobType <- xml.textNode("Type")
+        jobStatus <- xml.textNodeOption("Status")
+        outputContainerUri <- xml.textNode("OutputContainerUri")
+        importFileUri <- xml.textNodeOption("ImportFileUri")
+        failure <- xml.textNodeOption("Failure")
         outputProperties <- parseProperties(xml \ "OutputProperties")
-        createdAt <- xml.getOptionDateTime("CreatedAt")
-        updatedAt <- xml.getOptionDateTime("updatedAt")
+        createdAt <- xml.dateTimeNodeOption("CreatedAt")
+        updatedAt <- xml.dateTimeNodeOption("updatedAt")
       } yield NotificationHubJob(
         jobId = jobId,
         progress = progress,

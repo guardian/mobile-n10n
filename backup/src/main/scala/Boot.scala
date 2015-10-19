@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
 import scala.util.{Failure, Success}
 
 object Boot {
-  def runBatch[T<:Batch](rootPath: String)(implicit classTag: ClassTag[T]): Unit = {
+  def runBatch[T <: Batch](rootPath: String)(implicit classTag: ClassTag[T]): Unit = {
     val env = Environment(new File(rootPath), this.getClass.getClassLoader, Mode.Prod)
     val ctx = ApplicationLoader.createContext(env)
     val app = new GuiceApplicationLoader().load(ctx)

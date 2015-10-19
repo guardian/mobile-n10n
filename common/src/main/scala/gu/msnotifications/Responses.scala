@@ -5,7 +5,6 @@ import gu.msnotifications.NotificationHubClient.HubResult
 import models.WindowsMobile
 import notifications.providers.{RegistrationResponse => RegistrarResponse, UserIdNotInTags}
 import org.joda.time.DateTime
-import play.api.Logger
 import play.api.libs.ws.WSResponse
 import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
@@ -18,7 +17,6 @@ trait XmlReads[T] {
 
 object XmlParser {
   private def getXml(response: WSResponse): HubResult[Elem] = {
-    Logger.info(response.xml.toString)
     if (response.status >= 200 || response.status < 300)
       Try(response.xml).toOption \/> HubParseFailed.invalidXml(response.body)
     else
@@ -41,22 +39,22 @@ object Responses {
 
   implicit class RichXmlElem(xml: Elem) {
 
-    def getStrings(s: String): Seq[String] = (xml \ s).map(_.text)
+    def textNodes(s: String): Seq[String] = (xml \ s).map(_.text)
 
-    def getString(s: String): HubResult[String] =
-      getStrings(s).headOption \/> HubParseFailed(body = xml.toString(), reason = s"Missing field $s")
+    def textNode(s: String): HubResult[String] =
+      textNodes(s).headOption \/> HubParseFailed(body = xml.toString(), reason = s"Missing field $s")
 
-    def getOptionString(s: String): HubResult[Option[String]] =
-      \/-(getStrings(s).headOption)
+    def textNodeOption(s: String): HubResult[Option[String]] =
+      \/-(textNodes(s).headOption)
 
-    def getDateTime(s: String): HubResult[DateTime] = {
-      getString(s).flatMap { dateTime =>
+    def dateTimeNode(s: String): HubResult[DateTime] = {
+      textNode(s).flatMap { dateTime =>
         Try(DateTime.parse(dateTime)).toOption \/> HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTime' in field $s as datetime")
       }
     }
 
-    def getOptionDateTime(s: String): HubResult[Option[DateTime]] = {
-      getOptionString(s) flatMap {
+    def dateTimeNodeOption(s: String): HubResult[Option[DateTime]] = {
+      textNodeOption(s) flatMap {
         case Some(dateTimeValue) => Try(DateTime.parse(dateTimeValue)) match {
           case Success(dateTime) => \/-(Some(dateTime))
           case Failure(_) => -\/(HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTimeValue' in field $s as datetime"))
@@ -65,14 +63,14 @@ object Responses {
       }
     }
 
-    def getDouble(s: String): HubResult[Double] = {
-      getString(s).flatMap { double =>
+    def doubleNode(s: String): HubResult[Double] = {
+      textNode(s).flatMap { double =>
         Try(double.toDouble).toOption \/> HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$double' in field $s as a double")
       }
     }
 
-    def getOptionDouble(s: String): HubResult[Option[Double]] = {
-      getOptionString(s).flatMap {
+    def doubleNodeOption(s: String): HubResult[Option[Double]] = {
+      textNodeOption(s).flatMap {
         case Some(doubleValue) => Try(doubleValue.toDouble) match {
           case Success(double) => \/-(Some(double))
           case Failure(_) => -\/(HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$doubleValue' in field $s as a double"))
@@ -88,10 +86,10 @@ object RegistrationResponse {
 
   implicit val reader = new XmlReads[RegistrationResponse] {
     def reads(xml: Elem) = for {
-        expirationTime <- xml.getDateTime("ExpirationTime")
-        registrationId <- xml.getString("RegistrationId").map(WNSRegistrationId.apply)
-        channelUri <- xml.getString("ChannelUri")
-        tags = xml.getStrings("Tags").flatMap(_.split(",").map(_.stripPrefix(" ")))
+        expirationTime <- xml.dateTimeNode("ExpirationTime")
+        registrationId <- xml.textNode("RegistrationId").map(WNSRegistrationId.apply)
+        channelUri <- xml.textNode("ChannelUri")
+        tags = xml.textNodes("Tags").flatMap(_.split(",").map(_.stripPrefix(" ")))
     } yield RegistrationResponse(registrationId, tags.toList, channelUri, expirationTime)
   }
 }
@@ -109,7 +107,7 @@ object AtomFeedResponse {
 
   implicit def reader[T](implicit reader: XmlReads[T]): XmlReads[AtomFeedResponse[T]] = new XmlReads[AtomFeedResponse[T]] {
     def reads(xml: Elem) =  for {
-      title <- xml.getString("title")
+      title <- xml.textNode("title")
       items <- getItems(xml)(reader)
     } yield AtomFeedResponse(title, items)
   }
