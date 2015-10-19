@@ -2,22 +2,11 @@ package batches
 
 import javax.inject.Singleton
 
-import com.google.inject.ImplementedBy
 import com.gu.conf.ConfigurationFactory
 import gu.msnotifications.NotificationHubConnection
 
-
-@ImplementedBy(classOf[BackupConfigurationFile])
-trait BackupConfiguration {
-  def storageConnectionString: String
-  def containerName: String
-  def directoryName: String
-  def backupRetention: Int
-  def notificationHubConnection: NotificationHubConnection
-}
-
 @Singleton
-class BackupConfigurationFile extends BackupConfiguration {
+class BackupConfiguration {
 
   lazy val conf = ConfigurationFactory.getConfiguration(
     applicationName = "backup",
