@@ -10,7 +10,6 @@ import gu.msnotifications.{NotificationHubJobType, _}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.libs.ws.WSClient
 import play.api.Logger
-import collection.JavaConversions._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{-\/, \/-}
@@ -47,20 +46,9 @@ class Backup @Inject() (conf: BackupConfiguration, ws: WSClient)(implicit ec: Ex
   }
 
   private def cleanup(container: CloudBlobContainer): Unit = {
-
-    def listAllFiles(directory: CloudBlobDirectory): List[CloudBlob] = {
-      // toList to force the lazy list to be evaluated
-      val directoryContent = directory.listBlobs().toList
-      directoryContent.flatMap {
-        case blob: CloudBlob => List(blob)
-        case dir: CloudBlobDirectory => listAllFiles(dir)
-        case _ => Nil
-      }
-    }
-
     val tooOld = DateTime.now().minusDays(conf.backupRetention).toDate
     val directory = container.getDirectoryReference(conf.directoryName)
-    val allBlobs = listAllFiles(directory)
+    val allBlobs = AzureUtils.listAllFiles(directory)
     val blobsToDelete = allBlobs.filter(_.getProperties.getLastModified.before(tooOld))
     blobsToDelete.foreach { blob =>
       blob.deleteIfExists()

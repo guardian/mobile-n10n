@@ -25,7 +25,8 @@ lazy val backup = project
       "com.typesafe.play" % "play-ws_2.11" % "2.4.2",
       "com.microsoft.azure" % "azure-storage" % "3.1.0"
     ),
-    version := "1.0-SNAPSHOT"
+    version := "1.0-SNAPSHOT",
+    mainClass in (Compile,run) := Some("BackupBoot")
   )
 
 lazy val registration = project.
