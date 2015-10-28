@@ -7,7 +7,7 @@ import gu.msnotifications.Responses.RichXmlElem
 import play.api.Logger
 
 import scala.xml.{NodeSeq, Elem}
-import scalaz.\/-
+import scalaz.\/
 
 case class NotificationHubJobRequest(
   jobType: NotificationHubJobType,
@@ -47,7 +47,7 @@ case class NotificationHubJob(
 object NotificationHubJob {
 
   private def parseProperties(seq: NodeSeq): HubResult[Map[String, String]] = {
-    \/-(seq.map { elem =>
+    \/.right(seq.map { elem =>
       (elem \ "Key" text) -> (elem \ "Value" text)
     }.toMap)
   }
