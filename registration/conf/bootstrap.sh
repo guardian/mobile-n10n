@@ -1,7 +1,5 @@
 #!/bin/bash
 
-/var/lib/dpkg/info/ca-certificates-java.postinst configure
-
 instanceid=`curl -s http://169.254.169.254/latest/meta-data/instance-id`
 region=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone |sed 's/.$//'`
 
