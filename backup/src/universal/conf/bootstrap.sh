@@ -9,4 +9,5 @@ stagetag=`aws ec2 describe-tags --filters "Name=resource-id,Values=$instanceid" 
 
 aws s3 cp s3://mobile-notifications-dist/$stagetag/$stacktag.properties /etc/init/backup.conf
 
-/backup-1.0-SNAPSHOT/bin/backup
+adduser --home /$apptag-1.0-SNAPSHOT --disabled-password --gecos \"\" user
+sudo -u user /backup-1.0-SNAPSHOT/bin/backup
