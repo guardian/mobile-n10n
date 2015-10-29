@@ -34,5 +34,5 @@ object Boot {
     }
   }
 
-  def main (args: Array[String]): Unit = runBatch[Backup]("./backup")
+  def main (args: Array[String]): Unit = runBatch[Backup](args.headOption.getOrElse("./backup"))
 }
