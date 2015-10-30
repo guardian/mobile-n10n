@@ -35,4 +35,4 @@ sudo -u user /backup-1.0-SNAPSHOT/bin/backup /backup-1.0-SNAPSHOT
 snsarn="arn:aws:sns:eu-west-1:201359054765:mobile-server-side"
 snssubject="Daily azure backup on $stagetag"
 snsmessage=$(cat /$apptag-1.0-SNAPSHOT/logs/application.log)
-aws sns publish --topic-arn "$snsarn" --message "$snsmessage" --subject "$snssubject" --region $REGION
+aws sns publish --topic-arn "$snsarn" --message "$snsmessage" --subject "$snssubject" --region $region
