@@ -9,6 +9,7 @@ import play.api.libs.ws.WSResponse
 import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
 import scalaz.{-\/, \/-, \/}
+import scalaz.syntax.either._
 import scalaz.std.option.optionSyntax._
 
 trait XmlReads[T] {
@@ -45,7 +46,7 @@ object Responses {
       textNodes(s).headOption \/> HubParseFailed(body = xml.toString(), reason = s"Missing field $s")
 
     def textNodeOption(s: String): HubResult[Option[String]] =
-      \/-(textNodes(s).headOption)
+      textNodes(s).headOption.right
 
     def dateTimeNode(s: String): HubResult[DateTime] = {
       textNode(s).flatMap { dateTime =>
@@ -56,10 +57,10 @@ object Responses {
     def dateTimeNodeOption(s: String): HubResult[Option[DateTime]] = {
       textNodeOption(s) flatMap {
         case Some(dateTimeValue) => Try(DateTime.parse(dateTimeValue)) match {
-          case Success(dateTime) => \/-(Some(dateTime))
-          case Failure(_) => -\/(HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTimeValue' in field $s as datetime"))
+          case Success(dateTime) => Some(dateTime).right
+          case Failure(_) => HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTimeValue' in field $s as datetime").left
         }
-        case None => \/-(None)
+        case None => None.right
       }
     }
 

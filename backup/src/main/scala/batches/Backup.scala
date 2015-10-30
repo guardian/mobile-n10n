@@ -36,7 +36,6 @@ class Backup @Inject() (conf: BackupConfiguration, ws: WSClient)(implicit ec: Ex
       outputContainerUri = Some(containerUri)
     )
 
-    Logger.info(notificationJob.toXml.toString())
     val hubClient = new NotificationHubClient(conf.notificationHubConnection, ws)
     hubClient.submitNotificationHubJob(notificationJob).map {
       case \/-(result) => result.items.foreach { job =>
