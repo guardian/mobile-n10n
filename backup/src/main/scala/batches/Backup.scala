@@ -17,6 +17,8 @@ import scalaz.{-\/, \/-}
 
 class Backup @Inject() (conf: BackupConfiguration, ws: WSClient)(implicit ec: ExecutionContext) extends Batch {
 
+  val batchExecutionDeadline = DateTime.now(DateTimeZone.UTC).plusHours(3)
+
   def execute(): Future[Unit] = {
     val storageAccount = CloudStorageAccount.parse(conf.storageConnectionString)
     val blobClient = storageAccount.createCloudBlobClient()
@@ -27,7 +29,7 @@ class Backup @Inject() (conf: BackupConfiguration, ws: WSClient)(implicit ec: Ex
 
     val sharedAccessPolicy = new SharedAccessBlobPolicy()
     sharedAccessPolicy.setPermissions(util.EnumSet.of(READ, WRITE, LIST))
-    sharedAccessPolicy.setSharedAccessExpiryTime(DateTime.now(DateTimeZone.UTC).plusHours(3).toDate)
+    sharedAccessPolicy.setSharedAccessExpiryTime(batchExecutionDeadline.toDate)
     val arg = container.generateSharedAccessSignature(sharedAccessPolicy, "")
     val containerUri = container.getUri + "?" + arg
 
