@@ -21,8 +21,8 @@ final class NotificationRegistrarSupport @Inject()(wsClient: WSClient, configura
 
   private def hubConnection = NotificationHubConnection(
     endpoint = configuration.hubEndpoint,
-    sharedAccessKeyName =  configuration.hubSecretKeyName,
-    sharedAccessKey = configuration.hubSecretKey
+    sharedAccessKeyName =  configuration.hubSharedAccessKeyName,
+    sharedAccessKey = configuration.hubSharedAccessKey
   )
 
   private val hubClient = new NotificationHubClient(hubConnection, wsClient)

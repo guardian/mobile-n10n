@@ -11,8 +11,8 @@ import scala.concurrent.ExecutionContext
 final class NotificationSenderSupport @Inject()(wsClient: WSClient, configuration: Configuration)(implicit executionContext: ExecutionContext) {
   private def hubConnection = NotificationHubConnection(
     endpoint = configuration.hubEndpoint,
-    sharedAccessKeyName = configuration.hubSecretKeyName,
-    sharedAccessKey = configuration.hubSecretKey
+    sharedAccessKeyName = configuration.hubSharedAccessKeyName,
+    sharedAccessKey = configuration.hubSharedAccessKey
   )
 
   private val hubClient = new NotificationHubClient(hubConnection, wsClient)
