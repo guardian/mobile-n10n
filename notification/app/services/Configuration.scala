@@ -1,10 +1,6 @@
 package services
 
-import javax.inject.Inject
-
-import com.gu.conf.ConfigurationFactory
-
-import scala.concurrent.ExecutionContext
+import conf.NotificationConfiguration
 
 case class NotificationHubConfiguration(
   endpointUri: String,
@@ -13,13 +9,7 @@ case class NotificationHubConfiguration(
   sharedKeyValue: String
 )
 
-final class Configuration @Inject()()(implicit executionContext: ExecutionContext) {
-
-  private lazy val conf = ConfigurationFactory.getConfiguration(
-    applicationName = "notification",
-    webappConfDirectory = "gu-conf"
-  )
-
+final class Configuration extends NotificationConfiguration("notification") {
   lazy val notificationHubConfiguration = NotificationHubConfiguration(
     endpointUri= conf.getStringProperty("gu.msnotifications.endpointUri").get,
     hubName = conf.getStringProperty("gu.msnotifications.hubname").get,

@@ -2,22 +2,11 @@ package batches
 
 import javax.inject.Singleton
 
-import com.gu.conf.ConfigurationFactory
+import conf.NotificationConfiguration
 import gu.msnotifications.NotificationHubConnection
 
 @Singleton
-class BackupConfiguration {
-
-  lazy val conf = ConfigurationFactory.getConfiguration(
-    applicationName = "backup",
-    webappConfDirectory = "gu-conf"
-  )
-
-  def getConfigString(key: String): String = conf.getStringProperty(key)
-    .getOrElse(throw new RuntimeException(s"key $key not found in configuration"))
-  def getConfigInt(key: String): Int = conf.getIntegerProperty(key)
-    .getOrElse(throw new RuntimeException(s"key $key not found in configuration"))
-
+class BackupConfiguration extends NotificationConfiguration("backup") {
   lazy val storageConnectionString = getConfigString("azure.storageConnectionString")
   lazy val containerName = getConfigString("azure.storageContainerName")
   lazy val directoryName = getConfigString("azure.storageDirectoryName")
