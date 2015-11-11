@@ -7,12 +7,12 @@ import gu.msnotifications.NotificationHubConnection
 
 @Singleton
 class BackupConfiguration extends NotificationConfiguration("backup") {
-  lazy val storageConnectionString = getConfigString("azure.storageConnectionString")
-  lazy val containerName = getConfigString("azure.storageContainerName")
-  lazy val directoryName = getConfigString("azure.storageDirectoryName")
-  lazy val backupRetention = getConfigInt("azure.backupRetention")
+  lazy val storageConnectionString = getConfigString("azure.storage.connectionString")
+  lazy val containerName = getConfigString("azure.storage.containerName")
+  lazy val directoryName = getConfigString("azure.storage.directoryName")
+  lazy val backupRetention = getConfigInt("backup.retention")
   lazy val notificationHubConnection = NotificationHubConnection(
-    getConfigString("azure.url"),
-    getConfigString("azure.secretKeyName"),
-    getConfigString("azure.secretKey"))
+    getConfigString("azure.hub.endpoint"),
+    getConfigString("azure.hub.sharedAccessKeyName"),
+    getConfigString("azure.hub.sharedAccessKey"))
 }
