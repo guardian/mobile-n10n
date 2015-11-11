@@ -26,7 +26,7 @@ __END__
 wget https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py
 python ./awslogs-agent-setup.py -n -r $region -c awslogs.conf
 
-aws s3 cp s3://mobile-notifications-dist/$stagetag/$stacktag.properties /etc/init/backup.conf
+aws s3 cp s3://mobile-notifications-dist/$stagetag/$stacktag.properties /etc/gu/$apptag.properties
 
 adduser --home /$apptag-1.0-SNAPSHOT --disabled-password --gecos \"\" user
 chown -R user /$apptag-1.0-SNAPSHOT
