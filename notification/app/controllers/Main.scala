@@ -1,5 +1,6 @@
 package controllers
 
+import java.util.UUID
 import javax.inject.Inject
 
 import authentication.AuthenticationSupport
@@ -54,7 +55,7 @@ final class Main @Inject()(
     pushGeneric(push)
   }
 
-  def pushUser(userId: String) = AuthenticatedAction.async(BodyJson[Notification]) { request =>
+  def pushUser(userId: UUID) = AuthenticatedAction.async(BodyJson[Notification]) { request =>
     val push = Push(request.body, Right(UserId(userId)))
     pushGeneric(push)
   }

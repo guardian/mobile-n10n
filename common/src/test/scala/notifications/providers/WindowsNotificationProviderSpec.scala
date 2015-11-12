@@ -1,5 +1,7 @@
 package notifications.providers
 
+import java.util.UUID
+
 import gu.msnotifications.RawWindowsRegistration.fromMobileRegistration
 import gu.msnotifications.{NotificationHubClient, RegistrationResponse => HubRegistrationResponse, WNSRegistrationId}
 import models.{Registration, UserId, WindowsMobile}
@@ -51,10 +53,12 @@ with Mockito {
     val hubClient = mock[NotificationHubClient]
     val provider = new WindowsNotificationProvider(hubClient)
 
-    val registration = Registration("deviceId", WindowsMobile, UserId("windowsLooser"), Set.empty)
+    val userId = UserId(UUID.fromString("988ADFF8-8961-11E5-96E3-D0DB64696656"))
+
+    val registration = Registration("deviceId", WindowsMobile, userId, Set.empty)
     val hubRegResponse = HubRegistrationResponse(
       registration = WNSRegistrationId("regId"),
-      tags = List("user:windowsLooser"),
+      tags = List(s"user:${userId.id.toString}"),
       channelUri = registration.deviceId,
       expirationTime = DateTime.now)
   }

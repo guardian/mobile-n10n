@@ -14,7 +14,7 @@ object Topic {
   implicit val jf = Json.format[Topic]
 
   def fromString(s: String): String \/ Topic = {
-    val (topicType, topicName) = s.partition(_ != '/')
+    val (topicType, topicName) = s.splitAt(s.indexOf("/"))
     for {
       tt <- TopicType.fromString(topicType) \/> s"Invalid topic type $topicType"
       tn = topicName.drop(1)

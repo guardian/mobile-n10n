@@ -1,3 +1,5 @@
+import java.util.UUID
+
 import gu.msnotifications.WNSRegistrationId
 import models.{Topic, TopicType}
 import org.joda.time.DateTime
@@ -64,5 +66,21 @@ package object binders {
           }
         }
       }
+    }
+
+  implicit def bindUUID(implicit strBinder: QueryStringBindable[String]) =
+    new QueryStringBindable[UUID] {
+      override def unbind(key: String, value: UUID): String =
+        strBinder.unbind(key = key, value = value.toString)
+
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, UUID]] =
+        strBinder.bind(key, params).map {
+          _.right.flatMap { v =>
+            Try(UUID.fromString(v)) match {
+              case Success(uuid) => Right(uuid)
+              case Failure(error) => Left(error.getMessage)
+            }
+          }
+        }
     }
 }
