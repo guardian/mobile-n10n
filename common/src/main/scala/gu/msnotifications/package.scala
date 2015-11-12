@@ -12,7 +12,7 @@ package object msnotifications {
   private def decode(string: String): String =
     new String(Base64.getUrlDecoder.decode(string), "UTF-8")
 
-  case class Tag(encodedUri: String)
+  case class Tag(encodedTag: String)
 
   object Tag {
     import Tags._
@@ -30,7 +30,7 @@ package object msnotifications {
   case class Tags(tags: Set[Tag] = Set.empty) {
     import Tags._
 
-    def asSet = tags.map(_.encodedUri)
+    def asSet = tags.map(_.encodedTag)
 
     def findUserId: Option[UserId] = urisInTags
       .find(_.matches(UserTagRegex.regex))
@@ -47,7 +47,7 @@ package object msnotifications {
 
     def withTopics(topics: Set[Topic]) = copy(tags ++ topics.map(Tag.fromTopic))
 
-    private[this] def urisInTags = tags.map(_.encodedUri)
+    private[this] def urisInTags = tags.map(_.encodedTag)
   }
 
   object Tags {
@@ -56,6 +56,6 @@ package object msnotifications {
     val UserTagRegex = """user:(.*)""".r
     val TopicTagRegex = """topic:(.*):(.*)""".r
 
-    def fromUris(tags: Set[String]) = Tags(tags.map(Tag(_)))
+    def fromStrings(tags: Set[String]) = Tags(tags.map(Tag(_)))
   }
 }
