@@ -4,6 +4,7 @@ import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
+import scalaz.std.option.optionSyntax._
 
 case class NotificationHubError(message: String)
 
@@ -24,10 +25,17 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
     val Messages = "/messages/"
   }
 
+  private def extractRegistration(hubResult: HubResult[AtomFeedResponse[RegistrationResponse]]): HubResult[RegistrationResponse] = {
+    hubResult.flatMap {
+      _.items.headOption \/> HubFailure.HubInvalidResponse("No content in the entry")
+    }
+  }
+
   def create(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
     request(Endpoints.Registrations)
       .post(rawWindowsRegistration.toXml)
-      .map(XmlParser.parse[RegistrationResponse])
+      .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
+      .map(extractRegistration)
   }
 
   def update(registrationId: WNSRegistrationId,
@@ -35,7 +43,8 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
               ): Future[HubResult[RegistrationResponse]] = {
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
       .put(rawWindowsRegistration.toXml)
-      .map(XmlParser.parse[RegistrationResponse])
+      .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
+      .map(extractRegistration)
   }
 
   def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
