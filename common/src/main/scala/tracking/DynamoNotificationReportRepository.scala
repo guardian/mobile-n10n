@@ -1,5 +1,7 @@
 package tracking
 
+import java.util.UUID
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.JavaConversions._
 
@@ -47,9 +49,9 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
     }
   }
 
-  override def getByUuid(uuid: String): Future[RepositoryResult[NotificationReport]] = {
+  override def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
     val q = new QueryRequest(tableName)
-      .withKeyConditions(Map(UuidField -> keyEquals(uuid)))
+      .withKeyConditions(Map(UuidField -> keyEquals(uuid.toString)))
       .withConsistentRead(true)
 
     client.query(q) map { result =>

@@ -1,5 +1,7 @@
 package tracking
 
+import java.util.UUID
+
 import com.amazonaws.services.dynamodbv2.model._
 import models._
 import org.joda.time.{Interval, DateTimeZone, DateTime}
@@ -41,22 +43,22 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
   }
 
   trait ExampleReports {
-    val singleReport = createNotificationReport(uuid = "test-uuid-0001", sentTime = "2015-01-01T10:11:12Z")
+    val singleReport = createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z")
 
     val reports = List(
-      createNotificationReport(uuid = "test-uuid-0001", sentTime = "2015-01-01T10:11:12Z"),
-      createNotificationReport(uuid = "test-uuid-0002", sentTime = "2015-01-02T10:11:12Z"),
-      createNotificationReport(uuid = "test-uuid-0003", sentTime = "2015-01-03T10:11:12Z"),
-      createNotificationReport(uuid = "test-uuid-0004", sentTime = "2015-01-04T10:11:12Z"),
-      createNotificationReport(uuid = "test-uuid-0005", sentTime = "2015-01-05T10:11:12Z"),
-      createNotificationReport(uuid = "test-uuid-0006", sentTime = "2015-01-06T10:11:12Z")
+      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z"),
+      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-02T10:11:12Z"),
+      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-03T10:11:12Z"),
+      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-04T10:11:12Z"),
+      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-05T10:11:12Z"),
+      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-06T10:11:12Z")
     )
 
     val interval = new Interval(DateTime.parse("2015-01-02T00:00:00Z"), DateTime.parse("2015-01-05T12:00:00Z"))
 
     val reportsInInterval = reports.filter(report => interval.contains(report.sentTime))
 
-    private def createNotificationReport(uuid: String, sentTime: String) = NotificationReport.create(
+    private def createNotificationReport(uuid: UUID, sentTime: String) = NotificationReport.create(
       sentTime = DateTime.parse(sentTime).withZone(DateTimeZone.UTC),
       notification = Notification(
         uuid = uuid,
