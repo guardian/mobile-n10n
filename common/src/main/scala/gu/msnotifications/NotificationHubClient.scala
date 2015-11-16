@@ -4,6 +4,7 @@ import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
+import scalaz.std.option.optionSyntax._
 
 case class NotificationHubError(message: String)
 
@@ -24,10 +25,13 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
     val Messages = "/messages/"
   }
 
+  private def extractContent[T](hubResult: HubResult[AtomEntry[T]]): HubResult[T] = hubResult.map(_.content)
+
   def create(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
     request(Endpoints.Registrations)
       .post(rawWindowsRegistration.toXml)
-      .map(XmlParser.parse[RegistrationResponse])
+      .map(XmlParser.parse[AtomEntry[RegistrationResponse]])
+      .map(extractContent)
   }
 
   def update(registrationId: WNSRegistrationId,
@@ -35,7 +39,8 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
               ): Future[HubResult[RegistrationResponse]] = {
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
       .put(rawWindowsRegistration.toXml)
-      .map(XmlParser.parse[RegistrationResponse])
+      .map(XmlParser.parse[AtomEntry[RegistrationResponse]])
+      .map(extractContent)
   }
 
   def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
@@ -79,14 +84,16 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
   }
   
-  def submitNotificationHubJob(job: NotificationHubJobRequest): Future[HubResult[AtomFeedResponse[NotificationHubJob]]] = {
+  def submitNotificationHubJob(job: NotificationHubJobRequest): Future[HubResult[NotificationHubJob]] = {
     request("/jobs")
       .post(job.toXml)
-      .map(XmlParser.parse[AtomFeedResponse[NotificationHubJob]])
+      .map(XmlParser.parse[AtomEntry[NotificationHubJob]])
+      .map(extractContent)
   }
 
   def registrationsByChannelUri(channelUri: String): Future[HubResult[List[RegistrationResponse]]] = {
     request(Endpoints.Registrations)
+      .withQueryString("$filter" -> s"ChannelUri eq '$channelUri'")
       .get()
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
       .map { hubResult => hubResult.map(_.items) }

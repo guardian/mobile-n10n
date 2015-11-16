@@ -35,4 +35,6 @@ object HubFailure {
   case class HubParseFailed(body: String, reason: String) extends HubFailure
 
   case class HubInvalidConnectionString(reason: String) extends HubFailure
+
+  case class HubInvalidResponse(reason: String) extends HubFailure
 }

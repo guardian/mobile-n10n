@@ -108,6 +108,26 @@ case class RegistrationResponse(registration: WNSRegistrationId, tags: List[Stri
   }
 }
 
+object AtomEntry {
+  import Responses._
+
+  implicit def reader[T](implicit reader: XmlReads[T]): XmlReads[AtomEntry[T]] = new XmlReads[AtomEntry[T]] {
+    def reads(xml: Elem) =  for {
+      title <- xml.textNode("title")
+      item <- getItem(xml)(reader)
+    } yield AtomEntry(title, item)
+  }
+
+  private def getItem[T](xml: Elem)(implicit reader: XmlReads[T]): HubResult[T] = {
+    val results = (xml \ "content").flatMap(_.child).collectFirst {
+      case elem: Elem => reader.reads(elem)
+    }
+    results.getOrElse(HubFailure.HubParseFailed(xml.toString(), "No Content in the xml").left)
+  }
+}
+
+case class AtomEntry[T](title: String, content: T)
+
 object AtomFeedResponse {
   import Responses._
 
@@ -118,9 +138,9 @@ object AtomFeedResponse {
     } yield AtomFeedResponse(title, items)
   }
 
-  private def getItems[T](xml: Elem)(implicit reader: XmlReads[T]) = {
-    val results = (xml \ "content").flatMap(_.child).map {
-      case elem: Elem => reader.reads(elem)
+  private def getItems[T](xml: Elem)(implicit reader: XmlReads[T]): HubResult[List[AtomEntry[T]]] = {
+    val results = (xml \ "entry").collect {
+      case elem: scala.xml.Elem => AtomEntry.reader(reader).reads(elem)
     }
     val (left, right) = results.partition(_.isLeft)
     val errors = left.flatMap(_.swap.toOption)
@@ -132,4 +152,6 @@ object AtomFeedResponse {
   }
 }
 
-case class AtomFeedResponse[T](title: String, items: List[T])
+case class AtomFeedResponse[T](title: String, entries: List[AtomEntry[T]]) {
+  def items: List[T] = entries.map(_.content)
+}

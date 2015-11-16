@@ -40,9 +40,7 @@ class Backup @Inject() (conf: Configuration, ws: WSClient)(implicit ec: Executio
 
     val hubClient = new NotificationHubClient(conf.notificationHubConnection, ws)
     hubClient.submitNotificationHubJob(notificationJob).map {
-      case \/-(result) => result.items.foreach { job =>
-        Logger.info(s"Success, job created with id ${job.jobId}\n$job")
-      }
+      case \/-(job) => Logger.info(s"Success, job created with id ${job.jobId}. Job: $job")
       case -\/(failure) => Logger.error(failure.toString)
     }
   }
