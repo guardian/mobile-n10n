@@ -1,5 +1,7 @@
 package controllers
 
+import java.util.UUID
+
 import models.TopicTypes.FootballMatch
 import models.{Topic, Registration, UserId, WindowsMobile}
 import notifications.providers.{Error, NotificationRegistrar, RegistrationResponse}
@@ -32,7 +34,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers{
         """
           |{
           |  "deviceId": "someId",
-          |  "userId": "abcd",
+          |  "userId": "83B148C0-8951-11E5-865A-222E69A460B9",
           |  "platform": "windows-mobile",
           |  "topics": [
           |    {"type": "football-match", "name": "science"}
@@ -66,7 +68,7 @@ class RegistrarSupportMock extends RegistrarSupport {
       RegistrationResponse(
         deviceId = "deviceAA",
         platform = WindowsMobile,
-        userId = UserId("idOfUser"),
+        userId = UserId(UUID.fromString("83B148C0-8951-11E5-865A-222E69A460B9")),
         topics = Set(Topic(`type` = FootballMatch, name = "match-in-response"))
       ).right
     }

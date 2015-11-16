@@ -1,5 +1,6 @@
 package models
 
+import java.util.UUID
 import play.api.libs.json.Json
 
 object Notification {
@@ -7,7 +8,7 @@ object Notification {
 }
 
 case class Notification(
-  uuid: String,
+  uuid: UUID,
   sender: String,
   timeToLiveInSeconds: Int,
   payload: MessagePayload

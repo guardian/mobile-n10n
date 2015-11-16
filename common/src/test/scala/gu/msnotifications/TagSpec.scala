@@ -1,5 +1,7 @@
 package gu.msnotifications
 
+import java.util.UUID
+
 import models.{UserId, Topic}
 import models.TopicTypes.{TagBlog, FootballMatch}
 import org.specs2.mutable.Specification
@@ -29,7 +31,9 @@ class TagSpec extends Specification {
         Topic(`type` = TagBlog, name = "blogger")
       )
 
-      val tagsWithTopicsAndUser = Tags().withUserId(UserId("userA")).withTopics(topics)
+      val tagsWithTopicsAndUser = Tags()
+        .withUserId(UserId(UUID.fromString("988ADFF8-8961-11E5-96E3-D0DB64696656")))
+        .withTopics(topics)
 
       tagsWithTopicsAndUser.decodedTopics must beEqualTo(topics)
     }

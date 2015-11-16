@@ -22,7 +22,7 @@ package object msnotifications {
     }
 
     def fromUserId(u: UserId): Tag = {
-      Tag(s"$UserTagPrefix${u.userId}")
+      Tag(s"$UserTagPrefix${u.id}")
     }
 
   }
@@ -34,7 +34,7 @@ package object msnotifications {
 
     def findUserId: Option[UserId] = urisInTags
       .find(_.matches(UserTagRegex.regex))
-      .map { case UserTagRegex(uname) => UserId(uname) }
+      .map { case UserTagRegex(UserId(uuid)) => UserId(uuid) }
 
     def decodedTopics: Set[Topic] = for {
       encodedUri <- urisInTags

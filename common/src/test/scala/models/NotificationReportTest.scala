@@ -1,5 +1,7 @@
 package models
 
+import java.util.UUID
+
 import org.joda.time.{DateTimeZone, DateTime}
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
@@ -12,7 +14,7 @@ class NotificationReportTest extends Specification {
 
         |  "uuid": "uuid",
         |  "sentTime": "2015-01-01T00:00:00.000Z",
-        |  "uuid": "uuid",
+        |  "uuid": "d00ceaea-8a27-11a5-9da0-a51c69a460b9",
         |  "sender": "sender",
         |  "type": "type",
         |  "timeToLiveInSeconds": 1,
@@ -31,7 +33,7 @@ class NotificationReportTest extends Specification {
       val report = NotificationReport.create(
         sentTime = DateTime.parse("2015-01-01T00:00:00Z").withZone(DateTimeZone.UTC),
         notification = Notification(
-          uuid = s"uuid",
+          uuid = UUID.fromString("d00ceaea-8a27-11a5-9da0-a51c69a460b9"),
           sender = s"sender",
           timeToLiveInSeconds = 1,
           payload = MessagePayload(

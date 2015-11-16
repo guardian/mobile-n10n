@@ -1,5 +1,7 @@
 package controllers
 
+import java.util.UUID
+
 import models._
 import org.joda.time.{DateTimeZone, DateTime}
 import org.specs2.mock.Mockito
@@ -43,7 +45,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
     private def notificationReport(date: String, prefix: String) = NotificationReport.create(
       sentTime = DateTime.parse(date).withZone(DateTimeZone.UTC),
       notification = Notification(
-        uuid = s"$prefix:uuid",
+        uuid = UUID.randomUUID(),
         sender = s"$prefix:sender",
         timeToLiveInSeconds = 1,
         payload = MessagePayload(

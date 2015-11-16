@@ -1,5 +1,7 @@
 package gu.msnotifications
 
+import java.util.UUID
+
 import models.TopicTypes.FootballMatch
 import models.{Topic, Registration, UserId, WindowsMobile}
 import org.specs2.mutable.Specification
@@ -7,7 +9,7 @@ import org.specs2.mutable.Specification
 class RawWindowsRegistrationSpec extends Specification {
 
   "Raw Windows Registration" should {
-    val userId = UserId("windowsLooser")
+    val userId = UserId(UUID.fromString("988ADFF8-8961-11E5-96E3-D0DB64696656"))
 
     "be created from mobile registration with user tag without topics" in {
       val registration = Registration(
@@ -20,7 +22,7 @@ class RawWindowsRegistrationSpec extends Specification {
       val rawRegistration = RawWindowsRegistration.fromMobileRegistration(registration)
 
       rawRegistration.channelUri mustEqual registration.deviceId
-      rawRegistration.tags must contain(exactly("user:windowsLooser"))
+      rawRegistration.tags must contain(exactly(s"user:${userId.id.toString}"))
     }
 
     "be created from mobile registration with topics as tags" in {

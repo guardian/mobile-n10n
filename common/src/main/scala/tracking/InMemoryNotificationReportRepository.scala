@@ -1,5 +1,6 @@
 package tracking
 
+import java.util.UUID
 import models.NotificationReport
 import org.joda.time.{DateTime, Interval}
 import tracking.Repository.RepositoryResult
@@ -17,7 +18,7 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
     Future.successful(\/.right(()))
   }
 
-  def getByUuid(uuid: String): Future[RepositoryResult[NotificationReport]] = {
+  def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
     Future.successful(db.find(_.uuid == uuid) \/> RepositoryError("Notification report not found"))
   }
 
