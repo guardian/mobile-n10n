@@ -5,6 +5,7 @@ import play.api.libs.json._
 sealed trait TopicType
 
 object TopicTypes {
+  case object Breaking extends TopicType { override def toString = "breaking" }
   case object Content extends TopicType { override def toString = "content" }
   case object TagContributor extends TopicType { override def toString = "tag-contributor" }
   case object TagKeyword extends TopicType { override def toString = "tag-keyword" }
@@ -17,6 +18,7 @@ object TopicTypes {
 object TopicType {
   import TopicTypes._
   def fromString(s: String): Option[TopicType] = PartialFunction.condOpt(s) {
+    case "breaking" => Breaking
     case "content" => Content
     case "tag-contributor" => TagContributor
     case "tag-keyword" => TagKeyword

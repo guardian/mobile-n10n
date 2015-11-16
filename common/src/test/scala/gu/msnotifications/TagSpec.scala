@@ -14,15 +14,15 @@ class TagSpec extends Specification {
       val uglyTopic = Topic(name = "test!!.|~ ", `type` = FootballMatch)
       val tag = Tag.fromTopic(uglyTopic)
 
-      Tag(tag.encodedUri) must beEqualTo(tag)
+      Tag(tag.encodedTag) must beEqualTo(tag)
     }
 
     "encode and decode a pretty topic" in {
       def prettyTopic = Topic(name = "blah/etc-123-stuff", `type` = FootballMatch)
       val tag = Tag.fromTopic(prettyTopic)
 
-      tag.encodedUri must be matching """[0-9a-zA-Z\/:-=]+"""
-      Tag(tag.encodedUri) must beEqualTo(tag)
+      tag.encodedTag must be matching """[0-9a-zA-Z\/:-=]+"""
+      Tag(tag.encodedTag) must beEqualTo(tag)
     }
 
     "encode tags and return decoded topics" in {

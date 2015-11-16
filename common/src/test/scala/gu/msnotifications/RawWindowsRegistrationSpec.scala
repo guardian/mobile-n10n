@@ -36,7 +36,7 @@ class RawWindowsRegistrationSpec extends Specification {
 
       val rawRegistration = RawWindowsRegistration.fromMobileRegistration(registration)
 
-      rawRegistration.tags must contain(Tag.fromTopic(topic).encodedUri)
+      rawRegistration.tags must contain(Tag.fromTopic(topic).encodedTag)
     }
   }
 
