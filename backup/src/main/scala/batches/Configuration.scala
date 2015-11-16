@@ -6,7 +6,7 @@ import conf.NotificationConfiguration
 import gu.msnotifications.NotificationHubConnection
 
 @Singleton
-class BackupConfiguration extends NotificationConfiguration("backup") {
+class Configuration extends NotificationConfiguration("backup") {
   lazy val storageConnectionString = getConfigString("azure.storage.connectionString")
   lazy val containerName = getConfigString("azure.storage.containerName")
   lazy val directoryName = getConfigString("azure.storage.directoryName")
