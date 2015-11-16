@@ -1,9 +1,8 @@
 package notifications.providers
 
 import java.util.UUID
-
-import gu.msnotifications.RawWindowsRegistration.fromMobileRegistration
-import gu.msnotifications.{NotificationHubClient, RegistrationResponse => HubRegistrationResponse, WNSRegistrationId}
+import azure.{WNSRegistrationId, NotificationHubClient, RawWindowsRegistration, RegistrationResponse => HubRegistrationResponse}
+import RawWindowsRegistration.fromMobileRegistration
 import models.{Registration, UserId, WindowsMobile}
 import org.joda.time.DateTime
 import org.specs2.concurrent.ExecutionEnv

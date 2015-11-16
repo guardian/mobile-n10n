@@ -1,8 +1,7 @@
 package notifications.providers
 
-import gu.msnotifications
-import gu.msnotifications.NotificationHubClient.HubResult
-import gu.msnotifications.{AzureRawPush, NotificationHubClient, RawWindowsRegistration, WNSRegistrationId}
+import azure.{RawWindowsRegistration, WNSRegistrationId, AzureRawPush, NotificationHubClient}
+import NotificationHubClient.HubResult
 import models._
 import org.joda.time.DateTime
 import tracking.Repository._
@@ -54,7 +53,7 @@ class WindowsNotificationProvider(hubClient: NotificationHubClient)(implicit ec:
     case Right(_: UserId) => Future.successful(RepositoryResult(1))
   }
 
-  private def hubResultToRegistrationResponse(hubResult: HubResult[msnotifications.RegistrationResponse]) =
+  private def hubResultToRegistrationResponse(hubResult: HubResult[azure.RegistrationResponse]) =
     hubResult.flatMap(_.toRegistrarResponse)
 
 }
