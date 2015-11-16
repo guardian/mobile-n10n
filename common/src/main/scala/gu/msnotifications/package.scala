@@ -4,11 +4,11 @@ import models.{Topic, UserId}
 
 package object msnotifications {
 
-  private def encodeBase16(string: String): String =
-    string.getBytes("UTF-8").map("%02X".format(_)).mkString.toLowerCase
+  private def encodeBase16(source: String): String =
+    source.getBytes("UTF-8").map("%02X".format(_)).mkString.toLowerCase
 
-  private def decodeBase16(string: String): String = {
-    val bytes = string.grouped(2).map(unit => java.lang.Byte.parseByte(unit, 16))
+  private def decodeBase16(encoded: String): String = {
+    val bytes = encoded.grouped(2).map(group => java.lang.Byte.parseByte(group, 16))
     new String(bytes.toArray, "UTF-8")
   }
 
