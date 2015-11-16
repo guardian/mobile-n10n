@@ -119,10 +119,10 @@ object AtomEntry {
   }
 
   private def getItem[T](xml: Elem)(implicit reader: XmlReads[T]): HubResult[T] = {
-    val results = (xml \ "content").flatMap(_.child).collect {
+    val results = (xml \ "content").flatMap(_.child).collectFirst {
       case elem: Elem => reader.reads(elem)
     }
-    results.headOption.getOrElse(HubFailure.HubParseFailed(xml.toString(), "No Content in the xml").left)
+    results.getOrElse(HubFailure.HubParseFailed(xml.toString(), "No Content in the xml").left)
   }
 }
 
