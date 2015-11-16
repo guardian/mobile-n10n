@@ -1,11 +1,13 @@
 package gu.msnotifications
 
-case class NotificationHubConnection(notificationsHubUrl: String, sharedKeyName: String, sharedKeyValue: String) {
-
+case class NotificationHubConnection(
+  endpoint: String,
+  sharedAccessKeyName: String,
+  sharedAccessKey: String
+) {
   def authorizationHeader(uri: String) = SasTokenGeneration.generateSasToken(
-    sasKeyName = sharedKeyName,
-    sasKeyValue = sharedKeyValue,
+    sasKeyName = sharedAccessKeyName,
+    sasKeyValue = sharedAccessKey,
     uri = uri
   )
-
 }

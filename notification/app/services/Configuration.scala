@@ -1,31 +1,10 @@
 package services
 
-import javax.inject.Inject
+import conf.NotificationConfiguration
 
-import com.gu.conf.ConfigurationFactory
-
-import scala.concurrent.ExecutionContext
-
-case class NotificationHubConfiguration(
-  endpointUri: String,
-  hubName: String,
-  sharedKeyName: String,
-  sharedKeyValue: String
-)
-
-final class Configuration @Inject()()(implicit executionContext: ExecutionContext) {
-
-  private lazy val conf = ConfigurationFactory.getConfiguration(
-    applicationName = "notification",
-    webappConfDirectory = "gu-conf"
-  )
-
-  lazy val notificationHubConfiguration = NotificationHubConfiguration(
-    endpointUri= conf.getStringProperty("gu.msnotifications.endpointUri").get,
-    hubName = conf.getStringProperty("gu.msnotifications.hubname").get,
-    sharedKeyName = conf.getStringProperty("gu.msnotifications.sharedKeyName").get,
-    sharedKeyValue = conf.getStringProperty("gu.msnotifications.sharedKeyValue").get
-  )
-
-  lazy val apiKey = conf.getStringProperty("gu.msnotifications.admin-api-key")
+final class Configuration extends NotificationConfiguration("notification") {
+  lazy val hubEndpoint = getConfigString("azure.hub.endpoint")
+  lazy val hubSharedAccessKeyName = getConfigString("azure.hub.sharedAccessKeyName")
+  lazy val hubSharedAccessKey = getConfigString("azure.hub.sharedAccessKey")
+  lazy val apiKey = conf.getStringProperty("notifications.api.secretKey")
 }

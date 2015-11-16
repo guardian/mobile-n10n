@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import com.google.inject.ImplementedBy
 import models.{Registration, WindowsMobile}
-import gu.msnotifications.{ConnectionSettings, Endpoint, NotificationHubClient}
+import gu.msnotifications.{NotificationHubConnection, NotificationHubClient}
 import notifications.providers.{NotificationRegistrar, WindowsNotificationProvider}
 import play.api.libs.ws.WSClient
 
@@ -19,13 +19,12 @@ trait RegistrarSupport {
 
 final class NotificationRegistrarSupport @Inject()(wsClient: WSClient, configuration: Configuration)(implicit executionContext: ExecutionContext) extends RegistrarSupport {
 
-  private def hubConnection = ConnectionSettings(
-    endpoint = Endpoint.parse(providerConf.endpointUri),
-    keyName =  providerConf.sharedKeyName,
-    key = providerConf.sharedKeyValue
-  ).buildHubConnection(providerConf.hubName)
+  private def hubConnection = NotificationHubConnection(
+    endpoint = configuration.hubEndpoint,
+    sharedAccessKeyName =  configuration.hubSharedAccessKeyName,
+    sharedAccessKey = configuration.hubSharedAccessKey
+  )
 
-  private val providerConf = configuration.notificationHubConfiguration
   private val hubClient = new NotificationHubClient(hubConnection, wsClient)
 
   private lazy val notificationRegistrar: NotificationRegistrar = new WindowsNotificationProvider(hubClient)

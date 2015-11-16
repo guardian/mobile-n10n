@@ -56,7 +56,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
   }
 
   private def request(path: String) = {
-    val uri = s"$notificationsHubUrl$path?api-version=2015-01"
+    val uri = s"$endpoint$path?api-version=2015-01"
     wsClient
       .url(uri)
       .withHeaders("Authorization" -> authorizationHeader(uri))

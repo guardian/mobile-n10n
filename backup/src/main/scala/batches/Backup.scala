@@ -15,7 +15,7 @@ import collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{-\/, \/-}
 
-class Backup @Inject() (conf: BackupConfiguration, ws: WSClient)(implicit ec: ExecutionContext) extends Batch {
+class Backup @Inject() (conf: Configuration, ws: WSClient)(implicit ec: ExecutionContext) extends Batch {
 
   val batchExecutionDeadline = DateTime.now(DateTimeZone.UTC).plusHours(3)
 
