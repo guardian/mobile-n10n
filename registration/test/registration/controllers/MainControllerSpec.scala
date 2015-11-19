@@ -1,4 +1,4 @@
-package rregistration.controllersegistration.controllers
+package registration.controllers
 
 import java.util.UUID
 
