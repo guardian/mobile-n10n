@@ -1,13 +1,12 @@
 import java.util.UUID
 
-import gu.msnotifications.WNSRegistrationId
-import models.{Topic, TopicType}
+import azure.WNSRegistrationId
+import models.Topic
 import org.joda.time.DateTime
 import play.api.mvc.{PathBindable, QueryStringBindable}
 
 import scala.language.implicitConversions
 import scala.util.{Try, Success, Failure}
-import scala.util.control.NonFatal
 
 package object binders {
 
