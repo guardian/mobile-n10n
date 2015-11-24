@@ -1,7 +1,11 @@
 package models
 
+import java.net.URL
+
 import org.joda.time.{DateTimeZone, DateTime}
 import play.api.libs.json._
+
+import scala.util.Try
 
 object JsonUtils {
   implicit def eitherFormat[L, R](implicit leftFormat: Format[L], rightFormat: Format[R]): Format[Either[L, R]] = new Format[Either[L, R]] {
@@ -33,5 +37,13 @@ object JsonUtils {
 
     override def writes(o: Option[T]): JsValue =
       o map format.writes getOrElse JsNull
+  }
+
+  implicit val urlFormat = new Format[URL] {
+    override def writes(o: URL): JsValue = JsString(o.toExternalForm)
+    override def reads(json: JsValue): JsResult[URL] = json match {
+      case JsString(url) => Try(JsSuccess(new URL(url))).getOrElse(JsError(s"Invalid url: $url"))
+      case _ => JsError("Invalid url type")
+    }
   }
 }

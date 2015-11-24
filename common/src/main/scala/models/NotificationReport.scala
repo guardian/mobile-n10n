@@ -22,8 +22,8 @@ object NotificationReport {
   def create(sentTime: DateTime,
     notification: Notification,
     statistics: NotificationStatistics) = NotificationReport(
-      id = notification.uuid,
-      `type` = "some-type",
+      id = notification.id,
+      `type` = notification.`type`,
       notification = notification,
       sentTime = sentTime,
       statistics = statistics

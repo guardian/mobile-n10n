@@ -1,7 +1,11 @@
 package report.controllers
 
+import java.net.URL
 import java.util.UUID
 
+import models.Link.Internal
+import models.Importance.Major
+import models.TopicTypes.Breaking
 import models._
 import org.joda.time.{DateTimeZone, DateTime}
 import org.specs2.mock.Mockito
@@ -19,7 +23,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
     "Return last 7 days notification reports if no date supplied" in new ReportTestScope {
       running(application) {
-        val result = route(FakeRequest(GET, s"/notifications/test-type?api-key=$apiKey")).get
+        val result = route(FakeRequest(GET, s"/notifications/news?api-key=$apiKey")).get
 
         status(result) must equalTo(OK)
         contentType(result) must beSome("application/json")
@@ -30,7 +34,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
     "Return a list of notification reports filtered by date" in new ReportTestScope {
       running(application) {
-        val result = route(FakeRequest(GET, s"/notifications/test-type?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
+        val result = route(FakeRequest(GET, s"/notifications/news?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
 
         status(result) must equalTo(OK)
         contentType(result) must beSome("application/json")
@@ -44,10 +48,16 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
     private def notificationReport(date: String, prefix: String) = NotificationReport.create(
       sentTime = DateTime.parse(date).withZone(DateTimeZone.UTC),
-      notification = Notification(
-        uuid = UUID.randomUUID(),
+      notification = BreakingNewsNotification(
+        id = UUID.randomUUID(),
         sender = s"$prefix:sender",
-        timeToLiveInSeconds = 1
+        title = s"$prefix:title",
+        message = s"$prefix:message",
+        thumbnailUrl = Some(new URL(s"http://some.url/$prefix.png")),
+        link = Internal(s"content/api/id/$prefix"),
+        imageUrl = Some(new URL(s"http://some.url/$prefix.jpg")),
+        importance = Major,
+        topic = Set(Topic(Breaking, "uk"))
       ),
       statistics = NotificationStatistics(Map(WindowsMobile -> Some(5)))
     )

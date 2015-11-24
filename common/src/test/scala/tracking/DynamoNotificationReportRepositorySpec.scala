@@ -1,8 +1,12 @@
 package tracking
 
+import java.net.URL
 import java.util.UUID
 
 import com.amazonaws.services.dynamodbv2.model._
+import models.Link.Internal
+import models.Importance.Major
+import models.TopicTypes.Breaking
 import models._
 import org.joda.time.{Interval, DateTimeZone, DateTime}
 import org.specs2.concurrent.ExecutionEnv
@@ -26,7 +30,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
     "get NotificationReports by date range" in new RepositoryScope with ExampleReports {
       afterStoringReports(reports) {
         repository.getByTypeWithDateRange(
-          notificationType = "test-type",
+          notificationType = "news",
           from = interval.getStart,
           to = interval.getEnd
         )
@@ -60,10 +64,16 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
 
     private def createNotificationReport(id: UUID, sentTime: String) = NotificationReport.create(
       sentTime = DateTime.parse(sentTime).withZone(DateTimeZone.UTC),
-      notification = Notification(
-        uuid = id,
-        sender = "some-sender",
-        timeToLiveInSeconds = 1
+      notification = BreakingNewsNotification(
+        id = id,
+        sender = "sender",
+        title = "title",
+        message = "message",
+        thumbnailUrl = Some(new URL("http://some.url/my.png")),
+        link = Internal("some/capi/id-with-dashes"),
+        imageUrl = Some(new URL("http://some.url/i.jpg")),
+        importance = Major,
+        topic = Set(Topic(Breaking, "uk"))
       ),
       statistics = NotificationStatistics(Map(WindowsMobile -> Some(5)))
     )
