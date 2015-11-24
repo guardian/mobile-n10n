@@ -19,7 +19,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
   "A DynamoNotificationReportRepository" should {
     "store and retrieve a NotificationReport" in new RepositoryScope with ExampleReports {
       afterStoringReports(List(singleReport)) {
-        repository.getByUuid(singleReport.uuid)
+        repository.getByUuid(singleReport.id)
       } must beEqualTo(singleReport).await
     }
 
@@ -43,25 +43,25 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
   }
 
   trait ExampleReports {
-    val singleReport = createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z")
+    val singleReport = createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z")
 
     val reports = List(
-      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z"),
-      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-02T10:11:12Z"),
-      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-03T10:11:12Z"),
-      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-04T10:11:12Z"),
-      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-05T10:11:12Z"),
-      createNotificationReport(uuid = UUID.randomUUID(), sentTime = "2015-01-06T10:11:12Z")
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z"),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-02T10:11:12Z"),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-03T10:11:12Z"),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-04T10:11:12Z"),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-05T10:11:12Z"),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-06T10:11:12Z")
     )
 
     val interval = new Interval(DateTime.parse("2015-01-02T00:00:00Z"), DateTime.parse("2015-01-05T12:00:00Z"))
 
     val reportsInInterval = reports.filter(report => interval.contains(report.sentTime))
 
-    private def createNotificationReport(uuid: UUID, sentTime: String) = NotificationReport.create(
+    private def createNotificationReport(id: UUID, sentTime: String) = NotificationReport.create(
       sentTime = DateTime.parse(sentTime).withZone(DateTimeZone.UTC),
       notification = Notification(
-        uuid = uuid,
+        uuid = id,
         sender = "some-sender",
         timeToLiveInSeconds = 1,
         payload = MessagePayload(
@@ -77,7 +77,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
   }
 
   def createTableRequest = {
-    val UuidField = "uuid"
+    val IdField = "id"
     val SentTimeField = "sentTime"
     val TypeField = "type"
     val SentTimeIndex = "sentTime-index"
@@ -91,9 +91,9 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
       .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
       .withProjection(new Projection().withProjectionType(ProjectionType.ALL))
 
-    new CreateTableRequest(TableName, List(new KeySchemaElement(UuidField, KeyType.HASH)))
+    new CreateTableRequest(TableName, List(new KeySchemaElement(IdField, KeyType.HASH)))
       .withAttributeDefinitions(List(
-        new AttributeDefinition(UuidField, ScalarAttributeType.S),
+        new AttributeDefinition(IdField, ScalarAttributeType.S),
         new AttributeDefinition(SentTimeField, ScalarAttributeType.S),
         new AttributeDefinition(TypeField, ScalarAttributeType.S)
       ))

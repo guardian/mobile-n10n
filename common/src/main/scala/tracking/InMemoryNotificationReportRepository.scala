@@ -19,7 +19,7 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
   }
 
   def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
-    Future.successful(db.find(_.uuid == uuid) \/> RepositoryError("Notification report not found"))
+    Future.successful(db.find(_.id == uuid) \/> RepositoryError("Notification report not found"))
   }
 
   def getByTypeWithDateRange(notificationType: String, from: DateTime, until: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {

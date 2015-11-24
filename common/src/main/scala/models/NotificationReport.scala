@@ -1,12 +1,13 @@
 package models
 
 import java.util.UUID
+
 import org.joda.time.DateTime
 
 import JsonUtils._
 
 case class NotificationReport(
-  uuid: UUID,
+  id: UUID,
   `type`: String,
   sender: String,
   timeToLiveInSeconds: Int,

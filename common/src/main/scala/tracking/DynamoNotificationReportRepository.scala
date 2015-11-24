@@ -25,7 +25,7 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
   extends SentNotificationReportRepository {
 
   private val SentTimeField = "sentTime"
-  private val UuidField = "uuid"
+  private val IdField = "id"
   private val TypeField = "type"
   private val SentTimeIndex = "sentTime-index"
 
@@ -51,7 +51,7 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
 
   override def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
     val q = new QueryRequest(tableName)
-      .withKeyConditions(Map(UuidField -> keyEquals(uuid.toString)))
+      .withKeyConditions(Map(IdField -> keyEquals(uuid.toString)))
       .withConsistentRead(true)
 
     client.query(q) map { result =>

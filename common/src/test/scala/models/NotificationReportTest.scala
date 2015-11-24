@@ -12,9 +12,8 @@ class NotificationReportTest extends Specification {
       val json = """
         |{
 
-        |  "uuid": "uuid",
+        |  "id": "d00ceaea-8a27-11a5-9da0-a51c69a460b9",
         |  "sentTime": "2015-01-01T00:00:00.000Z",
-        |  "uuid": "d00ceaea-8a27-11a5-9da0-a51c69a460b9",
         |  "sender": "sender",
         |  "type": "type",
         |  "timeToLiveInSeconds": 1,
