@@ -6,10 +6,10 @@ import javax.inject.Inject
 import authentication.AuthenticationSupport
 import models.{Notification, Push, Topic, UserId}
 import notification.services.{NotificationSenderSupport, NotificationReportRepositorySupport, Configuration}
-import notifications.providers
 import play.Logger
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, Controller, Result}
+import providers.Error
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{-\/, \/-}
@@ -27,7 +27,7 @@ final class Main @Inject()(
   import notificationSenderSupport._
 
   def handleErrors[T](result: T): Result = result match {
-    case error: providers.Error => InternalServerError(error.reason)
+    case error: Error => InternalServerError(error.reason)
   }
 
   def healthCheck = Action {

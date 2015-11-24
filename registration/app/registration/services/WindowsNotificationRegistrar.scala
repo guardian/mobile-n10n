@@ -1,21 +1,17 @@
-package notifications.providers
+package registration.services
 
-import azure.{RawWindowsRegistration, WNSRegistrationId, AzureRawPush, NotificationHubClient}
-import NotificationHubClient.HubResult
+import azure.NotificationHubClient.HubResult
+import azure.{Tags, NotificationHubClient, RawWindowsRegistration, WNSRegistrationId}
 import models._
-import org.joda.time.DateTime
-import tracking.Repository._
-import tracking.{InMemoryTopicSubscriptionsRepository, RepositoryResult}
+import providers.Error
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.syntax.either._
 import scalaz.{-\/, \/, \/-}
+import scalaz.std.option.optionSyntax._
 
-class WindowsNotificationProvider(hubClient: NotificationHubClient)(implicit ec: ExecutionContext)
-  extends NotificationRegistrar with NotificationSender {
-  override val name = "WNS"
-
-  private val topicSubscriptionsRepository = new InMemoryTopicSubscriptionsRepository
+class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec: ExecutionContext)
+  extends NotificationRegistrar {
 
   override def register(registration: Registration): Future[\/[Error, RegistrationResponse]] = {
     def createNewRegistration = hubClient
@@ -35,26 +31,20 @@ class WindowsNotificationProvider(hubClient: NotificationHubClient)(implicit ec:
     }
   }
 
-  def sendNotification(push: Push): Future[Error \/ NotificationReport] = for {
-    result <- hubClient.sendNotification(AzureRawPush.fromPush(push))
-    count <- getCounts(push.destination)
-  } yield {
-    result map { _ =>
-      NotificationReport.create(
-        sentTime = DateTime.now,
-        notification = push.notification,
-        statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))
-      )
-    }
-  }
-
-  private def getCounts(destination: Either[Topic, UserId]): Future[RepositoryResult[Int]] = destination match {
-    case Left(topic: Topic) => topicSubscriptionsRepository.count(topic)
-    case Right(_: UserId) => Future.successful(RepositoryResult(1))
-  }
-
   private def hubResultToRegistrationResponse(hubResult: HubResult[azure.RegistrationResponse]) =
-    hubResult.flatMap(_.toRegistrarResponse)
+    hubResult.flatMap(toRegistrarResponse)
+
+  def toRegistrarResponse(resp: azure.RegistrationResponse): UserIdNotInTags \/ RegistrationResponse = {
+    val tagsFromUris = Tags.fromStrings(resp.tags.toSet)
+    for {
+      userId <- tagsFromUris.findUserId \/> UserIdNotInTags()
+    } yield RegistrationResponse(
+      deviceId = resp.channelUri,
+      WindowsMobile,
+      userId = userId,
+      topics = tagsFromUris.decodedTopics
+    )
+  }
 
 }
 

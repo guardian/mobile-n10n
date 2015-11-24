@@ -1,4 +1,4 @@
-package notifications.providers
+package providers
 
 trait Error {
   def providerName: String

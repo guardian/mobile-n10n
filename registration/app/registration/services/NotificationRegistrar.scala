@@ -1,6 +1,7 @@
-package notifications.providers
+package registration.services
 
-import models.{Topic, UserId, Platform, Registration}
+import models.{Platform, Registration, Topic, UserId}
+import providers.Error
 
 import scala.concurrent.Future
 import scalaz.\/

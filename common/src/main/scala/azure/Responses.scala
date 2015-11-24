@@ -2,8 +2,6 @@ package azure
 
 import HubFailure.{HubParseFailed, HubServiceError}
 import NotificationHubClient.HubResult
-import models.WindowsMobile
-import notifications.providers.{RegistrationResponse => RegistrarResponse, UserIdNotInTags}
 import org.joda.time.DateTime
 import play.api.libs.ws.WSResponse
 import scala.util.{Failure, Success, Try}
@@ -94,19 +92,7 @@ object RegistrationResponse {
     } yield RegistrationResponse(registrationId, tags.toList, channelUri, expirationTime)
   }
 }
-case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
-  def toRegistrarResponse: UserIdNotInTags \/ RegistrarResponse = {
-    val tagsFromUris = Tags.fromStrings(tags.toSet)
-    for {
-      userId <- tagsFromUris.findUserId \/> UserIdNotInTags()
-    } yield RegistrarResponse(
-      deviceId = channelUri,
-      WindowsMobile,
-      userId = userId,
-      topics = tagsFromUris.decodedTopics
-    )
-  }
-}
+case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime)
 
 object AtomEntry {
   import Responses._
