@@ -34,14 +34,7 @@ class NotificationReportTest extends Specification {
         notification = Notification(
           uuid = UUID.fromString("d00ceaea-8a27-11a5-9da0-a51c69a460b9"),
           sender = s"sender",
-          timeToLiveInSeconds = 1,
-          payload = MessagePayload(
-            link = Some(s"link"),
-            `type` = Some(s"type"),
-            ticker = Some(s"ticker"),
-            title = Some(s"title"),
-            message = Some(s"message")
-          )
+          timeToLiveInSeconds = 1
         ),
         statistics = NotificationStatistics(Map.empty)
       )

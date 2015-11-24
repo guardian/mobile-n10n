@@ -11,7 +11,7 @@ case class AzureRawPush(wnsType: String, body: String, tags: Option[Set[Tag]]) {
 
 object AzureRawPush {
   def fromPush(push: Push) = {
-    val body = Json.stringify(Json.toJson(push.notification.payload))
+    val body = Json.stringify(Json.toJson(push.notification))
     push.destination match {
       case Left(topic: Topic) => AzureRawPush("wns/raw", body, Some(Set(Tag.fromTopic(topic))))
       case Right(user: UserId) => AzureRawPush("wns/raw", body, Some(Set(Tag.fromUserId(user))))

@@ -9,9 +9,7 @@ import JsonUtils._
 case class NotificationReport(
   id: UUID,
   `type`: String,
-  sender: String,
-  timeToLiveInSeconds: Int,
-  payload: MessagePayload,
+  notification: Notification,
   sentTime: DateTime,
   statistics: NotificationStatistics
 )
@@ -21,15 +19,13 @@ object NotificationReport {
 
   implicit val jf = Json.format[NotificationReport]
 
-  def create(sentTime: DateTime, notification: Notification, statistics: NotificationStatistics): NotificationReport = {
-    NotificationReport(
-      notification.uuid,
-      notification.payload.`type`.getOrElse("default"),
-      notification.sender,
-      notification.timeToLiveInSeconds,
-      notification.payload,
-      sentTime,
-      statistics
+  def create(sentTime: DateTime,
+    notification: Notification,
+    statistics: NotificationStatistics) = NotificationReport(
+      id = notification.uuid,
+      `type` = "some-type",
+      notification = notification,
+      sentTime = sentTime,
+      statistics = statistics
     )
-  }
 }

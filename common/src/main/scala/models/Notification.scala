@@ -10,6 +10,5 @@ object Notification {
 case class Notification(
   uuid: UUID,
   sender: String,
-  timeToLiveInSeconds: Int,
-  payload: MessagePayload
+  timeToLiveInSeconds: Int
 )

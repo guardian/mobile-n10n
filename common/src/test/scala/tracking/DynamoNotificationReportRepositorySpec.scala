@@ -63,14 +63,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
       notification = Notification(
         uuid = id,
         sender = "some-sender",
-        timeToLiveInSeconds = 1,
-        payload = MessagePayload(
-          link = Some("some-link"),
-          `type` = Some("test-type"),
-          ticker = Some("some-ticker"),
-          title = Some("some-title"),
-          message = Some("some-message")
-        )
+        timeToLiveInSeconds = 1
       ),
       statistics = NotificationStatistics(Map(WindowsMobile -> Some(5)))
     )

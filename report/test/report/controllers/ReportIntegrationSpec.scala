@@ -47,14 +47,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
       notification = Notification(
         uuid = UUID.randomUUID(),
         sender = s"$prefix:sender",
-        timeToLiveInSeconds = 1,
-        payload = MessagePayload(
-          link = Some(s"$prefix:link"),
-          `type` = Some(s"test-type"),
-          ticker = Some(s"$prefix:ticker"),
-          title = Some(s"$prefix:title"),
-          message = Some(s"$prefix:message")
-        )
+        timeToLiveInSeconds = 1
       ),
       statistics = NotificationStatistics(Map(WindowsMobile -> Some(5)))
     )
