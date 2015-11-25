@@ -1,8 +1,9 @@
-package notifications.providers
+package registration.services
 
 import java.util.UUID
-import azure.{WNSRegistrationId, NotificationHubClient, RawWindowsRegistration, RegistrationResponse => HubRegistrationResponse}
-import RawWindowsRegistration.fromMobileRegistration
+
+import azure.RawWindowsRegistration.fromMobileRegistration
+import azure.{NotificationHubClient, RegistrationResponse => HubRegistrationResponse, WNSRegistrationId}
 import models.{Registration, UserId, WindowsMobile}
 import org.joda.time.DateTime
 import org.specs2.concurrent.ExecutionEnv
@@ -13,7 +14,7 @@ import org.specs2.specification.Scope
 import scala.concurrent.Future
 import scalaz.syntax.either._
 
-class WindowsNotificationProviderSpec(implicit ev: ExecutionEnv) extends Specification
+class WindowsNotificationRegistrarSpec(implicit ev: ExecutionEnv) extends Specification
 with Mockito {
   "Windows Notification Provider registration" should {
     "create new registration when no registrations found for channel uri" in new registrations {
@@ -50,7 +51,7 @@ with Mockito {
 
   trait registrations extends Scope {
     val hubClient = mock[NotificationHubClient]
-    val provider = new WindowsNotificationProvider(hubClient)
+    val provider = new WindowsNotificationRegistrar(hubClient)
 
     val userId = UserId(UUID.fromString("988ADFF8-8961-11E5-96E3-D0DB64696656"))
 

@@ -4,14 +4,14 @@ import java.util.UUID
 
 import models.TopicTypes.FootballMatch
 import models.{Registration, Topic, UserId, WindowsMobile}
-import notifications.providers.{Error, NotificationRegistrar, RegistrationResponse}
 import org.specs2.matcher.JsonMatchers
 import org.specs2.specification.Scope
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.{FakeRequest, PlaySpecification}
-import registration.services.RegistrarSupport
+import providers.Error
+import registration.services.{RegistrationResponse, NotificationRegistrar, RegistrarSupport}
 import registration.services.topic.TopicValidator
 
 import scala.concurrent.ExecutionContext.Implicits.global
