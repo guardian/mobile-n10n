@@ -19,14 +19,14 @@ class WindowsNotificationSender(hubClient: NotificationHubClient)(implicit ec: E
     result <- hubClient.sendNotification(AzureRawPush.fromPush(push))
     count <- getCounts(push.destination)
   } yield {
-      result map { _ =>
-        NotificationReport.create(
-          sentTime = DateTime.now,
-          notification = push.notification,
-          statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))
-        )
-      }
+    result map { _ =>
+      NotificationReport.create(
+        sentTime = DateTime.now,
+        notification = push.notification,
+        statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))
+      )
     }
+  }
 
 
   private def getCounts(destination: Either[Topic, UserId]): Future[RepositoryResult[Int]] = destination match {
