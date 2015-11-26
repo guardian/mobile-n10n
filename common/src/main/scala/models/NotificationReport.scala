@@ -1,16 +1,15 @@
 package models
 
 import java.util.UUID
+
 import org.joda.time.DateTime
 
 import JsonUtils._
 
 case class NotificationReport(
-  uuid: UUID,
-  `type`: String,
-  sender: String,
-  timeToLiveInSeconds: Int,
-  payload: MessagePayload,
+  id: UUID,
+  `type`: NotificationType,
+  notification: Notification,
   sentTime: DateTime,
   statistics: NotificationStatistics
 )
@@ -20,15 +19,13 @@ object NotificationReport {
 
   implicit val jf = Json.format[NotificationReport]
 
-  def create(sentTime: DateTime, notification: Notification, statistics: NotificationStatistics): NotificationReport = {
-    NotificationReport(
-      notification.uuid,
-      notification.payload.`type`.getOrElse("default"),
-      notification.sender,
-      notification.timeToLiveInSeconds,
-      notification.payload,
-      sentTime,
-      statistics
+  def create(sentTime: DateTime,
+    notification: Notification,
+    statistics: NotificationStatistics) = NotificationReport(
+      id = notification.id,
+      `type` = notification.`type`,
+      notification = notification,
+      sentTime = sentTime,
+      statistics = statistics
     )
-  }
 }

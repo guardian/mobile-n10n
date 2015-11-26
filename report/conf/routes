@@ -1,2 +1,2 @@
 GET         /healthcheck                         @report.controllers.Report.healthCheck
-GET         /notifications/:nType                @report.controllers.Report.notifications(nType: String, from: Option[DateTime], until: Option[DateTime])
+GET         /notifications/:nType                @report.controllers.Report.notifications(nType: NotificationType, from: Option[DateTime], until: Option[DateTime])

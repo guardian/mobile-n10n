@@ -16,7 +16,7 @@ import aws.AsyncDynamo
 import aws.AsyncDynamo._
 import aws.DynamoJsonConversions._
 
-import models.NotificationReport
+import models.{NotificationType, NotificationReport}
 import tracking.Repository.RepositoryResult
 
 
@@ -25,7 +25,7 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
   extends SentNotificationReportRepository {
 
   private val SentTimeField = "sentTime"
-  private val UuidField = "uuid"
+  private val IdField = "id"
   private val TypeField = "type"
   private val SentTimeIndex = "sentTime-index"
 
@@ -34,11 +34,11 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
     client.putItem(putItemRequest) map { _ => \/.right(()) }
   }
 
-  override def getByTypeWithDateRange(notificationType: String, from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
+  override def getByTypeWithDateRange(notificationType: NotificationType, from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
     val q = new QueryRequest(tableName)
       .withIndexName(SentTimeIndex)
       .withKeyConditions(Map(
-        TypeField -> keyEquals(notificationType),
+        TypeField -> keyEquals(notificationType.value),
         SentTimeField -> keyBetween(from.toString, to.toString)
       ))
 
@@ -51,7 +51,7 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
 
   override def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
     val q = new QueryRequest(tableName)
-      .withKeyConditions(Map(UuidField -> keyEquals(uuid.toString)))
+      .withKeyConditions(Map(IdField -> keyEquals(uuid.toString)))
       .withConsistentRead(true)
 
     client.query(q) map { result =>

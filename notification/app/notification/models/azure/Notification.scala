@@ -1,22 +1,30 @@
-package models
+package notification.models.azure
 
 import java.util.UUID
-import models.NotificationType._
+import azure.{Tag, AzureRawPush}
+import models.NotificationType.{GoalAlert, Content, BreakingNews}
+import models._
 import play.api.libs.json._
-import JsonUtils._
+import models.JsonUtils._
 
 sealed trait Notification {
   def id: UUID
   def `type`: NotificationType
-  def sender: String
   def title: String
   def message: String
   def thumbnailUrl: Option[URL]
-  def importance: Importance
   def topic: Set[Topic]
 }
 
 object Notification {
+
+  def toAzureRawPush(push: Push) = {
+    val body = Json.stringify(Json.toJson(push.notification))
+    push.destination match {
+      case Left(topic: Topic) => AzureRawPush(body = body, tags = Some(Set(Tag.fromTopic(topic))))
+      case Right(user: UserId) => AzureRawPush(body = body, tags = Some(Set(Tag.fromUserId(user))))
+    }
+  }
 
   implicit val jf = new Format[Notification] {
     override def writes(o: Notification): JsValue = o match {
@@ -35,23 +43,16 @@ object Notification {
   }
 }
 
-trait NotificationWithLink {
-  self: Notification =>
-  def link: Link
-}
-
 case class BreakingNewsNotification(
   id: UUID,
   `type`: NotificationType = BreakingNews,
   title: String,
   message: String,
   thumbnailUrl: Option[URL],
-  sender: String,
-  link: Link,
+  link: URL,
   imageUrl: Option[URL],
-  importance: Importance,
   topic: Set[Topic]
-) extends Notification with NotificationWithLink
+) extends Notification
 
 object BreakingNewsNotification {
   implicit val jf = Json.format[BreakingNewsNotification]
@@ -63,12 +64,9 @@ case class ContentNotification(
   title: String,
   message: String,
   thumbnailUrl: Option[URL],
-  sender: String,
-  link: Link,
-  importance: Importance,
-  topic: Set[Topic],
-  shortUrl: String
-) extends Notification with NotificationWithLink
+  link: URL,
+  topic: Set[Topic]
+) extends Notification
 
 object ContentNotification {
   implicit val jf = Json.format[ContentNotification]
@@ -80,7 +78,6 @@ case class GoalAlertNotification(
   title: String,
   message: String,
   thumbnailUrl: Option[URL] = None,
-  sender: String,
   goalType: GoalType,
   awayTeamName: String,
   awayTeamScore: Int,
@@ -91,8 +88,7 @@ case class GoalAlertNotification(
   goalMins: Int,
   otherTeamName: String,
   matchId: String,
-  mapiUrl: URL,
-  importance: Importance,
+  link: URL,
   topic: Set[Topic],
   addedTime: Option[String]
 ) extends Notification

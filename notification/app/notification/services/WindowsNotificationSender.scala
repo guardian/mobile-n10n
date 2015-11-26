@@ -1,6 +1,6 @@
 package notification.services
 
-import azure.{NotificationHubClient, AzureRawPush}
+import azure.NotificationHubClient
 import models._
 import org.joda.time.DateTime
 import providers.Error
@@ -10,13 +10,15 @@ import tracking.{InMemoryTopicSubscriptionsRepository, RepositoryResult}
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
 
-class WindowsNotificationSender(hubClient: NotificationHubClient)(implicit ec: ExecutionContext) extends NotificationSender {
+class WindowsNotificationSender(hubClient: NotificationHubClient, configuration: Configuration)(implicit ec: ExecutionContext) extends NotificationSender {
   override val name = "WNS"
 
   private val topicSubscriptionsRepository = new InMemoryTopicSubscriptionsRepository
 
+  private val azureRawPushConverter = new AzureRawPushConverter(configuration)
+
   def sendNotification(push: Push): Future[Error \/ NotificationReport] = for {
-    result <- hubClient.sendNotification(AzureRawPush.fromPush(push))
+    result <- hubClient.sendNotification(azureRawPushConverter.toAzureRawPush(push))
     count <- getCounts(push.destination)
   } yield {
     result map { _ =>

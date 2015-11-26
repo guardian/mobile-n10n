@@ -47,7 +47,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
 
     request(Endpoints.Messages)
-      .withHeaders("X-WNS-Type" -> azureWindowsPush.wnsType)
+      .withHeaders("X-WNS-Type" -> "wns/raw")
       .withHeaders("ServiceBusNotification-Format" -> "windows")
       .withHeaders("Content-Type" -> "application/octet-stream")
       .withHeaders(serviceBusTags: _*)

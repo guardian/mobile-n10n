@@ -48,7 +48,7 @@ lazy val notification = project.
   settings(
     fork in run := true,
     routesImport += "binders._",
-    routesImport += "models.Topic",
+    routesImport += "models._",
     riffRaffPackageType := (packageZipTarball in config("universal")).value,
     version := "1.0-SNAPSHOT"
   )
@@ -60,6 +60,7 @@ lazy val report = project.
     fork in run := true,
     routesImport += "binders._",
     routesImport += "org.joda.time.DateTime",
+    routesImport += "models._",
     riffRaffPackageType := (packageZipTarball in config("universal")).value,
     version := "1.0-SNAPSHOT"
   )
