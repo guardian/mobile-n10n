@@ -1,6 +1,5 @@
 package models
 
-import java.net.URL
 import java.util.UUID
 import play.api.libs.json._
 import JsonUtils._
@@ -91,7 +90,7 @@ case class GoalAlertNotification(
   goalMins: Int,
   otherTeamName: String,
   matchId: String,
-  mapiUrl: String,
+  mapiUrl: URL,
   importance: Importance,
   topic: Set[Topic],
   addedTime: Option[String]

@@ -1,6 +1,5 @@
 package report.controllers
 
-import java.net.URL
 import java.util.UUID
 
 import models.Link.Internal
@@ -53,9 +52,9 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
         sender = s"$prefix:sender",
         title = s"$prefix:title",
         message = s"$prefix:message",
-        thumbnailUrl = Some(new URL(s"http://some.url/$prefix.png")),
+        thumbnailUrl = Some(URL(s"http://some.url/$prefix.png")),
         link = Internal(s"content/api/id/$prefix"),
-        imageUrl = Some(new URL(s"http://some.url/$prefix.jpg")),
+        imageUrl = Some(URL(s"http://some.url/$prefix.jpg")),
         importance = Major,
         topic = Set(Topic(Breaking, "uk"))
       ),

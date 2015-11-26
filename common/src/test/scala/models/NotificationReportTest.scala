@@ -1,6 +1,5 @@
 package models
 
-import java.net.URL
 import java.util.UUID
 
 import models.Link.Internal
@@ -49,9 +48,9 @@ class NotificationReportTest extends Specification {
           sender = "sender",
           title = "title",
           message = "message",
-          thumbnailUrl = Some(new URL("http://some.url/my.png")),
+          thumbnailUrl = Some(URL("http://some.url/my.png")),
           link = Internal("some/capi/id-with-dashes"),
-          imageUrl = Some(new URL("http://some.url/i.jpg")),
+          imageUrl = Some(URL("http://some.url/i.jpg")),
           importance = Major,
           topic = Set(Topic(Breaking, "uk"))
         ),

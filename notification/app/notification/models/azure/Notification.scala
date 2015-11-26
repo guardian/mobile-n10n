@@ -1,9 +1,8 @@
 package notification.models.azure
 
-import java.net.URL
 import java.util.UUID
 import azure.{Tag, AzureRawPush}
-import models.{UserId, Push, GoalType, Topic}
+import models._
 import play.api.libs.json._
 import models.JsonUtils._
 

@@ -1,6 +1,5 @@
 package tracking
 
-import java.net.URL
 import java.util.UUID
 
 import com.amazonaws.services.dynamodbv2.model._
@@ -69,9 +68,9 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
         sender = "sender",
         title = "title",
         message = "message",
-        thumbnailUrl = Some(new URL("http://some.url/my.png")),
+        thumbnailUrl = Some(URL("http://some.url/my.png")),
         link = Internal("some/capi/id-with-dashes"),
-        imageUrl = Some(new URL("http://some.url/i.jpg")),
+        imageUrl = Some(URL("http://some.url/i.jpg")),
         importance = Major,
         topic = Set(Topic(Breaking, "uk"))
       ),
