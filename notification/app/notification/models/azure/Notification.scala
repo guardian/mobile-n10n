@@ -21,8 +21,8 @@ object Notification {
   def toAzureRawPush(push: Push) = {
     val body = Json.stringify(Json.toJson(push.notification))
     push.destination match {
-      case Left(topic: Topic) => AzureRawPush("wns/raw", body, Some(Set(Tag.fromTopic(topic))))
-      case Right(user: UserId) => AzureRawPush("wns/raw", body, Some(Set(Tag.fromUserId(user))))
+      case Left(topic: Topic) => AzureRawPush(body = body, tags = Some(Set(Tag.fromTopic(topic))))
+      case Right(user: UserId) => AzureRawPush(body = body, tags = Some(Set(Tag.fromUserId(user))))
     }
   }
 
