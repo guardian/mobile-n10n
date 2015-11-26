@@ -11,18 +11,19 @@ import models.JsonUtils._
 
 class AzureRawPushConverter(conf: Configuration) {
   def toAzureRawPush(push: Push): AzureRawPush = {
-    val azureNotification = push.notification match {
-      case bnn: BreakingNewsNotification => toAzureBreakingNews(bnn)
-      case cn: ContentNotification => toContent(cn)
-      case gan: GoalAlertNotification => toGoalAlert(gan)
-    }
     AzureRawPush(
-      body = Json.stringify(Json.toJson(azureNotification)),
-      tags = tags(push.destination)
+      body = Json.stringify(Json.toJson(toAzure(push.notification))),
+      tags = toTags(push.destination)
     )
   }
 
-  private def tags(destination: Either[Topic, UserId]) = destination match {
+  private[services] def toAzure(notification: Notification): azure.Notification = notification match {
+    case bnn: BreakingNewsNotification => toAzureBreakingNews(bnn)
+    case cn: ContentNotification => toContent(cn)
+    case gan: GoalAlertNotification => toGoalAlert(gan)
+  }
+
+  private[services] def toTags(destination: Either[Topic, UserId]) = destination match {
     case Left(topic: Topic) => Some(Set(Tag.fromTopic(topic)))
     case Right(user: UserId) => Some(Set(Tag.fromUserId(user)))
   }
