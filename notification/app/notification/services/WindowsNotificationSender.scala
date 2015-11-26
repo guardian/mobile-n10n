@@ -1,6 +1,6 @@
 package notification.services
 
-import _root_.azure.{AzureRawPush, NotificationHubClient}
+import azure.NotificationHubClient
 import models._
 import org.joda.time.DateTime
 import providers.Error
