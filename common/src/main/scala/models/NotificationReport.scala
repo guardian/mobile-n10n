@@ -8,7 +8,7 @@ import JsonUtils._
 
 case class NotificationReport(
   id: UUID,
-  `type`: String,
+  `type`: NotificationType,
   notification: Notification,
   sentTime: DateTime,
   statistics: NotificationStatistics

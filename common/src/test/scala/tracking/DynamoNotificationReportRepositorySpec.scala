@@ -5,6 +5,7 @@ import java.util.UUID
 import com.amazonaws.services.dynamodbv2.model._
 import models.Link.Internal
 import models.Importance.Major
+import models.NotificationType.BreakingNews
 import models.TopicTypes.Breaking
 import models._
 import org.joda.time.{Interval, DateTimeZone, DateTime}
@@ -29,7 +30,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
     "get NotificationReports by date range" in new RepositoryScope with ExampleReports {
       afterStoringReports(reports) {
         repository.getByTypeWithDateRange(
-          notificationType = "news",
+          notificationType = BreakingNews,
           from = interval.getStart,
           to = interval.getEnd
         )

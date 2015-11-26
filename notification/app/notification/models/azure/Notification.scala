@@ -2,13 +2,14 @@ package notification.models.azure
 
 import java.util.UUID
 import azure.{Tag, AzureRawPush}
+import models.NotificationType.{GoalAlert, Content, BreakingNews}
 import models._
 import play.api.libs.json._
 import models.JsonUtils._
 
 sealed trait Notification {
   def id: UUID
-  def `type`: String
+  def `type`: NotificationType
   def title: String
   def message: String
   def thumbnailUrl: Option[URL]
@@ -44,7 +45,7 @@ object Notification {
 
 case class BreakingNewsNotification(
   id: UUID,
-  `type`: String = "news",
+  `type`: NotificationType = BreakingNews,
   title: String,
   message: String,
   thumbnailUrl: Option[URL],
@@ -59,7 +60,7 @@ object BreakingNewsNotification {
 
 case class ContentNotification(
   id: UUID,
-  `type`: String = "content",
+  `type`: NotificationType = Content,
   title: String,
   message: String,
   thumbnailUrl: Option[URL],
@@ -73,7 +74,7 @@ object ContentNotification {
 
 case class GoalAlertNotification(
   id: UUID,
-  `type`: String = "goalAlert",
+  `type`: NotificationType = GoalAlert,
   title: String,
   message: String,
   thumbnailUrl: Option[URL] = None,

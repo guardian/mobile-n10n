@@ -1,12 +1,13 @@
 package models
 
 import java.util.UUID
+import models.NotificationType._
 import play.api.libs.json._
 import JsonUtils._
 
 sealed trait Notification {
   def id: UUID
-  def `type`: String
+  def `type`: NotificationType
   def sender: String
   def title: String
   def message: String
@@ -41,7 +42,7 @@ trait NotificationWithLink {
 
 case class BreakingNewsNotification(
   id: UUID,
-  `type`: String = "news",
+  `type`: NotificationType = BreakingNews,
   title: String,
   message: String,
   thumbnailUrl: Option[URL],
@@ -58,7 +59,7 @@ object BreakingNewsNotification {
 
 case class ContentNotification(
   id: UUID,
-  `type`: String = "content",
+  `type`: NotificationType = Content,
   title: String,
   message: String,
   thumbnailUrl: Option[URL],
@@ -75,7 +76,7 @@ object ContentNotification {
 
 case class GoalAlertNotification(
   id: UUID,
-  `type`: String = "goalAlert",
+  `type`: NotificationType = GoalAlert,
   title: String,
   message: String,
   thumbnailUrl: Option[URL] = None,

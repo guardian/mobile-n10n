@@ -16,7 +16,7 @@ import aws.AsyncDynamo
 import aws.AsyncDynamo._
 import aws.DynamoJsonConversions._
 
-import models.NotificationReport
+import models.{NotificationType, NotificationReport}
 import tracking.Repository.RepositoryResult
 
 
@@ -34,11 +34,11 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
     client.putItem(putItemRequest) map { _ => \/.right(()) }
   }
 
-  override def getByTypeWithDateRange(notificationType: String, from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
+  override def getByTypeWithDateRange(notificationType: NotificationType, from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
     val q = new QueryRequest(tableName)
       .withIndexName(SentTimeIndex)
       .withKeyConditions(Map(
-        TypeField -> keyEquals(notificationType),
+        TypeField -> keyEquals(notificationType.value),
         SentTimeField -> keyBetween(from.toString, to.toString)
       ))
 

@@ -3,6 +3,7 @@ package report.controllers
 import javax.inject.Inject
 
 import authentication.AuthenticationSupport
+import models.NotificationType
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
@@ -25,7 +26,7 @@ final class Report @Inject()(
     Ok("Good")
   }
 
-  def notifications(notificationType: String, from: Option[DateTime], until: Option[DateTime]) = AuthenticatedAction.async { request =>
+  def notifications(notificationType: NotificationType, from: Option[DateTime], until: Option[DateTime]) = AuthenticatedAction.async { request =>
     notificationReportRepository.getByTypeWithDateRange(
       notificationType = notificationType,
       from = from.getOrElse(DateTime.now.minusDays(7)),

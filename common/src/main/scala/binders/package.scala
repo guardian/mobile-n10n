@@ -1,7 +1,7 @@
 import java.util.UUID
 
 import azure.WNSRegistrationId
-import models.Topic
+import models.{NotificationType, Topic}
 import org.joda.time.DateTime
 import play.api.mvc.{PathBindable, QueryStringBindable}
 
@@ -81,5 +81,26 @@ package object binders {
             }
           }
         }
+    }
+
+  implicit def bindNotificationType(implicit strBinder: PathBindable[String]): PathBindable[NotificationType] =
+    new PathBindable[NotificationType] {
+      override def unbind(key: String, value: NotificationType): String = {
+        strBinder.unbind(
+          key = key,
+          value = NotificationType.toRep(value)
+        )
+      }
+
+      override def bind(key: String, value: String): Either[String, NotificationType] = {
+        strBinder.bind(
+          key = key,
+          value = value
+        ).right.flatMap { v => NotificationType.fromRep.get(v) match {
+            case Some(notificationType) => Right(notificationType)
+            case None => Left(s"Unknown NotificationType $v")
+          }
+        }
+      }
     }
 }
