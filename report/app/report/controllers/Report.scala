@@ -26,14 +26,16 @@ final class Report @Inject()(
     Ok("Good")
   }
 
-  def notifications(notificationType: NotificationType, from: Option[DateTime], until: Option[DateTime]): Action[AnyContent] = AuthenticatedAction.async { request =>
-    notificationReportRepository.getByTypeWithDateRange(
-      notificationType = notificationType,
-      from = from.getOrElse(DateTime.now.minusWeeks(1)),
-      until = until.getOrElse(DateTime.now)
-    ) map {
-      case \/-(result) => Ok(Json.toJson(result))
-      case -\/(error) => InternalServerError(error.message)
+  def notifications(notificationType: NotificationType, from: Option[DateTime], until: Option[DateTime]): Action[AnyContent] = {
+    AuthenticatedAction.async { request =>
+      notificationReportRepository.getByTypeWithDateRange(
+        notificationType = notificationType,
+        from = from.getOrElse(DateTime.now.minusWeeks(1)),
+        until = until.getOrElse(DateTime.now)
+      ) map {
+        case \/-(result) => Ok(Json.toJson(result))
+        case -\/(error) => InternalServerError(error.message)
+      }
     }
   }
 
