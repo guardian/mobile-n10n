@@ -3,7 +3,6 @@ package models
 import java.util.UUID
 import models.NotificationType._
 import play.api.libs.json._
-import JsonUtils._
 
 sealed trait Notification {
   def id: UUID
