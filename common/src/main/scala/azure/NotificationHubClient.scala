@@ -53,7 +53,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .withHeaders(serviceBusTags: _*)
       .post(azureWindowsPush.body)
       .map { response =>
-        if (response.status >= 200 || response.status < 300)
+        if (response.status >= 200 && response.status < 300)
           \/.right(())
         else
           \/.left(XmlParser.parseError(response))
