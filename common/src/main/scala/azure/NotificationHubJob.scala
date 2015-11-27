@@ -18,7 +18,7 @@ case class NotificationHubJobRequest(
   private def xmlOutputContainerUri: NodeSeq = outputContainerUri.map(uri => <OutputContainerUri>{uri}</OutputContainerUri>).getOrElse(NodeSeq.Empty)
   private def xmlImportFileUri: NodeSeq = importFileUri.map(uri => <ImportFileUri>{uri}</ImportFileUri>).getOrElse(NodeSeq.Empty)
 
-  def toXml = {
+  def toXml: Elem = {
     <entry xmlns="http://www.w3.org/2005/Atom">
       <content type="application/atom+xml;type=entry;charset=utf-8">
         <NotificationHubJob xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/netservices/2010/10/servicebus/connect">

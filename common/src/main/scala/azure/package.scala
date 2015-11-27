@@ -28,7 +28,7 @@ package object azure {
   case class Tags(tags: Set[Tag] = Set.empty) {
     import Tags._
 
-    def asSet = tags.map(_.encodedTag)
+    def asSet: Set[String] = tags.map(_.encodedTag)
 
     def findUserId: Option[UserId] = encodedTags
       .find(_.matches(UserTagRegex.regex))
@@ -39,9 +39,9 @@ package object azure {
       topics.map(Topic.fromString).flatMap(_.toOption)
     }
 
-    def withUserId(userId: UserId) = copy(tags + Tag.fromUserId(userId))
+    def withUserId(userId: UserId): Tag = copy(tags + Tag.fromUserId(userId))
 
-    def withTopics(topics: Set[Topic]) = copy(tags ++ topics.map(Tag.fromTopic))
+    def withTopics(topics: Set[Topic]): Tag = copy(tags ++ topics.map(Tag.fromTopic))
 
     private[this] def encodedTags = tags.map(_.encodedTag)
   }
@@ -52,6 +52,6 @@ package object azure {
     val UserTagRegex = """user:(.*)""".r
     val TopicTagRegex = """topic:Base16:(.*)""".r
 
-    def fromStrings(tags: Set[String]) = Tags(tags.map(Tag(_)))
+    def fromStrings(tags: Set[String]): Tags = Tags(tags.map(Tag(_)))
   }
 }

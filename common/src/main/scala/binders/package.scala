@@ -67,7 +67,7 @@ package object binders {
       }
     }
 
-  implicit def bindUUID(implicit strBinder: QueryStringBindable[String]) =
+  implicit def bindUUID(implicit strBinder: QueryStringBindable[String]): QueryStringBindable[UUID] =
     new QueryStringBindable[UUID] {
       override def unbind(key: String, value: UUID): String =
         strBinder.unbind(key = key, value = value.toString)

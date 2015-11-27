@@ -82,7 +82,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .get()
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
   }
-  
+
   def submitNotificationHubJob(job: NotificationHubJobRequest): Future[HubResult[NotificationHubJob]] = {
     request("/jobs")
       .post(job.toXml)
