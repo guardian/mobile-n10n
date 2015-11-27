@@ -39,9 +39,9 @@ package object azure {
       topics.map(Topic.fromString).flatMap(_.toOption)
     }
 
-    def withUserId(userId: UserId): Tag = copy(tags + Tag.fromUserId(userId))
+    def withUserId(userId: UserId): Tags = copy(tags + Tag.fromUserId(userId))
 
-    def withTopics(topics: Set[Topic]): Tag = copy(tags ++ topics.map(Tag.fromTopic))
+    def withTopics(topics: Set[Topic]): Tags = copy(tags ++ topics.map(Tag.fromTopic))
 
     private[this] def encodedTags = tags.map(_.encodedTag)
   }
