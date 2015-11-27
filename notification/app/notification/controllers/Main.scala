@@ -4,9 +4,10 @@ import java.util.UUID
 import javax.inject.Inject
 
 import authentication.AuthenticationSupport
-import models.{Notification, Push, Topic, UserId}
+import models._
 import notification.services.{NotificationSenderSupport, NotificationReportRepositorySupport, Configuration}
 import play.Logger
+import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, Controller, Result}
 import providers.Error
@@ -39,13 +40,15 @@ final class Main @Inject()(
       case \/-(report) =>
         notificationReportRepository.store(report) map {
           case \/-(_) =>
-            Ok("Ok")
+            Logger.info(s"Notification was sent: $push")
+            Ok(Json.toJson(PushResult(push.notification.id)))
           case -\/(error) =>
             Logger.error(s"Notification sent ($report) but not report could not be stored ($error)")
             InternalServerError(s"Notification sent but report could not be stored ($error)")
         }
 
       case -\/(error) =>
+        Logger.error(s"Notification ($push) could not be sent: $error")
         Future.successful(handleErrors(error))
     }
   }
