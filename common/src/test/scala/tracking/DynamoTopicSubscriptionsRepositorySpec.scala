@@ -5,6 +5,7 @@ import models.TopicTypes.TagKeyword
 import models._
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
+import scala.concurrent.duration._
 
 import scala.collection.JavaConversions._
 
@@ -21,7 +22,7 @@ class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends 
         endCount <- repository.count(topic)
       } yield (initialCount.toOption.get, endCount.toOption.get)
 
-      result must beEqualTo((0, 1)).await
+      result must beEqualTo((0, 1)).awaitFor(5 seconds)
     }
 
     "decrement a subscriptions counter" in new RepositoryScope {
@@ -35,7 +36,7 @@ class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends 
         endCount <- repository.count(topic)
       } yield (initialCount.toOption.get, middleCount.toOption.get, endCount.toOption.get)
 
-      result must beEqualTo((0, 2, 1)).await
+      result must beEqualTo((0, 2, 1)).awaitFor(5 seconds)
     }
 
     "increment topics independently" in new RepositoryScope {
@@ -56,7 +57,7 @@ class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends 
         endCountB <- repository.count(topicB)
       } yield List(initialCountA, initialCountB, endCountA, endCountB).map(_.toOption.get)
 
-      result must beEqualTo(List(0, 0, 5, 2)).await
+      result must beEqualTo(List(0, 0, 5, 2)).awaitFor(5 seconds)
     }
   }
 
