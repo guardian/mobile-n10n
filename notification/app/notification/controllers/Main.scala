@@ -41,7 +41,7 @@ final class Main @Inject()(
         notificationReportRepository.store(report) map {
           case \/-(_) =>
             Logger.info(s"Notification was sent: $push")
-            Ok(Json.toJson(PushResult(push.notification.id)))
+            Created(Json.toJson(PushResult(push.notification.id)))
           case -\/(error) =>
             Logger.error(s"Notification sent ($report) but not report could not be stored ($error)")
             InternalServerError(s"Notification sent but report could not be stored ($error)")
