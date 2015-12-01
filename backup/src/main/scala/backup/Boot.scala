@@ -9,6 +9,8 @@ import scala.reflect.ClassTag
 import scala.util.{Failure, Success}
 
 object Boot {
+  val logger = Logger(this.getClass)
+
   def runBatch[T <: Batch](rootPath: String)(implicit classTag: ClassTag[T]): Unit = {
     val env = Environment(new File(rootPath), this.getClass.getClassLoader, Mode.Prod)
     val ctx = ApplicationLoader.createContext(env)
@@ -18,18 +20,18 @@ object Boot {
     try {
       val backup = app.injector.instanceOf[T]
 
-      Logger.info(s"Starting $className")
+      logger.info(s"Starting $className")
       backup.execute().onComplete {
         case Success(_) =>
-          Logger.info(s"End of $className")
+          logger.info(s"End of $className")
           app.stop()
         case Failure(error) =>
-          Logger.error(error.getMessage, error)
+          logger.error(error.getMessage, error)
           app.stop()
       }
     } catch {
       case e: Exception =>
-        Logger.error(e.getMessage, e)
+        logger.error(e.getMessage, e)
         app.stop()
     }
   }

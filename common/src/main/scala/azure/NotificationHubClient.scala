@@ -1,9 +1,11 @@
 package azure
 
+import play.api.Logger
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
+import scalaz.syntax.either._
 
 case class NotificationHubError(message: String)
 
@@ -19,6 +21,8 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
   import NotificationHubClient.HubResult
   import notificationHubConnection._
 
+  val logger = Logger(classOf[NotificationHubClient])
+
   private object Endpoints {
     val Registrations = "/registrations/"
     val Messages = "/messages/"
@@ -27,6 +31,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
   private def extractContent[T](hubResult: HubResult[AtomEntry[T]]): HubResult[T] = hubResult.map(_.content)
 
   def create(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
+    logger.debug(s"Creating new registration: $rawWindowsRegistration")
     request(Endpoints.Registrations)
       .post(rawWindowsRegistration.toXml)
       .map(XmlParser.parse[AtomEntry[RegistrationResponse]])
@@ -36,6 +41,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
   def update(registrationId: WNSRegistrationId,
              rawWindowsRegistration: RawWindowsRegistration
               ): Future[HubResult[RegistrationResponse]] = {
+    logger.debug(s"Updating registration ($registrationId) with $rawWindowsRegistration")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
       .put(rawWindowsRegistration.toXml)
       .map(XmlParser.parse[AtomEntry[RegistrationResponse]])
@@ -44,7 +50,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
 
   def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
-
+    logger.debug(s"Sending Azure Raw Notification: $azureWindowsPush")
     request(Endpoints.Messages)
       .withHeaders("X-WNS-Type" -> "wns/raw")
       .withHeaders("ServiceBusNotification-Format" -> "windows")
@@ -53,9 +59,9 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .post(azureWindowsPush.body)
       .map { response =>
         if ((200 until 300).contains(response.status))
-          \/.right(())
+          ().right
         else
-          \/.left(XmlParser.parseError(response))
+          XmlParser.parseError(response).left
       }
   }
 
@@ -97,7 +103,4 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
       .map { hubResult => hubResult.map(_.items) }
   }
-
-
-
 }

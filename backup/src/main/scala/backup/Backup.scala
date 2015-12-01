@@ -3,7 +3,7 @@ package backup
 import java.util
 import javax.inject.Inject
 
-import azure.{NotificationHubClient, NotificationHubJobRequest, NotificationHubJobType}
+import azure.{HubFailure, NotificationHubClient, NotificationHubJobRequest, NotificationHubJobType}
 import com.microsoft.azure.storage.CloudStorageAccount
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions._
 import com.microsoft.azure.storage.blob._
@@ -16,6 +16,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{-\/, \/-}
 
 class Backup @Inject() (conf: Configuration, ws: WSClient)(implicit ec: ExecutionContext) extends Batch {
+  val logger = Logger(classOf[Backup])
 
   val batchExecutionDeadline = DateTime.now(DateTimeZone.UTC).plusHours(3)
 
@@ -40,8 +41,11 @@ class Backup @Inject() (conf: Configuration, ws: WSClient)(implicit ec: Executio
 
     val hubClient = new NotificationHubClient(conf.notificationHubConnection, ws)
     hubClient.submitNotificationHubJob(notificationJob).map {
-      case \/-(job) => Logger.info(s"Success, job created with id ${job.jobId}. Job: $job")
-      case -\/(failure) => Logger.error(failure.toString)
+      case \/-(job) =>
+        logger.info(s"Job successfully created with id ${job.jobId}")
+        logger.debug(s"Job submitted to hub: $job")
+      case -\/(failure: HubFailure) =>
+        logger.error(s"Failed submitting job to hub (provider ${failure.providerName}, reason: ${failure.reason})")
     }
   }
 
@@ -63,7 +67,7 @@ class Backup @Inject() (conf: Configuration, ws: WSClient)(implicit ec: Executio
     val blobsToDelete = allBlobs.filter(_.getProperties.getLastModified.before(tooOld))
     blobsToDelete.foreach { blob =>
       blob.deleteIfExists()
-      Logger.info(s"deleted old backup: ${blob.getName}")
+      logger.info(s"deleted old backup: ${blob.getName}")
     }
   }
 }

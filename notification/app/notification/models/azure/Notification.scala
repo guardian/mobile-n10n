@@ -1,7 +1,6 @@
 package notification.models.azure
 
 import java.util.UUID
-import azure.{Tag, AzureRawPush}
 import models.NotificationType.{GoalAlert, Content, BreakingNews}
 import models._
 import play.api.libs.json._
@@ -17,14 +16,6 @@ sealed trait Notification {
 }
 
 object Notification {
-
-  def toAzureRawPush(push: Push): AzureRawPush = {
-    val body = Json.stringify(Json.toJson(push.notification))
-    push.destination match {
-      case Left(topic: Topic) => AzureRawPush(body = body, tags = Some(Set(Tag.fromTopic(topic))))
-      case Right(user: UserId) => AzureRawPush(body = body, tags = Some(Set(Tag.fromUserId(user))))
-    }
-  }
 
   implicit val jf = new Format[Notification] {
     override def writes(o: Notification): JsValue = o match {
