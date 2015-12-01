@@ -4,11 +4,15 @@ import azure.{AzureRawPush, Tag}
 import models.Link.{External, Internal}
 import models._
 import notification.models.azure
+import play.api.Logger
 import play.api.libs.json.Json
 import models.JsonUtils._
 
 class AzureRawPushConverter(conf: Configuration) {
+  val logger = Logger(classOf[AzureRawPushConverter])
+
   def toAzureRawPush(push: Push): AzureRawPush = {
+    logger.debug(s"Converting push to Azure: $push")
     AzureRawPush(
       body = Json.stringify(Json.toJson(toAzure(push.notification))),
       tags = toTags(push.destination)

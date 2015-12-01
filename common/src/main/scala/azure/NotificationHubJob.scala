@@ -45,6 +45,7 @@ case class NotificationHubJob(
 )
 
 object NotificationHubJob {
+  val logger = Logger(classOf[NotificationHubJob])
 
   private def parseProperties(seq: NodeSeq): HubResult[Map[String, String]] = {
     \/.right(seq.map { elem =>
@@ -54,7 +55,8 @@ object NotificationHubJob {
 
   implicit val reads = new XmlReads[NotificationHubJob] {
     override def reads(xml: Elem): HubResult[NotificationHubJob] = {
-      Logger.info(xml.toString())
+      logger.debug(s"Reading NotificatioHubJob from XML: $xml")
+
       for {
         jobId <- xml.textNode("JobId")
         progress <- xml.doubleNodeOption("Progress")

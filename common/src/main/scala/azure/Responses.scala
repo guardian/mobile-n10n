@@ -19,7 +19,7 @@ object XmlParser {
     if (response.status >= 200 || response.status < 300)
       Try(response.xml).toOption \/> HubParseFailed.invalidXml(response.body)
     else
-      \/.left(parseError(response))
+      parseError(response).left
   }
 
   def parseError(response: WSResponse): HubFailure = {
@@ -71,10 +71,10 @@ object Responses {
     def doubleNodeOption(s: String): HubResult[Option[Double]] = {
       textNodeOption(s).flatMap {
         case Some(doubleValue) => Try(doubleValue.toDouble) match {
-          case Success(double) => \/-(Some(double))
-          case Failure(_) => -\/(HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$doubleValue' in field $s as a double"))
+          case Success(double) => Some(double).right
+          case Failure(_) => HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$doubleValue' in field $s as a double").left
         }
-        case None => \/-(None)
+        case None => None.right
       }
     }
   }
@@ -132,9 +132,9 @@ object AtomFeedResponse {
     val errors = left.flatMap(_.swap.toOption)
     val successes = right.flatMap(_.toOption)
     if (errors.nonEmpty)
-      \/.left(errors.head)
+      errors.head.left
     else
-      \/.right(successes.toList)
+      successes.toList.right
   }
 }
 

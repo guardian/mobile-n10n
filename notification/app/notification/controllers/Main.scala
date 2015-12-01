@@ -6,7 +6,7 @@ import javax.inject.Inject
 import authentication.AuthenticationSupport
 import models._
 import notification.services.{NotificationSenderSupport, NotificationReportRepositorySupport, Configuration}
-import play.Logger
+import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{AnyContent, Action, Controller, Result}
@@ -21,6 +21,8 @@ final class Main @Inject()(
   notificationReportRepositorySupport: NotificationReportRepositorySupport)
   (implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
+
+  val logger = Logger(classOf[Main])
 
   override def validApiKey(apiKey: String): Boolean = configuration.apiKey.contains(apiKey)
 
@@ -40,15 +42,15 @@ final class Main @Inject()(
       case \/-(report) =>
         notificationReportRepository.store(report) map {
           case \/-(_) =>
-            Logger.info(s"Notification was sent: $push")
+            logger.info(s"Notification was sent: $push")
             Created(Json.toJson(PushResult(push.notification.id)))
           case -\/(error) =>
-            Logger.error(s"Notification sent ($report) but not report could not be stored ($error)")
+            logger.error(s"Notification ($push) sent ($report) but report could not be stored ($error)")
             InternalServerError(s"Notification sent but report could not be stored ($error)")
         }
 
       case -\/(error) =>
-        Logger.error(s"Notification ($push) could not be sent: $error")
+        logger.error(s"Notification ($push) could not be sent: $error")
         Future.successful(handleErrors(error))
     }
   }

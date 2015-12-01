@@ -21,7 +21,7 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
 
   import notificationRegistrarSupport._
 
-  private val logger = Logger("main")
+  private val logger = Logger(classOf[Main])
 
   def healthCheck: Action[AnyContent] = Action {
     Ok("Good")
@@ -49,16 +49,16 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
       case \/-(res) =>
         Ok(Json.toJson(res))
       case -\/(HubServiceError(reason, code)) =>
-        logger.error(message = s"Service error code $code: $reason")
+        logger.error(s"Service error code $code: $reason")
         Status(code.toInt)(s"Upstream service failed with code $code.")
       case -\/(HubParseFailed(body, reason)) =>
-        logger.error(message = s"Failed to parse body due to: $reason; body = $body")
+        logger.error(s"Failed to parse body due to: $reason; body = $body")
         InternalServerError(reason)
       case -\/(HubInvalidConnectionString(reason)) =>
-        logger.error(message = s"Failed due to invalid connection string: $reason")
+        logger.error(s"Failed due to invalid connection string: $reason")
         InternalServerError(reason)
       case -\/(other) =>
-        logger.error(message = s"Unknown error: ${other.reason}")
+        logger.error(s"Unknown error: ${other.reason}")
         InternalServerError(other.reason)
     }
   }
