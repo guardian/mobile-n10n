@@ -1,4 +1,5 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
+import org.scalastyle.sbt.ScalastylePlugin._
 
 lazy val testScalastyle = taskKey[Unit]("testScalastyle")
 
@@ -23,7 +24,7 @@ lazy val common = project
     testOnly in Test <<= (testOnly in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),
     testQuick in Test <<= (testQuick in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),
     scalastyleFailOnError := true,
-    testScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value,
+    testScalastyle := (scalastyle in Compile).toTask("").value,
     test in Test <<= (test in Test) dependsOn testScalastyle,
     testOnly in Test <<= (testOnly in Test) dependsOn testScalastyle,
     testQuick in Test <<= (testQuick in Test) dependsOn testScalastyle
