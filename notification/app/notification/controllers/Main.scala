@@ -9,7 +9,7 @@ import notification.services.{NotificationSenderSupport, NotificationReportRepos
 import play.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
-import play.api.mvc.{Action, Controller, Result}
+import play.api.mvc.{AnyContent, Action, Controller, Result}
 import providers.Error
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,7 +22,7 @@ final class Main @Inject()(
   (implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
 
-  override def validApiKey(apiKey: String) = configuration.apiKey.contains(apiKey)
+  override def validApiKey(apiKey: String): Boolean = configuration.apiKey.contains(apiKey)
 
   import notificationReportRepositorySupport._
   import notificationSenderSupport._
@@ -31,7 +31,7 @@ final class Main @Inject()(
     case error: Error => InternalServerError(error.reason)
   }
 
-  def healthCheck = Action {
+  def healthCheck: Action[AnyContent] = Action {
     Ok("Good")
   }
 
@@ -53,12 +53,12 @@ final class Main @Inject()(
     }
   }
 
-  def pushTopic(topic: Topic) = AuthenticatedAction.async(BodyJson[Notification]) { request =>
+  def pushTopic(topic: Topic): Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
     val push = Push(request.body, Left(topic))
     pushGeneric(push)
   }
 
-  def pushUser(userId: UUID) = AuthenticatedAction.async(BodyJson[Notification]) { request =>
+  def pushUser(userId: UUID): Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
     val push = Push(request.body, Right(UserId(userId)))
     pushGeneric(push)
   }

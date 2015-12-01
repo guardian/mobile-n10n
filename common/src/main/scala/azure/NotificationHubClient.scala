@@ -4,7 +4,6 @@ import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
-import scalaz.std.option.optionSyntax._
 
 case class NotificationHubError(message: String)
 
@@ -78,12 +77,12 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .map(_.map(_.title))
   }
 
-  def registrationsByTag(tag: String) = {
+  def registrationsByTag(tag: String): Future[HubResult[AtomFeedResponse[RegistrationResponse]]] = {
     request(s"/tags/$tag/registrations")
       .get()
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
   }
-  
+
   def submitNotificationHubJob(job: NotificationHubJobRequest): Future[HubResult[NotificationHubJob]] = {
     request("/jobs")
       .post(job.toXml)

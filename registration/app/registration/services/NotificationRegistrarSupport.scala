@@ -16,7 +16,8 @@ trait RegistrarSupport {
   def registrarFor(registration: Registration): \/[String, NotificationRegistrar]
 }
 
-final class NotificationRegistrarSupport @Inject()(wsClient: WSClient, configuration: Configuration)(implicit executionContext: ExecutionContext) extends RegistrarSupport {
+final class NotificationRegistrarSupport @Inject()(wsClient: WSClient, configuration: Configuration)
+  (implicit executionContext: ExecutionContext) extends RegistrarSupport {
 
   private def hubConnection = NotificationHubConnection(
     endpoint = configuration.hubEndpoint,

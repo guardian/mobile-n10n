@@ -11,7 +11,8 @@ object SasTokenGeneration {
   val expiresInMins = 60
 
   /**
-   * From [[https://github.com/Azure/azure-notificationhubs-java-backend/blob/master/NotificationHubs/src/com/windowsazure/messaging/NamespaceManager.java#L233]]
+   * From:
+   * [[https://github.com/Azure/azure-notificationhubs-java-backend/blob/master/NotificationHubs/src/com/windowsazu0re/messaging/NamespaceManager.java#L233]]
    * Licensed under Apache License 2.0 - [[https://github.com/Azure/azure-notificationhubs-java-backend/blob/master/LICENSE]]
    */
   def generateSasToken(sasKeyName: String, sasKeyValue: String, uri: String): String = {

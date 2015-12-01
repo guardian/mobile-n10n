@@ -4,7 +4,7 @@ import play.api.libs.ws.WSResponse
 import providers.Error
 
 sealed trait HubFailure extends Error {
-  def providerName = "WNS"
+  def providerName: String = "WNS"
   def reason: String
 }
 
@@ -18,7 +18,7 @@ object HubFailure {
       } yield HubServiceError(detail.text, code.text.toInt)
     }.headOption
 
-    def fromWSResponse(response: WSResponse) = HubServiceError(
+    def fromWSResponse(response: WSResponse): HubServiceError = HubServiceError(
       reason = response.statusText,
       code = response.status
     )
@@ -27,7 +27,7 @@ object HubFailure {
   case class HubServiceError(reason: String, code: Int) extends HubFailure
 
   object HubParseFailed {
-    def invalidXml(body: String) = HubParseFailed(
+    def invalidXml(body: String): HubParseFailed = HubParseFailed(
       body = body,
       reason = "Failed to find any XML"
     )

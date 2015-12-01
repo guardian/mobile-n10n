@@ -18,7 +18,7 @@ sealed trait Notification {
 
 object Notification {
 
-  def toAzureRawPush(push: Push) = {
+  def toAzureRawPush(push: Push): AzureRawPush = {
     val body = Json.stringify(Json.toJson(push.notification))
     push.destination match {
       case Left(topic: Topic) => AzureRawPush(body = body, tags = Some(Set(Tag.fromTopic(topic))))

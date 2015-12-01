@@ -4,9 +4,9 @@ import play.api.libs.json._
 
 sealed trait Platform
 
-case object Android extends Platform { override def toString = "android" }
-case object iOS extends Platform { override def toString = "ios" }
-case object WindowsMobile extends Platform { override def toString = "windows-mobile" }
+case object Android extends Platform { override def toString: String = "android" }
+case object iOS extends Platform { override def toString: String = "ios" }
+case object WindowsMobile extends Platform { override def toString: String = "windows-mobile" }
 
 object Platform {
   def fromString(s: String): Option[Platform] = PartialFunction.condOpt(s) {

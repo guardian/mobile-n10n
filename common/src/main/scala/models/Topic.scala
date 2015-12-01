@@ -6,7 +6,7 @@ import scalaz.\/
 import scalaz.std.option.optionSyntax._
 
 case class Topic(`type`: TopicType, name: String) {
-  override def toString = s"${`type`}/$name"
+  override def toString: String = s"${`type`}/$name"
 }
 
 object Topic {

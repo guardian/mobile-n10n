@@ -5,7 +5,7 @@ case class NotificationHubConnection(
   sharedAccessKeyName: String,
   sharedAccessKey: String
 ) {
-  def authorizationHeader(uri: String) = SasTokenGeneration.generateSasToken(
+  def authorizationHeader(uri: String): String = SasTokenGeneration.generateSasToken(
     sasKeyName = sharedAccessKeyName,
     sasKeyValue = sharedAccessKey,
     uri = uri
