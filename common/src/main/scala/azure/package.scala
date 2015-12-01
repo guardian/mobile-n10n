@@ -5,8 +5,8 @@ package object azure {
   private def encodeBase16(source: String): String =
     source.getBytes("UTF-8").map("%02X".format(_)).mkString.toLowerCase
 
-  val base16 = 16
   private def decodeBase16(encoded: String): String = {
+    val base16 = 16
     val bytes = encoded.grouped(2).map(group => java.lang.Byte.parseByte(group, base16))
     new String(bytes.toArray, "UTF-8")
   }
