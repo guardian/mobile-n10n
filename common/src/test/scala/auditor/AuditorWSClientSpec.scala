@@ -13,6 +13,7 @@ import play.api.mvc.{Results, Action}
 import play.api.routing.sird._
 import play.api.test.WsTestClient
 import play.core.server.Server
+import scala.concurrent.duration._
 
 class AuditorWSClientSpec(implicit ev: ExecutionEnv) extends Specification with Mockito {
   "Auditor WS Client" should {
@@ -30,7 +31,7 @@ class AuditorWSClientSpec(implicit ev: ExecutionEnv) extends Specification with 
 
           val filteredTopics = auditorWSClient.expiredTopics(auditor, topics)
 
-          filteredTopics must beEqualTo(topics).await
+          filteredTopics must beEqualTo(topics).awaitFor(5 seconds)
         }
       }
     }

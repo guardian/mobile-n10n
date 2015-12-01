@@ -15,6 +15,7 @@ import tracking.Repository.RepositoryResult
 
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends DynamodbSpecification with Mockito {
 
@@ -24,7 +25,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
     "store and retrieve a NotificationReport" in new RepositoryScope with ExampleReports {
       afterStoringReports(List(singleReport)) {
         repository.getByUuid(singleReport.id)
-      } must beEqualTo(singleReport).await
+      } must beEqualTo(singleReport).awaitFor(5 seconds)
     }
 
     "get NotificationReports by date range" in new RepositoryScope with ExampleReports {
@@ -34,7 +35,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
           from = interval.getStart,
           to = interval.getEnd
         )
-      } must beEqualTo(reportsInInterval.toSet).await
+      } must beEqualTo(reportsInInterval.toSet).awaitFor(5 seconds)
     }
   }
 
