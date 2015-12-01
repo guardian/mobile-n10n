@@ -1,5 +1,7 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 
+lazy val testScalastyle = taskKey[Unit]("testScalastyle")
+
 lazy val common = project
   .settings(localdynamodb.settings)
   .settings(
@@ -17,7 +19,14 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk" % "1.9.31",
       "com.gu" %% "configuration" %  "4.1"
     ),
-    test in Test <<= (test in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal)
+    test in Test <<= (test in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),
+    testOnly in Test <<= (testOnly in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),
+    testQuick in Test <<= (testQuick in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),
+    scalastyleFailOnError := true,
+    testScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value,
+    test in Test <<= (test in Test) dependsOn testScalastyle,
+    testOnly in Test <<= (testOnly in Test) dependsOn testScalastyle,
+    testQuick in Test <<= (testQuick in Test) dependsOn testScalastyle
   )
 
 lazy val backup = project
