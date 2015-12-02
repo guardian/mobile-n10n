@@ -19,7 +19,7 @@ cat > awslogs.conf <<__END__
 state_file = /var/awslogs/state/agent-state
 [$apptag-$stagetag]
 datetime_format = %Y-%m-%d %H:%M:%S
-file = /$apptag-1.0-SNAPSHOT/logs/$apptag.log
+file = /$apptag-1.0-SNAPSHOT/logs/application.log
 buffer_duration = 5000
 log_stream_name = $apptag-$stagetag-$instanceid
 initial_position = start_of_file
