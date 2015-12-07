@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 import authentication.AuthenticationSupport
 import models._
-import notification.models.Push
+import notification.models.{PushResult, Push}
 import notification.services.{NotificationSenderSupport, NotificationReportRepositorySupport, Configuration}
 import play.api.Logger
 import play.api.libs.json.Json
