@@ -56,8 +56,11 @@ final class Main @Inject()(
     }
   }
 
-  def pushTopic(topic: Topic): Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
-    val push = Push(request.body, Left(Set(topic)))
+  @deprecated("A push notification can be sent to multiple topics, this is for backward compatibility only", since = "07/12/2015")
+  def pushTopic(topic: Topic): Action[Notification] = pushTopics
+
+  def pushTopics: Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
+    val push = Push(request.body, Left(request.body.topic))
     pushGeneric(push)
   }
 
