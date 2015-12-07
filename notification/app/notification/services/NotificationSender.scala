@@ -1,6 +1,7 @@
 package notification.services
 
-import models.{NotificationReport, Push}
+import models.NotificationReport
+import notification.models.Push
 import providers.Error
 
 import scala.concurrent.Future

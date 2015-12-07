@@ -2,6 +2,7 @@ package notification.services
 
 import azure.NotificationHubClient
 import models._
+import notification.models.Push
 import org.joda.time.DateTime
 import providers.Error
 import tracking.Repository._

@@ -3,7 +3,7 @@ package notification.services
 import azure.{AzureRawPush, Tag}
 import models.Link.{External, Internal}
 import models._
-import notification.models.azure
+import notification.models.{Push, azure}
 import play.api.Logger
 import play.api.libs.json.Json
 import models.JsonUtils._
