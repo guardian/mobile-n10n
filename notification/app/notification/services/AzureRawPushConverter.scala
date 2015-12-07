@@ -1,8 +1,9 @@
 package notification.services
 
-import azure.{AzureRawPush, Tag}
+import _root_.azure.{Tags, AzureRawPush}
 import models.Link.{External, Internal}
 import models._
+import notification.models.Destination.Destination
 import notification.models.{Push, azure}
 import play.api.Logger
 import play.api.libs.json.Json
@@ -25,9 +26,9 @@ class AzureRawPushConverter(conf: Configuration) {
     case gan: GoalAlertNotification => toGoalAlert(gan)
   }
 
-  private[services] def toTags(destination: Either[Topic, UserId]) = destination match {
-    case Left(topic: Topic) => Some(Set(Tag.fromTopic(topic)))
-    case Right(user: UserId) => Some(Set(Tag.fromUserId(user)))
+  private[services] def toTags(destination: Destination) = destination match {
+    case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
+    case Right(user: UserId) => Some(Tags.fromUserId(user))
   }
 
   private def toUrl(link: Link): URL = link match {

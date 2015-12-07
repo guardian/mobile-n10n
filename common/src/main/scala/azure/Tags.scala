@@ -45,4 +45,9 @@ object Tags {
   val TopicTagRegex = """topic:Base16:(.*)""".r
 
   def fromStrings(tags: Set[String]): Tags = Tags(tags.map(Tag(_)))
+
+  def fromTopics(topics: Set[Topic]): Tags = Tags(topics.map(Tag.fromTopic))
+
+  def fromUserId(u: UserId): Tags = Tags(Set(Tag.fromUserId(u)))
+
 }

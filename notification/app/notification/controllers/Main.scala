@@ -57,7 +57,7 @@ final class Main @Inject()(
   }
 
   def pushTopic(topic: Topic): Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
-    val push = Push(request.body, Left(topic))
+    val push = Push(request.body, Left(Set(topic)))
     pushGeneric(push)
   }
 
