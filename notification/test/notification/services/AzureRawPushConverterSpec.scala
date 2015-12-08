@@ -46,7 +46,7 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
   }
 
   trait PushConverterScope extends Scope {
-    def configuration: Configuration = {
+    val configuration: Configuration = {
       val c = mock[Configuration]
       c.mapiItemEndpoint returns "http://mobile-apps.guardianapis.com/items"
       c
