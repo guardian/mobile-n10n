@@ -38,6 +38,11 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       val expected = Tag("topic:Base16:627265616b696e672f756b")
       azureRawPushConverter.toTags(Destination(topic)) shouldEqual Some(Tags(Set(expected)))
     }
+    "Convert a list of topics into a list of tag" in new PushConverterScope {
+      val topics = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"))
+      val expected = Tags(Set(Tag("topic:Base16:627265616b696e672f756b"), Tag("topic:Base16:627265616b696e672f7573")))
+      azureRawPushConverter.toTags(Destination(topics)) shouldEqual Some(expected)
+    }
   }
 
   trait PushConverterScope extends Scope {
