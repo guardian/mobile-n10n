@@ -41,9 +41,10 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
   }
 
   trait PushConverterScope extends Scope {
-    def configuration = {
+    def configuration: Configuration = {
       val c = mock[Configuration]
       c.mapiItemEndpoint returns "http://mobile-apps.guardianapis.com/items"
+      c.debug returns true
       c
     }
 
@@ -70,7 +71,8 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       thumbnailUrl = Some(URL("http://media.guim.co.uk/09951387fda453719fe1fee3e5dcea4efa05e4fa/0_181_3596_2160/140.jpg")),
       link = URL("http://mobile-apps.guardianapis.com/items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates"),
       imageUrl = Some(URL("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
-      topic = Set(Topic(Breaking, "uk"))
+      topic = Set(Topic(Breaking, "uk")),
+      debug = true
     )
   }
 
@@ -93,7 +95,8 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       message = "Which countries are doing the most to stop dangerous global warming?",
       thumbnailUrl = Some(URL("http://media.guim.co.uk/a07334e4ed5d13d3ecf4c1ac21145f7f4a099f18/127_0_3372_2023/140.jpg")),
       link = URL("http://mobile-apps.guardianapis.com/items/environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming"),
-      topic = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground"))
+      topic = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground")),
+      debug = true
     )
   }
 
@@ -143,7 +146,8 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
         Topic(FootballTeam, "41"),
         Topic(FootballMatch, "3833380")
       ),
-      addedTime = None
+      addedTime = None,
+      debug = true
     )
   }
 

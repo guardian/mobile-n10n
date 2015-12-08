@@ -8,4 +8,5 @@ class Configuration extends NotificationConfiguration("notification") {
   lazy val hubSharedAccessKey = getConfigString("azure.hub.sharedAccessKey")
   lazy val apiKey = conf.getStringProperty("notifications.api.secretKey")
   lazy val mapiItemEndpoint = conf.getStringProperty("mapi.items.endpoint", "http://mobile-apps.guardianapis.com/items")
+  lazy val debug = getConfigBoolean("notifications.api.debug")
 }
