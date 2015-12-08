@@ -60,8 +60,12 @@ final class Main @Inject()(
   def pushTopic(topic: Topic): Action[Notification] = pushTopics
 
   def pushTopics: Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
-    val push = Push(request.body, Left(request.body.topic))
-    pushGeneric(push)
+    val topics = request.body.topic
+    topics.size match {
+      case 0 => Future.successful(BadRequest("Empty topic list"))
+      case a: Int if a > 20 => Future.successful(BadRequest("Too many topics"))
+      case _ => pushGeneric(Push(request.body, Left(topics)))
+    }
   }
 
   def pushUser(userId: UUID): Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
