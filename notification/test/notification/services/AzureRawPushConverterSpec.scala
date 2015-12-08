@@ -2,7 +2,7 @@ package notification.services
 
 import java.util.UUID
 
-import _root_.azure.{Tags, Tag}
+import azure.{Tags, Tag}
 import models.GoalType.Penalty
 import models.Importance.Major
 import models.Link.Internal

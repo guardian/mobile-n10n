@@ -1,6 +1,6 @@
 package notification.services
 
-import _root_.azure.{Tags, AzureRawPush}
+import azure.{Tags, AzureRawPush}
 import models.Link.{External, Internal}
 import models._
 import notification.models.Destination.Destination
