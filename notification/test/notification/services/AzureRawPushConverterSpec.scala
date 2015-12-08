@@ -2,13 +2,13 @@ package notification.services
 
 import java.util.UUID
 
-import azure.Tag
+import azure.{Tags, Tag}
 import models.GoalType.Penalty
 import models.Importance.Major
 import models.Link.Internal
 import models._
 import models.TopicTypes.{FootballMatch, FootballTeam, TagSeries, Breaking}
-import notification.models.azure
+import notification.models.{Destination, azure}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
@@ -31,17 +31,22 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
     "Convert a userId into a tag" in new PushConverterScope {
       val userId = UserId(id = UUID.fromString("497f172a-9434-11e5-af4E-61a964696656"))
       val expected = Tag("user:497f172a-9434-11e5-af4e-61a964696656")
-      azureRawPushConverter.toTags(Right(userId)) shouldEqual Some(Set(expected))
+      azureRawPushConverter.toTags(Right(userId)) shouldEqual Some(Tags(Set(expected)))
     }
     "Convert a topic into a tag" in new PushConverterScope {
       val topic = Topic(Breaking, "uk")
       val expected = Tag("topic:Base16:627265616b696e672f756b")
-      azureRawPushConverter.toTags(Left(topic)) shouldEqual Some(Set(expected))
+      azureRawPushConverter.toTags(Destination(topic)) shouldEqual Some(Tags(Set(expected)))
+    }
+    "Convert a list of topics into a list of tag" in new PushConverterScope {
+      val topics = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"))
+      val expected = Tags(Set(Tag("topic:Base16:627265616b696e672f756b"), Tag("topic:Base16:627265616b696e672f7573")))
+      azureRawPushConverter.toTags(Destination(topics)) shouldEqual Some(expected)
     }
   }
 
   trait PushConverterScope extends Scope {
-    def configuration: Configuration = {
+    val configuration: Configuration = {
       val c = mock[Configuration]
       c.mapiItemEndpoint returns "http://mobile-apps.guardianapis.com/items"
       c.debug returns true
