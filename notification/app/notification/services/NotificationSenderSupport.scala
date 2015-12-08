@@ -7,7 +7,7 @@ import play.api.libs.ws.WSClient
 
 import scala.concurrent.ExecutionContext
 
-final class NotificationSenderSupport @Inject()(wsClient: WSClient, configuration: Configuration)(implicit executionContext: ExecutionContext) {
+class NotificationSenderSupport @Inject()(wsClient: WSClient, configuration: Configuration)(implicit executionContext: ExecutionContext) {
   private def hubConnection = NotificationHubConnection(
     endpoint = configuration.hubEndpoint,
     sharedAccessKeyName = configuration.hubSharedAccessKeyName,

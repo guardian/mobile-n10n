@@ -4,6 +4,6 @@ import javax.inject.Inject
 
 import tracking.InMemoryNotificationReportRepository
 
-final class NotificationReportRepositorySupport @Inject()() {
+class NotificationReportRepositorySupport @Inject()() {
   val notificationReportRepository = new InMemoryNotificationReportRepository
 }

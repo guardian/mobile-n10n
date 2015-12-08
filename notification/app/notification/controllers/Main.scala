@@ -5,6 +5,7 @@ import javax.inject.Inject
 
 import authentication.AuthenticationSupport
 import models._
+import notification.models.{PushResult, Push}
 import notification.services.{NotificationSenderSupport, NotificationReportRepositorySupport, Configuration}
 import play.api.Logger
 import play.api.libs.json.Json
@@ -55,9 +56,16 @@ final class Main @Inject()(
     }
   }
 
-  def pushTopic(topic: Topic): Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
-    val push = Push(request.body, Left(topic))
-    pushGeneric(push)
+  @deprecated("A push notification can be sent to multiple topics, this is for backward compatibility only", since = "07/12/2015")
+  def pushTopic(topic: Topic): Action[Notification] = pushTopics
+
+  def pushTopics: Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
+    val topics = request.body.topic
+    topics.size match {
+      case 0 => Future.successful(BadRequest("Empty topic list"))
+      case a: Int if a > 20 => Future.successful(BadRequest("Too many topics"))
+      case _ => pushGeneric(Push(request.body, Left(topics)))
+    }
   }
 
   def pushUser(userId: UUID): Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>

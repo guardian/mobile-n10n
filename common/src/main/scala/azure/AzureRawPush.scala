@@ -1,7 +1,7 @@
 package azure
 
-case class AzureRawPush(body: String, tags: Option[Set[Tag]]) {
+case class AzureRawPush(body: String, tags: Option[Tags]) {
   def tagQuery: Option[String] = tags.map { set =>
-    set.map(_.encodedTag).mkString("(", " && ", ")")
+    set.tags.map(_.encodedTag).mkString("(", " && ", ")")
   }
 }
