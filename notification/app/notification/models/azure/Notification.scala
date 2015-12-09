@@ -13,6 +13,7 @@ sealed trait Notification {
   def message: String
   def thumbnailUrl: Option[URL]
   def topic: Set[Topic]
+  def debug: Boolean
 }
 
 object Notification {
@@ -42,7 +43,8 @@ case class BreakingNewsNotification(
   thumbnailUrl: Option[URL],
   link: URL,
   imageUrl: Option[URL],
-  topic: Set[Topic]
+  topic: Set[Topic],
+  debug: Boolean
 ) extends Notification
 
 object BreakingNewsNotification {
@@ -56,7 +58,8 @@ case class ContentNotification(
   message: String,
   thumbnailUrl: Option[URL],
   link: URL,
-  topic: Set[Topic]
+  topic: Set[Topic],
+  debug: Boolean
 ) extends Notification
 
 object ContentNotification {
@@ -81,7 +84,8 @@ case class GoalAlertNotification(
   matchId: String,
   link: URL,
   topic: Set[Topic],
-  addedTime: Option[String]
+  addedTime: Option[String],
+  debug: Boolean
 ) extends Notification
 
 object GoalAlertNotification {

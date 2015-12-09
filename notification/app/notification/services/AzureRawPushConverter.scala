@@ -44,7 +44,8 @@ class AzureRawPushConverter(conf: Configuration) {
     thumbnailUrl = bnn.thumbnailUrl,
     link = toUrl(bnn.link),
     imageUrl = bnn.imageUrl,
-    topic = bnn.topic
+    topic = bnn.topic,
+    debug = conf.debug
   )
 
   private def toContent(cn: ContentNotification) = azure.ContentNotification(
@@ -54,7 +55,8 @@ class AzureRawPushConverter(conf: Configuration) {
     message = cn.message,
     thumbnailUrl = cn.thumbnailUrl,
     link = toUrl(cn.link),
-    topic = cn.topic
+    topic = cn.topic,
+    debug = conf.debug
   )
 
   private def toGoalAlert(gan: GoalAlertNotification) = azure.GoalAlertNotification(
@@ -75,6 +77,7 @@ class AzureRawPushConverter(conf: Configuration) {
     matchId = gan.matchId,
     link = gan.mapiUrl,
     topic = gan.topic,
-    addedTime = gan.addedTime
+    addedTime = gan.addedTime,
+    debug = conf.debug
   )
 }
