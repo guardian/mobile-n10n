@@ -1,23 +1,23 @@
 package notification.models.azure
 
+import java.net.URI
 import java.util.UUID
 import models.NotificationType.{GoalAlert, Content, BreakingNews}
 import models._
 import play.api.libs.json._
-import models.JsonUtils._
 
 sealed trait Notification {
   def id: UUID
   def `type`: NotificationType
   def title: String
   def message: String
-  def thumbnailUrl: Option[URL]
+  def thumbnailUrl: Option[URI]
   def topic: Set[Topic]
   def debug: Boolean
 }
 
 object Notification {
-
+  import models.JsonUtils._
   implicit val jf = new Format[Notification] {
     override def writes(o: Notification): JsValue = o match {
       case n: BreakingNewsNotification => BreakingNewsNotification.jf.writes(n)
@@ -40,14 +40,15 @@ case class BreakingNewsNotification(
   `type`: NotificationType = BreakingNews,
   title: String,
   message: String,
-  thumbnailUrl: Option[URL],
-  link: URL,
-  imageUrl: Option[URL],
+  thumbnailUrl: Option[URI],
+  link: URI,
+  imageUrl: Option[URI],
   topic: Set[Topic],
   debug: Boolean
 ) extends Notification
 
 object BreakingNewsNotification {
+  import models.JsonUtils._
   implicit val jf = Json.format[BreakingNewsNotification]
 }
 
@@ -56,13 +57,14 @@ case class ContentNotification(
   `type`: NotificationType = Content,
   title: String,
   message: String,
-  thumbnailUrl: Option[URL],
-  link: URL,
+  thumbnailUrl: Option[URI],
+  link: URI,
   topic: Set[Topic],
   debug: Boolean
 ) extends Notification
 
 object ContentNotification {
+  import models.JsonUtils._
   implicit val jf = Json.format[ContentNotification]
 }
 
@@ -71,7 +73,7 @@ case class GoalAlertNotification(
   `type`: NotificationType = GoalAlert,
   title: String,
   message: String,
-  thumbnailUrl: Option[URL] = None,
+  thumbnailUrl: Option[URI] = None,
   goalType: GoalType,
   awayTeamName: String,
   awayTeamScore: Int,
@@ -82,12 +84,13 @@ case class GoalAlertNotification(
   goalMins: Int,
   otherTeamName: String,
   matchId: String,
-  link: URL,
+  link: URI,
   topic: Set[Topic],
   addedTime: Option[String],
   debug: Boolean
 ) extends Notification
 
 object GoalAlertNotification {
+  import models.JsonUtils._
   implicit val jf = Json.format[GoalAlertNotification]
 }

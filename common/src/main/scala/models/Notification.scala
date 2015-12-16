@@ -3,6 +3,7 @@ package models
 import java.util.UUID
 import models.NotificationType._
 import play.api.libs.json._
+import java.net.URI
 
 sealed trait Notification {
   def id: UUID
@@ -10,7 +11,7 @@ sealed trait Notification {
   def sender: String
   def title: String
   def message: String
-  def thumbnailUrl: Option[URL]
+  def thumbnailUrl: Option[URI]
   def importance: Importance
   def topic: Set[Topic]
 }
@@ -44,15 +45,16 @@ case class BreakingNewsNotification(
   `type`: NotificationType = BreakingNews,
   title: String,
   message: String,
-  thumbnailUrl: Option[URL],
+  thumbnailUrl: Option[URI],
   sender: String,
   link: Link,
-  imageUrl: Option[URL],
+  imageUrl: Option[URI],
   importance: Importance,
   topic: Set[Topic]
 ) extends Notification with NotificationWithLink
 
 object BreakingNewsNotification {
+  import JsonUtils._
   implicit val jf = Json.format[BreakingNewsNotification]
 }
 
@@ -61,7 +63,7 @@ case class ContentNotification(
   `type`: NotificationType = Content,
   title: String,
   message: String,
-  thumbnailUrl: Option[URL],
+  thumbnailUrl: Option[URI],
   sender: String,
   link: Link,
   importance: Importance,
@@ -70,6 +72,7 @@ case class ContentNotification(
 ) extends Notification with NotificationWithLink
 
 object ContentNotification {
+  import JsonUtils._
   implicit val jf = Json.format[ContentNotification]
 }
 
@@ -78,7 +81,7 @@ case class GoalAlertNotification(
   `type`: NotificationType = GoalAlert,
   title: String,
   message: String,
-  thumbnailUrl: Option[URL] = None,
+  thumbnailUrl: Option[URI] = None,
   sender: String,
   goalType: GoalType,
   awayTeamName: String,
@@ -90,12 +93,13 @@ case class GoalAlertNotification(
   goalMins: Int,
   otherTeamName: String,
   matchId: String,
-  mapiUrl: URL,
+  mapiUrl: URI,
   importance: Importance,
   topic: Set[Topic],
   addedTime: Option[String]
 ) extends Notification
 
 object GoalAlertNotification {
+  import JsonUtils._
   implicit val jf = Json.format[GoalAlertNotification]
 }
