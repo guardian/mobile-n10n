@@ -42,7 +42,7 @@ object JsonUtils {
   implicit val uriFormat = new Format[URI] {
     override def reads(json: JsValue): JsResult[URI] = json match {
       case JsString(uri) => Try(new URI(uri)).map(u => JsSuccess(u)).getOrElse(JsError(s"Invalid URI: $uri"))
-      case _ => JsError("Unknown URI type")
+      case _ => JsError("URI must be a String")
     }
 
     override def writes(o: URI): JsValue = JsString(o.toString)
