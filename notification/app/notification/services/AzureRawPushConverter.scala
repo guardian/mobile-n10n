@@ -1,5 +1,7 @@
 package notification.services
 
+import java.net.URI
+
 import azure.{Tags, AzureRawPush}
 import models.Link.{External, Internal}
 import models._
@@ -31,9 +33,9 @@ class AzureRawPushConverter(conf: Configuration) {
     case Right(user: UserId) => Some(Tags.fromUserId(user))
   }
 
-  private def toUrl(link: Link): URL = link match {
-    case External(url) => URL(url)
-    case Internal(capiId) => URL(s"${conf.mapiItemEndpoint}/$capiId")
+  private def toUrl(link: Link): URI = link match {
+    case External(url) => new URI(url)
+    case Internal(capiId) => new URI(s"${conf.mapiItemEndpoint}/$capiId")
   }
 
   private def toAzureBreakingNews(bnn: BreakingNewsNotification) = azure.BreakingNewsNotification(
