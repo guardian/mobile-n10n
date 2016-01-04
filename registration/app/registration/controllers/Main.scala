@@ -27,13 +27,13 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
     Ok("Good")
   }
 
-  def register(deviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
-    val registration = request.body.copy(deviceId = deviceId)
+  def register(latestDeviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
+    val registration = request.body
 
     def registerWith(registrar: NotificationRegistrar): Future[Result] =
       topicValidator.removeInvalid(registration.topics) flatMap {
         case \/-(validTopics) => registrar
-          .register(registration.copy(topics = validTopics))
+          .register(latestDeviceId, registration.copy(topics = validTopics))
           .map { processResponse }
         case -\/(e) => Future.successful(InternalServerError(e.reason))
       }
