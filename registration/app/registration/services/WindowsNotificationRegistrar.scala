@@ -21,7 +21,7 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec
     }
   }
 
-  def createOrUpdateRegistration(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+  private def createOrUpdateRegistration(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
     def createNewRegistration = hubClient
       .create(RawWindowsRegistration.fromMobileRegistration(registration))
       .map(hubResultToRegistrationResponse)
