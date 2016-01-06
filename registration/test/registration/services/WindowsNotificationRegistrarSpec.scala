@@ -51,6 +51,24 @@ with Mockito {
       val channelUri = hubRegResponse.channelUri
       val oldChannelUri = "oldChannelUri"
       hubClient.registrationsByChannelUri(oldChannelUri) returns Future.successful(List(hubRegResponse.copy(channelUri = oldChannelUri)).right)
+      hubClient.registrationsByChannelUri(channelUri) returns Future.successful(Nil.right)
+      hubClient.update(hubRegResponse.registration, fromMobileRegistration(registration)) returns Future.successful(hubRegResponse.right)
+
+      val response = provider.register(oldChannelUri, registration)
+
+      response must beEqualTo(RegistrationResponse(
+        deviceId = channelUri,
+        platform = WindowsMobile,
+        userId = registration.userId,
+        topics = Set.empty
+      ).right).await
+    }
+
+    "update existing registration, if the target registration already exists (instead of creating a new one)" in new registrations {
+      val channelUri = hubRegResponse.channelUri
+      val oldChannelUri = "oldChannelUri"
+      hubClient.registrationsByChannelUri(oldChannelUri) returns Future.successful(List(hubRegResponse.copy(channelUri = oldChannelUri)).right)
+      hubClient.registrationsByChannelUri(channelUri) returns Future.successful(List(hubRegResponse).right)
       hubClient.update(hubRegResponse.registration, fromMobileRegistration(registration)) returns Future.successful(hubRegResponse.right)
 
       val response = provider.register(oldChannelUri, registration)

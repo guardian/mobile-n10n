@@ -14,6 +14,14 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec
   extends NotificationRegistrar {
 
   override def register(oldChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+    hubClient.registrationsByChannelUri(registration.deviceId).flatMap {
+      case \/-(Nil) => createOrUpdateRegistration(oldChannelUri, registration)
+      case \/-(_ :: _) => createOrUpdateRegistration(registration.deviceId, registration)
+      case -\/(e: Error) => Future.successful(e.left)
+    }
+  }
+
+  def createOrUpdateRegistration(oldChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
     def createNewRegistration = hubClient
       .create(RawWindowsRegistration.fromMobileRegistration(registration))
       .map(hubResultToRegistrationResponse)
