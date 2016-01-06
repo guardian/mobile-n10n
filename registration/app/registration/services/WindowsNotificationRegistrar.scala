@@ -13,15 +13,15 @@ import scalaz.std.option.optionSyntax._
 class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec: ExecutionContext)
   extends NotificationRegistrar {
 
-  override def register(oldChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+  override def register(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
     hubClient.registrationsByChannelUri(registration.deviceId).flatMap {
-      case \/-(Nil) => createOrUpdateRegistration(oldChannelUri, registration)
+      case \/-(Nil) => createOrUpdateRegistration(lastKnownChannelUri, registration)
       case \/-(_ :: _) => createOrUpdateRegistration(registration.deviceId, registration)
       case -\/(e: Error) => Future.successful(e.left)
     }
   }
 
-  def createOrUpdateRegistration(oldChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+  def createOrUpdateRegistration(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
     def createNewRegistration = hubClient
       .create(RawWindowsRegistration.fromMobileRegistration(registration))
       .map(hubResultToRegistrationResponse)
@@ -30,10 +30,10 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec
       .update(regId, RawWindowsRegistration.fromMobileRegistration(registration))
       .map(hubResultToRegistrationResponse)
 
-    hubClient.registrationsByChannelUri(oldChannelUri).flatMap {
+    hubClient.registrationsByChannelUri(lastKnownChannelUri).flatMap {
       case \/-(Nil) => createNewRegistration
       case \/-(existing :: Nil) => updateRegistration(existing.registration)
-      case \/-(_ :: _ :: _) => Future.successful(TooManyRegistrationsForChannel(oldChannelUri).left)
+      case \/-(_ :: _ :: _) => Future.successful(TooManyRegistrationsForChannel(lastKnownChannelUri).left)
       case -\/(e: Error) => Future.successful(e.left)
     }
   }
