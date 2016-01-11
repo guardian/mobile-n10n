@@ -65,7 +65,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers{
 class RegistrarSupportMock extends RegistrarSupport {
 
   override def registrarFor(registration: Registration): \/[String, NotificationRegistrar] = new NotificationRegistrar {
-    override def register(registration: Registration): Future[\/[Error, RegistrationResponse]] = Future {
+    override def register(deviceId: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = Future {
       RegistrationResponse(
         deviceId = "deviceAA",
         platform = WindowsMobile,
