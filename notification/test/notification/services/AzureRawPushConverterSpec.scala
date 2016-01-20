@@ -91,8 +91,7 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       sender = "test",
       link = Internal("environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming"),
       importance = Major,
-      topic = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground")),
-      shortUrl = "shortUrl"
+      topic = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground"))
     )
 
     val azureNotification = azure.ContentNotification(
