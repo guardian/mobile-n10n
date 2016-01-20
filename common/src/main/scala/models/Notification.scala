@@ -67,8 +67,7 @@ case class ContentNotification(
   sender: String,
   link: Link,
   importance: Importance,
-  topic: Set[Topic],
-  shortUrl: String
+  topic: Set[Topic]
 ) extends Notification with NotificationWithLink
 
 object ContentNotification {
