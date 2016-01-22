@@ -70,7 +70,7 @@ with Mockito {
       there was no(hubClient).delete(any[WNSRegistrationId])
     }
 
-    "delete all and replace by only one registration if more than one notification for the same userId" in new registrations {
+    "delete all and replace by only one registration if more than one registration for the same userId" in new registrations {
       val channelUri = registration.deviceId
       val userRegistrations = (0 to 2).map(generateHubResponse).toList
       hubClient.registrationsByTag(userIdTag) returns Future.successful(userRegistrations.right)
@@ -85,7 +85,7 @@ with Mockito {
       there was three(hubClient).delete(any[WNSRegistrationId])
     }
 
-    "delete all and replace by only one registration if more than one notification" in new registrations {
+    "delete all and replace by only one registration if more than one registration" in new registrations {
       val channelUri = registration.deviceId
       val userRegistrations = (0 to 1).map(generateHubResponse).toList
       hubClient.registrationsByTag(userIdTag) returns Future.successful(userRegistrations.right)
