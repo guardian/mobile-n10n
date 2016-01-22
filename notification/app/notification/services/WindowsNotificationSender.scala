@@ -1,6 +1,7 @@
 package notification.services
 
 import azure.NotificationHubClient
+import models.Importance.Major
 import models._
 import notification.models.Destination.Destination
 import notification.models.Push
@@ -20,16 +21,23 @@ class WindowsNotificationSender(hubClient: NotificationHubClient, configuration:
 
   private val azureRawPushConverter = new AzureRawPushConverter(configuration)
 
-  def sendNotification(push: Push): Future[Error \/ NotificationReport] = for {
-    result <- hubClient.sendNotification(azureRawPushConverter.toAzureRawPush(push))
-    count <- count(push.destination)
-  } yield {
-    result map { _ =>
-      NotificationReport.create(
-        sentTime = DateTime.now,
-        notification = push.notification,
-        statistics = NotificationStatistics(Map(WindowsMobile -> count.toOption))
-      )
+  def sendNotification(push: Push): Future[Error \/ NotificationReport] = {
+
+    def report(stats: Map[Platform, Option[Int]]) = NotificationReport.create(
+      sentTime = DateTime.now,
+      notification = push.notification,
+      statistics = NotificationStatistics(stats)
+    )
+
+    if (push.notification.importance == Major) {
+      for {
+        result <- hubClient.sendNotification(azureRawPushConverter.toAzureRawPush(push))
+        count <- count(push.destination)
+      } yield {
+        result.map(_ => report(Map(WindowsMobile -> count.toOption)))
+      }
+    } else {
+      Future.successful(report(Map.empty).right)
     }
   }
 
