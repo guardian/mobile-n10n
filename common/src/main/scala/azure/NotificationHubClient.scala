@@ -48,6 +48,20 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .map(extractContent)
   }
 
+  def delete(registrationId: WNSRegistrationId): Future[HubResult[Unit]] = {
+    logger.debug(s"deleting registration ($registrationId)")
+    request(s"${Endpoints.Registrations}${registrationId.registrationId}")
+      .withHeaders("If-Match" -> "*")
+      .delete()
+      .map { response =>
+        if (response.status == 200 || response.status == 404) {
+          ().right
+        } else {
+          XmlParser.parseError(response).left
+        }
+      }
+  }
+
   def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
     logger.debug(s"Sending Azure Raw Notification: $azureWindowsPush")
@@ -83,10 +97,11 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .map(_.map(_.title))
   }
 
-  def registrationsByTag(tag: String): Future[HubResult[AtomFeedResponse[RegistrationResponse]]] = {
+  def registrationsByTag(tag: String): Future[HubResult[List[RegistrationResponse]]] = {
     request(s"/tags/$tag/registrations")
       .get()
       .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
+      .map { hubResult => hubResult.map(_.items) }
   }
 
   def submitNotificationHubJob(job: NotificationHubJobRequest): Future[HubResult[NotificationHubJob]] = {

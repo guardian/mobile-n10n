@@ -1,8 +1,9 @@
 package registration.services
 
 import azure.NotificationHubClient.HubResult
-import azure.{Tags, NotificationHubClient, RawWindowsRegistration, WNSRegistrationId}
+import azure.{Tag, Tags, NotificationHubClient, RawWindowsRegistration}
 import models._
+import play.api.Logger
 import providers.Error
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -13,28 +14,63 @@ import scalaz.std.option.optionSyntax._
 class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec: ExecutionContext)
   extends NotificationRegistrar {
 
+  val logger = Logger(classOf[WindowsNotificationRegistrar])
+
   override def register(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
-    hubClient.registrationsByChannelUri(registration.deviceId).flatMap {
-      case \/-(Nil) => createOrUpdateRegistration(lastKnownChannelUri, registration)
-      case \/-(_ :: _) => createOrUpdateRegistration(registration.deviceId, registration)
+    findRegistrations(lastKnownChannelUri, registration).flatMap {
+      case \/-(Nil) => createRegistration(registration)
+      case \/-(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
+      case \/-(moreThanOneRegistration) => deleteAndCreate(moreThanOneRegistration, registration)
       case -\/(e: Error) => Future.successful(e.left)
     }
   }
 
-  private def createOrUpdateRegistration(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
-    def createNewRegistration = hubClient
-      .create(RawWindowsRegistration.fromMobileRegistration(registration))
-      .map(hubResultToRegistrationResponse)
+  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, List[azure.RegistrationResponse]]] = {
 
-    def updateRegistration(regId: WNSRegistrationId) = hubClient
-      .update(regId, RawWindowsRegistration.fromMobileRegistration(registration))
-      .map(hubResultToRegistrationResponse)
+    def extractResultFromResponse(
+      userIdResults: HubResult[List[azure.RegistrationResponse]],
+      deviceIdResults: HubResult[List[azure.RegistrationResponse]]
+    ): \/[Error, List[azure.RegistrationResponse]] = {
+      for {
+        userIdRegistrations <- userIdResults
+        deviceIdRegistrations <- deviceIdResults
+      } yield (deviceIdRegistrations ++ userIdRegistrations).distinct
+    }
 
-    hubClient.registrationsByChannelUri(lastKnownChannelUri).flatMap {
-      case \/-(Nil) => createNewRegistration
-      case \/-(existing :: Nil) => updateRegistration(existing.registration)
-      case \/-(_ :: _ :: _) => Future.successful(TooManyRegistrationsForChannel(lastKnownChannelUri).left)
-      case -\/(e: Error) => Future.successful(e.left)
+    for {
+      userIdResults <- hubClient.registrationsByTag(Tag.fromUserId(registration.userId).encodedTag)
+      deviceIdResults <- hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri)
+    } yield extractResultFromResponse(userIdResults, deviceIdResults)
+  }
+
+  private def createRegistration(registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+    logger.debug(s"creating registration $registration")
+    hubClient.create(RawWindowsRegistration.fromMobileRegistration(registration))
+      .map(hubResultToRegistrationResponse)
+  }
+
+  private def updateRegistration(azureRegistration: azure.RegistrationResponse, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+    logger.debug(s"updating registration ${azureRegistration.registration} with $registration")
+    hubClient.update(azureRegistration.registration, RawWindowsRegistration.fromMobileRegistration(registration))
+      .map(hubResultToRegistrationResponse)
+  }
+
+  private def deleteAndCreate(
+    registrationsToDelete: List[azure.RegistrationResponse],
+    registrationToCreate: Registration): Future[\/[Error, RegistrationResponse]] = {
+    deleteRegistrations(registrationsToDelete).flatMap {
+      case \/-(_) => createRegistration(registrationToCreate)
+      case -\/(error) => Future.successful(error.left)
+    }
+  }
+
+  private def deleteRegistrations(registrations: List[azure.RegistrationResponse]): Future[\/[Error, Unit]] = {
+    Future.traverse(registrations) { registration =>
+      logger.debug(s"deleting registration ${registration.registration}")
+      hubClient.delete(registration.registration)
+    } map { responses =>
+      val errors = responses.collect { case -\/(error) => error }
+      if (errors.isEmpty) ().right else errors.head.left
     }
   }
 
