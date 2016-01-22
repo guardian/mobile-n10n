@@ -20,12 +20,12 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec
     findRegistrations(lastKnownChannelUri, registration).flatMap {
       case \/-(Nil) => createRegistration(registration)
       case \/-(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
-      case \/-(oneRegistration :: moreRegistration) => deleteAndCreate(oneRegistration :: moreRegistration, registration)
+      case \/-(oneRegistration :: moreRegistrations) => deleteAndCreate(oneRegistration :: moreRegistrations, registration)
       case -\/(e: Error) => Future.successful(e.left)
     }
   }
 
-  def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, List[azure.RegistrationResponse]]] = {
+  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, List[azure.RegistrationResponse]]] = {
 
     def extractResultFromResponse(
       userIdResults: HubResult[List[azure.RegistrationResponse]],
