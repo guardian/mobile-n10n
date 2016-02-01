@@ -64,8 +64,7 @@ final class Main @Inject()(
     topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > 20 => Future.successful(BadRequest("Too many topics"))
-      //case _ => pushGeneric(Push(request.body, Left(topics)))
-      case _ => Future.successful(Created(Json.toJson(PushResult(request.body.id))))
+      case _ => pushGeneric(Push(request.body, Left(topics)))
     }
   }
 

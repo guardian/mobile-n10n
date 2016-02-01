@@ -30,8 +30,7 @@ class MainSpec extends PlaySpecification with Mockito {
 
       status(response) must equalTo(CREATED)
       pushSent must beSome.which(_.destination must beEqualTo(Left(topics)))
-    }.pendingUntilFixed("ignored until notification re-enabled")
-
+    }
     "refuse a notification without a topic" in new MainScope with NotificationScope {
       val request = authenticatedRequest.withBody(notification(Set()))
       status(main.pushTopics()(request)) must equalTo(BAD_REQUEST)
