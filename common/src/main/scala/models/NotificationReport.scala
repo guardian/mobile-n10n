@@ -21,7 +21,7 @@ object NotificationReport {
 
   def create(sentTime: DateTime,
     notification: Notification,
-    statistics: NotificationStatistics): NotificationReport = NotificationReport(
+    statistics: NotificationStatistics = NotificationStatistics(Map.empty)): NotificationReport = NotificationReport(
       id = notification.id,
       `type` = notification.`type`,
       notification = notification,

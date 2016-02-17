@@ -1,9 +1,9 @@
 package azure
 
 import play.api.libs.ws.WSResponse
-import providers.Error
+import providers.ProviderError
 
-sealed trait HubFailure extends Error {
+sealed trait HubFailure extends ProviderError {
   def providerName: String = "WNS"
   def reason: String
 }

@@ -1,87 +1,146 @@
 package notification.controllers
 
-import java.net.URI
-import java.util.UUID
-
-import models.Importance.Major
-import models.Link.Internal
 import models.TopicTypes.Breaking
 import models._
-import notification.models.Push
-import notification.services.{NotificationReportRepositorySupport, NotificationSender, NotificationSenderSupport, Configuration}
+import notification.NotificationsFixtures
+import notification.models.{PushResult, Push}
+import notification.services.frontend.{FrontendAlerts, FrontendAlertsSupport}
+import notification.services._
+import org.specs2.concurrent.ExecutionEnv
+import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
-import play.api.test.{FakeRequest, PlaySpecification}
-import providers.Error
-import tracking.InMemoryNotificationReportRepository
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.ws.WSClient
+import play.api.test.PlaySpecification
+import tracking.{RepositoryError, SentNotificationReportRepository}
 
 import scala.concurrent.Future
-import scalaz.\/
 import scalaz.syntax.either._
 
-class MainSpec extends PlaySpecification with Mockito {
-
-  "The Main controller" should {
-    "send a notification to multiple topics" in new MainScope with NotificationScope {
-      val topics = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"))
-      val request = authenticatedRequest.withBody(notification(topics))
+class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito with JsonMatchers {
+  "Sending notification to topics" should {
+    "successfully send a notification to multiple topics" in new MainScope {
+      val request = requestWithValidTopics
       val response = main.pushTopics()(request)
 
       status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(Left(topics)))
+      pushSent must beSome.which(_.destination must beEqualTo(Left(validTopics)))
     }
-    "refuse a notification without a topic" in new MainScope with NotificationScope {
-      val request = authenticatedRequest.withBody(notification(Set()))
+    "refuse a notification without a topic" in new MainScope {
+      val request = authenticatedRequest.withBody(breakingNewsNotification(Set()))
       status(main.pushTopics()(request)) must equalTo(BAD_REQUEST)
     }
-    "refuse a notification with too many topics" in new MainScope with NotificationScope {
+    "refuse a notification with too many topics" in new MainScope {
       val topics = (1 to 21).map(i => Topic(Breaking, s"$i"))
-      val request = authenticatedRequest.withBody(notification(Set()))
+      val request = authenticatedRequest.withBody(breakingNewsNotification(Set()))
       status(main.pushTopics()(request)) must equalTo(BAD_REQUEST)
     }
   }
 
-  trait NotificationScope extends Scope {
-    def notification(topics: Set[Topic]): Notification = BreakingNewsNotification(
-      id = UUID.fromString("30aac5f5-34bb-4a88-8b69-97f995a4907b"),
-      title = "The Guardian",
-      message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
-      thumbnailUrl = Some(new URI("http://media.guim.co.uk/09951387fda453719fe1fee3e5dcea4efa05e4fa/0_181_3596_2160/140.jpg")),
-      sender = "test",
-      link = Internal("world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates"),
-      imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/" +
-        "0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
-      importance = Major,
-      topic = topics
-    )
+  "Sending correct notification" should {
+    "notify reporting repository about added notifications" in new MainScope {
+      val request = requestWithValidTopics
+
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(CREATED)
+      there was one(repositorySupport.notificationReportRepository).store(notificationReport)
+    }
+
+    "notify reporting repository about added notifications and propagate reporting error" in new MainScope {
+      val request = requestWithValidTopics
+      reportRepository.store(notificationReport) returns Future.successful(RepositoryError("error").left)
+
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(CREATED)
+      contentAsJson(response).as[PushResult].reportingError must beSome
+    }
+
+    "report frontend alerts rejected notifications" in new MainScope {
+      val request = requestWithValidTopics
+      alertsSupport.frontendAlerts.sendNotification(any) returns Future.successful(NotificationRejected(Some(providerError)).left)
+
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(CREATED)
+      contentAsJson(response).as[PushResult].rejectedNotifications must beSome.which(_.length == 1)
+    }
+
+    "send notification to frontend news alerts" in new MainScope {
+      val request = requestWithValidTopics
+
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(CREATED)
+      there was one(alertsSupport.frontendAlerts).sendNotification(any)
+    }
+
+    "report each succesfully sent notification" in new MainScope {
+      val request = requestWithValidTopics
+
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(CREATED)
+      there was two(reportRepository).store(any[NotificationReport])
+    }
+
+    "aggregates errors thrown from reporting" in new MainScope {
+      val request = requestWithValidTopics
+      val firstError = Future.successful(RepositoryError("first error").left)
+      val secondError = Future.successful(RepositoryError("second error").left)
+
+      reportRepository.store(any[NotificationReport]) returns firstError thenReturns secondError
+
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(CREATED)
+      contentAsJson(response).as[PushResult].reportingError must beSome(contain("first")) and beSome(contain("second"))
+      there was two(reportRepository).store(any[NotificationReport])
+    }
   }
 
   trait NotificationSenderSupportScope extends Scope {
+    self: NotificationsFixtures =>
     var pushSent: Option[Push] = None
-    val notificationReport = mock[NotificationReport]
+
     val notificationSenderSupport = {
       val m = mock[NotificationSenderSupport]
       m.notificationSender returns new NotificationSender {
-        override def sendNotification(push: Push): Future[\/[Error, NotificationReport]] = {
+        override def sendNotification(push: Push): Future[SenderResult] = {
           pushSent = Some(push)
           Future.successful(notificationReport.right)
         }
-        override def name: String = "test"
       }
     }
   }
 
   trait NotificationReportRepositorySupportScope extends Scope {
-    val notificationReportRepositorySupport = {
-      val m = mock[NotificationReportRepositorySupport]
-      m.notificationReportRepository returns new InMemoryNotificationReportRepository
+    val reportRepository = mock[SentNotificationReportRepository]
+    reportRepository.store(any) returns Future.successful(().right)
+
+    val repositorySupport = new NotificationReportRepositorySupport {
+      override val notificationReportRepository = reportRepository
     }
   }
 
-  trait MainScope extends Scope with NotificationSenderSupportScope with NotificationReportRepositorySupportScope {
-    val apiKey = "test"
-    val authenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$apiKey")
+  trait FrontendAlertsSupportScope extends Scope {
+    self: NotificationsFixtures =>
+    val configuration = mock[Configuration]
+    val wsClient = mock[WSClient]
+    configuration.frontendNewsAlertApiKey returns "someKey"
+    configuration.frontendNewsAlertEndpoint returns "https://internal-frontend.code.dev-guardianapis.com/news-alert/"
+    val alertsSupport = new FrontendAlertsSupport(configuration, wsClient) {
+      override val frontendAlerts = mock[FrontendAlerts]
+    }
+    alertsSupport.frontendAlerts.sendNotification(any) returns Future.successful(notificationReport.right)
+  }
+
+  trait MainScope extends Scope
+    with NotificationSenderSupportScope
+    with NotificationReportRepositorySupportScope
+    with FrontendAlertsSupportScope
+    with NotificationsFixtures {
     val conf: Configuration = {
       val m = mock[Configuration]
       m.apiKey returns Some(apiKey)
@@ -91,8 +150,8 @@ class MainSpec extends PlaySpecification with Mockito {
     val main = new Main(
       configuration = conf,
       notificationSenderSupport = notificationSenderSupport,
-      notificationReportRepositorySupport = notificationReportRepositorySupport
+      notificationReportRepositorySupport = repositorySupport,
+      frontendAlertsSupport = alertsSupport
     )
   }
-
 }

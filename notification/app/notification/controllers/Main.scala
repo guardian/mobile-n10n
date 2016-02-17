@@ -4,22 +4,28 @@ import java.util.UUID
 import javax.inject.Inject
 
 import authentication.AuthenticationSupport
+import error.NotificationsError
 import models._
 import notification.models.{PushResult, Push}
-import notification.services.{NotificationSenderSupport, NotificationReportRepositorySupport, Configuration}
+import notification.services.frontend.FrontendAlertsSupport
+import notification.services.{NotificationSender, Configuration, NotificationReportRepositorySupport, NotificationSenderSupport}
 import play.api.Logger
-import play.api.libs.json.Json
+import play.api.libs.json.Json.toJson
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
-import play.api.mvc.{AnyContent, Action, Controller, Result}
-import providers.Error
+import play.api.mvc.{Action, AnyContent, Controller, Result}
+import tracking.Repository.RepositoryResult
+import tracking.RepositoryError
 
+import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.{-\/, \/-}
+import scalaz.{\/-, -\/}
+import scalaz.syntax.either._
 
 final class Main @Inject()(
   configuration: Configuration,
   notificationSenderSupport: NotificationSenderSupport,
-  notificationReportRepositorySupport: NotificationReportRepositorySupport)
+  notificationReportRepositorySupport: NotificationReportRepositorySupport,
+  frontendAlertsSupport: FrontendAlertsSupport)
   (implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
 
@@ -29,31 +35,16 @@ final class Main @Inject()(
 
   import notificationReportRepositorySupport._
   import notificationSenderSupport._
-
+  import frontendAlertsSupport._
+  
+  val senders = List(notificationSender, frontendAlerts)
+  
   def handleErrors[T](result: T): Result = result match {
-    case error: Error => InternalServerError(error.reason)
+    case error: NotificationsError => InternalServerError(error.reason)
   }
 
   def healthCheck: Action[AnyContent] = Action {
     Ok("Good")
-  }
-
-  private def pushGeneric(push: Push) = {
-    notificationSender.sendNotification(push) flatMap {
-      case \/-(report) =>
-        notificationReportRepository.store(report) map {
-          case \/-(_) =>
-            logger.info(s"Notification was sent: $push")
-            Created(Json.toJson(PushResult(push.notification.id)))
-          case -\/(error) =>
-            logger.error(s"Notification ($push) sent ($report) but report could not be stored ($error)")
-            InternalServerError(s"Notification sent but report could not be stored ($error)")
-        }
-
-      case -\/(error) =>
-        logger.error(s"Notification ($push) could not be sent: $error")
-        Future.successful(handleErrors(error))
-    }
   }
 
   @deprecated("A push notification can be sent to multiple topics, this is for backward compatibility only", since = "07/12/2015")
@@ -61,9 +52,10 @@ final class Main @Inject()(
 
   def pushTopics: Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
     val topics = request.body.topic
+    val MaxTopics = 20
     topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
-      case a: Int if a > 20 => Future.successful(BadRequest("Too many topics"))
+      case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ => pushGeneric(Push(request.body, Left(topics)))
     }
   }
@@ -73,4 +65,53 @@ final class Main @Inject()(
     pushGeneric(push)
   }
 
+  private def pushGeneric(push: Push) = {
+    sendNotifications(push, to = senders) flatMap {
+      case (Nil, reports @ _ :: _) =>
+        reportPushSent(reports) map {
+          case \/-(_) =>
+            logger.info(s"Notification was sent: $push")
+            Created(toJson(PushResult(push.notification.id)))
+          case -\/(error) =>
+            logger.error(s"Notification ($push) sent but report could not be stored ($error)")
+            Created(toJson(PushResult(push.notification.id).withReportingError(error)))
+        }
+      case (rejected @ _ :: _, reports @ _ :: _) =>
+        reportPushSent(reports) map {
+          case \/-(_) =>
+            logger.warn(s"Notification ($push) was rejected by some providers: ($rejected)")
+            Created(toJson(PushResult(push.notification.id).withRejected(rejected)))
+          case -\/(error) =>
+            logger.error(s"Notification ($push) was rejected by some providers and there were errors in reporting")
+            Created(toJson(PushResult(push.notification.id).withRejected(rejected).withReportingError(error)))
+        }
+      case (allRejected @ _ :: _, Nil) =>
+        logger.error(s"Notification ($push) could not be sent: $allRejected")
+        Future.successful(InternalServerError)
+      case _ =>
+        Future.successful(NotFound)
+    }
+  }
+
+  private def sendNotifications(push: Push, to: List[NotificationSender]) = {
+    val sendResults = senders.map { _.sendNotification(push) }
+    sequence(sendResults) map { results =>
+      val rejected = results.flatMap(_.swap.toOption)
+      val reports = results.flatMap(_.toOption)
+      (rejected, reports)
+    }
+  }
+
+  private def reportPushSent(reports: List[NotificationReport]) = {
+    val reportingResults = reports map { notificationReportRepository.store }
+    val NoErrors = ().right[RepositoryError]
+    def collectErrors(aggr: RepositoryResult[Unit], result: RepositoryResult[Unit]) = (aggr, result) match {
+      case (NoErrors, \/-(())) => NoErrors
+      case (NoErrors, error @ -\/(_)) => error
+      case (aggregatedError @ -\/(_), \/-(())) => aggregatedError
+      case (aggregatedError @ -\/(_), -\/(error)) => aggregatedError.leftMap(e => e.copy(message = s"${ e.message }, ${ error.message }"))
+    }
+    Future.fold(reportingResults)(NoErrors)(collectErrors)
+  }
 }
+

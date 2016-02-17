@@ -2,8 +2,8 @@ package notification.services
 
 import javax.inject.Inject
 
-import tracking.InMemoryNotificationReportRepository
+import tracking.{SentNotificationReportRepository, InMemoryNotificationReportRepository}
 
 class NotificationReportRepositorySupport @Inject()() {
-  val notificationReportRepository = new InMemoryNotificationReportRepository
+  val notificationReportRepository: SentNotificationReportRepository = new InMemoryNotificationReportRepository
 }

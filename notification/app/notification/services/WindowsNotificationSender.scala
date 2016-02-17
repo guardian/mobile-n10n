@@ -6,22 +6,19 @@ import models._
 import notification.models.Destination.Destination
 import notification.models.Push
 import org.joda.time.DateTime
-import providers.Error
 import tracking.Repository._
 import tracking.{InMemoryTopicSubscriptionsRepository, RepositoryResult}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.{\/-, -\/, \/}
+import scalaz.{\/-, -\/}
 import scalaz.syntax.either._
 
 class WindowsNotificationSender(hubClient: NotificationHubClient, configuration: Configuration)(implicit ec: ExecutionContext) extends NotificationSender {
-  override val name = "WNS"
-
   private val topicSubscriptionsRepository = new InMemoryTopicSubscriptionsRepository
 
   private val azureRawPushConverter = new AzureRawPushConverter(configuration)
 
-  def sendNotification(push: Push): Future[Error \/ NotificationReport] = {
+  def sendNotification(push: Push): Future[SenderResult] = {
 
     def report(stats: Map[Platform, Option[Int]]) = NotificationReport.create(
       sentTime = DateTime.now,
@@ -34,7 +31,10 @@ class WindowsNotificationSender(hubClient: NotificationHubClient, configuration:
         result <- hubClient.sendNotification(azureRawPushConverter.toAzureRawPush(push))
         count <- count(push.destination)
       } yield {
-        result.map(_ => report(Map(WindowsMobile -> count.toOption)))
+        result.fold(
+          e => NotificationRejected(Some(e)).left,
+          _ => report(Map(WindowsMobile -> count.toOption)).right
+        )
       }
     } else {
       Future.successful(report(Map.empty).right)

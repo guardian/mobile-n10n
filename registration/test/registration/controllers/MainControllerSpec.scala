@@ -10,7 +10,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.{FakeRequest, PlaySpecification}
-import providers.Error
+import providers.ProviderError
 import registration.services.{RegistrationResponse, NotificationRegistrar, RegistrarSupport}
 import registration.services.topic.TopicValidator
 
@@ -65,7 +65,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers{
 class RegistrarSupportMock extends RegistrarSupport {
 
   override def registrarFor(registration: Registration): \/[String, NotificationRegistrar] = new NotificationRegistrar {
-    override def register(deviceId: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = Future {
+    override def register(deviceId: String, registration: Registration): Future[\/[ProviderError, RegistrationResponse]] = Future {
       RegistrationResponse(
         deviceId = "deviceAA",
         platform = WindowsMobile,
