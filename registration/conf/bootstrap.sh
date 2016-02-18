@@ -41,36 +41,3 @@ aws s3 cp s3://mobile-notifications-dist/$stagetag/$stacktag.properties /etc/gu/
 cp /$apptag-1.0-SNAPSHOT/conf/init.conf /etc/init/registration.conf
 
 start registration
-
-tmpfile=/tmp/filters.$$
-
-aws logs describe-subscription-filters \
-    --log-group-name $stacktag-$apptag-$stagetag \
-    --region eu-west-1 \
-    --filter-name-prefix "cwl-es-" > $tmpfile
-
-current_name=$(grep filterName $tmpfile | awk -F \" '{ print $4 };')
-current_pattern=$(grep filterPattern $tmpfile | awk -F \" '{ print $4 };')
-current_role=$(grep roleArn $tmpfile | awk -F \" '{ print $4 };')
-current_dest=$(grep destinationArn $tmpfile | awk -F \" '{ print $4 };')
-
-rm $tmpfile
-
-if [ "$current_pattern" != "$filter_pattern" ] || \
-    [ "$current_role" != "$loggingrole" ] || \
-    [ "$current_dest" != "$loggingstream" ]; then
-    if [ "$current_name" != "" ]; then
-        aws logs delete-subscription-filter \
-            --log-group-name $log_group_name \
-            --filter-name $current_name \
-            --region eu-west-1
-    fi
-
-    aws logs put-subscription-filter \
-        --log-group-name $log_group_name \
-        --filter-name cwl-es-$log_group_name \
-        --filter-pattern "$filter_pattern" \
-        --destination-arn "$loggingstream" \
-        --role-arn "$loggingrole" \
-        --region eu-west-1
-fi
