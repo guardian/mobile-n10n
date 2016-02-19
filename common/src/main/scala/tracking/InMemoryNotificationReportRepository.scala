@@ -23,10 +23,10 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
     Future.successful(db.find(_.id == uuid) \/> RepositoryError("Notification report not found"))
   }
 
-  override def getByTypeWithDateRange(notificationType: NotificationType, from: DateTime, until: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
+  override def getByTypeWithDateRange(`type`: NotificationType, from: DateTime, until: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
     val interval = new Interval(from, until)
     Future.successful(\/.right(db.filter({report =>
-      report.`type` == notificationType && (interval contains report.sentTime)
+      report.`type` == `type` && (interval contains report.sentTime)
     }).toList))
   }
 
@@ -36,5 +36,5 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
 }
 
 case class RepositoryTrackingError(message: String) extends TrackingError {
-  override def reason = s"Could not store notification report in repository. ($message)"
+  override def reason: String = s"Could not store notification report in repository. ($message)"
 }
