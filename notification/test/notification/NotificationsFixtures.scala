@@ -27,7 +27,7 @@ trait NotificationsFixtures {
   )
 
   def trackingError = new TrackingError {
-    override def reason: String = "tracker problem"
+    override def description: String = "tracker problem"
   }
 
 

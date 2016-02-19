@@ -43,4 +43,4 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient) extends T
   }
 }
 
-case class FrontendAlertsTrackingError(reason: String) extends TrackingError
+case class FrontendAlertsTrackingError(description: String) extends TrackingError

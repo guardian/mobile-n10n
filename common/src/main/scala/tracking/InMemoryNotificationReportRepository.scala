@@ -36,5 +36,5 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
 }
 
 case class RepositoryTrackingError(message: String) extends TrackingError {
-  override def reason: String = s"Could not store notification report in repository. ($message)"
+  override def description: String = s"Could not store notification report in repository. ($message)"
 }
