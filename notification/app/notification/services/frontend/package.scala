@@ -36,7 +36,7 @@ package object frontend {
           urlId = capiIdUri,
           title = notification.title,
           message = notification.message,
-          link = new URI(s"http://www.theguardian.com/$urlId"),
+          link = new URI(s"http://www.theguardian.com/$capiIdUri"),
           thumbnailUrl = notification.thumbnailUrl,
           imageUrl = notification.thumbnailUrl,
           publicationDate = sent,
