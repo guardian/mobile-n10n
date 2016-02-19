@@ -10,7 +10,6 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
-import org.specs2.specification.mutable.ExecutionEnvironment
 import play.api.libs.ws.WSClient
 import play.api.test.PlaySpecification
 import providers.ProviderError
@@ -46,8 +45,8 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       val response = main.pushTopics()(request)
 
-      there was one(repositorySupport.notificationReportRepository).notificationSent(notificationReport)
       status(response) must equalTo(CREATED)
+      there was one(repositorySupport.notificationReportRepository).notificationSent(notificationReport)
     }
 
     "notify reporting repository about added notifications and propagate errors in push result" in new MainScope {
@@ -66,8 +65,8 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       val response = main.pushTopics()(request)
 
-      there was one(alertsSupport.frontendAlerts).notificationSent(notificationReport)
       status(response) must equalTo(CREATED)
+      there was one(alertsSupport.frontendAlerts).notificationSent(notificationReport)
     }
   }
 
