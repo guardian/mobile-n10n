@@ -64,7 +64,7 @@ final class Main @Inject()(
       case -\/(error) =>
         logger.error(s"Notification ($push) could not be sent: $error")
         Future.successful(handleErrors(error))
-      }
+    }
   }
 
   @deprecated("A push notification can be sent to multiple topics, this is for backward compatibility only", since = "07/12/2015")
