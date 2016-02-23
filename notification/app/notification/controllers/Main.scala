@@ -13,7 +13,7 @@ import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, AnyContent, Controller, Result}
-import tracking.TrackingError
+import tracking.{TrackingObserver, TrackingError}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.syntax.either._
@@ -34,37 +34,15 @@ final class Main @Inject()(
   import notificationReportRepositorySupport._
   import notificationSenderSupport._
   import frontendAlertsSupport._
-
+  
+  val trackingObservers = Seq(notificationReportRepository, frontendAlerts)
+  
   def handleErrors[T](result: T): Result = result match {
     case error: NotificationsError => InternalServerError(error.reason)
   }
 
   def healthCheck: Action[AnyContent] = Action {
     Ok("Good")
-  }
-
-  private def pushGeneric(push: Push) = {
-    def notifyAboutPush(report: NotificationReport): Future[\/[List[TrackingError], Unit]] = {
-      val observers = Seq(notificationReportRepository, frontendAlerts)
-      val noErrors = ().right[List[TrackingError]]
-      Future.fold(observers.map(_.notificationSent(report)))(noErrors) { (aggr, trackerResult) => trackerResult match {
-        case -\/(err) if aggr.isLeft => aggr.leftMap { err :: _ }
-        case -\/(err) => List(err).left
-        case _ => aggr
-      }}
-    }
-
-    notificationSender.sendNotification(push) flatMap {
-      case \/-(report) =>
-        logger.info(s"Notification was sent: $push")
-        notifyAboutPush(report) map {
-          case \/-(_) => Created(Json.toJson(PushResult.fromReport(report)))
-          case -\/(errors) => Created(Json.toJson(PushResult.fromReport(report).withTrackingErrors(errors.map(_.reason))))
-        }
-      case -\/(error) =>
-        logger.error(s"Notification ($push) could not be sent: $error")
-        Future.successful(handleErrors(error))
-    }
   }
 
   @deprecated("A push notification can be sent to multiple topics, this is for backward compatibility only", since = "07/12/2015")
@@ -84,5 +62,28 @@ final class Main @Inject()(
     val push = Push(request.body, Right(UserId(userId)))
     pushGeneric(push)
   }
+  
+  private def pushGeneric(push: Push) = {
+    notificationSender.sendNotification(push) flatMap {
+      case \/-(report) =>
+        logger.info(s"Notification was sent: $push")
+        notifyAboutPush(trackingObservers, report) map {
+          case \/-(_) => Created(Json.toJson(PushResult.fromReport(report)))
+          case -\/(errors) => Created(Json.toJson(PushResult.fromReport(report).withTrackingErrors(errors.map(_.reason))))
+        }
+      case -\/(error) =>
+        logger.error(s"Notification ($push) could not be sent: $error")
+        Future.successful(handleErrors(error))
+    }
+  }
 
+  private def notifyAboutPush(observers: Seq[TrackingObserver], report: NotificationReport) = {
+    def notifyObservers = observers.map { _.notificationSent(report) }
+    val noErrors = ().right[List[TrackingError]]
+    Future.fold(notifyObservers)(noErrors) {
+      case (aggr, -\/(err)) if aggr.isLeft => aggr.leftMap { err :: _ }
+      case (aggr, -\/(err)) => List(err).left
+      case (aggr, _) => aggr
+    }
+  }
 }
