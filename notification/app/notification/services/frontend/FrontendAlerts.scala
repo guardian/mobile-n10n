@@ -15,7 +15,7 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient) extends T
   val logger = Logger(classOf[FrontendAlerts])
 
   def sendBreakingNewsAlert(alert: NewsAlert): Future[String \/ Unit] = wsClient
-    .url(config.endpoint + "/alert")
+    .url(s"${ config.endpoint }/alert")
     .withHeaders("Content-Type" -> "application/json", "X-Gu-Api-Key" -> config.apiKey)
     .post(Json.toJson(alert))
     .map { response =>
