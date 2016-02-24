@@ -79,8 +79,8 @@ final class Main @Inject()(
 
   private def notifyAboutPush(observers: Seq[TrackingObserver], report: NotificationReport) = {
     val notifyObservers = observers.map { _.notificationSent(report) }
-    val noErrors = ().right[List[TrackingError]]
-    Future.fold(notifyObservers)(noErrors) {
+    val NoErrors = ().right[List[TrackingError]]
+    Future.fold(notifyObservers)(NoErrors) {
       case (aggr, -\/(err)) => List(err).left
       case (-\/(errors), -\/(err)) => (err :: errors).left
       case (aggr, _) => aggr
