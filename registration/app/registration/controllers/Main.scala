@@ -3,12 +3,13 @@ package registration.controllers
 import javax.inject.Inject
 
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
+import error.NotificationsError
 import models.Registration
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{AnyContent, Action, Controller, Result}
-import providers.Error
+import providers.ProviderError
 import registration.services.{RegistrationResponse, NotificationRegistrar, RegistrarSupport}
 import registration.services.topic.TopicValidator
 
@@ -44,7 +45,7 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
     }
   }
 
-  private def processResponse(result: Error \/ RegistrationResponse): Result = {
+  private def processResponse(result: NotificationsError \/ RegistrationResponse): Result = {
     result match {
       case \/-(res) =>
         Ok(Json.toJson(res))

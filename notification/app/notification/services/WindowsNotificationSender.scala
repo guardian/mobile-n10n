@@ -6,7 +6,7 @@ import models._
 import notification.models.Destination.Destination
 import notification.models.Push
 import org.joda.time.DateTime
-import providers.Error
+import providers.ProviderError
 import tracking.Repository._
 import tracking.{InMemoryTopicSubscriptionsRepository, RepositoryResult}
 
@@ -21,7 +21,7 @@ class WindowsNotificationSender(hubClient: NotificationHubClient, configuration:
 
   private val azureRawPushConverter = new AzureRawPushConverter(configuration)
 
-  def sendNotification(push: Push): Future[Error \/ NotificationReport] = {
+  def sendNotification(push: Push): Future[ProviderError \/ NotificationReport] = {
 
     def report(stats: Map[Platform, Option[Int]]) = NotificationReport.create(
       sentTime = DateTime.now,

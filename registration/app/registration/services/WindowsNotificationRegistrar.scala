@@ -4,7 +4,7 @@ import azure.NotificationHubClient.HubResult
 import azure.{Tag, Tags, NotificationHubClient, RawWindowsRegistration}
 import models._
 import play.api.Logger
-import providers.Error
+import providers.ProviderError
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.syntax.either._
@@ -16,21 +16,21 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec
 
   val logger = Logger(classOf[WindowsNotificationRegistrar])
 
-  override def register(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+  override def register(lastKnownChannelUri: String, registration: Registration): Future[\/[ProviderError, RegistrationResponse]] = {
     findRegistrations(lastKnownChannelUri, registration).flatMap {
       case \/-(Nil) => createRegistration(registration)
       case \/-(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
       case \/-(moreThanOneRegistration) => deleteAndCreate(moreThanOneRegistration, registration)
-      case -\/(e: Error) => Future.successful(e.left)
+      case -\/(e: ProviderError) => Future.successful(e.left)
     }
   }
 
-  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[\/[Error, List[azure.RegistrationResponse]]] = {
+  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[\/[ProviderError, List[azure.RegistrationResponse]]] = {
 
     def extractResultFromResponse(
       userIdResults: HubResult[List[azure.RegistrationResponse]],
       deviceIdResults: HubResult[List[azure.RegistrationResponse]]
-    ): \/[Error, List[azure.RegistrationResponse]] = {
+    ): \/[ProviderError, List[azure.RegistrationResponse]] = {
       for {
         userIdRegistrations <- userIdResults
         deviceIdRegistrations <- deviceIdResults
@@ -43,13 +43,13 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec
     } yield extractResultFromResponse(userIdResults, deviceIdResults)
   }
 
-  private def createRegistration(registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+  private def createRegistration(registration: Registration): Future[\/[ProviderError, RegistrationResponse]] = {
     logger.debug(s"creating registration $registration")
     hubClient.create(RawWindowsRegistration.fromMobileRegistration(registration))
       .map(hubResultToRegistrationResponse)
   }
 
-  private def updateRegistration(azureRegistration: azure.RegistrationResponse, registration: Registration): Future[\/[Error, RegistrationResponse]] = {
+  private def updateRegistration(azureRegistration: azure.RegistrationResponse, registration: Registration): Future[\/[ProviderError, RegistrationResponse]] = {
     logger.debug(s"updating registration ${azureRegistration.registration} with $registration")
     hubClient.update(azureRegistration.registration, RawWindowsRegistration.fromMobileRegistration(registration))
       .map(hubResultToRegistrationResponse)
@@ -57,14 +57,14 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec
 
   private def deleteAndCreate(
     registrationsToDelete: List[azure.RegistrationResponse],
-    registrationToCreate: Registration): Future[\/[Error, RegistrationResponse]] = {
+    registrationToCreate: Registration): Future[\/[ProviderError, RegistrationResponse]] = {
     deleteRegistrations(registrationsToDelete).flatMap {
       case \/-(_) => createRegistration(registrationToCreate)
       case -\/(error) => Future.successful(error.left)
     }
   }
 
-  private def deleteRegistrations(registrations: List[azure.RegistrationResponse]): Future[\/[Error, Unit]] = {
+  private def deleteRegistrations(registrations: List[azure.RegistrationResponse]): Future[\/[ProviderError, Unit]] = {
     Future.traverse(registrations) { registration =>
       logger.debug(s"deleting registration ${registration.registration}")
       hubClient.delete(registration.registration)
@@ -91,7 +91,7 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient)(implicit ec
 
 }
 
-sealed trait WindowsNotificationProviderError extends Error {
+sealed trait WindowsNotificationProviderError extends ProviderError {
   override def providerName: String = "WNS"
 }
 
