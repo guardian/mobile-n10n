@@ -49,7 +49,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       there was one(repositorySupport.notificationReportRepository).notificationSent(notificationReport)
     }
 
-    "notify reporting repository about added notifications and propagate errors in push result" in new MainScope {
+    "notify reporting repository about added notifications and propagate tracking error" in new MainScope {
       val request = requestWithValidTopics
       reportRepository.notificationSent(notificationReport) returns Future.successful(trackingError.left)
 
@@ -59,8 +59,18 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       contentAsJson(response).as[PushResult].trackingErrors must beSome
     }
 
+    "notify reporting repository about added notifications and propagate multiple tracking errors" in new MainScope {
+      val request = requestWithValidTopics
+      reportRepository.notificationSent(notificationReport) returns Future.successful(trackingError.left)
+      alertsSupport.frontendAlerts.notificationSent(notificationReport) returns Future.successful(trackingError.left)
 
-    "notify frontend news alerts about about notification" in new MainScope {
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(CREATED)
+      contentAsJson(response).as[PushResult].trackingErrors must beSome(size[List[String]](2))
+    }
+
+    "notify frontend news alerts about notification" in new MainScope {
       val request = requestWithValidTopics
 
       val response = main.pushTopics()(request)

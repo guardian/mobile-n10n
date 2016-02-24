@@ -81,7 +81,7 @@ final class Main @Inject()(
     val notifyObservers = observers.map { _.notificationSent(report) }
     val NoErrors = ().right[List[TrackingError]]
     Future.fold(notifyObservers)(NoErrors) {
-      case (aggr, -\/(err)) => List(err).left
+      case (NoErrors, -\/(err)) => List(err).left
       case (-\/(errors), -\/(err)) => (err :: errors).left
       case (aggr, _) => aggr
     }
