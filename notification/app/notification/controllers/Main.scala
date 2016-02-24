@@ -78,7 +78,7 @@ final class Main @Inject()(
   }
 
   private def notifyAboutPush(observers: Seq[TrackingObserver], report: NotificationReport) = {
-    def notifyObservers = observers.map { _.notificationSent(report) }
+    val notifyObservers = observers.map { _.notificationSent(report) }
     val noErrors = ().right[List[TrackingError]]
     Future.fold(notifyObservers)(noErrors) {
       case (aggr, -\/(err)) if aggr.isLeft => aggr.leftMap { err :: _ }
