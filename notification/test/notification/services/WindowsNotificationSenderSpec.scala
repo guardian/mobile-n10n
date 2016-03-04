@@ -1,12 +1,10 @@
 package notification.services
 
-import java.util.UUID
 
 import azure.{AzureRawPush, NotificationHubClient}
 import models._
 import models.Importance.{Minor, Major}
-import models.Link.Internal
-import notification.models.Push
+import notification.NotificationsFixtures
 import org.joda.time.{DateTime, DateTimeUtils}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -36,23 +34,9 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
     }
   }
 
-  trait WNSScope extends Scope {
+  trait WNSScope extends Scope with NotificationsFixtures {
     def importance: Importance = Major
-
-    val somePush: Push = Push(
-      notification = BreakingNewsNotification(
-        id = UUID.randomUUID(),
-        title = "",
-        message = "",
-        thumbnailUrl = None,
-        sender = "test",
-        link = Internal("capiId"),
-        imageUrl = None,
-        importance = importance,
-        topic = Set()
-      ),
-      destination = Right(UserId(UUID.randomUUID()))
-    )
+    val somePush = breakingNewsPush(importance)
 
     def notificationReport(stats: Map[Platform, Option[Int]] = Map(WindowsMobile -> Some(1))): NotificationReport = NotificationReport.create(
       sentTime = DateTime.now,

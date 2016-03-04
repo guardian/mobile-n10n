@@ -1,7 +1,7 @@
 package registration.services
 
 import models.{Platform, Registration, Topic, UserId}
-import providers.Error
+import providers.ProviderError
 
 import scala.concurrent.Future
 import scalaz.\/
@@ -15,5 +15,5 @@ object RegistrationResponse {
 }
 
 trait NotificationRegistrar {
-  def register(oldDeviceId: String, registration: Registration): Future[Error \/ RegistrationResponse]
+  def register(oldDeviceId: String, registration: Registration): Future[ProviderError \/ RegistrationResponse]
 }
