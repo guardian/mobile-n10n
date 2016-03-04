@@ -9,6 +9,6 @@ class Configuration extends NotificationConfiguration("notification") {
   lazy val apiKey = conf.getStringProperty("notifications.api.secretKey")
   lazy val mapiItemEndpoint = conf.getStringProperty("mapi.items.endpoint", "http://mobile-apps.guardianapis.com/items")
   lazy val debug = getConfigBoolean("notifications.api.debug")
-  lazy val frontendNewsAlertEndpoint = getConfigString("notifications.tracking.frontendNewsAlert.endpoint")
-  lazy val frontendNewsAlertApiKey = getConfigString("notifications.tracking.frontendNewsAlert.apiKey")
+  lazy val frontendNewsAlertEndpoint = getConfigString("notifications.frontendNewsAlert.endpoint")
+  lazy val frontendNewsAlertApiKey = getConfigString("notifications.frontendNewsAlert.apiKey")
 }
