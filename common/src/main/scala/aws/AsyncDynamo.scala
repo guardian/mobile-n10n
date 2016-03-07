@@ -25,8 +25,8 @@ object AsyncDynamo {
     .withAttributeValueList(new AttributeValue(a), new AttributeValue(b))
 
   def apply(region: Regions, credentialsProvider: AWSCredentialsProvider = new InstanceProfileCredentialsProvider()): AsyncDynamo = {
-    val asyncClient = new AmazonDynamoDBAsyncClient(credentialsProvider).withRegion(region)
-    new AsyncDynamo(asyncClient)
+    val dynamoClient: AmazonDynamoDBAsyncClient = new AmazonDynamoDBAsyncClient(credentialsProvider).withRegion(region)
+    new AsyncDynamo(dynamoClient)
   }
 }
 
