@@ -2,8 +2,16 @@ package notification.services
 
 import javax.inject.Inject
 
-import tracking.{SentNotificationReportRepository, InMemoryNotificationReportRepository}
+import aws.AsyncDynamo
+import com.amazonaws.regions.Regions.EU_WEST_1
+import tracking.{DynamoNotificationReportRepository, SentNotificationReportRepository}
 
-class NotificationReportRepositorySupport @Inject()() {
-  val notificationReportRepository: SentNotificationReportRepository = new InMemoryNotificationReportRepository
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class NotificationReportRepositorySupport @Inject()(configuration: Configuration) {
+  lazy val notificationReportRepository: SentNotificationReportRepository =
+    new DynamoNotificationReportRepository(
+      AsyncDynamo(region = EU_WEST_1),
+      configuration.dynamoReportsTableName
+    )
 }
