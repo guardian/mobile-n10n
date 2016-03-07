@@ -119,19 +119,24 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     val reportRepository = mock[SentNotificationReportRepository]
     reportRepository.store(any) returns Future.successful(().right)
 
-    val repositorySupport = new NotificationReportRepositorySupport {
-      override val notificationReportRepository = reportRepository
+    val repositorySupport = {
+      val configuration = mock[Configuration]
+      new NotificationReportRepositorySupport(configuration) {
+        override lazy val notificationReportRepository = reportRepository
+      }
     }
   }
 
   trait FrontendAlertsSupportScope extends Scope {
     self: NotificationsFixtures =>
-    val configuration = mock[Configuration]
     val wsClient = mock[WSClient]
-    configuration.frontendNewsAlertApiKey returns "someKey"
-    configuration.frontendNewsAlertEndpoint returns "https://internal-frontend.code.dev-guardianapis.com/news-alert/"
-    val alertsSupport = new FrontendAlertsSupport(configuration, wsClient) {
-      override val frontendAlerts = mock[FrontendAlerts]
+    val alertsSupport = {
+      val configuration = mock[Configuration]
+      configuration.frontendNewsAlertApiKey returns "someKey"
+      configuration.frontendNewsAlertEndpoint returns "https://internal-frontend.code.dev-guardianapis.com/news-alert/"
+      new FrontendAlertsSupport(configuration, wsClient) {
+        override val frontendAlerts = mock[FrontendAlerts]
+      }
     }
     alertsSupport.frontendAlerts.sendNotification(any) returns Future.successful(notificationReport.right)
   }
