@@ -5,9 +5,12 @@ import java.util.UUID
 
 import models.Link.Internal
 import models.Importance.Major
+import models.NotificationType.BreakingNews
 import models.TopicTypes.Breaking
 import models._
-import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.DateTimeZone._
+import org.joda.time.DateTime
+import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -15,9 +18,9 @@ import play.api.inject.bind
 import play.api.test._
 import report.services.{Configuration, NotificationReportRepositorySupport}
 import tracking.InMemoryNotificationReportRepository
-import scala.concurrent.ExecutionContext.Implicits.global
+import scalaz.syntax.std.option._
 
-class ReportIntegrationSpec extends PlaySpecification with Mockito {
+class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification with Mockito {
 
   "Report service" should {
 
@@ -46,21 +49,28 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
   trait ReportTestScope extends Scope {
 
-    private def notificationReport(date: String, prefix: String) = NotificationReport.create(
-      sentTime = DateTime.parse(date).withZone(DateTimeZone.UTC),
-      notification = BreakingNewsNotification(
-        id = UUID.randomUUID(),
-        sender = s"$prefix:sender",
-        title = s"$prefix:title",
-        message = s"$prefix:message",
-        thumbnailUrl = Some(new URI(s"http://some.url/$prefix.png")),
-        link = Internal(s"content/api/id/$prefix"),
-        imageUrl = Some(new URI(s"http://some.url/$prefix.jpg")),
-        importance = Major,
-        topic = Set(Topic(Breaking, "uk"))
-      ),
-      statistics = NotificationStatistics(Map(WindowsMobile -> Some(5)))
-    )
+    private def notificationReport(date: String, prefix: String) = {
+      val id = UUID.randomUUID
+      NotificationReport(
+        id = id,
+        sentTime = DateTime.parse(date).withZone(UTC),
+        `type` = BreakingNews,
+        notification = BreakingNewsNotification(
+          id = id,
+          sender = s"$prefix:sender",
+          title = s"$prefix:title",
+          message = s"$prefix:message",
+          thumbnailUrl = Some(new URI(s"http://some.url/$prefix.png")),
+          link = Internal(s"content/api/id/$prefix"),
+          imageUrl = Some(new URI(s"http://some.url/$prefix.jpg")),
+          importance = Major,
+          topic = Set(Topic(Breaking, "uk"))
+        ),
+        reports = List(
+          SenderReport("Windows", DateTime.now.withZone(UTC), PlatformStatistics(WindowsMobile, 5).some)
+        )
+      )
+    }
 
     val apiKey = "test"
 
@@ -78,7 +88,7 @@ class ReportIntegrationSpec extends PlaySpecification with Mockito {
 
     val notificationReports =
       notificationReport("2015-01-02T00:00:00Z", "4") ::
-      reportsInRange ++ recentReports
+        reportsInRange ++ recentReports
 
     val application = {
       val reportController = {

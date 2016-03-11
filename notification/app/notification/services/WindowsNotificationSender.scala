@@ -1,6 +1,7 @@
 package notification.services
 
 import azure.NotificationHubClient
+import error.NotificationsError
 import models.Importance.Major
 import models._
 import notification.models.Destination.Destination
@@ -12,6 +13,7 @@ import tracking.{InMemoryTopicSubscriptionsRepository, RepositoryResult}
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{\/-, -\/}
 import scalaz.syntax.either._
+import scalaz.syntax.std.option._
 
 class WindowsNotificationSender(hubClient: NotificationHubClient, configuration: Configuration)(implicit ec: ExecutionContext) extends NotificationSender {
   private val topicSubscriptionsRepository = new InMemoryTopicSubscriptionsRepository
@@ -20,10 +22,10 @@ class WindowsNotificationSender(hubClient: NotificationHubClient, configuration:
 
   def sendNotification(push: Push): Future[SenderResult] = {
 
-    def report(stats: Map[Platform, Option[Int]]) = NotificationReport.create(
+    def report(recipentsCount: Option[Int]) = SenderReport(
+      senderName = Senders.Windows,
       sentTime = DateTime.now,
-      notification = push.notification,
-      statistics = NotificationStatistics(stats)
+      platformStatistics = recipentsCount map { PlatformStatistics(WindowsMobile, _) }
     )
 
     if (push.notification.importance == Major) {
@@ -32,12 +34,12 @@ class WindowsNotificationSender(hubClient: NotificationHubClient, configuration:
         count <- count(push.destination)
       } yield {
         result.fold(
-          e => NotificationRejected(Some(e)).left,
-          _ => report(Map(WindowsMobile -> count.toOption)).right
+          e => NotificationRejected(WindowsNotificationSenderError(e.some).some).left,
+          _ => report(count.toOption).right
         )
       }
     } else {
-      Future.successful(report(Map.empty).right)
+      Future.successful(report(None).right)
     }
   }
 
@@ -58,4 +60,9 @@ class WindowsNotificationSender(hubClient: NotificationHubClient, configuration:
       }
     }
   }
+}
+
+case class WindowsNotificationSenderError(underlying: Option[NotificationsError]) extends SenderError {
+  override def senderName: String = Senders.Windows
+  override def reason: String = s"Sender: $senderName ${ underlying.fold("")(_.reason) }"
 }

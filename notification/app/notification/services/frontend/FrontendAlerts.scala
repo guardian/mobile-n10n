@@ -1,18 +1,20 @@
 package notification.services.frontend
 
-import models.{BreakingNewsNotification, NotificationReport}
+import error.NotificationsError
+import models.{SenderReport, BreakingNewsNotification}
 import notification.models.Push
-import notification.services.{NotificationRejected, SenderResult, NotificationSender}
+import notification.services.{Senders, SenderError, NotificationRejected, SenderResult, NotificationSender}
 import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.mvc.Http.Status.CREATED
-import providers.ProviderError
 import scala.concurrent.ExecutionContext.Implicits.global
+
 import scala.concurrent.Future
 import scalaz.{-\/, \/-, \/}
 import scalaz.syntax.either._
+import scalaz.syntax.std.option._
 
 class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient) extends NotificationSender {
   val logger = Logger(classOf[FrontendAlerts])
@@ -43,16 +45,18 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient) extends N
     NewsAlert.fromNotification(bn, DateTime.now) match {
       case Some(alert) =>
         sendBreakingNewsAlert(alert) map {
-          case \/-(()) => NotificationReport.create(alert.publicationDate, push.notification).right
-          case -\/(e) => NotificationRejected(Some(FrontendAlertsProviderError(s"Could not send breaking news alert ($e)"))).left
+          case \/-(()) => SenderReport(Senders.FrontendAlerts, alert.publicationDate).right
+          case -\/(e) => NotificationRejected(FrontendAlertsProviderError(s"Could not send breaking news alert ($e)").some).left
         }
       case _ =>
         logger.error(s"Frontend alert not sent. Could not create alert from notification ${ push.notification }")
-        Future.successful(NotificationRejected(Some(FrontendAlertsProviderError("Alert could not be created"))).left)
+        Future.successful(NotificationRejected(FrontendAlertsProviderError("Alert could not be created").some).left)
     }
   }
 }
 
-case class FrontendAlertsProviderError(reason: String) extends ProviderError {
-  override def providerName: String = "FrontendAlerts"
+case class FrontendAlertsProviderError(reason: String) extends SenderError {
+  override def senderName: String = Senders.FrontendAlerts
+
+  override def underlying: Option[NotificationsError] = None
 }

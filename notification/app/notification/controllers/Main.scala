@@ -13,13 +13,10 @@ import play.api.Logger
 import play.api.libs.json.Json.toJson
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, AnyContent, Controller, Result}
-import tracking.Repository.RepositoryResult
-import tracking.RepositoryError
 
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{\/-, -\/}
-import scalaz.syntax.either._
 
 final class Main @Inject()(
   configuration: Configuration,
@@ -67,8 +64,8 @@ final class Main @Inject()(
 
   private def pushGeneric(push: Push) = {
     sendNotifications(push, to = senders) flatMap {
-      case (Nil, reports @ _ :: _) =>
-        reportPushSent(reports) map {
+      case (Nil, reports@_ :: _) =>
+        reportPushSent(push.notification, reports) map {
           case \/-(_) =>
             logger.info(s"Notification was sent: $push")
             Created(toJson(PushResult(push.notification.id)))
@@ -76,16 +73,16 @@ final class Main @Inject()(
             logger.error(s"Notification ($push) sent but report could not be stored ($error)")
             Created(toJson(PushResult(push.notification.id).withReportingError(error)))
         }
-      case (rejected @ _ :: _, reports @ _ :: _) =>
-        reportPushSent(reports) map {
+      case (rejected@_ :: _, reports@_ :: _) =>
+        reportPushSent(push.notification, reports) map {
           case \/-(_) =>
             logger.warn(s"Notification ($push) was rejected by some providers: ($rejected)")
             Created(toJson(PushResult(push.notification.id).withRejected(rejected)))
           case -\/(error) =>
-            logger.error(s"Notification ($push) was rejected by some providers and there were errors in reporting")
+            logger.error(s"Notification ($push) was rejected by some providers and there was error in reporting")
             Created(toJson(PushResult(push.notification.id).withRejected(rejected).withReportingError(error)))
         }
-      case (allRejected @ _ :: _, Nil) =>
+      case (allRejected@_ :: _, Nil) =>
         logger.error(s"Notification ($push) could not be sent: $allRejected")
         Future.successful(InternalServerError)
       case _ =>
@@ -102,16 +99,7 @@ final class Main @Inject()(
     }
   }
 
-  private def reportPushSent(reports: List[NotificationReport]) = {
-    val reportingResults = reports map { notificationReportRepository.store }
-    val NoErrors = ().right[RepositoryError]
-    def collectErrors(aggr: RepositoryResult[Unit], result: RepositoryResult[Unit]) = (aggr, result) match {
-      case (NoErrors, \/-(())) => NoErrors
-      case (NoErrors, error @ -\/(_)) => error
-      case (aggregatedError @ -\/(_), \/-(())) => aggregatedError
-      case (aggregatedError @ -\/(_), -\/(error)) => aggregatedError.leftMap(e => e.copy(message = s"${ e.message }, ${ error.message }"))
-    }
-    Future.fold(reportingResults)(NoErrors)(collectErrors)
-  }
+  private def reportPushSent(notification: Notification, reports: List[SenderReport]) =
+    notificationReportRepository.store(NotificationReport.create(notification, reports))
 }
 
