@@ -1,13 +1,26 @@
 package notification
 
-import _root_.models.NotificationReport
-import providers.ProviderError
+import _root_.models.SenderReport
+import error.NotificationsError
 
 import scalaz.\/
 
 package object services {
-  case class NotificationRejected(error: Option[ProviderError] = None) {
-    override def toString = error map { e => s"Notification rejected by ${ e.providerName }, reason: ${ e.reason }" } getOrElse "Notification rejected"
+  trait SenderError extends NotificationsError {
+    def senderName: String
+    def underlying: Option[NotificationsError]
   }
-  type SenderResult = NotificationRejected \/ NotificationReport
+
+  case class NotificationRejected(error: Option[SenderError] = None) {
+    override def toString: String = error map { e =>
+      s"Notification rejected by ${ e.senderName }, reason: ${ e.reason }"
+    } getOrElse "Notification rejected"
+  }
+
+  object Senders {
+    val Windows = "Windows Notification Sender"
+    val FrontendAlerts = "Frontend Alerts Sender"
+  }
+
+  type SenderResult = NotificationRejected \/ SenderReport
 }
