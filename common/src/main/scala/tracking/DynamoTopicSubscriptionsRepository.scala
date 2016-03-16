@@ -4,6 +4,7 @@ import aws.AsyncDynamo
 import aws.AsyncDynamo._
 import com.amazonaws.services.dynamodbv2.model._
 import models.Topic
+import play.api.Logger
 import tracking.Repository.RepositoryResult
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -13,14 +14,14 @@ import scala.collection.JavaConversions._
 
 class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
   (implicit ec: ExecutionContext) extends TopicSubscriptionsRepository {
-
+  val logger = Logger(classOf[DynamoTopicSubscriptionsRepository])
   val TopicIdField = "topicId"
   val TopicSubscriberCountField = "topicSubscriberCount"
 
-  override def subscribe(topic: Topic): Future[RepositoryResult[Unit]] =
+  override def deviceSubscribed(topic: Topic): Future[RepositoryResult[Unit]] =
     updateCount(topic, 1)
 
-  override def unsubscribe(topic: Topic): Future[RepositoryResult[Unit]] =
+  override def deviceUnsubscribed(topic: Topic): Future[RepositoryResult[Unit]] =
     updateCount(topic, -1)
 
   override def count(topic: Topic): Future[RepositoryResult[Int]] = {
@@ -49,7 +50,11 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
       .addKeyEntry(TopicIdField, new AttributeValue(topic.toString))
       .addAttributeUpdatesEntry(TopicSubscriberCountField, valueUpdate)
 
-    client.updateItem(req) map { _ => \/.right(()) }
+    val eventualUpdate = client.updateItem(req)
+    eventualUpdate.onFailure {
+      case t: Throwable => logger.error(s"DynamoDB communication error ($t)")
+    }
+    eventualUpdate map { _ => \/.right(()) }
   }
 
 }

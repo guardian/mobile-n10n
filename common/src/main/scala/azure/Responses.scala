@@ -92,7 +92,9 @@ object RegistrationResponse {
     } yield RegistrationResponse(registrationId, tags.toList, channelUri, expirationTime)
   }
 }
-case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime)
+case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
+  lazy val tagsAsSet = tags.toSet
+}
 
 object AtomEntry {
   import Responses._

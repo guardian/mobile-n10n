@@ -8,24 +8,24 @@ import notification.models.Destination.Destination
 import notification.models.Push
 import org.joda.time.DateTime
 import tracking.Repository._
-import tracking.{InMemoryTopicSubscriptionsRepository, RepositoryResult}
+import tracking.{TopicSubscriptionsRepository, RepositoryResult}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{\/-, -\/}
 import scalaz.syntax.either._
 import scalaz.syntax.std.option._
 
-class WindowsNotificationSender(hubClient: NotificationHubClient, configuration: Configuration)(implicit ec: ExecutionContext) extends NotificationSender {
-  private val topicSubscriptionsRepository = new InMemoryTopicSubscriptionsRepository
+class WindowsNotificationSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
+  (implicit ec: ExecutionContext) extends NotificationSender {
 
   private val azureRawPushConverter = new AzureRawPushConverter(configuration)
 
   def sendNotification(push: Push): Future[SenderResult] = {
 
-    def report(recipentsCount: Option[Int]) = SenderReport(
+    def report(recipientsCount: Option[Int]) = SenderReport(
       senderName = Senders.Windows,
       sentTime = DateTime.now,
-      platformStatistics = recipentsCount map { PlatformStatistics(WindowsMobile, _) }
+      platformStatistics = recipientsCount map { PlatformStatistics(WindowsMobile, _) }
     )
 
     if (push.notification.importance == Major) {

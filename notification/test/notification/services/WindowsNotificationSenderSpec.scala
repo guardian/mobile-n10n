@@ -8,6 +8,7 @@ import notification.{DateTimeFreezed, NotificationsFixtures}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
+import tracking.TopicSubscriptionsRepository
 import scalaz.syntax.either._
 import org.specs2.concurrent.ExecutionEnv
 
@@ -44,6 +45,6 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
       client.sendNotification(any[AzureRawPush]) returns Future.successful(().right)
       client
     }
-    val windowsNotificationSender = new WindowsNotificationSender(hubClient, configuration)
+    val windowsNotificationSender = new WindowsNotificationSender(hubClient, configuration, mock[TopicSubscriptionsRepository])
   }
 }

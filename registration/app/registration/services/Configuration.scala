@@ -13,4 +13,5 @@ class Configuration extends NotificationConfiguration("registration") {
       getConfigString("notifications.auditor.goalAlerts")
     )
   )
+  lazy val dynamoTopicsTableName = getConfigString("db.dynamo.topics.table-name")
 }

@@ -18,7 +18,7 @@ class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends 
       val topic = Topic(TagKeyword, "test-topic-1")
       val result = for {
         initialCount <- repository.count(topic)
-        _ <- repository.subscribe(topic)
+        _ <- repository.deviceSubscribed(topic)
         endCount <- repository.count(topic)
       } yield (initialCount.toOption.get, endCount.toOption.get)
 
@@ -29,10 +29,10 @@ class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends 
       val topic = Topic(TagKeyword, "test-topic-2")
       val result = for {
         initialCount <- repository.count(topic)
-        _ <- repository.subscribe(topic)
-        _ <- repository.subscribe(topic)
+        _ <- repository.deviceSubscribed(topic)
+        _ <- repository.deviceSubscribed(topic)
         middleCount <- repository.count(topic)
-        _ <- repository.unsubscribe(topic)
+        _ <- repository.deviceUnsubscribed(topic)
         endCount <- repository.count(topic)
       } yield (initialCount.toOption.get, middleCount.toOption.get, endCount.toOption.get)
 
@@ -46,13 +46,13 @@ class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends 
       val result = for {
         initialCountA <- repository.count(topicA)
         initialCountB <- repository.count(topicB)
-        _ <- repository.subscribe(topicA)
-        _ <- repository.subscribe(topicA)
-        _ <- repository.subscribe(topicA)
-        _ <- repository.subscribe(topicA)
-        _ <- repository.subscribe(topicA)
-        _ <- repository.subscribe(topicB)
-        _ <- repository.subscribe(topicB)
+        _ <- repository.deviceSubscribed(topicA)
+        _ <- repository.deviceSubscribed(topicA)
+        _ <- repository.deviceSubscribed(topicA)
+        _ <- repository.deviceSubscribed(topicA)
+        _ <- repository.deviceSubscribed(topicA)
+        _ <- repository.deviceSubscribed(topicB)
+        _ <- repository.deviceSubscribed(topicB)
         endCountA <- repository.count(topicA)
         endCountB <- repository.count(topicB)
       } yield List(initialCountA, initialCountB, endCountA, endCountB).map(_.toOption.get)
