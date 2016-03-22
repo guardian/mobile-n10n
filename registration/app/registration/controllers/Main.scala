@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
 import error.NotificationsError
-import models.Registration
+import models.{Topic, Registration}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
@@ -30,17 +30,27 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
   def register(lastKnownDeviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
     val registration = request.body
 
-    def registerWith(registrar: NotificationRegistrar): Future[Result] =
-      topicValidator.removeInvalid(registration.topics) flatMap {
-        case \/-(validTopics) => registrar
-          .register(lastKnownDeviceId, registration.copy(topics = validTopics))
-          .map { processResponse }
-        case -\/(e) => Future.successful(InternalServerError(e.reason))
-      }
+    def validate(topics: Set[Topic]): Future[Set[Topic]] =
+      topicValidator
+        .removeInvalid(topics)
+        .map {
+          case \/-(filteredTopics) =>
+            logger.debug(s"Successfully validated topics in registration (${registration.deviceId}), topics valid: [$filteredTopics]")
+            filteredTopics
+          case -\/(e) =>
+            logger.error(s"Could not validate topics ${e.topicsQueried} for registration (${registration.deviceId}), reason: ${e.reason}")
+            topics
+        }
+
+    def registerWith(registrar: NotificationRegistrar, topics: Set[Topic]) =
+      registrar
+        .register(lastKnownDeviceId, registration.copy(topics = topics))
+        .map { processResponse }
 
     registrarFor(registration) match {
+      case \/-(registrar) =>
+        validate(registration.topics).flatMap(registerWith(registrar, _))
       case -\/(msg) => Future.successful(InternalServerError(msg))
-      case \/-(registrar) => registerWith(registrar)
     }
   }
 
