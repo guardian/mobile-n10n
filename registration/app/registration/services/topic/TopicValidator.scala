@@ -17,11 +17,12 @@ import scalaz.syntax.either._
 trait TopicValidator {
   def removeInvalid(topics: Set[Topic]): Future[TopicValidatorError \/ Set[Topic]]
 
-  trait TopicValidatorError {
-    def reason: String
-  
-    def topicsQueried: Set[Topic]
-  }
+}
+
+trait TopicValidatorError {
+  def reason: String
+
+  def topicsQueried: Set[Topic]
 }
 
 final class AuditorTopicValidator(auditorClient: AuditorWSClient, configuration: Configuration)
@@ -30,14 +31,14 @@ final class AuditorTopicValidator(auditorClient: AuditorWSClient, configuration:
   @Inject def this(wsClient: WSClient, configuration: Configuration) = this(new AuditorWSClient(wsClient),
                                                                             configuration)
 
-  override def removeInvalid(topics: Set[Topic]): Future[\/[AuditorClientError, Set[Topic]]] =
+  override def removeInvalid(topics: Set[Topic]): Future[TopicValidatorError \/ Set[Topic]] =
     mkAuditorGroup(configuration.auditorConfiguration)
       .queryEach { auditorClient.expiredTopics(_, topics) }
       .map { expired => (topics -- expired.flatten).right }
-      .recover { case _ => AuditorClientError(topics).left }
+      .recover {
+        case e: Throwable => AuditorClientError(e.getMessage, topics).left
+      }
   
-  case class AuditorClientError(topicsQueried: Set[Topic]) extends TopicValidatorError {
-    override def reason: String = "Failed fetching invalid topics from Auditor client"
-  }
+  case class AuditorClientError(reason: String, topicsQueried: Set[Topic]) extends TopicValidatorError
 }
 
