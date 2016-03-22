@@ -30,26 +30,26 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
   def register(lastKnownDeviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
     val registration = request.body
 
-    def validate(topics: Set[Topic]) = {
+    def validate(topics: Set[Topic]): Future[Set[Topic]] =
       topicValidator
         .removeInvalid(topics)
-        .onSuccess {
-          case \/-(validTopics) =>
-            logger.debug(s"Successfully validated topics in registration (${registration.deviceId}), topics valid: [$validTopics]")
+        .map {
+          case \/-(filteredTopics) =>
+            logger.debug(s"Successfully validated topics in registration (${registration.deviceId}), topics valid: [$filteredTopics]")
+            filteredTopics
           case -\/(e) =>
             logger.error(s"Could not validate topics ${e.topicsQueried} for registration (${registration.deviceId}), reason: ${e.reason}")
+            topics
         }
-    }
 
-    def registerWith(registrar: NotificationRegistrar) =
+    def registerWith(registrar: NotificationRegistrar, topics: Set[Topic]) =
       registrar
-        .register(lastKnownDeviceId, registration)
+        .register(lastKnownDeviceId, registration.copy(topics = topics))
         .map { processResponse }
 
     registrarFor(registration) match {
       case \/-(registrar) =>
-        validate(registration.topics)
-        registerWith(registrar)
+        validate(registration.topics).flatMap(registerWith(registrar, _))
       case -\/(msg) => Future.successful(InternalServerError(msg))
     }
   }
