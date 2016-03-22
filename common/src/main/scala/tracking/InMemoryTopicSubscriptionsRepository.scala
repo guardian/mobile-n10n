@@ -9,12 +9,12 @@ class InMemoryTopicSubscriptionsRepository extends TopicSubscriptionsRepository 
 
   val counters = scala.collection.mutable.Map.empty[Topic, Int]
 
-  override def subscribe(topic: Topic): Future[RepositoryResult[Unit]] = {
+  override def deviceSubscribed(topic: Topic): Future[RepositoryResult[Unit]] = {
     counters.update(topic, counters.getOrElse(topic, 0) + 1)
     Future.successful(RepositoryResult(()))
   }
 
-  override def unsubscribe(topic: Topic): Future[RepositoryResult[Unit]] = {
+  override def deviceUnsubscribed(topic: Topic): Future[RepositoryResult[Unit]] = {
     counters.update(topic, counters.getOrElse(topic, 0) + 1)
     Future.successful(RepositoryResult(()))
   }

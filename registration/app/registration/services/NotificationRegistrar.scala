@@ -15,5 +15,6 @@ object RegistrationResponse {
 }
 
 trait NotificationRegistrar {
-  def register(oldDeviceId: String, registration: Registration): Future[ProviderError \/ RegistrationResponse]
+  type RegistrarResponse = Future[ProviderError \/ RegistrationResponse]
+  def register(oldDeviceId: String, registration: Registration): RegistrarResponse
 }

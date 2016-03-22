@@ -6,9 +6,9 @@ import scala.concurrent.Future
 
 trait TopicSubscriptionsRepository {
 
-  def subscribe(topic: Topic): Future[RepositoryResult[Unit]]
+  def deviceSubscribed(topic: Topic): Future[RepositoryResult[Unit]]
 
-  def unsubscribe(topic: Topic): Future[RepositoryResult[Unit]]
+  def deviceUnsubscribed(topic: Topic): Future[RepositoryResult[Unit]]
 
   def count(topic: Topic): Future[RepositoryResult[Int]]
 }
