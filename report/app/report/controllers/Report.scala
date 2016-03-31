@@ -18,7 +18,7 @@ final class Report @Inject()(
   (implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
 
-  override def validApiKey(apiKey: String): Boolean = configuration.apiKey.contains(apiKey)
+  override def validApiKey(apiKey: String): Boolean = configuration.apiKeys.contains(apiKey)
 
   import notificationReportRepositorySupport._
 

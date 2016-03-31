@@ -99,7 +99,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         notificationReportRepositorySupport.notificationReportRepository returns repository
 
         val configuration = mock[Configuration]
-        configuration.apiKey returns Some(apiKey)
+        configuration.apiKeys returns List(apiKey)
 
         new Report(configuration, notificationReportRepositorySupport)
       }

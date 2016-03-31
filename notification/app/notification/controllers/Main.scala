@@ -28,7 +28,7 @@ final class Main @Inject()(
 
   val logger = Logger(classOf[Main])
 
-  override def validApiKey(apiKey: String): Boolean = configuration.apiKey.contains(apiKey)
+  override def validApiKey(apiKey: String): Boolean = configuration.apiKeys.contains(apiKey)
 
   import notificationReportRepositorySupport._
   import notificationSenderSupport._
