@@ -146,7 +146,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     with NotificationsFixtures {
     val conf: Configuration = {
       val m = mock[Configuration]
-      m.apiKey returns Some(apiKey)
+      m.apiKeys returns List(apiKey)
       m
     }
 
