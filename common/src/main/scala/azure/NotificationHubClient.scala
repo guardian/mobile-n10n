@@ -32,8 +32,9 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
   private def extractContent[T](hubResult: HubResult[AtomEntry[T]]): HubResult[T] = hubResult.map(_.content)
 
   def create(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
-    logger.debug(s"Creating new registration: $rawWindowsRegistration")
+    logger.debug(s"Creating new registration: ${rawWindowsRegistration.toXml}")
     request(Endpoints.Registrations)
+      .withHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
       .post(rawWindowsRegistration.toXml)
       .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
@@ -42,8 +43,9 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
   def update(registrationId: WNSRegistrationId,
              rawWindowsRegistration: RawWindowsRegistration
               ): Future[HubResult[RegistrationResponse]] = {
-    logger.debug(s"Updating registration ($registrationId) with $rawWindowsRegistration")
+    logger.debug(s"Updating registration ($registrationId) with ${rawWindowsRegistration.toXml}")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
+      .withHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
       .put(rawWindowsRegistration.toXml)
       .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
@@ -52,7 +54,10 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
   def delete(registrationId: WNSRegistrationId): Future[HubResult[Unit]] = {
     logger.debug(s"deleting registration ($registrationId)")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
-      .withHeaders("If-Match" -> "*")
+      .withHeaders(
+        "If-Match" -> "*",
+        "Content-Type" -> "application/atom+xml;type=entry;charset=utf-8"
+      )
       .delete()
       .map { response =>
         if (response.status == 200 || response.status == 404) {
