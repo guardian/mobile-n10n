@@ -1,7 +1,8 @@
 package azure
 
 import play.api.Logger
-import play.api.libs.ws.WSClient
+import play.api.http.Status
+import play.api.libs.ws.{WSResponse, WSClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
@@ -34,7 +35,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
     logger.debug(s"Creating new registration: $rawWindowsRegistration")
     request(Endpoints.Registrations)
       .post(rawWindowsRegistration.toXml)
-      .map(XmlParser.parse[AtomEntry[RegistrationResponse]])
+      .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
   }
 
@@ -44,7 +45,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
     logger.debug(s"Updating registration ($registrationId) with $rawWindowsRegistration")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
       .put(rawWindowsRegistration.toXml)
-      .map(XmlParser.parse[AtomEntry[RegistrationResponse]])
+      .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
   }
 
@@ -85,29 +86,18 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .url(uri)
       .withHeaders("Authorization" -> authorizationHeader(uri))
   }
-  /**
-   * This is used for health-checking only: return the title of the feed,
-   * which is expected to be 'Registrations'.
-   * @return the title of the feed if it succeeds getting one
-   */
-  def fetchRegistrationsListEndpoint: Future[HubResult[String]] = {
-    request(Endpoints.Registrations)
-      .get()
-      .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
-      .map(_.map(_.title))
-  }
 
   def registrationsByTag(tag: String): Future[HubResult[List[RegistrationResponse]]] = {
     request(s"/tags/$tag/registrations")
       .get()
-      .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
+      .map { tryParse[AtomFeedResponse[RegistrationResponse]](Status.OK) }
       .map { hubResult => hubResult.map(_.items) }
   }
 
   def submitNotificationHubJob(job: NotificationHubJobRequest): Future[HubResult[NotificationHubJob]] = {
     request("/jobs")
       .post(job.toXml)
-      .map(XmlParser.parse[AtomEntry[NotificationHubJob]])
+      .map { tryParse[AtomEntry[NotificationHubJob]](Status.OK, Status.CREATED) }
       .map(extractContent)
   }
 
@@ -115,7 +105,16 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
     request(Endpoints.Registrations)
       .withQueryString("$filter" -> s"ChannelUri eq '$channelUri'")
       .get()
-      .map(XmlParser.parse[AtomFeedResponse[RegistrationResponse]])
+      .map { tryParse[AtomFeedResponse[RegistrationResponse]](Status.OK) }
       .map { hubResult => hubResult.map(_.items) }
+  }
+
+  private def tryParse[T](successCode: Int, successCodes: Int*)(response: WSResponse)(implicit reader: XmlReads[T]) = {
+    if (Set(successCode, successCodes).contains(response.status))
+      XmlParser.parse[T](response)
+    else {
+      logger.error(s"Error returned from Azure endpoint (code: ${response.status} with body: ${response.body}")
+      XmlParser.parseError(response).left
+    }
   }
 }
