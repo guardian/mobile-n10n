@@ -116,7 +116,7 @@ with Mockito {
         Await.result(provider.register(channelUri, registrationWithTopics), 5.seconds)
 
         there was one(topicSubRepo).deviceSubscribed(breakingTopic) andThen one(topicSubRepo).deviceSubscribed(contentTopic)
-        there was one(topicSubRepo).deviceUnsubscribed(tagTopic)
+        there was one(topicSubRepo).deviceUnsubscribed(tagTopic.id)
       }
     }
   }

@@ -32,7 +32,7 @@ class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends 
         _ <- repository.deviceSubscribed(topic)
         _ <- repository.deviceSubscribed(topic)
         middleCount <- repository.count(topic)
-        _ <- repository.deviceUnsubscribed(topic)
+        _ <- repository.deviceUnsubscribed(topic.id)
         endCount <- repository.count(topic)
       } yield (initialCount.toOption.get, middleCount.toOption.get, endCount.toOption.get)
 
