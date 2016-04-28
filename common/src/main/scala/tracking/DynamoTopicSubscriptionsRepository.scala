@@ -15,24 +15,45 @@ import scala.collection.JavaConversions._
 class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
   (implicit ec: ExecutionContext) extends TopicSubscriptionsRepository {
   val logger = Logger(classOf[DynamoTopicSubscriptionsRepository])
-  val TopicIdField = "topicId"
-  val TopicSubscriberCountField = "topicSubscriberCount"
 
-  override def deviceSubscribed(topic: Topic): Future[RepositoryResult[Unit]] =
-    updateCount(topic, 1)
+  object TopicFields {
+    val Id = "topicId"
+    val Topic = "topic"
+    val SubscriberCount = "topicSubscriberCount"
+  }
 
-  override def deviceUnsubscribed(topic: Topic): Future[RepositoryResult[Unit]] =
-    updateCount(topic, -1)
+  override def deviceSubscribed(topic: Topic): Future[RepositoryResult[Unit]] = {
+    val subscriptionCountChange = +1
+    val req = newUpdateRequest
+      .addKeyEntry(TopicFields.Id, new AttributeValue(topic.id))
+      .withUpdateExpression(s"SET ${TopicFields.Topic} = :topic ADD ${TopicFields.SubscriberCount} :amount")
+      .withExpressionAttributeValues(Map(
+        ":topic" -> new AttributeValue(topic.toString),
+        ":amount" -> new AttributeValue().withN(subscriptionCountChange.toString)
+      ))
+    updateItem(req)
+  }
+
+  override def deviceUnsubscribed(topicId: String): Future[RepositoryResult[Unit]] = {
+    val subscriptionCountChange = -1
+    val req = newUpdateRequest
+      .addKeyEntry(TopicFields.Id, new AttributeValue(topicId))
+      .withUpdateExpression(s"ADD ${TopicFields.SubscriberCount} :amount")
+      .withExpressionAttributeValues(Map(
+        ":amount" -> new AttributeValue().withN(subscriptionCountChange.toString)
+      ))
+    updateItem(req)
+  }
 
   override def count(topic: Topic): Future[RepositoryResult[Int]] = {
     val q = new QueryRequest(tableName)
-      .withKeyConditions(Map(TopicIdField -> keyEquals(topic.toString)))
+      .withKeyConditions(Map(TopicFields.Id -> keyEquals(topic.id)))
       .withConsistentRead(true)
 
     client.query(q) map { result =>
       val count = for {
         item <- result.getItems.headOption
-        countField <- Option(item.get(TopicSubscriberCountField))
+        countField <- Option(item.get(TopicFields.SubscriberCount))
         countFieldValue <- Option(countField.getN)
       } yield countFieldValue.toInt
 
@@ -40,16 +61,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
     }
   }
 
-  private def updateCount(topic: Topic, amount: Int) = {
-    val valueUpdate = new AttributeValueUpdate()
-      .withValue(new AttributeValue().withN(amount.toString))
-      .withAction(AttributeAction.ADD)
-
-    val req = new UpdateItemRequest()
-      .withTableName(tableName)
-      .addKeyEntry(TopicIdField, new AttributeValue(topic.toString))
-      .addAttributeUpdatesEntry(TopicSubscriberCountField, valueUpdate)
-
+  private def updateItem(req: UpdateItemRequest) = {
     val eventualUpdate = client.updateItem(req)
     eventualUpdate.onFailure {
       case t: Throwable => logger.error(s"DynamoDB communication error ($t)")
@@ -57,4 +69,5 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
     eventualUpdate map { _ => \/.right(()) }
   }
 
+  private def newUpdateRequest = new UpdateItemRequest().withTableName(tableName)
 }

@@ -8,6 +8,10 @@ object Tag {
   import Tags._
 
   def fromTopic(t: Topic): Tag = {
+    Tag(s"$TopicTagPrefix${t.id}")
+  }
+
+  def fromTopicBase16(t: Topic): Tag = {
     Tag(s"${TopicTagPrefix}Base16:${Base16.encode(t.toString)}")
   }
 
@@ -26,11 +30,6 @@ case class Tags(tags: Set[Tag] = Set.empty) {
     .find(_.matches(UserTagRegex.regex))
     .map { case UserTagRegex(UserId(uuid)) => UserId(uuid) }
 
-  def decodedTopics: Set[Topic] = {
-    val topics = encodedTags.collect{ case TopicTagRegex(encodedTopic) => Base16.decode(encodedTopic) }
-    topics.map(Topic.fromString).flatMap(_.toOption)
-  }
-
   def withUserId(userId: UserId): Tags = copy(tags + Tag.fromUserId(userId))
 
   def withTopics(topics: Set[Topic]): Tags = copy(tags ++ topics.map(Tag.fromTopic))
@@ -42,11 +41,14 @@ object Tags {
   val UserTagPrefix = "user:"
   val TopicTagPrefix = "topic:"
   val UserTagRegex = """user:(.*)""".r
-  val TopicTagRegex = """topic:Base16:(.*)""".r
 
   def fromStrings(tags: Set[String]): Tags = Tags(tags.map(Tag(_)))
 
-  def fromTopics(topics: Set[Topic]): Tags = Tags(topics.map(Tag.fromTopic))
+  def fromTopics(topics: Set[Topic]): Tags = Tags(
+    topics flatMap {
+      t => Set(Tag.fromTopic(t), Tag.fromTopicBase16(t))
+    }
+  )
 
   def fromUserId(u: UserId): Tags = Tags(Set(Tag.fromUserId(u)))
 

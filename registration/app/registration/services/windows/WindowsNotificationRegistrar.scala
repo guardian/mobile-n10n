@@ -50,20 +50,21 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient, topicSubscr
     logger.debug(s"creating registration $registration")
     hubClient.create(RawWindowsRegistration.fromMobileRegistration(registration))
       .andThen { recordTopicSubscriptions(added = registration.topics) }
-      .map(hubResultToRegistrationResponse)
+      .map { hubResultToRegistrationResponse(registration.topics) }
   }
 
   private def updateRegistration(azureRegistration: azure.RegistrationResponse, registration: Registration): RegistrarResponse = {
     logger.debug(s"updating registration ${azureRegistration.registration} with $registration")
     hubClient.update(azureRegistration.registration, RawWindowsRegistration.fromMobileRegistration(registration))
       .andThen {
-        val existingRegistrationTopics = tagsIn(azureRegistration).decodedTopics
+        // FIXME: replace diff with topic.id
+        val existingRegistrationTopics = Set.empty[Topic]
         val newRegistrationTopics = registration.topics
         recordTopicSubscriptions(
           added = newRegistrationTopics.diff(existingRegistrationTopics),
           removed = existingRegistrationTopics.diff(newRegistrationTopics)
         )}
-      .map(hubResultToRegistrationResponse)
+      .map { hubResultToRegistrationResponse(registration.topics) }
   }
 
   private def deleteAndCreate(registrationsToDelete: List[azure.RegistrationResponse], registrationToCreate: Registration): RegistrarResponse = {
@@ -79,7 +80,8 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient, topicSubscr
       hubClient
         .delete(registration.registration)
         .andThen {
-          val removedTopics = registrations.map(tagsIn).flatMap(_.decodedTopics).toSet
+          // FIXME: replace with topic.id set
+          val removedTopics = Set.empty[Topic]
           recordTopicSubscriptions(removed = removedTopics)
         }
     } map { responses =>
@@ -88,20 +90,21 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient, topicSubscr
     }
   }
 
-  private def hubResultToRegistrationResponse(hubResult: HubResult[azure.RegistrationResponse]) =
+  private def hubResultToRegistrationResponse(topicsRegisteredFor: Set[Topic])(hubResult: HubResult[azure.RegistrationResponse]) = {
+    def toRegistrarResponse(registration: azure.RegistrationResponse) = {
+      val tags = tagsIn(registration)
+      for {
+        userId <- tags.findUserId \/> UserIdNotInTags()
+      } yield RegistrationResponse(
+        deviceId = registration.channelUri,
+        platform = WindowsMobile,
+        userId = userId,
+        topics = topicsRegisteredFor
+      )
+    }
     hubResult.flatMap(toRegistrarResponse)
-
-  private def toRegistrarResponse(registration: azure.RegistrationResponse): UserIdNotInTags \/ RegistrationResponse = {
-    val tags = tagsIn(registration)
-    for {
-      userId <- tags.findUserId \/> UserIdNotInTags()
-    } yield RegistrationResponse(
-      deviceId = registration.channelUri,
-      platform = WindowsMobile,
-      userId = userId,
-      topics = tags.decodedTopics
-    )
   }
+
 
   private def tagsIn(registration: azure.RegistrationResponse): Tags = Tags.fromStrings(registration.tagsAsSet)
 
@@ -113,7 +116,7 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient, topicSubscr
       } map handleErrors
       Future.traverse(removed) { t =>
         logger.debug(s"Informing about removed topic registrations. [$removed]")
-        topicSubscriptionsRepository.deviceUnsubscribed(t)
+        topicSubscriptionsRepository.deviceUnsubscribed(t.id)
       } map handleErrors
 
     case _ => logger.error("Topic subscription counters not updated. Preceding action failed.")

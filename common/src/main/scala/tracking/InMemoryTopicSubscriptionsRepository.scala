@@ -14,11 +14,13 @@ class InMemoryTopicSubscriptionsRepository extends TopicSubscriptionsRepository 
     Future.successful(RepositoryResult(()))
   }
 
-  override def deviceUnsubscribed(topic: Topic): Future[RepositoryResult[Unit]] = {
-    counters.update(topic, counters.getOrElse(topic, 0) + 1)
-    Future.successful(RepositoryResult(()))
-  }
-
   override def count(topic: Topic): Future[RepositoryResult[Int]] =
     Future.successful(RepositoryResult(counters.getOrElse(topic, 0)))
+
+  override def deviceUnsubscribed(topicId: String): Future[RepositoryResult[Unit]] = {
+    counters.transform { case (topic, count) =>
+      if (topic.id == topicId) count - 1 else count
+    }
+    Future.successful(RepositoryResult(()))
+  }
 }

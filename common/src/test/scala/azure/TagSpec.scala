@@ -3,39 +3,48 @@ package azure
 import java.util.UUID
 
 import models.{UserId, Topic}
-import models.TopicTypes.{TagBlog, FootballMatch}
+import models.TopicTypes.{Content, TagContributor, FootballMatch}
 import org.specs2.mutable.Specification
 
 class TagSpec extends Specification {
 
-  "Hub Tag" should {
+  "Azure hub tag" should {
 
-    "encode and decode an ugly topic" in {
+    "encode an ugly topic" in {
       val uglyTopic = Topic(name = "test!!.|~ ", `type` = FootballMatch)
       val tag = Tag.fromTopic(uglyTopic)
 
       Tag(tag.encodedTag) must beEqualTo(tag)
     }
 
-    "encode and decode a pretty topic" in {
-      def prettyTopic = Topic(name = "blah/etc-123-stuff", `type` = FootballMatch)
+    "encode a pretty topic" in {
+      val prettyTopic = Topic(name = "blah/etc-123-stuff", `type` = FootballMatch)
       val tag = Tag.fromTopic(prettyTopic)
 
       tag.encodedTag must be matching """[0-9a-zA-Z\/:-=]+"""
       Tag(tag.encodedTag) must beEqualTo(tag)
     }
 
-    "encode tags and return decoded topics" in {
-      val topics = Set(
-        Topic(`type` = FootballMatch, name = "some match"),
-        Topic(`type` = TagBlog, name = "blogger")
-      )
+    "encoded tag must end with topic id" in {
+      val topic = Topic(name = "profile/josh-halliday", `type` = TagContributor)
+      val tag = Tag.fromTopic(topic)
 
-      val tagsWithTopicsAndUser = Tags()
-        .withUserId(UserId(UUID.fromString("988ADFF8-8961-11E5-96E3-D0DB64696656")))
-        .withTopics(topics)
+      tag.encodedTag must endWith(topic.id)
+    }
 
-      tagsWithTopicsAndUser.decodedTopics must beEqualTo(topics)
+    "encoded tag must not exceed 120 characters for long topic names" in {
+      val topic = Topic(name = "uk-news/live/2016/apr/26/hillsborough-disaster-inquest-jury-returns-verdict-live-updates", `type` = Content)
+      val tag = Tag.fromTopic(topic)
+
+      tag.encodedTag must haveLength(beLessThan(120))
+    }
+
+    "encoded tag must contain user id" in {
+      val uuid = UUID.randomUUID
+      val userId = UserId(uuid)
+      val tag = Tag.fromUserId(userId)
+
+      tag.encodedTag must endWith(uuid.toString)
     }
   }
 }
