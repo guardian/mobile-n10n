@@ -12,7 +12,7 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import registration.services.windows.WindowsNotificationRegistrar
-import tracking.TopicSubscriptionsRepository
+import tracking.{SubscriptionTracker, TopicSubscriptionsRepository}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -117,7 +117,7 @@ with Mockito {
 
         there was one(topicSubRepo).deviceSubscribed(breakingTopic) andThen one(topicSubRepo).deviceSubscribed(contentTopic)
         there was one(topicSubRepo).deviceUnsubscribed(tagTopic.id)
-      }.pendingUntilFixed
+      }
     }
   }
 
@@ -155,7 +155,7 @@ with Mockito {
       client
     }
     val topicSubRepo = mock[TopicSubscriptionsRepository]
-    val provider = new WindowsNotificationRegistrar(hubClient, topicSubRepo)
+    val provider = new WindowsNotificationRegistrar(hubClient, new SubscriptionTracker(topicSubRepo))
   }
 
 }

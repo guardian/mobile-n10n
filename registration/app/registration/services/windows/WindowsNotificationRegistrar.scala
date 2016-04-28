@@ -6,16 +6,14 @@ import models._
 import play.api.Logger
 import providers.ProviderError
 import registration.services.{NotificationRegistrar, RegistrationResponse}
-import tracking.Repository._
-import tracking.TopicSubscriptionsRepository
+import tracking.{TopicSubscriptionTracking, SubscriptionTracker}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Try, Success}
 import scalaz.std.option.optionSyntax._
 import scalaz.syntax.either._
 import scalaz.{-\/, \/, \/-}
 
-class WindowsNotificationRegistrar(hubClient: NotificationHubClient, topicSubscriptionsRepository: TopicSubscriptionsRepository)(implicit ec: ExecutionContext)
+class WindowsNotificationRegistrar(hubClient: NotificationHubClient, subscriptionTracker: SubscriptionTracker)(implicit ec: ExecutionContext)
   extends NotificationRegistrar {
 
   val logger = Logger(classOf[WindowsNotificationRegistrar])
@@ -49,7 +47,7 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient, topicSubscr
   private def createRegistration(registration: Registration): RegistrarResponse = {
     logger.debug(s"creating registration $registration")
     hubClient.create(RawWindowsRegistration.fromMobileRegistration(registration))
-      .andThen { recordTopicSubscriptions(added = registration.topics) }
+      .andThen { subscriptionTracker.recordSubscriptionChange(TopicSubscriptionTracking(addedTopics = registration.topics)) }
       .map { hubResultToRegistrationResponse(registration.topics) }
   }
 
@@ -57,13 +55,12 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient, topicSubscr
     logger.debug(s"updating registration ${azureRegistration.registration} with $registration")
     hubClient.update(azureRegistration.registration, RawWindowsRegistration.fromMobileRegistration(registration))
       .andThen {
-        // FIXME: replace diff with topic.id
-        val existingRegistrationTopics = Set.empty[Topic]
-        val newRegistrationTopics = registration.topics
-        recordTopicSubscriptions(
-          added = newRegistrationTopics.diff(existingRegistrationTopics),
-          removed = existingRegistrationTopics.diff(newRegistrationTopics)
-        )}
+        subscriptionTracker.recordSubscriptionChange(
+          TopicSubscriptionTracking.withDiffBetween(
+            existingTopicIds = tagsIn(azureRegistration).topicIds,
+            newTopics = registration.topics
+          ))
+      }
       .map { hubResultToRegistrationResponse(registration.topics) }
   }
 
@@ -80,9 +77,9 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient, topicSubscr
       hubClient
         .delete(registration.registration)
         .andThen {
-          // FIXME: replace with topic.id set
-          val removedTopics = Set.empty[Topic]
-          recordTopicSubscriptions(removed = removedTopics)
+          subscriptionTracker.recordSubscriptionChange(
+            TopicSubscriptionTracking(removedTopicsIds = tagsIn(registration).topicIds)
+          )
         }
     } map { responses =>
       val errors = responses.collect { case -\/(error) => error }
@@ -108,24 +105,6 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient, topicSubscr
 
   private def tagsIn(registration: azure.RegistrationResponse): Tags = Tags.fromStrings(registration.tagsAsSet)
 
-  private def recordTopicSubscriptions(added: Set[Topic] = Set.empty, removed: Set[Topic] = Set.empty): PartialFunction[Try[HubResult[_]], Unit] = {
-    case Success(\/-(_)) =>
-      Future.traverse(added) { t =>
-        logger.debug(s"Informing about new topic registrations. [$added]")
-        topicSubscriptionsRepository.deviceSubscribed(t)
-      } map handleErrors
-      Future.traverse(removed) { t =>
-        logger.debug(s"Informing about removed topic registrations. [$removed]")
-        topicSubscriptionsRepository.deviceUnsubscribed(t.id)
-      } map handleErrors
-
-    case _ => logger.error("Topic subscription counters not updated. Preceding action failed.")
-  }
-
-  private def handleErrors(responses: Set[RepositoryResult[Unit]]): Unit = {
-    val errors = responses.filter(_.isLeft)
-    if (errors.nonEmpty) logger.error("Failed saving topic subscriptions: " + errors.mkString(","))
-  }
 }
 
 sealed trait WindowsNotificationProviderError extends ProviderError {

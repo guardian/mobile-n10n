@@ -30,6 +30,9 @@ case class Tags(tags: Set[Tag] = Set.empty) {
     .find(_.matches(UserTagRegex.regex))
     .map { case UserTagRegex(UserId(uuid)) => UserId(uuid) }
 
+  def topicIds: Set[String] = encodedTags
+    .collect { case TopicTagRegex(topicId) => topicId }
+
   def withUserId(userId: UserId): Tags = copy(tags + Tag.fromUserId(userId))
 
   def withTopics(topics: Set[Topic]): Tags = copy(tags ++ topics.map(Tag.fromTopic))
@@ -41,6 +44,7 @@ object Tags {
   val UserTagPrefix = "user:"
   val TopicTagPrefix = "topic:"
   val UserTagRegex = """user:(.*)""".r
+  val TopicTagRegex = """topic:(.*)""".r
 
   def fromStrings(tags: Set[String]): Tags = Tags(tags.map(Tag(_)))
 
