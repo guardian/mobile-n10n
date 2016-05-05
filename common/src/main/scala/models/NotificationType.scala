@@ -13,7 +13,7 @@ object NotificationType {
 
   val fromRep: Map[String, NotificationType] = Map(
     "news" -> BreakingNews,
-    "content" -> Content, //TODO see if this should be tag?
+    "content" -> Content, 
     "goal" -> GoalAlert
   )
 
