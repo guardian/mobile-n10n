@@ -9,7 +9,7 @@ import com.google.inject.ImplementedBy
 import models.{Registration, WindowsMobile}
 import play.api.libs.ws.WSClient
 import registration.services.windows.WindowsNotificationRegistrar
-import tracking.DynamoTopicSubscriptionsRepository
+import tracking.{SubscriptionTracker, DynamoTopicSubscriptionsRepository}
 
 import scala.concurrent.ExecutionContext
 import scalaz.\/
@@ -37,7 +37,7 @@ final class NotificationRegistrarSupport @Inject()(wsClient: WSClient, configura
       AsyncDynamo(region = EU_WEST_1),
       configuration.dynamoTopicsTableName
     )
-    new WindowsNotificationRegistrar(hubClient, topicSubscriptionRepository)
+    new WindowsNotificationRegistrar(hubClient, new SubscriptionTracker(topicSubscriptionRepository))
   }
 
   override def registrarFor(registration: Registration): String \/ NotificationRegistrar = registration match {
