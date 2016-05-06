@@ -64,7 +64,7 @@ final class Main @Inject()(
 
   private def pushGeneric(push: Push) = {
     sendNotifications(push, to = senders) flatMap {
-      case (Nil, reports@_ :: _) =>
+      case (Nil, reports @ _ :: _) =>
         reportPushSent(push.notification, reports) map {
           case \/-(_) =>
             logger.info(s"Notification was sent: $push")
@@ -73,7 +73,7 @@ final class Main @Inject()(
             logger.error(s"Notification ($push) sent but report could not be stored ($error)")
             Created(toJson(PushResult(push.notification.id).withReportingError(error)))
         }
-      case (rejected@_ :: _, reports@_ :: _) =>
+      case (rejected @ _ :: _, reports @ _ :: _) =>
         reportPushSent(push.notification, reports) map {
           case \/-(_) =>
             logger.warn(s"Notification ($push) was rejected by some providers: ($rejected)")
@@ -82,7 +82,7 @@ final class Main @Inject()(
             logger.error(s"Notification ($push) was rejected by some providers and there was error in reporting")
             Created(toJson(PushResult(push.notification.id).withRejected(rejected).withReportingError(error)))
         }
-      case (allRejected@_ :: _, Nil) =>
+      case (allRejected @ _ :: _, Nil) =>
         logger.error(s"Notification ($push) could not be sent: $allRejected")
         Future.successful(InternalServerError)
       case _ =>
