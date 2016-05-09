@@ -28,7 +28,7 @@ object Notification {
       json \ "type" match {
         case JsDefined(JsString("news")) => BreakingNewsNotification.jf.reads(json)
         case JsDefined(JsString("content")) => ContentNotification.jf.reads(json)
-        case JsDefined(JsString("goalAlert")) => GoalAlertNotification.jf.reads(json)
+        case JsDefined(JsString("goal")) => GoalAlertNotification.jf.reads(json)
         case _ => JsError("Unknown notification type")
       }
     }
