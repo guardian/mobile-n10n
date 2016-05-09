@@ -38,7 +38,9 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient) extends N
       sendAsBreakingNewsAlert(push, bn)
     case _ =>
       logger.info(s"Frontend alert not sent. Push report ($push) ignored as notification is not BreakingNews.")
-      Future.successful(NotificationRejected().left)
+      Future.successful {
+        NotificationRejected(FrontendAlertsProviderError("Only Breaking News notification currently supported").some).left
+      }
   }
 
   private def sendAsBreakingNewsAlert(push: Push, bn: BreakingNewsNotification) = {
@@ -50,7 +52,9 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient) extends N
         }
       case _ =>
         logger.error(s"Frontend alert not sent. Could not create alert from notification ${ push.notification }")
-        Future.successful(NotificationRejected(FrontendAlertsProviderError("Alert could not be created").some).left)
+        Future.successful {
+          NotificationRejected(FrontendAlertsProviderError("Alert could not be created").some).left
+        }
     }
   }
 }
