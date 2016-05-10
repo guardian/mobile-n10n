@@ -26,7 +26,7 @@ trait NotificationsFixtures {
     topic = topics
   )
   
-  def breakingNewsPush(importance: Importance = Major): Push = Push(
+  def userTargetedBreakingNewsPush(importance: Importance = Major): Push = Push(
     notification = BreakingNewsNotification(
       id = UUID.randomUUID(),
       title = "",
@@ -41,7 +41,12 @@ trait NotificationsFixtures {
     destination = Right(UserId(UUID.randomUUID()))
   )
 
-  val providerError = new WindowsNotificationSenderError(None)
+  def topicTargetedBreakingNewsPush(notification: Notification): Push = Push(
+    notification = notification,
+    destination = Left(notification.topic)
+  )
+
+  val providerError = new WindowsNotificationSenderError(Seq.empty)
 
   val apiKey = "test"
   val authenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$apiKey")

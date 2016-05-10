@@ -18,30 +18,38 @@ import scalaz.syntax.std.option._
 class WindowsNotificationSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
   (implicit ec: ExecutionContext) extends NotificationSender {
 
-  private val azureRawPushConverter = new AzureRawPushConverter(configuration)
+  private val azurePushConverter = new AzureRawPushConverter(configuration, AzureRawPushConverter.topicEncoder)
+  private val backwardCompatiblePushConverter = new AzureRawPushConverter(configuration, AzureRawPushConverter.backwardCompatibleTopicEncoder)
 
-  def sendNotification(push: Push): Future[SenderResult] = {
-
-    def report(recipientsCount: Option[Int]) = SenderReport(
-      senderName = Senders.Windows,
-      sentTime = DateTime.now,
-      platformStatistics = recipientsCount map { PlatformStatistics(WindowsMobile, _) }
-    )
-
+  def sendNotification(push: Push): Future[SenderResult] =
     if (push.notification.importance == Major) {
       for {
-        result <- hubClient.sendNotification(azureRawPushConverter.toAzureRawPush(push))
+        results <- Future.sequence(hubRequests(push))
         count <- count(push.destination)
       } yield {
-        result.fold(
-          e => NotificationRejected(WindowsNotificationSenderError(e.some).some).left,
-          _ => report(count.toOption).right
-        )
+        val errors = results.collect { case -\/(error) => error }
+        if (errors.isEmpty)
+          report(count.toOption).right
+        else
+          NotificationRejected(WindowsNotificationSenderError(errors).some).left
       }
     } else {
       Future.successful(report(None).right)
     }
+
+  private def hubRequests(push: Push) = push.destination match {
+    case Left(_: Set[Topic]) => Seq(
+      hubClient.sendNotification(azurePushConverter.toAzureRawPush(push)),
+      hubClient.sendNotification(backwardCompatiblePushConverter.toAzureRawPush(push))
+    )
+    case _ => Seq(hubClient.sendNotification(azurePushConverter.toAzureRawPush(push)))
   }
+
+  private def report(recipientsCount: Option[Int]) = SenderReport(
+    senderName = Senders.Windows,
+    sentTime = DateTime.now,
+    platformStatistics = recipientsCount map { PlatformStatistics(WindowsMobile, _) }
+  )
 
   private def count(destination: Destination): Future[RepositoryResult[Int]] = destination match {
     case Left(topics: Set[Topic]) => sumOf(topics)
@@ -49,10 +57,11 @@ class WindowsNotificationSender(hubClient: NotificationHubClient, configuration:
   }
 
   private def sumOf(topics: Set[Topic]): Future[RepositoryResult[Int]] = {
-    Future.sequence(topics.map(topicSubscriptionsRepository.count)) map { results =>
+    // Beware: topics must be converted to list so that identical value responses from repository are not treated as the same
+    val eventuallySubscriberCounts = topics.toList.map(topicSubscriptionsRepository.count)
+    Future.sequence(eventuallySubscriberCounts) map { results =>
       val errors = results.collect { case -\/(error) => error }
       val successes = results.collect { case \/-(success) => success }
-
       if (errors.nonEmpty) {
         errors.head.left
       } else {
@@ -62,7 +71,8 @@ class WindowsNotificationSender(hubClient: NotificationHubClient, configuration:
   }
 }
 
-case class WindowsNotificationSenderError(underlying: Option[NotificationsError]) extends SenderError {
+case class WindowsNotificationSenderError(underlying: Seq[NotificationsError]) extends SenderError {
   override def senderName: String = Senders.Windows
-  override def reason: String = s"Sender: $senderName ${ underlying.fold("")(_.reason) }"
+
+  override def reason: String = s"Sender: $senderName ${ underlying.map(_.reason).mkString }"
 }

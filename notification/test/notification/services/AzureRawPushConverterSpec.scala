@@ -18,13 +18,13 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
 
   "AzureRawPushConverter.toAzure" should {
     "convert a breaking news into the azure format" in new BreakingNewsScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter().toAzure(notification) shouldEqual azureNotification
     }
     "convert a content notification into the azure format" in new ContentNotificationScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter().toAzure(notification) shouldEqual azureNotification
     }
     "convert a goal alert into the azure format" in new GoalAlertNotificationScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter().toAzure(notification) shouldEqual azureNotification
     }
   }
 
@@ -32,24 +32,22 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
     "Convert a userId into a tag" in new PushConverterScope {
       val userId = UserId(id = UUID.fromString("497f172a-9434-11e5-af4E-61a964696656"))
       val expected = Tag("user:497f172a-9434-11e5-af4e-61a964696656")
-      azureRawPushConverter.toTags(Right(userId)) shouldEqual Some(Tags(Set(expected)))
+      azureRawPushConverter().toTags(Right(userId)) shouldEqual Some(Tags(Set(expected)))
     }
 
-    "Convert a topic into a tag with additional Base16 encoded tag for backward compatibility" in new PushConverterScope {
+    "Convert a topic into a tag with Base16 encoded tag for backward compatibility" in new PushConverterScope {
       val topic = Topic(Breaking, "uk")
-      val expected = Set(
-        Tag(s"topic:${topic.id}"),
-        Tag("topic:Base16:627265616b696e672f756b")
-      )
-      azureRawPushConverter.toTags(Destination(topic)) shouldEqual Some(Tags(expected))
+      val expected = Set(Tag("topic:Base16:627265616b696e672f756b"))
+
+      azureRawPushConverter(AzureRawPushConverter.backwardCompatibleTopicEncoder).toTags(Destination(topic)) shouldEqual Some(Tags(expected))
     }
 
-    "Convert a list of topics into a list of tag with additional Base16 encoded tags for backward compatibility" in new PushConverterScope {
+    "Convert a list of topics into a list of tag with Base16 encoded tags when different encoder used" in new PushConverterScope {
       val topics = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"))
       val expected = Tags(
-        topics flatMap { t => Set(Tag(s"topic:${t.id}"), Tag(s"topic:Base16:${Base16.encode(t.toString)}")) }
+        topics map { t => Tag(s"topic:Base16:${ Base16.encode(t.toString) }") }
       )
-      azureRawPushConverter.toTags(Destination(topics)) shouldEqual Some(expected)
+      azureRawPushConverter(AzureRawPushConverter.backwardCompatibleTopicEncoder).toTags(Destination(topics)) shouldEqual Some(expected)
     }
   }
 
@@ -61,7 +59,7 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       c
     }
 
-    val azureRawPushConverter = new AzureRawPushConverter(configuration)
+    def azureRawPushConverter(topicEncoder: Topic => Tag = AzureRawPushConverter.topicEncoder) = new AzureRawPushConverter(configuration, topicEncoder)
   }
 
   trait BreakingNewsScope extends PushConverterScope {

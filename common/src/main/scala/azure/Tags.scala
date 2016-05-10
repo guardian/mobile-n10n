@@ -48,10 +48,8 @@ object Tags {
 
   def fromStrings(tags: Set[String]): Tags = Tags(tags.map(Tag(_)))
 
-  def fromTopics(topics: Set[Topic]): Tags = Tags(
-    topics flatMap {
-      t => Set(Tag.fromTopic(t), Tag.fromTopicBase16(t))
-    }
+  def fromTopics(topicEncoder: Topic => Tag)(topics: Set[Topic]): Tags = Tags(
+    topics map { topicEncoder(_) }
   )
 
   def fromUserId(u: UserId): Tags = Tags(Set(Tag.fromUserId(u)))

@@ -2,7 +2,7 @@ package notification.services.frontend
 
 import java.net.URI
 
-import models.{BreakingNewsNotification}
+import models.BreakingNewsNotification
 import models.Link.External
 import notification.NotificationsFixtures
 import notification.services.NotificationRejected
@@ -22,8 +22,8 @@ import scalaz.syntax.either._
 class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "Frontend alerts notified about notification" should {
     "skip breaking news notification without capi id (i.e. with non-internal Link)" in new FrontendAlertsScope {
-      val push = breakingNewsPush().copy(notification =
-        breakingNewsNotification(validTopics).asInstanceOf[BreakingNewsNotification].copy(link = External("url"))
+      val push = userTargetedBreakingNewsPush().copy(
+        notification = breakingNewsNotification(validTopics).asInstanceOf[BreakingNewsNotification].copy(link = External("url"))
       )
 
       alerts.sendNotification(push) must beEqualTo(NotificationRejected(Some(FrontendAlertsProviderError("Alert could not be created"))).left).await
@@ -39,7 +39,7 @@ class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with M
       } { implicit port =>
         WsTestClient.withClient { client =>
           val alerts = new FrontendAlerts(config, client)
-          alerts.sendNotification(breakingNewsPush()) map { _.toEither } must beRight.await
+          alerts.sendNotification(userTargetedBreakingNewsPush()) map { _.toEither } must beRight.await
         }
       }
     }
