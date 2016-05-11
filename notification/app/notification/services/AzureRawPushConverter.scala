@@ -2,16 +2,15 @@ package notification.services
 
 import java.net.URI
 
-import azure.{Tags, AzureRawPush}
+import azure.{Tag, Tags, AzureRawPush}
 import models.Link.{External, Internal}
 import models._
 import notification.models.Destination.Destination
 import notification.models.{Push, azure}
 import play.api.Logger
 import play.api.libs.json.Json
-import models.JsonUtils._
 
-class AzureRawPushConverter(conf: Configuration) {
+class AzureRawPushConverter(conf: Configuration, topicEncoder: Topic => Tag) {
   val logger = Logger(classOf[AzureRawPushConverter])
 
   def toAzureRawPush(push: Push): AzureRawPush = {
@@ -29,7 +28,7 @@ class AzureRawPushConverter(conf: Configuration) {
   }
 
   private[services] def toTags(destination: Destination) = destination match {
-    case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
+    case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topicEncoder)(topics))
     case Right(user: UserId) => Some(Tags.fromUserId(user))
   }
 
@@ -82,4 +81,9 @@ class AzureRawPushConverter(conf: Configuration) {
     addedTime = gan.addedTime,
     debug = conf.debug
   )
+}
+
+object AzureRawPushConverter {
+  val backwardCompatibleTopicEncoder: Topic => Tag = Tag.fromTopicBase16
+  val topicEncoder: Topic => Tag = Tag.fromTopic
 }

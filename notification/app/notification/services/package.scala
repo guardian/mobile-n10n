@@ -8,7 +8,6 @@ import scalaz.\/
 package object services {
   trait SenderError extends NotificationsError {
     def senderName: String
-    def underlying: Option[NotificationsError]
   }
 
   case class NotificationRejected(error: Option[SenderError] = None) {

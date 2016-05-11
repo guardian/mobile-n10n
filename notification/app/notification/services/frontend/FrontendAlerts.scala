@@ -1,6 +1,5 @@
 package notification.services.frontend
 
-import error.NotificationsError
 import models.{SenderReport, BreakingNewsNotification}
 import notification.models.Push
 import notification.services.{Senders, SenderError, NotificationRejected, SenderResult, NotificationSender}
@@ -61,6 +60,4 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient) extends N
 
 case class FrontendAlertsProviderError(reason: String) extends SenderError {
   override def senderName: String = Senders.FrontendAlerts
-
-  override def underlying: Option[NotificationsError] = None
 }
