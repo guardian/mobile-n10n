@@ -52,7 +52,7 @@ lazy val backup = project
   .settings(standardSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" % "play-ws_2.11" % "2.4.2",
+      "com.typesafe.play" %% "play-ws" % "2.5.3",
       "com.microsoft.azure" % "azure-storage" % "3.1.0"
     ),
     riffRaffPackageType := (packageZipTarball in Universal).value,

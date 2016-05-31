@@ -30,7 +30,6 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
         status(result) must equalTo(OK)
         contentType(result) must beSome("application/json")
-        charset(result) must beSome("utf-8")
         contentAsJson(result).as[List[NotificationReport]] mustEqual recentReports
       }
     }
@@ -41,7 +40,6 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
         status(result) must equalTo(OK)
         contentType(result) must beSome("application/json")
-        charset(result) must beSome("utf-8")
         contentAsJson(result).as[List[NotificationReport]] mustEqual reportsInRange
       }
     }
