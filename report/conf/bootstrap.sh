@@ -4,6 +4,7 @@ instanceid=`curl -s http://169.254.169.254/latest/meta-data/instance-id`
 region=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone |sed 's/.$//'`
 
 apptag=`aws ec2 describe-tags --filters "Name=resource-id,Values=$instanceid" "Name=resource-type,Values=instance" "Name=key,Values=App" --region $region | grep -oP "(?<=\"Value\": \")[^\"]+"`
+appdir=/$apptag-1.0-SNAPSHOT
 stacktag=`aws ec2 describe-tags --filters "Name=resource-id,Values=$instanceid" "Name=resource-type,Values=instance" "Name=key,Values=Stack" --region $region | grep -oP "(?<=\"Value\": \")[^\"]+"`
 stagetag=`aws ec2 describe-tags --filters "Name=resource-id,Values=$instanceid" "Name=resource-type,Values=instance" "Name=key,Values=Stage" --region $region | grep -oP "(?<=\"Value\": \")[^\"]+"`
 
@@ -38,6 +39,7 @@ wget https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setu
 python ./awslogs-agent-setup.py -n -r $region -c awslogs.conf
 
 aws s3 cp s3://mobile-notifications-dist/$stagetag/$stacktag.properties /etc/gu/$apptag.properties
+aws s3 cp s3://mobile-notifications-dist/$stagetag/application.conf $appdir/conf/application.conf
 cp /$apptag-1.0-SNAPSHOT/conf/init.conf /etc/init/report.conf
 
 start report
