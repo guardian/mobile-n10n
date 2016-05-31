@@ -48,10 +48,12 @@ lazy val common = project
 
 lazy val backup = project
   .dependsOn(common)
-  .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
+  .enablePlugins(RiffRaffArtifact, JavaAppPackaging)
   .settings(standardSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-ws" % "2.5.3",
+      "com.typesafe.play" %% "play-logback" % "2.5.3",
       "com.microsoft.azure" % "azure-storage" % "3.1.0"
     ),
     riffRaffPackageType := (packageZipTarball in Universal).value,
