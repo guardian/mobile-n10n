@@ -32,7 +32,7 @@ aws s3 cp s3://mobile-notifications-dist/$stagetag/application.conf $appdir/conf
 
 adduser --home $appdir --disabled-password --gecos \"\" user
 chown -R user $appdir
-sudo -u user $appdir/bin/backup /backup-1.0-SNAPSHOT
+sudo -u user $appdir/bin/backup /backup-1.0-SNAPSHOT -Dconfig.file=$appdir/conf/application.conf
 
 snsarn="arn:aws:sns:eu-west-1:201359054765:mobile-server-side"
 snssubject="Daily azure backup on $stagetag"
