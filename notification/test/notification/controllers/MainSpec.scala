@@ -4,14 +4,13 @@ import models.TopicTypes.Breaking
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
 import notification.models.{PushResult, Push}
-import notification.services.frontend.{FrontendAlerts, FrontendAlertsSupport}
+import notification.services.frontend.FrontendAlerts
 import notification.services._
 import org.mockito.ArgumentCaptor
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
-import play.api.libs.ws.WSClient
 import play.api.test.PlaySpecification
 import tracking.{RepositoryError, SentNotificationReportRepository}
 
@@ -48,7 +47,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
 
       status(response) must equalTo(CREATED)
-      there was one(repositorySupport.notificationReportRepository).store(expectedReport)
+      there was one(reportRepository).store(expectedReport)
     }
 
     "notify reporting repository about added notifications and propagate reporting error" in new MainScope {
@@ -66,7 +65,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
     "report frontend alerts rejected notifications" in new MainScope {
       val request = requestWithValidTopics
-      alertsSupport.frontendAlerts.sendNotification(any) returns Future.successful(NotificationRejected(Some(providerError)).left)
+      frontendAlerts.sendNotification(any) returns Future.successful(NotificationRejected(Some(providerError)).left)
 
       val response = main.pushTopics()(request)
 
@@ -80,14 +79,14 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
 
       status(response) must equalTo(CREATED)
-      there was one(alertsSupport.frontendAlerts).sendNotification(any)
+      there was one(frontendAlerts).sendNotification(any)
     }
 
 
     "notification report has sent time of last sender report" in new MainScope {
       val request = requestWithValidTopics
       val frontendAlertsReport = senderReport(Senders.FrontendAlerts, sentTimeOffsetSeconds = 1)
-      alertsSupport.frontendAlerts.sendNotification(any) returns Future.successful(frontendAlertsReport.right)
+      frontendAlerts.sendNotification(any) returns Future.successful(frontendAlertsReport.right)
 
       val response = main.pushTopics()(request)
 
@@ -102,9 +101,8 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     self: NotificationsFixtures =>
     var pushSent: Option[Push] = None
 
-    val notificationSenderSupport = {
-      val m = mock[NotificationSenderSupport]
-      m.notificationSender returns new NotificationSender {
+    val windowsNotificationSender = {
+      new NotificationSender {
         override def sendNotification(push: Push): Future[SenderResult] = {
           pushSent = Some(push)
           Future.successful(senderReport(Senders.Windows).right)
@@ -113,36 +111,21 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     }
   }
 
-  trait NotificationReportRepositorySupportScope extends Scope {
+  trait NotifcationReportRepoScope extends Scope {
     val reportRepository = mock[SentNotificationReportRepository]
     reportRepository.store(any) returns Future.successful(().right)
-
-    val repositorySupport = {
-      val configuration = mock[Configuration]
-      new NotificationReportRepositorySupport(configuration) {
-        override lazy val notificationReportRepository = reportRepository
-      }
-    }
   }
 
-  trait FrontendAlertsSupportScope extends Scope {
+  trait FrontendAlertsScope extends Scope {
     self: NotificationsFixtures =>
-    val wsClient = mock[WSClient]
-    val alertsSupport = {
-      val configuration = mock[Configuration]
-      configuration.frontendNewsAlertApiKey returns "someKey"
-      configuration.frontendNewsAlertEndpoint returns "https://internal-frontend.code.dev-guardianapis.com/news-alert/"
-      new FrontendAlertsSupport(configuration, wsClient) {
-        override val frontendAlerts = mock[FrontendAlerts]
-      }
-    }
-    alertsSupport.frontendAlerts.sendNotification(any) returns Future.successful(senderReport(Senders.FrontendAlerts, None).right)
+    val frontendAlerts = mock[FrontendAlerts]
+    frontendAlerts.sendNotification(any) returns Future.successful(senderReport(Senders.FrontendAlerts, None).right)
   }
 
   trait MainScope extends Scope
     with NotificationSenderSupportScope
-    with NotificationReportRepositorySupportScope
-    with FrontendAlertsSupportScope
+    with NotifcationReportRepoScope
+    with FrontendAlertsScope
     with NotificationsFixtures {
     val conf: Configuration = {
       val m = mock[Configuration]
@@ -152,9 +135,8 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
     val main = new Main(
       configuration = conf,
-      notificationSenderSupport = notificationSenderSupport,
-      notificationReportRepositorySupport = repositorySupport,
-      frontendAlertsSupport = alertsSupport
+      senders = List(windowsNotificationSender, frontendAlerts),
+      notificationReportRepository = reportRepository
     )
   }
 
