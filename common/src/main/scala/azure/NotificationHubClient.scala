@@ -115,7 +115,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
   }
 
   private def tryParse[T](successCode: Int, successCodes: Int*)(response: WSResponse)(implicit reader: XmlReads[T]) = {
-    if (Set(successCode, successCodes).contains(response.status))
+    if ((successCode +: successCodes).contains(response.status))
       XmlParser.parse[T](response)
     else {
       logger.error(s"Error returned from Azure endpoint (code: ${response.status} with body: ${response.body}")
