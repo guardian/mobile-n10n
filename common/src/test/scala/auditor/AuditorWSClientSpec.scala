@@ -36,7 +36,7 @@ class AuditorWSClientSpec(implicit ev: ExecutionEnv) extends Specification with 
           filteredTopics must beEqualTo(topics).awaitFor(5 seconds)
         }
       }
-    }.pendingUntilFixed("problems with Materializer being closed when NettyServer tris to bind channel")
+    }
 
     "not query web service with empty list" in {
       val wsClient = mock[WSClient]
