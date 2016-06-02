@@ -7,6 +7,7 @@ import models.TopicTypes.FootballMatch
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
+import play.api.Play
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Results, Action}
@@ -25,6 +26,7 @@ class AuditorWSClientSpec(implicit ev: ExecutionEnv) extends Specification with 
           Results.Ok(Json.toJson(ExpiredTopicsResponse(topics.toList)))
         }
       } { implicit port =>
+        implicit val materializer = Play.current.materializer
         WsTestClient.withClient { client =>
           val auditorWSClient = new AuditorWSClient(client)
           val auditor = Auditor(new URL(s"http://localhost:$port"))

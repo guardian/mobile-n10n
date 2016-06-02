@@ -34,7 +34,8 @@ lazy val common = project
       "org.scalaz" %% "scalaz-core" % "7.1.0",
       "joda-time" % "joda-time" % "2.8.2",
       "com.amazonaws" % "aws-java-sdk" % "1.9.31",
-      "com.gu" %% "configuration" %  "4.1"
+      "com.gu" %% "configuration" % "4.1",
+      "com.typesafe.play" %% "play-logback" % "2.5.3"
     ),
     test in Test <<= (test in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),
     testOnly in Test <<= (testOnly in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),
@@ -52,7 +53,6 @@ lazy val backup = project
   .settings(standardSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-ws" % "2.5.3",
       "com.typesafe.play" %% "play-logback" % "2.5.3",
       "com.microsoft.azure" % "azure-storage" % "3.1.0"
     ),

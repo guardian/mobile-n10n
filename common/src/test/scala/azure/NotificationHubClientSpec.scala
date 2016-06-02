@@ -7,6 +7,7 @@ import play.api.test._
 import play.api.mvc._
 import play.api.routing.sird._
 import play.core.server.Server
+import scala.concurrent.duration._
 
 import scala.xml.Elem
 
@@ -16,7 +17,7 @@ class NotificationHubClientSpec(implicit ee: ExecutionEnv) extends Specification
       withHubClient(hubResponse) { client =>
         val job = NotificationHubJobRequest(NotificationHubJobType.ExportRegistrations)
 
-        client.submitNotificationHubJob(job).map { _.isRight } must beTrue.await
+        client.submitNotificationHubJob(job).map { _.isRight } must beTrue.awaitFor(5 seconds)
       }
     }
   }
@@ -39,8 +40,8 @@ class NotificationHubClientSpec(implicit ee: ExecutionEnv) extends Specification
     Server.withRouter() {
       case POST(p"/jobs") => Action { Results.Created(response) }
     } { implicit port =>
-      val connection = NotificationHubConnection(s"http://localhost:$port", "sharedKeyName", "sharedKey")
       implicit val materializer = Play.current.materializer
+      val connection = NotificationHubConnection(s"http://localhost:$port", "sharedKeyName", "sharedKey")
       WsTestClient.withClient { client =>
         block(new NotificationHubClient(connection, client))
       }
