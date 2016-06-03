@@ -42,11 +42,9 @@ aws s3 cp s3://mobile-notifications-dist/$stagetag/$stacktag.properties /etc/gu/
 
 s3_app_conf=`mktemp` || exit 1
 app_conf="${appdir}/conf/application.conf"
-sudo -u ${apptag} sh -c "touch ${app_conf}"
+touch ${app_conf}
 aws s3 cp s3://mobile-notifications-dist/${stagetag}/application.conf ${s3_app_conf}
-chown ${apptag}:${apptag} ${s3_app_conf}
-sudo -u ${apptag} sh -c "cat ${app_conf} ${s3_app_conf} > ${appdir}/conf/application.conf.all"
-sudo -u ${apptag} sh -c "rm ${app_conf} && mv ${appdir}/conf/application.conf.all ${app_conf}"
+cat ${s3_app_conf} >> ${app_conf}
 
 cp /$apptag-1.0-SNAPSHOT/conf/init.conf /etc/init/registration.conf
 
