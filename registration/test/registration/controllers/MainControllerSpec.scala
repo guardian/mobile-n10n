@@ -1,18 +1,18 @@
 package registration.controllers
 
-
+import application.WithPlayApp
 import models.TopicTypes.{Breaking, FootballMatch}
 import models.{Registration, Topic, WindowsMobile}
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
-import org.specs2.specification.Scope
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.ApplicationLoader.Context
+import play.api.{BuiltInComponentsFromContext, BuiltInComponents}
 import play.api.libs.json.Json
 import play.api.test.{FakeRequest, PlaySpecification}
 import providers.ProviderError
+import registration.AppComponents
 import registration.services.topic.{TopicValidator, TopicValidatorError}
-import registration.services.{NotificationRegistrar, RegistrarSupport, RegistrationResponse}
+import registration.services.{Configuration, NotificationRegistrar, RegistrarProvider, RegistrationResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -23,47 +23,41 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
   "Registrations controller" should {
     "responds to healtcheck" in new registrations {
-      running(application) {
-        val eventualResult = route(FakeRequest(GET, "/healthcheck")).get
+      val eventualResult = route(FakeRequest(GET, "/healthcheck")).get
 
-        status(eventualResult) must equalTo(OK)
-      }
+      status(eventualResult) must equalTo(OK)
     }
 
     "accepts registration and calls registrar factory" in new registrations {
-      running(application) {
-        val Some(result) = route(FakeRequest(PUT, "/registrations/someId").withJsonBody(Json.parse(registrationJson)))
+      val Some(result) = route(FakeRequest(PUT, "/registrations/someId").withJsonBody(Json.parse(registrationJson)))
 
-        status(result) must equalTo(OK)
-        contentAsString(result) must /("topics") /# 0 /("type" -> "football-match")
-                                                      /("name" -> "science")
-      }
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("topics") /# 0 /("type" -> "football-match")
+                                                    /("name" -> "science")
     }
 
-    "register with topics in registration when validatin fails" in new registrations {
-      topicValidator.removeInvalid(topics) returns Future.successful(validatorError.left)
-      running(application) {
-        val Some(result) = route(FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
+    "register with topics in registration when validation fails" in new registrations {
+      topicValidatorMock.removeInvalid(topics) returns Future.successful(validatorError.left)
 
-        status(result) must equalTo(OK)
-        contentAsString(result) must /("topics") /# 0 /("type" -> "football-match")
-                                                      /("name" -> "science")
-      }
+      val Some(result) = route(FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
+
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("topics") /# 0 /("type" -> "football-match")
+                                                    /("name" -> "science")
     }
 
-    "register only with validated topics" in new registrations {
-      topicValidator.removeInvalid(topics) returns Future.successful((topics - footballMatchTopic).right)
-      running(application) {
-        val Some(result) = route(FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
+    "register only with valid topics" in new registrations {
+      topicValidatorMock.removeInvalid(topics) returns Future.successful((topics - footballMatchTopic).right)
 
-        status(result) must equalTo(OK)
-        contentAsString(result) must /("topics") /# 0 /("type" -> "breaking")
-                                                      /("name" -> "uk")
-      }
+      val Some(result) = route(FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
+
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("topics") /# 0 /("type" -> "breaking")
+                                                    /("name" -> "uk")
     }
   }
 
-  trait registrations extends Scope {
+  trait registrations extends WithPlayApp {
     val registrationJson =
       """
         |{
@@ -84,7 +78,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       Topic(`type` = Breaking, name = "uk")
     )
 
-    val topicValidator = {
+    val topicValidatorMock = {
       val validator = mock[TopicValidator]
       validator.removeInvalid(topics) returns Future.successful(topics.right)
       validator
@@ -95,14 +89,17 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       override def topicsQueried: Set[Topic] = topics
     }
 
-    val application = new GuiceApplicationBuilder()
-      .overrides(bind[RegistrarSupport].to[RegistrarSupportMock])
-      .overrides(bind[TopicValidator].toInstance(topicValidator))
-      .build()
+    override def configureComponents(context: Context): BuiltInComponents = {
+      new BuiltInComponentsFromContext(context) with AppComponents {
+        override lazy val topicValidator = topicValidatorMock
+        override lazy val registrarProvider: RegistrarProvider = new RegistrarProviderMock
+        override lazy val appConfig = mock[Configuration]
+      }
+    }
   }
 }
 
-class RegistrarSupportMock extends RegistrarSupport {
+class RegistrarProviderMock extends RegistrarProvider {
 
   override def registrarFor(registration: Registration): \/[String, NotificationRegistrar] = new NotificationRegistrar {
     override def register(deviceId: String, registration: Registration): Future[\/[ProviderError, RegistrationResponse]] = Future {

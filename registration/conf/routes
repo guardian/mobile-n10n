@@ -1,2 +1,2 @@
-PUT         /registrations/:lastKnownDeviceId    @registration.controllers.Main.register(lastKnownDeviceId)
-GET         /healthcheck                         @registration.controllers.Main.healthCheck
+PUT         /registrations/:lastKnownDeviceId    registration.controllers.Main.register(lastKnownDeviceId)
+GET         /healthcheck                         registration.controllers.Main.healthCheck

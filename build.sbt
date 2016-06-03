@@ -60,8 +60,8 @@ lazy val backup = project
     version := "1.0-SNAPSHOT"
   )
 
-lazy val registration = project.
-  dependsOn(common)
+lazy val registration = project
+  .dependsOn(common % "test->test;compile->compile")
   .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
   .settings(standardSettings: _*)
   .settings(
@@ -71,8 +71,8 @@ lazy val registration = project.
     version := "1.0-SNAPSHOT"
   )
 
-lazy val notification = project.
-  dependsOn(common)
+lazy val notification = project
+  .dependsOn(common)
   .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
   .settings(standardSettings: _*)
   .settings(
@@ -83,8 +83,8 @@ lazy val notification = project.
     version := "1.0-SNAPSHOT"
   )
 
-lazy val report = project.
-  dependsOn(common)
+lazy val report = project
+  .dependsOn(common % "test->test;compile->compile")
   .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
   .settings(standardSettings: _*)
   .settings(

@@ -1,7 +1,5 @@
 package registration.controllers
 
-import javax.inject.Inject
-
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
 import error.NotificationsError
 import models.{Topic, Registration}
@@ -9,17 +7,15 @@ import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{AnyContent, Action, Controller, Result}
-import registration.services.{RegistrationResponse, NotificationRegistrar, RegistrarSupport}
+import registration.services.{RegistrationResponse, NotificationRegistrar, RegistrarProvider}
 import registration.services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{-\/, \/, \/-}
 
-final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topicValidator: TopicValidator)
+final class Main(registrarProvider: RegistrarProvider, topicValidator: TopicValidator)
     (implicit executionContext: ExecutionContext)
   extends Controller {
-
-  import notificationRegistrarSupport._
 
   private val logger = Logger(classOf[Main])
 
@@ -47,7 +43,7 @@ final class Main @Inject()(notificationRegistrarSupport: RegistrarSupport, topic
         .register(lastKnownDeviceId, registration.copy(topics = topics))
         .map { processResponse }
 
-    registrarFor(registration) match {
+    registrarProvider.registrarFor(registration) match {
       case \/-(registrar) =>
         validate(registration.topics).flatMap(registerWith(registrar, _))
       case -\/(msg) => Future.successful(InternalServerError(msg))
