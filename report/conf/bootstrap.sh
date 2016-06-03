@@ -39,7 +39,13 @@ wget https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setu
 python ./awslogs-agent-setup.py -n -r $region -c awslogs.conf
 
 aws s3 cp s3://mobile-notifications-dist/$stagetag/$stacktag.properties /etc/gu/$apptag.properties
-aws s3 cp s3://mobile-notifications-dist/$stagetag/application.conf $appdir/conf/application.conf
+
+s3_app_conf=`mktemp` || exit 1
+app_conf="${appdir}/conf/application.conf"
+sudo -u ${apptag} sh -c "touch ${app_conf}"
+aws s3 cp s3://mobile-notifications-dist/${stagetag}/application.conf ${s3_app_conf}
+cat ${s3_app_conf} >> ${app_conf}
+
 cp /$apptag-1.0-SNAPSHOT/conf/init.conf /etc/init/report.conf
 
 start report
