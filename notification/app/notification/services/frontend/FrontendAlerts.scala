@@ -1,5 +1,7 @@
 package notification.services.frontend
 
+import java.net.URI
+
 import models.{SenderReport, BreakingNewsNotification}
 import notification.models.Push
 import notification.services.{Senders, SenderError, NotificationRejected, SenderResult, NotificationSender}
@@ -8,14 +10,15 @@ import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.mvc.Http.Status.CREATED
-import scala.concurrent.ExecutionContext.Implicits.global
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{-\/, \/-, \/}
 import scalaz.syntax.either._
 import scalaz.syntax.std.option._
 
-class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient) extends NotificationSender {
+case class FrontendAlertsConfig(endpoint: URI, apiKey: String)
+
+class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit val ec: ExecutionContext) extends NotificationSender {
   val logger = Logger(classOf[FrontendAlerts])
 
   def sendBreakingNewsAlert(alert: NewsAlert): Future[String \/ Unit] =

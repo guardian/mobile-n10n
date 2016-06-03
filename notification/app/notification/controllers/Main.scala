@@ -1,41 +1,33 @@
 package notification.controllers
 
 import java.util.UUID
-import javax.inject.Inject
 
 import authentication.AuthenticationSupport
 import error.NotificationsError
 import models._
 import notification.models.{PushResult, Push}
-import notification.services.frontend.FrontendAlertsSupport
-import notification.services.{NotificationSender, Configuration, NotificationReportRepositorySupport, NotificationSenderSupport}
+import notification.services.{NotificationSender, Configuration}
 import play.api.Logger
 import play.api.libs.json.Json.toJson
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, AnyContent, Controller, Result}
+import tracking.SentNotificationReportRepository
 
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.{\/-, -\/}
 
-final class Main @Inject()(
+final class Main(
   configuration: Configuration,
-  notificationSenderSupport: NotificationSenderSupport,
-  notificationReportRepositorySupport: NotificationReportRepositorySupport,
-  frontendAlertsSupport: FrontendAlertsSupport)
-  (implicit executionContext: ExecutionContext)
+  senders: List[NotificationSender],
+  notificationReportRepository: SentNotificationReportRepository
+)(implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
 
   val logger = Logger(classOf[Main])
 
   override def validApiKey(apiKey: String): Boolean = configuration.apiKeys.contains(apiKey)
 
-  import notificationReportRepositorySupport._
-  import notificationSenderSupport._
-  import frontendAlertsSupport._
-  
-  val senders = List(notificationSender, frontendAlerts)
-  
   def handleErrors[T](result: T): Result = result match {
     case error: NotificationsError => InternalServerError(error.reason)
   }

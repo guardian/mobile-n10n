@@ -1,4 +1,4 @@
-GET         /healthcheck                        @notification.controllers.Main.healthCheck
-POST        /push/user/:userId                  @notification.controllers.Main.pushUser(userId: java.util.UUID)
-POST        /push/topic                         @notification.controllers.Main.pushTopics
-POST        /push/topic/*topic                  @notification.controllers.Main.pushTopic(topic: Topic)
+GET         /healthcheck                        notification.controllers.Main.healthCheck
+POST        /push/user/:userId                  notification.controllers.Main.pushUser(userId: java.util.UUID)
+POST        /push/topic                         notification.controllers.Main.pushTopics
+POST        /push/topic/*topic                  notification.controllers.Main.pushTopic(topic: Topic)
