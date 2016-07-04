@@ -1,7 +1,7 @@
 package notification.services
 
 
-import azure.{Tag, AzureRawPush, NotificationHubClient}
+import azure.{AzureRawPush, NotificationHubClient}
 import models._
 import models.Importance.{Minor, Major}
 import notification.{DateTimeFreezed, NotificationsFixtures}
@@ -34,8 +34,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
 
         result should beEqualTo(senderReport(Senders.Windows, platformStats = PlatformStatistics(WindowsMobile, 2).some).right).await
         got {
-          one(hubClient).sendNotification(pushConverter(AzureRawPushConverter.topicEncoder).toAzureRawPush(topicPush))
-          one(hubClient).sendNotification(pushConverter(AzureRawPushConverter.backwardCompatibleTopicEncoder).toAzureRawPush(topicPush))
+          one(hubClient).sendNotification(pushConverter.toAzureRawPush(topicPush))
         }
       }
 
@@ -44,7 +43,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
 
         result should beEqualTo(senderReport(Senders.Windows, platformStats = PlatformStatistics(WindowsMobile, 1).some).right).await
         got {
-          one(hubClient).sendNotification(pushConverter(AzureRawPushConverter.topicEncoder).toAzureRawPush(userPush))
+          one(hubClient).sendNotification(pushConverter.toAzureRawPush(userPush))
         }
       }
     }
@@ -67,7 +66,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
       client
     }
 
-    def pushConverter(topicEncoder: Topic => Tag) = new AzureRawPushConverter(configuration, topicEncoder)
+    val pushConverter = new AzureRawPushConverter(configuration)
 
     val topicSubscriptionsRepository = {
       val m = mock[TopicSubscriptionsRepository]
