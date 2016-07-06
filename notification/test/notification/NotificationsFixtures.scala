@@ -46,7 +46,7 @@ trait NotificationsFixtures {
     destination = Left(notification.topic)
   )
 
-  val providerError = new WindowsNotificationSenderError(Seq.empty)
+  val providerError = new WindowsNotificationSenderError(None)
 
   val apiKey = "test"
   val authenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$apiKey")

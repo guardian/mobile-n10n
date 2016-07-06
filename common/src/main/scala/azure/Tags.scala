@@ -11,10 +11,6 @@ object Tag {
     Tag(s"$TopicTagPrefix${t.id}")
   }
 
-  def fromTopicBase16(t: Topic): Tag = {
-    Tag(s"${TopicTagPrefix}Base16:${Base16.encode(t.toString)}")
-  }
-
   def fromUserId(u: UserId): Tag = {
     Tag(s"$UserTagPrefix${u.id}")
   }
@@ -48,9 +44,7 @@ object Tags {
 
   def fromStrings(tags: Set[String]): Tags = Tags(tags.map(Tag(_)))
 
-  def fromTopics(topicEncoder: Topic => Tag)(topics: Set[Topic]): Tags = Tags(
-    topics map { topicEncoder(_) }
-  )
+  def fromTopics(topics: Set[Topic]): Tags = Tags(topics map Tag.fromTopic)
 
   def fromUserId(u: UserId): Tags = Tags(Set(Tag.fromUserId(u)))
 
