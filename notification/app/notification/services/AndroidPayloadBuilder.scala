@@ -14,7 +14,7 @@ object AndroidPayloadBuilder extends PlatformPayloadBuilder {
   }
 
   private def toAndroidLink(link: Link) = link match {
-    case Link.Internal(contentApiId) => s"x-gu://www.guardian.co.uk/$contentApiId"
+    case Link.Internal(contentApiId, _) => s"x-gu://www.guardian.co.uk/$contentApiId"
     case Link.External(url) => url
   }
 
@@ -59,11 +59,11 @@ object AndroidPayloadBuilder extends PlatformPayloadBuilder {
   private def buildBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
 
     val sectionLink = condOpt(breakingNews.link) {
-      case Link.Internal(contentApiId) if isSectionLink => contentApiId
+      case Link.Internal(contentApiId, GITSection) => contentApiId
     }
 
     val tagLink = condOpt(breakingNews.link) {
-      case Link.Internal(contentApiId) if isTagLink => contentApiId
+      case Link.Internal(contentApiId, GITTag) => contentApiId
     }
 
     val link = toPlatformLink(breakingNews.link)

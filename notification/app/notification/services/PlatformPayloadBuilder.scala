@@ -25,7 +25,7 @@ trait PlatformPayloadBuilder {
   protected def replaceHost(uri: URI) = List(Some("x-gu://"), Option(uri.getPath), Option(uri.getQuery).map("?" + _)).flatten.mkString
 
   protected def toPlatformLink(link: Link) = link match {
-    case Link.Internal(contentApiId) => PlatformUri(s"x-gu:///items/$contentApiId", Item)
+    case Link.Internal(contentApiId, _) => PlatformUri(s"x-gu:///items/$contentApiId", Item)
     case Link.External(url) => PlatformUri(url, External)
   }
 
