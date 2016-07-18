@@ -1,19 +1,22 @@
-package registration.services.windows
+package registration.services.azure
 
 import azure.NotificationHubClient.HubResult
-import azure.{NotificationHubClient, RawWindowsRegistration, Tag, Tags}
+import azure._
 import models._
 import play.api.Logger
 import providers.ProviderError
 import registration.services.{NotificationRegistrar, RegistrationResponse}
-import tracking.{TopicSubscriptionTracking, SubscriptionTracker}
+import tracking.{SubscriptionTracker, TopicSubscriptionTracking}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.std.option.optionSyntax._
 import scalaz.syntax.either._
 import scalaz.{-\/, \/, \/-}
 
-class WindowsNotificationRegistrar(hubClient: NotificationHubClient, subscriptionTracker: SubscriptionTracker)(implicit ec: ExecutionContext)
+class NotificationHubRegistrar(
+  hubClient: NotificationHubClient,
+  subscriptionTracker: SubscriptionTracker,
+  registrationExtractor: Registration => NotificationsHubRegistration)(implicit ec: ExecutionContext)
   extends NotificationRegistrar {
 
   val logger = Logger(classOf[WindowsNotificationRegistrar])
@@ -46,14 +49,14 @@ class WindowsNotificationRegistrar(hubClient: NotificationHubClient, subscriptio
 
   private def createRegistration(registration: Registration): RegistrarResponse = {
     logger.debug(s"creating registration $registration")
-    hubClient.create(RawWindowsRegistration.fromMobileRegistration(registration))
+    hubClient.create(registrationExtractor(registration))
       .andThen { subscriptionTracker.recordSubscriptionChange(TopicSubscriptionTracking(addedTopics = registration.topics)) }
       .map { hubResultToRegistrationResponse(registration.topics) }
   }
 
   private def updateRegistration(azureRegistration: azure.RegistrationResponse, registration: Registration): RegistrarResponse = {
     logger.debug(s"updating registration ${azureRegistration.registration} with $registration")
-    hubClient.update(azureRegistration.registration, RawWindowsRegistration.fromMobileRegistration(registration))
+    hubClient.update(azureRegistration.registration, registrationExtractor(registration))
       .andThen {
         subscriptionTracker.recordSubscriptionChange(
           TopicSubscriptionTracking.withDiffBetween(

@@ -2,8 +2,8 @@ package registration.services
 
 import java.util.UUID
 
-import azure.RawWindowsRegistration.fromMobileRegistration
-import azure.{RegistrationResponse => HubRegistrationResponse, RawWindowsRegistration, Tag, NotificationHubClient, WNSRegistrationId}
+import _root_.azure.RawWindowsRegistration.fromMobileRegistration
+import _root_.azure.{RegistrationResponse => HubRegistrationResponse, RawWindowsRegistration, Tag, NotificationHubClient, WNSRegistrationId}
 import models.TopicTypes.{TagContributor, Content, Breaking}
 import models.{Topic, Registration, UserId, WindowsMobile}
 import org.joda.time.DateTime
@@ -11,7 +11,7 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import registration.services.windows.WindowsNotificationRegistrar
+import registration.services.azure.WindowsNotificationRegistrar
 import tracking.{SubscriptionTracker, TopicSubscriptionsRepository}
 
 import scala.concurrent.duration._

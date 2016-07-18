@@ -13,7 +13,7 @@ object RawWindowsRegistration {
     )
   }
 }
-case class RawWindowsRegistration(channelUri: String, tags: Set[String]) {
+case class RawWindowsRegistration(channelUri: String, tags: Set[String]) extends NotificationsHubRegistration {
 
   def toXml: scala.xml.Elem =
     <entry xmlns="http://www.w3.org/2005/Atom">

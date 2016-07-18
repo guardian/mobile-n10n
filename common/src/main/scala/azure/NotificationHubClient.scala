@@ -31,22 +31,22 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
 
   private def extractContent[T](hubResult: HubResult[AtomEntry[T]]): HubResult[T] = hubResult.map(_.content)
 
-  def create(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
-    logger.debug(s"Creating new registration: ${rawWindowsRegistration.toXml}")
+  def create(rawRegistration: NotificationsHubRegistration): Future[HubResult[RegistrationResponse]] = {
+    logger.debug(s"Creating new registration: ${rawRegistration.toXml}")
     request(Endpoints.Registrations)
       .withHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
-      .post(rawWindowsRegistration.toXml)
+      .post(rawRegistration.toXml)
       .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
   }
 
   def update(registrationId: WNSRegistrationId,
-             rawWindowsRegistration: RawWindowsRegistration
+             rawRegistration: NotificationsHubRegistration
               ): Future[HubResult[RegistrationResponse]] = {
-    logger.debug(s"Updating registration ($registrationId) with ${rawWindowsRegistration.toXml}")
+    logger.debug(s"Updating registration ($registrationId) with ${rawRegistration.toXml}")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
       .withHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
-      .put(rawWindowsRegistration.toXml)
+      .put(rawRegistration.toXml)
       .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
   }
