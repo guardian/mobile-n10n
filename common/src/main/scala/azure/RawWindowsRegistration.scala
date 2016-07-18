@@ -1,9 +1,7 @@
 package azure
 
 import models.Registration
-/**
- * [[https://msdn.microsoft.com/en-us/library/microsoft.servicebus.notifications.windowsregistrationdescription.aspx]]
- */
+
 object RawWindowsRegistration {
   def fromMobileRegistration(m: Registration): RawWindowsRegistration = {
     RawWindowsRegistration(
