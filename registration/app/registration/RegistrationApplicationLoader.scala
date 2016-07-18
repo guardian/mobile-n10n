@@ -10,7 +10,7 @@ import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import registration.controllers.Main
 import registration.services.topic.{TopicValidator, AuditorTopicValidator}
-import registration.services.azure.WindowsNotificationRegistrar
+import registration.services.azure.{GCMNotificationRegistrar, WindowsNotificationRegistrar}
 import registration.services.{RegistrarProvider, NotificationRegistrarProvider, Configuration}
 import router.Routes
 import tracking.{SubscriptionTracker, DynamoTopicSubscriptionsRepository}
@@ -27,6 +27,7 @@ class RegistrationApplicationLoader extends ApplicationLoader {
 trait AppComponents extends Controllers
   with Registrars
   with WindowsRegistrations
+  with GCMRegistrations
   with NotificationsHubClient
   with Tracking
   with TopicValidation
@@ -50,8 +51,19 @@ trait AppConfiguration {
 
 trait Registrars {
   self: WindowsRegistrations
+    with GCMRegistrations
     with ExecutionEnv =>
   lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
+}
+
+trait GCMRegistrations {
+  self: Tracking
+    with AppConfiguration
+    with NotificationsHubClient
+    with AhcWSComponents
+    with ExecutionEnv =>
+
+  lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = wire[GCMNotificationRegistrar]
 }
 
 trait WindowsRegistrations {
