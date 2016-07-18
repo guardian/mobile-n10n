@@ -2,6 +2,7 @@ package azure
 
 import play.api.Logger
 import play.api.http.Status
+import play.api.libs.json.Json
 import play.api.libs.ws.{WSResponse, WSClient}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -68,15 +69,31 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       }
   }
 
-  def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
+  def sendWNSNotification(azureWindowsPush: WNSRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
-    logger.debug(s"Sending Azure Raw Notification: $azureWindowsPush")
+    logger.debug(s"Sending WNS Raw Notification: $azureWindowsPush")
     request(Endpoints.Messages)
       .withHeaders("X-WNS-Type" -> "wns/raw")
       .withHeaders("ServiceBusNotification-Format" -> "windows")
       .withHeaders("Content-Type" -> "application/octet-stream")
       .withHeaders(serviceBusTags: _*)
       .post(azureWindowsPush.body)
+      .map { response =>
+        if ((200 until 300).contains(response.status))
+          ().right
+        else
+          XmlParser.parseError(response).left
+      }
+  }
+
+  def sendGCMNotification(push: GCMRawPush): Future[HubResult[Unit]] = {
+    val serviceBusTags = push.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
+    logger.debug(s"Sending GCM Raw Notification: $push")
+    request(Endpoints.Messages)
+      .withHeaders("ServiceBusNotification-Format" -> "gcm")
+      .withHeaders("Content-Type" -> "application/json;charset=utf-8")
+      .withHeaders(serviceBusTags: _*)
+      .post(Json.toJson(push.body))
       .map { response =>
         if ((200 until 300).contains(response.status))
           ().right

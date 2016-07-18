@@ -2,7 +2,7 @@ package notification.services
 
 import java.net.URI
 
-import azure.{Tag, Tags, AzureRawPush}
+import _root_.azure.{Tags, WNSRawPush, GCMRawPush, GCMBody}
 import models.Link.{External, Internal}
 import models._
 import notification.models.Destination.Destination
@@ -13,10 +13,18 @@ import play.api.libs.json.Json
 class AzureRawPushConverter(conf: Configuration) {
   val logger = Logger(classOf[AzureRawPushConverter])
 
-  def toAzureRawPush(push: Push): AzureRawPush = {
+  def toWNSRawPush(push: Push): WNSRawPush = {
     logger.debug(s"Converting push to Azure: $push")
-    AzureRawPush(
+    WNSRawPush(
       body = Json.stringify(Json.toJson(toAzure(push.notification))),
+      tags = toTags(push.destination)
+    )
+  }
+
+  def toGCMRawPush(push: Push): GCMRawPush = {
+    logger.debug(s"Converting push to Azure: $push")
+    GCMRawPush(
+      body = GCMBody(data = AndroidPayloadBuilder.build(push.notification)),
       tags = toTags(push.destination)
     )
   }

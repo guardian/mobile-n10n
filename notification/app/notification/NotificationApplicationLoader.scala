@@ -7,10 +7,10 @@ import azure.{NotificationHubConnection, NotificationHubClient}
 import com.softwaremill.macwire._
 import notification.controllers.Main
 import notification.services.frontend.{FrontendAlertsConfig, FrontendAlerts}
-import notification.services.{WindowsNotificationSender, NotificationSender, Configuration}
+import notification.services._
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
-import play.api.{BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator, Application, ApplicationLoader}
+import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.ApplicationLoader.Context
 import router.Routes
 import tracking.{DynamoNotificationReportRepository, DynamoTopicSubscriptionsRepository}
@@ -35,7 +35,7 @@ trait AppComponents extends PlayComponents
 
 trait Controllers {
   self: AzureHubComponents with FrontendAlertsComponents with ConfigurationComponents with PlayComponents with ExecutionEnv =>
-  lazy val notificationSenders = List(windowsNotificationSender, frontendAlerts)
+  lazy val notificationSenders = List(wnsNotificationSender, gcmNotificationSender, frontendAlerts)
   lazy val mainController = wire[Main]
 }
 
@@ -65,9 +65,14 @@ trait AzureHubComponents {
     new NotificationHubClient(hubConnection, wsClient)
   }
 
-  lazy val windowsNotificationSender: NotificationSender = {
+  lazy val wnsNotificationSender: WNSNotificationSender = {
     val topicSubscriptionsRepository = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
-    new WindowsNotificationSender(hubClient, appConfig, topicSubscriptionsRepository)
+    new WNSNotificationSender(hubClient, appConfig, topicSubscriptionsRepository)
+  }
+
+  lazy val gcmNotificationSender: GCMNotificationSender = {
+    val topicSubscriptionsRepository = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
+    new GCMNotificationSender(hubClient, appConfig, topicSubscriptionsRepository)
   }
 
   lazy val notificationReportRepository = new DynamoNotificationReportRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoReportsTableName)

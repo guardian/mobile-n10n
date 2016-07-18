@@ -1,7 +1,7 @@
 package notification.services
 
 
-import azure.{AzureRawPush, NotificationHubClient}
+import azure.{WNSRawPush, NotificationHubClient}
 import models._
 import models.Importance.{Minor, Major}
 import notification.{DateTimeFreezed, NotificationsFixtures}
@@ -25,7 +25,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
       val result = windowsNotificationSender.sendNotification(userPush)
 
       result should beEqualTo(expectedReport).await
-      there was no(hubClient).sendNotification(any[AzureRawPush])
+      there was no(hubClient).sendWNSNotification(any[WNSRawPush])
     }
 
     "process a Major notification" in {
@@ -34,7 +34,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
 
         result should beEqualTo(senderReport(Senders.Windows, platformStats = PlatformStatistics(WindowsMobile, 2).some).right).await
         got {
-          one(hubClient).sendNotification(pushConverter.toAzureRawPush(topicPush))
+          one(hubClient).sendWNSNotification(pushConverter.toWNSRawPush(topicPush))
         }
       }
 
@@ -43,7 +43,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
 
         result should beEqualTo(senderReport(Senders.Windows, platformStats = PlatformStatistics(WindowsMobile, 1).some).right).await
         got {
-          one(hubClient).sendNotification(pushConverter.toAzureRawPush(userPush))
+          one(hubClient).sendWNSNotification(pushConverter.toWNSRawPush(userPush))
         }
       }
     }
@@ -62,7 +62,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
     val configuration = mock[Configuration].debug returns true
     val hubClient = {
       val client = mock[NotificationHubClient]
-      client.sendNotification(any[AzureRawPush]) returns Future.successful(().right)
+      client.sendWNSNotification(any[WNSRawPush]) returns Future.successful(().right)
       client
     }
 
@@ -74,6 +74,6 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
       m
     }
 
-    val windowsNotificationSender = new WindowsNotificationSender(hubClient, configuration, topicSubscriptionsRepository)
+    val windowsNotificationSender = new WNSNotificationSender(hubClient, configuration, topicSubscriptionsRepository)
   }
 }

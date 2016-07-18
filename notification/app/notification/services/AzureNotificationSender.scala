@@ -1,6 +1,7 @@
 package notification.services
 
 import azure.NotificationHubClient
+import azure.NotificationHubClient.HubResult
 import error.NotificationsError
 import models.Importance.Major
 import models._
@@ -15,10 +16,29 @@ import scalaz.{\/-, -\/}
 import scalaz.syntax.either._
 import scalaz.syntax.std.option._
 
-class WindowsNotificationSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
+class WNSNotificationSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
+  (implicit ec: ExecutionContext) extends AzureNotificationSender(hubClient, configuration, topicSubscriptionsRepository)(ec) {
+
+  override protected def send(push: Push): Future[HubResult[Unit]] =
+    hubClient.sendWNSNotification(azureRawPushConverter.toWNSRawPush(push))
+}
+
+class GCMNotificationSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
+  (implicit ec: ExecutionContext) extends AzureNotificationSender(hubClient, configuration, topicSubscriptionsRepository)(ec) {
+
+  override protected def send(push: Push): Future[HubResult[Unit]] =
+    hubClient.sendGCMNotification(azureRawPushConverter.toGCMRawPush(push))
+}
+
+abstract class AzureNotificationSender(
+  hubClient: NotificationHubClient,
+  configuration: Configuration,
+  topicSubscriptionsRepository: TopicSubscriptionsRepository)
   (implicit ec: ExecutionContext) extends NotificationSender {
 
-  private val azureRawPushConverter = new AzureRawPushConverter(configuration)
+  protected val azureRawPushConverter = new AzureRawPushConverter(configuration)
+
+  protected def send(push: Push): Future[HubResult[Unit]]
 
   def sendNotification(push: Push): Future[SenderResult] = {
 
@@ -30,7 +50,7 @@ class WindowsNotificationSender(hubClient: NotificationHubClient, configuration:
 
     if (push.notification.importance == Major) {
       for {
-        result <- hubClient.sendNotification(azureRawPushConverter.toAzureRawPush(push))
+        result <- send(push)
         count <- count(push.destination)
       } yield {
         result.fold(
