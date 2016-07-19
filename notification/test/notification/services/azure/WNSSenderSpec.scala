@@ -1,20 +1,18 @@
-package notification.services
-
+package notification.services.azure
 
 import _root_.azure.{NotificationHubClient, WNSRawPush}
-import azure.{WNSPushConverter, WNSSender}
-import models._
 import models.Importance.{Major, Minor}
+import models._
+import notification.services.{Configuration, Senders}
 import notification.{DateTimeFreezed, NotificationsFixtures}
+import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import tracking.TopicSubscriptionsRepository
 
-import scalaz.syntax.either._
-import org.specs2.concurrent.ExecutionEnv
-
 import scala.concurrent.Future
+import scalaz.syntax.either._
 import scalaz.syntax.std.option._
 
 class WNSSenderSpec(implicit ev: ExecutionEnv) extends Specification

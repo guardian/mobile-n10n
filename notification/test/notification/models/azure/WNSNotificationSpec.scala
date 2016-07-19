@@ -11,7 +11,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.libs.json.Json
 
-class NotificationSpec extends Specification {
+class WNSNotificationSpec extends Specification {
 
   "A breaking news" should {
     "serialize / deserialize to json" in new BreakingNewsScope {

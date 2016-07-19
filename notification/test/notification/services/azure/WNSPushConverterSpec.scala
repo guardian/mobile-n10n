@@ -1,23 +1,23 @@
-package notification.services
+package notification.services.azure
 
 import java.net.URI
 import java.util.UUID
 
 import _root_.azure.{Tag, Tags}
-import azure.{WNSPushConverter}
 import models.GoalType.Penalty
 import models.Importance.Major
 import models.Link.Internal
-import models._
 import models.TopicTypes.{Breaking, FootballMatch, FootballTeam, TagSeries}
-import notification.models.{Destination, azure, wns}
+import models._
+import notification.models.{Destination, wns}
+import notification.services.Configuration
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
 class WNSPushConverterSpec extends Specification with Mockito {
 
-  "AzureRawPushConverter.toAzure" should {
+  "WNSPushConverter.toAzure" should {
     "convert a breaking news into the azure format" in new BreakingNewsScope {
       azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
     }
@@ -29,7 +29,7 @@ class WNSPushConverterSpec extends Specification with Mockito {
     }
   }
 
-  "AzureRawPushConverter.toTag" should {
+  "WNSPushConverter.toTag" should {
     "convert a userId into a tag" in new PushConverterScope {
       val userId = Destination(UserId(id = UUID.fromString("497f172a-9434-11e5-af4E-61a964696656")))
       val expected = Tag("user:497f172a-9434-11e5-af4e-61a964696656")
