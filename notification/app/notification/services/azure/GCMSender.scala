@@ -10,7 +10,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class GCMSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
   (implicit ec: ExecutionContext) extends NotificationsHubSender(hubClient, configuration, topicSubscriptionsRepository)(ec) {
 
-  protected val azureRawPushConverter = new AzureGCMPushConverter(configuration)
+  protected val azureRawPushConverter = new GCMPushConverter(configuration)
 
   override protected def send(push: Push): Future[HubResult[Unit]] =
     hubClient.sendGCMNotification(azureRawPushConverter.toRawPush(push))

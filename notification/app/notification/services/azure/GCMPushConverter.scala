@@ -32,9 +32,9 @@ object PlatformUriTypes {
 
 }
 
-class AzureGCMPushConverter(conf: Configuration) {
+class GCMPushConverter(conf: Configuration) {
 
-  val logger = Logger(classOf[AzureGCMPushConverter])
+  val logger = Logger(classOf[GCMPushConverter])
 
   def toRawPush(push: Push): GCMRawPush = {
     logger.debug(s"Converting push to Azure: $push")
@@ -44,7 +44,7 @@ class AzureGCMPushConverter(conf: Configuration) {
     )
   }
 
-  private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): android.Notification = np match {
+  private[services] def toAzure(np: Notification, editions: Set[Edition] = Set.empty): android.Notification = np match {
     case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
