@@ -19,15 +19,19 @@ import scalaz.syntax.std.option._
 class WNSNotificationSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
   (implicit ec: ExecutionContext) extends AzureNotificationSender(hubClient, configuration, topicSubscriptionsRepository)(ec) {
 
+  protected val azureRawPushConverter = new AzureWNSPushConverter(configuration)
+
   override protected def send(push: Push): Future[HubResult[Unit]] =
-    hubClient.sendWNSNotification(azureRawPushConverter.toWNSRawPush(push))
+    hubClient.sendWNSNotification(azureRawPushConverter.toRawPush(push))
 }
 
 class GCMNotificationSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
   (implicit ec: ExecutionContext) extends AzureNotificationSender(hubClient, configuration, topicSubscriptionsRepository)(ec) {
 
+  protected val azureRawPushConverter = new AzureGCMPushConverter(configuration)
+
   override protected def send(push: Push): Future[HubResult[Unit]] =
-    hubClient.sendGCMNotification(azureRawPushConverter.toGCMRawPush(push))
+    hubClient.sendGCMNotification(azureRawPushConverter.toRawPush(push))
 }
 
 abstract class AzureNotificationSender(
@@ -35,8 +39,6 @@ abstract class AzureNotificationSender(
   configuration: Configuration,
   topicSubscriptionsRepository: TopicSubscriptionsRepository)
   (implicit ec: ExecutionContext) extends NotificationSender {
-
-  protected val azureRawPushConverter = new AzureRawPushConverter(configuration)
 
   protected def send(push: Push): Future[HubResult[Unit]]
 

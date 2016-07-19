@@ -1,10 +1,12 @@
-package notification.models.azure
+package notification.models.wns
 
 import java.net.URI
 import java.util.UUID
-import models.NotificationType.{GoalAlert, Content, BreakingNews}
+
+import models.NotificationType.{BreakingNews, Content, GoalAlert}
 import models._
 import play.api.libs.json._
+import JsonUtils._
 
 sealed trait Notification {
   def id: UUID
@@ -17,7 +19,6 @@ sealed trait Notification {
 }
 
 object Notification {
-  import models.JsonUtils._
   implicit val jf = new Format[Notification] {
     override def writes(o: Notification): JsValue = o match {
       case n: BreakingNewsNotification => BreakingNewsNotification.jf.writes(n)
@@ -48,7 +49,6 @@ case class BreakingNewsNotification(
 ) extends Notification
 
 object BreakingNewsNotification {
-  import models.JsonUtils._
   implicit val jf = Json.format[BreakingNewsNotification]
 }
 
@@ -64,7 +64,6 @@ case class ContentNotification(
 ) extends Notification
 
 object ContentNotification {
-  import models.JsonUtils._
   implicit val jf = Json.format[ContentNotification]
 }
 
@@ -91,6 +90,5 @@ case class GoalAlertNotification(
 ) extends Notification
 
 object GoalAlertNotification {
-  import models.JsonUtils._
   implicit val jf = Json.format[GoalAlertNotification]
 }

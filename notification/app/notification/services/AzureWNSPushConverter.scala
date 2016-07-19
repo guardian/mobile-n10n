@@ -2,18 +2,18 @@ package notification.services
 
 import java.net.URI
 
-import _root_.azure.{Tags, WNSRawPush, GCMRawPush, GCMBody}
+import _root_.azure.{Tags, WNSRawPush}
 import models.Link.{External, Internal}
 import models._
 import notification.models.Destination.Destination
-import notification.models.{Push, azure}
+import notification.models.{Push, wns}
 import play.api.Logger
 import play.api.libs.json.Json
 
-class AzureRawPushConverter(conf: Configuration) {
-  val logger = Logger(classOf[AzureRawPushConverter])
+class AzureWNSPushConverter(conf: Configuration) {
+  val logger = Logger(classOf[AzureWNSPushConverter])
 
-  def toWNSRawPush(push: Push): WNSRawPush = {
+  def toRawPush(push: Push): WNSRawPush = {
     logger.debug(s"Converting push to Azure: $push")
     WNSRawPush(
       body = Json.stringify(Json.toJson(toAzure(push.notification))),
@@ -21,15 +21,7 @@ class AzureRawPushConverter(conf: Configuration) {
     )
   }
 
-  def toGCMRawPush(push: Push): GCMRawPush = {
-    logger.debug(s"Converting push to Azure: $push")
-    GCMRawPush(
-      body = GCMBody(data = AndroidPayloadBuilder.build(push.notification)),
-      tags = toTags(push.destination)
-    )
-  }
-
-  private[services] def toAzure(notification: Notification): azure.Notification = notification match {
+  private[services] def toAzure(notification: Notification): wns.Notification = notification match {
     case bnn: BreakingNewsNotification => toAzureBreakingNews(bnn)
     case cn: ContentNotification => toContent(cn)
     case gan: GoalAlertNotification => toGoalAlert(gan)
@@ -45,7 +37,7 @@ class AzureRawPushConverter(conf: Configuration) {
     case Internal(capiId, _) => new URI(s"${conf.mapiItemEndpoint}/$capiId")
   }
 
-  private def toAzureBreakingNews(bnn: BreakingNewsNotification) = azure.BreakingNewsNotification(
+  private def toAzureBreakingNews(bnn: BreakingNewsNotification) = wns.BreakingNewsNotification(
     id = bnn.id,
     `type` = bnn.`type`,
     title = bnn.title,
@@ -57,7 +49,7 @@ class AzureRawPushConverter(conf: Configuration) {
     debug = conf.debug
   )
 
-  private def toContent(cn: ContentNotification) = azure.ContentNotification(
+  private def toContent(cn: ContentNotification) = wns.ContentNotification(
     id = cn.id,
     `type` = cn.`type`,
     title = cn.title,
@@ -68,7 +60,7 @@ class AzureRawPushConverter(conf: Configuration) {
     debug = conf.debug
   )
 
-  private def toGoalAlert(gan: GoalAlertNotification) = azure.GoalAlertNotification(
+  private def toGoalAlert(gan: GoalAlertNotification) = wns.GoalAlertNotification(
     id = gan.id,
     `type` = gan.`type`,
     title = gan.title,

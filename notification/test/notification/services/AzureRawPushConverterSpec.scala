@@ -3,13 +3,13 @@ package notification.services
 import java.net.URI
 import java.util.UUID
 
-import azure.{Tags, Tag}
+import azure.{Tag, Tags}
 import models.GoalType.Penalty
 import models.Importance.Major
 import models.Link.Internal
 import models._
-import models.TopicTypes.{FootballMatch, FootballTeam, TagSeries, Breaking}
-import notification.models.{Destination, azure}
+import models.TopicTypes.{Breaking, FootballMatch, FootballTeam, TagSeries}
+import notification.models.{Destination, azure, wns}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
@@ -52,7 +52,7 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       c
     }
 
-    def azureRawPushConverter = new AzureRawPushConverter(configuration)
+    def azureRawPushConverter = new AzureWNSPushConverter(configuration)
   }
 
   trait BreakingNewsScope extends PushConverterScope {
@@ -68,7 +68,7 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       topic = Set(Topic(Breaking, "uk"))
     )
 
-    val azureNotification = azure.BreakingNewsNotification(
+    val azureNotification = wns.BreakingNewsNotification(
       id = UUID.fromString("30aac5f5-34bb-4a88-8b69-97f995a4907b"),
       title = "The Guardian",
       message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
@@ -92,7 +92,7 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       topic = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground"))
     )
 
-    val azureNotification = azure.ContentNotification(
+    val azureNotification = wns.ContentNotification(
       id = UUID.fromString("c8bd6aaa-072f-4593-a38b-322f3ecd6bd3"),
       title = "Follow",
       message = "Which countries are doing the most to stop dangerous global warming?",
@@ -129,7 +129,7 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       addedTime = None
     )
 
-    val azureNotification = azure.GoalAlertNotification(
+    val azureNotification = wns.GoalAlertNotification(
       id = UUID.fromString("3e0bc788-a27c-4864-bb71-77a80aadcce4"),
       title = "The Guardian",
       message = "Leicester 2-1 Watford\nDeeney 75min",

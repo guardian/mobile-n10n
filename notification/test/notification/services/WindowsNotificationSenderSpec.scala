@@ -34,7 +34,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
 
         result should beEqualTo(senderReport(Senders.Windows, platformStats = PlatformStatistics(WindowsMobile, 2).some).right).await
         got {
-          one(hubClient).sendWNSNotification(pushConverter.toWNSRawPush(topicPush))
+          one(hubClient).sendWNSNotification(pushConverter.toRawPush(topicPush))
         }
       }
 
@@ -43,7 +43,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
 
         result should beEqualTo(senderReport(Senders.Windows, platformStats = PlatformStatistics(WindowsMobile, 1).some).right).await
         got {
-          one(hubClient).sendWNSNotification(pushConverter.toWNSRawPush(userPush))
+          one(hubClient).sendWNSNotification(pushConverter.toRawPush(userPush))
         }
       }
     }
@@ -66,7 +66,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
       client
     }
 
-    val pushConverter = new AzureRawPushConverter(configuration)
+    val pushConverter = new AzureWNSPushConverter(configuration)
 
     val topicSubscriptionsRepository = {
       val m = mock[TopicSubscriptionsRepository]

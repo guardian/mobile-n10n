@@ -5,7 +5,8 @@ import java.util.UUID
 
 import models.GoalType.Penalty
 import models.Topic
-import models.TopicTypes.{FootballMatch, FootballTeam, TagSeries, Breaking}
+import models.TopicTypes.{Breaking, FootballMatch, FootballTeam, TagSeries}
+import notification.models.wns.{BreakingNewsNotification, ContentNotification, GoalAlertNotification, Notification}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.libs.json.Json
