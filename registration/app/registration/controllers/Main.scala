@@ -1,13 +1,16 @@
 package registration.controllers
 
+import java.util.UUID
+
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
 import error.NotificationsError
-import models.{Topic, Registration}
+import models._
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
-import play.api.mvc.{AnyContent, Action, Controller, Result}
-import registration.services.{RegistrationResponse, NotificationRegistrar, RegistrarProvider}
+import play.api.mvc.{Action, AnyContent, Controller, Result}
+import registration.models.LegacyRegistration
+import registration.services.{NotificationRegistrar, RegistrarProvider, RegistrationResponse}
 import registration.services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -24,7 +27,40 @@ final class Main(registrarProvider: RegistrarProvider, topicValidator: TopicVali
   }
 
   def register(lastKnownDeviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
-    val registration = request.body
+    registerCommon(lastKnownDeviceId, request.body)
+  }
+
+  def legacyRegister: Action[LegacyRegistration] = Action.async(BodyJson[LegacyRegistration]) { request =>
+    val topics = for {
+      topics <- request.body.preferences.topics.toList
+      topic <- topics
+      topicType <- TopicType.fromString(topic.`type`)
+    } yield Topic(topicType, topic.name) // todo: check this
+
+    val matchTopics = for {
+      topics <- request.body.preferences.matches.toList
+      topic <- topics
+    } yield Topic(TopicTypes.FootballMatch, topic.matchId) // todo: check this
+
+    val breakingTopic = if (request.body.preferences.receiveNewsAlerts)
+      Some(Topic(TopicTypes.Breaking, request.body.preferences.edition)) // todo: check this
+    else None
+
+    val result = for {
+      platform <- Platform.fromString(request.body.device.platform)
+    } yield {
+      val registration = Registration(
+        deviceId = request.body.device.pushToken,
+        platform = platform,
+        userId = UserId(UUID.fromString(request.body.device.udid)),
+        topics = (topics ++ matchTopics ++ breakingTopic.toList).toSet
+      )
+      registerCommon(registration.deviceId, registration)
+    }
+    result getOrElse Future.successful(InternalServerError("Platform not recognised"))
+  }
+
+  private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[Result] = {
 
     def validate(topics: Set[Topic]): Future[Set[Topic]] =
       topicValidator
