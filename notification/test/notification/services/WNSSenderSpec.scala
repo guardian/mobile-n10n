@@ -1,27 +1,29 @@
 package notification.services
 
 
-import azure.{WNSRawPush, NotificationHubClient}
+import _root_.azure.{NotificationHubClient, WNSRawPush}
+import azure.{WNSPushConverter, WNSSender}
 import models._
-import models.Importance.{Minor, Major}
+import models.Importance.{Major, Minor}
 import notification.{DateTimeFreezed, NotificationsFixtures}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import tracking.TopicSubscriptionsRepository
+
 import scalaz.syntax.either._
 import org.specs2.concurrent.ExecutionEnv
 
 import scala.concurrent.Future
 import scalaz.syntax.std.option._
 
-class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specification
+class WNSSenderSpec(implicit ev: ExecutionEnv) extends Specification
   with Mockito with DateTimeFreezed {
 
   "the notification sender" should {
     "filter out Minor notifications" in new WNSScope {
       override val importance = Minor
-      val expectedReport = senderReport(Senders.Windows).right
+      val expectedReport = senderReport(Senders.AzureNotificationsHub).right
       val result = windowsNotificationSender.sendNotification(userPush)
 
       result should beEqualTo(expectedReport).await
@@ -32,7 +34,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
       "send two separate with notifications with differently encoded topics when addressed to topic" in new WNSScope {
         val result = windowsNotificationSender.sendNotification(topicPush)
 
-        result should beEqualTo(senderReport(Senders.Windows, platformStats = PlatformStatistics(WindowsMobile, 2).some).right).await
+        result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 2).some).right).await
         got {
           one(hubClient).sendWNSNotification(pushConverter.toRawPush(topicPush))
         }
@@ -41,7 +43,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
       "send only one notification when destination is user so that user do not receive the same message twice" in new WNSScope {
         val result = windowsNotificationSender.sendNotification(userPush)
 
-        result should beEqualTo(senderReport(Senders.Windows, platformStats = PlatformStatistics(WindowsMobile, 1).some).right).await
+        result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some).right).await
         got {
           one(hubClient).sendWNSNotification(pushConverter.toRawPush(userPush))
         }
@@ -66,7 +68,7 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
       client
     }
 
-    val pushConverter = new AzureWNSPushConverter(configuration)
+    val pushConverter = new WNSPushConverter(configuration)
 
     val topicSubscriptionsRepository = {
       val m = mock[TopicSubscriptionsRepository]
@@ -74,6 +76,6 @@ class WindowsNotificationSenderSpec(implicit ev: ExecutionEnv) extends Specifica
       m
     }
 
-    val windowsNotificationSender = new WNSNotificationSender(hubClient, configuration, topicSubscriptionsRepository)
+    val windowsNotificationSender = new WNSSender(hubClient, configuration, topicSubscriptionsRepository)
   }
 }

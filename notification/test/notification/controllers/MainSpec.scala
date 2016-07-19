@@ -41,7 +41,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     "notify reporting repository about added notifications" in new MainScope {
       val request = requestWithValidTopics
       val expectedReport = reportWithSenderReports(List(
-        senderReport(Senders.Windows), senderReport(Senders.FrontendAlerts)
+        senderReport(Senders.AzureNotificationsHub), senderReport(Senders.FrontendAlerts)
       ))
 
       val response = main.pushTopics()(request)
@@ -53,7 +53,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     "notify reporting repository about added notifications and propagate reporting error" in new MainScope {
       val request = requestWithValidTopics
       val expectedReport = reportWithSenderReports(List(
-        senderReport(Senders.Windows), senderReport(Senders.FrontendAlerts)
+        senderReport(Senders.AzureNotificationsHub), senderReport(Senders.FrontendAlerts)
       ))
       reportRepository.store(expectedReport) returns Future.successful(RepositoryError("error").left)
 
@@ -105,7 +105,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       new NotificationSender {
         override def sendNotification(push: Push): Future[SenderResult] = {
           pushSent = Some(push)
-          Future.successful(senderReport(Senders.Windows).right)
+          Future.successful(senderReport(Senders.AzureNotificationsHub).right)
         }
       }
     }

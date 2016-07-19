@@ -17,7 +17,7 @@ package object services {
   }
 
   object Senders {
-    val Windows = "Windows Notification Sender"
+    val AzureNotificationsHub = "Azure Notifications Hub"
     val FrontendAlerts = "Frontend Alerts Sender"
   }
 

@@ -5,6 +5,8 @@ import java.util.UUID
 
 import models.NotificationType.{BreakingNews, Content, GoalAlert}
 import models._
+import notification.models.android.Editions.Edition
+import notification.services.azure.PlatformUriType
 import play.api.libs.json._
 
 sealed trait Notification {
@@ -13,7 +15,7 @@ sealed trait Notification {
   def title: String
   def message: String
   def thumbnailUrl: Option[URI]
-  def topics: String
+  def topics: Set[Topic]
   def debug: Boolean
   def payload: Map[String, String]
 }
@@ -26,13 +28,13 @@ case class BreakingNewsNotification(
   ticker: String,
   message: String,
   debug: Boolean,
-  editions: String,
+  editions: Set[Edition],
   link: URI,
-  topics: String,
-  uriType: String,
+  topics: Set[Topic],
+  uriType: PlatformUriType,
   uri: String,
   section: Option[URI],
-  edition: Option[String],
+  edition: Option[Edition],
   keyword: Option[URI],
   imageUrl: Option[URI],
   thumbnailUrl: Option[URI]
@@ -45,13 +47,13 @@ case class BreakingNewsNotification(
     "ticker" -> ticker,
     "message" -> message,
     "debug" -> debug.toString,
-    "editions" -> editions,
+    "editions" -> editions.mkString(","),
     "link" -> link.toString,
-    "topics" -> topics,
-    "uriType" -> uriType,
+    "topics" -> topics.map(_.toString).mkString(","),
+    "uriType" -> uriType.toString,
     "uri" -> uri) ++ (Map(
     "section" -> section.map(_.toString),
-    "edition" -> edition,
+    "edition" -> edition.map(_.toString),
     "keyword" -> keyword.map(_.toString),
     "imageUrl" -> imageUrl.map(_.toString),
     "thumbnailUrl" -> thumbnailUrl.map(_.toString)
@@ -67,8 +69,8 @@ case class ContentNotification(
   ticker: String,
   message: String,
   link: URI,
-  topics: String,
-  uriType: String,
+  topics: Set[Topic],
+  uriType: PlatformUriType,
   uri: URI,
   thumbnailUrl: Option[URI],
   debug: Boolean
@@ -80,8 +82,8 @@ case class ContentNotification(
     "ticker" -> ticker,
     "message" -> message,
     "link" -> link.toString,
-    "topics" -> topics,
-    "uriType" -> uriType,
+    "topics" -> topics.map(_.toString).mkString(","),
+    "uriType" -> uriType.toString,
     "uri" -> uri.toString,
     "debug" -> debug.toString
   ) ++ (Map("thumbnailUrl" -> thumbnailUrl.map(_.toString)) collect { case (k, Some(v)) => k -> v })
@@ -91,20 +93,20 @@ case class GoalAlertNotification(
   `type`: String = AndroidMessageTypes.GoalAlert,
   uniqueIdentifier: UUID,
   AWAY_TEAM_NAME: String,
-  AWAY_TEAM_SCORE: String,
+  AWAY_TEAM_SCORE: Int,
   HOME_TEAM_NAME: String,
-  HOME_TEAM_SCORE: String,
+  HOME_TEAM_SCORE: Int,
   SCORING_TEAM_NAME: String,
   SCORER_NAME: String,
-  GOAL_MINS: String,
+  GOAL_MINS: Int,
   OTHER_TEAM_NAME: String,
   matchId: String,
   mapiUrl: URI,
   uri: URI,
-  uriType: String,
+  uriType: PlatformUriType,
   debug: Boolean
 ) extends Notification {
-  def topics: String = ""
+  def topics: Set[Topic] = Set.empty
   def thumbnailUrl: Option[URI] = None
   def message: String = ""
   def title: String = ""
@@ -112,17 +114,17 @@ case class GoalAlertNotification(
     "type" -> `type`,
     "uniqueIdentifier" -> uniqueIdentifier.toString,
     "AWAY_TEAM_NAME" -> AWAY_TEAM_NAME,
-    "AWAY_TEAM_SCORE" -> AWAY_TEAM_SCORE,
+    "AWAY_TEAM_SCORE" -> AWAY_TEAM_SCORE.toString,
     "HOME_TEAM_NAME" -> HOME_TEAM_NAME,
-    "HOME_TEAM_SCORE" -> HOME_TEAM_SCORE,
+    "HOME_TEAM_SCORE" -> HOME_TEAM_SCORE.toString,
     "SCORING_TEAM_NAME" -> SCORING_TEAM_NAME,
     "SCORER_NAME" -> SCORER_NAME,
-    "GOAL_MINS" -> GOAL_MINS,
+    "GOAL_MINS" -> GOAL_MINS.toString,
     "OTHER_TEAM_NAME" -> OTHER_TEAM_NAME,
     "matchId" -> matchId,
     "mapiUrl" -> mapiUrl.toString,
     "uri" -> uri.toString,
-    "uriType" -> uriType,
+    "uriType" -> uriType.toString,
     "debug" -> debug.toString
   )
 }

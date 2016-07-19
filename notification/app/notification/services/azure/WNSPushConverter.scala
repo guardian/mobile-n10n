@@ -1,4 +1,4 @@
-package notification.services
+package notification.services.azure
 
 import java.net.URI
 
@@ -7,11 +7,12 @@ import models.Link.{External, Internal}
 import models._
 import notification.models.Destination.Destination
 import notification.models.{Push, wns}
+import notification.services.Configuration
 import play.api.Logger
 import play.api.libs.json.Json
 
-class AzureWNSPushConverter(conf: Configuration) {
-  val logger = Logger(classOf[AzureWNSPushConverter])
+class WNSPushConverter(conf: Configuration) {
+  val logger = Logger(classOf[WNSPushConverter])
 
   def toRawPush(push: Push): WNSRawPush = {
     logger.debug(s"Converting push to Azure: $push")
@@ -22,7 +23,7 @@ class AzureWNSPushConverter(conf: Configuration) {
   }
 
   private[services] def toAzure(notification: Notification): wns.Notification = notification match {
-    case bnn: BreakingNewsNotification => toAzureBreakingNews(bnn)
+    case bnn: BreakingNewsNotification => toBreakingNews(bnn)
     case cn: ContentNotification => toContent(cn)
     case gan: GoalAlertNotification => toGoalAlert(gan)
   }
@@ -37,7 +38,7 @@ class AzureWNSPushConverter(conf: Configuration) {
     case Internal(capiId, _) => new URI(s"${conf.mapiItemEndpoint}/$capiId")
   }
 
-  private def toAzureBreakingNews(bnn: BreakingNewsNotification) = wns.BreakingNewsNotification(
+  private def toBreakingNews(bnn: BreakingNewsNotification) = wns.BreakingNewsNotification(
     id = bnn.id,
     `type` = bnn.`type`,
     title = bnn.title,

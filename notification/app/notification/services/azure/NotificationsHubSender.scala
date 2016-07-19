@@ -1,4 +1,4 @@
-package notification.services
+package notification.services.azure
 
 import azure.NotificationHubClient
 import azure.NotificationHubClient.HubResult
@@ -7,34 +7,18 @@ import models.Importance.Major
 import models._
 import notification.models.Destination.Destination
 import notification.models.Push
+import notification.services.{NotificationRejected, Senders, _}
 import org.joda.time.DateTime
 import tracking.Repository._
-import tracking.{TopicSubscriptionsRepository, RepositoryResult}
+import tracking.{RepositoryResult, TopicSubscriptionsRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.{\/-, -\/}
 import scalaz.syntax.either._
 import scalaz.syntax.std.option._
+import scalaz.{-\/, \/-}
 
-class WNSNotificationSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
-  (implicit ec: ExecutionContext) extends AzureNotificationSender(hubClient, configuration, topicSubscriptionsRepository)(ec) {
 
-  protected val azureRawPushConverter = new AzureWNSPushConverter(configuration)
-
-  override protected def send(push: Push): Future[HubResult[Unit]] =
-    hubClient.sendWNSNotification(azureRawPushConverter.toRawPush(push))
-}
-
-class GCMNotificationSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
-  (implicit ec: ExecutionContext) extends AzureNotificationSender(hubClient, configuration, topicSubscriptionsRepository)(ec) {
-
-  protected val azureRawPushConverter = new AzureGCMPushConverter(configuration)
-
-  override protected def send(push: Push): Future[HubResult[Unit]] =
-    hubClient.sendGCMNotification(azureRawPushConverter.toRawPush(push))
-}
-
-abstract class AzureNotificationSender(
+abstract class NotificationsHubSender(
   hubClient: NotificationHubClient,
   configuration: Configuration,
   topicSubscriptionsRepository: TopicSubscriptionsRepository)
@@ -45,7 +29,7 @@ abstract class AzureNotificationSender(
   def sendNotification(push: Push): Future[SenderResult] = {
 
     def report(recipientsCount: Option[Int]) = SenderReport(
-      senderName = Senders.Windows,
+      senderName = Senders.AzureNotificationsHub,
       sentTime = DateTime.now,
       platformStatistics = recipientsCount map { PlatformStatistics(WindowsMobile, _) }
     )
@@ -86,6 +70,6 @@ abstract class AzureNotificationSender(
 }
 
 case class WindowsNotificationSenderError(underlying: Option[NotificationsError]) extends SenderError {
-  override def senderName: String = Senders.Windows
+  override def senderName: String = Senders.AzureNotificationsHub
   override def reason: String = s"Sender: $senderName ${ underlying.fold("")(_.reason) }"
 }

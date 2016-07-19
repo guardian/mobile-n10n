@@ -3,7 +3,8 @@ package notification.services
 import java.net.URI
 import java.util.UUID
 
-import azure.{Tag, Tags}
+import _root_.azure.{Tag, Tags}
+import azure.{WNSPushConverter}
 import models.GoalType.Penalty
 import models.Importance.Major
 import models.Link.Internal
@@ -14,7 +15,7 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
-class AzureRawPushConverterSpec extends Specification with Mockito {
+class WNSPushConverterSpec extends Specification with Mockito {
 
   "AzureRawPushConverter.toAzure" should {
     "convert a breaking news into the azure format" in new BreakingNewsScope {
@@ -52,7 +53,7 @@ class AzureRawPushConverterSpec extends Specification with Mockito {
       c
     }
 
-    def azureRawPushConverter = new AzureWNSPushConverter(configuration)
+    def azureRawPushConverter = new WNSPushConverter(configuration)
   }
 
   trait BreakingNewsScope extends PushConverterScope {

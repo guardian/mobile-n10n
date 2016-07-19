@@ -3,11 +3,12 @@ package notification
 import java.net.URI
 
 import _root_.controllers.Assets
-import azure.{NotificationHubConnection, NotificationHubClient}
+import azure.{NotificationHubClient, NotificationHubConnection}
 import com.softwaremill.macwire._
 import notification.controllers.Main
-import notification.services.frontend.{FrontendAlertsConfig, FrontendAlerts}
+import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
+import notification.services.azure.{GCMSender, WNSSender}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
@@ -65,14 +66,14 @@ trait AzureHubComponents {
     new NotificationHubClient(hubConnection, wsClient)
   }
 
-  lazy val wnsNotificationSender: WNSNotificationSender = {
+  lazy val wnsNotificationSender: WNSSender = {
     val topicSubscriptionsRepository = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
-    new WNSNotificationSender(hubClient, appConfig, topicSubscriptionsRepository)
+    new WNSSender(hubClient, appConfig, topicSubscriptionsRepository)
   }
 
-  lazy val gcmNotificationSender: GCMNotificationSender = {
+  lazy val gcmNotificationSender: GCMSender = {
     val topicSubscriptionsRepository = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
-    new GCMNotificationSender(hubClient, appConfig, topicSubscriptionsRepository)
+    new GCMSender(hubClient, appConfig, topicSubscriptionsRepository)
   }
 
   lazy val notificationReportRepository = new DynamoNotificationReportRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoReportsTableName)

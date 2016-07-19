@@ -1,16 +1,36 @@
-package notification.services
+package notification.services.azure
 
-import models._
-import notification.models.android.Editions.Edition
-import notification.models.android.AndroidMessageTypes
-import notification.models.{Push, android}
-
-import scala.PartialFunction._
 import java.net.URI
 
-import azure.{GCMBody, GCMRawPush, Tags}
-import notification.models.Destination.{apply => _, _}
+import _root_.azure.{GCMBody, GCMRawPush, Tags}
+import models._
+import notification.models.Destination._
+import notification.models.android.AndroidMessageTypes
+import notification.models.android.Editions.Edition
+import notification.models.{Push, android}
+import notification.services.Configuration
 import play.api.Logger
+
+import scala.PartialFunction._
+import PlatformUriTypes.{Item, FootballMatch, External}
+
+sealed trait PlatformUriType
+
+object PlatformUriTypes {
+
+  case object Item extends PlatformUriType {
+    override def toString: String = "item"
+  }
+
+  case object FootballMatch extends PlatformUriType {
+    override def toString: String = "football-match"
+  }
+
+  case object External extends PlatformUriType {
+    override def toString: String = "external"
+  }
+
+}
 
 class AzureGCMPushConverter(conf: Configuration) {
 
@@ -25,9 +45,9 @@ class AzureGCMPushConverter(conf: Configuration) {
   }
 
   private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): android.Notification = np match {
-    case ga: GoalAlertNotification => buildGoalAlert(ga)
-    case ca: ContentNotification => buildContentAlert(ca)
-    case bn: BreakingNewsNotification => buildBreakingNews(bn, editions)
+    case ga: GoalAlertNotification => toGoalAlert(ga)
+    case ca: ContentNotification => toContent(ca)
+    case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
   }
 
   private[services] def toTags(destination: Destination) = destination match {
@@ -40,44 +60,7 @@ class AzureGCMPushConverter(conf: Configuration) {
     case Link.External(url) => new URI(url)
   }
 
-  private def buildContentAlert(contentAlert: ContentNotification) = {
-    val link = toPlatformLink(contentAlert.link)
-
-    android.ContentNotification(
-      uniqueIdentifier = contentAlert.id,
-      title = contentAlert.title,
-      ticker = contentAlert.message,
-      message = contentAlert.message,
-      link = toAndroidLink(contentAlert.link),
-      topics = contentAlert.topic.map(_.toString).mkString(","),
-      uriType = link.`type`.toString,
-      uri = new URI(link.uri),
-      thumbnailUrl = contentAlert.thumbnailUrl,
-      debug = conf.debug
-    )
-  }
-
-  private def buildGoalAlert(goalAlert: GoalAlertNotification) = {
-    android.GoalAlertNotification(
-      `type` = AndroidMessageTypes.GoalAlert,
-      uniqueIdentifier = goalAlert.id,
-      AWAY_TEAM_NAME = goalAlert.awayTeamName,
-      AWAY_TEAM_SCORE = goalAlert.awayTeamScore.toString,
-      HOME_TEAM_NAME = goalAlert.homeTeamName,
-      HOME_TEAM_SCORE = goalAlert.homeTeamScore.toString,
-      SCORING_TEAM_NAME = goalAlert.scoringTeamName,
-      SCORER_NAME = goalAlert.scorerName,
-      GOAL_MINS = goalAlert.goalMins.toString,
-      OTHER_TEAM_NAME = goalAlert.otherTeamName,
-      matchId = goalAlert.matchId,
-      mapiUrl = goalAlert.mapiUrl,
-      debug = conf.debug,
-      uri = new URI(replaceHost(goalAlert.mapiUrl)),
-      uriType = FootballMatch.toString
-    )
-  }
-
-  private def buildBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
+  private def toBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
 
     val sectionLink = condOpt(breakingNews.link) {
       case Link.Internal(contentApiId, GITSection) => contentApiId
@@ -97,32 +80,53 @@ class AzureGCMPushConverter(conf: Configuration) {
       ticker = breakingNews.message,
       message = breakingNews.message,
       debug = conf.debug,
-      editions = editions.mkString(","),
+      editions = editions,
       link = toAndroidLink(breakingNews.link),
-      topics = breakingNews.topic.map(_.toString).mkString(","),
-      uriType = link.`type`.toString,
+      topics = breakingNews.topic,
+      uriType = link.`type`,
       uri = link.uri,
       section = sectionLink.map(new URI(_)),
-      edition = if (editions.size == 1) Some(editions.head.toString) else None,
+      edition = if (editions.size == 1) Some(editions.head) else None,
       keyword = tagLink.map(new URI(_)),
       imageUrl = breakingNews.imageUrl,
       thumbnailUrl = breakingNews.thumbnailUrl
     )
   }
 
-  sealed trait PlatformUriType
+  private def toContent(cn: ContentNotification) = {
+    val link = toPlatformLink(cn.link)
 
-  case object Item extends PlatformUriType {
-    override def toString: String = "item"
+    android.ContentNotification(
+      uniqueIdentifier = cn.id,
+      title = cn.title,
+      ticker = cn.message,
+      message = cn.message,
+      link = toAndroidLink(cn.link),
+      topics = cn.topic,
+      uriType = link.`type`,
+      uri = new URI(link.uri),
+      thumbnailUrl = cn.thumbnailUrl,
+      debug = conf.debug
+    )
   }
 
-  case object FootballMatch extends PlatformUriType {
-    override def toString: String = "football-match"
-  }
-
-  case object External extends PlatformUriType {
-    override def toString: String = "external"
-  }
+  private def toGoalAlert(goalAlert: GoalAlertNotification) = android.GoalAlertNotification(
+    `type` = AndroidMessageTypes.GoalAlert,
+    uniqueIdentifier = goalAlert.id,
+    AWAY_TEAM_NAME = goalAlert.awayTeamName,
+    AWAY_TEAM_SCORE = goalAlert.awayTeamScore,
+    HOME_TEAM_NAME = goalAlert.homeTeamName,
+    HOME_TEAM_SCORE = goalAlert.homeTeamScore,
+    SCORING_TEAM_NAME = goalAlert.scoringTeamName,
+    SCORER_NAME = goalAlert.scorerName,
+    GOAL_MINS = goalAlert.goalMins,
+    OTHER_TEAM_NAME = goalAlert.otherTeamName,
+    matchId = goalAlert.matchId,
+    mapiUrl = goalAlert.mapiUrl,
+    debug = conf.debug,
+    uri = new URI(replaceHost(goalAlert.mapiUrl)),
+    uriType = FootballMatch
+  )
 
   case class PlatformUri(uri: String, `type`: PlatformUriType)
 

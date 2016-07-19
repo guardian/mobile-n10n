@@ -8,7 +8,7 @@ import _root_.models.Link.Internal
 import _root_.models.TopicTypes.Breaking
 import _root_.models._
 import notification.models.Push
-import notification.services.WindowsNotificationSenderError
+import notification.services.azure.WindowsNotificationSenderError
 import org.joda.time.DateTime
 import play.api.test.FakeRequest
 
