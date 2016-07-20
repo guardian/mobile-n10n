@@ -43,7 +43,7 @@ final class Main(registrarProvider: RegistrarProvider, topicValidator: TopicVali
     } yield Topic(TopicTypes.FootballMatch, topic.matchId) // todo: check this
 
     val breakingTopic = if (request.body.preferences.receiveNewsAlerts)
-      Some(Topic(TopicTypes.Breaking, request.body.preferences.edition)) // todo: check this
+      Some(Topic(TopicTypes.Breaking, request.body.preferences.edition))
     else None
 
     val result = for {
