@@ -41,7 +41,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .map(extractContent)
   }
 
-  def update(registrationId: WNSRegistrationId,
+  def update(registrationId: NotificationHubRegistrationId,
              rawRegistration: NotificationsHubRegistration
               ): Future[HubResult[RegistrationResponse]] = {
     logger.debug(s"Updating registration ($registrationId) with ${rawRegistration.toXml}")
@@ -52,7 +52,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .map(extractContent)
   }
 
-  def delete(registrationId: WNSRegistrationId): Future[HubResult[Unit]] = {
+  def delete(registrationId: NotificationHubRegistrationId): Future[HubResult[Unit]] = {
     logger.debug(s"deleting registration ($registrationId)")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
       .withHeaders(

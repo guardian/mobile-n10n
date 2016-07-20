@@ -93,11 +93,15 @@ class NotificationHubRegistrar(
   private def hubResultToRegistrationResponse(topicsRegisteredFor: Set[Topic])(hubResult: HubResult[azure.RegistrationResponse]) = {
     def toRegistrarResponse(registration: azure.RegistrationResponse) = {
       val tags = tagsIn(registration)
+      val (platform, deviceId) = registration match {
+        case WNSRegistrationResponse(_, _, channelUri, _) => (WindowsMobile, channelUri)
+        case GCMRegistrationResponse(_, _, gcmRegistrationId, _) => (Android, gcmRegistrationId)
+      }
       for {
         userId <- tags.findUserId \/> UserIdNotInTags()
       } yield RegistrationResponse(
-        deviceId = registration.channelUri,
-        platform = WindowsMobile,
+        deviceId = deviceId,
+        platform = platform,
         userId = userId,
         topics = topicsRegisteredFor
       )

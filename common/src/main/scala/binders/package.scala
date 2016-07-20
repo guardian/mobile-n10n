@@ -1,6 +1,6 @@
 import java.util.UUID
 
-import azure.WNSRegistrationId
+import azure.NotificationHubRegistrationId
 import models.{NotificationType, Topic}
 import org.joda.time.DateTime
 import play.api.mvc.{PathBindable, QueryStringBindable}
@@ -10,20 +10,20 @@ import scala.util.{Try, Success, Failure}
 
 package object binders {
 
-  implicit def bindRegistrationId(implicit strBindable: PathBindable[String]): PathBindable[WNSRegistrationId] =
-    new PathBindable[WNSRegistrationId] {
-      override def unbind(key: String, value: WNSRegistrationId): String = {
+  implicit def bindRegistrationId(implicit strBindable: PathBindable[String]): PathBindable[NotificationHubRegistrationId] =
+    new PathBindable[NotificationHubRegistrationId] {
+      override def unbind(key: String, value: NotificationHubRegistrationId): String = {
         strBindable.unbind(
           key = key,
           value = value.registrationId
         )
       }
 
-      override def bind(key: String, value: String): Either[String, WNSRegistrationId] = {
+      override def bind(key: String, value: String): Either[String, NotificationHubRegistrationId] = {
         strBindable.bind(
           key = key,
           value = value
-        ).right.flatMap(v => WNSRegistrationId.fromString(v).toEither)
+        ).right.flatMap(v => NotificationHubRegistrationId.fromString(v).toEither)
       }
     }
 
