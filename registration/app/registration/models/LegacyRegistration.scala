@@ -30,6 +30,11 @@ object LegacyDevice {
   implicit val jf = Json.format[LegacyDevice]
 }
 
+case class LegacyMatch(matchId: String, matchDate: String)
+object LegacyMatch {
+  implicit val jf = Json.format[LegacyMatch]
+}
+
 case class LegacyPreferences(
   receiveNewsAlerts: Boolean,
   edition: String,
@@ -47,11 +52,6 @@ case class LegacyPreferences(
 }
 object LegacyPreferences {
   implicit val jf = Json.format[LegacyPreferences]
-}
-
-case class LegacyMatch(matchId: String, matchDate: String)
-object LegacyMatch {
-  implicit val jf = Json.format[LegacyMatch]
 }
 
 case class LegacyRegistration(device: LegacyDevice, preferences: LegacyPreferences)
