@@ -7,6 +7,7 @@ import models.NotificationType.BreakingNews
 import models._
 import notification.models.android.Editions.Edition
 import notification.services.azure.PlatformUriType
+import utils.MapImplicits._
 
 sealed trait Notification {
   def payload: Map[String, String]
@@ -43,15 +44,13 @@ case class BreakingNewsNotification(
     Keys.Link -> link.toString,
     Keys.Topics -> topics.map(_.toString).mkString(","),
     Keys.UriType -> uriType.toString,
-    Keys.Uri -> uri) ++ (Map(
-    Keys.Section -> section.map(_.toString),
-    Keys.Edition -> edition.map(_.toString),
-    Keys.Keyword -> keyword.map(_.toString),
-    Keys.ImageUrl -> imageUrl.map(_.toString),
-    Keys.ThumbnailUrl -> thumbnailUrl.map(_.toString)
-  ) collect {
-    case (k, Some(v)) => k -> v
-  })
+    Keys.Uri -> uri) ++ Map(
+      Keys.Section -> section.map(_.toString),
+      Keys.Edition -> edition.map(_.toString),
+      Keys.Keyword -> keyword.map(_.toString),
+      Keys.ImageUrl -> imageUrl.map(_.toString),
+      Keys.ThumbnailUrl -> thumbnailUrl.map(_.toString)
+    ).flattenValues
 }
 
 case class ContentNotification(
@@ -78,7 +77,7 @@ case class ContentNotification(
     Keys.UriType -> uriType.toString,
     Keys.Uri -> uri.toString,
     Keys.Debug -> debug.toString
-  ) ++ (Map(Keys.ThumbnailUrl -> thumbnailUrl.map(_.toString)) collect { case (k, Some(v)) => k -> v })
+  ) ++ Map(Keys.ThumbnailUrl -> thumbnailUrl.map(_.toString)).flattenValues
 }
 
 case class GoalAlertNotification(
