@@ -4,6 +4,7 @@ import auditor.AuditorGroupConfig
 import conf.NotificationConfiguration
 
 class Configuration extends NotificationConfiguration("registration") {
+  lazy val legacyNotficationsEndpoint = getConfigString("legacy_notifications.endpoint")
   lazy val hubEndpoint = getConfigString("azure.hub.endpoint")
   lazy val hubSharedAccessKeyName = getConfigString("azure.hub.sharedAccessKeyName")
   lazy val hubSharedAccessKey = getConfigString("azure.hub.sharedAccessKey")

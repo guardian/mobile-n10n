@@ -1,12 +1,13 @@
 package registration.controllers
 
 import application.WithPlayApp
+import error.NotificationsError
 import models.TopicTypes.{Breaking, FootballMatch}
 import models.{Registration, Topic, WindowsMobile}
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import play.api.ApplicationLoader.Context
-import play.api.{BuiltInComponentsFromContext, BuiltInComponents}
+import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
 import play.api.libs.json.Json
 import play.api.test.{FakeRequest, PlaySpecification}
 import providers.ProviderError
@@ -101,7 +102,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
 class RegistrarProviderMock extends RegistrarProvider {
 
-  override def registrarFor(registration: Registration): \/[String, NotificationRegistrar] = new NotificationRegistrar {
+  override def registrarFor(registration: Registration): \/[NotificationsError, NotificationRegistrar] = new NotificationRegistrar {
     override def register(deviceId: String, registration: Registration): Future[\/[ProviderError, RegistrationResponse]] = Future {
       RegistrationResponse(
         deviceId = "deviceAA",
