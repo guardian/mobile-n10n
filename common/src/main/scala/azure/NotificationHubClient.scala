@@ -3,11 +3,12 @@ package azure
 import play.api.Logger
 import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.libs.ws.{WSResponse, WSClient}
+import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
 import scalaz.syntax.either._
+import utils.WSImplicits._
 
 case class NotificationHubError(message: String)
 
@@ -78,11 +79,9 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .withHeaders("Content-Type" -> "application/octet-stream")
       .withHeaders(serviceBusTags: _*)
       .post(azureWindowsPush.body)
-      .map { response =>
-        if ((200 until 300).contains(response.status))
-          ().right
-        else
-          XmlParser.parseError(response).left
+      .map {
+        case r if r.isSuccess => ().right
+        case r => XmlParser.parseError(r).left
       }
   }
 
@@ -94,11 +93,9 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .withHeaders("Content-Type" -> "application/json;charset=utf-8")
       .withHeaders(serviceBusTags: _*)
       .post(Json.toJson(push.body))
-      .map { response =>
-        if ((200 until 300).contains(response.status))
-          ().right
-        else
-          XmlParser.parseError(response).left
+      .map {
+        case r if r.isSuccess => ().right
+        case r => XmlParser.parseError(r).left
       }
   }
 

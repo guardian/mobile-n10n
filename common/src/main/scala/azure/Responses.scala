@@ -9,6 +9,7 @@ import scala.xml.Elem
 import scalaz.{-\/, \/-, \/}
 import scalaz.syntax.either._
 import scalaz.std.option.optionSyntax._
+import utils.WSImplicits._
 
 trait XmlReads[T] {
   def reads(xml: Elem): HubResult[T]
@@ -16,7 +17,7 @@ trait XmlReads[T] {
 
 object XmlParser {
   private def getXml(response: WSResponse): HubResult[Elem] = {
-    if (response.status >= 200 || response.status < 300)
+    if (response.isSuccess)
       Try(response.xml).toOption \/> HubParseFailed.invalidXml(response.body)
     else
       parseError(response).left
