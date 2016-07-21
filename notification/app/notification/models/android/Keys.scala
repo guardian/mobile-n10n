@@ -27,5 +27,5 @@ object Keys {
   final val HomeTeamScore = "HOME_TEAM_SCORE"
   final val AwayTeamScore = "AWAY_TEAM_SCORE"
   final val Topics = "topics"
-  final val uniqueIdentifier = "uniqueIdentifier"
+  final val UniqueIdentifier = "uniqueIdentifier"
 }

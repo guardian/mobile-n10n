@@ -32,23 +32,23 @@ case class BreakingNewsNotification(
   thumbnailUrl: Option[URI]
 ) extends Notification {
   def payload: Map[String, String] = Map(
-    "notificationType" -> notificationType.toString,
-    "uniqueIdentifier" -> id.toString,
-    "type" -> `type`,
-    "title" -> title,
-    "ticker" -> ticker,
-    "message" -> message,
-    "debug" -> debug.toString,
-    "editions" -> editions.mkString(","),
-    "link" -> link.toString,
-    "topics" -> topics.map(_.toString).mkString(","),
-    "uriType" -> uriType.toString,
-    "uri" -> uri) ++ (Map(
-    "section" -> section.map(_.toString),
-    "edition" -> edition.map(_.toString),
-    "keyword" -> keyword.map(_.toString),
-    "imageUrl" -> imageUrl.map(_.toString),
-    "thumbnailUrl" -> thumbnailUrl.map(_.toString)
+    Keys.NotificationType -> notificationType.toString,
+    Keys.UniqueIdentifier -> id.toString,
+    Keys.Type -> `type`,
+    Keys.Title -> title,
+    Keys.Ticker -> ticker,
+    Keys.Message -> message,
+    Keys.Debug -> debug.toString,
+    Keys.Editions -> editions.mkString(","),
+    Keys.Link -> link.toString,
+    Keys.Topics -> topics.map(_.toString).mkString(","),
+    Keys.UriType -> uriType.toString,
+    Keys.Uri -> uri) ++ (Map(
+    Keys.Section -> section.map(_.toString),
+    Keys.Edition -> edition.map(_.toString),
+    Keys.Keyword -> keyword.map(_.toString),
+    Keys.ImageUrl -> imageUrl.map(_.toString),
+    Keys.ThumbnailUrl -> thumbnailUrl.map(_.toString)
   ) collect {
     case (k, Some(v)) => k -> v
   })
@@ -68,17 +68,17 @@ case class ContentNotification(
   debug: Boolean
 ) extends Notification {
   def payload: Map[String, String] = Map(
-    "type" -> `type`,
-    "uniqueIdentifier" -> id.toString,
-    "title" -> title,
-    "ticker" -> ticker,
-    "message" -> message,
-    "link" -> link.toString,
-    "topics" -> topics.map(_.toString).mkString(","),
-    "uriType" -> uriType.toString,
-    "uri" -> uri.toString,
-    "debug" -> debug.toString
-  ) ++ (Map("thumbnailUrl" -> thumbnailUrl.map(_.toString)) collect { case (k, Some(v)) => k -> v })
+    Keys.Type -> `type`,
+    Keys.UniqueIdentifier -> id.toString,
+    Keys.Title -> title,
+    Keys.Ticker -> ticker,
+    Keys.Message -> message,
+    Keys.Link -> link.toString,
+    Keys.Topics -> topics.map(_.toString).mkString(","),
+    Keys.UriType -> uriType.toString,
+    Keys.Uri -> uri.toString,
+    Keys.Debug -> debug.toString
+  ) ++ (Map(Keys.ThumbnailUrl -> thumbnailUrl.map(_.toString)) collect { case (k, Some(v)) => k -> v })
 }
 
 case class GoalAlertNotification(
@@ -99,20 +99,20 @@ case class GoalAlertNotification(
   debug: Boolean
 ) extends Notification {
   def payload: Map[String, String] = Map(
-    "type" -> `type`,
-    "uniqueIdentifier" -> id.toString,
-    "AWAY_TEAM_NAME" -> awayTeamName,
-    "AWAY_TEAM_SCORE" -> awayTeamScore.toString,
-    "HOME_TEAM_NAME" -> homeTeamName,
-    "HOME_TEAM_SCORE" -> homeTeamScore.toString,
-    "SCORING_TEAM_NAME" -> scoringTeamName,
-    "SCORER_NAME" -> scorerName,
-    "GOAL_MINS" -> goalMins.toString,
-    "OTHER_TEAM_NAME" -> otherTeamName,
-    "matchId" -> matchId,
-    "mapiUrl" -> mapiUrl.toString,
-    "uri" -> uri.toString,
-    "uriType" -> uriType.toString,
-    "debug" -> debug.toString
+    Keys.Type -> `type`,
+    Keys.UniqueIdentifier -> id.toString,
+    Keys.AwayTeamName -> awayTeamName,
+    Keys.AwayTeamScore -> awayTeamScore.toString,
+    Keys.HomeTeamName -> homeTeamName,
+    Keys.HomeTeamScore -> homeTeamScore.toString,
+    Keys.ScoringTeamName -> scoringTeamName,
+    Keys.ScorerName -> scorerName,
+    Keys.GoalMins -> goalMins.toString,
+    Keys.OtherTeamName -> otherTeamName,
+    Keys.MatchId -> matchId,
+    Keys.MapiUrl -> mapiUrl.toString,
+    Keys.Uri -> uri.toString,
+    Keys.UriType -> uriType.toString,
+    Keys.Debug -> debug.toString
   )
 }
