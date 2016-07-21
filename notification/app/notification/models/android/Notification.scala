@@ -3,11 +3,10 @@ package notification.models.android
 import java.net.URI
 import java.util.UUID
 
-import models.NotificationType.{BreakingNews, Content, GoalAlert}
+import models.NotificationType.BreakingNews
 import models._
 import notification.models.android.Editions.Edition
 import notification.services.azure.PlatformUriType
-import play.api.libs.json._
 
 sealed trait Notification {
   def id: UUID
