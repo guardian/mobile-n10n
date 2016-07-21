@@ -9,13 +9,6 @@ import notification.models.android.Editions.Edition
 import notification.services.azure.PlatformUriType
 
 sealed trait Notification {
-  def id: UUID
-  def `type`: String
-  def title: String
-  def message: String
-  def thumbnailUrl: Option[URI]
-  def topics: Set[Topic]
-  def debug: Boolean
   def payload: Map[String, String]
 }
 
@@ -105,10 +98,6 @@ case class GoalAlertNotification(
   uriType: PlatformUriType,
   debug: Boolean
 ) extends Notification {
-  def topics: Set[Topic] = Set.empty
-  def thumbnailUrl: Option[URI] = None
-  def message: String = ""
-  def title: String = ""
   def payload: Map[String, String] = Map(
     "type" -> `type`,
     "uniqueIdentifier" -> id.toString,
