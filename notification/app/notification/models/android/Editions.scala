@@ -1,16 +1,10 @@
 package notification.models.android
 
 import models.{Topic, TopicTypes}
-import play.api.libs.json.{JsError, _}
+import play.api.libs.json._
+import scala.PartialFunction.condOpt
 
 object Editions {
-
-  val regions: Map[String, Edition] = Map(
-    "uk" -> UK,
-    "us" -> US,
-    "au" -> AU,
-    "international" -> International
-  )
 
   sealed trait Edition
 
@@ -32,19 +26,20 @@ object Editions {
 
   object Edition {
 
-    def fromTopic(t: Topic): Option[Edition] = t match {
-      case Topic(TopicTypes.Breaking, x) => regions.get(x)
-      case _ => None
+    def fromTopic(t: Topic): Option[Edition] = condOpt(t) {
+      case Topic(TopicTypes.Breaking, "uk") => UK
+      case Topic(TopicTypes.Breaking, "us") => US
+      case Topic(TopicTypes.Breaking, "au") => AU
+      case Topic(TopicTypes.Breaking, "international") => International
     }
 
     implicit val jf = new Format[Edition] {
-      override def reads(json: JsValue): JsResult[Edition] = json match {
-        case JsString("uk") => JsSuccess(UK)
-        case JsString("us") => JsSuccess(US)
-        case JsString("au") => JsSuccess(AU)
-        case JsString("international") => JsSuccess(International)
-        case JsString(unknown) => JsError(s"Unkown region [$unknown]")
-        case _ => JsError(s"Unknown type $json")
+      override def reads(json: JsValue): JsResult[Edition] = json.validate[String] flatMap {
+        case "uk" => JsSuccess(UK)
+        case "us" => JsSuccess(US)
+        case "au" => JsSuccess(AU)
+        case "international" => JsSuccess(International)
+        case unknown => JsError(s"Unkown region [$unknown]")
       }
       override def writes(region: Edition): JsValue = JsString(region.toString)
     }
