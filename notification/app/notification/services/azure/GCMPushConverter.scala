@@ -74,7 +74,7 @@ class GCMPushConverter(conf: Configuration) {
 
     android.BreakingNewsNotification(
       `type` = AndroidMessageTypes.Custom,
-      uniqueIdentifier = breakingNews.id,
+      id = breakingNews.id,
       notificationType = breakingNews.`type`,
       title = breakingNews.title,
       ticker = breakingNews.message,
@@ -97,7 +97,7 @@ class GCMPushConverter(conf: Configuration) {
     val link = toPlatformLink(cn.link)
 
     android.ContentNotification(
-      uniqueIdentifier = cn.id,
+      id = cn.id,
       title = cn.title,
       ticker = cn.message,
       message = cn.message,
@@ -112,15 +112,15 @@ class GCMPushConverter(conf: Configuration) {
 
   private def toGoalAlert(goalAlert: GoalAlertNotification) = android.GoalAlertNotification(
     `type` = AndroidMessageTypes.GoalAlert,
-    uniqueIdentifier = goalAlert.id,
-    AWAY_TEAM_NAME = goalAlert.awayTeamName,
-    AWAY_TEAM_SCORE = goalAlert.awayTeamScore,
-    HOME_TEAM_NAME = goalAlert.homeTeamName,
-    HOME_TEAM_SCORE = goalAlert.homeTeamScore,
-    SCORING_TEAM_NAME = goalAlert.scoringTeamName,
-    SCORER_NAME = goalAlert.scorerName,
-    GOAL_MINS = goalAlert.goalMins,
-    OTHER_TEAM_NAME = goalAlert.otherTeamName,
+    id = goalAlert.id,
+    awayTeamName = goalAlert.awayTeamName,
+    awayTeamScore = goalAlert.awayTeamScore,
+    homeTeamName = goalAlert.homeTeamName,
+    homeTeamScore = goalAlert.homeTeamScore,
+    scoringTeamName = goalAlert.scoringTeamName,
+    scorerName = goalAlert.scorerName,
+    goalMins = goalAlert.goalMins,
+    otherTeamName = goalAlert.otherTeamName,
     matchId = goalAlert.matchId,
     mapiUrl = goalAlert.mapiUrl,
     debug = conf.debug,

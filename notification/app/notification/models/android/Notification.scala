@@ -10,7 +10,7 @@ import notification.services.azure.PlatformUriType
 import play.api.libs.json._
 
 sealed trait Notification {
-  def uniqueIdentifier: UUID
+  def id: UUID
   def `type`: String
   def title: String
   def message: String
@@ -22,7 +22,7 @@ sealed trait Notification {
 
 case class BreakingNewsNotification(
   notificationType: NotificationType = BreakingNews,
-  uniqueIdentifier: UUID,
+  id: UUID,
   `type`: String = AndroidMessageTypes.Custom,
   title: String,
   ticker: String,
@@ -41,7 +41,7 @@ case class BreakingNewsNotification(
 ) extends Notification {
   def payload: Map[String, String] = Map(
     "notificationType" -> notificationType.toString,
-    "uniqueIdentifier" -> uniqueIdentifier.toString,
+    "uniqueIdentifier" -> id.toString,
     "type" -> `type`,
     "title" -> title,
     "ticker" -> ticker,
@@ -64,7 +64,7 @@ case class BreakingNewsNotification(
 
 case class ContentNotification(
   `type`: String = AndroidMessageTypes.Custom,
-  uniqueIdentifier: UUID,
+  id: UUID,
   title: String,
   ticker: String,
   message: String,
@@ -77,7 +77,7 @@ case class ContentNotification(
 ) extends Notification {
   def payload: Map[String, String] = Map(
     "type" -> `type`,
-    "uniqueIdentifier" -> uniqueIdentifier.toString,
+    "uniqueIdentifier" -> id.toString,
     "title" -> title,
     "ticker" -> ticker,
     "message" -> message,
@@ -91,15 +91,15 @@ case class ContentNotification(
 
 case class GoalAlertNotification(
   `type`: String = AndroidMessageTypes.GoalAlert,
-  uniqueIdentifier: UUID,
-  AWAY_TEAM_NAME: String,
-  AWAY_TEAM_SCORE: Int,
-  HOME_TEAM_NAME: String,
-  HOME_TEAM_SCORE: Int,
-  SCORING_TEAM_NAME: String,
-  SCORER_NAME: String,
-  GOAL_MINS: Int,
-  OTHER_TEAM_NAME: String,
+  id: UUID,
+  awayTeamName: String,
+  awayTeamScore: Int,
+  homeTeamName: String,
+  homeTeamScore: Int,
+  scoringTeamName: String,
+  scorerName: String,
+  goalMins: Int,
+  otherTeamName: String,
   matchId: String,
   mapiUrl: URI,
   uri: URI,
@@ -112,15 +112,15 @@ case class GoalAlertNotification(
   def title: String = ""
   def payload: Map[String, String] = Map(
     "type" -> `type`,
-    "uniqueIdentifier" -> uniqueIdentifier.toString,
-    "AWAY_TEAM_NAME" -> AWAY_TEAM_NAME,
-    "AWAY_TEAM_SCORE" -> AWAY_TEAM_SCORE.toString,
-    "HOME_TEAM_NAME" -> HOME_TEAM_NAME,
-    "HOME_TEAM_SCORE" -> HOME_TEAM_SCORE.toString,
-    "SCORING_TEAM_NAME" -> SCORING_TEAM_NAME,
-    "SCORER_NAME" -> SCORER_NAME,
-    "GOAL_MINS" -> GOAL_MINS.toString,
-    "OTHER_TEAM_NAME" -> OTHER_TEAM_NAME,
+    "uniqueIdentifier" -> id.toString,
+    "AWAY_TEAM_NAME" -> awayTeamName,
+    "AWAY_TEAM_SCORE" -> awayTeamScore.toString,
+    "HOME_TEAM_NAME" -> homeTeamName,
+    "HOME_TEAM_SCORE" -> homeTeamScore.toString,
+    "SCORING_TEAM_NAME" -> scoringTeamName,
+    "SCORER_NAME" -> scorerName,
+    "GOAL_MINS" -> goalMins.toString,
+    "OTHER_TEAM_NAME" -> otherTeamName,
     "matchId" -> matchId,
     "mapiUrl" -> mapiUrl.toString,
     "uri" -> uri.toString,

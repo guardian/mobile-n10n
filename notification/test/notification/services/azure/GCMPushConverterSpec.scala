@@ -70,7 +70,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
     )
 
     val azureNotification = android.BreakingNewsNotification(
-      uniqueIdentifier = UUID.fromString("30aac5f5-34bb-4a88-8b69-97f995a4907b"),
+      id = UUID.fromString("30aac5f5-34bb-4a88-8b69-97f995a4907b"),
       title = "The Guardian",
       ticker = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
       message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
@@ -101,7 +101,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
     )
 
     val azureNotification = android.ContentNotification(
-      uniqueIdentifier = UUID.fromString("c8bd6aaa-072f-4593-a38b-322f3ecd6bd3"),
+      id = UUID.fromString("c8bd6aaa-072f-4593-a38b-322f3ecd6bd3"),
       title = "Follow",
       ticker = "Which countries are doing the most to stop dangerous global warming?",
       message = "Which countries are doing the most to stop dangerous global warming?",
@@ -141,17 +141,17 @@ class GCMPushConverterSpec extends Specification with Mockito {
     )
 
     val azureNotification = android.GoalAlertNotification(
-      uniqueIdentifier = UUID.fromString("3e0bc788-a27c-4864-bb71-77a80aadcce4"),
+      id = UUID.fromString("3e0bc788-a27c-4864-bb71-77a80aadcce4"),
       //title = "The Guardian",
       //message = "Leicester 2-1 Watford\nDeeney 75min",
-      AWAY_TEAM_NAME = "Watford",
-      AWAY_TEAM_SCORE = 1,
-      HOME_TEAM_NAME = "Leicester",
-      HOME_TEAM_SCORE = 2,
-      SCORING_TEAM_NAME = "Watford",
-      SCORER_NAME = "Deeney",
-      GOAL_MINS = 75,
-      OTHER_TEAM_NAME = "Leicester",
+      awayTeamName = "Watford",
+      awayTeamScore = 1,
+      homeTeamName = "Leicester",
+      homeTeamScore = 2,
+      scoringTeamName = "Watford",
+      scorerName = "Deeney",
+      goalMins = 75,
+      otherTeamName = "Leicester",
       matchId = "3833380",
       uri = new URI("x-gu:///match-info/3833380"),
       uriType = PlatformUriTypes.FootballMatch,
