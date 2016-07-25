@@ -142,8 +142,6 @@ class GCMPushConverterSpec extends Specification with Mockito {
 
     val azureNotification = android.GoalAlertNotification(
       id = UUID.fromString("3e0bc788-a27c-4864-bb71-77a80aadcce4"),
-      //title = "The Guardian",
-      //message = "Leicester 2-1 Watford\nDeeney 75min",
       awayTeamName = "Watford",
       awayTeamScore = 1,
       homeTeamName = "Leicester",
