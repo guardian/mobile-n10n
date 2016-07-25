@@ -40,7 +40,7 @@ abstract class NotificationsHubSender(
         count <- count(push.destination)
       } yield {
         result.fold(
-          e => NotificationRejected(WindowsNotificationSenderError(e.some).some).left,
+          e => NotificationRejected(NotificationHubSenderError(e.some).some).left,
           _ => report(count.toOption).right
         )
       }
@@ -69,7 +69,7 @@ abstract class NotificationsHubSender(
   }
 }
 
-case class WindowsNotificationSenderError(underlying: Option[NotificationsError]) extends SenderError {
+case class NotificationHubSenderError(underlying: Option[NotificationsError]) extends SenderError {
   override def senderName: String = Senders.AzureNotificationsHub
   override def reason: String = s"Sender: $senderName ${ underlying.fold("")(_.reason) }"
 }

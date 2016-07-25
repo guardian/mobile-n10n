@@ -8,7 +8,7 @@ import _root_.models.Link.Internal
 import _root_.models.TopicTypes.Breaking
 import _root_.models._
 import notification.models.Push
-import notification.services.azure.WindowsNotificationSenderError
+import notification.services.azure.NotificationHubSenderError
 import org.joda.time.DateTime
 import play.api.test.FakeRequest
 
@@ -46,7 +46,7 @@ trait NotificationsFixtures {
     destination = Left(notification.topic)
   )
 
-  val providerError = new WindowsNotificationSenderError(None)
+  val providerError = new NotificationHubSenderError(None)
 
   val apiKey = "test"
   val authenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$apiKey")
