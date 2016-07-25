@@ -66,17 +66,13 @@ trait AzureHubComponents {
     new NotificationHubClient(hubConnection, wsClient)
   }
 
-  lazy val wnsNotificationSender: WNSSender = {
-    val topicSubscriptionsRepository = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
-    new WNSSender(hubClient, appConfig, topicSubscriptionsRepository)
-  }
-
-  lazy val gcmNotificationSender: GCMSender = {
-    val topicSubscriptionsRepository = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
-    new GCMSender(hubClient, appConfig, topicSubscriptionsRepository)
-  }
+  lazy val topicSubscriptionsRepository = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
 
   lazy val notificationReportRepository = new DynamoNotificationReportRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoReportsTableName)
+
+  lazy val wnsNotificationSender: WNSSender = wire[WNSSender]
+
+  lazy val gcmNotificationSender: GCMSender = wire[GCMSender]
 }
 
 
