@@ -50,7 +50,7 @@ final class Main(
   }
 
   def pushUser(userId: UUID): Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
-    val push = Push(request.body, Right(UserId(userId)))
+    val push = Push(request.body, Right(UniqueDeviceIdentifier(userId)))
     pushGeneric(push)
   }
 

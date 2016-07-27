@@ -30,7 +30,7 @@ class WNSPushConverter(conf: Configuration) {
 
   private[services] def toTags(destination: Destination) = destination match {
     case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
-    case Right(user: UserId) => Some(Tags.fromUserId(user))
+    case Right(user: UniqueDeviceIdentifier) => Some(Tags.fromUserId(user))
   }
 
   private def toUrl(link: Link): URI = link match {

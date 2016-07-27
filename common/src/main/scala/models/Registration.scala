@@ -1,6 +1,6 @@
 package models
 
-case class Registration(deviceId: String, platform: Platform, userId: UserId, topics: Set[Topic])
+case class Registration(deviceId: String, platform: Platform, userId: UniqueDeviceIdentifier, topics: Set[Topic])
 
 object Registration {
   import play.api.libs.json._

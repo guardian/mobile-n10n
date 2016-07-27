@@ -1,6 +1,6 @@
 package azure
 
-import models.{UserId, Topic}
+import models.{UniqueDeviceIdentifier, Topic}
 
 case class Tag(encodedTag: String)
 
@@ -11,7 +11,7 @@ object Tag {
     Tag(s"$TopicTagPrefix${t.id}")
   }
 
-  def fromUserId(u: UserId): Tag = {
+  def fromUserId(u: UniqueDeviceIdentifier): Tag = {
     Tag(s"$UserTagPrefix${u.id}")
   }
 
@@ -22,14 +22,14 @@ case class Tags(tags: Set[Tag] = Set.empty) {
 
   def asSet: Set[String] = tags.map(_.encodedTag)
 
-  def findUserId: Option[UserId] = encodedTags
+  def findUserId: Option[UniqueDeviceIdentifier] = encodedTags
     .find(_.matches(UserTagRegex.regex))
-    .map { case UserTagRegex(UserId(uuid)) => UserId(uuid) }
+    .map { case UserTagRegex(UniqueDeviceIdentifier(uuid, prefix)) => UniqueDeviceIdentifier(uuid, prefix) }
 
   def topicIds: Set[String] = encodedTags
     .collect { case TopicTagRegex(topicId) => topicId }
 
-  def withUserId(userId: UserId): Tags = copy(tags + Tag.fromUserId(userId))
+  def withUserId(userId: UniqueDeviceIdentifier): Tags = copy(tags + Tag.fromUserId(userId))
 
   def withTopics(topics: Set[Topic]): Tags = copy(tags ++ topics.map(Tag.fromTopic))
 
@@ -46,6 +46,6 @@ object Tags {
 
   def fromTopics(topics: Set[Topic]): Tags = Tags(topics map Tag.fromTopic)
 
-  def fromUserId(u: UserId): Tags = Tags(Set(Tag.fromUserId(u)))
+  def fromUserId(u: UniqueDeviceIdentifier): Tags = Tags(Set(Tag.fromUserId(u)))
 
 }

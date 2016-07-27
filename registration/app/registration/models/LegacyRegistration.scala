@@ -2,6 +2,7 @@ package registration.models
 
 import play.api.libs.json.{Json, Reads}
 import LegacyJodaFormat._
+import models.UniqueDeviceIdentifier
 
 object LegacyJodaFormat {
   val DateTimePattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
@@ -25,7 +26,7 @@ case class LegacyTopic(
   def toTopicString: String = `type` + "//" + name
 }
 
-case class LegacyDevice(platform: String, udid: String, pushToken: String, buildTier: String)
+case class LegacyDevice(platform: String, udid: UniqueDeviceIdentifier, pushToken: String, buildTier: String)
 object LegacyDevice {
   implicit val jf = Json.format[LegacyDevice]
 }

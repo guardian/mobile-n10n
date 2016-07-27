@@ -31,7 +31,7 @@ class WNSPushConverterSpec extends Specification with Mockito {
 
   "WNSPushConverter.toTag" should {
     "convert a userId into a tag" in new PushConverterScope {
-      val userId = Destination(UserId(id = UUID.fromString("497f172a-9434-11e5-af4E-61a964696656")))
+      val userId = Destination(UniqueDeviceIdentifier(id = UUID.fromString("497f172a-9434-11e5-af4E-61a964696656")))
       val expected = Tag("user:497f172a-9434-11e5-af4e-61a964696656")
       azureRawPushConverter.toTags(userId) shouldEqual Some(Tags(Set(expected)))
     }

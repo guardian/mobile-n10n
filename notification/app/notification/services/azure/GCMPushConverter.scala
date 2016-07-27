@@ -52,7 +52,7 @@ class GCMPushConverter(conf: Configuration) {
 
   private[services] def toTags(destination: Destination) = destination match {
     case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
-    case Right(user: UserId) => Some(Tags.fromUserId(user))
+    case Right(user: UniqueDeviceIdentifier) => Some(Tags.fromUserId(user))
   }
 
   private def toAndroidLink(link: Link) = link match {

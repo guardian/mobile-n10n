@@ -38,7 +38,7 @@ trait NotificationsFixtures {
       importance = importance,
       topic = Set()
     ),
-    destination = Right(UserId(UUID.randomUUID()))
+    destination = Right(UniqueDeviceIdentifier(UUID.randomUUID()))
   )
 
   def topicTargetedBreakingNewsPush(notification: Notification): Push = Push(
