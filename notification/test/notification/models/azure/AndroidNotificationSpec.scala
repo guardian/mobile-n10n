@@ -64,7 +64,7 @@ class AndroidNotificationSpec extends Specification {
       "uri" -> "http://mobile-apps.guardianapis.com/items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates-uri",
       "debug" -> "true",
       "uriType" -> "item",
-      "notificationType" -> "BreakingNews",
+      "notificationType" -> "news",
       "link" -> "http://mobile-apps.guardianapis.com/items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates",
       "message" -> "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
       "title" -> "The Guardian",

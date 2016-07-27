@@ -33,7 +33,7 @@ case class BreakingNewsNotification(
   thumbnailUrl: Option[URI]
 ) extends Notification {
   def payload: Map[String, String] = Map(
-    Keys.NotificationType -> notificationType.toString,
+    Keys.NotificationType -> notificationType.value,
     Keys.UniqueIdentifier -> id.toString,
     Keys.Type -> `type`,
     Keys.Title -> title,
