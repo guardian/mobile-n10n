@@ -1,15 +1,24 @@
 package models
 
+import java.net.URI
+
 import play.api.libs.json._
 
-sealed trait Link
+sealed trait Link {
+  def webUri: URI
+}
+
 object Link {
-  case class External(url: String) extends Link
+  case class External(url: String) extends Link {
+    def webUri: URI = new URI(url)
+  }
   object External {
     implicit val jf = Json.format[External]
   }
 
-  case class Internal(contentApiId: String, shortUrl: Option[String], git: GuardianItemType) extends Link
+  case class Internal(contentApiId: String, shortUrl: Option[String], git: GuardianItemType) extends Link {
+    def webUri: URI = new URI(s"http://www.theguardian.com/$contentApiId") // todo: remove hardcoded domain/protocol
+  }
   object Internal {
     implicit val jf = Json.format[Internal]
   }

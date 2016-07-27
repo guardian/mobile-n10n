@@ -99,6 +99,20 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       }
   }
 
+  def sendAPNSNotification(push: APNSRawPush): Future[HubResult[Unit]] = {
+    val serviceBusTags = push.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
+    logger.debug(s"Sending APNS Raw Notification: $push")
+    request(Endpoints.Messages)
+      .withHeaders("ServiceBusNotification-Format" -> "apple")
+      .withHeaders("Content-Type" -> "application/json;charset=utf-8")
+      .withHeaders(serviceBusTags: _*)
+      .post(Json.toJson(push.body))
+      .map {
+        case r if r.isSuccess => ().right
+        case r => XmlParser.parseError(r).left
+      }
+  }
+
   private def request(path: String) = {
     val uri = s"$endpoint$path?api-version=2015-01"
     wsClient
