@@ -38,7 +38,7 @@ class LegacyRegistrationConverter {
     } yield Topic(TopicTypes.FootballMatch, topic.matchId) // todo: check this
 
     val breakingTopic = if (request.preferences.receiveNewsAlerts)
-      Some(Topic(TopicTypes.Breaking, request.preferences.edition))
+      Some(Topic(TopicTypes.Breaking, request.preferences.edition.toLowerCase))
     else None
 
     (topics ++ matchTopics ++ breakingTopic.toList).toSet
