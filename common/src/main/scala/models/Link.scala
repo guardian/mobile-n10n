@@ -9,7 +9,7 @@ object Link {
     implicit val jf = Json.format[External]
   }
 
-  case class Internal(contentApiId: String, git: GuardianItemType) extends Link
+  case class Internal(contentApiId: String, shortUrl: Option[String], git: GuardianItemType) extends Link
   object Internal {
     implicit val jf = Json.format[Internal]
   }
