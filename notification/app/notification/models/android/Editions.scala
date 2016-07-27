@@ -1,7 +1,9 @@
 package notification.models.android
 
 import models.{Topic, TopicTypes}
+import play.api.data.validation.ValidationError
 import play.api.libs.json._
+
 import scala.PartialFunction.condOpt
 
 object Editions {
@@ -25,22 +27,14 @@ object Editions {
   }
 
   object Edition {
-
-    def fromTopic(t: Topic): Option[Edition] = condOpt(t) {
-      case Topic(TopicTypes.Breaking, "uk") => UK
-      case Topic(TopicTypes.Breaking, "us") => US
-      case Topic(TopicTypes.Breaking, "au") => AU
-      case Topic(TopicTypes.Breaking, "international") => International
-    }
-
     implicit val jf = new Format[Edition] {
-      override def reads(json: JsValue): JsResult[Edition] = json.validate[String] flatMap {
-        case "uk" => JsSuccess(UK)
-        case "us" => JsSuccess(US)
-        case "au" => JsSuccess(AU)
-        case "international" => JsSuccess(International)
-        case unknown => JsError(s"Unkown region [$unknown]")
+      override def reads(json: JsValue): JsResult[Edition] = json.validate[String].collect(ValidationError(s"Unkown region")) {
+        case "uk" => UK
+        case "us" => US
+        case "au" => AU
+        case "international" => International
       }
+
       override def writes(region: Edition): JsValue = JsString(region.toString)
     }
   }
