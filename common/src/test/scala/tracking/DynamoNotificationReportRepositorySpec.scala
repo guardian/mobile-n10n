@@ -76,7 +76,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
         title = "title",
         message = "message",
         thumbnailUrl = Some(new URI("http://some.url/my.png")),
-        link = Internal("some/capi/id-with-dashes"),
+        link = Internal("some/capi/id-with-dashes", GITContent),
         imageUrl = Some(new URI("http://some.url/i.jpg")),
         importance = Major,
         topic = Set(Topic(Breaking, "uk"))

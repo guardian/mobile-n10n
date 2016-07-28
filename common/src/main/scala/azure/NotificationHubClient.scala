@@ -2,11 +2,13 @@ package azure
 
 import play.api.Logger
 import play.api.http.Status
-import play.api.libs.ws.{WSResponse, WSClient}
+import play.api.libs.json.Json
+import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scalaz.\/
 import scalaz.syntax.either._
+import utils.WSImplicits._
 
 case class NotificationHubError(message: String)
 
@@ -31,27 +33,27 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
 
   private def extractContent[T](hubResult: HubResult[AtomEntry[T]]): HubResult[T] = hubResult.map(_.content)
 
-  def create(rawWindowsRegistration: RawWindowsRegistration): Future[HubResult[RegistrationResponse]] = {
-    logger.debug(s"Creating new registration: ${rawWindowsRegistration.toXml}")
+  def create(rawRegistration: NotificationsHubRegistration): Future[HubResult[RegistrationResponse]] = {
+    logger.debug(s"Creating new registration: ${rawRegistration.toXml}")
     request(Endpoints.Registrations)
       .withHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
-      .post(rawWindowsRegistration.toXml)
+      .post(rawRegistration.toXml)
       .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
   }
 
-  def update(registrationId: WNSRegistrationId,
-             rawWindowsRegistration: RawWindowsRegistration
+  def update(registrationId: NotificationHubRegistrationId,
+             rawRegistration: NotificationsHubRegistration
               ): Future[HubResult[RegistrationResponse]] = {
-    logger.debug(s"Updating registration ($registrationId) with ${rawWindowsRegistration.toXml}")
+    logger.debug(s"Updating registration ($registrationId) with ${rawRegistration.toXml}")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
       .withHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
-      .put(rawWindowsRegistration.toXml)
+      .put(rawRegistration.toXml)
       .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
   }
 
-  def delete(registrationId: WNSRegistrationId): Future[HubResult[Unit]] = {
+  def delete(registrationId: NotificationHubRegistrationId): Future[HubResult[Unit]] = {
     logger.debug(s"deleting registration ($registrationId)")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
       .withHeaders(
@@ -68,20 +70,32 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       }
   }
 
-  def sendNotification(azureWindowsPush: AzureRawPush): Future[HubResult[Unit]] = {
+  def sendWNSNotification(azureWindowsPush: WNSRawPush): Future[HubResult[Unit]] = {
     val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
-    logger.debug(s"Sending Azure Raw Notification: $azureWindowsPush")
+    logger.debug(s"Sending WNS Raw Notification: $azureWindowsPush")
     request(Endpoints.Messages)
       .withHeaders("X-WNS-Type" -> "wns/raw")
       .withHeaders("ServiceBusNotification-Format" -> "windows")
       .withHeaders("Content-Type" -> "application/octet-stream")
       .withHeaders(serviceBusTags: _*)
       .post(azureWindowsPush.body)
-      .map { response =>
-        if ((200 until 300).contains(response.status))
-          ().right
-        else
-          XmlParser.parseError(response).left
+      .map {
+        case r if r.isSuccess => ().right
+        case r => XmlParser.parseError(r).left
+      }
+  }
+
+  def sendGCMNotification(push: GCMRawPush): Future[HubResult[Unit]] = {
+    val serviceBusTags = push.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
+    logger.debug(s"Sending GCM Raw Notification: $push")
+    request(Endpoints.Messages)
+      .withHeaders("ServiceBusNotification-Format" -> "gcm")
+      .withHeaders("Content-Type" -> "application/json;charset=utf-8")
+      .withHeaders(serviceBusTags: _*)
+      .post(Json.toJson(push.body))
+      .map {
+        case r if r.isSuccess => ().right
+        case r => XmlParser.parseError(r).left
       }
   }
 

@@ -8,7 +8,7 @@ import _root_.models.Link.Internal
 import _root_.models.TopicTypes.Breaking
 import _root_.models._
 import notification.models.Push
-import notification.services.WindowsNotificationSenderError
+import notification.services.azure.NotificationHubSenderError
 import org.joda.time.DateTime
 import play.api.test.FakeRequest
 
@@ -19,7 +19,7 @@ trait NotificationsFixtures {
     message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
     thumbnailUrl = Some(new URI("http://media.guim.co.uk/09951387fda453719fe1fee3e5dcea4efa05e4fa/0_181_3596_2160/140.jpg")),
     sender = "test",
-    link = Internal("world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates"),
+    link = Internal("world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates", GITContent),
     imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/" +
       "0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
     importance = Major,
@@ -33,7 +33,7 @@ trait NotificationsFixtures {
       message = "",
       thumbnailUrl = None,
       sender = "test",
-      link = Internal("capiId"),
+      link = Internal("capiId", GITContent),
       imageUrl = None,
       importance = importance,
       topic = Set()
@@ -46,7 +46,7 @@ trait NotificationsFixtures {
     destination = Left(notification.topic)
   )
 
-  val providerError = new WindowsNotificationSenderError(None)
+  val providerError = new NotificationHubSenderError(None)
 
   val apiKey = "test"
   val authenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$apiKey")

@@ -1,7 +1,7 @@
 package tracking
 
 import aws.AsyncDynamo
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider, AWSCredentialsProviderChain}
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient
 import com.amazonaws.services.dynamodbv2.model.{CreateTableRequest, DeleteTableRequest}
 import org.specs2.mutable.Specification
@@ -17,16 +17,26 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll {
 
   val TestEndpoint = "http://localhost:8000"
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     awsClient.createTable(createTableRequest)
   }
 
-  override def afterAll() = {
+  override def afterAll(): Unit = {
     awsClient.deleteTable(new DeleteTableRequest(TableName))
   }
 
   private def awsClient = {
-    val client = new AmazonDynamoDBAsyncClient(new DefaultAWSCredentialsProviderChain())
+    val chain = new AWSCredentialsProviderChain(new AWSCredentialsProvider {
+      override def refresh(): Unit = {}
+
+      override def getCredentials: AWSCredentials = new AWSCredentials {
+        override def getAWSAccessKeyId: String = ""
+
+        override def getAWSSecretKey: String = ""
+      }
+    })
+
+    val client = new AmazonDynamoDBAsyncClient(chain)
     client.setEndpoint(TestEndpoint)
     client
   }

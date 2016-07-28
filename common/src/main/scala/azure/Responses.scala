@@ -9,6 +9,7 @@ import scala.xml.Elem
 import scalaz.{-\/, \/-, \/}
 import scalaz.syntax.either._
 import scalaz.std.option.optionSyntax._
+import utils.WSImplicits._
 
 trait XmlReads[T] {
   def reads(xml: Elem): HubResult[T]
@@ -16,7 +17,7 @@ trait XmlReads[T] {
 
 object XmlParser {
   private def getXml(response: WSResponse): HubResult[Elem] = {
-    if (response.status >= 200 || response.status < 300)
+    if (response.isSuccess)
       Try(response.xml).toOption \/> HubParseFailed.invalidXml(response.body)
     else
       parseError(response).left
@@ -84,15 +85,46 @@ object RegistrationResponse {
   import Responses._
 
   implicit val reader = new XmlReads[RegistrationResponse] {
-    def reads(xml: Elem) = for {
-        expirationTime <- xml.dateTimeNode("ExpirationTime")
-        registrationId <- xml.textNode("RegistrationId").map(WNSRegistrationId.apply)
-        channelUri <- xml.textNode("ChannelUri")
-        tags = xml.textNodes("Tags").flatMap(_.split(",").map(_.stripPrefix(" ")))
-    } yield RegistrationResponse(registrationId, tags.toList, channelUri, expirationTime)
+    def reads(xml: Elem) = {
+      xml.label match {
+        case "WindowsRegistrationDescription" =>
+          for {
+            expirationTime <- xml.dateTimeNode("ExpirationTime")
+            registrationId <- xml.textNode("RegistrationId").map(NotificationHubRegistrationId.apply)
+            channelUri <- xml.textNode("ChannelUri")
+            tags = xml.textNodes("Tags").flatMap(_.split(",").map(_.stripPrefix(" ")))
+          } yield WNSRegistrationResponse(registrationId, tags.toList, channelUri, expirationTime)
+        case "GcmRegistrationDescription" =>
+          for {
+            expirationTime <- xml.dateTimeNode("ExpirationTime")
+            registrationId <- xml.textNode("RegistrationId").map(NotificationHubRegistrationId.apply)
+            gcmRegistrationId <- xml.textNode("GcmRegistrationId")
+            tags = xml.textNodes("Tags").flatMap(_.split(",").map(_.stripPrefix(" ")))
+          } yield GCMRegistrationResponse(registrationId, tags.toList, gcmRegistrationId, expirationTime)
+      }
+    }
   }
 }
-case class RegistrationResponse(registration: WNSRegistrationId, tags: List[String], channelUri: String, expirationTime: DateTime) {
+sealed trait RegistrationResponse {
+  def tags: List[String]
+  def registration: NotificationHubRegistrationId
+  def expirationTime: DateTime
+  def tagsAsSet: Set[String]
+}
+
+case class WNSRegistrationResponse(
+  registration: NotificationHubRegistrationId,
+  tags: List[String],
+  channelUri: String,
+  expirationTime: DateTime) extends RegistrationResponse {
+  lazy val tagsAsSet = tags.toSet
+}
+
+case class GCMRegistrationResponse(
+  registration: NotificationHubRegistrationId,
+  tags: List[String],
+  gcmRegistrationId: String,
+  expirationTime: DateTime) extends RegistrationResponse {
   lazy val tagsAsSet = tags.toSet
 }
 

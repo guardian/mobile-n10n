@@ -5,20 +5,23 @@ import play.api.libs.json._
 sealed trait Link
 object Link {
   case class External(url: String) extends Link
-  case class Internal(contentApiId: String) extends Link
+  object External {
+    implicit val jf = Json.format[External]
+  }
+
+  case class Internal(contentApiId: String, git: GuardianItemType) extends Link
+  object Internal {
+    implicit val jf = Json.format[Internal]
+  }
 
   implicit val jf = new Format[Link] {
     override def writes(o: Link): JsValue = o match {
-      case External(url) => Json.obj("url" -> url)
-      case Internal(contentApiId: String) => Json.obj("contentApiId" -> contentApiId)
+      case external: External => External.jf.writes(external)
+      case internal: Internal => Internal.jf.writes(internal)
     }
 
     override def reads(json: JsValue): JsResult[Link] = {
-      (json \ "contentApiId", json \ "url") match {
-        case (JsDefined(JsString(contentApiId)), _) => JsSuccess(Internal(contentApiId))
-        case (_, JsDefined(JsString(url))) => JsSuccess(External(url))
-        case _ => JsError("Unknown link type")
-      }
+      Internal.jf.reads(json) orElse External.jf.reads(json)
     }
   }
 }

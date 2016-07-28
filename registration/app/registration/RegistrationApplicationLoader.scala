@@ -5,15 +5,15 @@ import auditor.AuditorWSClient
 import azure.{NotificationHubClient, NotificationHubConnection}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
-import play.api.{BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator, Application, ApplicationLoader}
+import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import registration.controllers.Main
-import registration.services.topic.{TopicValidator, AuditorTopicValidator}
-import registration.services.windows.WindowsNotificationRegistrar
-import registration.services.{RegistrarProvider, NotificationRegistrarProvider, NotificationRegistrar, Configuration}
+import registration.services.topic.{AuditorTopicValidator, TopicValidator}
+import registration.services.azure.{GCMNotificationRegistrar, WindowsNotificationRegistrar}
 import router.Routes
-import tracking.{SubscriptionTracker, DynamoTopicSubscriptionsRepository}
+import registration.services._
+import tracking.{DynamoTopicSubscriptionsRepository, SubscriptionTracker}
 
 import scala.concurrent.ExecutionContext
 
@@ -26,7 +26,10 @@ class RegistrationApplicationLoader extends ApplicationLoader {
 
 trait AppComponents extends Controllers
   with Registrars
+  with LegacyComponents
   with WindowsRegistrations
+  with GCMRegistrations
+  with NotificationsHubClient
   with Tracking
   with TopicValidation
   with AppConfiguration
@@ -39,6 +42,7 @@ trait Controllers {
     with TopicValidation
     with PlayComponents
     with AppConfiguration
+    with LegacyComponents
     with ExecutionEnv =>
   lazy val mainController = wire[Main]
 }
@@ -49,13 +53,33 @@ trait AppConfiguration {
 
 trait Registrars {
   self: WindowsRegistrations
+    with GCMRegistrations
     with ExecutionEnv =>
   lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
+}
+
+trait GCMRegistrations {
+  self: Tracking
+    with AppConfiguration
+    with NotificationsHubClient
+    with AhcWSComponents
+    with ExecutionEnv =>
+
+  lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = wire[GCMNotificationRegistrar]
 }
 
 trait WindowsRegistrations {
   self: Tracking
     with AppConfiguration
+    with NotificationsHubClient
+    with AhcWSComponents
+    with ExecutionEnv =>
+
+  lazy val winNotificationRegistrar: WindowsNotificationRegistrar = wire[WindowsNotificationRegistrar]
+}
+
+trait NotificationsHubClient {
+  self: AppConfiguration
     with AhcWSComponents
     with ExecutionEnv =>
 
@@ -67,8 +91,6 @@ trait WindowsRegistrations {
     )
     new NotificationHubClient(hubConnection, wsClient)
   }
-
-  lazy val winNotificationRegistrar: NotificationRegistrar = wire[WindowsNotificationRegistrar]
 }
 
 trait Tracking {
@@ -92,6 +114,14 @@ trait TopicValidation {
     with ExecutionEnv =>
   lazy val auditorWsClient = wire[AuditorWSClient]
   lazy val topicValidator: TopicValidator = wire[AuditorTopicValidator]
+}
+
+trait LegacyComponents {
+  self: AppConfiguration
+    with AhcWSComponents
+    with ExecutionEnv =>
+  lazy val legacyRegistrationClient = wire[LegacyRegistrationClient]
+  lazy val legacyRegistrationConverter = wire[LegacyRegistrationConverter]
 }
 
 trait PlayComponents extends BuiltInComponents {

@@ -1,9 +1,7 @@
 package azure
 
 import models.Registration
-/**
- * [[https://msdn.microsoft.com/en-us/library/microsoft.servicebus.notifications.windowsregistrationdescription.aspx]]
- */
+
 object RawWindowsRegistration {
   def fromMobileRegistration(m: Registration): RawWindowsRegistration = {
     RawWindowsRegistration(
@@ -15,7 +13,7 @@ object RawWindowsRegistration {
     )
   }
 }
-case class RawWindowsRegistration(channelUri: String, tags: Set[String]) {
+case class RawWindowsRegistration(channelUri: String, tags: Set[String]) extends NotificationsHubRegistration {
 
   def toXml: scala.xml.Elem =
     <entry xmlns="http://www.w3.org/2005/Atom">

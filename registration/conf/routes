@@ -1,2 +1,5 @@
 PUT         /registrations/:lastKnownDeviceId    registration.controllers.Main.register(lastKnownDeviceId)
 GET         /healthcheck                         registration.controllers.Main.healthCheck
+
+# Legacy Android API registration endpoint
+POST        /legacy/device/register              registration.controllers.Main.legacyRegister
