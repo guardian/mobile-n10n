@@ -14,24 +14,6 @@ import play.api.Logger
 import scala.PartialFunction._
 import PlatformUriTypes.{Item, FootballMatch, External}
 
-sealed trait PlatformUriType
-
-object PlatformUriTypes {
-
-  case object Item extends PlatformUriType {
-    override def toString: String = "item"
-  }
-
-  case object FootballMatch extends PlatformUriType {
-    override def toString: String = "football-match"
-  }
-
-  case object External extends PlatformUriType {
-    override def toString: String = "external"
-  }
-
-}
-
 class GCMPushConverter(conf: Configuration) {
 
   val logger = Logger(classOf[GCMPushConverter])
@@ -53,11 +35,6 @@ class GCMPushConverter(conf: Configuration) {
   private[services] def toTags(destination: Destination) = destination match {
     case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
     case Right(user: UniqueDeviceIdentifier) => Some(Tags.fromUserId(user))
-  }
-
-  private def toAndroidLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId")
-    case Link.External(url) => new URI(url)
   }
 
   private def toBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
@@ -128,8 +105,6 @@ class GCMPushConverter(conf: Configuration) {
     uriType = FootballMatch
   )
 
-  case class PlatformUri(uri: String, `type`: PlatformUriType)
-
   protected def replaceHost(uri: URI) = List(Some("x-gu://"), Option(uri.getPath), Option(uri.getQuery).map("?" + _)).flatten.mkString
 
   protected def toPlatformLink(link: Link) = link match {
@@ -137,6 +112,8 @@ class GCMPushConverter(conf: Configuration) {
     case Link.External(url) => PlatformUri(url, External)
   }
 
-  protected def mapWithOptionalValues(elems: (String, String)*)(optionals: (String, Option[String])*) =
-    elems.toMap ++ optionals.collect { case (k, Some(v)) => k -> v }
+  private def toAndroidLink(link: Link) = link match {
+    case Link.Internal(contentApiId, _, _) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId")
+    case Link.External(url) => new URI(url)
+  }
 }
