@@ -55,7 +55,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
           title = s"$prefix:title",
           message = s"$prefix:message",
           thumbnailUrl = Some(new URI(s"http://some.url/$prefix.png")),
-          link = Internal(s"content/api/id/$prefix", GITContent),
+          link = Internal(s"content/api/id/$prefix", None, GITContent),
           imageUrl = Some(new URI(s"http://some.url/$prefix.jpg")),
           importance = Major,
           topic = Set(Topic(Breaking, "uk"))

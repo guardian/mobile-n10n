@@ -101,6 +101,13 @@ object RegistrationResponse {
             gcmRegistrationId <- xml.textNode("GcmRegistrationId")
             tags = xml.textNodes("Tags").flatMap(_.split(",").map(_.stripPrefix(" ")))
           } yield GCMRegistrationResponse(registrationId, tags.toList, gcmRegistrationId, expirationTime)
+        case "AppleRegistrationDescription" =>
+          for {
+            expirationTime <- xml.dateTimeNode("ExpirationTime")
+            registrationId <- xml.textNode("RegistrationId").map(NotificationHubRegistrationId.apply)
+            deviceToken <- xml.textNode("DeviceToken")
+            tags = xml.textNodes("Tags").flatMap(_.split(",").map(_.stripPrefix(" ")))
+          } yield APNSRegistrationResponse(registrationId, tags.toList, deviceToken, expirationTime)
       }
     }
   }
@@ -127,6 +134,15 @@ case class GCMRegistrationResponse(
   expirationTime: DateTime) extends RegistrationResponse {
   lazy val tagsAsSet = tags.toSet
 }
+
+case class APNSRegistrationResponse(
+  registration: NotificationHubRegistrationId,
+  tags: List[String],
+  deviceToken: String,
+  expirationTime: DateTime) extends RegistrationResponse {
+  lazy val tagsAsSet = tags.toSet
+}
+
 
 object AtomEntry {
   import Responses._

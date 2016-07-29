@@ -31,7 +31,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
 
   "GCMPushConverter.toTag" should {
     "convert a userId into a tag" in new PushConverterScope {
-      val userId = Destination(UserId(id = UUID.fromString("497f172a-9434-11e5-af4E-61a964696656")))
+      val userId = Destination(UniqueDeviceIdentifier(id = UUID.fromString("497f172a-9434-11e5-af4E-61a964696656")))
       val expected = Tag("user:497f172a-9434-11e5-af4e-61a964696656")
       azureRawPushConverter.toTags(userId) shouldEqual Some(Tags(Set(expected)))
     }
@@ -63,7 +63,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
       thumbnailUrl = Some(new URI("http://media.guim.co.uk/09951387fda453719fe1fee3e5dcea4efa05e4fa/0_181_3596_2160/140.jpg")),
       sender = "test",
-      link = Internal("world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates", GITContent),
+      link = Internal("world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates", None, GITContent),
       imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
       importance = Major,
       topic = Set(Topic(Breaking, "uk"))
@@ -95,7 +95,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       message = "Which countries are doing the most to stop dangerous global warming?",
       thumbnailUrl = Some(new URI("http://media.guim.co.uk/a07334e4ed5d13d3ecf4c1ac21145f7f4a099f18/127_0_3372_2023/140.jpg")),
       sender = "test",
-      link = Internal("environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming", GITContent),
+      link = Internal("environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming", None, GITContent),
       importance = Major,
       topic = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground"))
     )

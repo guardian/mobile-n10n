@@ -1,12 +1,8 @@
 package azure
 
-import play.api.libs.json.Json
-
-case class GCMRawPush(body: GCMBody, tags: Option[Tags]) {
-  def tagQuery: Option[String] = tags.map { set =>
-    set.tags.map(_.encodedTag).mkString("(", " || ", ")")
-  }
-}
+import play.api.http.Writeable
+import play.api.libs.json.{JsValue, Json}
+import utils.WriteableImplicits._
 
 case class GCMBody(
   collapse_key: Option[String] = None,
@@ -16,4 +12,10 @@ case class GCMBody(
 )
 object GCMBody {
   implicit val jf = Json.format[GCMBody]
+}
+
+case class GCMRawPush(body: GCMBody, tags: Option[Tags]) extends RawPush[GCMBody] {
+  override def format: String = "gcm"
+
+  override def writeable: Writeable[GCMBody] = implicitly[Writeable[JsValue]].map(Json.toJson[GCMBody]).withContentType("application/json;charset=utf-8")
 }

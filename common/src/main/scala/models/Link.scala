@@ -1,15 +1,24 @@
 package models
 
+import java.net.URI
+
 import play.api.libs.json._
 
-sealed trait Link
+sealed trait Link {
+  def webUri(frontendBaseUrl: String): URI
+}
+
 object Link {
-  case class External(url: String) extends Link
+  case class External(url: String) extends Link {
+    def webUri(frontendBaseUrl: String): URI = new URI(url)
+  }
   object External {
     implicit val jf = Json.format[External]
   }
 
-  case class Internal(contentApiId: String, git: GuardianItemType) extends Link
+  case class Internal(contentApiId: String, shortUrl: Option[String], git: GuardianItemType) extends Link {
+    def webUri(frontendBaseUrl: String): URI = new URI(s"$frontendBaseUrl$contentApiId")
+  }
   object Internal {
     implicit val jf = Json.format[Internal]
   }

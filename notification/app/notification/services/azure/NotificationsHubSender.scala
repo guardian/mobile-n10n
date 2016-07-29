@@ -51,7 +51,7 @@ abstract class NotificationsHubSender(
 
   private def count(destination: Destination): Future[RepositoryResult[Int]] = destination match {
     case Left(topics: Set[Topic]) => sumOf(topics)
-    case Right(_: UserId) => Future.successful(RepositoryResult(1))
+    case Right(_: UniqueDeviceIdentifier) => Future.successful(RepositoryResult(1))
   }
 
   private def sumOf(topics: Set[Topic]): Future[RepositoryResult[Int]] = {

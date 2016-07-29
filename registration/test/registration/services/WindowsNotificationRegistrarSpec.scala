@@ -5,7 +5,7 @@ import java.util.UUID
 import _root_.azure.RawWindowsRegistration.fromMobileRegistration
 import _root_.azure.{NotificationHubClient, NotificationHubRegistrationId, RawWindowsRegistration, Tag, WNSRegistrationResponse}
 import models.TopicTypes.{Breaking, Content, TagContributor}
-import models.{Registration, Topic, UserId, WindowsMobile}
+import models.{Registration, Topic, UniqueDeviceIdentifier, WindowsMobile}
 import org.joda.time.DateTime
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
@@ -124,7 +124,7 @@ with Mockito {
   trait registrations extends Scope {
     def generateHubResponse(i: Int): WNSRegistrationResponse = hubRegResponse.copy(channelUri = s"channel$i")
 
-    val userId = UserId(UUID.fromString("988ADFF8-8961-11E5-96E3-D0DB64696656"))
+    val userId = UniqueDeviceIdentifier(UUID.fromString("988ADFF8-8961-11E5-96E3-D0DB64696656"))
     val userIdTag = Tag.fromUserId(userId).encodedTag
 
     val registration = Registration("deviceId", WindowsMobile, userId, Set.empty)
@@ -145,7 +145,7 @@ with Mockito {
     val registrationResponse = RegistrationResponse(
       deviceId = registration.deviceId,
       platform = WindowsMobile,
-      userId = registration.userId,
+      userId = registration.udid,
       topics = Set.empty
     )
     val hubClient = {

@@ -42,7 +42,7 @@ class NotificationHubRegistrar(
     }
 
     for {
-      userIdResults <- hubClient.registrationsByTag(Tag.fromUserId(registration.userId).encodedTag)
+      userIdResults <- hubClient.registrationsByTag(Tag.fromUserId(registration.udid).encodedTag)
       deviceIdResults <- hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri)
     } yield extractResultFromResponse(userIdResults, deviceIdResults)
   }
@@ -96,6 +96,7 @@ class NotificationHubRegistrar(
       val (platform, deviceId) = registration match {
         case WNSRegistrationResponse(_, _, channelUri, _) => (WindowsMobile, channelUri)
         case GCMRegistrationResponse(_, _, gcmRegistrationId, _) => (Android, gcmRegistrationId)
+        case APNSRegistrationResponse(_, _, deviceToken, _) => (iOS, deviceToken)
       }
       for {
         userId <- tags.findUserId \/> UserIdNotInTags()

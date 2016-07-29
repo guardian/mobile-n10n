@@ -8,7 +8,7 @@ import com.softwaremill.macwire._
 import notification.controllers.Main
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
-import notification.services.azure.{GCMSender, WNSSender}
+import notification.services.azure.{APNSSender, GCMSender, WNSSender}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
@@ -36,7 +36,7 @@ trait AppComponents extends PlayComponents
 
 trait Controllers {
   self: AzureHubComponents with FrontendAlertsComponents with ConfigurationComponents with PlayComponents with ExecutionEnv =>
-  lazy val notificationSenders = List(wnsNotificationSender, gcmNotificationSender, frontendAlerts)
+  lazy val notificationSenders = List(wnsNotificationSender, gcmNotificationSender, apnsNotificationSender, frontendAlerts)
   lazy val mainController = wire[Main]
 }
 
@@ -73,6 +73,8 @@ trait AzureHubComponents {
   lazy val wnsNotificationSender: WNSSender = wire[WNSSender]
 
   lazy val gcmNotificationSender: GCMSender = wire[GCMSender]
+
+  lazy val apnsNotificationSender: APNSSender = wire[APNSSender]
 }
 
 

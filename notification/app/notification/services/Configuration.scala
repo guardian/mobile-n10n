@@ -13,4 +13,5 @@ class Configuration extends NotificationConfiguration("notification") {
   lazy val frontendNewsAlertApiKey = getConfigString("notifications.frontendNewsAlert.apiKey")
   lazy val dynamoReportsTableName = getConfigString("db.dynamo.reports.table-name")
   lazy val dynamoTopicsTableName = getConfigString("db.dynamo.topics.table-name")
+  lazy val frontendBaseUrl = getConfigString("frontend.baseUrl")
 }

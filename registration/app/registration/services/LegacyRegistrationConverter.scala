@@ -3,7 +3,7 @@ package registration.services
 import java.util.UUID
 
 import error.NotificationsError
-import models.{UserId, _}
+import models.{UniqueDeviceIdentifier, _}
 import registration.models.LegacyRegistration
 import scalaz.\/
 import scalaz.syntax.either._
@@ -19,7 +19,7 @@ class LegacyRegistrationConverter {
         deviceId = legacyRegistration.device.pushToken,
         platform = platform,
         // The Windows app sends a device generated guid as the userId, not a real Guardian user id so udid is equivalent
-        userId = UserId(UUID.fromString(legacyRegistration.device.udid)),
+        udid = legacyRegistration.device.udid,
         topics = topics(legacyRegistration)
       ).right
     }
@@ -38,7 +38,7 @@ class LegacyRegistrationConverter {
     } yield Topic(TopicTypes.FootballMatch, topic.matchId) // todo: check this
 
     val breakingTopic = if (request.preferences.receiveNewsAlerts)
-      Some(Topic(TopicTypes.Breaking, request.preferences.edition))
+      Some(Topic(TopicTypes.Breaking, request.preferences.edition.toLowerCase))
     else None
 
     (topics ++ matchTopics ++ breakingTopic.toList).toSet

@@ -1,12 +1,12 @@
 package registration.services
 
-import models.{Platform, Registration, Topic, UserId}
+import models.{Platform, Registration, Topic, UniqueDeviceIdentifier}
 import providers.ProviderError
 
 import scala.concurrent.Future
 import scalaz.\/
 
-case class RegistrationResponse(deviceId: String, platform: Platform, userId: UserId, topics: Set[Topic])
+case class RegistrationResponse(deviceId: String, platform: Platform, userId: UniqueDeviceIdentifier, topics: Set[Topic])
 
 object RegistrationResponse {
   import play.api.libs.json._

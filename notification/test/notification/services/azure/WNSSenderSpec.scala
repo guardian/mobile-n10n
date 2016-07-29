@@ -25,7 +25,7 @@ class WNSSenderSpec(implicit ev: ExecutionEnv) extends Specification
       val result = windowsNotificationSender.sendNotification(userPush)
 
       result should beEqualTo(expectedReport).await
-      there was no(hubClient).sendWNSNotification(any[WNSRawPush])
+      there was no(hubClient).sendNotification(any[WNSRawPush])
     }
 
     "process a Major notification" in {
@@ -34,7 +34,7 @@ class WNSSenderSpec(implicit ev: ExecutionEnv) extends Specification
 
         result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 2).some).right).await
         got {
-          one(hubClient).sendWNSNotification(pushConverter.toRawPush(topicPush))
+          one(hubClient).sendNotification(pushConverter.toRawPush(topicPush))
         }
       }
 
@@ -43,7 +43,7 @@ class WNSSenderSpec(implicit ev: ExecutionEnv) extends Specification
 
         result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some).right).await
         got {
-          one(hubClient).sendWNSNotification(pushConverter.toRawPush(userPush))
+          one(hubClient).sendNotification(pushConverter.toRawPush(userPush))
         }
       }
     }
@@ -62,7 +62,7 @@ class WNSSenderSpec(implicit ev: ExecutionEnv) extends Specification
     val configuration = mock[Configuration].debug returns true
     val hubClient = {
       val client = mock[NotificationHubClient]
-      client.sendWNSNotification(any[WNSRawPush]) returns Future.successful(().right)
+      client.sendNotification(any[WNSRawPush]) returns Future.successful(().right)
       client
     }
 

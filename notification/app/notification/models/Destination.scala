@@ -1,11 +1,11 @@
 package notification.models
 
-import models.{UserId, Topic}
+import models.{UniqueDeviceIdentifier, Topic}
 
 object Destination {
-  type Destination = Either[Set[Topic], UserId]
+  type Destination = Either[Set[Topic], UniqueDeviceIdentifier]
 
-  def apply(userId: UserId): Destination = Right(userId)
+  def apply(userId: UniqueDeviceIdentifier): Destination = Right(userId)
   def apply(topic: Topic): Destination = Left(Set(topic))
   def apply(topics: Set[Topic]): Destination = Left(topics)
 }

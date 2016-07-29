@@ -63,7 +63,7 @@ class NotificationReportTest extends Specification {
             title = "title",
             message = "message",
             thumbnailUrl = Some(new URI("http://some.url/my.png")),
-            link = Internal("some/capi/id-with-dashes", GITContent),
+            link = Internal("some/capi/id-with-dashes", None, GITContent),
             imageUrl = Some(new URI("http://some.url/i.jpg")),
             importance = Major,
             topic = Set(Topic(Breaking, "uk"))

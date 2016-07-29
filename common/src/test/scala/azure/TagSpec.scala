@@ -2,7 +2,7 @@ package azure
 
 import java.util.UUID
 
-import models.{UserId, Topic}
+import models.{UniqueDeviceIdentifier, Topic}
 import models.TopicTypes.{Content, TagContributor, FootballMatch}
 import org.specs2.mutable.Specification
 
@@ -41,7 +41,7 @@ class TagSpec extends Specification {
 
     "encoded tag must contain user id" in {
       val uuid = UUID.randomUUID
-      val userId = UserId(uuid)
+      val userId = UniqueDeviceIdentifier(uuid)
       val tag = Tag.fromUserId(userId)
 
       tag.encodedTag must endWith(uuid.toString)

@@ -30,12 +30,12 @@ class WNSPushConverter(conf: Configuration) {
 
   private[services] def toTags(destination: Destination) = destination match {
     case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
-    case Right(user: UserId) => Some(Tags.fromUserId(user))
+    case Right(user: UniqueDeviceIdentifier) => Some(Tags.fromUserId(user))
   }
 
   private def toUrl(link: Link): URI = link match {
     case External(url) => new URI(url)
-    case Internal(capiId, _) => new URI(s"${conf.mapiItemEndpoint}/$capiId")
+    case Internal(capiId, _, _) => new URI(s"${conf.mapiItemEndpoint}/$capiId")
   }
 
   private def toBreakingNews(bnn: BreakingNewsNotification) = wns.BreakingNewsNotification(
