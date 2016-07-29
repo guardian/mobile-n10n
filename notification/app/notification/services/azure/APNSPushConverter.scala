@@ -82,7 +82,7 @@ class APNSPushConverter(conf: Configuration) {
 
   private def toIosLink(link: Link) = link match {
     case Link.Internal(contentApiId, Some(shortUrl), _) => new URI(s"x-gu://${new URI(shortUrl).getPath}")
-    case _ => link.webUri
+    case _ => link.webUri(conf.frontendBaseUrl)
   }
 
   private def replaceHost(uri: URI) =
