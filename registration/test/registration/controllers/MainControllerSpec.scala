@@ -107,7 +107,7 @@ class RegistrarProviderMock extends RegistrarProvider {
       RegistrationResponse(
         deviceId = "deviceAA",
         platform = WindowsMobile,
-        userId = registration.userId,
+        userId = registration.udid,
         topics = registration.topics
       ).right
     }

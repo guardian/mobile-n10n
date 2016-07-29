@@ -42,7 +42,7 @@ class NotificationHubRegistrar(
     }
 
     for {
-      userIdResults <- hubClient.registrationsByTag(Tag.fromUserId(registration.userId).encodedTag)
+      userIdResults <- hubClient.registrationsByTag(Tag.fromUserId(registration.udid).encodedTag)
       deviceIdResults <- hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri)
     } yield extractResultFromResponse(userIdResults, deviceIdResults)
   }

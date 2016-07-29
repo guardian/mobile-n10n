@@ -15,7 +15,7 @@ class RawGCMRegistrationSpec extends Specification {
       val registration = Registration(
         deviceId = "deviceId",
         platform = WindowsMobile,
-        userId = userId,
+        udid = userId,
         topics = Set.empty
       )
 
@@ -30,7 +30,7 @@ class RawGCMRegistrationSpec extends Specification {
       val registration = Registration(
         deviceId = "device2",
         platform = WindowsMobile,
-        userId = userId,
+        udid = userId,
         topics = Set(topic)
       )
 

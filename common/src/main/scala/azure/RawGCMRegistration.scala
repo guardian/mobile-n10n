@@ -7,7 +7,7 @@ object RawGCMRegistration {
     RawGCMRegistration(
       gcmRegistrationId = m.deviceId,
       tags = Tags()
-        .withUserId(m.userId)
+        .withUserId(m.udid)
         .withTopics(m.topics)
         .asSet
     )

@@ -145,7 +145,7 @@ with Mockito {
     val registrationResponse = RegistrationResponse(
       deviceId = registration.deviceId,
       platform = WindowsMobile,
-      userId = registration.userId,
+      userId = registration.udid,
       topics = Set.empty
     )
     val hubClient = {
