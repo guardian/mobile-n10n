@@ -70,43 +70,14 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       }
   }
 
-  def sendWNSNotification(azureWindowsPush: WNSRawPush): Future[HubResult[Unit]] = {
-    val serviceBusTags = azureWindowsPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
-    logger.debug(s"Sending WNS Raw Notification: $azureWindowsPush")
+  def sendNotification[T](rawPush: RawPush[T]): Future[HubResult[Unit]] = {
+    val serviceBusTags = rawPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
+    logger.debug(s"Sending Raw Notification: $rawPush")
     request(Endpoints.Messages)
-      .withHeaders("X-WNS-Type" -> "wns/raw")
-      .withHeaders("ServiceBusNotification-Format" -> "windows")
-      .withHeaders("Content-Type" -> "application/octet-stream")
+      .withHeaders(rawPush.extraHeaders: _*)
+      .withHeaders("ServiceBusNotification-Format" -> rawPush.format)
       .withHeaders(serviceBusTags: _*)
-      .post(azureWindowsPush.body)
-      .map {
-        case r if r.isSuccess => ().right
-        case r => XmlParser.parseError(r).left
-      }
-  }
-
-  def sendGCMNotification(push: GCMRawPush): Future[HubResult[Unit]] = {
-    val serviceBusTags = push.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
-    logger.debug(s"Sending GCM Raw Notification: $push")
-    request(Endpoints.Messages)
-      .withHeaders("ServiceBusNotification-Format" -> "gcm")
-      .withHeaders("Content-Type" -> "application/json;charset=utf-8")
-      .withHeaders(serviceBusTags: _*)
-      .post(Json.toJson(push.body))
-      .map {
-        case r if r.isSuccess => ().right
-        case r => XmlParser.parseError(r).left
-      }
-  }
-
-  def sendAPNSNotification(push: APNSRawPush): Future[HubResult[Unit]] = {
-    val serviceBusTags = push.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
-    logger.debug(s"Sending APNS Raw Notification: $push")
-    request(Endpoints.Messages)
-      .withHeaders("ServiceBusNotification-Format" -> "apple")
-      .withHeaders("Content-Type" -> "application/json;charset=utf-8")
-      .withHeaders(serviceBusTags: _*)
-      .post(Json.toJson(push.body))
+      .post(rawPush.body)(rawPush.writeable)
       .map {
         case r if r.isSuccess => ().right
         case r => XmlParser.parseError(r).left
