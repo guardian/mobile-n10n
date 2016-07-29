@@ -11,10 +11,10 @@ object Body {
       Json.toJson(o.customProperties.mapValues(JsString(_)) + ("aps" -> Json.toJson(o.aps)))
 
     override def reads(json: JsValue): JsResult[Body] = for {
-      bodyWithoutCustom <- Json.fromJson[BodyWithoutCustom](json)
-      bodyRaw <- Json.fromJson[JsObject](json)
+      aps <- (json \ "aps").validate[APS]
+      bodyRaw <- json.validate[JsObject]
     } yield Body(
-      aps = bodyWithoutCustom.aps,
+      aps = aps,
       customProperties = bodyRaw.value.filterKeys(_ != "aps").collect({
         case (k, JsString(v)) => k -> v
       })(breakOut)
