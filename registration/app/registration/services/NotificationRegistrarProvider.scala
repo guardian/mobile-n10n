@@ -22,10 +22,10 @@ final class NotificationRegistrarProvider(
   apnsNotificationRegistrar: APNSNotificationRegistrar)
   (implicit executionContext: ExecutionContext) extends RegistrarProvider {
 
-  override def registrarFor(registration: Registration): NotificationsError \/ NotificationRegistrar = registration match {
-    case Registration(_, WindowsMobile, _, _) => windowsNotificationRegistrar.right
-    case Registration(_, Android, _, _) => gcmNotificationRegistrar.right
-    case Registration(_, `iOS`, _, _) => apnsNotificationRegistrar.right
+  override def registrarFor(registration: Registration): NotificationsError \/ NotificationRegistrar = registration.platform match {
+    case WindowsMobile => windowsNotificationRegistrar.right
+    case Android => gcmNotificationRegistrar.right
+    case `iOS` => apnsNotificationRegistrar.right
     case _ => UnsupportedPlatform(registration.platform.toString).left
   }
 }
