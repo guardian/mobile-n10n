@@ -27,7 +27,9 @@ case class BreakingNewsNotification(
   def payload: Body = Body(
     aps = APS(
       category = Some(category),
-      alert = Some(Right(message))
+      alert = Some(Right(message)),
+      `content-available` = Some(1),
+      sound = Some("default")
     ),
     customProperties = Map(
       Keys.MessageType -> `type`,
@@ -54,7 +56,9 @@ case class ContentNotification(
   def payload: Body = Body(
     aps = APS(
       category = Some(category),
-      alert = Some(Right(message))
+      alert = Some(Right(message)),
+      `content-available` = Some(1),
+      sound = Some("default")
     ),
     customProperties = Map(
       Keys.MessageType -> `type`,
@@ -77,7 +81,9 @@ case class GoalAlertNotification(
 ) extends Notification {
   def payload: Body = Body(
     aps = APS(
-      alert = Some(Right(message))
+      alert = Some(Right(message)),
+      `content-available` = Some(1),
+      sound = Some("default")
     ),
     customProperties = Map(
       Keys.MessageType -> `type`,

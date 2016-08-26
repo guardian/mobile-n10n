@@ -60,7 +60,9 @@ class iOSNotificationSpec extends Specification with Mockito {
     val expected = Body(
       aps = APS(
         alert = Some(Right("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State")),
-        category = Some("ITEM_CATEGORY")
+        category = Some("ITEM_CATEGORY"),
+        `content-available` = Some(1),
+        sound = Some("default")
       ),
       customProperties = Map(
         "t" -> "m",
@@ -91,7 +93,9 @@ class iOSNotificationSpec extends Specification with Mockito {
     val expected = Body(
       aps = APS(
         alert = Some(Right("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State")),
-        category = Some("ITEM_CATEGORY")
+        category = Some("ITEM_CATEGORY"),
+        `content-available` = Some(1),
+        sound = Some("default")
       ),
       customProperties = Map(
         "t" -> "m",
@@ -139,7 +143,9 @@ class iOSNotificationSpec extends Specification with Mockito {
     val expected = Body(
       aps = APS(
         alert = Some(Right("Leicester 2-1 Watford\nDeeney 75min (o.g.)")),
-        category = None
+        category = None,
+        `content-available` = Some(1),
+        sound = Some("default")
       ),
       customProperties = Map(
         "t" -> "g",
