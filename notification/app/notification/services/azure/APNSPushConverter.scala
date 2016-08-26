@@ -43,7 +43,7 @@ class APNSPushConverter(conf: Configuration) {
 
     ios.ContentNotification(
       category = "ITEM_CATEGORY",
-      message = cn.message,
+      message = cn.title,
       link = toIosLink(cn.link),
       topics = cn.topic,
       uri = new URI(link.uri),
