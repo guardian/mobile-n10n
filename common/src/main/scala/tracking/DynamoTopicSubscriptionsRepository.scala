@@ -8,7 +8,8 @@ import play.api.Logger
 import tracking.Repository.RepositoryResult
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.\/
+import cats.data.Xor
+import cats.implicits._
 
 import scala.collection.JavaConversions._
 
@@ -57,7 +58,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
         countFieldValue <- Option(countField.getN)
       } yield countFieldValue.toInt
 
-      \/.right(count getOrElse 0)
+      count.getOrElse(0).right
     }
   }
 
@@ -66,7 +67,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
     eventualUpdate.onFailure {
       case t: Throwable => logger.error(s"DynamoDB communication error ($t)")
     }
-    eventualUpdate map { _ => \/.right(()) }
+    eventualUpdate map { _ => ().right }
   }
 
   private def newUpdateRequest = new UpdateItemRequest().withTableName(tableName)

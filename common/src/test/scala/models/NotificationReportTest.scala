@@ -10,7 +10,7 @@ import org.joda.time.{DateTimeZone, DateTime}
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
 
-import scalaz.syntax.std.option._
+import cats.implicits._
 
 class NotificationReportTest extends Specification {
   "NotificationReport" should {

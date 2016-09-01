@@ -3,7 +3,7 @@ package azure
 import NotificationHubClient.HubResult
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import scalaz.syntax.either._
+import cats.implicits._
 
 import scala.xml.Elem
 

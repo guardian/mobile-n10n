@@ -2,9 +2,9 @@ package notification.services.frontend
 
 import java.net.URI
 
-import models.{SenderReport, BreakingNewsNotification}
+import models.{BreakingNewsNotification, SenderReport}
 import notification.models.Push
-import notification.services.{Senders, SenderError, NotificationRejected, SenderResult, NotificationSender}
+import notification.services.{NotificationRejected, NotificationSender, SenderError, SenderResult, Senders}
 import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json.Json
@@ -12,16 +12,15 @@ import play.api.libs.ws.WSClient
 import play.mvc.Http.Status.CREATED
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.{-\/, \/-, \/}
-import scalaz.syntax.either._
-import scalaz.syntax.std.option._
+import cats.data.Xor
+import cats.implicits._
 
 case class FrontendAlertsConfig(endpoint: URI, apiKey: String)
 
 class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit val ec: ExecutionContext) extends NotificationSender {
   val logger = Logger(classOf[FrontendAlerts])
 
-  def sendBreakingNewsAlert(alert: NewsAlert): Future[String \/ Unit] =
+  def sendBreakingNewsAlert(alert: NewsAlert): Future[String Xor Unit] =
     wsClient.url(s"${ config.endpoint }/alert")
     .withHeaders("Content-Type" -> "application/json", "X-Gu-Api-Key" -> config.apiKey)
     .post(Json.toJson(alert))
@@ -49,8 +48,8 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit 
     NewsAlert.fromNotification(bn, DateTime.now) match {
       case Some(alert) =>
         sendBreakingNewsAlert(alert) map {
-          case \/-(()) => SenderReport(Senders.FrontendAlerts, alert.publicationDate).right
-          case -\/(e) => NotificationRejected(FrontendAlertsProviderError(s"Could not send breaking news alert ($e)").some).left
+          case Xor.Right(()) => SenderReport(Senders.FrontendAlerts, alert.publicationDate).right
+          case Xor.Left(e) => NotificationRejected(Some(FrontendAlertsProviderError(s"Could not send breaking news alert ($e)"))).left
         }
       case _ =>
         logger.error(s"Frontend alert not sent. Could not create alert from notification ${ push.notification }")

@@ -3,7 +3,7 @@ package notification.controllers
 import models.TopicTypes.Breaking
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
-import notification.models.{PushResult, Push}
+import notification.models.{Push, PushResult}
 import notification.services.frontend.FrontendAlerts
 import notification.services._
 import org.mockito.ArgumentCaptor
@@ -15,7 +15,8 @@ import play.api.test.PlaySpecification
 import tracking.{RepositoryError, SentNotificationReportRepository}
 
 import scala.concurrent.Future
-import scalaz.syntax.either._
+import cats.data.Xor
+import cats.implicits._
 
 class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito with JsonMatchers with DateTimeFreezed {
   "Sending notification to topics" should {

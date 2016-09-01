@@ -12,7 +12,7 @@ import org.specs2.specification.Scope
 import registration.services.Configuration
 
 import scala.concurrent.Future.successful
-import scalaz.syntax.either._
+import cats.implicits._
 
 class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "Auditor Topic Validator" should {

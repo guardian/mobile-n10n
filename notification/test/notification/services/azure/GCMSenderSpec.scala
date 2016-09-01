@@ -12,8 +12,8 @@ import org.specs2.specification.Scope
 import tracking.TopicSubscriptionsRepository
 
 import scala.concurrent.Future
-import scalaz.syntax.either._
-import scalaz.syntax.std.option._
+import cats.data.Xor
+import cats.implicits._
 
 class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
   with Mockito with DateTimeFreezed {

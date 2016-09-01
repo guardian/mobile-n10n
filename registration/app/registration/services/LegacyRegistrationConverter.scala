@@ -5,14 +5,14 @@ import java.util.UUID
 import error.NotificationsError
 import models.{UniqueDeviceIdentifier, _}
 import registration.models.LegacyRegistration
-import scalaz.\/
-import scalaz.syntax.either._
+import cats.data.Xor
+import cats.implicits._
 
 class LegacyRegistrationConverter {
 
-  def toRegistration(legacyRegistration: LegacyRegistration): NotificationsError \/ Registration = {
-    val unsupportedPlatform: NotificationsError \/ Registration =
-      UnsupportedPlatform(legacyRegistration.device.platform).left
+  def toRegistration(legacyRegistration: LegacyRegistration): NotificationsError Xor Registration = {
+    val unsupportedPlatform: NotificationsError Xor Registration =
+      Xor.left(UnsupportedPlatform(legacyRegistration.device.platform))
 
     Platform.fromString(legacyRegistration.device.platform).fold(unsupportedPlatform) { platform =>
       Registration(

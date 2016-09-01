@@ -5,8 +5,8 @@ import java.util.UUID
 import authentication.AuthenticationSupport
 import error.NotificationsError
 import models._
-import notification.models.{PushResult, Push}
-import notification.services.{NotificationSender, Configuration}
+import notification.models.{Push, PushResult}
+import notification.services.{Configuration, NotificationSender}
 import play.api.Logger
 import play.api.libs.json.Json.toJson
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
@@ -15,7 +15,7 @@ import tracking.SentNotificationReportRepository
 
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.{\/-, -\/}
+import cats.data.Xor
 
 final class Main(
   configuration: Configuration,
@@ -58,19 +58,19 @@ final class Main(
     sendNotifications(push, to = senders) flatMap {
       case (Nil, reports @ _ :: _) =>
         reportPushSent(push.notification, reports) map {
-          case \/-(_) =>
+          case Xor.Right(_) =>
             logger.info(s"Notification was sent: $push")
             Created(toJson(PushResult(push.notification.id)))
-          case -\/(error) =>
+          case Xor.Left(error) =>
             logger.error(s"Notification ($push) sent but report could not be stored ($error)")
             Created(toJson(PushResult(push.notification.id).withReportingError(error)))
         }
       case (rejected @ _ :: _, reports @ _ :: _) =>
         reportPushSent(push.notification, reports) map {
-          case \/-(_) =>
+          case Xor.Right(_) =>
             logger.warn(s"Notification ($push) was rejected by some providers: ($rejected)")
             Created(toJson(PushResult(push.notification.id).withRejected(rejected)))
-          case -\/(error) =>
+          case Xor.Left(error) =>
             logger.error(s"Notification ($push) was rejected by some providers and there was error in reporting")
             Created(toJson(PushResult(push.notification.id).withRejected(rejected).withReportingError(error)))
         }

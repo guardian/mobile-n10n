@@ -1,13 +1,13 @@
 package tracking
 
-import scalaz.\/
+import cats.data.Xor
 
 case class RepositoryError(message: String)
 
 object Repository {
-  type RepositoryResult[T] = RepositoryError \/ T
+  type RepositoryResult[T] = RepositoryError Xor T
 }
 
 object RepositoryResult {
-  def apply[T](result: T): RepositoryError \/ T = \/.right(result)
+  def apply[T](result: T): RepositoryError Xor T = Xor.right(result)
 }

@@ -5,11 +5,11 @@ import models.{Android, iOS, Registration, WindowsMobile}
 import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, WindowsNotificationRegistrar}
 
 import scala.concurrent.ExecutionContext
-import scalaz.\/
-import scalaz.syntax.either._
+import cats.data.Xor
+import cats.implicits._
 
 trait RegistrarProvider {
-  def registrarFor(registration: Registration): \/[NotificationsError, NotificationRegistrar]
+  def registrarFor(registration: Registration): Xor[NotificationsError, NotificationRegistrar]
 }
 
 case class UnsupportedPlatform(platform: String) extends RequestError {
@@ -22,7 +22,7 @@ final class NotificationRegistrarProvider(
   apnsNotificationRegistrar: APNSNotificationRegistrar)
   (implicit executionContext: ExecutionContext) extends RegistrarProvider {
 
-  override def registrarFor(registration: Registration): NotificationsError \/ NotificationRegistrar = registration.platform match {
+  override def registrarFor(registration: Registration): NotificationsError Xor NotificationRegistrar = registration.platform match {
     case WindowsMobile => windowsNotificationRegistrar.right
     case Android => gcmNotificationRegistrar.right
     case `iOS` => apnsNotificationRegistrar.right

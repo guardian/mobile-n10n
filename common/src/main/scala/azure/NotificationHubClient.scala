@@ -6,14 +6,14 @@ import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.\/
-import scalaz.syntax.either._
+import cats.data.Xor
+import cats.implicits._
 import utils.WSImplicits._
 
 case class NotificationHubError(message: String)
 
 object NotificationHubClient {
-  type HubResult[T] = HubFailure \/ T
+  type HubResult[T] = HubFailure Xor T
 }
 /**
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx

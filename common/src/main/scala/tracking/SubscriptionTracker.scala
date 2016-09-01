@@ -6,8 +6,8 @@ import play.api.Logger
 import tracking.Repository.RepositoryResult
 
 import scala.concurrent.Future
-import scala.util.{Try, Success}
-import scalaz.\/-
+import scala.util.{Success, Try}
+import cats.data.Xor
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -15,7 +15,7 @@ class SubscriptionTracker(topicSubscriptionsRepository: TopicSubscriptionsReposi
   val logger = Logger(classOf[SubscriptionTracker])
 
   def recordSubscriptionChange(topicSubscriptionTracking: TopicSubscriptionTracking): PartialFunction[Try[HubResult[_]], Unit] = {
-    case Success(\/-(_)) =>
+    case Success(Xor.Right(_)) =>
       Future.traverse(topicSubscriptionTracking.addedTopics) { topic =>
         logger.debug(s"Informing about new topic registrations. [$topic]")
         topicSubscriptionsRepository.deviceSubscribed(topic)
