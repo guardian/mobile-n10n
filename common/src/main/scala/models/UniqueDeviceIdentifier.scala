@@ -11,6 +11,10 @@ object UniqueDeviceIdentifier {
 
   private def uuidFromString(s: String) = Try(UUID.fromString(s)).toOption
 
+  def fromString(s: String): Option[UniqueDeviceIdentifier] = unapply(s) map {
+    case (id, prefix) => UniqueDeviceIdentifier(id, prefix)
+  }
+
   def unapply(string: String): Option[(UUID, Option[String])] = {
     if (string.startsWith("gia:"))
       uuidFromString(string.stripPrefix("gia:")).map((_, Some("gia:")))
@@ -29,9 +33,11 @@ object UniqueDeviceIdentifier {
       case _ => JsError(ValidationError(s"User ID is not a valid UUID"))
     }
 
-    override def writes(o: UniqueDeviceIdentifier): JsValue = JsString(o.prefix.getOrElse("") + o.id.toString)
+    override def writes(o: UniqueDeviceIdentifier): JsValue = JsString(o.toString)
   }
 }
 
-case class UniqueDeviceIdentifier(id: UUID, prefix: Option[String] = None)
+case class UniqueDeviceIdentifier(id: UUID, prefix: Option[String] = None) {
+  override def toString: String = prefix.getOrElse("") + id.toString
+}
 

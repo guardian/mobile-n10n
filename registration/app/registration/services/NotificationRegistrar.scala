@@ -15,6 +15,7 @@ object RegistrationResponse {
 }
 
 trait NotificationRegistrar {
-  type RegistrarResponse = Future[ProviderError Xor RegistrationResponse]
-  def register(oldDeviceId: String, registration: Registration): RegistrarResponse
+  type RegistrarResponse[T] = Future[ProviderError Xor T]
+  def register(oldDeviceId: String, registration: Registration): RegistrarResponse[RegistrationResponse]
+  def unregister(udid: UniqueDeviceIdentifier): RegistrarResponse[Unit]
 }

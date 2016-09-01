@@ -1,4 +1,5 @@
 PUT         /registrations/:lastKnownDeviceId    registration.controllers.Main.register(lastKnownDeviceId)
+DELETE      /registrations/:platform/:udid       registration.controllers.Main.unregister(platform: Platform, udid: UniqueDeviceIdentifier)
 GET         /healthcheck                         registration.controllers.Main.healthCheck
 
 # Legacy Android API registration endpoint
