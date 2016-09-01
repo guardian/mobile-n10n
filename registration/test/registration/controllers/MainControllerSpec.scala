@@ -17,8 +17,8 @@ import registration.services.{Configuration, NotificationRegistrar, RegistrarPro
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scalaz.\/
-import scalaz.syntax.either._
+import cats.data.Xor
+import cats.implicits._
 
 class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockito {
 
@@ -102,8 +102,8 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
 class RegistrarProviderMock extends RegistrarProvider {
 
-  override def registrarFor(registration: Registration): \/[NotificationsError, NotificationRegistrar] = new NotificationRegistrar {
-    override def register(deviceId: String, registration: Registration): Future[\/[ProviderError, RegistrationResponse]] = Future {
+  override def registrarFor(registration: Registration): Xor[NotificationsError, NotificationRegistrar] = new NotificationRegistrar {
+    override def register(deviceId: String, registration: Registration): Future[Xor[ProviderError, RegistrationResponse]] = Future {
       RegistrationResponse(
         deviceId = "deviceAA",
         platform = WindowsMobile,
@@ -112,4 +112,5 @@ class RegistrarProviderMock extends RegistrarProvider {
       ).right
     }
   }.right
+
 }

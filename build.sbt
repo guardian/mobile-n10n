@@ -24,14 +24,13 @@ lazy val common = project
   .settings(
     resolvers ++= Seq(
       "Guardian GitHub Releases" at "http://guardian.github.com/maven/repo-releases",
-      "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots",
-      "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
+      "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
     ),
     libraryDependencies ++= Seq(
       json,
       ws,
       "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
-      "org.scalaz" %% "scalaz-core" % "7.1.0",
+      "org.typelevel" %% "cats" % "0.7.0",
       "joda-time" % "joda-time" % "2.8.2",
       "com.amazonaws" % "aws-java-sdk" % "1.9.31",
       "com.gu" %% "configuration" % "4.1",

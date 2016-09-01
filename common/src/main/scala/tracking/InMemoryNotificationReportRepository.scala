@@ -1,14 +1,13 @@
 package tracking
 
 import java.util.UUID
-import models.{NotificationType, NotificationReport}
+import models.{NotificationReport, NotificationType}
 import org.joda.time.{DateTime, Interval}
 import tracking.Repository.RepositoryResult
 
 import scala.concurrent.Future
-import scalaz.\/
-import scalaz.std.option.optionSyntax._
-import scalaz.syntax.either._
+import cats.data.Xor
+import cats.implicits._
 
 class InMemoryNotificationReportRepository extends SentNotificationReportRepository {
 
@@ -20,13 +19,13 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
   }
 
   override def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
-    Future.successful(db.find(_.id == uuid) \/> RepositoryError("Notification report not found"))
+    Future.successful(Xor.fromOption(db.find(_.id == uuid), RepositoryError("Notification report not found")))
   }
 
   override def getByTypeWithDateRange(`type`: NotificationType, from: DateTime, until: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
     val interval = new Interval(from, until)
-    Future.successful(\/.right(db.filter({report =>
+    Future.successful(db.filter({report =>
       report.`type` == `type` && (interval contains report.sentTime)
-    }).toList))
+    }).toList.right)
   }
 }

@@ -13,9 +13,8 @@ import tracking.Repository._
 import tracking.{RepositoryResult, TopicSubscriptionsRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.syntax.either._
-import scalaz.syntax.std.option._
-import scalaz.{-\/, \/-}
+import cats.data.Xor
+import cats.implicits._
 
 
 abstract class NotificationsHubSender(
@@ -58,8 +57,8 @@ abstract class NotificationsHubSender(
     // Beware: topics must be converted to list so that identical value responses from repository are not treated as the same
     val eventuallySubscriberCounts = topics.toList.map(topicSubscriptionsRepository.count)
     Future.sequence(eventuallySubscriberCounts) map { results =>
-      val errors = results.collect { case -\/(error) => error }
-      val successes = results.collect { case \/-(success) => success }
+      val errors = results.collect { case Xor.Left(error) => error }
+      val successes = results.collect { case Xor.Right(success) => success }
       if (errors.nonEmpty) {
         errors.head.left
       } else {

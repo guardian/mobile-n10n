@@ -9,9 +9,8 @@ import registration.services.{NotificationRegistrar, RegistrationResponse}
 import tracking.{SubscriptionTracker, TopicSubscriptionTracking}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scalaz.std.option.optionSyntax._
-import scalaz.syntax.either._
-import scalaz.{-\/, \/, \/-}
+import cats.data.Xor
+import cats.implicits._
 
 class NotificationHubRegistrar(
   hubClient: NotificationHubClient,
@@ -23,18 +22,18 @@ class NotificationHubRegistrar(
 
   override def register(lastKnownChannelUri: String, registration: Registration): RegistrarResponse = {
     findRegistrations(lastKnownChannelUri, registration).flatMap {
-      case \/-(Nil) => createRegistration(registration)
-      case \/-(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
-      case \/-(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
-      case -\/(e: ProviderError) => Future.successful(e.left)
+      case Xor.Right(Nil) => createRegistration(registration)
+      case Xor.Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
+      case Xor.Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
+      case Xor.Left(e: ProviderError) => Future.successful(e.left)
     }
   }
 
-  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[ProviderError \/ List[azure.RegistrationResponse]] = {
+  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[ProviderError Xor List[azure.RegistrationResponse]] = {
     def extractResultFromResponse(
       userIdResults: HubResult[List[azure.RegistrationResponse]],
       deviceIdResults: HubResult[List[azure.RegistrationResponse]]
-    ): \/[ProviderError, List[azure.RegistrationResponse]] = {
+    ): Xor[ProviderError, List[azure.RegistrationResponse]] = {
       for {
         userIdRegistrations <- userIdResults
         deviceIdRegistrations <- deviceIdResults
@@ -69,12 +68,12 @@ class NotificationHubRegistrar(
 
   private def deleteAndCreate(registrationsToDelete: List[azure.RegistrationResponse], registrationToCreate: Registration): RegistrarResponse = {
     deleteRegistrations(registrationsToDelete).flatMap {
-      case \/-(_) => createRegistration(registrationToCreate)
-      case -\/(error) => Future.successful(error.left)
+      case Xor.Right(_) => createRegistration(registrationToCreate)
+      case Xor.Left(error) => Future.successful(error.left)
     }
   }
 
-  private def deleteRegistrations(registrations: List[azure.RegistrationResponse]): Future[ProviderError \/ Unit] = {
+  private def deleteRegistrations(registrations: List[azure.RegistrationResponse]): Future[ProviderError Xor Unit] = {
     Future.traverse(registrations) { registration =>
       logger.debug(s"deleting registration ${registration.registration}")
       hubClient
@@ -85,7 +84,7 @@ class NotificationHubRegistrar(
           )
         }
     } map { responses =>
-      val errors = responses.collect { case -\/(error) => error }
+      val errors = responses.collect { case Xor.Left(error) => error }
       if (errors.isEmpty) ().right else errors.head.left
     }
   }
@@ -99,7 +98,7 @@ class NotificationHubRegistrar(
         case APNSRegistrationResponse(_, _, deviceToken, _) => (iOS, deviceToken)
       }
       for {
-        userId <- tags.findUserId \/> UserIdNotInTags()
+        userId <- Xor.fromOption(tags.findUserId, UserIdNotInTags())
       } yield RegistrationResponse(
         deviceId = deviceId,
         platform = platform,

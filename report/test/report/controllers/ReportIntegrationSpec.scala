@@ -19,7 +19,7 @@ import play.api.test._
 import report.AppComponents
 import report.services.Configuration
 import tracking.InMemoryNotificationReportRepository
-import scalaz.syntax.std.option._
+import cats.implicits._
 
 class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification with Mockito {
 

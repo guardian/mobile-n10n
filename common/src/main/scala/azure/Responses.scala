@@ -6,9 +6,8 @@ import org.joda.time.DateTime
 import play.api.libs.ws.WSResponse
 import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
-import scalaz.{-\/, \/-, \/}
-import scalaz.syntax.either._
-import scalaz.std.option.optionSyntax._
+import cats.data.Xor
+import cats.implicits._
 import utils.WSImplicits._
 
 trait XmlReads[T] {
@@ -18,9 +17,9 @@ trait XmlReads[T] {
 object XmlParser {
   private def getXml(response: WSResponse): HubResult[Elem] = {
     if (response.isSuccess)
-      Try(response.xml).toOption \/> HubParseFailed.invalidXml(response.body)
+      Xor.fromOption(Try(response.xml).toOption, HubParseFailed.invalidXml(response.body))
     else
-      parseError(response).left
+      Xor.left(parseError(response))
   }
 
   def parseError(response: WSResponse): HubFailure = {
@@ -42,14 +41,17 @@ object Responses {
     def textNodes(s: String): Seq[String] = (xml \ s).map(_.text)
 
     def textNode(s: String): HubResult[String] =
-      textNodes(s).headOption \/> HubParseFailed(body = xml.toString(), reason = s"Missing field $s")
+      Xor.fromOption(textNodes(s).headOption, HubParseFailed(body = xml.toString(), reason = s"Missing field $s"))
 
     def textNodeOption(s: String): HubResult[Option[String]] =
       textNodes(s).headOption.right
 
     def dateTimeNode(s: String): HubResult[DateTime] = {
       textNode(s).flatMap { dateTime =>
-        Try(DateTime.parse(dateTime)).toOption \/> HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTime' in field $s as datetime")
+        Xor.fromOption(
+          Try(DateTime.parse(dateTime)).toOption,
+          HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTime' in field $s as datetime")
+        )
       }
     }
 
@@ -57,7 +59,9 @@ object Responses {
       textNodeOption(s) flatMap {
         case Some(dateTimeValue) => Try(DateTime.parse(dateTimeValue)) match {
           case Success(dateTime) => Some(dateTime).right
-          case Failure(_) => HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTimeValue' in field $s as datetime").left
+          case Failure(_) => Xor.left(
+            HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTimeValue' in field $s as datetime")
+          )
         }
         case None => None.right
       }
@@ -65,7 +69,7 @@ object Responses {
 
     def doubleNode(s: String): HubResult[Double] = {
       textNode(s).flatMap { double =>
-        Try(double.toDouble).toOption \/> HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$double' in field $s as a double")
+        Xor.fromOption(Try(double.toDouble).toOption, HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$double' in field $s as a double"))
       }
     }
 

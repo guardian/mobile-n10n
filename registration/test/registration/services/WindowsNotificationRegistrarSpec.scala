@@ -11,12 +11,13 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import azure.{WindowsNotificationRegistrar}
+import azure.WindowsNotificationRegistrar
 import tracking.{SubscriptionTracker, TopicSubscriptionsRepository}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scalaz.syntax.either._
+import cats.data.Xor
+import cats.implicits._
 
 class WindowsNotificationRegistrarSpec(implicit ev: ExecutionEnv) extends Specification
 with Mockito {

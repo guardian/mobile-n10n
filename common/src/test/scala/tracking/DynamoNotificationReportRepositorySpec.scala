@@ -18,7 +18,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-import scalaz.syntax.std.option._
+import cats.implicits._
 
 class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends DynamodbSpecification with Mockito {
 

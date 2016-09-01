@@ -7,11 +7,11 @@ import registration.services.Configuration
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scalaz.\/
-import scalaz.syntax.either._
+import cats.data.Xor
+import cats.implicits._
 
 trait TopicValidator {
-  def removeInvalid(topics: Set[Topic]): Future[TopicValidatorError \/ Set[Topic]]
+  def removeInvalid(topics: Set[Topic]): Future[TopicValidatorError Xor Set[Topic]]
 }
 
 trait TopicValidatorError {
@@ -23,7 +23,7 @@ trait TopicValidatorError {
 final class AuditorTopicValidator(auditorClient: AuditorWSClient, configuration: Configuration)
   extends TopicValidator {
 
-  override def removeInvalid(topics: Set[Topic]): Future[TopicValidatorError \/ Set[Topic]] =
+  override def removeInvalid(topics: Set[Topic]): Future[TopicValidatorError Xor Set[Topic]] =
     mkAuditorGroup(configuration.auditorConfiguration)
       .queryEach { auditorClient.expiredTopics(_, topics) }
       .map { expired => (topics -- expired.flatten).right }

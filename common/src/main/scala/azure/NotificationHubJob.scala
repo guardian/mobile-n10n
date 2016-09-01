@@ -6,8 +6,8 @@ import NotificationHubJobType._
 import Responses.RichXmlElem
 import play.api.Logger
 
-import scala.xml.{NodeSeq, Elem}
-import scalaz.\/
+import scala.xml.{Elem, NodeSeq}
+import cats.data.Xor
 
 case class NotificationHubJobRequest(
   jobType: NotificationHubJobType,
@@ -48,7 +48,7 @@ object NotificationHubJob {
   val logger = Logger(classOf[NotificationHubJob])
 
   private def parseProperties(seq: NodeSeq): HubResult[Map[String, String]] = {
-    \/.right(seq.map { elem =>
+    Xor.right(seq.map { elem =>
       (elem \ "Key" text) -> (elem \ "Value" text)
     }.toMap)
   }

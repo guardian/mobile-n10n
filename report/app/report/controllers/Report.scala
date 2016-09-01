@@ -4,12 +4,12 @@ import authentication.AuthenticationSupport
 import models.NotificationType
 import org.joda.time.DateTime
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Controller, AnyContent}
+import play.api.mvc.{Action, AnyContent, Controller}
 import report.services.Configuration
 import tracking.SentNotificationReportRepository
 
 import scala.concurrent.ExecutionContext
-import scalaz.{-\/, \/-}
+import cats.data.Xor
 
 final class Report(
   configuration: Configuration,
@@ -31,8 +31,8 @@ final class Report(
         from = from.getOrElse(DateTime.now.minusWeeks(1)),
         to = until.getOrElse(DateTime.now)
       ) map {
-        case \/-(result) => Ok(Json.toJson(result))
-        case -\/(error) => InternalServerError(error.message)
+        case Xor.Right(result) => Ok(Json.toJson(result))
+        case Xor.Left(error) => InternalServerError(error.message)
       }
     }
   }

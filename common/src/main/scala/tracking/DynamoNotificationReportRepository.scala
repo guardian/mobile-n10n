@@ -5,8 +5,8 @@ import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.JavaConversions._
 
-import scalaz.\/
-import scalaz.std.option.optionSyntax._
+import cats.data.Xor
+import cats.implicits._
 
 import org.joda.time.DateTime
 
@@ -16,7 +16,7 @@ import aws.AsyncDynamo
 import aws.AsyncDynamo._
 import aws.DynamoJsonConversions._
 
-import models.{NotificationType, NotificationReport}
+import models.{NotificationReport, NotificationType}
 import tracking.Repository.RepositoryResult
 
 
@@ -31,7 +31,7 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
 
   override def store(report: NotificationReport): Future[RepositoryResult[Unit]] = {
     val putItemRequest = new PutItemRequest(tableName, toAttributeMap(report))
-    client.putItem(putItemRequest) map { _ => \/.right(()) }
+    client.putItem(putItemRequest) map { _ => ().right }
   }
 
   override def getByTypeWithDateRange(notificationType: NotificationType, from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
@@ -43,9 +43,9 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
       ))
 
     client.query(q) map { result =>
-      \/.right(result.getItems.toList.flatMap { item =>
+      (result.getItems.toList.flatMap { item =>
         fromAttributeMap[NotificationReport](item.toMap).asOpt
-      })
+      }).right
     }
   }
 
@@ -56,8 +56,8 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
 
     client.query(q) map { result =>
       for {
-        item <- result.getItems.headOption \/> RepositoryError("UUID not found")
-        parsed <- fromAttributeMap[NotificationReport](item.toMap).asOpt \/> RepositoryError("Unable to parse report")
+        item <- Xor.fromOption(result.getItems.headOption, RepositoryError("UUID not found"))
+        parsed <- Xor.fromOption(fromAttributeMap[NotificationReport](item.toMap).asOpt, RepositoryError("Unable to parse report"))
       } yield parsed
     }
   }
