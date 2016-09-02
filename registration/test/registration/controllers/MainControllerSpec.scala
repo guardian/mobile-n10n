@@ -3,7 +3,7 @@ package registration.controllers
 import application.WithPlayApp
 import error.NotificationsError
 import models.TopicTypes.{Breaking, FootballMatch}
-import models.{Registration, Topic, WindowsMobile}
+import models._
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import play.api.ApplicationLoader.Context
@@ -19,6 +19,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import cats.data.Xor
 import cats.implicits._
+import registration.services.azure.UdidNotFound
 
 class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockito {
 
@@ -35,6 +36,20 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       status(result) must equalTo(OK)
       contentAsString(result) must /("topics") /# 0 /("type" -> "football-match")
                                                     /("name" -> "science")
+    }
+
+    "return 204 and empty response for unregistration of udid" in new registrations {
+      val Some(result) = route(FakeRequest(DELETE, "/registrations/ios/gia:00000000-0000-0000-0000-000000000000"))
+      there was one(registrarProviderMock).registrarFor(iOS)
+      there was one(registrarProviderMock).registrarFor(any[Platform])
+      status(result) must equalTo(NO_CONTENT)
+      contentAsString(result) must beEmpty
+    }
+
+    "return 404 for unregistration of udid that is not found" in new registrations {
+      val Some(result) = route(FakeRequest(DELETE, "/registrations/ios/gia:F0000000-0000-0000-0000-000000000000"))
+
+      status(result) must equalTo(NOT_FOUND)
     }
 
     "register with topics in registration when validation fails" in new registrations {
@@ -90,10 +105,39 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       override def topicsQueried: Set[Topic] = topics
     }
 
+    val notificationRegistrar = new NotificationRegistrar {
+      override def register(deviceId: String, registration: Registration): Future[Xor[ProviderError, RegistrationResponse]] = Future {
+        RegistrationResponse(
+          deviceId = "deviceAA",
+          platform = WindowsMobile,
+          userId = registration.udid,
+          topics = registration.topics
+        ).right
+      }
+
+      override def unregister(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Unit] = Future {
+        if (existingDeviceIds.contains(udid)) {
+          ().right
+        } else {
+          UdidNotFound.left
+        }
+      }
+
+      val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
+
+    }
+
+    val registrarProviderMock = {
+      val provider = mock[RegistrarProvider]
+      provider.registrarFor(any[Platform]) returns notificationRegistrar.right
+      provider.registrarFor(any[Registration]) returns notificationRegistrar.right
+      provider
+    }
+
     override def configureComponents(context: Context): BuiltInComponents = {
       new BuiltInComponentsFromContext(context) with AppComponents {
         override lazy val topicValidator = topicValidatorMock
-        override lazy val registrarProvider: RegistrarProvider = new RegistrarProviderMock
+        override lazy val registrarProvider: RegistrarProvider = registrarProviderMock
         override lazy val appConfig = mock[Configuration]
       }
     }
@@ -102,7 +146,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
 class RegistrarProviderMock extends RegistrarProvider {
 
-  override def registrarFor(registration: Registration): Xor[NotificationsError, NotificationRegistrar] = new NotificationRegistrar {
+  override def registrarFor(platform: Platform): Xor[NotificationsError, NotificationRegistrar] = new NotificationRegistrar {
     override def register(deviceId: String, registration: Registration): Future[Xor[ProviderError, RegistrationResponse]] = Future {
       RegistrationResponse(
         deviceId = "deviceAA",
@@ -111,6 +155,16 @@ class RegistrarProviderMock extends RegistrarProvider {
         topics = registration.topics
       ).right
     }
-  }.right
 
+    override def unregister(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Unit] = Future {
+      if (existingDeviceIds.contains(udid)) {
+        ().right
+      } else {
+        UdidNotFound.left
+      }
+    }
+
+    val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
+
+  }.right
 }

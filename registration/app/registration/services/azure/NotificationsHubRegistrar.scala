@@ -9,7 +9,7 @@ import registration.services.{NotificationRegistrar, RegistrationResponse}
 import tracking.{SubscriptionTracker, TopicSubscriptionTracking}
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.Xor
+import cats.data.{Xor, XorT}
 import cats.implicits._
 
 class NotificationHubRegistrar(
@@ -20,13 +20,22 @@ class NotificationHubRegistrar(
 
   val logger = Logger(classOf[WindowsNotificationRegistrar])
 
-  override def register(lastKnownChannelUri: String, registration: Registration): RegistrarResponse = {
+  override def register(lastKnownChannelUri: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
     findRegistrations(lastKnownChannelUri, registration).flatMap {
       case Xor.Right(Nil) => createRegistration(registration)
       case Xor.Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
       case Xor.Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
       case Xor.Left(e: ProviderError) => Future.successful(e.left)
     }
+  }
+
+  override def unregister(udid: UniqueDeviceIdentifier): RegistrarResponse[Unit] = {
+    val result = for {
+      registrationResponses <- XorT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
+      _ <- XorT(deleteRegistrations(registrationResponses))
+    } yield ()
+
+    result.value
   }
 
   private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[ProviderError Xor List[azure.RegistrationResponse]] = {
@@ -46,14 +55,14 @@ class NotificationHubRegistrar(
     } yield extractResultFromResponse(userIdResults, deviceIdResults)
   }
 
-  private def createRegistration(registration: Registration): RegistrarResponse = {
+  private def createRegistration(registration: Registration): RegistrarResponse[RegistrationResponse] = {
     logger.debug(s"creating registration $registration")
     hubClient.create(registrationExtractor(registration))
       .andThen { subscriptionTracker.recordSubscriptionChange(TopicSubscriptionTracking(addedTopics = registration.topics)) }
       .map { hubResultToRegistrationResponse(registration.topics) }
   }
 
-  private def updateRegistration(azureRegistration: azure.RegistrationResponse, registration: Registration): RegistrarResponse = {
+  private def updateRegistration(azureRegistration: azure.RegistrationResponse, registration: Registration): RegistrarResponse[RegistrationResponse] = {
     logger.debug(s"updating registration ${azureRegistration.registration} with $registration")
     hubClient.update(azureRegistration.registration, registrationExtractor(registration))
       .andThen {
@@ -66,7 +75,7 @@ class NotificationHubRegistrar(
       .map { hubResultToRegistrationResponse(registration.topics) }
   }
 
-  private def deleteAndCreate(registrationsToDelete: List[azure.RegistrationResponse], registrationToCreate: Registration): RegistrarResponse = {
+  private def deleteAndCreate(registrationsToDelete: List[azure.RegistrationResponse], registrationToCreate: Registration): RegistrarResponse[RegistrationResponse] = {
     deleteRegistrations(registrationsToDelete).flatMap {
       case Xor.Right(_) => createRegistration(registrationToCreate)
       case Xor.Left(error) => Future.successful(error.left)
@@ -89,24 +98,26 @@ class NotificationHubRegistrar(
     }
   }
 
-  private def hubResultToRegistrationResponse(topicsRegisteredFor: Set[Topic])(hubResult: HubResult[azure.RegistrationResponse]) = {
-    def toRegistrarResponse(registration: azure.RegistrationResponse) = {
-      val tags = tagsIn(registration)
-      val (platform, deviceId) = registration match {
-        case WNSRegistrationResponse(_, _, channelUri, _) => (WindowsMobile, channelUri)
-        case GCMRegistrationResponse(_, _, gcmRegistrationId, _) => (Android, gcmRegistrationId)
-        case APNSRegistrationResponse(_, _, deviceToken, _) => (iOS, deviceToken)
-      }
-      for {
-        userId <- Xor.fromOption(tags.findUserId, UserIdNotInTags())
-      } yield RegistrationResponse(
-        deviceId = deviceId,
-        platform = platform,
-        userId = userId,
-        topics = topicsRegisteredFor
-      )
+
+  private def toRegistrarResponse(topicsRegisteredFor: Set[Topic])(registration: azure.RegistrationResponse): Xor[ProviderError, RegistrationResponse] = {
+    val tags = tagsIn(registration)
+    val (platform, deviceId) = registration match {
+      case WNSRegistrationResponse(_, _, channelUri, _) => (WindowsMobile, channelUri)
+      case GCMRegistrationResponse(_, _, gcmRegistrationId, _) => (Android, gcmRegistrationId)
+      case APNSRegistrationResponse(_, _, deviceToken, _) => (iOS, deviceToken)
     }
-    hubResult.flatMap(toRegistrarResponse)
+    for {
+      userId <- Xor.fromOption(tags.findUserId, UserIdNotInTags)
+    } yield RegistrationResponse(
+      deviceId = deviceId,
+      platform = platform,
+      userId = userId,
+      topics = topicsRegisteredFor
+    )
+  }
+
+  private def hubResultToRegistrationResponse(topicsRegisteredFor: Set[Topic])(hubResult: HubResult[azure.RegistrationResponse]) = {
+    hubResult.flatMap(toRegistrarResponse(topicsRegisteredFor))
   }
 
 
@@ -118,6 +129,10 @@ sealed trait WindowsNotificationProviderError extends ProviderError {
   override def providerName: String = "WNS"
 }
 
-case class UserIdNotInTags() extends WindowsNotificationProviderError {
+case object UserIdNotInTags extends WindowsNotificationProviderError {
   override def reason: String = "Could not find userId in response from Hub"
+}
+
+case object UdidNotFound extends WindowsNotificationProviderError {
+  override def reason: String = "Udid not found"
 }

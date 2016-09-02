@@ -1,12 +1,12 @@
 import java.util.UUID
 
 import azure.NotificationHubRegistrationId
-import models.{NotificationType, Topic}
+import models.{NotificationType, Platform, Topic, UniqueDeviceIdentifier}
 import org.joda.time.DateTime
 import play.api.mvc.{PathBindable, QueryStringBindable}
 
 import scala.language.implicitConversions
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 package object binders {
 
@@ -42,6 +42,24 @@ package object binders {
           value = value
         ).right.flatMap(v => Topic.fromString(v).toEither)
       }
+    }
+
+  implicit def bindUdid(implicit strBindable: PathBindable[String]): PathBindable[UniqueDeviceIdentifier] =
+    new PathBindable[UniqueDeviceIdentifier] {
+      override def unbind(key: String, value: UniqueDeviceIdentifier): String =
+        strBindable.unbind(key = key, value = value.toString)
+
+      override def bind(key: String, value: String): Either[String, UniqueDeviceIdentifier] =
+        strBindable.bind(key, value).right.flatMap(v => UniqueDeviceIdentifier.fromString(v).toRight("Invalid udid"))
+    }
+
+  implicit def bindPlatform(implicit strBindable: PathBindable[String]): PathBindable[Platform] =
+    new PathBindable[Platform] {
+      override def unbind(key: String, value: Platform): String =
+        strBindable.unbind(key = key, value = value.toString)
+
+      override def bind(key: String, value: String): Either[String, Platform] =
+        strBindable.bind(key, value).right.flatMap(v => Platform.fromString(v).toRight("Invalid platform"))
     }
 
   implicit def bindDateTime(implicit strBinder: QueryStringBindable[String]): QueryStringBindable[DateTime] =

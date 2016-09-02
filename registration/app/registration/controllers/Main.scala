@@ -3,6 +3,8 @@ package registration.controllers
 import java.util.UUID
 
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
+import cats.data.{Xor, XorT}
+import cats.implicits._
 import error.{NotificationsError, RequestError}
 import models._
 import play.api.Logger
@@ -10,6 +12,7 @@ import play.api.libs.json.Json
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, AnyContent, Controller, Result}
 import registration.models.LegacyRegistration
+import registration.services.azure.UdidNotFound
 import registration.services.{UnsupportedPlatform, _}
 import registration.services.topic.TopicValidator
 
@@ -33,6 +36,21 @@ final class Main(
 
   def register(lastKnownDeviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
     registerCommon(lastKnownDeviceId, request.body).map(processResponse)
+  }
+
+  def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
+
+    def registrarFor(platform: Platform) = XorT.fromXor[Future](
+      registrarProvider.registrarFor(platform)
+    )
+
+    def unregisterFrom(registrar: NotificationRegistrar) = XorT(
+      registrar.unregister(udid): Future[Xor[NotificationsError, Unit]]
+    )
+
+    registrarFor(platform)
+      .flatMap(unregisterFrom)
+      .fold(processErrors, _ => NoContent)
   }
 
   def legacyRegister: Action[LegacyRegistration] = Action.async(BodyJson[LegacyRegistration]) { request =>
@@ -82,26 +100,27 @@ final class Main(
     }
   }
 
-  private def processResponse(result: NotificationsError Xor RegistrationResponse): Result = {
-    result match {
-      case Xor.Right(res) =>
-        Ok(Json.toJson(res))
-      case Xor.Left(HubServiceError(reason, code)) =>
-        logger.error(s"Service error code $code: $reason")
-        Status(code.toInt)(s"Upstream service failed with code $code.")
-      case Xor.Left(HubParseFailed(body, reason)) =>
-        logger.error(s"Failed to parse body due to: $reason; body = $body")
-        InternalServerError(reason)
-      case Xor.Left(HubInvalidConnectionString(reason)) =>
-        logger.error(s"Failed due to invalid connection string: $reason")
-        InternalServerError(reason)
-      case Xor.Left(requestError: RequestError) =>
-        logger.warn(s"Bad request: ${requestError.reason}")
-        BadRequest(requestError.reason)
-      case Xor.Left(other) =>
-        logger.error(s"Unknown error: ${other.reason}")
-        InternalServerError(other.reason)
-    }
+  private def processResponse(result: NotificationsError Xor RegistrationResponse): Result =
+    result.fold(processErrors, res => Ok(Json.toJson(res)))
+
+  private def processErrors(error: NotificationsError): Result = error match {
+    case UdidNotFound =>
+      NotFound("Udid not found")
+    case HubServiceError(reason, code) =>
+      logger.error(s"Service error code $code: $reason")
+      Status(code.toInt)(s"Upstream service failed with code $code.")
+    case HubParseFailed(body, reason) =>
+      logger.error(s"Failed to parse body due to: $reason; body = $body")
+      InternalServerError(reason)
+    case HubInvalidConnectionString(reason) =>
+      logger.error(s"Failed due to invalid connection string: $reason")
+      InternalServerError(reason)
+    case requestError: RequestError =>
+      logger.warn(s"Bad request: ${requestError.reason}")
+      BadRequest(requestError.reason)
+    case other =>
+      logger.error(s"Unknown error: ${other.reason}")
+      InternalServerError(other.reason)
   }
 
 }

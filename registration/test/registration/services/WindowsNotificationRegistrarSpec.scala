@@ -71,6 +71,18 @@ with Mockito {
       there was no(hubClient).delete(any[NotificationHubRegistrationId])
     }
 
+    "delete a registration" in new registrations {
+      val userRegistrations = (0 to 2).map(generateHubResponse).toList
+      hubClient.registrationsByTag(userIdTag) returns Future.successful(userRegistrations.right)
+      hubClient.delete(any[NotificationHubRegistrationId]) returns Future.successful(().right)
+
+      val response = provider.unregister(registration.udid)
+
+      response must beEqualTo(().right).await
+      there was no(hubClient).create(any[RawWindowsRegistration])
+      there was three(hubClient).delete(any[NotificationHubRegistrationId])
+    }
+
     "delete all and replace by only one registration if more than one registration for the same userId" in new registrations {
       val userRegistrations = (0 to 2).map(generateHubResponse).toList
       hubClient.registrationsByTag(userIdTag) returns Future.successful(userRegistrations.right)
