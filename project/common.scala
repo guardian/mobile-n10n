@@ -7,7 +7,7 @@ object CommonSettingsPlugin extends AutoPlugin {
 
   override def projectSettings = Seq(
     organization := "com.gu",
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.8",
     scalacOptions ++= Seq("-deprecation", "-feature", "-language:postfixOps"),
     version := "1.0",
     libraryDependencies ++= Seq(
