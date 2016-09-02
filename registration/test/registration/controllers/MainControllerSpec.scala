@@ -26,13 +26,13 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
   "Registrations controller" should {
     "responds to healtcheck" in new registrations {
-      val eventualResult = route(FakeRequest(GET, "/healthcheck")).get
+      val eventualResult = route(app, FakeRequest(GET, "/healthcheck")).get
 
       status(eventualResult) must equalTo(OK)
     }
 
     "accepts registration and calls registrar factory" in new registrations {
-      val Some(result) = route(FakeRequest(PUT, "/registrations/someId").withJsonBody(Json.parse(registrationJson)))
+      val Some(result) = route(app, FakeRequest(PUT, "/registrations/someId").withJsonBody(Json.parse(registrationJson)))
 
       status(result) must equalTo(OK)
       contentAsString(result) must /("topics") /# 0 /("type" -> "football-match")
@@ -40,21 +40,21 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     }
 
     "accepts legacy ios registration and unregisters from pushy using uppercase uuid" in new registrations {
-      val Some(result) = route(FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationJson)))
+      val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationJson)))
 
       status(result) must equalTo(OK)
       there was one(legacyRegistrationClientWSMock).url("https://localhost/device/registrations/gia:0E980097-59FD-4047-B609-366C6D5BB1B3")
     }
 
     "accepts legacy android registration and unregisters from pushy" in new registrations {
-      val Some(result) = route(FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyAndroidRegistrationJson)))
+      val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyAndroidRegistrationJson)))
 
       status(result) must equalTo(OK)
       there was one(legacyRegistrationClientWSMock).url("https://localhost/device/registrations/0e980097-59fd-4047-b609-366c6d5bb1b3")
     }
 
     "return 204 and empty response for unregistration of udid" in new registrations {
-      val Some(result) = route(FakeRequest(DELETE, "/registrations/ios/gia:00000000-0000-0000-0000-000000000000"))
+      val Some(result) = route(app, FakeRequest(DELETE, "/registrations/ios/gia:00000000-0000-0000-0000-000000000000"))
       status(result) must equalTo(NO_CONTENT)
       contentAsString(result) must beEmpty
       there was one(registrarProviderMock).registrarFor(iOS)
@@ -62,7 +62,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     }
 
     "return 404 for unregistration of udid that is not found" in new registrations {
-      val Some(result) = route(FakeRequest(DELETE, "/registrations/ios/gia:F0000000-0000-0000-0000-000000000000"))
+      val Some(result) = route(app, FakeRequest(DELETE, "/registrations/ios/gia:F0000000-0000-0000-0000-000000000000"))
 
       status(result) must equalTo(NOT_FOUND)
     }
@@ -70,7 +70,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     "register with topics in registration when validation fails" in new registrations {
       topicValidatorMock.removeInvalid(topics) returns Future.successful(validatorError.left)
 
-      val Some(result) = route(FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
+      val Some(result) = route(app, FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
 
       status(result) must equalTo(OK)
       contentAsString(result) must /("topics") /# 0 /("type" -> "football-match")
@@ -80,7 +80,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     "register only with valid topics" in new registrations {
       topicValidatorMock.removeInvalid(topics) returns Future.successful((topics - footballMatchTopic).right)
 
-      val Some(result) = route(FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
+      val Some(result) = route(app, FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
 
       status(result) must equalTo(OK)
       contentAsString(result) must /("topics") /# 0 /("type" -> "breaking")
