@@ -13,12 +13,13 @@ import play.api.test.{FakeRequest, PlaySpecification}
 import providers.ProviderError
 import registration.AppComponents
 import registration.services.topic.{TopicValidator, TopicValidatorError}
-import registration.services.{Configuration, NotificationRegistrar, RegistrarProvider, RegistrationResponse}
+import registration.services._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import cats.data.Xor
 import cats.implicits._
+import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import registration.services.azure.UdidNotFound
 
 class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockito {
@@ -38,12 +39,26 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
                                                     /("name" -> "science")
     }
 
+    "accepts legacy ios registration and unregisters from pushy using uppercase uuid" in new registrations {
+      val Some(result) = route(FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationJson)))
+
+      status(result) must equalTo(OK)
+      there was one(legacyRegistrationClientWSMock).url("https://localhost/device/registrations/gia:0E980097-59FD-4047-B609-366C6D5BB1B3")
+    }
+
+    "accepts legacy android registration and unregisters from pushy" in new registrations {
+      val Some(result) = route(FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyAndroidRegistrationJson)))
+
+      status(result) must equalTo(OK)
+      there was one(legacyRegistrationClientWSMock).url("https://localhost/device/registrations/0e980097-59fd-4047-b609-366c6d5bb1b3")
+    }
+
     "return 204 and empty response for unregistration of udid" in new registrations {
       val Some(result) = route(FakeRequest(DELETE, "/registrations/ios/gia:00000000-0000-0000-0000-000000000000"))
-      there was one(registrarProviderMock).registrarFor(iOS)
-      there was one(registrarProviderMock).registrarFor(any[Platform])
       status(result) must equalTo(NO_CONTENT)
       contentAsString(result) must beEmpty
+      there was one(registrarProviderMock).registrarFor(iOS)
+      there was one(registrarProviderMock).registrarFor(any[Platform])
     }
 
     "return 404 for unregistration of udid that is not found" in new registrations {
@@ -74,6 +89,46 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
   }
 
   trait registrations extends WithPlayApp {
+    val legacyIosRegistrationJson =
+      """
+        |{
+        |	"device": {
+        |		"pushToken": "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4",
+        |		"buildTier": "debug",
+        |		"udid": "gia:0E980097-59FD-4047-B609-366C6D5BB1B3",
+        |		"platform": "ios"
+        |	},
+        |	"preferences": {
+        |		"edition": "UK",
+        |		"topics": [{
+        |			"type": "user-type",
+        |			"name": "GuardianInternalBeta"
+        |		}],
+        |		"receiveNewsAlerts": true
+        |	}
+        |}
+      """.stripMargin
+
+    val legacyAndroidRegistrationJson =
+      """
+        |{
+        |	"device": {
+        |		"pushToken": "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4",
+        |		"buildTier": "debug",
+        |		"udid": "0e980097-59fd-4047-b609-366c6d5bb1b3",
+        |		"platform": "android"
+        |	},
+        |	"preferences": {
+        |		"edition": "UK",
+        |		"topics": [{
+        |			"type": "user-type",
+        |			"name": "GuardianInternalBeta"
+        |		}],
+        |		"receiveNewsAlerts": true
+        |	}
+        |}
+      """.stripMargin
+
     val registrationJson =
       """
         |{
@@ -94,9 +149,14 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       Topic(`type` = Breaking, name = "uk")
     )
 
+    val legacyTopics = Set(
+      Topic(`type` = Breaking, name = "uk")
+    )
+
     val topicValidatorMock = {
       val validator = mock[TopicValidator]
       validator.removeInvalid(topics) returns Future.successful(topics.right)
+      validator.removeInvalid(legacyTopics) returns Future.successful(legacyTopics.right)
       validator
     }
 
@@ -134,11 +194,27 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       provider
     }
 
+    val legacyRegistrationClientWSMock = mock[WSClient]
+
+    val legacyRegistrationClientMock = {
+      val conf = mock[Configuration]
+      conf.legacyNotficationsEndpoint returns "https://localhost"
+      val deleteRequest = {
+        val request = mock[WSRequest]
+        val response = mock[WSResponse]
+        response.status returns 200
+        request.delete() returns Future.successful(response)
+      }
+      legacyRegistrationClientWSMock.url(any[String]) returns deleteRequest
+      new LegacyRegistrationClient(legacyRegistrationClientWSMock, conf)
+    }
+
     override def configureComponents(context: Context): BuiltInComponents = {
       new BuiltInComponentsFromContext(context) with AppComponents {
         override lazy val topicValidator = topicValidatorMock
         override lazy val registrarProvider: RegistrarProvider = registrarProviderMock
         override lazy val appConfig = mock[Configuration]
+        override lazy val legacyRegistrationClient = legacyRegistrationClientMock
       }
     }
   }
