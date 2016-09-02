@@ -46,5 +46,19 @@ class TagSpec extends Specification {
 
       tag.encodedTag must endWith(uuid.toString)
     }
+
+    "encoded tag should not be influenced by 'gia:' prefix" in {
+      val uuid = UUID.randomUUID
+      val userId = UniqueDeviceIdentifier(uuid)
+      val userIdWithPrefix = UniqueDeviceIdentifier(uuid, Some("gia:"))
+      Tag.fromUserId(userId) must beEqualTo(Tag.fromUserId(userIdWithPrefix))
+    }
+
+    "encoded tag should not be influenced by uuid case" in {
+      val uuid = UUID.randomUUID
+      val userIdUppercase = UniqueDeviceIdentifier(uuid, uppercaseUuid = true)
+      val userIdLowercase = UniqueDeviceIdentifier(uuid, uppercaseUuid = false)
+      Tag.fromUserId(userIdUppercase) must beEqualTo(Tag.fromUserId(userIdLowercase))
+    }
   }
 }

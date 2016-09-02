@@ -24,7 +24,7 @@ case class Tags(tags: Set[Tag] = Set.empty) {
 
   def findUserId: Option[UniqueDeviceIdentifier] = encodedTags
     .find(_.matches(UserTagRegex.regex))
-    .map { case UserTagRegex(UniqueDeviceIdentifier(uuid, prefix)) => UniqueDeviceIdentifier(uuid, prefix) }
+    .map { case UserTagRegex(UniqueDeviceIdentifier(uuid, prefix, uppercaseUuid)) => UniqueDeviceIdentifier(uuid, prefix, uppercaseUuid) }
 
   def topicIds: Set[String] = encodedTags
     .collect { case TopicTagRegex(topicId) => topicId }
