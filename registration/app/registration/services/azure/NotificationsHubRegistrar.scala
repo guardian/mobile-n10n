@@ -32,7 +32,7 @@ class NotificationHubRegistrar(
   override def unregister(udid: UniqueDeviceIdentifier): RegistrarResponse[Unit] = {
     val result = for {
       registrationResponses <- XorT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
-      _ <- XorT(deleteRegistrations(registrationResponses))
+      _ <- XorT(deleteRegistrations(registrationResponses)).ensure(UdidNotFound)(_ => registrationResponses.nonEmpty)
     } yield ()
 
     result.value
