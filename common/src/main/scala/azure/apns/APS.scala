@@ -9,7 +9,8 @@ case class APS(
   badge: Option[Int] = None,
   sound: Option[String] = None,
   `content-available`: Option[Int] = None,
-  category: Option[String] = None
+  category: Option[String] = None,
+  `mutable-content`: Option[Int] = None
 )
 object APS {
   implicit val jf = Json.format[APS]
