@@ -17,5 +17,7 @@ object IosUdid {
 
 class IosUdid(underlying: String, id: UUID) extends UniqueDeviceIdentifier(id) {
 
+  override def toString: String = s"IosUdid($underlying, $id)"
+  
   override def legacyFormat: String = underlying
 }

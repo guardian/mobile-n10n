@@ -33,6 +33,8 @@ object UniqueDeviceIdentifier {
 
 class UniqueDeviceIdentifier(val id: UUID) {
 
+  override def toString: String = s"UniqueDeviceIdentifier($id)"
+
   def legacyFormat: String = id.toString
 
   override def equals(that: Any): Boolean = that match {
