@@ -58,7 +58,7 @@ final class Main(
       case Xor.Right(registration) =>
         val registrationResult = registerCommon(registration.deviceId, registration)
         registrationResult onSuccess {
-          case Xor.Right(_) => unregisterFromLegacy(request.body)
+          case Xor.Right(_) => unregisterFromLegacy(registration)
         }
         registrationResult
       case Xor.Left(error) =>
@@ -67,11 +67,11 @@ final class Main(
     result.map(processResponse)
   }
 
-  private def unregisterFromLegacy(registration: LegacyRegistration) = legacyClient.unregister(registration).foreach {
+  private def unregisterFromLegacy(registration: Registration) = legacyClient.unregister(registration.udid).foreach {
     case Xor.Right(_) =>
-      logger.debug(s"Unregistered ${registration.device.udid} from legacy notifications")
+      logger.debug(s"Unregistered ${registration.udid} from legacy notifications")
     case Xor.Left(error) =>
-      logger.error(s"Failed to unregistered ${registration.device.udid} from legacy notifications: $error")
+      logger.error(s"Failed to unregistered ${registration.udid} from legacy notifications: $error")
   }
 
   private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[NotificationsError Xor RegistrationResponse] = {
