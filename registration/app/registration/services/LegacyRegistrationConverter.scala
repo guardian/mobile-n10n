@@ -1,14 +1,12 @@
 package registration.services
 
-import java.util.UUID
-
 import error.NotificationsError
-import models.{UniqueDeviceIdentifier, _}
+import models._
 import registration.models.LegacyRegistration
 import cats.data.Xor
 import cats.implicits._
 
-class LegacyRegistrationConverter {
+class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistration] {
 
   def toRegistration(legacyRegistration: LegacyRegistration): NotificationsError Xor Registration = {
     val unsupportedPlatform: NotificationsError Xor Registration =

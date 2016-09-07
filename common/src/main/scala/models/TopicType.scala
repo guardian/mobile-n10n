@@ -13,6 +13,7 @@ object TopicTypes {
   case object TagBlog extends TopicType { override def toString: String = "tag-blog" }
   case object FootballTeam extends TopicType { override def toString: String = "football-team" }
   case object FootballMatch extends TopicType { override def toString: String = "football-match" }
+  case object Newsstand extends TopicType { override def toString: String = "newsstand" }
 }
 
 object TopicType {
@@ -26,6 +27,7 @@ object TopicType {
     case "tag-blog" => TagBlog
     case "football-team" => FootballTeam
     case "football-match" => FootballMatch
+    case "newsstand" => Newsstand
   }
 
   implicit val jf = new Format[TopicType] {
