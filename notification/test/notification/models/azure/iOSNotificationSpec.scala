@@ -22,6 +22,10 @@ class iOSNotificationSpec extends Specification with Mockito {
       converter.toRawPush(push).body shouldEqual expected
     }
 
+    "use imageUrl if thumbnail is not available" in new BreakingNewsScopeNoThumbnail {
+      converter.toRawPush(push).body shouldEqual expected
+    }
+
     "serialize / deserialize to json without mutable flag if there is no image" in new BreakingNewsScopeNoImage {
       converter.toRawPush(push).body shouldEqual expected
     }
@@ -75,6 +79,42 @@ class iOSNotificationSpec extends Specification with Mockito {
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "breaking/uk,breaking/us,breaking/au,breaking/international",
         "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        "imageUrl" -> "https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg",
+        "uriType" -> "item"
+      )
+    )
+  }
+
+  trait BreakingNewsScopeNoThumbnail extends NotificationScope {
+    val notification = models.BreakingNewsNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      `type` = NotificationType.BreakingNews,
+      title  = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+      message = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+      thumbnailUrl = None,
+      sender = "matt.wells@guardian.co.uk",
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      imageUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg")),
+      importance = Major,
+      topic = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
+    )
+
+    val push = Push(notification, Left(Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))))
+
+    val expected = Body(
+      aps = APS(
+        alert = Some(Right("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State")),
+        category = Some("ITEM_CATEGORY"),
+        `content-available` = Some(1),
+        sound = Some("default"),
+        `mutable-content` = Some(1)
+      ),
+      customProperties = Map(
+        "t" -> "m",
+        "notificationType" -> "news",
+        "link" -> "x-gu:///p/4p7xt",
+        "topics" -> "breaking/uk,breaking/us,breaking/au,breaking/international",
+        "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         "imageUrl" -> "https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg",
         "uriType" -> "item"
       )
@@ -87,7 +127,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       `type` = NotificationType.BreakingNews,
       title  = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
       message = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
-      thumbnailUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg")),
+      thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       imageUrl = None,

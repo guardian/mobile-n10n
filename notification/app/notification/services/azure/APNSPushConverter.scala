@@ -35,7 +35,7 @@ class APNSPushConverter(conf: Configuration) {
       uri = new URI(link.uri),
       uriType = link.`type`,
       legacyLink = toIosLink(breakingNews.link).toString, //check this
-      imageUrl = breakingNews.imageUrl
+      imageUrl = breakingNews.thumbnailUrl orElse breakingNews.imageUrl
     )
   }
 
