@@ -24,7 +24,7 @@ object UniqueDeviceIdentifier {
       }
     }
 
-    override def writes(o: UniqueDeviceIdentifier): JsValue = JsString(o.toString)
+    override def writes(o: UniqueDeviceIdentifier): JsValue = JsString(o.legacyFormat)
   }
 
   def apply(id: UUID): UniqueDeviceIdentifier =
