@@ -10,4 +10,6 @@ trait TopicSubscriptionsRepository {
   def deviceUnsubscribed(topicId: String): Future[RepositoryResult[Unit]]
 
   def count(topic: Topic): Future[RepositoryResult[Int]]
+
+  def topicFromId(topicId: String): Future[RepositoryResult[Topic]]
 }

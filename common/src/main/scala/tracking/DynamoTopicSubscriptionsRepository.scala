@@ -12,6 +12,7 @@ import cats.data.Xor
 import cats.implicits._
 
 import scala.collection.JavaConversions._
+import spray.caching.{Cache, LruCache}
 
 class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
   (implicit ec: ExecutionContext) extends TopicSubscriptionsRepository {
@@ -22,6 +23,8 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
     val Topic = "topic"
     val SubscriberCount = "topicSubscriberCount"
   }
+
+  private val topicCache: Cache[Option[Topic]] = LruCache[Option[Topic]]()
 
   override def deviceSubscribed(topic: Topic): Future[RepositoryResult[Unit]] = {
     val subscriptionCountChange = +1
@@ -60,6 +63,23 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
 
       count.getOrElse(0).right
     }
+  }
+
+  override def topicFromId(topicId: String): Future[RepositoryResult[Topic]] = {
+    val q = new QueryRequest(tableName)
+      .withKeyConditions(Map(TopicFields.Id -> keyEquals(topicId)))
+      .withConsistentRead(true)
+
+    def generate() = client.query(q) map { result =>
+      for {
+        item <- result.getItems.headOption
+        topicField <- Option(item.get(TopicFields.Topic))
+        topicFieldValue <- Option(topicField.getS)
+        topic <- Topic.fromString(topicFieldValue).toOption
+      } yield topic
+    }
+    val error: RepositoryResult[Topic] = Xor.left(RepositoryError(s"Topic not found"))
+    topicCache.apply(topicId, generate).map(_.fold(error)(_.right))
   }
 
   private def updateItem(req: UpdateItemRequest) = {

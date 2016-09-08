@@ -34,6 +34,7 @@ lazy val common = project
       "joda-time" % "joda-time" % "2.8.2",
       "com.amazonaws" % "aws-java-sdk" % "1.9.31",
       "com.gu" %% "configuration" % "4.1",
+      "io.spray" %% "spray-caching" % "1.3.3",
       "com.typesafe.play" %% "play-logback" % "2.5.3"
     ),
     test in Test <<= (test in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),
