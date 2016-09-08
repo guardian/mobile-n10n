@@ -75,7 +75,9 @@ class NotificationHubRegistrar(
       .map { hubResultToRegistrationResponse(registration.topics) }
   }
 
-  private def deleteAndCreate(registrationsToDelete: List[azure.RegistrationResponse], registrationToCreate: Registration): RegistrarResponse[RegistrationResponse] = {
+  private def deleteAndCreate(
+    registrationsToDelete: List[azure.RegistrationResponse],
+    registrationToCreate: Registration): RegistrarResponse[RegistrationResponse] = {
     deleteRegistrations(registrationsToDelete).flatMap {
       case Xor.Right(_) => createRegistration(registrationToCreate)
       case Xor.Left(error) => Future.successful(error.left)
