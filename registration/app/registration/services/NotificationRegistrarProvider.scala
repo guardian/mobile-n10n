@@ -13,6 +13,8 @@ trait RegistrarProvider {
     registrarFor(registration.platform)
 
   def registrarFor(platform: Platform): Xor[NotificationsError, NotificationRegistrar]
+
+  def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T]
 }
 
 case class UnsupportedPlatform(platform: String) extends RequestError {
@@ -30,5 +32,11 @@ final class NotificationRegistrarProvider(
     case Android => gcmNotificationRegistrar.right
     case `iOS` => apnsNotificationRegistrar.right
     case _ => UnsupportedPlatform(platform.toString).left
+  }
+
+  def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T] = {
+    // This list should include all independent backends
+    // At the moment all of the registrars are backed by azure notifications hub, so there is just one item
+    List(fn(windowsNotificationRegistrar))
   }
 }

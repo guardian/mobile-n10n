@@ -243,4 +243,6 @@ class RegistrarProviderMock extends RegistrarProvider {
     val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
 
   }.right
+
+  override def withAllRegistrars[T](fn: (NotificationRegistrar) => T): List[T] = List(fn(registrarFor(WindowsMobile).toOption.get))
 }
