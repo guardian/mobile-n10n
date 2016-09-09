@@ -84,18 +84,26 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       }
   }
 
-  private def request(path: String) = {
-    val uri = s"$endpoint$path?api-version=2015-01"
+  private def request(path: String, queryParams: Map[String, String] = Map.empty) = {
+    val queryString = queryParams.updated("api-version", "2015-01").map({ case (k, v) => s"$k=$v"}).mkString("?", "&", "")
+    val uri = s"$endpoint$path$queryString"
     wsClient
       .url(uri)
       .withHeaders("Authorization" -> authorizationHeader(uri))
   }
 
-  def registrationsByTag(tag: String): Future[HubResult[List[RegistrationResponse]]] = {
-    request(s"/tags/$tag/registrations")
+  def registrationsByTag(tag: String, cursor: Option[String] = None): Future[HubResult[Registrations]] = {
+    val params = cursor.map(c => Map("ContinuationToken" -> c)).getOrElse(Map.empty)
+    request(s"/tags/$tag/registrations", params)
       .get()
-      .map { tryParse[AtomFeedResponse[RegistrationResponse]](Status.OK) }
-      .map { hubResult => hubResult.map(_.items) }
+      .map { response =>
+        tryParse[AtomFeedResponse[RegistrationResponse]](Status.OK)(response).map { parsed =>
+          Registrations(
+            registrations = parsed.items,
+            cursor = response.header("X-MS-ContinuationToken")
+          )
+        }
+      }
   }
 
   def submitNotificationHubJob(job: NotificationHubJobRequest): Future[HubResult[NotificationHubJob]] = {

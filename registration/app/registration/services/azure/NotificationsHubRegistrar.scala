@@ -32,7 +32,7 @@ class NotificationHubRegistrar(
   override def unregister(udid: UniqueDeviceIdentifier): RegistrarResponse[Unit] = {
     val result = for {
       registrationResponses <- XorT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
-      _ <- XorT(deleteRegistrations(registrationResponses)).ensure(UdidNotFound)(_ => registrationResponses.nonEmpty)
+      _ <- XorT(deleteRegistrations(registrationResponses.registrations)).ensure(UdidNotFound)(_ => registrationResponses.registrations.nonEmpty)
     } yield ()
 
     result.value
@@ -40,13 +40,13 @@ class NotificationHubRegistrar(
 
   private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[ProviderError Xor List[azure.RegistrationResponse]] = {
     def extractResultFromResponse(
-      userIdResults: HubResult[List[azure.RegistrationResponse]],
+      userIdResults: HubResult[Registrations],
       deviceIdResults: HubResult[List[azure.RegistrationResponse]]
     ): Xor[ProviderError, List[azure.RegistrationResponse]] = {
       for {
         userIdRegistrations <- userIdResults
         deviceIdRegistrations <- deviceIdResults
-      } yield (deviceIdRegistrations ++ userIdRegistrations).distinct
+      } yield (deviceIdRegistrations ++ userIdRegistrations.registrations).distinct
     }
 
     for {
