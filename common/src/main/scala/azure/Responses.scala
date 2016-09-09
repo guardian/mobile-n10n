@@ -8,6 +8,7 @@ import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
 import cats.data.Xor
 import cats.implicits._
+import models.{Android, Platform, WindowsMobile, iOS}
 import utils.WSImplicits._
 
 trait XmlReads[T] {
@@ -121,6 +122,8 @@ sealed trait RegistrationResponse {
   def registration: NotificationHubRegistrationId
   def expirationTime: DateTime
   def tagsAsSet: Set[String]
+  def platform: Platform
+  def deviceId: String
 }
 
 case class WNSRegistrationResponse(
@@ -129,6 +132,8 @@ case class WNSRegistrationResponse(
   channelUri: String,
   expirationTime: DateTime) extends RegistrationResponse {
   lazy val tagsAsSet = tags.toSet
+  override def platform: Platform = WindowsMobile
+  override def deviceId: String = channelUri
 }
 
 case class GCMRegistrationResponse(
@@ -137,6 +142,8 @@ case class GCMRegistrationResponse(
   gcmRegistrationId: String,
   expirationTime: DateTime) extends RegistrationResponse {
   lazy val tagsAsSet = tags.toSet
+  override def platform: Platform = Android
+  override def deviceId: String = gcmRegistrationId
 }
 
 case class APNSRegistrationResponse(
@@ -145,6 +152,8 @@ case class APNSRegistrationResponse(
   deviceToken: String,
   expirationTime: DateTime) extends RegistrationResponse {
   lazy val tagsAsSet = tags.toSet
+  override def platform: Platform = iOS
+  override def deviceId: String = deviceToken
 }
 
 

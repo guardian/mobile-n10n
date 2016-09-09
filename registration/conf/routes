@@ -2,6 +2,10 @@ PUT         /registrations/:lastKnownDeviceId    registration.controllers.Main.r
 DELETE      /registrations/:platform/:udid       registration.controllers.Main.unregister(platform: Platform, udid: UniqueDeviceIdentifier)
 GET         /healthcheck                         registration.controllers.Main.healthCheck
 
+GET         /udids/:udid                            registration.controllers.Main.registrationsByUdid(udid: UniqueDeviceIdentifier)
+GET         /topics/*topic                          registration.controllers.Main.registrationsByTopic(topic: Topic, cursor: Option[CursorSet])
+GET         /registrations/:platform/:deviceToken   registration.controllers.Main.registrationsByDeviceToken(platform: Platform, deviceToken)
+
 # Legacy Android/iOS API registration endpoint
 POST        /legacy/device/register              registration.controllers.Main.legacyRegister
 

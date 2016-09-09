@@ -17,6 +17,7 @@ import registration.services.topic.TopicValidator
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
 import cats.implicits._
+import models.pagination.{CursorSet, Paginated}
 
 final class Main(
   registrarProvider: RegistrarProvider,
@@ -70,6 +71,46 @@ final class Main(
         Future.successful(Xor.left(error))
     }
     result.map(processResponse)
+  }
+
+  def registrationsByTopic(topic: Topic, cursors: Option[CursorSet]): Action[AnyContent] = Action.async {
+    val isFirstPage = cursors.isEmpty
+
+    val registrarResults = registrarProvider.withAllRegistrars { registrar =>
+      val cursorForProvider = cursors.flatMap(_.providerCursor(registrar.providerIdentifier))
+
+      if (isFirstPage || cursorForProvider.isDefined)
+        registrar.findRegistrations(topic, cursorForProvider.map(_.cursor)).map(_.toOption)
+      else
+        Future.successful(None)
+    }
+    Future.sequence(registrarResults).map { pageAttempts =>
+      val pages = pageAttempts.flatten
+
+      val results = pages.flatMap(_.results)
+
+      val cursor =
+        Some(pages.flatMap(_.cursor))
+          .filter(_.nonEmpty)
+          .map(CursorSet.apply)
+
+      Ok(Json.toJson(Paginated(results, cursor)))
+    }
+  }
+
+  def registrationsByDeviceToken(platform: Platform, deviceToken: String): Action[AnyContent] = Action.async {
+    val result = for {
+      registrar <- XorT.fromXor[Future](registrarProvider.registrarFor(platform))
+      registrations <- XorT(registrar.findRegistrations(deviceToken): Future[Xor[NotificationsError, List[StoredRegistration]]])
+    } yield registrations
+    result.fold(processErrors, res => Ok(Json.toJson(res)))
+  }
+
+  def registrationsByUdid(udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
+    val results = registrarProvider.withAllRegistrars { registrar =>
+      registrar.findRegistrations(udid)
+    }
+    Future.sequence(results).map(_.flatMap(_.toList.flatMap(_.results))).map(res => Ok(Json.toJson(res)))
   }
 
   private def unregisterFromLegacy(registration: Registration) = legacyClient.unregister(registration.udid).foreach {

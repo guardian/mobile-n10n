@@ -20,7 +20,9 @@ import scala.concurrent.Future
 import cats.data.Xor
 import cats.implicits._
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
-import registration.services.azure.UdidNotFound
+import azure.UdidNotFound
+import _root_.azure.Registrations
+import models.pagination.Paginated
 
 class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockito {
 
@@ -166,6 +168,8 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     }
 
     val notificationRegistrar = new NotificationRegistrar {
+      override val providerIdentifier = "test"
+
       override def register(deviceId: String, registration: Registration): Future[Xor[ProviderError, RegistrationResponse]] = Future {
         RegistrationResponse(
           deviceId = "deviceAA",
@@ -185,6 +189,11 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
       val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
 
+      override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[ProviderError Xor Paginated[StoredRegistration]] = ???
+
+      override def findRegistrations(lastKnownChannelUri: String): Future[ProviderError Xor List[StoredRegistration]] = ???
+
+      override def findRegistrations(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Paginated[StoredRegistration]] = ???
     }
 
     val registrarProviderMock = {
@@ -223,6 +232,8 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 class RegistrarProviderMock extends RegistrarProvider {
 
   override def registrarFor(platform: Platform): Xor[NotificationsError, NotificationRegistrar] = new NotificationRegistrar {
+    override val providerIdentifier = "test"
+
     override def register(deviceId: String, registration: Registration): Future[Xor[ProviderError, RegistrationResponse]] = Future {
       RegistrationResponse(
         deviceId = "deviceAA",
@@ -242,6 +253,11 @@ class RegistrarProviderMock extends RegistrarProvider {
 
     val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
 
+    override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[ProviderError Xor Paginated[StoredRegistration]] = ???
+
+    override def findRegistrations(lastKnownChannelUri: String): Future[ProviderError Xor List[StoredRegistration]] = ???
+
+    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Paginated[StoredRegistration]] = ???
   }.right
 
   override def withAllRegistrars[T](fn: (NotificationRegistrar) => T): List[T] = List(fn(registrarFor(WindowsMobile).toOption.get))

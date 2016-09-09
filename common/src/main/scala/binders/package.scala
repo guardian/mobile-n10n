@@ -1,7 +1,8 @@
 import java.util.UUID
 
 import azure.NotificationHubRegistrationId
-import models.{NotificationType, Platform, Topic, UniqueDeviceIdentifier}
+import models._
+import models.pagination.CursorSet
 import org.joda.time.DateTime
 import play.api.mvc.{PathBindable, QueryStringBindable}
 
@@ -98,6 +99,17 @@ package object binders {
               case Failure(error) => Left(error.getMessage)
             }
           }
+        }
+    }
+
+  implicit def bindCursorSet(implicit strBinder: QueryStringBindable[String]): QueryStringBindable[CursorSet] =
+    new QueryStringBindable[CursorSet] {
+      override def unbind(key: String, value: CursorSet): String =
+        strBinder.unbind(key = key, value = value.encoded)
+
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, CursorSet]] =
+        strBinder.bind(key, params).map {
+          _.right.map(CursorSet.fromString)
         }
     }
 

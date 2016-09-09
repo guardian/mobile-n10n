@@ -66,8 +66,11 @@ lazy val registration = project
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
-    routesImport += "binders._",
-    routesImport += "models._",
+    routesImport ++= Seq(
+      "binders._",
+      "models._",
+      "models.pagination._"
+    ),
     riffRaffPackageType := (packageZipTarball in Universal).value,
     version := "1.0-SNAPSHOT"
   )
