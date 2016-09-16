@@ -19,6 +19,9 @@ import registration.services.topic.TopicValidator
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
 import cats.implicits._
+import providers.ProviderError
+
+import scala.util.{Success, Try}
 
 final class Main(
   registrarProvider: RegistrarProvider,
@@ -92,9 +95,13 @@ final class Main(
       registrar
         .register(lastKnownDeviceId, registration.copy(topics = topics))
 
+    def logErrors: PartialFunction[Try[ProviderError Xor RegistrationResponse], Unit] = {
+      case Success(Xor.Left(v)) => logger.error(s"Failed to register $registration with ${v.providerName}: ${v.reason}")
+    }
+
     registrarProvider.registrarFor(registration) match {
       case Xor.Right(registrar) =>
-        validate(registration.topics).flatMap(registerWith(registrar, _))
+        validate(registration.topics).flatMap(registerWith(registrar, _).andThen(logErrors))
       case Xor.Left(error) =>
         Future.successful(error.left)
     }
