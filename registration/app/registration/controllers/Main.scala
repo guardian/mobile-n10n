@@ -8,10 +8,10 @@ import cats.implicits._
 import error.{NotificationsError, RequestError}
 import models._
 import play.api.Logger
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, Writes}
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, AnyContent, Controller, Result}
-import registration.models.LegacyRegistration
+import registration.models.{LegacyRegistration, LegacyTopic}
 import registration.services.azure.UdidNotFound
 import registration.services.{UnsupportedPlatform, _}
 import registration.services.topic.TopicValidator
@@ -38,7 +38,7 @@ final class Main(
   }
 
   def register(lastKnownDeviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
-    registerCommon(lastKnownDeviceId, request.body).map(processResponse)
+    registerCommon(lastKnownDeviceId, request.body).map(processResponse(_))
   }
 
   def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
@@ -57,17 +57,17 @@ final class Main(
   }
 
   def legacyRegister: Action[LegacyRegistration] = Action.async(BodyJson[LegacyRegistration]) { request =>
-    val result = legacyRegistrationConverter.toRegistration(request.body) match {
-      case Xor.Right(registration) =>
-        val registrationResult = registerCommon(registration.deviceId, registration)
-        registrationResult onSuccess {
-          case Xor.Right(_) => unregisterFromLegacy(request.body)
-        }
-        registrationResult
-      case Xor.Left(error) =>
-        Future.successful(Xor.left(error))
+    val legacyRegistration = request.body
+
+    val result = for {
+      registration <- XorT.fromXor[Future](legacyRegistrationConverter.toRegistration(legacyRegistration))
+      registrationResponse <- XorT(registerCommon(registration.deviceId, registration))
+    } yield {
+      unregisterFromLegacy(legacyRegistration)
+      legacyRegistrationConverter.fromResponse(legacyRegistration, registrationResponse)
     }
-    result.map(processResponse)
+
+    result.value.map(processResponse(_))
   }
 
   private def unregisterFromLegacy(registration: LegacyRegistration) = legacyClient.unregister(registration).foreach {
@@ -107,8 +107,8 @@ final class Main(
     }
   }
 
-  private def processResponse(result: NotificationsError Xor RegistrationResponse): Result =
-    result.fold(processErrors, res => Ok(Json.toJson(res)))
+  private def processResponse[T](result: NotificationsError Xor T)(implicit writer: Writes[T]) : Result =
+    result.fold(processErrors, res => Ok(Json.toJson(res)(writer)))
 
   private def processErrors(error: NotificationsError): Result = error match {
     case UdidNotFound =>

@@ -4,7 +4,7 @@ import java.util.UUID
 
 import error.NotificationsError
 import models.{UniqueDeviceIdentifier, _}
-import registration.models.LegacyRegistration
+import registration.models.{LegacyRegistration, LegacyTopic}
 import cats.data.Xor
 import cats.implicits._
 
@@ -23,6 +23,16 @@ class LegacyRegistrationConverter {
         topics = topics(legacyRegistration)
       ).right
     }
+  }
+
+  def fromResponse(legacyRegistration: LegacyRegistration, response: RegistrationResponse): LegacyRegistration = {
+    val topics = response.topics.map { topic =>
+      LegacyTopic(topic.`type`.toString, topic.name)
+    }
+
+    val preferences = legacyRegistration.preferences.copy(topics = Some(topics.toSeq))
+
+    legacyRegistration.copy(preferences = preferences)
   }
 
   private def topics(request: LegacyRegistration): Set[Topic] = {
