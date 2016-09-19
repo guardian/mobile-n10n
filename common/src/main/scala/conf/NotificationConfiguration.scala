@@ -14,6 +14,9 @@ class NotificationConfiguration(projectName: String) {
   def getConfigInt(key: String): Int = conf.getIntegerProperty(key)
     .getOrElse(throw new RuntimeException(s"key $key not found in configuration"))
 
+  def getConfigInt(key: String, default: Int): Int = conf.getIntegerProperty(key)
+    .getOrElse(default)
+
   def getConfigBoolean(key: String): Boolean = getConfigString(key).toLowerCase match {
     case "true" => true
     case "false" => false
