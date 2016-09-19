@@ -18,11 +18,11 @@ class SubscriptionTracker(topicSubscriptionsRepository: TopicSubscriptionsReposi
     case Success(Xor.Right(_)) =>
       Future.traverse(topicSubscriptionTracking.addedTopics) { topic =>
         logger.debug(s"Informing about new topic registrations. [$topic]")
-        topicSubscriptionsRepository.deviceSubscribed(topic)
+        topicSubscriptionsRepository.deviceSubscribed(topic, 1)
       } map handleErrors
       Future.traverse(topicSubscriptionTracking.removedTopicsIds) { topicId =>
         logger.debug(s"Informing about removed topic registrations. [$topicId]")
-        topicSubscriptionsRepository.deviceUnsubscribed(topicId)
+        topicSubscriptionsRepository.deviceUnsubscribed(topicId, 1)
       } map handleErrors
 
     case _ => logger.error("Topic subscription counters not updated. Preceding action failed.")
