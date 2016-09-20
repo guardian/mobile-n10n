@@ -43,14 +43,14 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationJson)))
 
       status(result) must equalTo(OK)
-      there was one(legacyRegistrationClientWSMock).url("https://localhost/device/registrations/gia:0E980097-59FD-4047-B609-366C6D5BB1B3")
+      eventually(there was one(legacyRegistrationClientWSMock).url("https://localhost/device/registrations/gia:0E980097-59FD-4047-B609-366C6D5BB1B3"))
     }
 
     "accepts legacy android registration and unregisters from pushy" in new registrations {
       val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyAndroidRegistrationJson)))
 
       status(result) must equalTo(OK)
-      there was one(legacyRegistrationClientWSMock).url("https://localhost/device/registrations/0e980097-59fd-4047-b609-366c6d5bb1b3")
+      eventually(there was one(legacyRegistrationClientWSMock).url("https://localhost/device/registrations/0e980097-59fd-4047-b609-366c6d5bb1b3"))
     }
 
     "return 204 and empty response for unregistration of udid" in new registrations {
