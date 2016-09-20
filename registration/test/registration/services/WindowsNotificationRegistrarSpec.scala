@@ -118,7 +118,7 @@ with Mockito {
 
         Await.result(provider.register(channelUri, registrationWithTopics), 5.seconds)
 
-        there was one(topicSubRepo).deviceSubscribed(breakingTopic) andThen one(topicSubRepo).deviceSubscribed(contentTopic)
+        there was one(topicSubRepo).deviceSubscribed(breakingTopic, 1) andThen one(topicSubRepo).deviceSubscribed(contentTopic, 1)
       }
 
       "record updated topic subscriptions from existing registration" in new registrations {
@@ -128,8 +128,8 @@ with Mockito {
 
         Await.result(provider.register(channelUri, registrationWithTopics), 5.seconds)
 
-        there was one(topicSubRepo).deviceSubscribed(breakingTopic) andThen one(topicSubRepo).deviceSubscribed(contentTopic)
-        there was one(topicSubRepo).deviceUnsubscribed(tagTopic.id)
+        there was one(topicSubRepo).deviceSubscribed(breakingTopic, 1) andThen one(topicSubRepo).deviceSubscribed(contentTopic, 1)
+        there was one(topicSubRepo).deviceUnsubscribed(tagTopic.id, 1)
       }
     }
   }

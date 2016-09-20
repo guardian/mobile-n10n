@@ -12,7 +12,7 @@ class LegacyNewsstandRegistrationConverter extends RegistrationConverter[LegacyN
     val udid = NewsstandUdid.fromDeviceToken(legacyRegistration.pushToken)
     Registration(
       deviceId = legacyRegistration.pushToken,
-      platform = iOS,
+      platform = Newsstand,
       udid = udid,
       topics = Set(Topic(TopicTypes.Newsstand, "newsstand"))
     ).right

@@ -14,7 +14,7 @@ import cats.implicits._
 import models.pagination.{Paginated, ProviderCursor}
 
 class NotificationHubRegistrar(
-  hubClient: NotificationHubClient,
+  val hubClient: NotificationHubClient,
   subscriptionTracker: SubscriptionTracker,
   registrationExtractor: Registration => NotificationsHubRegistration)(implicit ec: ExecutionContext)
   extends NotificationRegistrar {

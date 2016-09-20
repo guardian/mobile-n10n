@@ -35,7 +35,9 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk" % "1.9.31",
       "com.gu" %% "configuration" % "4.1",
       "io.spray" %% "spray-caching" % "1.3.3",
-      "com.typesafe.play" %% "play-logback" % "2.5.3"
+      "com.typesafe.play" %% "play-logback" % "2.5.3",
+      "org.specs2" %% "specs2-core" % "3.8.5" % "test",
+      "org.specs2" %% "specs2-cats" % "3.8.5" % "test"
     ),
     test in Test <<= (test in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),
     testOnly in Test <<= (testOnly in Test).dependsOn(DynamoDBLocal.Keys.startDynamoDBLocal),

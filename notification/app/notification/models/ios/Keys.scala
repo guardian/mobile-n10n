@@ -7,4 +7,5 @@ object Keys {
   final val Topics = "topics"
   final val Uri = "uri"
   final val UriType = "uriType"
+  final val ImageUrl = "imageUrl"
 }

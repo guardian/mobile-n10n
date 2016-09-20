@@ -26,8 +26,9 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
 
   private val topicCache: Cache[Option[Topic]] = LruCache[Option[Topic]]()
 
-  override def deviceSubscribed(topic: Topic): Future[RepositoryResult[Unit]] = {
-    val subscriptionCountChange = +1
+  override def deviceSubscribed(topic: Topic, count: Int = 1): Future[RepositoryResult[Unit]] = {
+    Logger.debug(s"Increasing subscriber count for $topic by $count")
+    val subscriptionCountChange = count
     val req = newUpdateRequest
       .addKeyEntry(TopicFields.Id, new AttributeValue(topic.id))
       .withUpdateExpression(s"SET ${TopicFields.Topic} = :topic ADD ${TopicFields.SubscriberCount} :amount")
@@ -38,8 +39,9 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
     updateItem(req)
   }
 
-  override def deviceUnsubscribed(topicId: String): Future[RepositoryResult[Unit]] = {
-    val subscriptionCountChange = -1
+  override def deviceUnsubscribed(topicId: String, count: Int = 1): Future[RepositoryResult[Unit]] = {
+    Logger.debug(s"Reducing subscriber count for $topicId by $count")
+    val subscriptionCountChange = -count
     val req = newUpdateRequest
       .addKeyEntry(TopicFields.Id, new AttributeValue(topicId))
       .withUpdateExpression(s"ADD ${TopicFields.SubscriberCount} :amount")

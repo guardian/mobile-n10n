@@ -3,6 +3,7 @@ package notification
 import java.net.URI
 
 import _root_.controllers.Assets
+import akka.actor.ActorSystem
 import azure.{NotificationHubClient, NotificationHubConnection}
 import com.softwaremill.macwire._
 import notification.controllers.Main
@@ -14,7 +15,7 @@ import play.api.routing.Router
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.ApplicationLoader.Context
 import router.Routes
-import tracking.{DynamoNotificationReportRepository, DynamoTopicSubscriptionsRepository}
+import tracking.{BatchingTopicSubscriptionsRepository, DynamoNotificationReportRepository, DynamoTopicSubscriptionsRepository, TopicSubscriptionsRepository}
 
 import scala.concurrent.ExecutionContext
 
@@ -66,8 +67,12 @@ trait AzureHubComponents {
     new NotificationHubClient(hubConnection, wsClient)
   }
 
-  lazy val topicSubscriptionsRepository = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
-
+  lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
+    val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
+    val batching = new BatchingTopicSubscriptionsRepository(underlying)
+    batching.scheduleFlush(appConfig.dynamoTopicsFlushInterval)
+    batching
+  }
   lazy val notificationReportRepository = new DynamoNotificationReportRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoReportsTableName)
 
   lazy val wnsNotificationSender: WNSSender = wire[WNSSender]
@@ -91,6 +96,7 @@ trait FrontendAlertsComponents {
 trait ExecutionEnv {
   self: PlayComponents =>
   implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
+  implicit lazy val implicitActorSystem: ActorSystem = actorSystem
 }
 
 
