@@ -11,7 +11,7 @@ import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import registration.controllers.Main
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
-import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, WindowsNotificationRegistrar}
+import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
 import router.Routes
 import registration.services._
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
@@ -31,6 +31,7 @@ trait AppComponents extends Controllers
   with WindowsRegistrations
   with GCMRegistrations
   with APNSRegistrations
+  with NewsstandRegistrations
   with NotificationsHubClient
   with Tracking
   with TopicValidation
@@ -57,6 +58,7 @@ trait Registrars {
   self: WindowsRegistrations
     with GCMRegistrations
     with APNSRegistrations
+    with NewsstandRegistrations
     with ExecutionEnv =>
   lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
 }
@@ -91,19 +93,23 @@ trait WindowsRegistrations {
   lazy val winNotificationRegistrar: WindowsNotificationRegistrar = wire[WindowsNotificationRegistrar]
 }
 
+trait NewsstandRegistrations {
+  self: Tracking
+    with AppConfiguration
+    with AhcWSComponents
+    with ExecutionEnv =>
+
+  lazy val newsstandHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
+
+  lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
+}
+
 trait NotificationsHubClient {
   self: AppConfiguration
     with AhcWSComponents
     with ExecutionEnv =>
 
-  lazy val hubClient = {
-    val hubConnection = NotificationHubConnection(
-      endpoint = appConfig.hubEndpoint,
-      sharedAccessKeyName = appConfig.hubSharedAccessKeyName,
-      sharedAccessKey = appConfig.hubSharedAccessKey
-    )
-    new NotificationHubClient(hubConnection, wsClient)
-  }
+  lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 }
 
 trait Tracking {
