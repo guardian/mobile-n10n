@@ -1,8 +1,8 @@
 package registration.services
 
 import error.{NotificationsError, RequestError}
-import models.{Android, iOS, Platform, Registration, WindowsMobile}
-import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, WindowsNotificationRegistrar}
+import models._
+import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
 
 import scala.concurrent.ExecutionContext
 import cats.data.Xor
@@ -20,15 +20,17 @@ case class UnsupportedPlatform(platform: String) extends RequestError {
 }
 
 final class NotificationRegistrarProvider(
-  windowsNotificationRegistrar: WindowsNotificationRegistrar,
-  gcmNotificationRegistrar: GCMNotificationRegistrar,
-  apnsNotificationRegistrar: APNSNotificationRegistrar)
+  windowsRegistrar: WindowsNotificationRegistrar,
+  gcmRegistrar: GCMNotificationRegistrar,
+  apnsRegistrar: APNSNotificationRegistrar,
+  newsstandRegistrar: NewsstandNotificationRegistrar)
   (implicit executionContext: ExecutionContext) extends RegistrarProvider {
 
   override def registrarFor(platform: Platform): NotificationsError Xor NotificationRegistrar = platform match {
-    case WindowsMobile => windowsNotificationRegistrar.right
-    case Android => gcmNotificationRegistrar.right
-    case `iOS` => apnsNotificationRegistrar.right
+    case WindowsMobile => windowsRegistrar.right
+    case Android => gcmRegistrar.right
+    case `iOS` => apnsRegistrar.right
+    case Newsstand => newsstandRegistrar.right
     case _ => UnsupportedPlatform(platform.toString).left
   }
 }

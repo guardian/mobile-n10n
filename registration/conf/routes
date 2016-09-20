@@ -2,5 +2,8 @@ PUT         /registrations/:lastKnownDeviceId    registration.controllers.Main.r
 DELETE      /registrations/:platform/:udid       registration.controllers.Main.unregister(platform: Platform, udid: UniqueDeviceIdentifier)
 GET         /healthcheck                         registration.controllers.Main.healthCheck
 
-# Legacy Android API registration endpoint
+# Legacy Android/iOS API registration endpoint
 POST        /legacy/device/register              registration.controllers.Main.legacyRegister
+
+# Legacy Newsstand registration endpoint
+POST        /legacy/newsstand/register           registration.controllers.Main.newsstandRegister

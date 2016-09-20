@@ -1,19 +1,17 @@
 package registration.controllers
 
-import java.util.UUID
-
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
-import cats.data.{Xor, XorT}
+import cats.data.XorT
 import cats.implicits._
 import error.{NotificationsError, RequestError}
 import models._
 import play.api.Logger
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, Reads}
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, AnyContent, Controller, Result}
-import registration.models.LegacyRegistration
+import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
 import registration.services.azure.UdidNotFound
-import registration.services.{UnsupportedPlatform, _}
+import registration.services._
 import registration.services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,7 +25,8 @@ final class Main(
   registrarProvider: RegistrarProvider,
   topicValidator: TopicValidator,
   legacyClient: LegacyRegistrationClient,
-  legacyRegistrationConverter: LegacyRegistrationConverter)
+  legacyRegistrationConverter: LegacyRegistrationConverter,
+  legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter)
     (implicit executionContext: ExecutionContext)
   extends Controller {
 
@@ -56,12 +55,18 @@ final class Main(
       .fold(processErrors, _ => NoContent)
   }
 
-  def legacyRegister: Action[LegacyRegistration] = Action.async(BodyJson[LegacyRegistration]) { request =>
-    val result = legacyRegistrationConverter.toRegistration(request.body) match {
+  def newsstandRegister: Action[LegacyNewsstandRegistration] =
+    registerWithConverter(legacyNewsstandRegistrationConverter)
+
+  def legacyRegister: Action[LegacyRegistration] =
+    registerWithConverter(legacyRegistrationConverter)
+
+  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit reader: Reads[T]): Action[T] = Action.async(BodyJson[T]) { request =>
+    val result = converter.toRegistration(request.body) match {
       case Xor.Right(registration) =>
         val registrationResult = registerCommon(registration.deviceId, registration)
         registrationResult onSuccess {
-          case Xor.Right(_) => unregisterFromLegacy(request.body)
+          case Xor.Right(_) => unregisterFromLegacy(registration)
         }
         registrationResult
       case Xor.Left(error) =>
@@ -70,11 +75,11 @@ final class Main(
     result.map(processResponse)
   }
 
-  private def unregisterFromLegacy(registration: LegacyRegistration) = legacyClient.unregister(registration).foreach {
+  private def unregisterFromLegacy(registration: Registration) = legacyClient.unregister(registration.udid).foreach {
     case Xor.Right(_) =>
-      logger.debug(s"Unregistered ${registration.device.udid} from legacy notifications")
+      logger.debug(s"Unregistered ${registration.udid} from legacy notifications")
     case Xor.Left(error) =>
-      logger.error(s"Failed to unregistered ${registration.device.udid} from legacy notifications: $error")
+      logger.error(s"Failed to unregistered ${registration.udid} from legacy notifications: $error")
   }
 
   private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[NotificationsError Xor RegistrationResponse] = {

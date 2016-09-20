@@ -6,6 +6,7 @@ sealed trait Platform
 
 case object Android extends Platform { override def toString: String = "android" }
 case object iOS extends Platform { override def toString: String = "ios" }
+case object Newsstand extends Platform { override def toString: String = "newsstand" }
 case object WindowsMobile extends Platform { override def toString: String = "windows-mobile" }
 
 object Platform {
