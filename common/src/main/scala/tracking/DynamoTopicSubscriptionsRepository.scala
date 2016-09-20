@@ -24,6 +24,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
   }
 
   override def deviceSubscribed(topic: Topic, count: Int = 1): Future[RepositoryResult[Unit]] = {
+    Logger.debug(s"Increasing subscriber count for $topic by $count")
     val subscriptionCountChange = count
     val req = newUpdateRequest
       .addKeyEntry(TopicFields.Id, new AttributeValue(topic.id))
@@ -36,6 +37,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
   }
 
   override def deviceUnsubscribed(topicId: String, count: Int = 1): Future[RepositoryResult[Unit]] = {
+    Logger.debug(s"Reducing subscriber count for $topicId by $count")
     val subscriptionCountChange = -count
     val req = newUpdateRequest
       .addKeyEntry(TopicFields.Id, new AttributeValue(topicId))
