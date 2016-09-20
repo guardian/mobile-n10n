@@ -2,18 +2,20 @@ package models
 
 import play.api.libs.json._
 
-sealed trait TopicType
+case class TopicType(name: String, priority: Int) {
+  override def toString: String = name
+}
 
 object TopicTypes {
-  case object Breaking extends TopicType { override def toString: String = "breaking" }
-  case object Content extends TopicType { override def toString: String = "content" }
-  case object TagContributor extends TopicType { override def toString: String = "tag-contributor" }
-  case object TagKeyword extends TopicType { override def toString: String = "tag-keyword" }
-  case object TagSeries extends TopicType { override def toString: String = "tag-series" }
-  case object TagBlog extends TopicType { override def toString: String = "tag-blog" }
-  case object FootballTeam extends TopicType { override def toString: String = "football-team" }
-  case object FootballMatch extends TopicType { override def toString: String = "football-match" }
-  case object Newsstand extends TopicType { override def toString: String = "newsstand" }
+  object Breaking extends TopicType("breaking", 100) // scalastyle:off magic.number
+  object Content extends TopicType("content", 1)
+  object TagContributor extends TopicType("tag-contributor", 1)
+  object TagKeyword extends TopicType("tag-keyword", 1)
+  object TagSeries extends TopicType("tag-series", 1)
+  object TagBlog extends TopicType("tag-blog", 1)
+  object FootballTeam extends TopicType("football-team", 1)
+  object FootballMatch extends TopicType("football-match", 1)
+  object Newsstand extends TopicType("newsstand", 100) // scalastyle:off magic.number
 }
 
 object TopicType {

@@ -1,6 +1,7 @@
 package registration
 
 import _root_.controllers.Assets
+import akka.actor.ActorSystem
 import auditor.AuditorWSClient
 import azure.{NotificationHubClient, NotificationHubConnection}
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -13,7 +14,7 @@ import registration.services.topic.{AuditorTopicValidator, TopicValidator}
 import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, WindowsNotificationRegistrar}
 import router.Routes
 import registration.services._
-import tracking.{DynamoTopicSubscriptionsRepository, SubscriptionTracker}
+import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
 
 import scala.concurrent.ExecutionContext
 
@@ -112,10 +113,12 @@ trait Tracking {
   import com.amazonaws.regions.Regions.EU_WEST_1
   import aws.AsyncDynamo
 
-  lazy val topicSubscriptionRepository = new DynamoTopicSubscriptionsRepository(
-    AsyncDynamo(region = EU_WEST_1),
-    appConfig.dynamoTopicsTableName
-  )
+  lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
+    val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
+    val batching = new BatchingTopicSubscriptionsRepository(underlying)
+    batching.scheduleFlush(appConfig.dynamoTopicsFlushInterval)
+    batching
+  }
 
   lazy val subscriptionTracker = wire[SubscriptionTracker]
 }
@@ -147,4 +150,5 @@ trait PlayComponents extends BuiltInComponents {
 trait ExecutionEnv {
   self: PlayComponents =>
   implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
+  implicit lazy val implicitActorSystem: ActorSystem = actorSystem
 }
