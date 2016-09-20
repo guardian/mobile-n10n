@@ -28,20 +28,14 @@ object UniqueDeviceIdentifier {
   }
 
   def apply(id: UUID): UniqueDeviceIdentifier =
-    new UniqueDeviceIdentifier(id)
+    new UniqueDeviceIdentifierImpl(id)
 }
 
-class UniqueDeviceIdentifier(val id: UUID) {
+case class UniqueDeviceIdentifierImpl(id: UUID) extends UniqueDeviceIdentifier
 
-  override def toString: String = s"UniqueDeviceIdentifier($id)"
+trait UniqueDeviceIdentifier {
+
+  def id: UUID
 
   def legacyFormat: String = id.toString
-
-  override def equals(that: Any): Boolean = that match {
-    case that: UniqueDeviceIdentifier if that.toString == this.toString => true
-    case _ => false
-  }
-
-  override def hashCode: Int =
-    scala.util.hashing.MurmurHash3.productHash(new Tuple1(id))
 }

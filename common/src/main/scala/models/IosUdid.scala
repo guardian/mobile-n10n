@@ -15,9 +15,7 @@ object IosUdid {
   private def uuidFromString(s: String) = Try(UUID.fromString(s)).toOption
 }
 
-class IosUdid(underlying: String, id: UUID) extends UniqueDeviceIdentifier(id) {
+case class IosUdid(underlying: String, id: UUID) extends UniqueDeviceIdentifier {
 
-  override def toString: String = s"IosUdid($underlying, $id)"
-  
   override def legacyFormat: String = underlying
 }
