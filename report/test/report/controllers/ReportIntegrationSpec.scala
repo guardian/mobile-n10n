@@ -61,7 +61,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
           topic = Set(Topic(Breaking, "uk"))
         ),
         reports = List(
-          SenderReport("Windows", DateTime.now.withZone(UTC), PlatformStatistics(WindowsMobile, 5).some)
+          SenderReport("Windows", DateTime.now.withZone(UTC), Some(s"hub-$id"), PlatformStatistics(WindowsMobile, 5).some)
         )
       )
     }

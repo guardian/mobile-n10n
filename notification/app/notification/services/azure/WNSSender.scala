@@ -13,6 +13,6 @@ class WNSSender(hubClient: NotificationHubClient, configuration: Configuration, 
 
   protected val azureRawPushConverter = new WNSPushConverter(configuration)
 
-  override protected def send(push: Push): Future[HubResult[Unit]] =
+  override protected def send(push: Push): Future[HubResult[Option[String]]] =
     hubClient.sendNotification(azureRawPushConverter.toRawPush(push))
 }

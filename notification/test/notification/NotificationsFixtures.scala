@@ -53,8 +53,13 @@ trait NotificationsFixtures {
   val validTopics = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"))
   val requestWithValidTopics = authenticatedRequest.withBody(breakingNewsNotification(validTopics))
 
-  def senderReport(senderName: String, platformStats: Option[PlatformStatistics] = None, sentTimeOffsetSeconds: Int = 0): SenderReport =
-    SenderReport(senderName, DateTime.now.plusSeconds(sentTimeOffsetSeconds), platformStats)
+  def senderReport(
+    senderName: String,
+    platformStats: Option[PlatformStatistics] = None,
+    sendersId: Option[String] = None,
+    sentTimeOffsetSeconds: Int = 0
+  ): SenderReport =
+    SenderReport(senderName, DateTime.now.plusSeconds(sentTimeOffsetSeconds), sendersId, platformStats)
 
   def reportWithSenderReports(reports: List[SenderReport]): NotificationReport = NotificationReport.create(
     breakingNewsNotification(validTopics),

@@ -18,6 +18,7 @@ case class NotificationReport(
 case class SenderReport(
   senderName: String,
   sentTime: DateTime,
+  sendersId: Option[String] = None,
   platformStatistics: Option[PlatformStatistics] = None
 )
 
