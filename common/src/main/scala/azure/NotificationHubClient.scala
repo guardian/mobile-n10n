@@ -70,7 +70,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       }
   }
 
-  def sendNotification[T](rawPush: RawPush[T]): Future[HubResult[Unit]] = {
+  def sendNotification[T](rawPush: RawPush[T]): Future[HubResult[Option[String]]] = {
     val serviceBusTags = rawPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
     logger.debug(s"Sending Raw Notification: $rawPush")
     request(Endpoints.Messages)
@@ -79,7 +79,7 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
       .withHeaders(serviceBusTags: _*)
       .post(rawPush.body)(rawPush.writeable)
       .map {
-        case r if r.isSuccess => ().right
+        case r if r.isSuccess => r.header("Location").right
         case r => XmlParser.parseError(r).left
       }
   }

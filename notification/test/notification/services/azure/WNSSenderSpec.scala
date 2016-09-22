@@ -32,7 +32,7 @@ class WNSSenderSpec(implicit ev: ExecutionEnv) extends Specification
       "send two separate with notifications with differently encoded topics when addressed to topic" in new WNSScope {
         val result = windowsNotificationSender.sendNotification(topicPush)
 
-        result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 2).some).right).await
+        result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 2).some, sendersId = "fake-id".some).right).await
         got {
           one(hubClient).sendNotification(pushConverter.toRawPush(topicPush))
         }
@@ -41,7 +41,7 @@ class WNSSenderSpec(implicit ev: ExecutionEnv) extends Specification
       "send only one notification when destination is user so that user do not receive the same message twice" in new WNSScope {
         val result = windowsNotificationSender.sendNotification(userPush)
 
-        result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some).right).await
+        result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some, sendersId = "fake-id".some).right).await
         got {
           one(hubClient).sendNotification(pushConverter.toRawPush(userPush))
         }
@@ -62,7 +62,7 @@ class WNSSenderSpec(implicit ev: ExecutionEnv) extends Specification
     val configuration = mock[Configuration].debug returns true
     val hubClient = {
       val client = mock[NotificationHubClient]
-      client.sendNotification(any[WNSRawPush]) returns Future.successful(().right)
+      client.sendNotification(any[WNSRawPush]) returns Future.successful(Some("fake-id").right)
       client
     }
 

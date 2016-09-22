@@ -23,11 +23,12 @@ abstract class NotificationsHubSender(
   topicSubscriptionsRepository: TopicSubscriptionsRepository)
   (implicit ec: ExecutionContext) extends NotificationSender {
 
-  protected def send(push: Push): Future[HubResult[Unit]]
+  protected def send(push: Push): Future[HubResult[Option[String]]]
 
   def sendNotification(push: Push): Future[SenderResult] = {
 
-    def report(recipientsCount: Option[Int]) = SenderReport(
+    def report(sendersId: Option[String], recipientsCount: Option[Int]) = SenderReport(
+      sendersId = sendersId,
       senderName = Senders.AzureNotificationsHub,
       sentTime = DateTime.now,
       platformStatistics = recipientsCount map { PlatformStatistics(WindowsMobile, _) }
@@ -40,11 +41,11 @@ abstract class NotificationsHubSender(
       } yield {
         result.fold(
           e => NotificationRejected(NotificationHubSenderError(e.some).some).left,
-          _ => report(count.toOption).right
+          id => report(id, count.toOption).right
         )
       }
     } else {
-      Future.successful(report(None).right)
+      Future.successful(report(None, None).right)
     }
   }
 
