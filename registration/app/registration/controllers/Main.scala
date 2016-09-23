@@ -1,5 +1,7 @@
 package registration.controllers
 
+import akka.actor.ActorSystem
+import akka.pattern.after
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
 import cats.data.XorT
 import cats.implicits._
@@ -8,7 +10,7 @@ import models._
 import play.api.Logger
 import play.api.libs.json.{Json, Reads}
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
-import play.api.mvc.{Action, AnyContent, Controller, Result}
+import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty, BodyParser, BodyParsers, Controller, Request, Result}
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
 import registration.services.azure.UdidNotFound
 import registration.services._
@@ -19,6 +21,7 @@ import cats.data.Xor
 import cats.implicits._
 import providers.ProviderError
 
+import scala.concurrent.duration._
 import scala.util.{Success, Try}
 
 final class Main(
@@ -26,8 +29,9 @@ final class Main(
   topicValidator: TopicValidator,
   legacyClient: LegacyRegistrationClient,
   legacyRegistrationConverter: LegacyRegistrationConverter,
-  legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter)
-    (implicit executionContext: ExecutionContext)
+  legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter,
+  config: Configuration)
+  (implicit system: ActorSystem, executionContext: ExecutionContext)
   extends Controller {
 
   private val logger = Logger(classOf[Main])
@@ -36,11 +40,11 @@ final class Main(
     Ok("Good")
   }
 
-  def register(lastKnownDeviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
+  def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(BodyJson[Registration]) { request =>
     registerCommon(lastKnownDeviceId, request.body).map(processResponse)
   }
 
-  def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
+  def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = actionWithTimeout {
 
     def registrarFor(platform: Platform) = XorT.fromXor[Future](
       registrarProvider.registrarFor(platform)
@@ -61,7 +65,7 @@ final class Main(
   def legacyRegister: Action[LegacyRegistration] =
     registerWithConverter(legacyRegistrationConverter)
 
-  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit reader: Reads[T]): Action[T] = Action.async(BodyJson[T]) { request =>
+  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit reader: Reads[T]): Action[T] = actionWithTimeout(BodyJson[T]) { request =>
     val result = converter.toRegistration(request.body) match {
       case Xor.Right(registration) =>
         val registrationResult = registerCommon(registration.deviceId, registration)
@@ -134,5 +138,15 @@ final class Main(
       logger.error(s"Unknown error: ${other.reason}")
       InternalServerError(other.reason)
   }
+
+  private def actionWithTimeout[T](bodyParser: BodyParser[T])(block: Request[T] => Future[Result]): Action[T] = {
+    Action.async(bodyParser) { request =>
+      val timeoutFuture = after(config.defaultTimeout, using = system.scheduler)(Future.successful(InternalServerError("Operation timed out")))
+      Future.firstCompletedOf(Seq(block(request), timeoutFuture))
+    }
+  }
+
+  private def actionWithTimeout(block: => Future[Result]): Action[AnyContent] =
+    actionWithTimeout(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
 
 }
