@@ -2,6 +2,8 @@ package registration.controllers
 
 import akka.actor.ActorSystem
 import akka.pattern.after
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
 import cats.data.XorT
 import cats.implicits._
@@ -19,6 +21,7 @@ import registration.services.topic.TopicValidator
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
 import cats.implicits._
+import play.api.http.HttpEntity
 import providers.ProviderError
 
 import scala.concurrent.duration._
@@ -37,7 +40,15 @@ final class Main(
   private val logger = Logger(classOf[Main])
 
   def healthCheck: Action[AnyContent] = Action {
-    Ok("Good")
+    // This forces Play to close the connection rather than allowing
+    // keep-alive (because the content length is unknown)
+    Ok.sendEntity(
+      HttpEntity.Streamed(
+        data =  Source(Array(ByteString("Good")).toVector),
+        contentLength = None,
+        contentType = Some("text/plain")
+      )
+    )
   }
 
   def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(BodyJson[Registration]) { request =>
