@@ -30,4 +30,6 @@ class Configuration extends NotificationConfiguration("registration") {
   lazy val maxTopics = getConfigInt("notifications.max_topics", 200) // scalastyle:off magic.number
   lazy val dynamoTopicsTableName = getConfigString("db.dynamo.topics.table-name")
   lazy val dynamoTopicsFlushInterval = getFiniteDuration("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
+
+  lazy val defaultTimeout = getFiniteDuration("routes.defaultTimeout").getOrElse(30.seconds)
 }
