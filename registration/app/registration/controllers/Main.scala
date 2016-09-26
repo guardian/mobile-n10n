@@ -111,10 +111,18 @@ final class Main(
   }
 
   def registrationsByUdid(udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
-    val results = registrarProvider.withAllRegistrars { registrar =>
-      registrar.findRegistrations(udid)
+    Future.sequence {
+      registrarProvider.withAllRegistrars { registrar =>
+        registrar.findRegistrations(udid)
+      }
+    } map { responses =>
+      val allResults = for {
+        response <- responses
+        successfulResponse <- response.toList
+        result <- successfulResponse.results
+      } yield result
+      Ok(Json.toJson(allResults))
     }
-    Future.sequence(results).map(_.flatMap(_.toList.flatMap(_.results))).map(res => Ok(Json.toJson(res)))
   }
 
   private def unregisterFromLegacy(registration: Registration) = legacyClient.unregister(registration.udid).foreach {
