@@ -33,6 +33,13 @@ class NotificationHubClient(notificationHubConnection: NotificationHubConnection
 
   private def extractContent[T](hubResult: HubResult[AtomEntry[T]]): HubResult[T] = hubResult.map(_.content)
 
+  def notificationDetails(id: String): Future[HubResult[NotificationDetails]] = {
+    logger.debug(s"Requesting details for notification $id")
+    request(s"${Endpoints.Messages}$id")
+      .get()
+      .map { tryParse[NotificationDetails](Status.OK) }
+  }
+
   def create(rawRegistration: NotificationsHubRegistration): Future[HubResult[RegistrationResponse]] = {
     logger.debug(s"Creating new registration: ${rawRegistration.toXml}")
     request(Endpoints.Registrations)

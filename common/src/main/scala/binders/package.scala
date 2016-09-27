@@ -1,7 +1,7 @@
 import java.util.UUID
 
 import azure.NotificationHubRegistrationId
-import models.{NotificationType, Platform, Topic, UniqueDeviceIdentifier}
+import models._
 import org.joda.time.DateTime
 import play.api.mvc.{PathBindable, QueryStringBindable}
 
@@ -96,6 +96,22 @@ package object binders {
             Try(UUID.fromString(v)) match {
               case Success(uuid) => Right(uuid)
               case Failure(error) => Left(error.getMessage)
+            }
+          }
+        }
+    }
+
+  implicit def bindNotificationType(implicit strBinder: QueryStringBindable[String]): QueryStringBindable[NotificationType] =
+    new QueryStringBindable[NotificationType] {
+      override def unbind(key: String, value: NotificationType): String =
+        strBinder.unbind(key = key, value = value.toString)
+
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, NotificationType]] =
+        strBinder.bind(key, params).map {
+          _.right.flatMap { v =>
+            NotificationType.fromRep.get(v) match {
+              case Some(notificationType) => Right(notificationType)
+              case None => Left(s"Unknown NotificationType $v")
             }
           }
         }

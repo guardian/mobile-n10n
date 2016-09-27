@@ -26,7 +26,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
   "Report service" should {
 
     "Return last 7 days notification reports if no date supplied" in new ReportTestScope {
-      val result = route(app, FakeRequest(GET, s"/notifications/news?api-key=$apiKey")).get
+      val result = route(app, FakeRequest(GET, s"/notifications?type=news&api-key=$apiKey")).get
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
@@ -34,7 +34,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
     }
 
     "Return a list of notification reports filtered by date" in new ReportTestScope {
-      val result = route(app, FakeRequest(GET, s"/notifications/news?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
+      val result = route(app, FakeRequest(GET, s"/notifications?type=news&from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
