@@ -10,7 +10,7 @@ import cats.implicits._
 import error.{NotificationsError, RequestError}
 import models._
 import play.api.Logger
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Format, Json, Writes}
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty, BodyParser, BodyParsers, Controller, Request, Result}
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
@@ -24,7 +24,6 @@ import cats.implicits._
 import play.api.http.HttpEntity
 import providers.ProviderError
 
-import scala.concurrent.duration._
 import scala.util.{Success, Try}
 
 final class Main(
@@ -52,7 +51,7 @@ final class Main(
   }
 
   def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(BodyJson[Registration]) { request =>
-    registerCommon(lastKnownDeviceId, request.body).map(processResponse)
+    registerCommon(lastKnownDeviceId, request.body).map(processResponse(_))
   }
 
   def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = actionWithTimeout {
@@ -76,18 +75,17 @@ final class Main(
   def legacyRegister: Action[LegacyRegistration] =
     registerWithConverter(legacyRegistrationConverter)
 
-  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit reader: Reads[T]): Action[T] = actionWithTimeout(BodyJson[T]) { request =>
-    val result = converter.toRegistration(request.body) match {
-      case Xor.Right(registration) =>
-        val registrationResult = registerCommon(registration.deviceId, registration)
-        registrationResult onSuccess {
-          case Xor.Right(_) => unregisterFromLegacy(registration)
-        }
-        registrationResult
-      case Xor.Left(error) =>
-        Future.successful(Xor.left(error))
+  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(BodyJson[T]) { request =>
+    val legacyRegistration = request.body
+    val result = for {
+      registration <- XorT.fromXor[Future](converter.toRegistration(legacyRegistration))
+      registrationResponse <- XorT(registerCommon(registration.deviceId, registration))
+    } yield {
+      unregisterFromLegacy(registration)
+      converter.fromResponse(legacyRegistration, registrationResponse)
     }
-    result.map(processResponse)
+
+    result.value.map(processResponse(_))
   }
 
   private def unregisterFromLegacy(registration: Registration) = legacyClient.unregister(registration.udid).foreach {
@@ -127,7 +125,7 @@ final class Main(
     }
   }
 
-  private def processResponse(result: NotificationsError Xor RegistrationResponse): Result =
+  private def processResponse[T](result: NotificationsError Xor T)(implicit writer: Writes[T]) : Result =
     result.fold(processErrors, res => Ok(Json.toJson(res)))
 
   private def processErrors(error: NotificationsError): Result = error match {
