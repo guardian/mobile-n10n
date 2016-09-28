@@ -4,6 +4,7 @@ import java.net.URI
 import java.util.UUID
 
 import application.WithPlayApp
+import azure.{NotificationDetails, NotificationStates}
 import models.Link.Internal
 import models.Importance.Major
 import models.NotificationType.BreakingNews
@@ -14,19 +15,22 @@ import org.joda.time.DateTime
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import play.api.ApplicationLoader.Context
-import play.api.{BuiltInComponentsFromContext, BuiltInComponents}
+import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
 import play.api.test._
 import report.AppComponents
-import report.services.Configuration
+import report.services.{Configuration, NotificationReportEnricher}
 import tracking.InMemoryNotificationReportRepository
 import cats.implicits._
+import com.softwaremill.macwire._
+
+import scala.concurrent.Future
 
 class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification with Mockito {
 
   "Report service" should {
 
     "Return last 7 days notification reports if no date supplied" in new ReportTestScope {
-      val result = route(app, FakeRequest(GET, s"/notifications/news?api-key=$apiKey")).get
+      val result = route(app, FakeRequest(GET, s"/notifications?type=news&api-key=$apiKey")).get
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
@@ -34,11 +38,20 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
     }
 
     "Return a list of notification reports filtered by date" in new ReportTestScope {
-      val result = route(app, FakeRequest(GET, s"/notifications/news?from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
+      val result = route(app, FakeRequest(GET, s"/notifications?type=news&from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
       contentAsJson(result).as[List[NotificationReport]] mustEqual reportsInRange
+    }
+
+    "Return an individual notification report complete with platform specific data" in new ReportTestScope {
+      val id = reportsInRange.head.id
+      val result = route(app, FakeRequest(GET, s"/notifications/$id?api-key=$apiKey")).get
+
+      status(result) must equalTo(OK)
+      contentType(result) must beSome("application/json")
+      contentAsJson(result).as[ExtendedNotificationReport].reports.head.debug must beSome
     }
   }
 
@@ -93,8 +106,38 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
       configuration
     }
 
+    val notificationReportEnricherMock = {
+      val notificationReportEnricher = mock[NotificationReportEnricher]
+
+      val report = reportsInRange.head
+
+      val enrichedReport = ExtendedNotificationReport.fromNotificationReport(report)
+
+      val details = NotificationDetails(
+        state = NotificationStates.Completed,
+        enqueueTime = report.sentTime.plusSeconds(5),
+        startTime = Some(report.sentTime.plusSeconds(10)),
+        endTime = Some(report.sentTime.plusSeconds(20)),
+        notificationBody = "test",
+        targetPlatforms = List.empty,
+        wnsOutcomeCounts = None,
+        apnsOutcomeCounts = None,
+        gcmOutcomeCounts = None,
+        tags = "test,tags,list",
+        pnsErrorDetailsUri = None
+      )
+
+      val enrichedReportWithDebug = enrichedReport.copy(
+        reports = enrichedReport.reports.map(report => report.copy(debug = Some(details)))
+      )
+
+      notificationReportEnricher.enrich(reportsInRange.head) returns Future.successful(enrichedReportWithDebug)
+      notificationReportEnricher
+    }
+
     override def configureComponents(context: Context): BuiltInComponents = {
       new BuiltInComponentsFromContext(context) with AppComponents {
+        override lazy val reportEnricher = notificationReportEnricherMock
         override lazy val notificationReportRepository = reportRepositoryMock
         override lazy val appConfig = appConfigMock
       }

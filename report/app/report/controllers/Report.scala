@@ -1,19 +1,23 @@
 package report.controllers
 
+import java.util.UUID
+
 import authentication.AuthenticationSupport
-import models.NotificationType
+import models._
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, Controller}
-import report.services.Configuration
+import report.services.{Configuration, NotificationReportEnricher}
 import tracking.SentNotificationReportRepository
 
 import scala.concurrent.ExecutionContext
-import cats.data.Xor
+import cats.data.{Xor, XorT}
+import cats.implicits._
 
 final class Report(
   configuration: Configuration,
-  reportRepository: SentNotificationReportRepository)
+  reportRepository: SentNotificationReportRepository,
+  reportEnricher: NotificationReportEnricher)
   (implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
 
@@ -37,4 +41,10 @@ final class Report(
     }
   }
 
+  def notification(id: UUID): Action[AnyContent] = AuthenticatedAction.async {
+    XorT(reportRepository.getByUuid(id)).semiflatMap(reportEnricher.enrich).fold(
+      error => InternalServerError(error.message),
+      result => Ok(Json.toJson(result))
+    )
+  }
 }

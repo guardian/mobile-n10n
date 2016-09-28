@@ -1,12 +1,14 @@
 package report
 
 import _root_.controllers.Assets
+import azure.NotificationHubClient
 import play.api.routing.Router
-import play.api.{BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator, Application, ApplicationLoader}
+import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
+import play.api.libs.ws.ahc.AhcWSComponents
 import report.controllers.Report
-import report.services.Configuration
+import report.services.{Configuration, NotificationReportEnricher}
 import router.Routes
 import tracking.{DynamoNotificationReportRepository, SentNotificationReportRepository}
 
@@ -21,6 +23,8 @@ class ReportApplicationLoader extends ApplicationLoader {
 
 trait AppComponents extends PlayComponents
   with Controllers
+  with ReportEnricher
+  with AhcWSComponents
   with ReportRepository
   with AppConfiguration
   with ExecutionEnv
@@ -28,6 +32,7 @@ trait AppComponents extends PlayComponents
 trait Controllers {
   self: AppConfiguration
     with ReportRepository
+    with ReportEnricher
     with ExecutionEnv =>
 
   lazy val reportController = wire[Report]
@@ -46,6 +51,16 @@ trait ReportRepository {
 
   lazy val notificationReportRepository: SentNotificationReportRepository =
     new DynamoNotificationReportRepository(AsyncDynamo(region = EU_WEST_1), appConfig.dynamoReportsTableName)
+}
+
+trait ReportEnricher {
+  self: AppConfiguration
+    with AhcWSComponents
+    with ExecutionEnv =>
+
+  lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
+
+  lazy val reportEnricher = wire[NotificationReportEnricher]
 }
 
 trait PlayComponents extends BuiltInComponents {
