@@ -4,7 +4,7 @@ import cats.data.Xor
 import cats.implicits._
 import error.NotificationsError
 import models._
-import registration.models.{LegacyNewsstandRegistration, LegacyRegistration, LegacyTopic}
+import registration.models.LegacyNewsstandRegistration
 
 class LegacyNewsstandRegistrationConverter extends RegistrationConverter[LegacyNewsstandRegistration] {
 

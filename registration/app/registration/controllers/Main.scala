@@ -10,11 +10,7 @@ import cats.implicits._
 import error.{NotificationsError, RequestError}
 import models._
 import play.api.Logger
-import play.api.libs.json.{Json, Writes}
-import play.api.mvc.BodyParsers.parse.{json => BodyJson}
-import play.api.mvc.{Action, AnyContent, Controller, Result}
-import registration.models.{LegacyRegistration, LegacyTopic}
-import play.api.libs.json.{Json, Format}
+import play.api.libs.json.{Format, Json, Writes}
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty, BodyParser, BodyParsers, Controller, Request, Result}
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
@@ -28,7 +24,6 @@ import cats.implicits._
 import play.api.http.HttpEntity
 import providers.ProviderError
 
-import scala.concurrent.duration._
 import scala.util.{Success, Try}
 
 final class Main(
