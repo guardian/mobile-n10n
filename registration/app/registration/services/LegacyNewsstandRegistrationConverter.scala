@@ -17,4 +17,7 @@ class LegacyNewsstandRegistrationConverter extends RegistrationConverter[LegacyN
       topics = Set(Topic(TopicTypes.Newsstand, "newsstand"))
     ).right
   }
+
+  def fromResponse(legacyRegistration: LegacyNewsstandRegistration, response: RegistrationResponse): LegacyNewsstandRegistration =
+    legacyRegistration
 }

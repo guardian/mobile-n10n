@@ -61,6 +61,26 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       eventually(there was one(legacyRegistrationClientWSMock).url("https://localhost/device/registrations/0e980097-59fd-4047-b609-366c6d5bb1b3"))
     }
 
+    "return legacy formatted response for legacy registration" in new registrations {
+      val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationJson)))
+
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("device") /("platform" -> "ios")
+      contentAsString(result) must /("preferences") /("receiveNewsAlerts" -> true)
+    }
+
+    "not include in invalid topics in response to legacy registration" in new registrations {
+      topicValidatorMock.removeInvalid(topics) returns Future.successful((topics - footballMatchTopic).right)
+
+      val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationWithFootballMatchTopicJson)))
+
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("preferences") /("topics") /# 0 /("type" -> "breaking")
+                                                    /("name" -> "uk")
+
+      contentAsString(result) must (/("preferences") / "topics" andHave size(1))
+    }
+
     "return 204 and empty response for unregistration of udid" in new registrations {
       val Some(result) = route(app, FakeRequest(DELETE, "/registrations/ios/gia:00000000-0000-0000-0000-000000000000"))
       status(result) must equalTo(NO_CONTENT)
@@ -136,6 +156,26 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
         |			"type": "user-type",
         |			"name": "GuardianInternalBeta"
         |		}],
+        |		"receiveNewsAlerts": true
+        |	}
+        |}
+      """.stripMargin
+
+    val legacyIosRegistrationWithFootballMatchTopicJson =
+      """
+        |{
+        |	"device": {
+        |		"pushToken": "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4",
+        |		"buildTier": "debug",
+        |		"udid": "gia:0E980097-59FD-4047-B609-366C6D5BB1B3",
+        |		"platform": "ios"
+        |	},
+        |	"preferences": {
+        |		"edition": "UK",
+        |		"topics": [
+        |     {"type": "football-match", "name": "science"},
+        |			{"type": "breaking", "name": "uk"}
+        |		],
         |		"receiveNewsAlerts": true
         |	}
         |}
