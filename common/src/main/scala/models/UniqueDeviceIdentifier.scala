@@ -11,36 +11,31 @@ object UniqueDeviceIdentifier {
 
   private def uuidFromString(s: String) = Try(UUID.fromString(s)).toOption
 
-  def fromString(s: String): Option[UniqueDeviceIdentifier] = unapply(s) map {
-    case (id, prefix, uppercaseUuid) => UniqueDeviceIdentifier(id, prefix, uppercaseUuid)
-  }
-
-  def unapply(string: String): Option[(UUID, Option[String], Boolean)] = {
-    val uppercaseUuid = string.toLowerCase != string
-    if (string.startsWith("gia:"))
-      uuidFromString(string.stripPrefix("gia:")).map((_, Some("gia:"), uppercaseUuid))
-    else
-      uuidFromString(string).map((_, None, uppercaseUuid))
-  }
-
-  def unapply(jsValue: JsValue): Option[(UUID, Option[String], Boolean)] = jsValue match {
-    case JsString(uuid) => unapply(uuid)
-    case _ => None
+  def fromString(s: String): Option[UniqueDeviceIdentifier] = {
+    IosUdid.fromString(s) orElse uuidFromString(s).map(UniqueDeviceIdentifier(_))
   }
 
   implicit val readsUserId = new Format[UniqueDeviceIdentifier] {
-    override def reads(json: JsValue): JsResult[UniqueDeviceIdentifier] = json match {
-      case UniqueDeviceIdentifier(uuid, prefix, uppercaseUuid) => JsSuccess(UniqueDeviceIdentifier(uuid, prefix, uppercaseUuid))
-      case _ => JsError(ValidationError(s"User ID is not a valid UUID"))
+
+    override def reads(json: JsValue): JsResult[UniqueDeviceIdentifier] = {
+      val invalid = ValidationError(s"User ID is not a valid UUID")
+      json.validate[String].map(UniqueDeviceIdentifier.fromString).collect(invalid) {
+        case Some(udid) => udid
+      }
     }
 
-    override def writes(o: UniqueDeviceIdentifier): JsValue = JsString(o.toString)
+    override def writes(o: UniqueDeviceIdentifier): JsValue = JsString(o.legacyFormat)
   }
+
+  def apply(id: UUID): UniqueDeviceIdentifier =
+    new UniqueDeviceIdentifierImpl(id)
 }
 
-case class UniqueDeviceIdentifier(id: UUID, prefix: Option[String] = None, uppercaseUuid: Boolean = false) {
-  
-  private def idAsString = if (uppercaseUuid) id.toString.toUpperCase else id.toString
-  
-  override def toString: String = prefix.getOrElse("") + idAsString
+case class UniqueDeviceIdentifierImpl(id: UUID) extends UniqueDeviceIdentifier
+
+trait UniqueDeviceIdentifier {
+
+  def id: UUID
+
+  def legacyFormat: String = id.toString
 }

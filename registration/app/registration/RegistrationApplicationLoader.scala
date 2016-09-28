@@ -1,6 +1,7 @@
 package registration
 
 import _root_.controllers.Assets
+import akka.actor.ActorSystem
 import auditor.AuditorWSClient
 import azure.{NotificationHubClient, NotificationHubConnection}
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -10,10 +11,10 @@ import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import registration.controllers.Main
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
-import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, WindowsNotificationRegistrar}
+import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
 import router.Routes
 import registration.services._
-import tracking.{DynamoTopicSubscriptionsRepository, SubscriptionTracker}
+import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
 
 import scala.concurrent.ExecutionContext
 
@@ -30,6 +31,7 @@ trait AppComponents extends Controllers
   with WindowsRegistrations
   with GCMRegistrations
   with APNSRegistrations
+  with NewsstandRegistrations
   with NotificationsHubClient
   with Tracking
   with TopicValidation
@@ -56,6 +58,7 @@ trait Registrars {
   self: WindowsRegistrations
     with GCMRegistrations
     with APNSRegistrations
+    with NewsstandRegistrations
     with ExecutionEnv =>
   lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
 }
@@ -90,19 +93,23 @@ trait WindowsRegistrations {
   lazy val winNotificationRegistrar: WindowsNotificationRegistrar = wire[WindowsNotificationRegistrar]
 }
 
+trait NewsstandRegistrations {
+  self: Tracking
+    with AppConfiguration
+    with AhcWSComponents
+    with ExecutionEnv =>
+
+  lazy val newsstandHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
+
+  lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
+}
+
 trait NotificationsHubClient {
   self: AppConfiguration
     with AhcWSComponents
     with ExecutionEnv =>
 
-  lazy val hubClient = {
-    val hubConnection = NotificationHubConnection(
-      endpoint = appConfig.hubEndpoint,
-      sharedAccessKeyName = appConfig.hubSharedAccessKeyName,
-      sharedAccessKey = appConfig.hubSharedAccessKey
-    )
-    new NotificationHubClient(hubConnection, wsClient)
-  }
+  lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 }
 
 trait Tracking {
@@ -112,10 +119,12 @@ trait Tracking {
   import com.amazonaws.regions.Regions.EU_WEST_1
   import aws.AsyncDynamo
 
-  lazy val topicSubscriptionRepository = new DynamoTopicSubscriptionsRepository(
-    AsyncDynamo(region = EU_WEST_1),
-    appConfig.dynamoTopicsTableName
-  )
+  lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
+    val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
+    val batching = new BatchingTopicSubscriptionsRepository(underlying)
+    batching.scheduleFlush(appConfig.dynamoTopicsFlushInterval)
+    batching
+  }
 
   lazy val subscriptionTracker = wire[SubscriptionTracker]
 }
@@ -134,6 +143,7 @@ trait LegacyComponents {
     with ExecutionEnv =>
   lazy val legacyRegistrationClient = wire[LegacyRegistrationClient]
   lazy val legacyRegistrationConverter = wire[LegacyRegistrationConverter]
+  lazy val legacyNewsstandRegistrationConverter = wire[LegacyNewsstandRegistrationConverter]
 }
 
 trait PlayComponents extends BuiltInComponents {
@@ -146,4 +156,5 @@ trait PlayComponents extends BuiltInComponents {
 trait ExecutionEnv {
   self: PlayComponents =>
   implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
+  implicit lazy val implicitActorSystem: ActorSystem = actorSystem
 }

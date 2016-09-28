@@ -45,13 +45,22 @@ final class Main(
     topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
-      case _ => pushGeneric(Push(request.body, Left(topics)))
+      case _ => pushWithDuplicateProtection(Push(request.body, Left(topics)))
     }
   }
 
   def pushUser(userId: UUID): Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
     val push = Push(request.body, Right(UniqueDeviceIdentifier(userId)))
-    pushGeneric(push)
+    pushWithDuplicateProtection(push)
+  }
+
+  private def pushWithDuplicateProtection(push: Push): Future[Result] = {
+    val isDuplicate = notificationReportRepository.getByUuid(push.notification.id).map(_.isRight)
+
+    isDuplicate.flatMap {
+      case true => Future.successful(BadRequest(s"${push.notification.id} has been sent before - refusing to resend"))
+      case false => pushGeneric(push)
+    }
   }
 
   private def pushGeneric(push: Push) = {

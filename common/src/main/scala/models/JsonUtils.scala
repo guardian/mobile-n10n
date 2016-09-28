@@ -47,4 +47,14 @@ object JsonUtils {
 
     override def writes(o: URI): JsValue = JsString(o.toString)
   }
+
+  def stringFormat[T](fromString: String => Option[T]): Format[T] = new Format[T] {
+    override def reads(json: JsValue): JsResult[T] = json.validate[String].flatMap { s =>
+      fromString(s)
+        .map(JsSuccess(_))
+        .getOrElse(JsError(s"Invalid string: $s"))
+    }
+
+    override def writes(o: T): JsValue = JsString(o.toString)
+  }
 }

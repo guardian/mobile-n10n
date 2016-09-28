@@ -12,7 +12,7 @@ import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import play.api.test.PlaySpecification
-import tracking.{RepositoryError, SentNotificationReportRepository}
+import tracking.{InMemoryNotificationReportRepository, RepositoryError, SentNotificationReportRepository}
 
 import scala.concurrent.Future
 import cats.data.Xor
@@ -26,6 +26,13 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       status(response) must equalTo(CREATED)
       pushSent must beSome.which(_.destination must beEqualTo(Left(validTopics)))
+    }
+    "refuse a notification that is sent twice" in new MainScope {
+      val request = requestWithValidTopics
+      val firstResponse = main.pushTopics()(request)
+      status(firstResponse) must equalTo(CREATED)
+      val secondResponse = main.pushTopics()(request)
+      status(secondResponse) must equalTo(BAD_REQUEST)
     }
     "refuse a notification without a topic" in new MainScope {
       val request = authenticatedRequest.withBody(breakingNewsNotification(Set()))
@@ -48,20 +55,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
 
       status(response) must equalTo(CREATED)
-      there was one(reportRepository).store(expectedReport)
-    }
-
-    "notify reporting repository about added notifications and propagate reporting error" in new MainScope {
-      val request = requestWithValidTopics
-      val expectedReport = reportWithSenderReports(List(
-        senderReport(Senders.AzureNotificationsHub), senderReport(Senders.FrontendAlerts)
-      ))
-      reportRepository.store(expectedReport) returns Future.successful(RepositoryError("error").left)
-
-      val response = main.pushTopics()(request)
-
-      status(response) must equalTo(CREATED)
-      contentAsJson(response).as[PushResult].reportingError must beSome
+      reportRepository.getByUuid(expectedReport.notification.id) must equalTo(expectedReport.right).await
     }
 
     "report frontend alerts rejected notifications" in new MainScope {
@@ -91,10 +85,12 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       val response = main.pushTopics()(request)
 
-      val reportCaptor = ArgumentCaptor.forClass(classOf[NotificationReport])
-      there was one(reportRepository).store(reportCaptor.capture())
+
       status(response) must equalTo(CREATED)
-      reportCaptor.getValue.sentTime must beEqualTo(frontendAlertsReport.sentTime)
+
+      val sentTime = reportRepository.getByUuid(breakingNewsNotification(Set.empty).id).map(_.map(_.sentTime))
+
+      sentTime must beEqualTo(frontendAlertsReport.sentTime.right).await
     }
   }
 
@@ -112,11 +108,6 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     }
   }
 
-  trait NotifcationReportRepoScope extends Scope {
-    val reportRepository = mock[SentNotificationReportRepository]
-    reportRepository.store(any) returns Future.successful(().right)
-  }
-
   trait FrontendAlertsScope extends Scope {
     self: NotificationsFixtures =>
     val frontendAlerts = mock[FrontendAlerts]
@@ -125,7 +116,6 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
   trait MainScope extends Scope
     with NotificationSenderSupportScope
-    with NotifcationReportRepoScope
     with FrontendAlertsScope
     with NotificationsFixtures {
     val conf: Configuration = {
@@ -133,6 +123,8 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       m.apiKeys returns List(apiKey)
       m
     }
+
+    val reportRepository = new InMemoryNotificationReportRepository
 
     val main = new Main(
       configuration = conf,

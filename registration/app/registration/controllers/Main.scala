@@ -1,9 +1,11 @@
 package registration.controllers
 
-import java.util.UUID
-
+import akka.actor.ActorSystem
+import akka.pattern.after
+import akka.stream.scaladsl.Source
+import akka.util.ByteString
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
-import cats.data.{Xor, XorT}
+import cats.data.XorT
 import cats.implicits._
 import error.{NotificationsError, RequestError}
 import models._
@@ -12,36 +14,52 @@ import play.api.libs.json.{Json, Writes}
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc.{Action, AnyContent, Controller, Result}
 import registration.models.{LegacyRegistration, LegacyTopic}
+import play.api.libs.json.{Json, Format}
+import play.api.mvc.BodyParsers.parse.{json => BodyJson}
+import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty, BodyParser, BodyParsers, Controller, Request, Result}
+import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
 import registration.services.azure.UdidNotFound
-import registration.services.{UnsupportedPlatform, _}
+import registration.services._
 import registration.services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
 import cats.implicits._
+import play.api.http.HttpEntity
 import providers.ProviderError
 
+import scala.concurrent.duration._
 import scala.util.{Success, Try}
 
 final class Main(
   registrarProvider: RegistrarProvider,
   topicValidator: TopicValidator,
   legacyClient: LegacyRegistrationClient,
-  legacyRegistrationConverter: LegacyRegistrationConverter)
-    (implicit executionContext: ExecutionContext)
+  legacyRegistrationConverter: LegacyRegistrationConverter,
+  legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter,
+  config: Configuration)
+  (implicit system: ActorSystem, executionContext: ExecutionContext)
   extends Controller {
 
   private val logger = Logger(classOf[Main])
 
   def healthCheck: Action[AnyContent] = Action {
-    Ok("Good")
+    // This forces Play to close the connection rather than allowing
+    // keep-alive (because the content length is unknown)
+    Ok.sendEntity(
+      HttpEntity.Streamed(
+        data =  Source(Array(ByteString("Good")).toVector),
+        contentLength = None,
+        contentType = Some("text/plain")
+      )
+    )
   }
 
-  def register(lastKnownDeviceId: String): Action[Registration] = Action.async(BodyJson[Registration]) { request =>
+  def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(BodyJson[Registration]) { request =>
     registerCommon(lastKnownDeviceId, request.body).map(processResponse(_))
   }
 
-  def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
+  def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = actionWithTimeout {
 
     def registrarFor(platform: Platform) = XorT.fromXor[Future](
       registrarProvider.registrarFor(platform)
@@ -56,25 +74,30 @@ final class Main(
       .fold(processErrors, _ => NoContent)
   }
 
-  def legacyRegister: Action[LegacyRegistration] = Action.async(BodyJson[LegacyRegistration]) { request =>
-    val legacyRegistration = request.body
+  def newsstandRegister: Action[LegacyNewsstandRegistration] =
+    registerWithConverter(legacyNewsstandRegistrationConverter)
 
+  def legacyRegister: Action[LegacyRegistration] =
+    registerWithConverter(legacyRegistrationConverter)
+
+  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(BodyJson[T]) { request =>
+    val legacyRegistration = request.body
     val result = for {
-      registration <- XorT.fromXor[Future](legacyRegistrationConverter.toRegistration(legacyRegistration))
+      registration <- XorT.fromXor[Future](converter.toRegistration(legacyRegistration))
       registrationResponse <- XorT(registerCommon(registration.deviceId, registration))
     } yield {
-      unregisterFromLegacy(legacyRegistration)
-      legacyRegistrationConverter.fromResponse(legacyRegistration, registrationResponse)
+      unregisterFromLegacy(registration)
+      converter.fromResponse(legacyRegistration, registrationResponse)
     }
 
     result.value.map(processResponse(_))
   }
 
-  private def unregisterFromLegacy(registration: LegacyRegistration) = legacyClient.unregister(registration).foreach {
+  private def unregisterFromLegacy(registration: Registration) = legacyClient.unregister(registration.udid).foreach {
     case Xor.Right(_) =>
-      logger.debug(s"Unregistered ${registration.device.udid} from legacy notifications")
+      logger.debug(s"Unregistered ${registration.udid} from legacy notifications")
     case Xor.Left(error) =>
-      logger.error(s"Failed to unregistered ${registration.device.udid} from legacy notifications: $error")
+      logger.error(s"Failed to unregistered ${registration.udid} from legacy notifications: $error")
   }
 
   private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[NotificationsError Xor RegistrationResponse] = {
@@ -129,5 +152,15 @@ final class Main(
       logger.error(s"Unknown error: ${other.reason}")
       InternalServerError(other.reason)
   }
+
+  private def actionWithTimeout[T](bodyParser: BodyParser[T])(block: Request[T] => Future[Result]): Action[T] = {
+    Action.async(bodyParser) { request =>
+      val timeoutFuture = after(config.defaultTimeout, using = system.scheduler)(Future.successful(InternalServerError("Operation timed out")))
+      Future.firstCompletedOf(Seq(block(request), timeoutFuture))
+    }
+  }
+
+  private def actionWithTimeout(block: => Future[Result]): Action[AnyContent] =
+    actionWithTimeout(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
 
 }

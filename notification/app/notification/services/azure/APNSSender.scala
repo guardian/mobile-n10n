@@ -12,6 +12,6 @@ class APNSSender(hubClient: NotificationHubClient, configuration: Configuration,
 
   protected val azureRawPushConverter = new APNSPushConverter(configuration)
 
-  override protected def send(push: Push): Future[HubResult[Unit]] =
+  override protected def send(push: Push): Future[HubResult[Option[String]]] =
     hubClient.sendNotification(azureRawPushConverter.toRawPush(push))
 }

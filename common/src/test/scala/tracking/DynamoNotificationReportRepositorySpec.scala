@@ -82,7 +82,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
         topic = Set(Topic(Breaking, "uk"))
       ),
       reports = List(
-        SenderReport("Windows", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), PlatformStatistics(WindowsMobile, 5).some)
+        SenderReport("Windows", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), Some(s"hub-$id"), PlatformStatistics(WindowsMobile, 5).some)
       )
     )
   }
