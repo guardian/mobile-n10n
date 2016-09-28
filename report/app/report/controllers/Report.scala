@@ -43,8 +43,8 @@ final class Report(
 
   def notification(id: UUID): Action[AnyContent] = AuthenticatedAction.async {
     XorT(reportRepository.getByUuid(id)).semiflatMap(reportEnricher.enrich).fold(
-      { error => InternalServerError(error.message) },
-      { result => Ok(Json.toJson(result)) }
+      error => InternalServerError(error.message),
+      result => Ok(Json.toJson(result))
     )
   }
 }
