@@ -1,6 +1,7 @@
 package registration.services
 
 import error.NotificationsError
+import registration.models.LegacyTopic
 import models._
 import registration.models.LegacyRegistration
 import cats.data.Xor
@@ -21,6 +22,16 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
         topics = topics(legacyRegistration)
       ).right
     }
+  }
+
+  def fromResponse(legacyRegistration: LegacyRegistration, response: RegistrationResponse): LegacyRegistration = {
+    val topics = response.topics.map { topic =>
+      LegacyTopic(topic.`type`.toString, topic.name)
+    }
+
+    val preferences = legacyRegistration.preferences.copy(topics = Some(topics.toSeq))
+
+    legacyRegistration.copy(preferences = preferences)
   }
 
   private def topics(request: LegacyRegistration): Set[Topic] = {
