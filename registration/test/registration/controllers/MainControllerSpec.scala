@@ -17,6 +17,7 @@ import registration.services._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import cats.data.Xor
 import cats.implicits._
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
@@ -31,6 +32,13 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       val eventualResult = route(app, FakeRequest(GET, "/healthcheck")).get
 
       status(eventualResult) must equalTo(OK)
+    }
+
+    "time out if a registration takes longer than the configured timeout" in new delayedRegistrations {
+      val Some(result) = route(app, FakeRequest(PUT, "/registrations/someId").withJsonBody(Json.parse(registrationJson)))
+
+      status(result) must equalTo(INTERNAL_SERVER_ERROR)
+      contentAsString(result) must equalTo("Operation timed out")
     }
 
     "accepts registration and calls registrar factory" in new registrations {
@@ -90,6 +98,37 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     }
   }
 
+  trait delayedRegistrations extends registrations {
+    override lazy val notificationRegistrar = new NotificationRegistrar {
+      override val providerIdentifier: String = "test"
+
+      override def register(deviceId: String, registration: Registration): Future[Xor[ProviderError, RegistrationResponse]] = Future {
+        Thread.sleep(2000)
+        RegistrationResponse(
+          deviceId = "deviceAA",
+          platform = WindowsMobile,
+          userId = registration.udid,
+          topics = registration.topics
+        ).right
+      }
+
+      override def unregister(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Unit] = Future {
+        if (existingDeviceIds.contains(udid)) {
+          ().right
+        } else {
+          UdidNotFound.left
+        }
+      }
+
+      val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
+
+      override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Xor[ProviderError, Paginated[StoredRegistration]]] = ???
+
+      override def findRegistrations(lastKnownChannelUri: String): Future[Xor[ProviderError, List[StoredRegistration]]] = ???
+
+      override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Xor[ProviderError, Paginated[StoredRegistration]]] = ???
+    }
+  }
   trait registrations extends WithPlayApp {
     val legacyIosRegistrationJson =
       """
@@ -155,7 +194,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       Topic(`type` = Breaking, name = "uk")
     )
 
-    val topicValidatorMock = {
+    lazy val topicValidatorMock = {
       val validator = mock[TopicValidator]
       validator.removeInvalid(topics) returns Future.successful(topics.right)
       validator.removeInvalid(legacyTopics) returns Future.successful(legacyTopics.right)
@@ -167,7 +206,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       override def topicsQueried: Set[Topic] = topics
     }
 
-    val notificationRegistrar = new NotificationRegistrar {
+    lazy val notificationRegistrar = new NotificationRegistrar {
       override val providerIdentifier = "test"
 
       override def register(deviceId: String, registration: Registration): Future[Xor[ProviderError, RegistrationResponse]] = Future {
@@ -196,7 +235,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       override def findRegistrations(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Paginated[StoredRegistration]] = ???
     }
 
-    val registrarProviderMock = {
+    lazy val registrarProviderMock = {
       val provider = mock[RegistrarProvider]
       provider.registrarFor(any[Platform]) returns notificationRegistrar.right
       provider.registrarFor(any[Registration]) returns notificationRegistrar.right
@@ -205,7 +244,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
     val legacyRegistrationClientWSMock = mock[WSClient]
 
-    val legacyRegistrationClientMock = {
+    lazy val legacyRegistrationClientMock = {
       val conf = mock[Configuration]
       conf.legacyNotficationsEndpoint returns "https://localhost"
       val deleteRequest = {
@@ -223,6 +262,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
         override lazy val topicValidator = topicValidatorMock
         override lazy val registrarProvider: RegistrarProvider = registrarProviderMock
         override lazy val appConfig = mock[Configuration]
+        appConfig.defaultTimeout returns 1.seconds
         override lazy val legacyRegistrationClient = legacyRegistrationClientMock
       }
     }

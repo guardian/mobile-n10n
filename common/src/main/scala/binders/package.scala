@@ -2,6 +2,7 @@ import java.util.UUID
 
 import azure.NotificationHubRegistrationId
 import models._
+
 import models.pagination.CursorSet
 import org.joda.time.DateTime
 import play.api.mvc.{PathBindable, QueryStringBindable}
@@ -72,7 +73,7 @@ package object binders {
         )
       }
 
-      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String,DateTime]] = {
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, DateTime]] = {
         strBinder.bind(key, params).map {
           _.right.flatMap { v =>
             Try {
@@ -110,6 +111,22 @@ package object binders {
       override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, CursorSet]] =
         strBinder.bind(key, params).map {
           _.right.map(CursorSet.fromString)
+        }
+    }
+
+  implicit def bindNotificationType(implicit strBinder: QueryStringBindable[String]): QueryStringBindable[NotificationType] =
+    new QueryStringBindable[NotificationType] {
+      override def unbind(key: String, value: NotificationType): String =
+        strBinder.unbind(key = key, value = value.toString)
+
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, NotificationType]] =
+        strBinder.bind(key, params).map {
+          _.right.flatMap { v =>
+            NotificationType.fromRep.get(v) match {
+              case Some(notificationType) => Right(notificationType)
+              case None => Left(s"Unknown NotificationType $v")
+            }
+          }
         }
     }
 

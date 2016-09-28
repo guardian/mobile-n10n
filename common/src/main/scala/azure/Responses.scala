@@ -1,6 +1,6 @@
 package azure
 
-import HubFailure.{HubParseFailed, HubServiceError}
+import HubFailure.{HubInvalidResponse, HubParseFailed, HubServiceError}
 import NotificationHubClient.HubResult
 import org.joda.time.DateTime
 import play.api.libs.ws.WSResponse
@@ -65,6 +65,12 @@ object Responses {
           )
         }
         case None => None.right
+      }
+    }
+
+    def integerNode(s: String): HubResult[Int] = {
+      textNode(s).flatMap { integer =>
+        Xor.fromOption(Try(integer.toInt).toOption, HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$integer' in field $s as an integer"))
       }
     }
 

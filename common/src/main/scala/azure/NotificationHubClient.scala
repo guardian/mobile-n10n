@@ -33,6 +33,13 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
 
   private def extractContent[T](hubResult: HubResult[AtomEntry[T]]): HubResult[T] = hubResult.map(_.content)
 
+  def notificationDetails(id: String): Future[HubResult[NotificationDetails]] = {
+    logger.debug(s"Requesting details for notification $id")
+    request(s"${Endpoints.Messages}$id")
+      .get()
+      .map { tryParse[NotificationDetails](Status.OK) }
+  }
+
   def create(rawRegistration: NotificationsHubRegistration): Future[HubResult[RegistrationResponse]] = {
     logger.debug(s"Creating new registration: ${rawRegistration.toXml}")
     request(Endpoints.Registrations)
@@ -70,7 +77,7 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
       }
   }
 
-  def sendNotification[T](rawPush: RawPush[T]): Future[HubResult[Unit]] = {
+  def sendNotification[T](rawPush: RawPush[T]): Future[HubResult[Option[String]]] = {
     val serviceBusTags = rawPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
     logger.debug(s"Sending Raw Notification: $rawPush")
     request(Endpoints.Messages)
@@ -79,7 +86,7 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
       .withHeaders(serviceBusTags: _*)
       .post(rawPush.body)(rawPush.writeable)
       .map {
-        case r if r.isSuccess => ().right
+        case r if r.isSuccess => r.header("Location").right
         case r => XmlParser.parseError(r).left
       }
   }
