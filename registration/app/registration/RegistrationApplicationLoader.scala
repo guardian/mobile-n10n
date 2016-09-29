@@ -1,8 +1,10 @@
 package registration
 
+import java.net.URL
+
 import _root_.controllers.Assets
 import akka.actor.ActorSystem
-import auditor.AuditorWSClient
+import auditor.{Auditor, AuditorGroup, LiveblogAuditor, RemoteAuditor}
 import azure.{NotificationHubClient, NotificationHubConnection}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
@@ -133,7 +135,10 @@ trait TopicValidation {
   self: AppConfiguration
     with AhcWSComponents
     with ExecutionEnv =>
-  lazy val auditorWsClient = wire[AuditorWSClient]
+  lazy val auditorGroup: AuditorGroup = {
+    val remoteAuditors: Set[Auditor] = appConfig.auditorConfiguration.hosts map { host => RemoteAuditor(new URL(host), wsClient) }
+    AuditorGroup(remoteAuditors + LiveblogAuditor(wsClient, appConfig.auditorConfiguration.contentApiConfig))
+  }
   lazy val topicValidator: TopicValidator = wire[AuditorTopicValidator]
 }
 
