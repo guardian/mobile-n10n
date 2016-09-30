@@ -21,6 +21,16 @@ object StoredRegistration {
   import play.api.libs.json._
 
   implicit val jf = Json.format[StoredRegistration]
+
+  def fromRegistration(registration: Registration) = {
+    StoredRegistration(
+      deviceId = registration.deviceId,
+      platform = registration.platform,
+      userId = Some(registration.udid),
+      tagIds = registration.topics.map(_.id),
+      topics = registration.topics
+    )
+  }
 }
 
 

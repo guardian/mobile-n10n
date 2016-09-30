@@ -5,6 +5,7 @@ import akka.pattern.after
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
+import binders.querystringbinders.{RegistrationsSelector, RegistrationsByUdidParams, RegistrationsByTopicParams, RegistrationsByDeviceToken}
 import cats.data.XorT
 import cats.implicits._
 import error.{NotificationsError, RequestError}
@@ -22,7 +23,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
 import cats.implicits._
 import models.pagination.{CursorSet, Paginated}
-
 import play.api.http.HttpEntity
 import providers.ProviderError
 
@@ -90,6 +90,14 @@ final class Main(
         Future.successful(Xor.left(error))
     }
     result.map(processResponse)
+  }
+
+  def registrations(selector: RegistrationsSelector): Action[AnyContent] = {
+    selector match {
+      case v: RegistrationsByUdidParams => registrationsByUdid(v.udid)
+      case v: RegistrationsByTopicParams => registrationsByTopic(v.topic, v.cursor)
+      case v: RegistrationsByDeviceToken => registrationsByDeviceToken(v.platform, v.deviceToken)
+    }
   }
 
   def registrationsByTopic(topic: Topic, cursors: Option[CursorSet]): Action[AnyContent] = Action.async {

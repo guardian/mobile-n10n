@@ -69,7 +69,8 @@ lazy val registration = project
   .settings(
     fork in run := true,
     routesImport ++= Seq(
-      "binders._",
+      "binders.querystringbinders._",
+      "binders.pathbinders._",
       "models._",
       "models.pagination._"
     ),
@@ -83,8 +84,11 @@ lazy val notification = project
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
-    routesImport += "binders._",
-    routesImport += "models._",
+    routesImport ++= Seq(
+      "binders.querystringbinders._",
+      "binders.pathbinders._",
+      "models._"
+    ),
     riffRaffPackageType := (packageZipTarball in Universal).value,
     version := "1.0-SNAPSHOT"
   )
@@ -95,9 +99,12 @@ lazy val report = project
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
-    routesImport += "binders._",
-    routesImport += "org.joda.time.DateTime",
-    routesImport += "models._",
+    routesImport ++= Seq(
+      "binders.querystringbinders._",
+      "binders.pathbinders._",
+      "org.joda.time.DateTime",
+      "models._"
+    ),
     riffRaffPackageType := (packageZipTarball in Universal).value,
     version := "1.0-SNAPSHOT"
   )
