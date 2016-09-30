@@ -96,8 +96,6 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
 
     override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[ProviderError Xor Paginated[StoredRegistration]] = {
-      println(s"Requested for $topic")
-      println(registrations)
       val selected = if (cursor.contains("abc")) {
         registrations.filter(_.topics.contains(topic)).map(StoredRegistration.fromRegistration).drop(5)
       } else {
