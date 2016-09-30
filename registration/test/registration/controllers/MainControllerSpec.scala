@@ -46,6 +46,33 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       eventually(there was one(wsClient).url("https://localhost/device/registrations/0e980097-59fd-4047-b609-366c6d5bb1b3"))
     }
 
+    "return legacy formatted response for legacy registration" in new RegistrationsContext {
+      val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationJson)))
+
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("device") /("platform" -> "ios")
+      contentAsString(result) must /("preferences") /("receiveNewsAlerts" -> true)
+    }
+
+    "not include in invalid topics in response to legacy registration" in new RegistrationsContext {
+      override lazy val fakeTopicValidator = {
+        val validator = mock[TopicValidator]
+        validator.removeInvalid(topics) returns Future.successful(topics.right)
+        validator.removeInvalid(legacyTopics) returns Future.successful(legacyTopics.right)
+        validator
+      }
+
+      fakeTopicValidator.removeInvalid(topics) returns Future.successful((topics - footballMatchTopic).right)
+
+      val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationWithFootballMatchTopicJson)))
+
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("preferences") /("topics") /# 0 /("type" -> "breaking")
+                                                    /("name" -> "uk")
+
+      contentAsString(result) must (/("preferences") / "topics" andHave size(1))
+    }
+
     "return 204 and empty response for unregistration of udid" in new RegistrationsContext {
       override lazy val fakeRegistrarProvider = {
         val provider = mock[RegistrarProvider]
