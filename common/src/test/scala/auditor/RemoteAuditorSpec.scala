@@ -20,7 +20,7 @@ import play.core.server.{Server, ServerConfig}
 
 import scala.concurrent.duration._
 
-class AuditorWSClientSpec(implicit ev: ExecutionEnv) extends Specification with Mockito {
+class RemoteAuditorSpec(implicit ev: ExecutionEnv) extends Specification with Mockito {
   // problems with Materializer being closed when NettyServer tris to bind channel
   args(skipAll = true)
 
@@ -44,10 +44,9 @@ class AuditorWSClientSpec(implicit ev: ExecutionEnv) extends Specification with 
       Server.withApplication(application, config)({ implicit port =>
         implicit val materializer = application.materializer
         WsTestClient.withClient { client =>
-          val auditorWSClient = new AuditorWSClient(client)
-          val auditor = Auditor(new URL(s"http://localhost:$port"))
+          val auditor = RemoteAuditor(new URL(s"http://localhost:$port"), client)
 
-          val filteredTopics = auditorWSClient.expiredTopics(auditor, topics)
+          val filteredTopics = auditor.expiredTopics(topics)
 
           filteredTopics must beEqualTo(topics).awaitFor(5 seconds)
         }
@@ -56,10 +55,9 @@ class AuditorWSClientSpec(implicit ev: ExecutionEnv) extends Specification with 
 
     "not query web service with empty list" in {
       val wsClient = mock[WSClient]
-      val auditor = Auditor(new URL(s"http://localhost:9000"))
-      val auditorWSClient = new AuditorWSClient(wsClient)
+      val auditor = RemoteAuditor(new URL(s"http://localhost:9000"), wsClient)
 
-      auditorWSClient.expiredTopics(auditor, Set.empty)
+      auditor.expiredTopics(Set.empty)
 
       there were no(wsClient).url(anyString)
     }

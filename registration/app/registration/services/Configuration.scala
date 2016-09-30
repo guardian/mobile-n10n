@@ -1,6 +1,6 @@
 package registration.services
 
-import auditor.AuditorGroupConfig
+import auditor.{AuditorGroupConfig, ContentApiConfig}
 import _root_.azure.NotificationHubConnection
 import conf.NotificationConfiguration
 
@@ -23,8 +23,11 @@ class Configuration extends NotificationConfiguration("registration") {
 
   lazy val auditorConfiguration = AuditorGroupConfig(
     hosts = Set(
-      getConfigString("notifications.auditor.contentNotifications"),
       getConfigString("notifications.auditor.goalAlerts")
+    ),
+    contentApiConfig = ContentApiConfig(
+      apiKey = getConfigString("notifications.auditor.contentApi.apiKey"),
+      url = getConfigString("notifications.auditor.contentApi.url")
     )
   )
   lazy val maxTopics = getConfigInt("notifications.max_topics", 200) // scalastyle:off magic.number

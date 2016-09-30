@@ -1,8 +1,6 @@
 package registration.services.topic
 
-import java.net.URL
-
-import auditor.{Auditor, AuditorGroupConfig, AuditorWSClient}
+import auditor.{Auditor, AuditorGroup, AuditorGroupConfig, ContentApiConfig}
 import models.{Topic, TopicTypes}
 import models.TopicTypes.{Content, FootballMatch}
 import org.specs2.concurrent.ExecutionEnv
@@ -13,6 +11,7 @@ import org.specs2.matcher.XorMatchers
 import registration.services.Configuration
 
 import scala.concurrent.Future.successful
+import scala.concurrent.ExecutionContext
 import cats.implicits._
 
 class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification with Mockito with XorMatchers {
@@ -26,8 +25,8 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
         expiredInA,
         expiredInB
       )
-      auditorWSClient.expiredTopics(===(auditorA), anySetOf[Topic]) returns successful(Set(expiredInB))
-      auditorWSClient.expiredTopics(===(auditorB), anySetOf[Topic]) returns successful(Set(expiredInA))
+      auditorA.expiredTopics(anySetOf[Topic])(any[ExecutionContext]) returns successful(Set(expiredInA))
+      auditorB.expiredTopics(anySetOf[Topic])(any[ExecutionContext]) returns successful(Set(expiredInB))
 
       val validTopics = topicValidator.removeInvalid(topics)
 
@@ -35,8 +34,8 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
     }
 
     "Limit the number of tags to 200" in new validators {
-      auditorWSClient.expiredTopics(===(auditorA), anySetOf[Topic]) returns successful(Set.empty)
-      auditorWSClient.expiredTopics(===(auditorB), anySetOf[Topic]) returns successful(Set.empty)
+      auditorA.expiredTopics(anySetOf[Topic])(any[ExecutionContext]) returns successful(Set.empty)
+      auditorB.expiredTopics(anySetOf[Topic])(any[ExecutionContext]) returns successful(Set.empty)
 
       val topics = for {
         i <- 0 to 300
@@ -48,9 +47,8 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
     }
 
     "Do not filter breaking news if topic list too long" in new validators {
-      auditorWSClient.expiredTopics(===(auditorA), anySetOf[Topic]) returns successful(Set.empty)
-      auditorWSClient.expiredTopics(===(auditorB), anySetOf[Topic]) returns successful(Set.empty)
-
+      auditorA.expiredTopics(anySetOf[Topic])(any[ExecutionContext]) returns successful(Set.empty)
+      auditorB.expiredTopics(anySetOf[Topic])(any[ExecutionContext]) returns successful(Set.empty)
       val topics = for {
         i <- 0 to 300
       } yield Topic(TopicTypes.Content, s"test-$i")
@@ -63,18 +61,19 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
   }
 
   trait validators extends Scope {
-    val auditorWSClient = mock[AuditorWSClient]
-    val auditorA = Auditor(new URL("http://localhost/auditorA"))
-    val auditorB = Auditor(new URL("http://locahost/auditorB"))
+
+    val auditorA = mock[Auditor]
+    val auditorB = mock[Auditor]
     val testMaxTopics = 200
     val topicValidator = {
       val configuration = new Configuration() {
         override lazy val auditorConfiguration = AuditorGroupConfig(
-          hosts = Set(auditorA.host, auditorB.host).map(_.toString)
+          hosts = Set.empty,
+          contentApiConfig = ContentApiConfig(apiKey = "test", url = "test")
         )
         override lazy val maxTopics = testMaxTopics
       }
-      new AuditorTopicValidator(auditorWSClient, configuration)
+      new AuditorTopicValidator(configuration, AuditorGroup(Set(auditorA, auditorB)))
     }
   }
 }

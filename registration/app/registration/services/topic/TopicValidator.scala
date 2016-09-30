@@ -1,12 +1,11 @@
 package registration.services.topic
 
 
-import auditor.{AuditorWSClient, mkAuditorGroup}
+import auditor.AuditorGroup
 import models.Topic
 import registration.services.Configuration
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
 import cats.implicits._
 
@@ -20,12 +19,12 @@ trait TopicValidatorError {
   def topicsQueried: Set[Topic]
 }
 
-final class AuditorTopicValidator(auditorClient: AuditorWSClient, configuration: Configuration)
+final class AuditorTopicValidator(configuration: Configuration, auditors: AuditorGroup)(implicit ec: ExecutionContext)
   extends TopicValidator {
 
   override def removeInvalid(topics: Set[Topic]): Future[TopicValidatorError Xor Set[Topic]] =
-    mkAuditorGroup(configuration.auditorConfiguration)
-      .queryEach { auditorClient.expiredTopics(_, topics) }
+    auditors
+      .queryEach { _.expiredTopics(topics) }
       .map(expired => topics -- expired.flatten)
       .map(limitTopics(configuration.maxTopics))
       .map(_.right)
