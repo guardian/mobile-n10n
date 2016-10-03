@@ -5,19 +5,21 @@ import azure._
 import models._
 import play.api.Logger
 import providers.ProviderError
-import registration.services.{NotificationRegistrar, RegistrationResponse}
+import registration.services.{NotificationRegistrar, RegistrationResponse, StoredRegistration}
 import tracking.{SubscriptionTracker, TopicSubscriptionTracking}
 
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.{Xor, XorT}
 import cats.implicits._
+import models.pagination.{Paginated, ProviderCursor}
 
 class NotificationHubRegistrar(
-  hubClient: NotificationHubClient,
+  val hubClient: NotificationHubClient,
   subscriptionTracker: SubscriptionTracker,
   registrationExtractor: Registration => NotificationsHubRegistration)(implicit ec: ExecutionContext)
   extends NotificationRegistrar {
 
+  override val providerIdentifier = "azure"
   val logger = Logger(classOf[WindowsNotificationRegistrar])
 
   override def register(lastKnownChannelUri: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
@@ -32,21 +34,39 @@ class NotificationHubRegistrar(
   override def unregister(udid: UniqueDeviceIdentifier): RegistrarResponse[Unit] = {
     val result = for {
       registrationResponses <- XorT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
-      _ <- XorT(deleteRegistrations(registrationResponses)).ensure(UdidNotFound)(_ => registrationResponses.nonEmpty)
+      _ <- XorT(deleteRegistrations(registrationResponses.registrations)).ensure(UdidNotFound)(_ => registrationResponses.registrations.nonEmpty)
     } yield ()
 
     result.value
   }
 
+  def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[ProviderError Xor Paginated[StoredRegistration]] = {
+    XorT(hubClient.registrationsByTag(Tag.fromTopic(topic).encodedTag, cursor))
+      .semiflatMap(responsesToStoredRegistrations)
+      .value
+  }
+
+  def findRegistrations(lastKnownChannelUri: String): Future[ProviderError Xor List[StoredRegistration]] = {
+    XorT(hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri))
+      .semiflatMap(responsesToStoredRegistrations)
+      .value
+  }
+
+  def findRegistrations(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Paginated[StoredRegistration]] = {
+    XorT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
+      .semiflatMap(responsesToStoredRegistrations)
+      .value
+  }
+
   private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[ProviderError Xor List[azure.RegistrationResponse]] = {
     def extractResultFromResponse(
-      userIdResults: HubResult[List[azure.RegistrationResponse]],
+      userIdResults: HubResult[Registrations],
       deviceIdResults: HubResult[List[azure.RegistrationResponse]]
     ): Xor[ProviderError, List[azure.RegistrationResponse]] = {
       for {
         userIdRegistrations <- userIdResults
         deviceIdRegistrations <- deviceIdResults
-      } yield (deviceIdRegistrations ++ userIdRegistrations).distinct
+      } yield (deviceIdRegistrations ++ userIdRegistrations.registrations).distinct
     }
 
     for {
@@ -75,7 +95,9 @@ class NotificationHubRegistrar(
       .map { hubResultToRegistrationResponse(registration.topics) }
   }
 
-  private def deleteAndCreate(registrationsToDelete: List[azure.RegistrationResponse], registrationToCreate: Registration): RegistrarResponse[RegistrationResponse] = {
+  private def deleteAndCreate(
+    registrationsToDelete: List[azure.RegistrationResponse],
+    registrationToCreate: Registration): RegistrarResponse[RegistrationResponse] = {
     deleteRegistrations(registrationsToDelete).flatMap {
       case Xor.Right(_) => createRegistration(registrationToCreate)
       case Xor.Left(error) => Future.successful(error.left)
@@ -98,19 +120,37 @@ class NotificationHubRegistrar(
     }
   }
 
+  private def responsesToStoredRegistrations(registrations: Registrations): Future[Paginated[StoredRegistration]] =
+    responsesToStoredRegistrations(registrations.registrations).map(Paginated(_, registrations.cursor.map(ProviderCursor(providerIdentifier, _))))
+
+  private def responsesToStoredRegistrations(responses: List[azure.RegistrationResponse]): Future[List[StoredRegistration]] = {
+    Future.sequence(responses.map { response =>
+      val tags = tagsIn(response)
+      def topicsFromTags: Future[Set[Topic]] = Future.sequence {
+        tags.topicIds.toList.map { topicId =>
+          subscriptionTracker.topicFromId(topicId).map(_.toList)
+        }
+      } map { _.flatten.toSet }
+
+      topicsFromTags.map { topics =>
+        StoredRegistration(
+          deviceId = response.deviceId,
+          platform = response.platform,
+          userId = tags.findUserId,
+          tagIds = tags.asSet,
+          topics = topics
+        )
+      }
+    })
+  }
 
   private def toRegistrarResponse(topicsRegisteredFor: Set[Topic])(registration: azure.RegistrationResponse): Xor[ProviderError, RegistrationResponse] = {
     val tags = tagsIn(registration)
-    val (platform, deviceId) = registration match {
-      case WNSRegistrationResponse(_, _, channelUri, _) => (WindowsMobile, channelUri)
-      case GCMRegistrationResponse(_, _, gcmRegistrationId, _) => (Android, gcmRegistrationId)
-      case APNSRegistrationResponse(_, _, deviceToken, _) => (iOS, deviceToken)
-    }
     for {
       userId <- Xor.fromOption(tags.findUserId, UserIdNotInTags)
     } yield RegistrationResponse(
-      deviceId = deviceId,
-      platform = platform,
+      deviceId = registration.deviceId,
+      platform = registration.platform,
       userId = userId,
       topics = topicsRegisteredFor
     )

@@ -5,6 +5,7 @@ import akka.pattern.after
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
+import binders.querystringbinders.{RegistrationsSelector, RegistrationsByUdidParams, RegistrationsByTopicParams, RegistrationsByDeviceToken}
 import cats.data.XorT
 import cats.implicits._
 import error.{NotificationsError, RequestError}
@@ -21,6 +22,7 @@ import registration.services.topic.TopicValidator
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
 import cats.implicits._
+import models.pagination.{CursorSet, Paginated}
 import play.api.http.HttpEntity
 import providers.ProviderError
 
@@ -86,6 +88,62 @@ final class Main(
     }
 
     result.value.map(processResponse(_))
+  }
+
+  def registrations(selector: RegistrationsSelector): Action[AnyContent] = {
+    selector match {
+      case v: RegistrationsByUdidParams => registrationsByUdid(v.udid)
+      case v: RegistrationsByTopicParams => registrationsByTopic(v.topic, v.cursor)
+      case v: RegistrationsByDeviceToken => registrationsByDeviceToken(v.platform, v.deviceToken)
+    }
+  }
+
+  def registrationsByTopic(topic: Topic, cursors: Option[CursorSet]): Action[AnyContent] = Action.async {
+    val isFirstPage = cursors.isEmpty
+
+    val registrarResults = registrarProvider.withAllRegistrars { registrar =>
+      val cursorForProvider = cursors.flatMap(_.providerCursor(registrar.providerIdentifier))
+
+      if (isFirstPage || cursorForProvider.isDefined)
+        registrar.findRegistrations(topic, cursorForProvider.map(_.cursor)).map(_.toOption)
+      else
+        Future.successful(None)
+    }
+    Future.sequence(registrarResults).map { pageAttempts =>
+      val pages = pageAttempts.flatten
+
+      val results = pages.flatMap(_.results)
+
+      val cursor =
+        Some(pages.flatMap(_.cursor))
+          .filter(_.nonEmpty)
+          .map(CursorSet.apply)
+
+      Ok(Json.toJson(Paginated(results, cursor)))
+    }
+  }
+
+  def registrationsByDeviceToken(platform: Platform, deviceToken: String): Action[AnyContent] = Action.async {
+    val result = for {
+      registrar <- XorT.fromXor[Future](registrarProvider.registrarFor(platform))
+      registrations <- XorT(registrar.findRegistrations(deviceToken): Future[Xor[NotificationsError, List[StoredRegistration]]])
+    } yield registrations
+    result.fold(processErrors, res => Ok(Json.toJson(res)))
+  }
+
+  def registrationsByUdid(udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
+    Future.sequence {
+      registrarProvider.withAllRegistrars { registrar =>
+        registrar.findRegistrations(udid)
+      }
+    } map { responses =>
+      val allResults = for {
+        response <- responses
+        successfulResponse <- response.toList
+        result <- successfulResponse.results
+      } yield result
+      Ok(Json.toJson(allResults))
+    }
   }
 
   private def unregisterFromLegacy(registration: Registration) = legacyClient.unregister(registration.udid).foreach {

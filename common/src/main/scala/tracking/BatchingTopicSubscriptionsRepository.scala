@@ -91,4 +91,6 @@ class BatchingTopicSubscriptionsRepository(underlying: TopicSubscriptionsReposit
   def scheduleFlush(interval: FiniteDuration): Unit = {
     system.scheduler.schedule(interval, interval, actor, Flush)
   }
+
+  override def topicFromId(topicId: String): Future[RepositoryResult[Topic]] = underlying.topicFromId(topicId)
 }

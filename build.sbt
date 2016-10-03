@@ -34,6 +34,7 @@ lazy val common = project
       "joda-time" % "joda-time" % "2.8.2",
       "com.amazonaws" % "aws-java-sdk" % "1.9.31",
       "com.gu" %% "configuration" % "4.1",
+      "io.spray" %% "spray-caching" % "1.3.3",
       "com.typesafe.play" %% "play-logback" % "2.5.3",
       "org.specs2" %% "specs2-core" % "3.8.5" % "test",
       "org.specs2" %% "specs2-cats" % "3.8.5" % "test"
@@ -67,8 +68,12 @@ lazy val registration = project
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
-    routesImport += "binders._",
-    routesImport += "models._",
+    routesImport ++= Seq(
+      "binders.querystringbinders._",
+      "binders.pathbinders._",
+      "models._",
+      "models.pagination._"
+    ),
     riffRaffPackageType := (packageZipTarball in Universal).value,
     version := "1.0-SNAPSHOT"
   )
@@ -79,8 +84,11 @@ lazy val notification = project
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
-    routesImport += "binders._",
-    routesImport += "models._",
+    routesImport ++= Seq(
+      "binders.querystringbinders._",
+      "binders.pathbinders._",
+      "models._"
+    ),
     riffRaffPackageType := (packageZipTarball in Universal).value,
     version := "1.0-SNAPSHOT"
   )
@@ -91,9 +99,12 @@ lazy val report = project
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
-    routesImport += "binders._",
-    routesImport += "org.joda.time.DateTime",
-    routesImport += "models._",
+    routesImport ++= Seq(
+      "binders.querystringbinders._",
+      "binders.pathbinders._",
+      "org.joda.time.DateTime",
+      "models._"
+    ),
     riffRaffPackageType := (packageZipTarball in Universal).value,
     version := "1.0-SNAPSHOT"
   )

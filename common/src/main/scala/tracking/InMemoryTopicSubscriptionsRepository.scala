@@ -1,5 +1,6 @@
 package tracking
 
+import cats.data.Xor
 import models.Topic
 import tracking.Repository._
 
@@ -23,4 +24,7 @@ class InMemoryTopicSubscriptionsRepository extends TopicSubscriptionsRepository 
     }
     Future.successful(RepositoryResult(()))
   }
+
+  override def topicFromId(topicId: String): Future[RepositoryResult[Topic]] =
+    Future.successful(Xor.fromOption(counters.keys.find(_.id == topicId), RepositoryError("Topic not found")))
 }

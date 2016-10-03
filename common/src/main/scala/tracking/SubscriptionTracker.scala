@@ -28,6 +28,9 @@ class SubscriptionTracker(topicSubscriptionsRepository: TopicSubscriptionsReposi
     case _ => logger.error("Topic subscription counters not updated. Preceding action failed.")
   }
 
+  def topicFromId(topicId: String): Future[RepositoryResult[Topic]] =
+    topicSubscriptionsRepository.topicFromId(topicId)
+
   private def handleErrors(responses: Set[RepositoryResult[Unit]]): Unit = {
     val errors = responses.filter(_.isLeft)
     if (errors.nonEmpty) logger.error("Failed saving topic subscriptions: " + errors.mkString(","))
