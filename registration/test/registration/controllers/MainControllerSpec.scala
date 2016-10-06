@@ -68,7 +68,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
       status(result) must equalTo(OK)
       contentAsString(result) must /("preferences") /("topics") /# 0 /("type" -> "breaking")
-                                                    /("name" -> "uk")
+      contentAsString(result) must /("preferences") /("topics") /# 0 /("name" -> "uk")
 
       contentAsString(result) must (/("preferences") / "topics" andHave size(1))
     }
