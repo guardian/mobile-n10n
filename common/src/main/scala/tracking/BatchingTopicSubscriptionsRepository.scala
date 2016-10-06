@@ -24,6 +24,8 @@ object BatchingTopicSubscriptionsRepository {
 
     var events = collection.mutable.Buffer[SubscriptionEvent]()
 
+    val emptyResponse = ()
+
     override def receive: Actor.Receive = {
       case event: SubscriptionEvent =>
         events.append(event)
@@ -31,9 +33,9 @@ object BatchingTopicSubscriptionsRepository {
       case Flush =>
         if (events.nonEmpty) {
           val requestor = sender
-          flush() foreach { _ => requestor ! () }
+          flush() foreach { _ => requestor ! emptyResponse }
         } else {
-          sender ! ()
+          sender ! emptyResponse
         }
     }
 
