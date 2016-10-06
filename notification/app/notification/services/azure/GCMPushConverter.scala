@@ -30,6 +30,7 @@ class GCMPushConverter(conf: Configuration) {
     case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
+    case el: ElectionNotification => toElectionAlert(el)
   }
 
   private[services] def toTags(destination: Destination) = destination match {
@@ -103,6 +104,12 @@ class GCMPushConverter(conf: Configuration) {
     debug = conf.debug,
     uri = new URI(replaceHost(goalAlert.mapiUrl)),
     uriType = FootballMatch
+  )
+
+  private def toElectionAlert(electionAlert: ElectionNotification) = android.ElectionNotification(
+    `type` = AndroidMessageTypes.ElectionAlert,
+    id = electionAlert.id,
+    message = electionAlert.message
   )
 
   protected def replaceHost(uri: URI) = List(Some("x-gu://"), Option(uri.getPath), Option(uri.getQuery).map("?" + _)).flatten.mkString

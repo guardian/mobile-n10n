@@ -26,6 +26,7 @@ class WNSPushConverter(conf: Configuration) {
     case bnn: BreakingNewsNotification => toBreakingNews(bnn)
     case cn: ContentNotification => toContent(cn)
     case gan: GoalAlertNotification => toGoalAlert(gan)
+    case el: ElectionNotification => toElectionResult(el)
   }
 
   private[services] def toTags(destination: Destination) = destination match {
@@ -81,5 +82,11 @@ class WNSPushConverter(conf: Configuration) {
     topic = gan.topic,
     addedTime = gan.addedTime,
     debug = conf.debug
+  )
+
+  private def toElectionResult(el: ElectionNotification) = wns.ElectionNotification(
+    `type` = el.`type`,
+    id = el.id,
+    message = el.message
   )
 }

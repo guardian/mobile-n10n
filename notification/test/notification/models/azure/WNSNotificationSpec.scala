@@ -4,14 +4,21 @@ import java.net.URI
 import java.util.UUID
 
 import models.GoalType.Penalty
-import models.Topic
+import models.Importance.Major
+import models.Link.Internal
+import models.{GITContent, Topic}
 import models.TopicTypes.{Breaking, FootballMatch, FootballTeam, TagSeries}
-import notification.models.wns.{BreakingNewsNotification, ContentNotification, GoalAlertNotification, Notification}
+import models.elections.ElectionResults
+import notification.models.Push
+import notification.models.wns._
+import notification.services.Configuration
+import notification.services.azure.WNSPushConverter
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.libs.json.Json
 
-class WNSNotificationSpec extends Specification {
+class WNSNotificationSpec extends Specification with Mockito {
 
   "A breaking news" should {
     "serialize / deserialize to json" in new BreakingNewsScope {
@@ -31,9 +38,15 @@ class WNSNotificationSpec extends Specification {
     }
   }
 
+  "An election notification" should {
+    "serialize / deserialize to json" in new ElectionNotificationScope {
+      Json.parse(converter.toRawPush(push).body) shouldEqual Json.parse(expected)
+    }
+  }
+
   trait NotificationScope extends Scope {
-    def notification: Notification
     def expected: String
+    val converter = new WNSPushConverter(mock[Configuration])
   }
 
   trait BreakingNewsScope extends NotificationScope {
@@ -152,6 +165,30 @@ class WNSNotificationSpec extends Specification {
         |    "name" : "3833380"
         |  } ],
         |  "debug": true
+        |}
+      """.stripMargin
+  }
+
+  trait ElectionNotificationScope extends NotificationScope {
+    val notification = models.ElectionNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      message = "test",
+      sender = "some-sender",
+      title = "some-title",
+      importance = Major,
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      results = ElectionResults(List.empty),
+      topic = Set.empty
+    )
+
+    val push = Push(notification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+
+    val expected =
+      """
+        |{
+        |  "id" : "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+        |  "type" : "election",
+        |  "message" : "test"
         |}
       """.stripMargin
   }
