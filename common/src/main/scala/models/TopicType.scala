@@ -16,11 +16,12 @@ object TopicTypes {
   object FootballTeam extends TopicType("football-team", 1)
   object FootballMatch extends TopicType("football-match", 1)
   object Newsstand extends TopicType("newsstand", 100) // scalastyle:off magic.number
+  object ElectionResults extends TopicType("election-results", 50) // scalastyle:off magic.number
 }
 
 object TopicType {
   import TopicTypes._
-  def fromString(s: String): Option[TopicType] = PartialFunction.condOpt(s) {
+  def fromString(s: String): Option[TopicType] = PartialFunction.condOpt(s) { // scalastyle:off cyclomatic.complexity
     case "breaking" => Breaking
     case "content" => Content
     case "tag-contributor" => TagContributor
@@ -30,6 +31,7 @@ object TopicType {
     case "football-team" => FootballTeam
     case "football-match" => FootballMatch
     case "newsstand" => Newsstand
+    case "election-results" => ElectionResults
   }
 
   implicit val jf = new Format[TopicType] {

@@ -6,16 +6,14 @@ import notification.{DateTimeFreezed, NotificationsFixtures}
 import notification.models.{Push, PushResult}
 import notification.services.frontend.FrontendAlerts
 import notification.services._
-import org.mockito.ArgumentCaptor
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import play.api.test.PlaySpecification
-import tracking.{InMemoryNotificationReportRepository, RepositoryError, SentNotificationReportRepository}
+import tracking.{InMemoryNotificationReportRepository}
 
 import scala.concurrent.Future
-import cats.data.Xor
 import cats.implicits._
 
 class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito with JsonMatchers with DateTimeFreezed {
@@ -26,6 +24,25 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       status(response) must equalTo(CREATED)
       pushSent must beSome.which(_.destination must beEqualTo(Left(validTopics)))
+    }
+    "refuse a notification with an invalid key" in new MainScope {
+      val request = invalidAuthenticatedRequest.withBody(breakingNewsNotification(validTopics))
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(UNAUTHORIZED)
+    }
+    "refuse a notification with an election-only key" in new MainScope {
+      val request = electionsAuthenticatedRequest.withBody(breakingNewsNotification(validTopics))
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(UNAUTHORIZED)
+    }
+    "successfully send a notification to multiple election topics with an election key" in new MainScope {
+      val request = electionsAuthenticatedRequest.withBody(breakingNewsNotification(validElectionTopics))
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(CREATED)
+      pushSent must beSome.which(_.destination must beEqualTo(Left(validElectionTopics)))
     }
     "refuse a notification that is sent twice" in new MainScope {
       val request = requestWithValidTopics
@@ -121,6 +138,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     val conf: Configuration = {
       val m = mock[Configuration]
       m.apiKeys returns List(apiKey)
+      m.electionRestrictedApiKeys returns List(electionsApiKey)
       m
     }
 

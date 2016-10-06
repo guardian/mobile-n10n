@@ -16,6 +16,7 @@ import tracking.SentNotificationReportRepository
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
+import models.TopicTypes.ElectionResults
 
 final class Main(
   configuration: Configuration,
@@ -26,7 +27,15 @@ final class Main(
 
   val logger = Logger(classOf[Main])
 
-  override def validApiKey(apiKey: String): Boolean = configuration.apiKeys.contains(apiKey)
+  override def validApiKey(apiKey: String): Boolean = configuration.apiKeys.contains(apiKey) || configuration.electionRestrictedApiKeys.contains(apiKey)
+
+  override def isPermittedTopic(apiKey: String): Topic => Boolean = {
+    if (configuration.electionRestrictedApiKeys.contains(apiKey)) {
+      topic => topic.`type` == ElectionResults
+    } else {
+      _ => true
+    }
+  }
 
   def handleErrors[T](result: T): Result = result match {
     case error: NotificationsError => InternalServerError(error.reason)
@@ -45,6 +54,7 @@ final class Main(
     topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
+      case _ if !topics.forall(request.isPermittedTopic) => Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(request.isPermittedTopic)}."))
       case _ => pushWithDuplicateProtection(Push(request.body, Left(topics)))
     }
   }

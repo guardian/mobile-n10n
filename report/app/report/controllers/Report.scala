@@ -23,6 +23,8 @@ final class Report(
 
   override def validApiKey(apiKey: String): Boolean = configuration.apiKeys.contains(apiKey)
 
+  override def isPermittedTopic(apiKey: String): Topic => Boolean =
+    _ => false
 
   def healthCheck: Action[AnyContent] = Action {
     Ok("Good")

@@ -7,6 +7,7 @@ import _root_.models.Importance.Major
 import _root_.models.Link.Internal
 import _root_.models.TopicTypes.Breaking
 import _root_.models._
+import _root_.models.TopicTypes.ElectionResults
 import notification.models.Push
 import notification.services.azure.NotificationHubSenderError
 import org.joda.time.DateTime
@@ -49,8 +50,12 @@ trait NotificationsFixtures {
   val providerError = new NotificationHubSenderError(None)
 
   val apiKey = "test"
+  val electionsApiKey = "elections-test"
   val authenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$apiKey")
+  val electionsAuthenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$electionsApiKey")
+  val invalidAuthenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=wrong-key")
   val validTopics = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"))
+  val validElectionTopics = Set(Topic(ElectionResults, "uk"), Topic(ElectionResults, "us"))
   val requestWithValidTopics = authenticatedRequest.withBody(breakingNewsNotification(validTopics))
 
   def senderReport(
