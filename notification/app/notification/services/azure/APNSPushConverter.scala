@@ -63,6 +63,13 @@ class APNSPushConverter(conf: Configuration) {
     )
   }
 
+  private def toElectionAlert(electionAlert: ElectionNotification) = {
+    ios.ElectionNotification(
+      message = electionAlert.message,
+      id = electionAlert.id
+    )
+  }
+
   case class PlatformUri(uri: String, `type`: PlatformUriType)
 
   private def toPlatformLink(link: Link) = link match {
@@ -74,6 +81,7 @@ class APNSPushConverter(conf: Configuration) {
     case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
+    case el: ElectionNotification => toElectionAlert(el)
   }
 
   private def toTags(destination: Destination) = destination match {

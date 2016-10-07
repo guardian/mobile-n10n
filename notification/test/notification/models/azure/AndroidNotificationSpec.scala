@@ -3,16 +3,20 @@ package notification.models.azure
 import java.net.URI
 import java.util.UUID
 
-import models.GoalType.Penalty
+import models.Importance.Major
+import models.Link.Internal
 import models.{GITContent, Topic}
-import models.TopicTypes.{Breaking, FootballMatch, FootballTeam, TagSeries}
-import notification.models.android.{BreakingNewsNotification, ContentNotification, GoalAlertNotification, Notification}
-import notification.services.azure.PlatformUriTypes
+import models.TopicTypes.{Breaking, TagSeries}
+import models.elections.ElectionResults
+import notification.models.Push
+import notification.models.android._
+import notification.services.Configuration
+import notification.services.azure.{GCMPushConverter, PlatformUriTypes}
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import play.api.libs.json.Json
 
-class AndroidNotificationSpec extends Specification {
+class AndroidNotificationSpec extends Specification with Mockito {
 
   "A breaking news" should {
     "serialize to map" in new BreakingNewsScope {
@@ -32,8 +36,14 @@ class AndroidNotificationSpec extends Specification {
     }
   }
 
+  "An election notification" should {
+    "serialize to map" in new ElectionNotificationScope {
+      converter.toRawPush(push).body.data shouldEqual expected
+    }
+  }
+
   trait NotificationScope extends Scope {
-    def notification: Notification
+    val converter = new GCMPushConverter(mock[Configuration])
     def expected: Map[String, String]
   }
 
@@ -139,6 +149,28 @@ class AndroidNotificationSpec extends Specification {
       "HOME_TEAM_NAME" -> "Leicester",
       "mapiUrl" -> "http://football.mobile-apps.guardianapis.com/match-info/3833380",
       "matchId" -> "3833380"
+    )
+  }
+
+  trait ElectionNotificationScope extends NotificationScope {
+    val notification = models.ElectionNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      message = "test",
+      sender = "some-sender",
+      title = "some-title",
+      importance = Major,
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      results = ElectionResults(List.empty),
+      topic = Set.empty
+    )
+
+    val push = Push(notification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+
+    val expected =  Map(
+      "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+      "type" -> "election",
+      "message" -> "test",
+      "debug" -> "false"
     )
   }
 

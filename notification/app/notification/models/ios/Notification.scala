@@ -95,3 +95,20 @@ case class GoalAlertNotification(
     )
   )
 }
+
+case class ElectionNotification(
+  `type`: String = MessageTypes.ElectionAlert,
+  message: String,
+  id: UUID
+) extends Notification {
+  def payload: Body = Body(
+    aps = APS(
+      alert = Some(Right(message)),
+      `content-available` = Some(1),
+      sound = Some("default")
+    ),
+    customProperties = Map(
+      Keys.MessageType -> `type`
+    )
+  )
+}

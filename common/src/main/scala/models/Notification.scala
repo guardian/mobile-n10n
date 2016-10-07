@@ -4,6 +4,7 @@ import java.util.UUID
 import models.NotificationType._
 import play.api.libs.json._
 import java.net.URI
+import models.elections.ElectionResults
 
 sealed trait Notification {
   def id: UUID
@@ -11,7 +12,6 @@ sealed trait Notification {
   def sender: String
   def title: String
   def message: String
-  def thumbnailUrl: Option[URI]
   def importance: Importance
   def topic: Set[Topic]
 }
@@ -23,12 +23,14 @@ object Notification {
       case n: BreakingNewsNotification => BreakingNewsNotification.jf.writes(n)
       case n: ContentNotification => ContentNotification.jf.writes(n)
       case n: GoalAlertNotification => GoalAlertNotification.jf.writes(n)
+      case n: ElectionNotification => ElectionNotification.jf.writes(n)
     }
     override def reads(json: JsValue): JsResult[Notification] = {
       json \ "type" match {
         case JsDefined(JsString("news")) => BreakingNewsNotification.jf.reads(json)
         case JsDefined(JsString("content")) => ContentNotification.jf.reads(json)
         case JsDefined(JsString("goal")) => GoalAlertNotification.jf.reads(json)
+        case JsDefined(JsString("election")) => ElectionNotification.jf.reads(json)
         case _ => JsError("Unknown notification type")
       }
     }
@@ -101,4 +103,21 @@ case class GoalAlertNotification(
 object GoalAlertNotification {
   import JsonUtils._
   implicit val jf = Json.format[GoalAlertNotification]
+}
+
+case class ElectionNotification(
+  id: UUID,
+  `type`: NotificationType = ElectionsAlert,
+  sender: String,
+  title: String,
+  message: String,
+  importance: Importance,
+  link: Link,
+  results: ElectionResults,
+  topic: Set[Topic]
+) extends Notification
+
+object ElectionNotification {
+  import JsonUtils._
+  implicit val jf = Json.format[ElectionNotification]
 }

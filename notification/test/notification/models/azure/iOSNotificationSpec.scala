@@ -3,12 +3,13 @@ package notification.models.azure
 import java.net.URI
 import java.util.UUID
 
-import azure.apns.{Alert, Body, APS}
+import azure.apns.{APS, Body}
 import notification.services.Configuration
 import models.Importance.Major
 import models.Link.Internal
 import models._
 import models.TopicTypes.{Breaking, TagSeries}
+import models.elections.ElectionResults
 import notification.models.Push
 import notification.services.azure.APNSPushConverter
 import org.specs2.mock.Mockito
@@ -39,6 +40,12 @@ class iOSNotificationSpec extends Specification with Mockito {
 
   "A goal alert notification" should {
     "serialize / deserialize to json" in new GoalAlertNotificationScope {
+      converter.toRawPush(push).body shouldEqual expected
+    }
+  }
+
+  "An election notification" should {
+    "serialize / deserialize to json" in new ElectionNotificationScope {
       converter.toRawPush(push).body shouldEqual expected
     }
   }
@@ -231,6 +238,33 @@ class iOSNotificationSpec extends Specification with Mockito {
         "t" -> "g",
         "uri" -> "x-gu:///match-info/3833380",
         "uriType" -> "football-match"
+      )
+    )
+  }
+
+  trait ElectionNotificationScope extends NotificationScope {
+    val notification = models.ElectionNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      message = "test",
+      sender = "some-sender",
+      title = "some-title",
+      importance = Major,
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      results = ElectionResults(List.empty),
+      topic = Set.empty
+    )
+
+    val push = Push(notification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+
+    val expected = Body(
+      aps = APS(
+        alert = Some(Right("test")),
+        category = None,
+        `content-available` = Some(1),
+        sound = Some("default")
+      ),
+      customProperties = Map(
+        "t" -> "e"
       )
     )
   }
