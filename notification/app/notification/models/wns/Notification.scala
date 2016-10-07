@@ -96,8 +96,14 @@ object GoalAlertNotification {
 
 case class ElectionNotification(
   id: UUID,
-  `type`: NotificationType = ElectionsAlert,
-  message: String
+  `type`: NotificationType = BreakingNews,
+  title: String,
+  message: String,
+  thumbnailUrl: Option[URI],
+  link: URI,
+  imageUrl: Option[URI],
+  topic: Set[Topic],
+  debug: Boolean
 ) extends Notification
 
 object ElectionNotification {

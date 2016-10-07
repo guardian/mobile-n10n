@@ -85,8 +85,13 @@ class WNSPushConverter(conf: Configuration) {
   )
 
   private def toElectionResult(el: ElectionNotification) = wns.ElectionNotification(
-    `type` = el.`type`,
     id = el.id,
-    message = el.message
+    title = el.message,
+    message = el.message,
+    thumbnailUrl = None,
+    link = toUrl(el.link),
+    imageUrl = None,
+    topic = Set.empty,
+    debug = conf.debug
   )
 }

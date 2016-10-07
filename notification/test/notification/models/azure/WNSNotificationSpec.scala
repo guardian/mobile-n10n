@@ -186,9 +186,13 @@ class WNSNotificationSpec extends Specification with Mockito {
     val expected =
       """
         |{
-        |  "id" : "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
-        |  "type" : "election",
-        |  "message" : "test"
+        |  "id": "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+        |  "type": "news",
+        |  "title": "test",
+        |  "message": "test",
+        |  "link": "null/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        |  "topic": [],
+        |  "debug": false
         |}
       """.stripMargin
   }
