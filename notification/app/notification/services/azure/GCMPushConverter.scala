@@ -109,7 +109,8 @@ class GCMPushConverter(conf: Configuration) {
   private def toElectionAlert(electionAlert: ElectionNotification) = android.ElectionNotification(
     `type` = AndroidMessageTypes.ElectionAlert,
     id = electionAlert.id,
-    message = electionAlert.message
+    message = electionAlert.message,
+    debug = conf.debug
   )
 
   protected def replaceHost(uri: URI) = List(Some("x-gu://"), Option(uri.getPath), Option(uri.getQuery).map("?" + _)).flatten.mkString

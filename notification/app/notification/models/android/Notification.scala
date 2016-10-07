@@ -119,11 +119,13 @@ case class GoalAlertNotification(
 case class ElectionNotification(
   `type`: String = AndroidMessageTypes.ElectionAlert,
   id: UUID,
-  message: String
+  message: String,
+  debug: Boolean
 ) extends Notification {
   def payload: Map[String, String] = Map(
     Keys.Type -> `type`,
     Keys.UniqueIdentifier -> id.toString,
-    Keys.Message -> message
+    Keys.Message -> message,
+    Keys.Debug -> debug.toString
   )
 }
