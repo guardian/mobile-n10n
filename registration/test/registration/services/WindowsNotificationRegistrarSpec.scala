@@ -140,7 +140,7 @@ with Mockito {
     val userId = UniqueDeviceIdentifier(UUID.fromString("988ADFF8-8961-11E5-96E3-D0DB64696656"))
     val userIdTag = Tag.fromUserId(userId).encodedTag
 
-    val registration = Registration("deviceId", WindowsMobile, userId, Set.empty)
+    val registration = Registration("deviceId", WindowsMobile, userId, Set.empty, None)
 
     val breakingTopic = Topic(`type` = Breaking, "news")
     val contentTopic = Topic(`type` = Content, "world/news")

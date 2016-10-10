@@ -23,7 +23,8 @@ class RegistrationSpec extends Specification {
         deviceId = "some-device-id",
         platform = WindowsMobile,
         udid = UniqueDeviceIdentifier(UUID.fromString("aaaa4696-5568-11e6-beb8-9e71128cae77")),
-        topics = Set(Topic(TopicTypes.Breaking, "uk"))
+        topics = Set(Topic(TopicTypes.Breaking, "uk")),
+        buildTier = None
       )
 
       Json.parse(json).as[Registration] mustEqual expected
@@ -45,7 +46,8 @@ class RegistrationSpec extends Specification {
         deviceId = "some-device-id",
         platform = WindowsMobile,
         udid = UniqueDeviceIdentifier(UUID.fromString("aaaa4696-5568-11e6-beb8-9e71128cae77")),
-        topics = Set(Topic(TopicTypes.Breaking, "uk"))
+        topics = Set(Topic(TopicTypes.Breaking, "uk")),
+        buildTier = None
       )
 
       Json.parse(json).as[Registration] mustEqual expected
@@ -67,7 +69,8 @@ class RegistrationSpec extends Specification {
         deviceId = "some-device-id",
         platform = WindowsMobile,
         udid = UniqueDeviceIdentifier(UUID.fromString("aaaa4696-5568-11e6-beb8-9e71128cae77")),
-        topics = Set(Topic(TopicTypes.Breaking, "uk"))
+        topics = Set(Topic(TopicTypes.Breaking, "uk")),
+        buildTier = None
       )
 
       Json.parse(json).as[Registration] mustEqual expected
