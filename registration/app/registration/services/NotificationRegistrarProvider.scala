@@ -11,9 +11,9 @@ import cats.implicits._
 
 trait RegistrarProvider {
   def registrarFor(registration: Registration): Xor[NotificationsError, NotificationRegistrar] =
-    registrarFor(registration.platform)
+    registrarFor(registration.platform, registration.buildTier)
 
-  def registrarFor(platform: Platform): Xor[NotificationsError, NotificationRegistrar]
+  def registrarFor(platform: Platform, buildTier: Option[String]): Xor[NotificationsError, NotificationRegistrar]
 
   def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T]
 }
@@ -36,7 +36,7 @@ final class NotificationRegistrarProvider(
       .values
       .flatMap(_.headOption)(breakOut)
 
-  override def registrarFor(platform: Platform): NotificationsError Xor NotificationRegistrar = platform match {
+  override def registrarFor(platform: Platform, buildTier: Option[String]): NotificationsError Xor NotificationRegistrar = platform match {
     case WindowsMobile => windowsRegistrar.right
     case Android => gcmRegistrar.right
     case `iOS` => apnsRegistrar.right

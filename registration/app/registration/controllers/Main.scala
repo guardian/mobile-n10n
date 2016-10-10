@@ -59,7 +59,7 @@ final class Main(
   def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = actionWithTimeout {
 
     def registrarFor(platform: Platform) = XorT.fromXor[Future](
-      registrarProvider.registrarFor(platform)
+      registrarProvider.registrarFor(platform, None)
     )
 
     def unregisterFrom(registrar: NotificationRegistrar) = XorT(
@@ -125,7 +125,7 @@ final class Main(
 
   def registrationsByDeviceToken(platform: Platform, deviceToken: String): Action[AnyContent] = Action.async {
     val result = for {
-      registrar <- XorT.fromXor[Future](registrarProvider.registrarFor(platform))
+      registrar <- XorT.fromXor[Future](registrarProvider.registrarFor(platform, None))
       registrations <- XorT(registrar.findRegistrations(deviceToken): Future[Xor[NotificationsError, List[StoredRegistration]]])
     } yield registrations
     result.fold(processErrors, res => Ok(Json.toJson(res)))
