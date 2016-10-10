@@ -1,10 +1,22 @@
 package notification.services
 
+import _root_.azure.NotificationHubConnection
 import conf.NotificationConfiguration
 import scala.concurrent.duration._
 
 class Configuration extends NotificationConfiguration("notification") {
-  lazy val hubEndpoint = getConfigString("azure.hub.endpoint")
+  lazy val defaultHub = NotificationHubConnection(
+    endpoint = getConfigString("azure.hub.endpoint"),
+    sharedAccessKeyName = getConfigString("azure.hub.sharedAccessKeyName"),
+    sharedAccessKey = getConfigString("azure.hub.sharedAccessKey")
+  )
+
+  lazy val enterpriseHub = NotificationHubConnection(
+    endpoint = getConfigString("enterprise.hub.endpoint"),
+    sharedAccessKeyName = getConfigString("enterprise.hub.sharedAccessKeyName"),
+    sharedAccessKey = getConfigString("enterprise.hub.sharedAccessKey")
+  )
+
   lazy val hubSharedAccessKeyName = getConfigString("azure.hub.sharedAccessKeyName")
   lazy val hubSharedAccessKey = getConfigString("azure.hub.sharedAccessKey")
   lazy val apiKeys = conf.getStringPropertiesSplitByComma("notifications.api.secretKeys")

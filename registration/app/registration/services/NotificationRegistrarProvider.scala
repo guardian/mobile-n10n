@@ -26,6 +26,7 @@ final class NotificationRegistrarProvider(
   windowsRegistrar: WindowsNotificationRegistrar,
   gcmRegistrar: GCMNotificationRegistrar,
   apnsRegistrar: APNSNotificationRegistrar,
+  apnsEnterpriseRegistrar: APNSEnterpriseNotifcationRegistrar,
   newsstandRegistrar: NewsstandNotificationRegistrar)
   (implicit executionContext: ExecutionContext) extends RegistrarProvider {
 
@@ -39,6 +40,7 @@ final class NotificationRegistrarProvider(
   override def registrarFor(platform: Platform, buildTier: Option[String]): NotificationsError Xor NotificationRegistrar = platform match {
     case WindowsMobile => windowsRegistrar.right
     case Android => gcmRegistrar.right
+    case `iOS` if buildTier.contains("enterprise-internal") => apnsEnterpriseRegistrar.right
     case `iOS` => apnsRegistrar.right
     case Newsstand => newsstandRegistrar.right
     case _ => UnsupportedPlatform(platform.toString).left

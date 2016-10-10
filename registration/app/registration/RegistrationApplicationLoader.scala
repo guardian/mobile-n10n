@@ -13,7 +13,7 @@ import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import registration.controllers.Main
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
-import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
+import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar, APNSEnterpriseNotifcationRegistrar}
 import router.Routes
 import registration.services._
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
@@ -33,6 +33,7 @@ trait AppComponents extends Controllers
   with WindowsRegistrations
   with GCMRegistrations
   with APNSRegistrations
+  with APNSEnterpriseRegistrations
   with NewsstandRegistrations
   with NotificationsHubClient
   with Tracking
@@ -60,6 +61,7 @@ trait Registrars {
   self: WindowsRegistrations
     with GCMRegistrations
     with APNSRegistrations
+    with APNSEnterpriseRegistrations
     with NewsstandRegistrations
     with ExecutionEnv =>
   lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
@@ -95,13 +97,24 @@ trait WindowsRegistrations {
   lazy val winNotificationRegistrar: WindowsNotificationRegistrar = wire[WindowsNotificationRegistrar]
 }
 
+trait APNSEnterpriseRegistrations {
+  self: Tracking
+    with AppConfiguration
+    with AhcWSComponents
+    with ExecutionEnv =>
+
+  lazy val enterpriseHubClient = new NotificationHubClient(appConfig.enterpriseHub, wsClient)
+
+  lazy val apnsEnterpriseNotificationRegistrar: APNSEnterpriseNotifcationRegistrar = new APNSEnterpriseNotifcationRegistrar(enterpriseHubClient, subscriptionTracker)
+}
+
 trait NewsstandRegistrations {
   self: Tracking
     with AppConfiguration
     with AhcWSComponents
     with ExecutionEnv =>
 
-  lazy val newsstandHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
+  lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
 
   lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
 }
