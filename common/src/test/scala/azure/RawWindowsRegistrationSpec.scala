@@ -16,7 +16,8 @@ class RawWindowsRegistrationSpec extends Specification {
         deviceId = "deviceId",
         platform = WindowsMobile,
         udid = userId,
-        topics = Set.empty
+        topics = Set.empty,
+        buildTier = None
       )
 
       val rawRegistration = RawWindowsRegistration.fromMobileRegistration(registration)
@@ -31,7 +32,8 @@ class RawWindowsRegistrationSpec extends Specification {
         deviceId = "device2",
         platform = WindowsMobile,
         udid = userId,
-        topics = Set(topic)
+        topics = Set(topic),
+        buildTier = None
       )
 
       val rawRegistration = RawWindowsRegistration.fromMobileRegistration(registration)

@@ -11,9 +11,9 @@ import cats.implicits._
 
 trait RegistrarProvider {
   def registrarFor(registration: Registration): Xor[NotificationsError, NotificationRegistrar] =
-    registrarFor(registration.platform)
+    registrarFor(registration.platform, registration.buildTier)
 
-  def registrarFor(platform: Platform): Xor[NotificationsError, NotificationRegistrar]
+  def registrarFor(platform: Platform, buildTier: Option[String]): Xor[NotificationsError, NotificationRegistrar]
 
   def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T]
 }
@@ -26,6 +26,7 @@ final class NotificationRegistrarProvider(
   windowsRegistrar: WindowsNotificationRegistrar,
   gcmRegistrar: GCMNotificationRegistrar,
   apnsRegistrar: APNSNotificationRegistrar,
+  apnsEnterpriseRegistrar: APNSEnterpriseNotifcationRegistrar,
   newsstandRegistrar: NewsstandNotificationRegistrar)
   (implicit executionContext: ExecutionContext) extends RegistrarProvider {
 
@@ -36,9 +37,10 @@ final class NotificationRegistrarProvider(
       .values
       .flatMap(_.headOption)(breakOut)
 
-  override def registrarFor(platform: Platform): NotificationsError Xor NotificationRegistrar = platform match {
+  override def registrarFor(platform: Platform, buildTier: Option[String]): NotificationsError Xor NotificationRegistrar = platform match {
     case WindowsMobile => windowsRegistrar.right
     case Android => gcmRegistrar.right
+    case `iOS` if buildTier.contains("enterprise-internal") => apnsEnterpriseRegistrar.right
     case `iOS` => apnsRegistrar.right
     case Newsstand => newsstandRegistrar.right
     case _ => UnsupportedPlatform(platform.toString).left

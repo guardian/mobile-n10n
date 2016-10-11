@@ -76,7 +76,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     "return 204 and empty response for unregistration of udid" in new RegistrationsContext {
       override lazy val fakeRegistrarProvider = {
         val provider = mock[RegistrarProvider]
-        provider.registrarFor(any[Platform]) returns fakeNotificationRegistrar.right
+        provider.registrarFor(any[Platform], any[Option[String]]) returns fakeNotificationRegistrar.right
         provider.registrarFor(any[Registration]) returns fakeNotificationRegistrar.right
         provider
       }
@@ -84,8 +84,8 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       val Some(result) = route(app, FakeRequest(DELETE, "/registrations/ios/gia:00000000-0000-0000-0000-000000000000"))
       status(result) must equalTo(NO_CONTENT)
       contentAsString(result) must beEmpty
-      there was one(fakeRegistrarProvider).registrarFor(iOS)
-      there was one(fakeRegistrarProvider).registrarFor(any[Platform])
+      there was one(fakeRegistrarProvider).registrarFor(iOS, None)
+      there was one(fakeRegistrarProvider).registrarFor(any[Platform], any[Option[String]])
     }
 
     "return 404 for unregistration of udid that is not found" in new RegistrationsContext {

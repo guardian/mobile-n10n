@@ -14,7 +14,8 @@ class LegacyNewsstandRegistrationConverter extends RegistrationConverter[LegacyN
       deviceId = legacyRegistration.pushToken,
       platform = Newsstand,
       udid = udid,
-      topics = Set(Topic(TopicTypes.Newsstand, "newsstand"))
+      topics = Set(Topic(TopicTypes.Newsstand, "newsstand")),
+      buildTier = None
     ).right
   }
 

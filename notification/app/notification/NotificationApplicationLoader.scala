@@ -9,7 +9,7 @@ import com.softwaremill.macwire._
 import notification.controllers.Main
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
-import notification.services.azure.{APNSSender, GCMSender, WNSSender}
+import notification.services.azure.{APNSEnterpriseSender, APNSSender, GCMSender, WNSSender}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
@@ -37,7 +37,13 @@ trait AppComponents extends PlayComponents
 
 trait Controllers {
   self: AzureHubComponents with FrontendAlertsComponents with ConfigurationComponents with PlayComponents with ExecutionEnv =>
-  lazy val notificationSenders = List(wnsNotificationSender, gcmNotificationSender, apnsNotificationSender, frontendAlerts)
+  lazy val notificationSenders = List(
+    wnsNotificationSender,
+    gcmNotificationSender,
+    apnsNotificationSender,
+    frontendAlerts,
+    apnsEnterpriseNotificationSender
+  )
   lazy val mainController = wire[Main]
 }
 
@@ -58,14 +64,7 @@ trait AzureHubComponents {
   import com.amazonaws.regions.Regions.EU_WEST_1
   import aws.AsyncDynamo
 
-  lazy val hubClient = {
-    val hubConnection = NotificationHubConnection(
-      endpoint = appConfig.hubEndpoint,
-      sharedAccessKeyName = appConfig.hubSharedAccessKeyName,
-      sharedAccessKey = appConfig.hubSharedAccessKey
-    )
-    new NotificationHubClient(hubConnection, wsClient)
-  }
+  lazy val hubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
   lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
     val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
@@ -80,6 +79,11 @@ trait AzureHubComponents {
   lazy val gcmNotificationSender: GCMSender = wire[GCMSender]
 
   lazy val apnsNotificationSender: APNSSender = wire[APNSSender]
+
+  lazy val apnsEnterpriseNotificationSender: APNSEnterpriseSender = {
+    val enterpriseHubClient = new NotificationHubClient(appConfig.enterpriseHub, wsClient)
+    new APNSEnterpriseSender(enterpriseHubClient, appConfig, topicSubscriptionsRepository)
+  }
 }
 
 
