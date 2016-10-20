@@ -10,7 +10,8 @@ case class CandidateResults(
   states: List[String],
   electoralVotes: Int,
   popularVotes: Int,
-  avatar: URI
+  avatar: URI,
+  colour: String
 )
 
 object CandidateResults {
