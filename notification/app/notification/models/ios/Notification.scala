@@ -96,6 +96,17 @@ case class GoalAlertNotification(
   )
 }
 
+case class NewsstandNotification(id: UUID) extends Notification {
+  def payload: Body = Body(
+    aps = APS(
+      alert = None,
+      `content-available` = Some(1),
+      sound = None
+    ),
+    customProperties = Map.empty
+  )
+}
+
 case class ElectionNotification(
   `type`: String = MessageTypes.ElectionAlert,
   message: String,

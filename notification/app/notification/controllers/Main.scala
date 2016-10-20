@@ -17,10 +17,12 @@ import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
 import models.TopicTypes.ElectionResults
+import notification.services.azure.NewsstandSender
 
 final class Main(
   configuration: Configuration,
   senders: List[NotificationSender],
+  newsstandSender: NewsstandSender,
   notificationReportRepository: SentNotificationReportRepository
 )(implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
@@ -37,12 +39,19 @@ final class Main(
     }
   }
 
-  def handleErrors[T](result: T): Result = result match {
-    case error: NotificationsError => InternalServerError(error.reason)
-  }
-
   def healthCheck: Action[AnyContent] = Action {
     Ok("Good")
+  }
+
+  def pushNewsstand(id: UUID): Action[AnyContent] = AuthenticatedAction.async {
+    newsstandSender.sendNotification(id) map {
+      case Xor.Right(_) =>
+        logger.info("Newsstand notification sent")
+        Created(toJson(PushResult(id)))
+      case Xor.Left(error) =>
+        logger.error(s"Newsstand notification failed: $error")
+        InternalServerError(s"Newsstand notification failed: $error")
+    }
   }
 
   @deprecated("A push notification can be sent to multiple topics, this is for backward compatibility only", since = "07/12/2015")
