@@ -109,7 +109,11 @@ class GCMPushConverter(conf: Configuration) {
   private def toElectionAlert(electionAlert: ElectionNotification) = android.ElectionNotification(
     `type` = AndroidMessageTypes.ElectionAlert,
     id = electionAlert.id,
+    title = electionAlert.title,
     message = electionAlert.message,
+    results = electionAlert.results,
+    link = toAndroidLink(electionAlert.link),
+    linkText = electionAlert.link.text,
     debug = conf.debug
   )
 

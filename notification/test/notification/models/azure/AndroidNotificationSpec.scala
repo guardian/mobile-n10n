@@ -7,7 +7,7 @@ import models.Importance.Major
 import models.Link.Internal
 import models.{GITContent, Topic}
 import models.TopicTypes.{Breaking, TagSeries}
-import models.elections.ElectionResults
+import models.elections.{CandidateResults, ElectionResults}
 import notification.models.Push
 import notification.models.android._
 import notification.services.Configuration
@@ -155,12 +155,29 @@ class AndroidNotificationSpec extends Specification with Mockito {
   trait ElectionNotificationScope extends NotificationScope {
     val notification = models.ElectionNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-      message = "test",
+      message = "• 270 electoral votes needed to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
       sender = "some-sender",
-      title = "some-title",
+      title = "Live election results",
       importance = Major,
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
-      results = ElectionResults(List.empty),
+      link = Internal("us", Some("https://gu.com/p/4p7xt"), GITContent, Some("Open liveblog")),
+      results = ElectionResults(List(
+        CandidateResults(
+          name = "Clinton",
+          states = List.empty,
+          electoralVotes = 220,
+          popularVotes = 5000000,
+          avatar = new URI("http://e4775a29.ngrok.io/clinton-neutral.png"),
+          colour = "#005689"
+        ),
+        CandidateResults(
+          name = "Trump",
+          states = List.empty,
+          electoralVotes = 133,
+          popularVotes = 5000000,
+          avatar = new URI("http://e4775a29.ngrok.io/trump-neutral.png"),
+          colour = "#d61d00"
+        )
+      )),
       topic = Set.empty
     )
 
@@ -168,9 +185,23 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
     val expected =  Map(
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
-      "type" -> "election",
-      "message" -> "test",
-      "debug" -> "false"
+      "debug" -> "false",
+      "type" -> "liveElections",
+      "candidates.length" -> "2",
+      "candidates[0].name" -> "Clinton",
+      "candidates[0].electoralVotes" -> "220",
+      "candidates[0].colour" -> "#005689",
+      "candidates[0].avatar" -> "http://e4775a29.ngrok.io/clinton-neutral.png",
+      "candidates[1].name" -> "Trump",
+      "candidates[1].electoralVotes" -> "133",
+      "candidates[1].colour" -> "#d61d00",
+      "candidates[1].avatar" -> "http://e4775a29.ngrok.io/trump-neutral.png",
+      "electoralVotesAvailable" -> "538",
+      "link" -> "x-gu://www.guardian.co.uk/us",
+      "linkText" -> "Open liveblog",
+      "title" -> "Live election results",
+      "buzz" -> "true",
+      "message" -> "• 270 electoral votes needed to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting"
     )
   }
 

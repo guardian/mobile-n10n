@@ -10,6 +10,7 @@ object Keys {
   final val Section = "section"
   final val Keyword = "keyword"
   final val Link = "link"
+  final val LinkText = "linkText"
   final val ThumbnailUrl = "thumbnailUrl"
   final val ImageUrl = "imageUrl"
   final val Edition = "edition"
@@ -28,4 +29,6 @@ object Keys {
   final val AwayTeamScore = "AWAY_TEAM_SCORE"
   final val Topics = "topics"
   final val UniqueIdentifier = "uniqueIdentifier"
+  final val electoralVotesAvailable = "electoralVotesAvailable"
+  final val Buzz = "buzz"
 }
