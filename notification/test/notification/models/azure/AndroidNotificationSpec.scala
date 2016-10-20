@@ -3,7 +3,7 @@ package notification.models.azure
 import java.net.URI
 import java.util.UUID
 
-import models.Importance.Major
+import models.Importance.{Major, Minor}
 import models.Link.Internal
 import models.{GITContent, Topic}
 import models.TopicTypes.{Breaking, TagSeries}
@@ -39,6 +39,9 @@ class AndroidNotificationSpec extends Specification with Mockito {
   "An election notification" should {
     "serialize to map" in new ElectionNotificationScope {
       converter.toRawPush(push).body.data shouldEqual expected
+    }
+    "Have buzz=false for minor notifications" in new MinorElectionNotificationScope {
+      converter.toRawPush(minorPush).body.data shouldEqual minorExpected
     }
   }
 
@@ -205,4 +208,9 @@ class AndroidNotificationSpec extends Specification with Mockito {
     )
   }
 
+  trait MinorElectionNotificationScope extends ElectionNotificationScope {
+    val minorNotification = notification.copy(importance = Minor)
+    val minorExpected = expected.updated("buzz", "false")
+    val minorPush = Push(minorNotification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+  }
 }

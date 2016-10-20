@@ -125,6 +125,7 @@ case class ElectionNotification(
   results: ElectionResults,
   link: URI,
   linkText: Option[String],
+  buzz: Boolean,
   debug: Boolean
 ) extends Notification {
 
@@ -150,6 +151,6 @@ case class ElectionNotification(
     Keys.Link -> link.toString,
     Keys.LinkText -> linkText.getOrElse("View more"),
     Keys.Title -> title,
-    Keys.Buzz -> "true"
+    Keys.Buzz -> buzz.toString
   ) ++ resultsFlattened.toMap
 }

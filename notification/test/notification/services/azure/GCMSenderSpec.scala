@@ -28,6 +28,15 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
       there was no(hubClient).sendNotification(any[GCMRawPush])
     }
 
+    "process a Minor election notification" in new GCMScope {
+      val result = androidNotificationSender.sendNotification(electionPush(Minor))
+
+      result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some, sendersId = "fake-id".some).right).await
+      got {
+        one(hubClient).sendNotification(pushConverter.toRawPush(electionPush(Minor)))
+      }
+    }
+
     "process a Major notification" in {
       "send two separate with notifications with differently encoded topics when addressed to topic" in new GCMScope {
         val result = androidNotificationSender.sendNotification(topicPush)
@@ -57,6 +66,9 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
         Topic(TopicTypes.Breaking, "world/religion"),
         Topic(TopicTypes.Breaking, "world/isis")
       ))
+    )
+    def electionPush(importance: Importance) = topicTargetedBreakingNewsPush(
+      electionNotification(importance)
     )
 
     val configuration = mock[Configuration].debug returns true

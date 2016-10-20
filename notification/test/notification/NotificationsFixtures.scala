@@ -8,6 +8,7 @@ import _root_.models.Link.Internal
 import _root_.models.TopicTypes.Breaking
 import _root_.models._
 import _root_.models.TopicTypes.ElectionResults
+import _root_.models.elections
 import notification.models.Push
 import notification.services.azure.NotificationHubSenderError
 import org.joda.time.DateTime
@@ -25,6 +26,34 @@ trait NotificationsFixtures {
       "0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
     importance = Major,
     topic = topics
+  )
+
+  def electionNotification(importance: Importance) = ElectionNotification(
+    id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+    message = "• 270 electoral votes needed to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+    sender = "some-sender",
+    title = "Live election results",
+    importance = importance,
+    link = Internal("us", Some("https://gu.com/p/4p7xt"), GITContent, Some("Open liveblog")),
+    results = elections.ElectionResults(List(
+      elections.CandidateResults(
+        name = "Clinton",
+        states = List.empty,
+        electoralVotes = 220,
+        popularVotes = 5000000,
+        avatar = new URI("http://e4775a29.ngrok.io/clinton-neutral.png"),
+        colour = "#005689"
+      ),
+      elections.CandidateResults(
+        name = "Trump",
+        states = List.empty,
+        electoralVotes = 133,
+        popularVotes = 5000000,
+        avatar = new URI("http://e4775a29.ngrok.io/trump-neutral.png"),
+        colour = "#d61d00"
+      )
+    )),
+    topic = Set(Topic(ElectionResults, "us-presidential-2016"))
   )
   
   def userTargetedBreakingNewsPush(importance: Importance = Major): Push = Push(
