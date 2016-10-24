@@ -199,7 +199,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "candidates[1].electoralVotes" -> "133",
       "candidates[1].colour" -> "#d61d00",
       "candidates[1].avatar" -> "http://e4775a29.ngrok.io/trump-neutral.png",
-      "electoralVotesAvailable" -> "538",
+      "electoralCollegeSize" -> "538",
       "link" -> "x-gu://www.guardian.co.uk/us",
       "linkText" -> "Open liveblog",
       "title" -> "Live election results",

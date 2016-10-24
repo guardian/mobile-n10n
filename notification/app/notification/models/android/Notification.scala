@@ -147,7 +147,7 @@ case class ElectionNotification(
     Keys.UniqueIdentifier -> id.toString,
     Keys.Message -> message,
     Keys.Debug -> debug.toString,
-    Keys.electoralVotesAvailable -> "538",
+    Keys.ElectoralCollegeSize -> "538",
     Keys.Link -> link.toString,
     Keys.LinkText -> linkText.getOrElse("View more"),
     Keys.Title -> title,

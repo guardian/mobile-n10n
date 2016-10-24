@@ -29,6 +29,6 @@ object Keys {
   final val AwayTeamScore = "AWAY_TEAM_SCORE"
   final val Topics = "topics"
   final val UniqueIdentifier = "uniqueIdentifier"
-  final val electoralVotesAvailable = "electoralVotesAvailable"
+  final val ElectoralCollegeSize = "electoralCollegeSize"
   final val Buzz = "buzz"
 }
