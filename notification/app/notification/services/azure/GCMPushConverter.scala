@@ -114,8 +114,8 @@ class GCMPushConverter(conf: Configuration) {
     message = electionAlert.message,
     results = electionAlert.results,
     link = toAndroidLink(electionAlert.link),
-    linkText = electionAlert.link.text,
-    buzz = electionAlert.importance == Major,
+    resultsLink = toAndroidLink(electionAlert.resultsLink),
+    importance = electionAlert.importance,
     debug = conf.debug
   )
 

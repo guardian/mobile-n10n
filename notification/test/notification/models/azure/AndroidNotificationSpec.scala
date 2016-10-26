@@ -158,12 +158,12 @@ class AndroidNotificationSpec extends Specification with Mockito {
   trait ElectionNotificationScope extends NotificationScope {
     val notification = models.ElectionNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-      message = "• 270 electoral votes needed to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+      message = "• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
       sender = "some-sender",
       title = "Live election results",
       importance = Major,
-      link = Internal("us", Some("https://gu.com/p/4p7xt"), GITContent, Some("Open liveblog")),
-      resultsLink = Internal("us", Some("https://gu.com/p/2zzz"), GITContent, Some("Results")),
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
+      resultsLink = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent, None),
       results = ElectionResults(List(
         CandidateResults(
           name = "Clinton",
@@ -171,7 +171,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
           electoralVotes = 220,
           popularVotes = 5000000,
           avatar = new URI("http://e4775a29.ngrok.io/clinton-neutral.png"),
-          colour = "#005689"
+          color = "#005689"
         ),
         CandidateResults(
           name = "Trump",
@@ -179,7 +179,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
           electoralVotes = 133,
           popularVotes = 5000000,
           avatar = new URI("http://e4775a29.ngrok.io/trump-neutral.png"),
-          colour = "#d61d00"
+          color = "#d61d00"
         )
       )),
       topic = Set.empty
@@ -194,24 +194,24 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "candidates.length" -> "2",
       "candidates[0].name" -> "Clinton",
       "candidates[0].electoralVotes" -> "220",
-      "candidates[0].colour" -> "#005689",
+      "candidates[0].color" -> "#005689",
       "candidates[0].avatar" -> "http://e4775a29.ngrok.io/clinton-neutral.png",
       "candidates[1].name" -> "Trump",
       "candidates[1].electoralVotes" -> "133",
-      "candidates[1].colour" -> "#d61d00",
+      "candidates[1].color" -> "#d61d00",
       "candidates[1].avatar" -> "http://e4775a29.ngrok.io/trump-neutral.png",
       "electoralCollegeSize" -> "538",
-      "link" -> "x-gu://www.guardian.co.uk/us",
-      "linkText" -> "Open liveblog",
+      "link" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+      "resultsLink" -> "x-gu://www.guardian.co.uk/world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau",
       "title" -> "Live election results",
-      "buzz" -> "true",
-      "message" -> "• 270 electoral votes needed to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting"
+      "importance" -> "Major",
+      "message" -> "• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting"
     )
   }
 
   trait MinorElectionNotificationScope extends ElectionNotificationScope {
     val minorNotification = notification.copy(importance = Minor)
-    val minorExpected = expected.updated("buzz", "false")
+    val minorExpected = expected.updated("importance", "Minor")
     val minorPush = Push(minorNotification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
   }
 }

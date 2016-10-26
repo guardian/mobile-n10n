@@ -11,7 +11,7 @@ case class CandidateResults(
   electoralVotes: Int,
   popularVotes: Int,
   avatar: URI,
-  colour: String
+  color: String
 )
 
 object CandidateResults {

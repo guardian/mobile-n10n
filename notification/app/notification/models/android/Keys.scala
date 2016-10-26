@@ -10,7 +10,7 @@ object Keys {
   final val Section = "section"
   final val Keyword = "keyword"
   final val Link = "link"
-  final val LinkText = "linkText"
+  final val ResultsLink = "resultsLink"
   final val ThumbnailUrl = "thumbnailUrl"
   final val ImageUrl = "imageUrl"
   final val Edition = "edition"
@@ -30,5 +30,5 @@ object Keys {
   final val Topics = "topics"
   final val UniqueIdentifier = "uniqueIdentifier"
   final val ElectoralCollegeSize = "electoralCollegeSize"
-  final val Buzz = "buzz"
+  final val Importance = "importance"
 }

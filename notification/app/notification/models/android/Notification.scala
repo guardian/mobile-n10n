@@ -124,8 +124,8 @@ case class ElectionNotification(
   message: String,
   results: ElectionResults,
   link: URI,
-  linkText: Option[String],
-  buzz: Boolean,
+  resultsLink: URI,
+  importance: Importance,
   debug: Boolean
 ) extends Notification {
 
@@ -134,7 +134,7 @@ case class ElectionNotification(
       List(
         s"candidates[$index].name" -> candidate.name,
         s"candidates[$index].electoralVotes" -> candidate.electoralVotes.toString,
-        s"candidates[$index].colour" -> candidate.colour,
+        s"candidates[$index].color" -> candidate.color,
         s"candidates[$index].avatar" -> candidate.avatar.toString
       )
     }
@@ -149,8 +149,8 @@ case class ElectionNotification(
     Keys.Debug -> debug.toString,
     Keys.ElectoralCollegeSize -> "538",
     Keys.Link -> link.toString,
-    Keys.LinkText -> linkText.getOrElse("View more"),
+    Keys.ResultsLink -> resultsLink.toString,
     Keys.Title -> title,
-    Keys.Buzz -> buzz.toString
+    Keys.Importance -> importance.toString
   ) ++ resultsFlattened.toMap
 }
