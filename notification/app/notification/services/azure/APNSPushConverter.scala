@@ -10,6 +10,7 @@ import notification.models.{Push, ios}
 import notification.services.Configuration
 import play.api.Logger
 import PlatformUriTypes.{External, FootballMatch, Item}
+import models.Importance.Major
 
 class APNSPushConverter(conf: Configuration) {
 
@@ -64,9 +65,21 @@ class APNSPushConverter(conf: Configuration) {
   }
 
   private def toElectionAlert(electionAlert: ElectionNotification) = {
+    val democratVotes = electionAlert.results.candidates.find(_.name == "Clinton").map(_.electoralVotes).getOrElse(0)
+    val republicanVotes = electionAlert.results.candidates.find(_.name == "Trump").map(_.electoralVotes).getOrElse(0)
+
+    val textonlyFallback = s"• Electoral votes: Clinton $democratVotes, Trump $republicanVotes\n• 270 electoral votes to win\n"
     ios.ElectionNotification(
       message = electionAlert.message,
-      id = electionAlert.id
+      id = electionAlert.id,
+      title = electionAlert.title,
+      body = textonlyFallback + electionAlert.message,
+      richBody = electionAlert.message,
+      democratVotes = democratVotes,
+      republicanVotes = republicanVotes,
+      link = toIosLink(electionAlert.link),
+      resultsLink = toIosLink(electionAlert.resultsLink),
+      buzz = electionAlert.importance == Major
     )
   }
 
