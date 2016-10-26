@@ -251,6 +251,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       importance = Major,
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       results = ElectionResults(List.empty),
+      resultsLink = Internal("us", Some("https://gu.com/p/2zzz"), GITContent, Some("Results")),
       topic = Set.empty
     )
 

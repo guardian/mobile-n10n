@@ -113,6 +113,7 @@ case class ElectionNotification(
   message: String,
   importance: Importance,
   link: Link,
+  resultsLink: Link,
   results: ElectionResults,
   topic: Set[Topic]
 ) extends Notification

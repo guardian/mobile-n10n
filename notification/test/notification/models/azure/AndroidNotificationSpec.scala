@@ -163,6 +163,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       title = "Live election results",
       importance = Major,
       link = Internal("us", Some("https://gu.com/p/4p7xt"), GITContent, Some("Open liveblog")),
+      resultsLink = Internal("us", Some("https://gu.com/p/2zzz"), GITContent, Some("Results")),
       results = ElectionResults(List(
         CandidateResults(
           name = "Clinton",
