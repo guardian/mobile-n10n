@@ -42,11 +42,11 @@ class GCMPushConverter(conf: Configuration) {
   private def toBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
 
     val sectionLink = condOpt(breakingNews.link) {
-      case Link.Internal(contentApiId, _, GITSection, _) => contentApiId
+      case Link.Internal(contentApiId, _, GITSection) => contentApiId
     }
 
     val tagLink = condOpt(breakingNews.link) {
-      case Link.Internal(contentApiId, _, GITTag, _) => contentApiId
+      case Link.Internal(contentApiId, _, GITTag) => contentApiId
     }
 
     val link = toPlatformLink(breakingNews.link)
@@ -122,12 +122,12 @@ class GCMPushConverter(conf: Configuration) {
   protected def replaceHost(uri: URI) = List(Some("x-gu://"), Option(uri.getPath), Option(uri.getQuery).map("?" + _)).flatten.mkString
 
   protected def toPlatformLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _, _) => PlatformUri(s"x-gu:///items/$contentApiId", Item)
-    case Link.External(url, _) => PlatformUri(url, External)
+    case Link.Internal(contentApiId, _, _) => PlatformUri(s"x-gu:///items/$contentApiId", Item)
+    case Link.External(url) => PlatformUri(url, External)
   }
 
   private def toAndroidLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _, _) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId")
-    case Link.External(url, _) => new URI(url)
+    case Link.Internal(contentApiId, _, _) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId")
+    case Link.External(url) => new URI(url)
   }
 }

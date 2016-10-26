@@ -35,8 +35,8 @@ class WNSPushConverter(conf: Configuration) {
   }
 
   private def toUrl(link: Link): URI = link match {
-    case External(url, _) => new URI(url)
-    case Internal(capiId, _, _, _) => new URI(s"${conf.mapiItemEndpoint}/$capiId")
+    case External(url) => new URI(url)
+    case Internal(capiId, _, _) => new URI(s"${conf.mapiItemEndpoint}/$capiId")
   }
 
   private def toBreakingNews(bnn: BreakingNewsNotification) = wns.BreakingNewsNotification(

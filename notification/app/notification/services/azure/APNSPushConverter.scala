@@ -86,8 +86,8 @@ class APNSPushConverter(conf: Configuration) {
   case class PlatformUri(uri: String, `type`: PlatformUriType)
 
   private def toPlatformLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _, _) => PlatformUri(s"x-gu:///items/$contentApiId", Item)
-    case Link.External(url, _) => PlatformUri(url, External)
+    case Link.Internal(contentApiId, _, _) => PlatformUri(s"x-gu:///items/$contentApiId", Item)
+    case Link.External(url) => PlatformUri(url, External)
   }
 
   private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): ios.Notification = np match {
@@ -103,7 +103,7 @@ class APNSPushConverter(conf: Configuration) {
   }
 
   private def toIosLink(link: Link) = link match {
-    case Link.Internal(contentApiId, Some(shortUrl), _, _) => new URI(s"x-gu://${new URI(shortUrl).getPath}")
+    case Link.Internal(contentApiId, Some(shortUrl), _) => new URI(s"x-gu://${new URI(shortUrl).getPath}")
     case _ => link.webUri(conf.frontendBaseUrl)
   }
 

@@ -249,8 +249,8 @@ class iOSNotificationSpec extends Specification with Mockito {
       sender = "some-sender",
       title = "Live election results",
       importance = Major,
-      link = Internal("us", Some("https://gu.com/p/4p7xt"), GITContent, Some("Open liveblog")),
-      resultsLink = Internal("us", Some("https://gu.com/p/2zzz"), GITContent, Some("Results")),
+      link = Internal("us", Some("https://gu.com/p/4p7xt"), GITContent),
+      resultsLink = Internal("us", Some("https://gu.com/p/2zzz"), GITContent),
       results = ElectionResults(List(
         CandidateResults(
           name = "Clinton",
