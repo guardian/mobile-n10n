@@ -257,7 +257,7 @@ class iOSNotificationSpec extends Specification with Mockito {
           states = List.empty,
           electoralVotes = 220,
           popularVotes = 5000000,
-          avatar = new URI("http://e4775a29.ngrok.io/clinton-neutral.png"),
+          avatar = Some(new URI("http://e4775a29.ngrok.io/clinton-neutral.png")),
           color = "#005689"
         ),
         CandidateResults(
@@ -265,7 +265,7 @@ class iOSNotificationSpec extends Specification with Mockito {
           states = List.empty,
           electoralVotes = 133,
           popularVotes = 5000000,
-          avatar = new URI("http://e4775a29.ngrok.io/trump-neutral.png"),
+          avatar = Some(new URI("http://e4775a29.ngrok.io/trump-neutral.png")),
           color = "#d61d00"
         )
       )),

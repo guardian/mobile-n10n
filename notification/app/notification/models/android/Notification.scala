@@ -134,9 +134,8 @@ case class ElectionNotification(
       List(
         s"candidates[$index].name" -> candidate.name,
         s"candidates[$index].electoralVotes" -> candidate.electoralVotes.toString,
-        s"candidates[$index].color" -> candidate.color,
-        s"candidates[$index].avatar" -> candidate.avatar.toString
-      )
+        s"candidates[$index].color" -> candidate.color
+      ) ++ candidate.avatar.map({ avatar => s"candidates[$index].avatar" -> avatar.toString }).toList
     }
     val length = "candidates.length" -> results.candidates.size.toString
     length :: data
