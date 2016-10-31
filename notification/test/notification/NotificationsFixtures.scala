@@ -31,6 +31,8 @@ trait NotificationsFixtures {
   def electionNotification(importance: Importance) = ElectionNotification(
     id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
     message = "• 270 electoral votes needed to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+    shortMessage = Some(""),
+    expandedMessage = Some(""),
     sender = "some-sender",
     title = "Live election results",
     importance = importance,

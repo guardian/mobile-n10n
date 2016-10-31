@@ -6,6 +6,8 @@ object Keys {
   final val Debug = "debug"
   final val Title = "title"
   final val Message = "message"
+  final val ShortMessage = "shortMessage"
+  final val ExpandedMessage = "expandedMessage"
   final val Ticker = "ticker"
   final val Section = "section"
   final val Keyword = "keyword"

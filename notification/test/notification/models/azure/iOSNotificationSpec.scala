@@ -245,7 +245,9 @@ class iOSNotificationSpec extends Specification with Mockito {
   trait ElectionNotificationScope extends NotificationScope {
     val notification = models.ElectionNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-      message = "• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+      message = "\u2022 Electoral votes: Clinton 220, Trump 133\n\u2022 270 electoral votes to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+      shortMessage = Some("this is the short message"),
+      expandedMessage = Some("this is the expanded message"),
       sender = "some-sender",
       title = "Live election results",
       importance = Major,
@@ -286,7 +288,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         election = Some(ElectionProperties(
           title = "Live election results",
           body = "\u2022 Electoral votes: Clinton 220, Trump 133\n\u2022 270 electoral votes to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
-          richviewbody = "• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+          richviewbody = "this is the expanded message",
           sound = 1,
           dem = 220,
           rep = 133,

@@ -159,6 +159,8 @@ class AndroidNotificationSpec extends Specification with Mockito {
     val notification = models.ElectionNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       message = "• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+      shortMessage = Some("this is the short message"),
+      expandedMessage = Some("this is the expanded message"),
       sender = "some-sender",
       title = "Live election results",
       importance = Major,
@@ -205,7 +207,8 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "resultsLink" -> "x-gu://www.guardian.co.uk/world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau",
       "title" -> "Live election results",
       "importance" -> "Major",
-      "message" -> "• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting"
+      "expandedMessage" -> "this is the expanded message",
+      "shortMessage" -> "this is the short message"
     )
   }
 
