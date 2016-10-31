@@ -45,7 +45,9 @@ trait NotificationsFixtures {
         electoralVotes = 220,
         popularVotes = 5000000,
         avatar = Some(new URI("http://e4775a29.ngrok.io/clinton-neutral.png")),
-        color = "#005689"
+        color = "#005689",
+        winner = Some(false),
+        loser = Some(true)
       ),
       elections.CandidateResults(
         name = "Trump",
@@ -53,7 +55,9 @@ trait NotificationsFixtures {
         electoralVotes = 133,
         popularVotes = 5000000,
         avatar = Some(new URI("http://e4775a29.ngrok.io/trump-neutral.png")),
-        color = "#d61d00"
+        color = "#d61d00",
+        winner = Some(true),
+        loser = Some(false)
       )
     )),
     topic = Set(Topic(ElectionResults, "us-presidential-2016"))

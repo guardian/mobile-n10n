@@ -173,7 +173,9 @@ class AndroidNotificationSpec extends Specification with Mockito {
           electoralVotes = 220,
           popularVotes = 5000000,
           avatar = Some(new URI("http://e4775a29.ngrok.io/clinton-neutral.png")),
-          color = "#005689"
+          color = "#005689",
+          winner = Some(false),
+          loser = Some(true)
         ),
         CandidateResults(
           name = "Trump",
@@ -181,7 +183,9 @@ class AndroidNotificationSpec extends Specification with Mockito {
           electoralVotes = 133,
           popularVotes = 5000000,
           avatar = Some(new URI("http://e4775a29.ngrok.io/trump-neutral.png")),
-          color = "#d61d00"
+          color = "#d61d00",
+          winner = Some(true),
+          loser = Some(false)
         )
       )),
       topic = Set.empty
@@ -198,10 +202,14 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "candidates[0].electoralVotes" -> "220",
       "candidates[0].color" -> "#005689",
       "candidates[0].avatar" -> "http://e4775a29.ngrok.io/clinton-neutral.png",
+      "candidates[0].winner" -> "false",
+      "candidates[0].loser" -> "true",
       "candidates[1].name" -> "Trump",
       "candidates[1].electoralVotes" -> "133",
       "candidates[1].color" -> "#d61d00",
       "candidates[1].avatar" -> "http://e4775a29.ngrok.io/trump-neutral.png",
+      "candidates[1].winner" -> "true",
+      "candidates[1].loser" -> "false",
       "electoralCollegeSize" -> "538",
       "link" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
       "resultsLink" -> "x-gu://www.guardian.co.uk/world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau",
