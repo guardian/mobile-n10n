@@ -10,9 +10,7 @@ case class ElectionProperties(
   dem: Int,
   rep: Int,
   link: String,
-  results: String,
-  winner: Option[String],
-  loser: Option[String]
+  results: String
 )
 object ElectionProperties {
   implicit val jf = Json.format[ElectionProperties]

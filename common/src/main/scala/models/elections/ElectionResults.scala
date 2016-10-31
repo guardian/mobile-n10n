@@ -11,9 +11,7 @@ case class CandidateResults(
   electoralVotes: Int,
   popularVotes: Int,
   avatar: Option[URI],
-  color: String,
-  winner: Option[Boolean],
-  loser: Option[Boolean]
+  color: String
 )
 
 object CandidateResults {

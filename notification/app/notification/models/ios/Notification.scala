@@ -106,8 +106,6 @@ case class ElectionNotification(
   richBody: String,
   democratVotes: Int,
   republicanVotes: Int,
-  winner: Option[String],
-  loser: Option[String],
   link: URI,
   resultsLink: URI,
   buzz: Boolean
@@ -128,9 +126,7 @@ case class ElectionNotification(
         dem = democratVotes,
         rep = republicanVotes,
         link = link.toString,
-        results = resultsLink.toString,
-        winner = winner,
-        loser = loser
+        results = resultsLink.toString
       ))
     )
   )

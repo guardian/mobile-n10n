@@ -260,9 +260,7 @@ class iOSNotificationSpec extends Specification with Mockito {
           electoralVotes = 220,
           popularVotes = 5000000,
           avatar = Some(new URI("http://e4775a29.ngrok.io/clinton-neutral.png")),
-          color = "#005689",
-          winner = Some(false),
-          loser = Some(true)
+          color = "#005689"
         ),
         CandidateResults(
           name = "Trump",
@@ -270,9 +268,7 @@ class iOSNotificationSpec extends Specification with Mockito {
           electoralVotes = 133,
           popularVotes = 5000000,
           avatar = Some(new URI("http://e4775a29.ngrok.io/trump-neutral.png")),
-          color = "#d61d00",
-          winner = Some(true),
-          loser = Some(false)
+          color = "#d61d00"
         )
       )),
       topic = Set.empty
@@ -296,8 +292,6 @@ class iOSNotificationSpec extends Specification with Mockito {
           sound = 1,
           dem = 220,
           rep = 133,
-          winner = Some("Trump"),
-          loser = Some("Clinton"),
           link = "x-gu:///p/4p7xt",
           results = "x-gu:///p/2zzz"
         ))

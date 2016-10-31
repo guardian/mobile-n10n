@@ -68,9 +68,6 @@ class APNSPushConverter(conf: Configuration) {
     val democratVotes = electionAlert.results.candidates.find(_.name == "Clinton").map(_.electoralVotes).getOrElse(0)
     val republicanVotes = electionAlert.results.candidates.find(_.name == "Trump").map(_.electoralVotes).getOrElse(0)
 
-    val winner = electionAlert.results.candidates.find(_.winner.contains(true)).map(_.name)
-    val loser = electionAlert.results.candidates.find(_.loser.contains(true)).map(_.name)
-
     val textonlyFallback = s"• Electoral votes: Clinton $democratVotes, Trump $republicanVotes\n• 270 electoral votes to win\n"
     ios.ElectionNotification(
       message = electionAlert.message,
@@ -80,8 +77,6 @@ class APNSPushConverter(conf: Configuration) {
       richBody = electionAlert.expandedMessage.getOrElse(electionAlert.message),
       democratVotes = democratVotes,
       republicanVotes = republicanVotes,
-      winner = winner,
-      loser = loser,
       link = toIosLink(electionAlert.link),
       resultsLink = toIosLink(electionAlert.resultsLink),
       buzz = electionAlert.importance == Major
