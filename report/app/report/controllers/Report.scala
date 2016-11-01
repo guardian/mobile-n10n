@@ -21,7 +21,9 @@ final class Report(
   (implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
 
-  override def validApiKey(apiKey: String): Boolean = configuration.apiKeys.contains(apiKey)
+  val allApiKeys = configuration.apiKeys ++ configuration.electionRestrictedApiKeys
+
+  override def validApiKey(apiKey: String): Boolean = allApiKeys.contains(apiKey)
 
   override def isPermittedTopic(apiKey: String): Topic => Boolean =
     _ => false
