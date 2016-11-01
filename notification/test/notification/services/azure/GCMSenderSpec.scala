@@ -37,6 +37,16 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
       }
     }
 
+    "ignore a Minor election notification if election notifications are disabled" in new GCMScope {
+      val expectedReport = senderReport(Senders.AzureNotificationsHub).right
+      configuration.disableElectionNotificationsAndroid returns true
+
+      val result = androidNotificationSender.sendNotification(electionPush(Minor))
+      
+      result should beEqualTo(expectedReport).await
+      there was no(hubClient).sendNotification(any[GCMRawPush])
+    }
+
     "process a Major notification" in {
       "send two separate with notifications with differently encoded topics when addressed to topic" in new GCMScope {
         val result = androidNotificationSender.sendNotification(topicPush)
@@ -71,7 +81,8 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
       electionNotification(importance)
     )
 
-    val configuration = mock[Configuration].debug returns true
+    val configuration = mock[Configuration]
+    configuration.debug returns true
     val hubClient = {
       val client = mock[NotificationHubClient]
       client.sendNotification(any[GCMRawPush]) returns Future.successful(Some("fake-id").right)

@@ -2,9 +2,12 @@ package notification.services.azure
 
 import azure.NotificationHubClient
 import azure.NotificationHubClient._
+import models.Notification
+import models.NotificationType.ElectionsAlert
 import notification.models.Push
 import notification.services.Configuration
 import tracking.TopicSubscriptionsRepository
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class APNSSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
@@ -14,4 +17,10 @@ class APNSSender(hubClient: NotificationHubClient, configuration: Configuration,
 
   override protected def send(push: Push): Future[HubResult[Option[String]]] =
     hubClient.sendNotification(azureRawPushConverter.toRawPush(push))
+
+  override protected def shouldSendToApps(notification: Notification) =
+    super.shouldSendToApps(notification) && !filterAlert(notification)
+
+  private def filterAlert(notification: Notification) =
+    notification.`type` == ElectionsAlert && configuration.disableElectionNotificationsIOS
 }

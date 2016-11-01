@@ -49,7 +49,7 @@ abstract class NotificationsHubSender(
     }
   }
 
-  private def shouldSendToApps(notification: Notification) =
+  protected def shouldSendToApps(notification: Notification) =
     notification.`type` == NotificationType.ElectionsAlert || notification.importance == Major
 
   private def count(destination: Destination): Future[RepositoryResult[Int]] = destination match {

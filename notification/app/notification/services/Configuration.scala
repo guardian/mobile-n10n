@@ -32,4 +32,7 @@ class Configuration extends NotificationConfiguration("notification") {
   lazy val dynamoTopicsTableName = getConfigString("db.dynamo.topics.table-name")
   lazy val dynamoTopicsFlushInterval = getFiniteDuration("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
   lazy val frontendBaseUrl = getConfigString("frontend.baseUrl")
+
+  lazy val disableElectionNotificationsAndroid = conf.getStringProperty("notifications.elections.android.disabled", "false").toBoolean
+  lazy val disableElectionNotificationsIOS = conf.getStringProperty("notifications.elections.ios.disabled", "false").toBoolean
 }
