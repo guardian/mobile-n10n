@@ -5,6 +5,7 @@ import java.util.UUID
 
 import models.NotificationType.BreakingNews
 import models._
+import models.elections.ElectionResults
 import notification.models.android.Editions.Edition
 import notification.services.azure.PlatformUriType
 import utils.MapImplicits._
@@ -119,13 +120,38 @@ case class GoalAlertNotification(
 case class ElectionNotification(
   `type`: String = AndroidMessageTypes.ElectionAlert,
   id: UUID,
-  message: String,
+  title: String,
+  expandedMessage: String,
+  shortMessage: String,
+  results: ElectionResults,
+  link: URI,
+  resultsLink: URI,
+  importance: Importance,
   debug: Boolean
 ) extends Notification {
+
+  private def resultsFlattened: List[(String, String)] = {
+    val data = results.candidates.zipWithIndex.flatMap { case (candidate, index) =>
+      List(
+        s"candidates[$index].name" -> candidate.name,
+        s"candidates[$index].electoralVotes" -> candidate.electoralVotes.toString,
+        s"candidates[$index].color" -> candidate.color
+      ) ++ candidate.avatar.map({ avatar => s"candidates[$index].avatar" -> avatar.toString }).toList
+    }
+    val length = "candidates.length" -> results.candidates.size.toString
+    length :: data
+  }
+
   def payload: Map[String, String] = Map(
     Keys.Type -> `type`,
     Keys.UniqueIdentifier -> id.toString,
-    Keys.Message -> message,
-    Keys.Debug -> debug.toString
-  )
+    Keys.ExpandedMessage -> expandedMessage,
+    Keys.ShortMessage -> shortMessage,
+    Keys.Debug -> debug.toString,
+    Keys.ElectoralCollegeSize -> "538",
+    Keys.Link -> link.toString,
+    Keys.ResultsLink -> resultsLink.toString,
+    Keys.Title -> title,
+    Keys.Importance -> importance.toString
+  ) ++ resultsFlattened.toMap
 }

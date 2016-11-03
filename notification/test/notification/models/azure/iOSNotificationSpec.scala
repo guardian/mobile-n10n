@@ -3,13 +3,13 @@ package notification.models.azure
 import java.net.URI
 import java.util.UUID
 
-import azure.apns.{APS, Body}
+import azure.apns._
 import notification.services.Configuration
 import models.Importance.Major
 import models.Link.Internal
 import models._
 import models.TopicTypes.{Breaking, TagSeries}
-import models.elections.ElectionResults
+import models.elections.{CandidateResults, ElectionResults}
 import notification.models.Push
 import notification.services.azure.APNSPushConverter
 import org.specs2.mock.Mockito
@@ -80,7 +80,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         sound = Some("default"),
         `mutable-content` = None
       ),
-      customProperties = Map(
+      customProperties = LegacyProperties(Map(
         "t" -> "m",
         "notificationType" -> "news",
         "link" -> "x-gu:///p/4p7xt",
@@ -88,7 +88,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         "imageUrl" -> "https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg",
         "uriType" -> "item"
-      )
+      ))
     )
   }
 
@@ -116,7 +116,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         sound = Some("default"),
         `mutable-content` = None
       ),
-      customProperties = Map(
+      customProperties = LegacyProperties(Map(
         "t" -> "m",
         "notificationType" -> "news",
         "link" -> "x-gu:///p/4p7xt",
@@ -124,7 +124,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         "imageUrl" -> "https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg",
         "uriType" -> "item"
-      )
+      ))
     )
   }
 
@@ -151,14 +151,14 @@ class iOSNotificationSpec extends Specification with Mockito {
         `content-available` = Some(1),
         sound = Some("default")
       ),
-      customProperties = Map(
+      customProperties = LegacyProperties(Map(
         "t" -> "m",
         "notificationType" -> "news",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "breaking/uk,breaking/us,breaking/au,breaking/international",
         "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         "uriType" -> "item"
-      )
+      ))
     )
   }
 
@@ -184,14 +184,14 @@ class iOSNotificationSpec extends Specification with Mockito {
         `content-available` = Some(1),
         sound = Some("default")
       ),
-      customProperties = Map(
+      customProperties = LegacyProperties(Map(
         "t" -> "m",
         "notificationType" -> "content",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "tag-series/series-a,tag-series/series-b",
         "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         "uriType" -> "item"
-      )
+      ))
     )
   }
 
@@ -234,23 +234,43 @@ class iOSNotificationSpec extends Specification with Mockito {
         `content-available` = Some(1),
         sound = Some("default")
       ),
-      customProperties = Map(
+      customProperties = LegacyProperties(Map(
         "t" -> "g",
         "uri" -> "x-gu:///match-info/3833380",
         "uriType" -> "football-match"
-      )
+      ))
     )
   }
 
   trait ElectionNotificationScope extends NotificationScope {
     val notification = models.ElectionNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-      message = "test",
+      message = "\u2022 Electoral votes: Clinton 220, Trump 133\n\u2022 270 electoral votes to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+      shortMessage = Some("this is the short message"),
+      expandedMessage = Some("this is the expanded message"),
       sender = "some-sender",
-      title = "some-title",
+      title = "Live election results",
       importance = Major,
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
-      results = ElectionResults(List.empty),
+      link = Internal("us", Some("https://gu.com/p/4p7xt"), GITContent),
+      resultsLink = Internal("us", Some("https://gu.com/p/2zzz"), GITContent),
+      results = ElectionResults(List(
+        CandidateResults(
+          name = "Clinton",
+          states = List.empty,
+          electoralVotes = 220,
+          popularVotes = 5000000,
+          avatar = Some(new URI("http://e4775a29.ngrok.io/clinton-neutral.png")),
+          color = "#005689"
+        ),
+        CandidateResults(
+          name = "Trump",
+          states = List.empty,
+          electoralVotes = 133,
+          popularVotes = 5000000,
+          avatar = Some(new URI("http://e4775a29.ngrok.io/trump-neutral.png")),
+          color = "#d61d00"
+        )
+      )),
       topic = Set.empty
     )
 
@@ -258,13 +278,23 @@ class iOSNotificationSpec extends Specification with Mockito {
 
     val expected = Body(
       aps = APS(
-        alert = Some(Right("test")),
+        alert = None,
         category = None,
         `content-available` = Some(1),
-        sound = Some("default")
+        sound = None
       ),
-      customProperties = Map(
-        "t" -> "e"
+      customProperties = StandardProperties(
+        t = "us-election",
+        election = Some(ElectionProperties(
+          title = "Live election results",
+          body = "\u2022 Electoral votes: Clinton 220, Trump 133\n\u2022 270 electoral votes to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+          richviewbody = "this is the expanded message",
+          sound = 1,
+          dem = 220,
+          rep = 133,
+          link = "x-gu:///p/4p7xt",
+          results = "x-gu:///p/2zzz"
+        ))
       )
     )
   }

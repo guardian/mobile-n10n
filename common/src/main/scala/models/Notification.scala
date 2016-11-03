@@ -111,8 +111,11 @@ case class ElectionNotification(
   sender: String,
   title: String,
   message: String,
+  expandedMessage: Option[String],
+  shortMessage: Option[String],
   importance: Importance,
   link: Link,
+  resultsLink: Link,
   results: ElectionResults,
   topic: Set[Topic]
 ) extends Notification

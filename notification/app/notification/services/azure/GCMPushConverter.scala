@@ -12,7 +12,8 @@ import notification.services.Configuration
 import play.api.Logger
 
 import scala.PartialFunction._
-import PlatformUriTypes.{Item, FootballMatch, External}
+import PlatformUriTypes.{External, FootballMatch, Item}
+import models.Importance.Major
 
 class GCMPushConverter(conf: Configuration) {
 
@@ -109,7 +110,13 @@ class GCMPushConverter(conf: Configuration) {
   private def toElectionAlert(electionAlert: ElectionNotification) = android.ElectionNotification(
     `type` = AndroidMessageTypes.ElectionAlert,
     id = electionAlert.id,
-    message = electionAlert.message,
+    title = electionAlert.title,
+    expandedMessage = electionAlert.expandedMessage.getOrElse(electionAlert.message),
+    shortMessage = electionAlert.shortMessage.getOrElse(electionAlert.message),
+    results = electionAlert.results,
+    link = toAndroidLink(electionAlert.link),
+    resultsLink = toAndroidLink(electionAlert.resultsLink),
+    importance = electionAlert.importance,
     debug = conf.debug
   )
 

@@ -3,11 +3,11 @@ package notification.models.azure
 import java.net.URI
 import java.util.UUID
 
-import models.Importance.Major
+import models.Importance.{Major, Minor}
 import models.Link.Internal
 import models.{GITContent, Topic}
 import models.TopicTypes.{Breaking, TagSeries}
-import models.elections.ElectionResults
+import models.elections.{CandidateResults, ElectionResults}
 import notification.models.Push
 import notification.models.android._
 import notification.services.Configuration
@@ -39,6 +39,9 @@ class AndroidNotificationSpec extends Specification with Mockito {
   "An election notification" should {
     "serialize to map" in new ElectionNotificationScope {
       converter.toRawPush(push).body.data shouldEqual expected
+    }
+    "Have buzz=false for minor notifications" in new MinorElectionNotificationScope {
+      converter.toRawPush(minorPush).body.data shouldEqual minorExpected
     }
   }
 
@@ -155,12 +158,32 @@ class AndroidNotificationSpec extends Specification with Mockito {
   trait ElectionNotificationScope extends NotificationScope {
     val notification = models.ElectionNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-      message = "test",
+      message = "• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+      shortMessage = Some("this is the short message"),
+      expandedMessage = Some("this is the expanded message"),
       sender = "some-sender",
-      title = "some-title",
+      title = "Live election results",
       importance = Major,
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
-      results = ElectionResults(List.empty),
+      resultsLink = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent),
+      results = ElectionResults(List(
+        CandidateResults(
+          name = "Clinton",
+          states = List.empty,
+          electoralVotes = 220,
+          popularVotes = 5000000,
+          avatar = Some(new URI("http://e4775a29.ngrok.io/clinton-neutral.png")),
+          color = "#005689"
+        ),
+        CandidateResults(
+          name = "Trump",
+          states = List.empty,
+          electoralVotes = 133,
+          popularVotes = 5000000,
+          avatar = Some(new URI("http://e4775a29.ngrok.io/trump-neutral.png")),
+          color = "#d61d00"
+        )
+      )),
       topic = Set.empty
     )
 
@@ -168,10 +191,30 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
     val expected =  Map(
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
-      "type" -> "election",
-      "message" -> "test",
-      "debug" -> "false"
+      "debug" -> "false",
+      "type" -> "liveElections",
+      "candidates.length" -> "2",
+      "candidates[0].name" -> "Clinton",
+      "candidates[0].electoralVotes" -> "220",
+      "candidates[0].color" -> "#005689",
+      "candidates[0].avatar" -> "http://e4775a29.ngrok.io/clinton-neutral.png",
+      "candidates[1].name" -> "Trump",
+      "candidates[1].electoralVotes" -> "133",
+      "candidates[1].color" -> "#d61d00",
+      "candidates[1].avatar" -> "http://e4775a29.ngrok.io/trump-neutral.png",
+      "electoralCollegeSize" -> "538",
+      "link" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+      "resultsLink" -> "x-gu://www.guardian.co.uk/world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau",
+      "title" -> "Live election results",
+      "importance" -> "Major",
+      "expandedMessage" -> "this is the expanded message",
+      "shortMessage" -> "this is the short message"
     )
   }
 
+  trait MinorElectionNotificationScope extends ElectionNotificationScope {
+    val minorNotification = notification.copy(importance = Minor)
+    val minorExpected = expected.updated("importance", "Minor")
+    val minorPush = Push(minorNotification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+  }
 }

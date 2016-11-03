@@ -173,10 +173,13 @@ class WNSNotificationSpec extends Specification with Mockito {
     val notification = models.ElectionNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       message = "test",
+      shortMessage = Some("this is the short message"),
+      expandedMessage = Some("this is the expanded message"),
       sender = "some-sender",
       title = "some-title",
       importance = Major,
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      resultsLink = Internal("us", Some("https://gu.com/p/2zzz"), GITContent),
       results = ElectionResults(List.empty),
       topic = Set.empty
     )
