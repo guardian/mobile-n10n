@@ -39,7 +39,7 @@ class Configuration extends NotificationConfiguration("registration") {
       url = getConfigString("notifications.auditor.contentApi.url")
     )
   )
-  lazy val maxTopics = getConfigInt("notifications.max_topics", 200) // scalastyle:off magic.number
+  lazy val maxTopics = getConfigInt("notifications.max_topics")
   lazy val dynamoTopicsTableName = getConfigString("db.dynamo.topics.table-name")
   lazy val dynamoTopicsFlushInterval = getFiniteDuration("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
 
