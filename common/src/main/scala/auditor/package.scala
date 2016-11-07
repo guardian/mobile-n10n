@@ -1,5 +1,6 @@
 import java.net.URL
 
+import models.TopicTypes.ElectionResults
 import models.{Topic, TopicTypes}
 import play.api.Logger
 import play.api.libs.json.Json
@@ -43,7 +44,7 @@ package object auditor {
   case class RemoteAuditor(host: URL, wsClient: WSClient) extends Auditor {
     val logger = Logger(classOf[RemoteAuditor])
 
-    def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = topics.toList match {
+    def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = topics.toList.filterNot(_.`type` == ElectionResults) match {
       case Nil => Future.successful(topics)
       case tl => logger.debug(s"Asking auditor ($host) for expired topics with $topics")
         wsClient
