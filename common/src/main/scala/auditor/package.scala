@@ -1,6 +1,8 @@
 import java.net.URL
 
+import models.TopicTypes.ElectionResults
 import models.{Topic, TopicTypes}
+import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
@@ -16,6 +18,17 @@ package object auditor {
 
   sealed trait Auditor {
     def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]]
+  }
+
+  case class TimeExpiringAuditor(referenceTopics: Set[Topic], expiry: DateTime) extends Auditor {
+    override def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = {
+      Future.successful {
+        if (DateTime.now.isAfter(expiry))
+          topics.intersect(referenceTopics)
+        else
+          Set.empty
+      }
+    }
   }
 
   case class LiveblogAuditor(wsClient: WSClient, config: ContentApiConfig) extends Auditor {
@@ -43,7 +56,7 @@ package object auditor {
   case class RemoteAuditor(host: URL, wsClient: WSClient) extends Auditor {
     val logger = Logger(classOf[RemoteAuditor])
 
-    def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = topics.toList match {
+    def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = topics.toList.filterNot(_.`type` == ElectionResults) match {
       case Nil => Future.successful(topics)
       case tl => logger.debug(s"Asking auditor ($host) for expired topics with $topics")
         wsClient
