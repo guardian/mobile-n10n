@@ -2,6 +2,7 @@ import java.net.URL
 
 import models.TopicTypes.ElectionResults
 import models.{Topic, TopicTypes}
+import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
@@ -17,6 +18,17 @@ package object auditor {
 
   sealed trait Auditor {
     def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]]
+  }
+
+  case class TimeExpiringAuditor(referenceTopics: Set[Topic], expiry: DateTime) extends Auditor {
+    override def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = {
+      Future.successful {
+        if (DateTime.now.isAfter(expiry))
+          topics.intersect(referenceTopics)
+        else
+          Set.empty
+      }
+    }
   }
 
   case class LiveblogAuditor(wsClient: WSClient, config: ContentApiConfig) extends Auditor {

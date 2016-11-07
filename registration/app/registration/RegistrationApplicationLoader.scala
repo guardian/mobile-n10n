@@ -4,17 +4,19 @@ import java.net.URL
 
 import _root_.controllers.Assets
 import akka.actor.ActorSystem
-import auditor.{Auditor, AuditorGroup, LiveblogAuditor, RemoteAuditor}
+import auditor.{Auditor, AuditorGroup, LiveblogAuditor, RemoteAuditor, TimeExpiringAuditor}
 import azure.{NotificationHubClient, NotificationHubConnection}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
+import _root_.models.Topic
+import _root_.models.TopicTypes.ElectionResults
+import org.joda.time.DateTime
 import registration.controllers.Main
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
-import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar, APNSEnterpriseNotifcationRegistrar}
-import router.Routes
+import registration.services.azure.{APNSEnterpriseNotifcationRegistrar, APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
 import registration.services._
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
 
@@ -150,7 +152,11 @@ trait TopicValidation {
     with ExecutionEnv =>
   lazy val auditorGroup: AuditorGroup = {
     val remoteAuditors: Set[Auditor] = appConfig.auditorConfiguration.hosts map { host => RemoteAuditor(new URL(host), wsClient) }
-    AuditorGroup(remoteAuditors + LiveblogAuditor(wsClient, appConfig.auditorConfiguration.contentApiConfig))
+    AuditorGroup(
+      remoteAuditors +
+        LiveblogAuditor(wsClient, appConfig.auditorConfiguration.contentApiConfig) +
+        TimeExpiringAuditor(Set(Topic(ElectionResults, "us-presidential-2016")), DateTime.parse("2016-11-14T00:00:00Z"))
+    )
   }
   lazy val topicValidator: TopicValidator = wire[AuditorTopicValidator]
 }
