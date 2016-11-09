@@ -22,6 +22,8 @@ import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsR
 
 import scala.concurrent.ExecutionContext
 
+import router.Routes
+
 class RegistrationApplicationLoader extends ApplicationLoader {
   override def load(context: Context): Application = {
     LoggerConfigurator(context.environment.classLoader) foreach { _.configure(context.environment) }
