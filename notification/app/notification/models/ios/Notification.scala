@@ -32,7 +32,7 @@ case class BreakingNewsNotification(
       category = Some(category),
       alert = Some(Right(message)),
       `content-available` = Some(1),
-      `mutable-content` = None,
+      `mutable-content` = if (imageUrl.isDefined) Some(1) else None,
       sound = Some("default")
     ),
     customProperties = LegacyProperties(Map(

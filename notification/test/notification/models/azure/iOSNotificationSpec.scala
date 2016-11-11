@@ -78,7 +78,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         category = Some("ITEM_CATEGORY"),
         `content-available` = Some(1),
         sound = Some("default"),
-        `mutable-content` = None
+        `mutable-content` = Some(1)
       ),
       customProperties = LegacyProperties(Map(
         "t" -> "m",
@@ -114,7 +114,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         category = Some("ITEM_CATEGORY"),
         `content-available` = Some(1),
         sound = Some("default"),
-        `mutable-content` = None
+        `mutable-content` = Some(1)
       ),
       customProperties = LegacyProperties(Map(
         "t" -> "m",
