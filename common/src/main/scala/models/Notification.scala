@@ -65,6 +65,7 @@ case class ContentNotification(
   `type`: NotificationType = Content,
   title: String,
   message: String,
+  iosUseMessage: Option[Boolean],
   thumbnailUrl: Option[URI],
   sender: String,
   link: Link,
