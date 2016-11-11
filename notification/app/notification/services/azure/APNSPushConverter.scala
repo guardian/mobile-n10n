@@ -45,7 +45,7 @@ class APNSPushConverter(conf: Configuration) {
 
     ios.ContentNotification(
       category = "ITEM_CATEGORY",
-      message = cn.title,
+      message = if (cn.iosUseMessage.contains(true)) cn.message else cn.title,
       link = toIosLink(cn.link),
       topics = cn.topic,
       uri = new URI(link.uri),

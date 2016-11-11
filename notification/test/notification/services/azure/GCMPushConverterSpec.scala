@@ -93,6 +93,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       id = UUID.fromString("c8bd6aaa-072f-4593-a38b-322f3ecd6bd3"),
       title = "Follow",
       message = "Which countries are doing the most to stop dangerous global warming?",
+      iosUseMessage = None,
       thumbnailUrl = Some(new URI("http://media.guim.co.uk/a07334e4ed5d13d3ecf4c1ac21145f7f4a099f18/127_0_3372_2023/140.jpg")),
       sender = "test",
       link = Internal("environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming", None, GITContent),
