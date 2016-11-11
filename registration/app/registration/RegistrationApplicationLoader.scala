@@ -157,7 +157,7 @@ trait TopicValidation {
     AuditorGroup(
       remoteAuditors +
         LiveblogAuditor(wsClient, appConfig.auditorConfiguration.contentApiConfig) +
-        TimeExpiringAuditor(Set(Topic(ElectionResults, "us-presidential-2016")), DateTime.parse("2016-11-14T00:00:00Z"))
+        TimeExpiringAuditor(Set(Topic(ElectionResults, "us-presidential-2016")), DateTime.parse("2016-11-30T00:00:00Z"))
     )
   }
   lazy val topicValidator: TopicValidator = wire[AuditorTopicValidator]
