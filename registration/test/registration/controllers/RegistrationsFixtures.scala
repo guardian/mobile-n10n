@@ -142,6 +142,25 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
 }
 
 trait RegistrationsJson {
+  val legacyIosRegistrationWithRoundUpTopic =
+    """
+      |{
+      |	"device": {
+      |		"pushToken": "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4",
+      |		"buildTier": "debug",
+      |		"udid": "gia:0E980097-59FD-4047-B609-366C6D5BB1B3",
+      |		"platform": "ios"
+      |	},
+      |	"preferences": {
+      |		"edition": "UK",
+      |		"topics": [
+      |     {"type": "tag-series", "name": "membership/series/weekend-round-up"}
+      |		],
+      |		"receiveNewsAlerts": false
+      |	}
+      |}
+    """.stripMargin
+
   val legacyIosRegistrationWithFootballMatchTopicJson =
     """
       |{
