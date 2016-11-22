@@ -14,6 +14,7 @@ sealed trait Notification {
   def message: String
   def importance: Importance
   def topic: Set[Topic]
+  def withTopics(topics: Set[Topic]): Notification
 }
 
 object Notification {
@@ -53,7 +54,9 @@ case class BreakingNewsNotification(
   imageUrl: Option[URI],
   importance: Importance,
   topic: Set[Topic]
-) extends Notification with NotificationWithLink
+) extends Notification with NotificationWithLink {
+  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+}
 
 object BreakingNewsNotification {
   import JsonUtils._
@@ -71,7 +74,9 @@ case class ContentNotification(
   link: Link,
   importance: Importance,
   topic: Set[Topic]
-) extends Notification with NotificationWithLink
+) extends Notification with NotificationWithLink {
+  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+}
 
 object ContentNotification {
   import JsonUtils._
@@ -99,7 +104,9 @@ case class GoalAlertNotification(
   importance: Importance,
   topic: Set[Topic],
   addedTime: Option[String]
-) extends Notification
+) extends Notification {
+  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+}
 
 object GoalAlertNotification {
   import JsonUtils._
@@ -119,7 +126,9 @@ case class ElectionNotification(
   resultsLink: Link,
   results: ElectionResults,
   topic: Set[Topic]
-) extends Notification
+) extends Notification {
+  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+}
 
 object ElectionNotification {
   import JsonUtils._
