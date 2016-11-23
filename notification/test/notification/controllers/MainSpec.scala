@@ -1,6 +1,6 @@
 package notification.controllers
 
-import models.TopicTypes.Breaking
+import models.TopicTypes.{Breaking, TagSeries}
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
 import notification.models.{Push, PushResult}
@@ -11,7 +11,7 @@ import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import play.api.test.PlaySpecification
-import tracking.{InMemoryNotificationReportRepository}
+import tracking.InMemoryNotificationReportRepository
 
 import scala.concurrent.Future
 import cats.implicits._
@@ -24,6 +24,15 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       status(response) must equalTo(CREATED)
       pushSent must beSome.which(_.destination must beEqualTo(Left(validTopics)))
+    }
+    "send weekend-reading notifications to weekend-round-up topic too" in new MainScope {
+      val weekendReadingTopic = Topic(TagSeries, "membership/series/weekend-reading")
+      val weekendRoundUpTopic = Topic(TagSeries, "membership/series/weekend-round-up")
+      val request = authenticatedRequest.withBody(breakingNewsNotification(Set(weekendReadingTopic)))
+      val response = main.pushTopics()(request)
+
+      status(response) must equalTo(CREATED)
+      pushSent must beSome.which(_.destination must beEqualTo(Left(Set(weekendReadingTopic, weekendRoundUpTopic))))
     }
     "refuse a notification with an invalid key" in new MainScope {
       val request = invalidAuthenticatedRequest.withBody(breakingNewsNotification(validTopics))
