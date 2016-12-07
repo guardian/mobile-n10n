@@ -43,7 +43,7 @@ case class BreakingNewsNotification(
     Keys.Debug -> debug.toString,
     Keys.Editions -> editions.mkString(","),
     Keys.Link -> link.toString,
-    Keys.Topics -> topics.map(_.toString).mkString(","),
+    Keys.Topics -> topics.map(_.androidToString).mkString(","),
     Keys.UriType -> uriType.toString,
     Keys.Uri -> uri) ++ Map(
       Keys.Section -> section.map(_.toString),
@@ -74,7 +74,7 @@ case class ContentNotification(
     Keys.Ticker -> ticker,
     Keys.Message -> message,
     Keys.Link -> link.toString,
-    Keys.Topics -> topics.map(_.toString).mkString(","),
+    Keys.Topics -> topics.map(_.androidToString).mkString(","),
     Keys.UriType -> uriType.toString,
     Keys.Uri -> uri.toString,
     Keys.Debug -> debug.toString
