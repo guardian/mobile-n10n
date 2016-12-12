@@ -39,6 +39,8 @@ class GCMPushConverter(conf: Configuration) {
     case Right(user: UniqueDeviceIdentifier) => Some(Tags.fromUserId(user))
   }
 
+  private def toAndroidTopic(topic: Topic) = s"${topic.`type`}//${topic.name}"
+
   private def toBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
 
     val sectionLink = condOpt(breakingNews.link) {
@@ -61,7 +63,7 @@ class GCMPushConverter(conf: Configuration) {
       debug = conf.debug,
       editions = editions,
       link = toAndroidLink(breakingNews.link),
-      topics = breakingNews.topic,
+      topics = breakingNews.topic.map(toAndroidTopic),
       uriType = link.`type`,
       uri = link.uri,
       section = sectionLink.map(new URI(_)),
@@ -81,7 +83,7 @@ class GCMPushConverter(conf: Configuration) {
       ticker = cn.message,
       message = cn.message,
       link = toAndroidLink(cn.link),
-      topics = cn.topic,
+      topics = cn.topic.map(toAndroidTopic),
       uriType = link.`type`,
       uri = new URI(link.uri),
       thumbnailUrl = cn.thumbnailUrl,

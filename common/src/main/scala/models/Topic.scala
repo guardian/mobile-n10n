@@ -7,7 +7,6 @@ import cats.data.Xor
 
 case class Topic(`type`: TopicType, name: String) {
   override def toString: String = s"${`type`}/$name"
-  def androidToString: String = s"${`type`}//$name"
   lazy val id: String = md5Hex(toString)
 }
 
