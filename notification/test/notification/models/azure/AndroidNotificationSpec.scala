@@ -61,7 +61,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       uri = "http://mobile-apps.guardianapis.com/items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates-uri",
       imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/" +
         "0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
-      topics = Set(Topic(Breaking, "uk")),
+      topics = Set("breaking//uk"),
       debug = true,
       section = None,
       edition = None,
@@ -71,7 +71,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
     )
 
     val expected = Map(
-      "topics" -> "breaking/uk",
+      "topics" -> "breaking//uk",
       "uniqueIdentifier" -> "30aac5f5-34bb-4a88-8b69-97f995a4907b",
       "editions" -> "",
       "uri" -> "http://mobile-apps.guardianapis.com/items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates-uri",
@@ -99,12 +99,12 @@ class AndroidNotificationSpec extends Specification with Mockito {
       ticker = "",
       link = new URI("http://mobile-apps.guardianapis.com/items/environment/ng-interactive/2015/oct/16/" +
         "which-countries-are-doing-the-most-to-stop-dangerous-global-warming"),
-      topics = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground")),
+      topics = Set("tag-series//environment/series/keep-it-in-the-ground"),
       debug = true
     )
 
     val expected = Map(
-      "topics" -> "tag-series/environment/series/keep-it-in-the-ground",
+      "topics" -> "tag-series//environment/series/keep-it-in-the-ground",
       "uniqueIdentifier" -> "c8bd6aaa-072f-4593-a38b-322f3ecd6bd3",
       "uri" -> "test-uri",
       "debug" -> "true",
