@@ -1,6 +1,6 @@
 package registration.services.topic
 
-import auditor.{Auditor, AuditorGroup, AuditorGroupConfig, ContentApiConfig}
+import auditor.{Auditor, AuditorGroup, AuditorGroupConfig, ApiConfig}
 import models.{Topic, TopicTypes}
 import models.TopicTypes.{Content, FootballMatch}
 import org.specs2.concurrent.ExecutionEnv
@@ -68,8 +68,8 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
     val topicValidator = {
       val configuration = new Configuration() {
         override lazy val auditorConfiguration = AuditorGroupConfig(
-          hosts = Set.empty,
-          contentApiConfig = ContentApiConfig(apiKey = "test", url = "test")
+          contentApiConfig = ApiConfig(apiKey = "test", url = "test"),
+          paApiConfig = ApiConfig(apiKey = "test", url = "test")
         )
         override lazy val maxTopics = testMaxTopics
       }

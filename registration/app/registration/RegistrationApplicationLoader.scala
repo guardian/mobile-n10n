@@ -1,11 +1,9 @@
 package registration
 
-import java.net.URL
-
 import _root_.controllers.Assets
 import akka.actor.ActorSystem
-import auditor.{Auditor, AuditorGroup, LiveblogAuditor, RemoteAuditor, TimeExpiringAuditor}
-import azure.{NotificationHubClient, NotificationHubConnection}
+import auditor.{AuditorGroup, FootballMatchAuditor, LiveblogAuditor, TimeExpiringAuditor}
+import azure.NotificationHubClient
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
@@ -153,12 +151,11 @@ trait TopicValidation {
     with AhcWSComponents
     with ExecutionEnv =>
   lazy val auditorGroup: AuditorGroup = {
-    val remoteAuditors: Set[Auditor] = appConfig.auditorConfiguration.hosts map { host => RemoteAuditor(new URL(host), wsClient) }
-    AuditorGroup(
-      remoteAuditors +
-        LiveblogAuditor(wsClient, appConfig.auditorConfiguration.contentApiConfig) +
-        TimeExpiringAuditor(Set(Topic(ElectionResults, "us-presidential-2016")), DateTime.parse("2016-11-30T00:00:00Z"))
-    )
+    AuditorGroup(Set(
+      FootballMatchAuditor(new WSPaClient(appConfig.auditorConfiguration.paApiConfig, wsClient)),
+      LiveblogAuditor(wsClient, appConfig.auditorConfiguration.contentApiConfig),
+      TimeExpiringAuditor(Set(Topic(ElectionResults, "us-presidential-2016")), DateTime.parse("2016-11-30T00:00:00Z"))
+    ))
   }
   lazy val topicValidator: TopicValidator = wire[AuditorTopicValidator]
 }
