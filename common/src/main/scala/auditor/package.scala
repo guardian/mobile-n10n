@@ -1,9 +1,6 @@
-import java.net.URL
-
-import models.TopicTypes.ElectionResults
 import models.{Topic, TopicTypes}
 import org.joda.time.DateTime
-import play.api.Logger
+import pa.PaClient
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 
@@ -12,9 +9,9 @@ import scala.util.Try
 
 package object auditor {
 
-  case class ContentApiConfig(url: String, apiKey: String)
+  case class ApiConfig(url: String, apiKey: String)
 
-  case class AuditorGroupConfig(hosts: Set[String], contentApiConfig: ContentApiConfig)
+  case class AuditorGroupConfig(contentApiConfig: ApiConfig, paApiConfig: ApiConfig)
 
   sealed trait Auditor {
     def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]]
@@ -31,7 +28,7 @@ package object auditor {
     }
   }
 
-  case class LiveblogAuditor(wsClient: WSClient, config: ContentApiConfig) extends Auditor {
+  case class LiveblogAuditor(wsClient: WSClient, config: ApiConfig) extends Auditor {
 
     override def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = {
       val contentTopics = topics.filter(_.`type` == TopicTypes.Content)
@@ -53,16 +50,34 @@ package object auditor {
     }
   }
 
-  case class RemoteAuditor(host: URL, wsClient: WSClient) extends Auditor {
-    val logger = Logger(classOf[RemoteAuditor])
+  case class FootballMatchAuditor(client: PaClient) extends Auditor {
 
-    def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = topics.toList.filterNot(_.`type` == ElectionResults) match {
-      case Nil => Future.successful(topics)
-      case tl => logger.debug(s"Asking auditor ($host) for expired topics with $topics")
-        wsClient
-          .url(s"$host/expired-topics")
-          .post(Json.toJson(ExpiredTopicsRequest(tl)))
-          .map { _.json.as[ExpiredTopicsResponse].topics.toSet }
+    private val matchEndedStatuses = List(
+      "FT",
+      "PTFT",
+      "Result",
+      "ETFT",
+      "MC",
+      "Abandoned",
+      "Cancelled"
+    )
+
+    override def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = {
+      val footballMatchTopics =  topics.filter(_.`type` == TopicTypes.FootballMatch)
+
+      Future.traverse(footballMatchTopics) { topic =>
+        isMatchEnded(topic.name).map {
+          case true => Some(topic)
+          case false => None
+        }
+      }.map(_.flatten)
+    }
+
+    private def isMatchEnded(matchId: String)(implicit ec: ExecutionContext): Future[Boolean] = {
+      client.matchInfo(matchId) map {
+        case theMatch if matchEndedStatuses contains theMatch.matchStatus => true
+        case _ => false
+      }
     }
   }
 
