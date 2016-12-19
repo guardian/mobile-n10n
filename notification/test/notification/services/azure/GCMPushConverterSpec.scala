@@ -9,6 +9,7 @@ import models.Importance.Major
 import models.Link.Internal
 import models.TopicTypes.{Breaking, FootballMatch, FootballTeam, TagSeries}
 import models._
+import notification.models.android.Editions
 import notification.models.{Destination, android}
 import notification.services.Configuration
 import org.specs2.mock.Mockito
@@ -74,10 +75,10 @@ class GCMPushConverterSpec extends Specification with Mockito {
       title = "The Guardian",
       ticker = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
       message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
-      editions = Set.empty,
+      editions = Set(Editions.UK),
       uriType = PlatformUriTypes.Item,
       section = None,
-      edition = None,
+      edition = Some(Editions.UK),
       keyword = None,
       thumbnailUrl = Some(new URI("http://media.guim.co.uk/09951387fda453719fe1fee3e5dcea4efa05e4fa/0_181_3596_2160/140.jpg")),
       link = new URI("x-gu://www.guardian.co.uk/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates"),

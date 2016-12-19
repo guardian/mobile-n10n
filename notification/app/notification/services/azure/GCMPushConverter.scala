@@ -6,7 +6,7 @@ import _root_.azure.{GCMBody, GCMRawPush, Tags}
 import models._
 import notification.models.Destination._
 import notification.models.android.AndroidMessageTypes
-import notification.models.android.Editions.Edition
+import notification.models.android.Editions.{Edition, UK}
 import notification.models.{Push, android}
 import notification.services.Configuration
 import play.api.Logger
@@ -27,10 +27,10 @@ class GCMPushConverter(conf: Configuration) {
     )
   }
 
-  private[services] def toAzure(np: Notification, editions: Set[Edition] = Set.empty): android.Notification = np match {
+  private[services] def toAzure(np: Notification): android.Notification = np match {
     case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
-    case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
+    case bn: BreakingNewsNotification => toBreakingNews(bn)
     case el: ElectionNotification => toElectionAlert(el)
   }
 
@@ -41,7 +41,7 @@ class GCMPushConverter(conf: Configuration) {
 
   private def toAndroidTopic(topic: Topic) = s"${topic.`type`}//${topic.name}"
 
-  private def toBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
+  private def toBreakingNews(breakingNews: BreakingNewsNotification) = {
 
     val sectionLink = condOpt(breakingNews.link) {
       case Link.Internal(contentApiId, _, GITSection) => contentApiId
@@ -53,6 +53,11 @@ class GCMPushConverter(conf: Configuration) {
 
     val link = toPlatformLink(breakingNews.link)
 
+    val editions = breakingNews.topic
+      .filter(_.`type` == TopicTypes.Breaking)
+      .map(_.name)
+      .collect(Edition.fromString)
+    
     android.BreakingNewsNotification(
       `type` = AndroidMessageTypes.Custom,
       id = breakingNews.id,
