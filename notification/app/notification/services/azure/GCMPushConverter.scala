@@ -6,14 +6,13 @@ import _root_.azure.{GCMBody, GCMRawPush, Tags}
 import models._
 import notification.models.Destination._
 import notification.models.android.AndroidMessageTypes
-import notification.models.android.Editions.{Edition, UK}
+import notification.models.android.Editions.Edition
 import notification.models.{Push, android}
 import notification.services.Configuration
 import play.api.Logger
 
 import scala.PartialFunction._
 import PlatformUriTypes.{External, FootballMatch, Item}
-import models.Importance.Major
 
 class GCMPushConverter(conf: Configuration) {
 
@@ -57,7 +56,7 @@ class GCMPushConverter(conf: Configuration) {
       .filter(_.`type` == TopicTypes.Breaking)
       .map(_.name)
       .collect(Edition.fromString)
-    
+
     android.BreakingNewsNotification(
       `type` = AndroidMessageTypes.Custom,
       id = breakingNews.id,
