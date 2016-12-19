@@ -1,6 +1,7 @@
 import models.{Topic, TopicTypes}
 import org.joda.time.DateTime
 import pa.PaClient
+import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 
@@ -77,6 +78,10 @@ package object auditor {
       client.matchInfo(matchId) map {
         case theMatch if matchEndedStatuses contains theMatch.matchStatus => true
         case _ => false
+      } recover {
+        case _ =>
+          Logger.error(s"Unable to determine match status of $matchId.  Assuming that it is in the future")
+          false
       }
     }
   }
