@@ -13,7 +13,6 @@ import play.api.Logger
 
 import scala.PartialFunction._
 import PlatformUriTypes.{External, FootballMatch, Item}
-import models.Importance.Major
 
 class GCMPushConverter(conf: Configuration) {
 
@@ -27,10 +26,10 @@ class GCMPushConverter(conf: Configuration) {
     )
   }
 
-  private[services] def toAzure(np: Notification, editions: Set[Edition] = Set.empty): android.Notification = np match {
+  private[services] def toAzure(np: Notification): android.Notification = np match {
     case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
-    case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
+    case bn: BreakingNewsNotification => toBreakingNews(bn)
     case el: ElectionNotification => toElectionAlert(el)
   }
 
@@ -41,7 +40,7 @@ class GCMPushConverter(conf: Configuration) {
 
   private def toAndroidTopic(topic: Topic) = s"${topic.`type`}//${topic.name}"
 
-  private def toBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
+  private def toBreakingNews(breakingNews: BreakingNewsNotification) = {
 
     val sectionLink = condOpt(breakingNews.link) {
       case Link.Internal(contentApiId, _, GITSection) => contentApiId
@@ -52,6 +51,11 @@ class GCMPushConverter(conf: Configuration) {
     }
 
     val link = toPlatformLink(breakingNews.link)
+
+    val editions = breakingNews.topic
+      .filter(_.`type` == TopicTypes.Breaking)
+      .map(_.name)
+      .collect(Edition.fromString)
 
     android.BreakingNewsNotification(
       `type` = AndroidMessageTypes.Custom,

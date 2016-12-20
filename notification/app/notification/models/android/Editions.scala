@@ -27,13 +27,16 @@ object Editions {
   }
 
   object Edition {
+
+    val fromString: PartialFunction[String, Edition] = {
+      case "uk" => UK
+      case "us" => US
+      case "au" => AU
+      case "international" => International
+    }
+
     implicit val jf = new Format[Edition] {
-      override def reads(json: JsValue): JsResult[Edition] = json.validate[String].collect(ValidationError(s"Unkown region")) {
-        case "uk" => UK
-        case "us" => US
-        case "au" => AU
-        case "international" => International
-      }
+      override def reads(json: JsValue): JsResult[Edition] = json.validate[String].collect(ValidationError(s"Unknown region"))(fromString)
 
       override def writes(region: Edition): JsValue = JsString(region.toString)
     }
