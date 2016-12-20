@@ -67,7 +67,6 @@ class GCMPushConverter(conf: Configuration) {
       debug = conf.debug,
       editions = editions,
       link = toAndroidLink(breakingNews.link),
-      topics = breakingNews.topic.map(toAndroidTopic),
       uriType = link.`type`,
       uri = link.uri,
       section = sectionLink.map(new URI(_)),

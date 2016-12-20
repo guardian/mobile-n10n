@@ -24,7 +24,6 @@ case class BreakingNewsNotification(
   debug: Boolean,
   editions: Set[Edition],
   link: URI,
-  topics: Set[String],
   uriType: PlatformUriType,
   uri: String,
   section: Option[URI],
@@ -43,7 +42,6 @@ case class BreakingNewsNotification(
     Keys.Debug -> debug.toString,
     Keys.Editions -> editions.mkString(","),
     Keys.Link -> link.toString,
-    Keys.Topics -> topics.mkString(","),
     Keys.UriType -> uriType.toString,
     Keys.Uri -> uri) ++ Map(
       Keys.Section -> section.map(_.toString),
