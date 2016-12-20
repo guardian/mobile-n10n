@@ -84,7 +84,6 @@ class GCMPushConverterSpec extends Specification with Mockito {
       link = new URI("x-gu://www.guardian.co.uk/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates"),
       uri = "x-gu:///items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates",
       imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
-      topics = Set("breaking//uk"),
       debug = true
     )
   }
