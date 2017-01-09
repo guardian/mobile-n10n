@@ -4,6 +4,7 @@ import pa.PaClient
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
+import spray.caching.{Cache, LruCache}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -51,7 +52,9 @@ package object auditor {
     }
   }
 
-  case class FootballMatchAuditor(client: PaClient) extends Auditor {
+  case class FootballMatchAuditor(client: PaClient)(implicit ec: ExecutionContext) extends Auditor {
+
+    private val matchStatusCache: Cache[String] = LruCache[String]()
 
     private val matchEndedStatuses = List(
       "FT",
@@ -74,9 +77,13 @@ package object auditor {
       }.map(_.flatten)
     }
 
+    def cachedMatchStatus(matchId: String): Future[String] = matchStatusCache(matchId) {
+      client.matchInfo(matchId) map (_.matchStatus)
+    }
+
     private def isMatchEnded(matchId: String)(implicit ec: ExecutionContext): Future[Boolean] = {
-      client.matchInfo(matchId) map {
-        case theMatch if matchEndedStatuses contains theMatch.matchStatus => true
+      cachedMatchStatus(matchId) map {
+        case matchStatus if matchEndedStatuses contains matchStatus => true
         case _ => false
       } recover {
         case _ =>
