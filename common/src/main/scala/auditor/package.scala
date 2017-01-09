@@ -55,7 +55,7 @@ package object auditor {
 
   case class FootballMatchAuditor(client: PaClient)(implicit ec: ExecutionContext) extends Auditor {
 
-    private val matchStatusCache: Cache[String] = LruCache[String](timeToLive = 5 minutes, timeToIdle = 1 minute)
+    private val matchStatusCache: Cache[String] = LruCache[String](timeToLive = 5 minutes)
 
     private val matchEndedStatuses = List(
       "FT",
