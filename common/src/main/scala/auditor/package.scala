@@ -8,6 +8,7 @@ import spray.caching.{Cache, LruCache}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import scala.concurrent.duration.DurationInt
 
 package object auditor {
 
@@ -54,7 +55,7 @@ package object auditor {
 
   case class FootballMatchAuditor(client: PaClient)(implicit ec: ExecutionContext) extends Auditor {
 
-    private val matchStatusCache: Cache[String] = LruCache[String]()
+    private val matchStatusCache: Cache[String] = LruCache[String](timeToLive = 5 minutes, timeToIdle = 1 minute)
 
     private val matchEndedStatuses = List(
       "FT",
