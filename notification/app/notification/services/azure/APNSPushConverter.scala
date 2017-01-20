@@ -12,17 +12,20 @@ import play.api.Logger
 import PlatformUriTypes.{External, FootballMatch, Item}
 import azure.apns.LiveEventProperties
 import models.Importance.Major
+import PartialFunction.condOpt
 
-class APNSPushConverter(conf: Configuration) {
+class APNSPushConverter(conf: Configuration) extends PushConverter {
 
   val logger = Logger(classOf[APNSPushConverter])
 
-  def toRawPush(push: Push): APNSRawPush = {
+  def toRawPush(push: Push): Option[APNSRawPush] = {
     logger.debug(s"Converting push to Azure: $push")
-    APNSRawPush(
-      body = toAzure(push.notification).payload,
-      tags = toTags(push.destination)
-    )
+    toAzure(push.notification) map { notification =>
+      APNSRawPush(
+        body = notification.payload,
+        tags = toTags(push.destination)
+      )
+    }
   }
 
   private def toBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
@@ -105,7 +108,7 @@ class APNSPushConverter(conf: Configuration) {
     case Link.External(url) => PlatformUri(url, External)
   }
 
-  private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): ios.Notification = np match {
+  private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): Option[ios.Notification] = condOpt(np) {
     case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)

@@ -20,39 +20,39 @@ class iOSNotificationSpec extends Specification with Mockito {
 
   "A breaking news" should {
     "serialize / deserialize to json" in new BreakingNewsScope {
-      converter.toRawPush(push).body shouldEqual expected
+      converter.toRawPush(push).get.body shouldEqual expected
     }
 
     "use imageUrl if thumbnail is not available" in new BreakingNewsScopeNoThumbnail {
-      converter.toRawPush(push).body shouldEqual expected
+      converter.toRawPush(push).get.body shouldEqual expected
     }
 
     "serialize / deserialize to json without mutable flag if there is no image" in new BreakingNewsScopeNoImage {
-      converter.toRawPush(push).body shouldEqual expected
+      converter.toRawPush(push).get.body shouldEqual expected
     }
   }
 
   "A content notification" should {
     "serialize / deserialize to json" in new ContentNotificationScope {
-      converter.toRawPush(push).body shouldEqual expected
+      converter.toRawPush(push).get.body shouldEqual expected
     }
   }
 
   "A goal alert notification" should {
     "serialize / deserialize to json" in new GoalAlertNotificationScope {
-      converter.toRawPush(push).body shouldEqual expected
+      converter.toRawPush(push).get.body shouldEqual expected
     }
   }
 
   "An election notification" should {
     "serialize / deserialize to json" in new ElectionNotificationScope {
-      converter.toRawPush(push).body shouldEqual expected
+      converter.toRawPush(push).get.body shouldEqual expected
     }
   }
 
   "A live notification" should {
     "serialize / deserialize to json" in new LiveEventNotificationScope {
-      converter.toRawPush(push).body shouldEqual expected
+      converter.toRawPush(push).get.body shouldEqual expected
     }
   }
 

@@ -40,7 +40,7 @@ class WNSNotificationSpec extends Specification with Mockito {
 
   "An election notification" should {
     "serialize / deserialize to json" in new ElectionNotificationScope {
-      Json.parse(converter.toRawPush(push).body) shouldEqual Json.parse(expected)
+      Json.parse(converter.toRawPush(push).get.body) shouldEqual Json.parse(expected)
     }
   }
 

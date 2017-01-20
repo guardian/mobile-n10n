@@ -38,16 +38,16 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
   "An election notification" should {
     "serialize to map" in new ElectionNotificationScope {
-      converter.toRawPush(push).body.data shouldEqual expected
+      converter.toRawPush(push).get.body.data shouldEqual expected
     }
     "Have importance=Minor for minor notifications" in new MinorElectionNotificationScope {
-      converter.toRawPush(minorPush).body.data shouldEqual minorExpected
+      converter.toRawPush(minorPush).get.body.data shouldEqual minorExpected
     }
   }
 
   "A live event notification" should {
     "serialize to map" in new LiveEventNotificationScope {
-      converter.toRawPush(push).body.data shouldEqual expected
+      converter.toRawPush(push).get.body.data shouldEqual expected
     }
   }
 

@@ -10,19 +10,22 @@ import notification.models.{Push, wns}
 import notification.services.Configuration
 import play.api.Logger
 import play.api.libs.json.Json
+import PartialFunction.condOpt
 
-class WNSPushConverter(conf: Configuration) {
+class WNSPushConverter(conf: Configuration) extends PushConverter {
   val logger = Logger(classOf[WNSPushConverter])
 
-  def toRawPush(push: Push): WNSRawPush = {
+  def toRawPush(push: Push): Option[WNSRawPush] = {
     logger.debug(s"Converting push to Azure: $push")
-    WNSRawPush(
-      body = Json.stringify(Json.toJson(toAzure(push.notification))),
-      tags = toTags(push.destination)
-    )
+    toAzure(push.notification) map { notification =>
+      WNSRawPush(
+        body = Json.stringify(Json.toJson(notification)),
+        tags = toTags(push.destination)
+      )
+    }
   }
 
-  private[services] def toAzure(notification: Notification): wns.Notification = notification match {
+  private[services] def toAzure(notification: Notification): Option[wns.Notification] = condOpt(notification) {
     case bnn: BreakingNewsNotification => toBreakingNews(bnn)
     case cn: ContentNotification => toContent(cn)
     case gan: GoalAlertNotification => toGoalAlert(gan)

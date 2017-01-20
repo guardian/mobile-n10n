@@ -2,11 +2,16 @@ package azure
 
 import azure.apns.Body
 import play.api.http.Writeable
-import play.api.libs.json.{Json, JsValue}
+import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.{WSRequest, WSResponse}
 import utils.WriteableImplicits._
 
-case class APNSRawPush(body: Body, tags: Option[Tags]) extends RawPush[Body] {
+import scala.concurrent.Future
+
+case class APNSRawPush(body: Body, tags: Option[Tags]) extends RawPush {
   override def format: String = "apple"
 
-  override def writeable: Writeable[Body] = implicitly[Writeable[JsValue]].map(Json.toJson[Body]).withContentType("application/json;charset=utf-8")
+  implicit private val writeable: Writeable[Body] = implicitly[Writeable[JsValue]].map(Json.toJson[Body]).withContentType("application/json;charset=utf-8")
+
+  override def post(request: WSRequest): Future[WSResponse] = request.post(body)
 }

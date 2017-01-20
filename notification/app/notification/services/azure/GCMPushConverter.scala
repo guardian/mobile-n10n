@@ -16,19 +16,21 @@ import PlatformUriTypes.{External, FootballMatch, Item}
 import notification.models.android.Keys
 import utils.MapImplicits._
 
-class GCMPushConverter(conf: Configuration) {
+class GCMPushConverter(conf: Configuration) extends PushConverter {
 
   val logger = Logger(classOf[GCMPushConverter])
 
-  def toRawPush(push: Push): GCMRawPush = {
+  def toRawPush(push: Push): Option[GCMRawPush] = {
     logger.debug(s"Converting push to Azure: $push")
-    GCMRawPush(
-      body = GCMBody(data = toAzure(push.notification).payload),
-      tags = toTags(push.destination)
-    )
+    toAzure(push.notification) map { notification =>
+      GCMRawPush(
+        body = GCMBody(data = notification.payload),
+        tags = toTags(push.destination)
+      )
+    }
   }
 
-  private[services] def toAzure(np: Notification): android.Notification = np match {
+  private[services] def toAzure(np: Notification): Option[android.Notification] = condOpt(np) {
     case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn)
