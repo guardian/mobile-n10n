@@ -10,6 +10,7 @@ import notification.models.{Push, ios}
 import notification.services.Configuration
 import play.api.Logger
 import PlatformUriTypes.{External, FootballMatch, Item}
+import azure.apns.LiveEventProperties
 import models.Importance.Major
 
 class APNSPushConverter(conf: Configuration) {
@@ -83,6 +84,20 @@ class APNSPushConverter(conf: Configuration) {
     )
   }
 
+  private def toLiveEventAlert(liveEvent: LiveEventNotification) = {
+    ios.LiveEventNotification(LiveEventProperties(
+        title = liveEvent.title,
+        body = liveEvent.message,
+        richviewbody = liveEvent.expandedMessage.getOrElse(liveEvent.message),
+        sound = if (liveEvent.importance == Major) 1 else 0,
+        link1 = toIosLink(liveEvent.link1).toString,
+        link2 = toIosLink(liveEvent.link2).toString,
+        imageURL = liveEvent.imageUrl.map(_.toString),
+        topics = liveEvent.topic.toList.map(_.toString).mkString(",")
+      )
+    )
+  }
+
   case class PlatformUri(uri: String, `type`: PlatformUriType)
 
   private def toPlatformLink(link: Link) = link match {
@@ -95,6 +110,7 @@ class APNSPushConverter(conf: Configuration) {
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
     case el: ElectionNotification => toElectionAlert(el)
+    case mi: LiveEventNotification => toLiveEventAlert(mi)
   }
 
   private def toTags(destination: Destination) = destination match {

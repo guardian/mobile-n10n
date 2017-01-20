@@ -50,6 +50,12 @@ class iOSNotificationSpec extends Specification with Mockito {
     }
   }
 
+  "A live notification" should {
+    "serialize / deserialize to json" in new LiveEventNotificationScope {
+      converter.toRawPush(push).body shouldEqual expected
+    }
+  }
+
   trait NotificationScope extends Scope {
     def push: Push
     def expected: Body
@@ -295,6 +301,46 @@ class iOSNotificationSpec extends Specification with Mockito {
           rep = 133,
           link = "x-gu:///p/4p7xt",
           results = "x-gu:///p/2zzz"
+        ))
+      )
+    )
+  }
+
+  trait LiveEventNotificationScope extends NotificationScope {
+    val notification = models.LiveEventNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "some-sender",
+      title = "Some live event",
+      message = "normal message",
+      expandedMessage = Some("this is the expanded message"),
+      shortMessage = Some("this is the short message"),
+      importance = Major,
+      link1 = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link2 = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent),
+      imageUrl = Some(new URI("http://gu.com/some-image.png")),
+      topic = Set(Topic(TagSeries, "some-event-tag"))
+    )
+
+    val push = Push(notification, Left(notification.topic))
+
+    val expected = Body(
+      aps = APS(
+        alert = None,
+        category = None,
+        `content-available` = Some(1),
+        sound = None
+      ),
+      customProperties = StandardProperties(
+        t = "live",
+        liveEvent = Some(LiveEventProperties(
+          title = "Some live event",
+          body = "normal message",
+          richviewbody = "this is the expanded message",
+          sound = 1,
+          link1 = "x-gu:///p/4p7xt",
+          link2 = "x-gu:///p/5982v",
+          imageURL = Some("http://gu.com/some-image.png"),
+          topics = "tag-series/some-event-tag"
         ))
       )
     )

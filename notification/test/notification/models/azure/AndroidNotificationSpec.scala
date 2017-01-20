@@ -40,8 +40,14 @@ class AndroidNotificationSpec extends Specification with Mockito {
     "serialize to map" in new ElectionNotificationScope {
       converter.toRawPush(push).body.data shouldEqual expected
     }
-    "Have buzz=false for minor notifications" in new MinorElectionNotificationScope {
+    "Have importance=Minor for minor notifications" in new MinorElectionNotificationScope {
       converter.toRawPush(minorPush).body.data shouldEqual minorExpected
+    }
+  }
+
+  "A live event notification" should {
+    "serialize to map" in new LiveEventNotificationScope {
+      converter.toRawPush(push).body.data shouldEqual expected
     }
   }
 
@@ -214,5 +220,38 @@ class AndroidNotificationSpec extends Specification with Mockito {
     val minorNotification = notification.copy(importance = Minor)
     val minorExpected = expected.updated("importance", "Minor")
     val minorPush = Push(minorNotification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+  }
+
+  trait LiveEventNotificationScope extends NotificationScope {
+    val notification = models.LiveEventNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "some-sender",
+      title = "Some live event",
+      message = "normal message",
+      expandedMessage = Some("this is the expanded message"),
+      shortMessage = Some("this is the short message"),
+      importance = Major,
+      link1 = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link2 = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent),
+      imageUrl = Some(new URI("http://gu.com/some-image.png")),
+      topic = Set(Topic(TagSeries, "some-event-tag"))
+    )
+
+    val push = Push(notification, Left(notification.topic))
+
+    val expected =  Map(
+      "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+      "debug" -> "false",
+      "type" -> "live",
+      "link1" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+      "link2" -> "x-gu://www.guardian.co.uk/world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau",
+      "title" -> "Some live event",
+      "importance" -> "Major",
+      "expandedMessage" -> "this is the expanded message",
+      "shortMessage" -> "this is the short message",
+      "message" -> "normal message",
+      "imageUrl" -> "http://gu.com/some-image.png",
+      "topics" -> "tag-series//some-event-tag"
+    )
   }
 }

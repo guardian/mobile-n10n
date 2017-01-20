@@ -134,3 +134,25 @@ object ElectionNotification {
   import JsonUtils._
   implicit val jf = Json.format[ElectionNotification]
 }
+
+case class LiveEventNotification(
+  id: UUID,
+  `type`: NotificationType = LiveEventAlert,
+  sender: String,
+  title: String,
+  message: String,
+  expandedMessage: Option[String],
+  shortMessage: Option[String],
+  importance: Importance,
+  link1: Link, // where does the title for this come from?
+  link2: Link, // where does the title for this come from?
+  imageUrl: Option[URI],
+  topic: Set[Topic]
+) extends Notification {
+  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+}
+
+object LiveEventNotification {
+  import JsonUtils._
+  implicit val jf = Json.format[LiveEventNotification]
+}

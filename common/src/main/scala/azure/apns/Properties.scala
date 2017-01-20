@@ -18,7 +18,8 @@ object LegacyProperties {
 
 case class StandardProperties(
   t: String,
-  election: Option[ElectionProperties]
+  election: Option[ElectionProperties] = None,
+  liveEvent: Option[LiveEventProperties] = None
 ) extends Properties
 
 object StandardProperties {
