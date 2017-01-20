@@ -50,7 +50,7 @@ abstract class NotificationsHubSender(
   }
 
   protected def shouldSendToApps(notification: Notification) =
-    notification.`type` == NotificationType.ElectionsAlert || notification.importance == Major
+    notification.`type` == NotificationType.ElectionsAlert || notification.`type` == NotificationType.LiveEventAlert || notification.importance == Major
 
   private def count(destination: Destination): Future[RepositoryResult[Int]] = destination match {
     case Left(topics: Set[Topic]) => sumOf(topics)
