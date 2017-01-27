@@ -29,7 +29,10 @@ class APNSPushConverter(conf: Configuration) {
     val link = toPlatformLink(breakingNews.link)
 
     ios.BreakingNewsNotification(
-      category = "ITEM_CATEGORY",
+      category = breakingNews.link match {
+        case _: Link.External => ""
+        case _: Link.Internal => "ITEM_CATEGORY"
+      },
       message = breakingNews.message,
       link = toIosLink(breakingNews.link), //check this
       topics = breakingNews.topic,
