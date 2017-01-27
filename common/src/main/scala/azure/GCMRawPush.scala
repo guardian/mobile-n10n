@@ -20,7 +20,7 @@ object GCMBody {
 case class GCMRawPush(body: GCMBody, tags: Option[Tags]) extends RawPush {
   override def format: String = "gcm"
 
-  implicit private val writeable: Writeable[GCMBody] = implicitly[Writeable[JsValue]].map(Json.toJson[GCMBody]).withContentType("application/json;charset=utf-8")
+  private val writeable: Writeable[GCMBody] = implicitly[Writeable[JsValue]].map(Json.toJson[GCMBody]).withContentType("application/json;charset=utf-8")
 
-  override def post(request: WSRequest): Future[WSResponse] = request.post(body)
+  override def post(request: WSRequest): Future[WSResponse] = request.post(body)(writeable)
 }

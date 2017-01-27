@@ -1,6 +1,5 @@
 package azure
 
-import play.api.http.Writeable
 import play.api.libs.ws.{WSRequest, WSResponse}
 
 import scala.concurrent.Future

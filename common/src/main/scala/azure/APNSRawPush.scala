@@ -11,7 +11,7 @@ import scala.concurrent.Future
 case class APNSRawPush(body: Body, tags: Option[Tags]) extends RawPush {
   override def format: String = "apple"
 
-  implicit private val writeable: Writeable[Body] = implicitly[Writeable[JsValue]].map(Json.toJson[Body]).withContentType("application/json;charset=utf-8")
+  private val writeable: Writeable[Body] = implicitly[Writeable[JsValue]].map(Json.toJson[Body]).withContentType("application/json;charset=utf-8")
 
-  override def post(request: WSRequest): Future[WSResponse] = request.post(body)
+  override def post(request: WSRequest): Future[WSResponse] = request.post(body)(writeable)
 }
