@@ -18,7 +18,7 @@ object NotificationType {
     "content" -> Content,
     "goal" -> GoalAlert,
     "election" -> ElectionsAlert,
-    "live" -> LiveEventAlert
+    "live-notification" -> LiveEventAlert
   )
 
   val toRep: Map[NotificationType, String] = fromRep.map(_.swap)
