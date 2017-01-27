@@ -5,4 +5,5 @@ object MessageTypes {
   final val GoalAlert = "g"
   final val ElectionAlert = "us-election"
   final val LiveEventAlert = "live"
+  final val SurveyAlert = "survey"
 }

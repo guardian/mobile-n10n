@@ -51,6 +51,12 @@ class AndroidNotificationSpec extends Specification with Mockito {
     }
   }
 
+  "A survey notification" should {
+    "serialize to map" in new SurveyNotificationScope {
+      converter.toRawPush(push).get.body.data shouldEqual expected
+    }
+  }
+
   trait NotificationScope extends Scope {
     val converter = new GCMPushConverter(mock[Configuration])
     def expected: Map[String, String]
@@ -250,6 +256,33 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "expandedMessage" -> "this is the expanded message",
       "shortMessage" -> "this is the short message",
       "message" -> "normal message",
+      "imageUrl" -> "http://gu.com/some-image.png",
+      "topics" -> "live-notification//super-bowl-li"
+    )
+  }
+
+  trait SurveyNotificationScope extends NotificationScope {
+    val notification = models.SurveyNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "some-sender",
+      title = "Some survey",
+      message = "Why not compete this survey?",
+      importance = Major,
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      imageUrl = Some(new URI("http://gu.com/some-image.png")),
+      topic = Set(Topic(LiveNotification, "super-bowl-li"))
+    )
+
+    val push = Push(notification, Left(notification.topic))
+
+    val expected =  Map(
+      "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+      "debug" -> "false",
+      "type" -> "survey",
+      "link" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+      "title" -> "Some survey",
+      "importance" -> "Major",
+      "message" -> "Why not compete this survey?",
       "imageUrl" -> "http://gu.com/some-image.png",
       "topics" -> "live-notification//super-bowl-li"
     )

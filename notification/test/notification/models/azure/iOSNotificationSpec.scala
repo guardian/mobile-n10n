@@ -56,6 +56,12 @@ class iOSNotificationSpec extends Specification with Mockito {
     }
   }
 
+  "A survey notification" should {
+    "serialize / deserialize to json" in new SurveyNotificationScope {
+      converter.toRawPush(push).map(_.body) should beSome(expected)
+    }
+  }
+
   trait NotificationScope extends Scope {
     def push: Push
     def expected: Body
@@ -346,5 +352,39 @@ class iOSNotificationSpec extends Specification with Mockito {
     )
   }
 
+  trait SurveyNotificationScope extends NotificationScope {
+    val notification = models.SurveyNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "some-sender",
+      title = "Some Survey",
+      message = "Why not compete this survey?",
+      importance = Major,
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      imageUrl = Some(new URI("http://gu.com/some-image.png")),
+      topic = Set(Topic(LiveNotification, "super-bowl-li"))
+    )
+
+    val push = Push(notification, Left(notification.topic))
+
+    val expected = Body(
+      aps = APS(
+        alert = None,
+        category = None,
+        `content-available` = Some(1),
+        sound = None
+      ),
+      customProperties = StandardProperties(
+        t = "survey",
+        survey = Some(SurveyProperties(
+          title = "Some Survey",
+          body = "Why not compete this survey?",
+          sound = 1,
+          link = "x-gu:///p/4p7xt",
+          imageURL = Some("http://gu.com/some-image.png"),
+          topics = "live-notification/super-bowl-li"
+        ))
+      )
+    )
+  }
 }
 

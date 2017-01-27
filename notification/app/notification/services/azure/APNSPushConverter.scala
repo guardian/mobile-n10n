@@ -10,7 +10,7 @@ import notification.models.{Push, ios}
 import notification.services.Configuration
 import play.api.Logger
 import PlatformUriTypes.{External, FootballMatch, Item}
-import azure.apns.LiveEventProperties
+import azure.apns.{LiveEventProperties, SurveyProperties}
 import models.Importance.Major
 import PartialFunction.condOpt
 
@@ -101,6 +101,18 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
     )
   }
 
+  private def toSurveyAlert(survey: SurveyNotification) = {
+    ios.SurveyNotification(SurveyProperties(
+        title = survey.title,
+        body = survey.message,
+        sound = if (survey.importance == Major) 1 else 0,
+        link = toIosLink(survey.link).toString,
+        imageURL = survey.imageUrl.map(_.toString),
+        topics = survey.topic.toList.map(_.toString).mkString(",")
+      )
+    )
+  }
+
   case class PlatformUri(uri: String, `type`: PlatformUriType)
 
   private def toPlatformLink(link: Link) = link match {
@@ -114,6 +126,7 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
     case el: ElectionNotification => toElectionAlert(el)
     case mi: LiveEventNotification => toLiveEventAlert(mi)
+    case sy: SurveyNotification => toSurveyAlert(sy)
   }
 
   private def toTags(destination: Destination) = destination match {
