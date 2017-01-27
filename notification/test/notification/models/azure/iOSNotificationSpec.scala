@@ -6,9 +6,9 @@ import java.util.UUID
 import azure.apns._
 import notification.services.Configuration
 import models.Importance.Major
-import models.Link.Internal
+import models.Link.{External, Internal}
 import models._
-import models.TopicTypes.{Breaking, TagSeries, LiveNotification}
+import models.TopicTypes.{Breaking, LiveNotification, TagSeries}
 import models.elections.{CandidateResults, ElectionResults}
 import notification.models.Push
 import notification.services.azure.APNSPushConverter
@@ -359,7 +359,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       title = "Some Survey",
       message = "Why not compete this survey?",
       importance = Major,
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link = External("http://survey-monkey-test.com"),
       imageUrl = Some(new URI("http://gu.com/some-image.png")),
       topic = Set(Topic(LiveNotification, "super-bowl-li"))
     )
@@ -379,7 +379,7 @@ class iOSNotificationSpec extends Specification with Mockito {
           title = "Some Survey",
           body = "Why not compete this survey?",
           sound = 1,
-          link = "x-gu:///p/4p7xt",
+          link = "http://survey-monkey-test.com",
           imageURL = Some("http://gu.com/some-image.png"),
           topics = "live-notification/super-bowl-li"
         ))

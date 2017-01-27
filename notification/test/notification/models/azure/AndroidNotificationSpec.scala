@@ -4,7 +4,7 @@ import java.net.URI
 import java.util.UUID
 
 import models.Importance.{Major, Minor}
-import models.Link.Internal
+import models.Link.{External, Internal}
 import models.{GITContent, Topic}
 import models.TopicTypes.{LiveNotification, TagSeries}
 import models.elections.{CandidateResults, ElectionResults}
@@ -268,7 +268,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       title = "Some survey",
       message = "Why not compete this survey?",
       importance = Major,
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link = External("http://survey-monkey-test.com"),
       imageUrl = Some(new URI("http://gu.com/some-image.png")),
       topic = Set(Topic(LiveNotification, "super-bowl-li"))
     )
@@ -279,7 +279,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
       "debug" -> "false",
       "type" -> "survey",
-      "link" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+      "link" -> "http://survey-monkey-test.com",
       "title" -> "Some survey",
       "importance" -> "Major",
       "message" -> "Why not compete this survey?",
