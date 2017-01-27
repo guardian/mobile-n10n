@@ -26,6 +26,7 @@ object Notification {
       case n: GoalAlertNotification => GoalAlertNotification.jf.writes(n)
       case n: ElectionNotification => ElectionNotification.jf.writes(n)
       case n: LiveEventNotification => LiveEventNotification.jf.writes(n)
+      case n: SurveyNotification => SurveyNotification.jf.writes(n)
     }
     override def reads(json: JsValue): JsResult[Notification] = {
       json \ "type" match {
