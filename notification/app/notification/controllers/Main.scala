@@ -16,7 +16,7 @@ import tracking.SentNotificationReportRepository
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
-import models.TopicTypes.ElectionResults
+import models.TopicTypes.{ElectionResults, LiveNotification}
 
 final class Main(
   configuration: Configuration,
@@ -34,7 +34,7 @@ final class Main(
 
   override def isPermittedTopic(apiKey: String): Topic => Boolean = {
     if (configuration.electionRestrictedApiKeys.contains(apiKey)) {
-      topic => topic.`type` == ElectionResults
+      topic => List(ElectionResults, LiveNotification).contains(topic.`type`)
     } else {
       _ => true
     }
