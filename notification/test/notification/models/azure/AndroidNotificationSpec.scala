@@ -6,7 +6,7 @@ import java.util.UUID
 import models.Importance.{Major, Minor}
 import models.Link.Internal
 import models.{GITContent, Topic}
-import models.TopicTypes.{Breaking, TagSeries}
+import models.TopicTypes.{LiveNotification, TagSeries}
 import models.elections.{CandidateResults, ElectionResults}
 import notification.models.Push
 import notification.models.android._
@@ -234,7 +234,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       link1 = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       link2 = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent),
       imageUrl = Some(new URI("http://gu.com/some-image.png")),
-      topic = Set(Topic(TagSeries, "some-event-tag"))
+      topic = Set(Topic(LiveNotification, "super-bowl-li"))
     )
 
     val push = Push(notification, Left(notification.topic))
@@ -251,7 +251,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "shortMessage" -> "this is the short message",
       "message" -> "normal message",
       "imageUrl" -> "http://gu.com/some-image.png",
-      "topics" -> "tag-series//some-event-tag"
+      "topics" -> "live-notification//super-bowl-li"
     )
   }
 }

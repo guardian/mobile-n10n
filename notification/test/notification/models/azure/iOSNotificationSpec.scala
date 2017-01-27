@@ -8,7 +8,7 @@ import notification.services.Configuration
 import models.Importance.Major
 import models.Link.Internal
 import models._
-import models.TopicTypes.{Breaking, TagSeries}
+import models.TopicTypes.{Breaking, TagSeries, LiveNotification}
 import models.elections.{CandidateResults, ElectionResults}
 import notification.models.Push
 import notification.services.azure.APNSPushConverter
@@ -318,7 +318,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       link1 = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       link2 = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent),
       imageUrl = Some(new URI("http://gu.com/some-image.png")),
-      topic = Set(Topic(TagSeries, "some-event-tag"))
+      topic = Set(Topic(LiveNotification, "super-bowl-li"))
     )
 
     val push = Push(notification, Left(notification.topic))
@@ -340,7 +340,7 @@ class iOSNotificationSpec extends Specification with Mockito {
           link1 = "x-gu:///p/4p7xt",
           link2 = "x-gu:///p/5982v",
           imageURL = Some("http://gu.com/some-image.png"),
-          topics = "tag-series/some-event-tag"
+          topics = "live-notification/super-bowl-li"
         ))
       )
     )

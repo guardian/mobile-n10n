@@ -17,6 +17,7 @@ object TopicTypes {
   object FootballMatch extends TopicType("football-match", 1)
   object Newsstand extends TopicType("newsstand", 100) // scalastyle:off magic.number
   object ElectionResults extends TopicType("election-results", 50) // scalastyle:off magic.number
+  object LiveNotification extends TopicType("live-notification", 51) // scalastyle:off magic.number
 }
 
 object TopicType {
@@ -32,6 +33,7 @@ object TopicType {
     case "football-match" => FootballMatch
     case "newsstand" => Newsstand
     case "election-results" => ElectionResults
+    case "live-notification" => LiveNotification
   }
 
   implicit val jf = new Format[TopicType] {
