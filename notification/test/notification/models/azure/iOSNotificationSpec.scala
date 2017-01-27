@@ -34,25 +34,25 @@ class iOSNotificationSpec extends Specification with Mockito {
 
   "A content notification" should {
     "serialize / deserialize to json" in new ContentNotificationScope {
-      converter.toRawPush(push).get.body shouldEqual expected
+      converter.toRawPush(push).map(_.body) should beSome(expected)
     }
   }
 
   "A goal alert notification" should {
     "serialize / deserialize to json" in new GoalAlertNotificationScope {
-      converter.toRawPush(push).get.body shouldEqual expected
+      converter.toRawPush(push).map(_.body) should beSome(expected)
     }
   }
 
   "An election notification" should {
     "serialize / deserialize to json" in new ElectionNotificationScope {
-      converter.toRawPush(push).get.body shouldEqual expected
+      converter.toRawPush(push).map(_.body) should beSome(expected)
     }
   }
 
   "A live notification" should {
     "serialize / deserialize to json" in new LiveEventNotificationScope {
-      converter.toRawPush(push).get.body shouldEqual expected
+      converter.toRawPush(push).map(_.body) should beSome(expected)
     }
   }
 
