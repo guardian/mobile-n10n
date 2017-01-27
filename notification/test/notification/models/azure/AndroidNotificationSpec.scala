@@ -242,7 +242,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
     val expected =  Map(
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
       "debug" -> "false",
-      "type" -> "live",
+      "type" -> "superBowl",
       "link1" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
       "link2" -> "x-gu://www.guardian.co.uk/world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau",
       "title" -> "Some live event",

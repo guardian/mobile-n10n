@@ -143,7 +143,7 @@ class GCMPushConverter(conf: Configuration) extends PushConverter {
       Keys.Topics -> Some(innovationAlert.topic.map(toAndroidTopic).mkString(",")),
       Keys.Debug -> Some(conf.debug.toString),
       Keys.Title -> Some(innovationAlert.title),
-      Keys.Type -> Some(AndroidMessageTypes.LiveEvent)
+      Keys.Type -> Some(AndroidMessageTypes.SuperbowlEvent)
     ).flattenValues
   )
 
