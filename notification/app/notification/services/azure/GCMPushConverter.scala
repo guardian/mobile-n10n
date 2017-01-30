@@ -36,6 +36,7 @@ class GCMPushConverter(conf: Configuration) extends PushConverter {
     case bn: BreakingNewsNotification => toBreakingNews(bn)
     case el: ElectionNotification => toElectionAlert(el)
     case mi: LiveEventNotification => toLiveEventAlert(mi)
+    case sy: SurveyNotification => toSurveyAlert(sy)
   }
 
   private[services] def toTags(destination: Destination) = destination match {
@@ -144,6 +145,20 @@ class GCMPushConverter(conf: Configuration) extends PushConverter {
       Keys.Debug -> Some(conf.debug.toString),
       Keys.Title -> Some(innovationAlert.title),
       Keys.Type -> Some(AndroidMessageTypes.SuperbowlEvent)
+    ).flattenValues
+  )
+
+  private def toSurveyAlert(surveyAlert: SurveyNotification) = android.SurveyAlert(
+    payload = Map(
+      Keys.UniqueIdentifier -> Some(surveyAlert.id.toString),
+      Keys.Message -> Some(surveyAlert.message),
+      Keys.Importance -> Some(surveyAlert.importance.toString),
+      Keys.Link -> Some(toAndroidLink(surveyAlert.link).toString),
+      Keys.ImageUrl -> surveyAlert.imageUrl.map(_.toString),
+      Keys.Topics -> Some(surveyAlert.topic.map(toAndroidTopic).mkString(",")),
+      Keys.Debug -> Some(conf.debug.toString),
+      Keys.Title -> Some(surveyAlert.title),
+      Keys.Type -> Some(AndroidMessageTypes.Survey)
     ).flattenValues
   )
 

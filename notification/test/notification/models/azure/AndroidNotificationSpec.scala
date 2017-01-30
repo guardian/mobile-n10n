@@ -4,7 +4,7 @@ import java.net.URI
 import java.util.UUID
 
 import models.Importance.{Major, Minor}
-import models.Link.Internal
+import models.Link.{External, Internal}
 import models.{GITContent, Topic}
 import models.TopicTypes.{LiveNotification, TagSeries}
 import models.elections.{CandidateResults, ElectionResults}
@@ -47,6 +47,12 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
   "A live event notification" should {
     "serialize to map" in new LiveEventNotificationScope {
+      converter.toRawPush(push).get.body.data shouldEqual expected
+    }
+  }
+
+  "A survey notification" should {
+    "serialize to map" in new SurveyNotificationScope {
       converter.toRawPush(push).get.body.data shouldEqual expected
     }
   }
@@ -250,6 +256,33 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "expandedMessage" -> "this is the expanded message",
       "shortMessage" -> "this is the short message",
       "message" -> "normal message",
+      "imageUrl" -> "http://gu.com/some-image.png",
+      "topics" -> "live-notification//super-bowl-li"
+    )
+  }
+
+  trait SurveyNotificationScope extends NotificationScope {
+    val notification = models.SurveyNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "some-sender",
+      title = "Some survey",
+      message = "Why not compete this survey?",
+      importance = Major,
+      link = External("http://survey-monkey-test.com"),
+      imageUrl = Some(new URI("http://gu.com/some-image.png")),
+      topic = Set(Topic(LiveNotification, "super-bowl-li"))
+    )
+
+    val push = Push(notification, Left(notification.topic))
+
+    val expected =  Map(
+      "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+      "debug" -> "false",
+      "type" -> "survey",
+      "link" -> "http://survey-monkey-test.com",
+      "title" -> "Some survey",
+      "importance" -> "Major",
+      "message" -> "Why not compete this survey?",
       "imageUrl" -> "http://gu.com/some-image.png",
       "topics" -> "live-notification//super-bowl-li"
     )

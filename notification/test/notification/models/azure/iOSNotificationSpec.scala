@@ -6,9 +6,9 @@ import java.util.UUID
 import azure.apns._
 import notification.services.Configuration
 import models.Importance.Major
-import models.Link.Internal
+import models.Link.{External, Internal}
 import models._
-import models.TopicTypes.{Breaking, TagSeries, LiveNotification}
+import models.TopicTypes.{Breaking, LiveNotification, TagSeries}
 import models.elections.{CandidateResults, ElectionResults}
 import notification.models.Push
 import notification.services.azure.APNSPushConverter
@@ -52,6 +52,12 @@ class iOSNotificationSpec extends Specification with Mockito {
 
   "A live notification" should {
     "serialize / deserialize to json" in new LiveEventNotificationScope {
+      converter.toRawPush(push).map(_.body) should beSome(expected)
+    }
+  }
+
+  "A survey notification" should {
+    "serialize / deserialize to json" in new SurveyNotificationScope {
       converter.toRawPush(push).map(_.body) should beSome(expected)
     }
   }
@@ -346,5 +352,39 @@ class iOSNotificationSpec extends Specification with Mockito {
     )
   }
 
+  trait SurveyNotificationScope extends NotificationScope {
+    val notification = models.SurveyNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "some-sender",
+      title = "Some Survey",
+      message = "Why not compete this survey?",
+      importance = Major,
+      link = External("http://survey-monkey-test.com"),
+      imageUrl = Some(new URI("http://gu.com/some-image.png")),
+      topic = Set(Topic(LiveNotification, "super-bowl-li"))
+    )
+
+    val push = Push(notification, Left(notification.topic))
+
+    val expected = Body(
+      aps = APS(
+        alert = None,
+        category = None,
+        `content-available` = Some(1),
+        sound = None
+      ),
+      customProperties = StandardProperties(
+        t = "survey",
+        survey = Some(SurveyProperties(
+          title = "Some Survey",
+          body = "Why not compete this survey?",
+          sound = 1,
+          link = "http://survey-monkey-test.com",
+          imageURL = Some("http://gu.com/some-image.png"),
+          topics = "live-notification/super-bowl-li"
+        ))
+      )
+    )
+  }
 }
 

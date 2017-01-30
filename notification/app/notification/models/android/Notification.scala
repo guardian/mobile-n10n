@@ -155,3 +155,5 @@ case class ElectionNotification(
 }
 
 case class LiveEventAlert(payload: Map[String, String]) extends Notification
+
+case class SurveyAlert(payload: Map[String, String]) extends Notification

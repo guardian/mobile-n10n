@@ -146,3 +146,17 @@ case class LiveEventNotification(liveEvent: LiveEventProperties) extends Notific
     )
   )
 }
+
+case class SurveyNotification(surveyProperties: SurveyProperties) extends Notification {
+  def payload: Body = Body(
+    aps = APS(
+      alert = None,
+      `content-available` = Some(1),
+      sound = None
+    ),
+    customProperties = StandardProperties(
+      t = MessageTypes.SurveyAlert,
+      survey = Some(surveyProperties)
+    )
+  )
+}
