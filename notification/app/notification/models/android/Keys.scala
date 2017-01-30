@@ -12,6 +12,8 @@ object Keys {
   final val Section = "section"
   final val Keyword = "keyword"
   final val Link = "link"
+  final val Link1 = "link1"
+  final val Link2 = "link2"
   final val ResultsLink = "resultsLink"
   final val ThumbnailUrl = "thumbnailUrl"
   final val ImageUrl = "imageUrl"

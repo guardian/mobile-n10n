@@ -19,13 +19,13 @@ class WNSPushConverterSpec extends Specification with Mockito {
 
   "WNSPushConverter.toAzure" should {
     "convert a breaking news into the azure format" in new BreakingNewsScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter.toAzure(notification) should beSome(azureNotification)
     }
     "convert a content notification into the azure format" in new ContentNotificationScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter.toAzure(notification) should beSome(azureNotification)
     }
     "convert a goal alert into the azure format" in new GoalAlertNotificationScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter.toAzure(notification) should beSome(azureNotification)
     }
   }
 

@@ -9,6 +9,7 @@ import models.NotificationType.{BreakingNews, Content}
 import notification.services.azure.PlatformUriType
 import utils.MapImplicits._
 import azure.apns.LegacyProperties._
+import play.api.libs.json.JsObject
 
 sealed trait Notification {
   def payload: Body
@@ -128,6 +129,20 @@ case class ElectionNotification(
         link = link.toString,
         results = resultsLink.toString
       ))
+    )
+  )
+}
+
+case class LiveEventNotification(liveEvent: LiveEventProperties) extends Notification {
+  def payload: Body = Body(
+    aps = APS(
+      alert = None,
+      `content-available` = Some(1),
+      sound = None
+    ),
+    customProperties = StandardProperties(
+      t = MessageTypes.LiveEventAlert,
+      liveEvent = Some(liveEvent)
     )
   )
 }

@@ -25,6 +25,7 @@ object Notification {
       case n: ContentNotification => ContentNotification.jf.writes(n)
       case n: GoalAlertNotification => GoalAlertNotification.jf.writes(n)
       case n: ElectionNotification => ElectionNotification.jf.writes(n)
+      case n: LiveEventNotification => LiveEventNotification.jf.writes(n)
     }
     override def reads(json: JsValue): JsResult[Notification] = {
       json \ "type" match {
@@ -32,6 +33,7 @@ object Notification {
         case JsDefined(JsString("content")) => ContentNotification.jf.reads(json)
         case JsDefined(JsString("goal")) => GoalAlertNotification.jf.reads(json)
         case JsDefined(JsString("election")) => ElectionNotification.jf.reads(json)
+        case JsDefined(JsString("live-notification")) => LiveEventNotification.jf.reads(json)
         case _ => JsError("Unknown notification type")
       }
     }
@@ -133,4 +135,26 @@ case class ElectionNotification(
 object ElectionNotification {
   import JsonUtils._
   implicit val jf = Json.format[ElectionNotification]
+}
+
+case class LiveEventNotification(
+  id: UUID,
+  `type`: NotificationType = LiveEventAlert,
+  sender: String,
+  title: String,
+  message: String,
+  expandedMessage: Option[String],
+  shortMessage: Option[String],
+  importance: Importance,
+  link1: Link,
+  link2: Link,
+  imageUrl: Option[URI],
+  topic: Set[Topic]
+) extends Notification {
+  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+}
+
+object LiveEventNotification {
+  import JsonUtils._
+  implicit val jf = Json.format[LiveEventNotification]
 }

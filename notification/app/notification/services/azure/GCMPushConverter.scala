@@ -13,24 +13,29 @@ import play.api.Logger
 
 import scala.PartialFunction._
 import PlatformUriTypes.{External, FootballMatch, Item}
+import notification.models.android.Keys
+import utils.MapImplicits._
 
-class GCMPushConverter(conf: Configuration) {
+class GCMPushConverter(conf: Configuration) extends PushConverter {
 
   val logger = Logger(classOf[GCMPushConverter])
 
-  def toRawPush(push: Push): GCMRawPush = {
+  def toRawPush(push: Push): Option[GCMRawPush] = {
     logger.debug(s"Converting push to Azure: $push")
-    GCMRawPush(
-      body = GCMBody(data = toAzure(push.notification).payload),
-      tags = toTags(push.destination)
-    )
+    toAzure(push.notification) map { notification =>
+      GCMRawPush(
+        body = GCMBody(data = notification.payload),
+        tags = toTags(push.destination)
+      )
+    }
   }
 
-  private[services] def toAzure(np: Notification): android.Notification = np match {
+  private[services] def toAzure(np: Notification): Option[android.Notification] = condOpt(np) {
     case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn)
     case el: ElectionNotification => toElectionAlert(el)
+    case mi: LiveEventNotification => toLiveEventAlert(mi)
   }
 
   private[services] def toTags(destination: Destination) = destination match {
@@ -123,6 +128,23 @@ class GCMPushConverter(conf: Configuration) {
     resultsLink = toAndroidLink(electionAlert.resultsLink),
     importance = electionAlert.importance,
     debug = conf.debug
+  )
+
+  private def toLiveEventAlert(innovationAlert: LiveEventNotification) = android.LiveEventAlert(
+    payload = Map(
+      Keys.UniqueIdentifier -> Some(innovationAlert.id.toString),
+      Keys.Message -> Some(innovationAlert.message),
+      Keys.ShortMessage -> Some(innovationAlert.shortMessage.getOrElse(innovationAlert.message)),
+      Keys.ExpandedMessage -> Some(innovationAlert.expandedMessage.getOrElse(innovationAlert.message)),
+      Keys.Importance -> Some(innovationAlert.importance.toString),
+      Keys.Link1 -> Some(toAndroidLink(innovationAlert.link1).toString),
+      Keys.Link2 -> Some(toAndroidLink(innovationAlert.link2).toString),
+      Keys.ImageUrl -> innovationAlert.imageUrl.map(_.toString),
+      Keys.Topics -> Some(innovationAlert.topic.map(toAndroidTopic).mkString(",")),
+      Keys.Debug -> Some(conf.debug.toString),
+      Keys.Title -> Some(innovationAlert.title),
+      Keys.Type -> Some(AndroidMessageTypes.SuperbowlEvent)
+    ).flattenValues
   )
 
   protected def replaceHost(uri: URI) = List(Some("x-gu://"), Option(uri.getPath), Option(uri.getQuery).map("?" + _)).flatten.mkString

@@ -1,20 +1,20 @@
 package azure
 
-import play.api.http.Writeable
+import play.api.libs.ws.{WSRequest, WSResponse}
 
-trait RawPush[T] {
+import scala.concurrent.Future
 
-  def body: T
+trait RawPush {
 
   def tags: Option[Tags]
 
   def format: String
-
-  def writeable: Writeable[T]
 
   def tagQuery: Option[String] = tags.map { set =>
     set.tags.map(_.encodedTag).mkString("(", " || ", ")")
   }
 
   def extraHeaders: List[(String, String)] = Nil
+
+  def post(request: WSRequest): Future[WSResponse]
 }

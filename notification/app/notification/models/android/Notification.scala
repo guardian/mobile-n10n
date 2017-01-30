@@ -153,3 +153,5 @@ case class ElectionNotification(
     Keys.Importance -> importance.toString
   ) ++ resultsFlattened.toMap
 }
+
+case class LiveEventAlert(payload: Map[String, String]) extends Notification

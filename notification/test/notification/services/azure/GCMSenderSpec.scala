@@ -33,7 +33,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
 
       result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some, sendersId = "fake-id".some).right).await
       got {
-        one(hubClient).sendNotification(pushConverter.toRawPush(electionPush(Minor)))
+        one(hubClient).sendNotification(pushConverter.toRawPush(electionPush(Minor)).get)
       }
     }
 
@@ -53,7 +53,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
 
         result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 2).some, sendersId = "fake-id".some).right).await
         got {
-          one(hubClient).sendNotification(pushConverter.toRawPush(topicPush))
+          one(hubClient).sendNotification(pushConverter.toRawPush(topicPush).get)
         }
       }
 
@@ -62,7 +62,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
 
         result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some, sendersId = "fake-id".some).right).await
         got {
-          one(hubClient).sendNotification(pushConverter.toRawPush(userPush))
+          one(hubClient).sendNotification(pushConverter.toRawPush(userPush).get)
         }
       }
     }
