@@ -146,8 +146,8 @@ case class LiveEventNotification(
   expandedMessage: Option[String],
   shortMessage: Option[String],
   importance: Importance,
-  link1: Link, // where does the title for this come from?
-  link2: Link, // where does the title for this come from?
+  link1: Link,
+  link2: Link,
   imageUrl: Option[URI],
   topic: Set[Topic]
 ) extends Notification {
