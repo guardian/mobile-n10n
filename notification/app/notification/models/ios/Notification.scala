@@ -5,7 +5,7 @@ import java.util.UUID
 
 import azure.apns._
 import models.{NotificationType, Topic}
-import models.NotificationType.{BreakingNews, Content}
+import models.NotificationType.{BreakingNews, Content, ElectionsAlert, GoalAlert, LiveEventAlert}
 import notification.services.azure.PlatformUriType
 import utils.MapImplicits._
 import azure.apns.LegacyProperties._
@@ -78,6 +78,7 @@ case class ContentNotification(
 
 case class GoalAlertNotification(
   `type`: String = MessageTypes.GoalAlert,
+  notificationType: NotificationType = GoalAlert,
   message: String,
   id: UUID,
   uri: URI,
@@ -92,6 +93,7 @@ case class GoalAlertNotification(
     ),
     customProperties = LegacyProperties(Map(
       Keys.MessageType -> `type`,
+      Keys.NotificationType -> notificationType.value,
       Keys.Uri -> uri.toString,
       Keys.UriType -> uriType.toString
     ))
@@ -100,6 +102,7 @@ case class GoalAlertNotification(
 
 case class ElectionNotification(
   `type`: String = MessageTypes.ElectionAlert,
+  notificationType: NotificationType = ElectionsAlert,
   message: String,
   id: UUID,
   title: String,
@@ -119,6 +122,7 @@ case class ElectionNotification(
     ),
     customProperties = StandardProperties(
       t = `type`,
+      notificationType = notificationType,
       election = Some(ElectionProperties(
         title = title,
         body = body,
@@ -142,6 +146,7 @@ case class LiveEventNotification(liveEvent: LiveEventProperties) extends Notific
     ),
     customProperties = StandardProperties(
       t = MessageTypes.LiveEventAlert,
+      notificationType = LiveEventAlert,
       liveEvent = Some(liveEvent)
     )
   )
