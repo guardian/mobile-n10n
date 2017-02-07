@@ -7,8 +7,9 @@ import azure.apns._
 import notification.services.Configuration
 import models.Importance.Major
 import models.Link.Internal
+import models.NotificationType.{ElectionsAlert, LiveEventAlert}
 import models._
-import models.TopicTypes.{Breaking, TagSeries, LiveNotification}
+import models.TopicTypes.{Breaking, LiveNotification, TagSeries}
 import models.elections.{CandidateResults, ElectionResults}
 import notification.models.Push
 import notification.services.azure.APNSPushConverter
@@ -243,6 +244,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       ),
       customProperties = LegacyProperties(Map(
         "t" -> "g",
+        "notificationType" -> "goal",
         "uri" -> "x-gu:///match-info/3833380",
         "uriType" -> "football-match"
       ))
@@ -292,6 +294,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       ),
       customProperties = StandardProperties(
         t = "us-election",
+        notificationType = ElectionsAlert,
         election = Some(ElectionProperties(
           title = "Live election results",
           body = "\u2022 Electoral votes: Clinton 220, Trump 133\n\u2022 270 electoral votes to win\n• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
@@ -332,6 +335,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       ),
       customProperties = StandardProperties(
         t = "live",
+        notificationType = LiveEventAlert,
         liveEvent = Some(LiveEventProperties(
           title = "Some live event",
           body = "normal message",

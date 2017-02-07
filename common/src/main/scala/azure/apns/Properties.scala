@@ -1,6 +1,7 @@
 package azure.apns
 
 import play.api.libs.json.{JsResult, Reads, _}
+import models.NotificationType
 
 sealed trait Properties
 
@@ -18,6 +19,7 @@ object LegacyProperties {
 
 case class StandardProperties(
   t: String,
+  notificationType: NotificationType,
   election: Option[ElectionProperties] = None,
   liveEvent: Option[LiveEventProperties] = None
 ) extends Properties
