@@ -6,6 +6,7 @@ import conf.NotificationConfiguration
 class Configuration extends NotificationConfiguration("report") {
   lazy val apiKeys = conf.getStringPropertiesSplitByComma("notifications.api.secretKeys")
   lazy val electionRestrictedApiKeys = conf.getStringPropertiesSplitByComma("notifications.api.electionRestrictedKeys")
+  lazy val reportsOnlyApiKeys = conf.getStringPropertiesSplitByComma("notifications.api.reportsOnlyKeys")
   lazy val dynamoReportsTableName = getConfigString("db.dynamo.reports.table-name")
 
   lazy val defaultHub = NotificationHubConnection(

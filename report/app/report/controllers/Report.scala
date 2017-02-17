@@ -21,7 +21,7 @@ final class Report(
   (implicit executionContext: ExecutionContext)
   extends Controller with AuthenticationSupport {
 
-  val allApiKeys = configuration.apiKeys ++ configuration.electionRestrictedApiKeys
+  val allApiKeys = configuration.apiKeys ++ configuration.electionRestrictedApiKeys ++ configuration.reportsOnlyApiKeys
 
   override def validApiKey(apiKey: String): Boolean = allApiKeys.contains(apiKey)
 
