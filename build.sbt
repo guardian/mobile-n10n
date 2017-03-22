@@ -19,7 +19,7 @@ val standardSettings = Seq[Setting[_]](
 )
 
 lazy val common = project
-  .settings(localDynamodb.settings)
+  .settings(LocalDynamoDB.settings)
   .settings(standardSettings: _*)
   .settings(
     resolvers ++= Seq(
@@ -44,8 +44,8 @@ lazy val common = project
     testScalastyle := (scalastyle in Compile).toTask("").value,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal, testScalastyle).value,
-    testOnly in Test <<= (testOnly in Test).dependsOn(startDynamoDBLocal, testScalastyle),
-    testQuick in Test <<= (testQuick in Test).dependsOn(startDynamoDBLocal, testScalastyle),
+    testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal, testScalastyle).evaluated,
+    testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal, testScalastyle).evaluated,
     testOptions in Test += dynamoDBLocalTestCleanup.value
   )
 
