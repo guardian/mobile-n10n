@@ -14,7 +14,8 @@ import _root_.models.TopicTypes.ElectionResults
 import org.joda.time.DateTime
 import registration.controllers.Main
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
-import registration.services.azure.{APNSEnterpriseNotifcationRegistrar, APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
+import registration.services.azure.{APNSEnterpriseNotifcationRegistrar, APNSNotificationRegistrar,
+GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
 import registration.services._
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
 
@@ -107,7 +108,8 @@ trait APNSEnterpriseRegistrations {
 
   lazy val enterpriseHubClient = new NotificationHubClient(appConfig.enterpriseHub, wsClient)
 
-  lazy val apnsEnterpriseNotificationRegistrar: APNSEnterpriseNotifcationRegistrar = new APNSEnterpriseNotifcationRegistrar(enterpriseHubClient, subscriptionTracker)
+  lazy val apnsEnterpriseNotificationRegistrar: APNSEnterpriseNotifcationRegistrar =
+    new APNSEnterpriseNotifcationRegistrar(enterpriseHubClient, subscriptionTracker)
 }
 
 trait NewsstandRegistrations {

@@ -67,7 +67,8 @@ final class Main(
     topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
-      case _ if !topics.forall(request.isPermittedTopic) => Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(request.isPermittedTopic)}."))
+      case _ if !topics.forall(request.isPermittedTopic) =>
+        Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(request.isPermittedTopic)}."))
       case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), Left(topics)))
     }
   }

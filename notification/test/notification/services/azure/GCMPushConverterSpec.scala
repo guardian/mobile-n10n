@@ -54,7 +54,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       c
     }
 
-    def azureRawPushConverter = new GCMPushConverter(configuration)
+    def azureRawPushConverter: GCMPushConverter = new GCMPushConverter(configuration)
   }
 
   trait BreakingNewsScope extends PushConverterScope {
