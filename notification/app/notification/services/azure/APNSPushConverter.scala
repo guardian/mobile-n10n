@@ -10,17 +10,22 @@ import notification.models.{Push, ios}
 import notification.services.Configuration
 import play.api.Logger
 import PlatformUriTypes.{External, FootballMatch, Item}
+import azure.apns.LiveEventProperties
+import models.Importance.Major
+import PartialFunction.condOpt
 
-class APNSPushConverter(conf: Configuration) {
+class APNSPushConverter(conf: Configuration) extends PushConverter {
 
   val logger = Logger(classOf[APNSPushConverter])
 
-  def toRawPush(push: Push): APNSRawPush = {
+  def toRawPush(push: Push): Option[APNSRawPush] = {
     logger.debug(s"Converting push to Azure: $push")
-    APNSRawPush(
-      body = toAzure(push.notification).payload,
-      tags = toTags(push.destination)
-    )
+    toAzure(push.notification) map { notification =>
+      APNSRawPush(
+        body = notification.payload,
+        tags = toTags(push.destination)
+      )
+    }
   }
 
   private def toBreakingNews(breakingNews: BreakingNewsNotification, editions: Set[Edition]) = {
@@ -28,7 +33,10 @@ class APNSPushConverter(conf: Configuration) {
     val link = toPlatformLink(breakingNews.link)
 
     ios.BreakingNewsNotification(
-      category = "ITEM_CATEGORY",
+      category = breakingNews.link match {
+        case _: Link.External => ""
+        case _: Link.Internal => "ITEM_CATEGORY"
+      },
       message = breakingNews.message,
       link = toIosLink(breakingNews.link), //check this
       topics = breakingNews.topic,
@@ -44,7 +52,7 @@ class APNSPushConverter(conf: Configuration) {
 
     ios.ContentNotification(
       category = "ITEM_CATEGORY",
-      message = cn.title,
+      message = if (cn.iosUseMessage.contains(true)) cn.message else cn.title,
       link = toIosLink(cn.link),
       topics = cn.topic,
       uri = new URI(link.uri),
@@ -64,9 +72,35 @@ class APNSPushConverter(conf: Configuration) {
   }
 
   private def toElectionAlert(electionAlert: ElectionNotification) = {
+    val democratVotes = electionAlert.results.candidates.find(_.name == "Clinton").map(_.electoralVotes).getOrElse(0)
+    val republicanVotes = electionAlert.results.candidates.find(_.name == "Trump").map(_.electoralVotes).getOrElse(0)
+
+    val textonlyFallback = s"• Electoral votes: Clinton $democratVotes, Trump $republicanVotes\n• 270 electoral votes to win\n"
     ios.ElectionNotification(
       message = electionAlert.message,
-      id = electionAlert.id
+      id = electionAlert.id,
+      title = electionAlert.title,
+      body = electionAlert.message,
+      richBody = electionAlert.expandedMessage.getOrElse(electionAlert.message),
+      democratVotes = democratVotes,
+      republicanVotes = republicanVotes,
+      link = toIosLink(electionAlert.link),
+      resultsLink = toIosLink(electionAlert.resultsLink),
+      buzz = electionAlert.importance == Major
+    )
+  }
+
+  private def toLiveEventAlert(liveEvent: LiveEventNotification) = {
+    ios.LiveEventNotification(LiveEventProperties(
+        title = liveEvent.title,
+        body = liveEvent.message,
+        richviewbody = liveEvent.expandedMessage.getOrElse(liveEvent.message),
+        sound = if (liveEvent.importance == Major) 1 else 0,
+        link1 = toIosLink(liveEvent.link1).toString,
+        link2 = toIosLink(liveEvent.link2).toString,
+        imageURL = liveEvent.imageUrl.map(_.toString),
+        topics = liveEvent.topic.toList.map(_.toString).mkString(",")
+      )
     )
   }
 
@@ -77,11 +111,12 @@ class APNSPushConverter(conf: Configuration) {
     case Link.External(url) => PlatformUri(url, External)
   }
 
-  private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): ios.Notification = np match {
+  private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): Option[ios.Notification] = condOpt(np) {
     case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
     case el: ElectionNotification => toElectionAlert(el)
+    case mi: LiveEventNotification => toLiveEventAlert(mi)
   }
 
   private def toTags(destination: Destination) = destination match {

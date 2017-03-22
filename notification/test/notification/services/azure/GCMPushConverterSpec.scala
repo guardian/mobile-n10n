@@ -9,6 +9,7 @@ import models.Importance.Major
 import models.Link.Internal
 import models.TopicTypes.{Breaking, FootballMatch, FootballTeam, TagSeries}
 import models._
+import notification.models.android.Editions
 import notification.models.{Destination, android}
 import notification.services.Configuration
 import org.specs2.mock.Mockito
@@ -19,13 +20,13 @@ class GCMPushConverterSpec extends Specification with Mockito {
 
   "GCMPushConverter.toAzure" should {
     "convert a breaking news into the azure format" in new BreakingNewsScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter.toAzure(notification) should beSome(azureNotification)
     }
     "convert a content notification into the azure format" in new ContentNotificationScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter.toAzure(notification) should beSome(azureNotification)
     }
     "convert a goal alert into the azure format" in new GoalAlertNotificationScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter.toAzure(notification) should beSome(azureNotification)
     }
   }
 
@@ -53,7 +54,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       c
     }
 
-    def azureRawPushConverter = new GCMPushConverter(configuration)
+    def azureRawPushConverter: GCMPushConverter = new GCMPushConverter(configuration)
   }
 
   trait BreakingNewsScope extends PushConverterScope {
@@ -74,16 +75,15 @@ class GCMPushConverterSpec extends Specification with Mockito {
       title = "The Guardian",
       ticker = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
       message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
-      editions = Set.empty,
+      editions = Set(Editions.UK),
       uriType = PlatformUriTypes.Item,
       section = None,
-      edition = None,
+      edition = Some(Editions.UK),
       keyword = None,
       thumbnailUrl = Some(new URI("http://media.guim.co.uk/09951387fda453719fe1fee3e5dcea4efa05e4fa/0_181_3596_2160/140.jpg")),
       link = new URI("x-gu://www.guardian.co.uk/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates"),
       uri = "x-gu:///items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates",
       imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
-      topics = Set(Topic(Breaking, "uk")),
       debug = true
     )
   }
@@ -93,6 +93,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       id = UUID.fromString("c8bd6aaa-072f-4593-a38b-322f3ecd6bd3"),
       title = "Follow",
       message = "Which countries are doing the most to stop dangerous global warming?",
+      iosUseMessage = None,
       thumbnailUrl = Some(new URI("http://media.guim.co.uk/a07334e4ed5d13d3ecf4c1ac21145f7f4a099f18/127_0_3372_2023/140.jpg")),
       sender = "test",
       link = Internal("environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming", None, GITContent),
@@ -109,7 +110,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       link = new URI("x-gu://www.guardian.co.uk/environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming"),
       uri = new URI("x-gu:///items/environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming"),
       uriType = PlatformUriTypes.Item,
-      topics = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground")),
+      topics = Set("tag-series//environment/series/keep-it-in-the-ground"),
       debug = true
     )
   }

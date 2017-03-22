@@ -1,7 +1,7 @@
 package azure
 
 import play.api.Logger
-import play.api.http.Status
+import play.api.http.{Status, Writeable}
 import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 
@@ -77,18 +77,18 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
       }
   }
 
-  def sendNotification[T](rawPush: RawPush[T]): Future[HubResult[Option[String]]] = {
+  def sendNotification[T](rawPush: RawPush): Future[HubResult[Option[String]]] = {
     val serviceBusTags = rawPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
     logger.debug(s"Sending Raw Notification: $rawPush")
-    request(Endpoints.Messages)
-      .withHeaders(rawPush.extraHeaders: _*)
-      .withHeaders("ServiceBusNotification-Format" -> rawPush.format)
-      .withHeaders(serviceBusTags: _*)
-      .post(rawPush.body)(rawPush.writeable)
-      .map {
-        case r if r.isSuccess => r.header("Location").right
-        case r => XmlParser.parseError(r).left
-      }
+    rawPush.post(
+      request(Endpoints.Messages)
+        .withHeaders(rawPush.extraHeaders: _*)
+        .withHeaders("ServiceBusNotification-Format" -> rawPush.format)
+        .withHeaders(serviceBusTags: _*)
+    ).map {
+      case r if r.isSuccess => r.header("Location").right
+      case r => XmlParser.parseError(r).left
+    }
   }
 
   private def request(path: String, queryParams: Map[String, String] = Map.empty) = {

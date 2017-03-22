@@ -8,6 +8,7 @@ import models._
 import notification.models.Destination.Destination
 import notification.models.Push
 import notification.services.{NotificationRejected, Senders, _}
+import _root_.azure.RawPush
 import org.joda.time.DateTime
 import tracking.Repository._
 import tracking.{RepositoryResult, TopicSubscriptionsRepository}
@@ -20,10 +21,11 @@ import cats.implicits._
 abstract class NotificationsHubSender(
   hubClient: NotificationHubClient,
   configuration: Configuration,
-  topicSubscriptionsRepository: TopicSubscriptionsRepository)
+  topicSubscriptionsRepository: TopicSubscriptionsRepository
+)
   (implicit ec: ExecutionContext) extends NotificationSender {
 
-  protected def send(push: Push): Future[HubResult[Option[String]]]
+  protected def converter: PushConverter
 
   def sendNotification(push: Push): Future[SenderResult] = {
 
@@ -34,20 +36,24 @@ abstract class NotificationsHubSender(
       platformStatistics = recipientsCount map { PlatformStatistics(WindowsMobile, _) }
     )
 
-    if (push.notification.importance == Major) {
-      for {
-        result <- send(push)
-        count <- count(push.destination)
-      } yield {
-        result.fold(
-          e => NotificationRejected(NotificationHubSenderError(e.some).some).left,
-          id => report(id, count.toOption).right
-        )
-      }
-    } else {
-      Future.successful(report(None, None).right)
+    converter.toRawPush(push) match {
+      case Some(rawPush) if shouldSendToApps(push.notification) =>
+        for {
+          result <- hubClient.sendNotification(rawPush)
+          count <- count(push.destination)
+        } yield {
+          result.fold(
+            e => NotificationRejected(NotificationHubSenderError(e.some).some).left,
+            id => report(id, count.toOption).right
+          )
+        }
+
+      case _ => Future.successful(report(None, None).right)
     }
   }
+
+  protected def shouldSendToApps(notification: Notification) =
+    notification.`type` == NotificationType.ElectionsAlert || notification.`type` == NotificationType.LiveEventAlert || notification.importance == Major
 
   private def count(destination: Destination): Future[RepositoryResult[Int]] = destination match {
     case Left(topics: Set[Topic]) => sumOf(topics)

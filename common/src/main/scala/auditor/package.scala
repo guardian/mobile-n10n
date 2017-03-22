@@ -1,24 +1,37 @@
-import java.net.URL
-
 import models.{Topic, TopicTypes}
+import org.joda.time.DateTime
+import pa.PaClient
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
+import spray.caching.{Cache, LruCache}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import scala.concurrent.duration.DurationInt
 
 package object auditor {
 
-  case class ContentApiConfig(url: String, apiKey: String)
+  case class ApiConfig(url: String, apiKey: String)
 
-  case class AuditorGroupConfig(hosts: Set[String], contentApiConfig: ContentApiConfig)
+  case class AuditorGroupConfig(contentApiConfig: ApiConfig, paApiConfig: ApiConfig)
 
   sealed trait Auditor {
     def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]]
   }
 
-  case class LiveblogAuditor(wsClient: WSClient, config: ContentApiConfig) extends Auditor {
+  case class TimeExpiringAuditor(referenceTopics: Set[Topic], expiry: DateTime) extends Auditor {
+    override def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = {
+      Future.successful {
+        if (DateTime.now.isAfter(expiry))
+          topics.intersect(referenceTopics)
+        else
+          Set.empty
+      }
+    }
+  }
+
+  case class LiveblogAuditor(wsClient: WSClient, config: ApiConfig) extends Auditor {
 
     override def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = {
       val contentTopics = topics.filter(_.`type` == TopicTypes.Content)
@@ -40,16 +53,44 @@ package object auditor {
     }
   }
 
-  case class RemoteAuditor(host: URL, wsClient: WSClient) extends Auditor {
-    val logger = Logger(classOf[RemoteAuditor])
+  case class FootballMatchAuditor(client: PaClient)(implicit ec: ExecutionContext) extends Auditor {
 
-    def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = topics.toList match {
-      case Nil => Future.successful(topics)
-      case tl => logger.debug(s"Asking auditor ($host) for expired topics with $topics")
-        wsClient
-          .url(s"$host/expired-topics")
-          .post(Json.toJson(ExpiredTopicsRequest(tl)))
-          .map { _.json.as[ExpiredTopicsResponse].topics.toSet }
+    private val matchStatusCache: Cache[String] = LruCache[String](timeToLive = 5 minutes)
+
+    private val matchEndedStatuses = List(
+      "FT",
+      "PTFT",
+      "Result",
+      "ETFT",
+      "MC",
+      "Abandoned",
+      "Cancelled"
+    )
+
+    override def expiredTopics(topics: Set[Topic])(implicit ec: ExecutionContext): Future[Set[Topic]] = {
+      val footballMatchTopics =  topics.filter(_.`type` == TopicTypes.FootballMatch)
+
+      Future.traverse(footballMatchTopics) { topic =>
+        isMatchEnded(topic.name).map {
+          case true => Some(topic)
+          case false => None
+        }
+      }.map(_.flatten)
+    }
+
+    def cachedMatchStatus(matchId: String): Future[String] = matchStatusCache(matchId) {
+      client.matchInfo(matchId) map (_.matchStatus)
+    }
+
+    private def isMatchEnded(matchId: String)(implicit ec: ExecutionContext): Future[Boolean] = {
+      cachedMatchStatus(matchId) map {
+        case matchStatus if matchEndedStatuses contains matchStatus => true
+        case _ => false
+      } recover {
+        case _ =>
+          Logger.error(s"Unable to determine match status of $matchId.  Assuming that it is in the future")
+          false
+      }
     }
   }
 

@@ -19,13 +19,13 @@ class WNSPushConverterSpec extends Specification with Mockito {
 
   "WNSPushConverter.toAzure" should {
     "convert a breaking news into the azure format" in new BreakingNewsScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter.toAzure(notification) should beSome(azureNotification)
     }
     "convert a content notification into the azure format" in new ContentNotificationScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter.toAzure(notification) should beSome(azureNotification)
     }
     "convert a goal alert into the azure format" in new GoalAlertNotificationScope {
-      azureRawPushConverter.toAzure(notification) shouldEqual azureNotification
+      azureRawPushConverter.toAzure(notification) should beSome(azureNotification)
     }
   }
 
@@ -86,6 +86,7 @@ class WNSPushConverterSpec extends Specification with Mockito {
       id = UUID.fromString("c8bd6aaa-072f-4593-a38b-322f3ecd6bd3"),
       title = "Follow",
       message = "Which countries are doing the most to stop dangerous global warming?",
+      iosUseMessage = None,
       thumbnailUrl = Some(new URI("http://media.guim.co.uk/a07334e4ed5d13d3ecf4c1ac21145f7f4a099f18/127_0_3372_2023/140.jpg")),
       sender = "test",
       link = Internal("environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming", None, GITContent),

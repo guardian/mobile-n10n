@@ -28,13 +28,32 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
       there was no(hubClient).sendNotification(any[GCMRawPush])
     }
 
+    "process a Minor election notification" in new GCMScope {
+      val result = androidNotificationSender.sendNotification(electionPush(Minor))
+
+      result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some, sendersId = "fake-id".some).right).await
+      got {
+        one(hubClient).sendNotification(pushConverter.toRawPush(electionPush(Minor)).get)
+      }
+    }
+
+    "ignore a Minor election notification if election notifications are disabled" in new GCMScope {
+      val expectedReport = senderReport(Senders.AzureNotificationsHub).right
+      configuration.disableElectionNotificationsAndroid returns true
+
+      val result = androidNotificationSender.sendNotification(electionPush(Minor))
+      
+      result should beEqualTo(expectedReport).await
+      there was no(hubClient).sendNotification(any[GCMRawPush])
+    }
+
     "process a Major notification" in {
       "send two separate with notifications with differently encoded topics when addressed to topic" in new GCMScope {
         val result = androidNotificationSender.sendNotification(topicPush)
 
         result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 2).some, sendersId = "fake-id".some).right).await
         got {
-          one(hubClient).sendNotification(pushConverter.toRawPush(topicPush))
+          one(hubClient).sendNotification(pushConverter.toRawPush(topicPush).get)
         }
       }
 
@@ -43,7 +62,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
 
         result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some, sendersId = "fake-id".some).right).await
         got {
-          one(hubClient).sendNotification(pushConverter.toRawPush(userPush))
+          one(hubClient).sendNotification(pushConverter.toRawPush(userPush).get)
         }
       }
     }
@@ -58,8 +77,12 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
         Topic(TopicTypes.Breaking, "world/isis")
       ))
     )
+    def electionPush(importance: Importance) = topicTargetedBreakingNewsPush(
+      electionNotification(importance)
+    )
 
-    val configuration = mock[Configuration].debug returns true
+    val configuration = mock[Configuration]
+    configuration.debug returns true
     val hubClient = {
       val client = mock[NotificationHubClient]
       client.sendNotification(any[GCMRawPush]) returns Future.successful(Some("fake-id").right)

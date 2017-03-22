@@ -3,11 +3,11 @@ package notification.models.azure
 import java.net.URI
 import java.util.UUID
 
-import models.Importance.Major
+import models.Importance.{Major, Minor}
 import models.Link.Internal
 import models.{GITContent, Topic}
-import models.TopicTypes.{Breaking, TagSeries}
-import models.elections.ElectionResults
+import models.TopicTypes.{LiveNotification, TagSeries}
+import models.elections.{CandidateResults, ElectionResults}
 import notification.models.Push
 import notification.models.android._
 import notification.services.Configuration
@@ -38,7 +38,16 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
   "An election notification" should {
     "serialize to map" in new ElectionNotificationScope {
-      converter.toRawPush(push).body.data shouldEqual expected
+      converter.toRawPush(push).get.body.data shouldEqual expected
+    }
+    "Have importance=Minor for minor notifications" in new MinorElectionNotificationScope {
+      converter.toRawPush(minorPush).get.body.data shouldEqual minorExpected
+    }
+  }
+
+  "A live event notification" should {
+    "serialize to map" in new LiveEventNotificationScope {
+      converter.toRawPush(push).get.body.data shouldEqual expected
     }
   }
 
@@ -58,7 +67,6 @@ class AndroidNotificationSpec extends Specification with Mockito {
       uri = "http://mobile-apps.guardianapis.com/items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates-uri",
       imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/" +
         "0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
-      topics = Set(Topic(Breaking, "uk")),
       debug = true,
       section = None,
       edition = None,
@@ -68,7 +76,6 @@ class AndroidNotificationSpec extends Specification with Mockito {
     )
 
     val expected = Map(
-      "topics" -> "breaking/uk",
       "uniqueIdentifier" -> "30aac5f5-34bb-4a88-8b69-97f995a4907b",
       "editions" -> "",
       "uri" -> "http://mobile-apps.guardianapis.com/items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates-uri",
@@ -96,12 +103,12 @@ class AndroidNotificationSpec extends Specification with Mockito {
       ticker = "",
       link = new URI("http://mobile-apps.guardianapis.com/items/environment/ng-interactive/2015/oct/16/" +
         "which-countries-are-doing-the-most-to-stop-dangerous-global-warming"),
-      topics = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground")),
+      topics = Set("tag-series//environment/series/keep-it-in-the-ground"),
       debug = true
     )
 
     val expected = Map(
-      "topics" -> "tag-series/environment/series/keep-it-in-the-ground",
+      "topics" -> "tag-series//environment/series/keep-it-in-the-ground",
       "uniqueIdentifier" -> "c8bd6aaa-072f-4593-a38b-322f3ecd6bd3",
       "uri" -> "test-uri",
       "debug" -> "true",
@@ -155,12 +162,32 @@ class AndroidNotificationSpec extends Specification with Mockito {
   trait ElectionNotificationScope extends NotificationScope {
     val notification = models.ElectionNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-      message = "test",
+      message = "• 35 states called, 5 swing states (OH, PA, NV, CO, FL)\n• Popular vote: Clinton 52%, Trump 43% with 42% precincts reporting",
+      shortMessage = Some("this is the short message"),
+      expandedMessage = Some("this is the expanded message"),
       sender = "some-sender",
-      title = "some-title",
+      title = "Live election results",
       importance = Major,
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
-      results = ElectionResults(List.empty),
+      resultsLink = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent),
+      results = ElectionResults(List(
+        CandidateResults(
+          name = "Clinton",
+          states = List.empty,
+          electoralVotes = 220,
+          popularVotes = 5000000,
+          avatar = Some(new URI("http://e4775a29.ngrok.io/clinton-neutral.png")),
+          color = "#005689"
+        ),
+        CandidateResults(
+          name = "Trump",
+          states = List.empty,
+          electoralVotes = 133,
+          popularVotes = 5000000,
+          avatar = Some(new URI("http://e4775a29.ngrok.io/trump-neutral.png")),
+          color = "#d61d00"
+        )
+      )),
       topic = Set.empty
     )
 
@@ -168,10 +195,63 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
     val expected =  Map(
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
-      "type" -> "election",
-      "message" -> "test",
-      "debug" -> "false"
+      "debug" -> "false",
+      "type" -> "liveElections",
+      "candidates.length" -> "2",
+      "candidates[0].name" -> "Clinton",
+      "candidates[0].electoralVotes" -> "220",
+      "candidates[0].color" -> "#005689",
+      "candidates[0].avatar" -> "http://e4775a29.ngrok.io/clinton-neutral.png",
+      "candidates[1].name" -> "Trump",
+      "candidates[1].electoralVotes" -> "133",
+      "candidates[1].color" -> "#d61d00",
+      "candidates[1].avatar" -> "http://e4775a29.ngrok.io/trump-neutral.png",
+      "electoralCollegeSize" -> "538",
+      "link" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+      "resultsLink" -> "x-gu://www.guardian.co.uk/world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau",
+      "title" -> "Live election results",
+      "importance" -> "Major",
+      "expandedMessage" -> "this is the expanded message",
+      "shortMessage" -> "this is the short message"
     )
   }
 
+  trait MinorElectionNotificationScope extends ElectionNotificationScope {
+    val minorNotification = notification.copy(importance = Minor)
+    val minorExpected = expected.updated("importance", "Minor")
+    val minorPush = Push(minorNotification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+  }
+
+  trait LiveEventNotificationScope extends NotificationScope {
+    val notification = models.LiveEventNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "some-sender",
+      title = "Some live event",
+      message = "normal message",
+      expandedMessage = Some("this is the expanded message"),
+      shortMessage = Some("this is the short message"),
+      importance = Major,
+      link1 = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link2 = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent),
+      imageUrl = Some(new URI("http://gu.com/some-image.png")),
+      topic = Set(Topic(LiveNotification, "super-bowl-li"))
+    )
+
+    val push = Push(notification, Left(notification.topic))
+
+    val expected =  Map(
+      "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+      "debug" -> "false",
+      "type" -> "superBowl",
+      "link1" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+      "link2" -> "x-gu://www.guardian.co.uk/world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau",
+      "title" -> "Some live event",
+      "importance" -> "Major",
+      "expandedMessage" -> "this is the expanded message",
+      "shortMessage" -> "this is the short message",
+      "message" -> "normal message",
+      "imageUrl" -> "http://gu.com/some-image.png",
+      "topics" -> "live-notification//super-bowl-li"
+    )
+  }
 }

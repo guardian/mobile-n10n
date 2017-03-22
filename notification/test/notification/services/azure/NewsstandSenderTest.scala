@@ -2,7 +2,7 @@ package notification.services.azure
 
 import java.util.UUID
 
-import azure.apns.{APS, Body}
+import azure.apns.{APS, Body, LegacyProperties}
 import azure.{APNSRawPush, NotificationHubClient, Tags}
 import models.Topic
 import models.TopicTypes.Newsstand
@@ -22,7 +22,7 @@ class NewsstandSenderTest extends Specification with Mockito {
             `content-available` = Some(1),
             sound = None
           ),
-          customProperties = Map.empty
+          customProperties = LegacyProperties(Map.empty)
         ),
         tags = Some(Tags.fromTopics(Set(Topic(Newsstand, "newsstand"))))
       )

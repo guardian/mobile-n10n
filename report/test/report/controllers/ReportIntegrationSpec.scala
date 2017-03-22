@@ -103,6 +103,8 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
     val appConfigMock = {
       val configuration = mock[Configuration]
       configuration.apiKeys returns List(apiKey)
+      configuration.electionRestrictedApiKeys returns List.empty
+      configuration.reportsOnlyApiKeys returns List.empty
       configuration
     }
 

@@ -1,6 +1,6 @@
 package registration.services
 
-import auditor.{AuditorGroupConfig, ContentApiConfig}
+import auditor.{AuditorGroupConfig, ApiConfig}
 import _root_.azure.NotificationHubConnection
 import conf.NotificationConfiguration
 
@@ -31,15 +31,16 @@ class Configuration extends NotificationConfiguration("registration") {
   )
 
   lazy val auditorConfiguration = AuditorGroupConfig(
-    hosts = Set(
-      getConfigString("notifications.auditor.goalAlerts")
-    ),
-    contentApiConfig = ContentApiConfig(
+    contentApiConfig = ApiConfig(
       apiKey = getConfigString("notifications.auditor.contentApi.apiKey"),
       url = getConfigString("notifications.auditor.contentApi.url")
+    ),
+    paApiConfig = ApiConfig(
+      apiKey = getConfigString("notifications.auditor.paApi.apiKey"),
+      url = getConfigString("notifications.auditor.paApi.url")
     )
   )
-  lazy val maxTopics = getConfigInt("notifications.max_topics", 200) // scalastyle:off magic.number
+  lazy val maxTopics = getConfigInt("notifications.max_topics")
   lazy val dynamoTopicsTableName = getConfigString("db.dynamo.topics.table-name")
   lazy val dynamoTopicsFlushInterval = getFiniteDuration("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
 

@@ -59,7 +59,7 @@ class LiveblogAuditorSpec(implicit ev: ExecutionEnv) extends Specification with 
   }
 
   trait AuditorScope extends Scope {
-    val config = ContentApiConfig(url = "http://localhost:1234", apiKey = "test-key")
+    val config = ApiConfig(url = "http://localhost:1234", apiKey = "test-key")
 
     val wsClient = mock[WSClient]
 
