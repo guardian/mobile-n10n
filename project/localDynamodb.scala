@@ -1,0 +1,13 @@
+import sbt._
+import com.localytics.sbt.dynamodb.DynamoDBLocalKeys
+import com.localytics.sbt.dynamodb.DynamoDBLocalKeys._
+
+object localDynamodb {
+
+  val settings: Seq[Setting[_]] = DynamoDBLocalKeys.baseDynamoDBSettings ++ Seq(
+    dynamoDBLocalDownloadDir := file("dynamodb-local"),
+    dynamoDBLocalInMemory := true,
+    dynamoDBLocalVersion := "2014-10-07"
+  )
+
+}

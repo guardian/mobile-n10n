@@ -22,7 +22,7 @@ object StoredRegistration {
 
   implicit val jf = Json.format[StoredRegistration]
 
-  def fromRegistration(registration: Registration) = {
+  def fromRegistration(registration: Registration): StoredRegistration = {
     StoredRegistration(
       deviceId = registration.deviceId,
       platform = registration.platform,
