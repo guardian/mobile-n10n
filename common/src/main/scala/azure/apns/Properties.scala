@@ -21,7 +21,8 @@ case class StandardProperties(
   t: String,
   notificationType: NotificationType,
   election: Option[ElectionProperties] = None,
-  liveEvent: Option[LiveEventProperties] = None
+  liveEvent: Option[LiveEventProperties] = None,
+  footballMatch: Option[FootballMatchStatusProperties] = None
 ) extends Properties
 
 object StandardProperties {

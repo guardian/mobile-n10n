@@ -5,7 +5,7 @@ import java.util.UUID
 
 import azure.apns._
 import models.{NotificationType, Topic}
-import models.NotificationType.{BreakingNews, Content, ElectionsAlert, GoalAlert, LiveEventAlert}
+import models.NotificationType.{BreakingNews, Content, ElectionsAlert, GoalAlert, LiveEventAlert, FootballMatchStatus}
 import notification.services.azure.PlatformUriType
 import utils.MapImplicits._
 
@@ -157,6 +157,21 @@ case class LiveEventNotification(liveEvent: LiveEventProperties) extends Notific
       t = MessageTypes.LiveEventAlert,
       notificationType = LiveEventAlert,
       liveEvent = Some(liveEvent)
+    )
+  )
+}
+
+case class FootballMatchStatusNotification(matchStatus: FootballMatchStatusProperties) extends Notification {
+  def payload: Body = Body(
+    aps = APS(
+      alert = None,
+      `content-available` = Some(1),
+      sound = None
+    ),
+    customProperties = StandardProperties(
+      t = MessageTypes.FootballMatchStatus,
+      notificationType = FootballMatchStatus,
+      footballMatch = Some(matchStatus)
     )
   )
 }
