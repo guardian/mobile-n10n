@@ -62,16 +62,6 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
     )
   }
 
-  private def toGoalAlert(goalAlert: GoalAlertNotification) = {
-    ios.GoalAlertNotification(
-      message = goalAlert.message,
-      id = goalAlert.id,
-      uri = replaceHost(goalAlert.mapiUrl),
-      uriType = FootballMatch,
-      debug = false
-    )
-  }
-
   private def toElectionAlert(electionAlert: ElectionNotification) = {
     val democratVotes = electionAlert.results.candidates.find(_.name == "Clinton").map(_.electoralVotes).getOrElse(0)
     val republicanVotes = electionAlert.results.candidates.find(_.name == "Trump").map(_.electoralVotes).getOrElse(0)
@@ -134,7 +124,6 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
   }
 
   private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): Option[ios.Notification] = condOpt(np) {
-    case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
     case el: ElectionNotification => toElectionAlert(el)

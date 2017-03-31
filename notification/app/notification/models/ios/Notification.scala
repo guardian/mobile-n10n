@@ -5,7 +5,7 @@ import java.util.UUID
 
 import azure.apns._
 import models.{NotificationType, Topic}
-import models.NotificationType.{BreakingNews, Content, ElectionsAlert, GoalAlert, LiveEventAlert, FootballMatchStatus}
+import models.NotificationType.{BreakingNews, Content, ElectionsAlert, LiveEventAlert, FootballMatchStatus}
 import notification.services.azure.PlatformUriType
 import utils.MapImplicits._
 
@@ -68,30 +68,6 @@ case class ContentNotification(
       Keys.NotificationType -> notificationType.value,
       Keys.Link -> legacyLink,
       Keys.Topics -> topics.map(_.toString).mkString(","),
-      Keys.Uri -> uri.toString,
-      Keys.UriType -> uriType.toString
-    ))
-  )
-}
-
-case class GoalAlertNotification(
-  `type`: String = MessageTypes.GoalAlert,
-  notificationType: NotificationType = GoalAlert,
-  message: String,
-  id: UUID,
-  uri: URI,
-  uriType: PlatformUriType,
-  debug: Boolean
-) extends Notification {
-  def payload: Body = Body(
-    aps = APS(
-      alert = Some(Right(message)),
-      `content-available` = Some(1),
-      sound = Some("default")
-    ),
-    customProperties = LegacyProperties(Map(
-      Keys.MessageType -> `type`,
-      Keys.NotificationType -> notificationType.value,
       Keys.Uri -> uri.toString,
       Keys.UriType -> uriType.toString
     ))
