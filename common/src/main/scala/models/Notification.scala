@@ -26,15 +26,16 @@ object Notification {
       case n: GoalAlertNotification => GoalAlertNotification.jf.writes(n)
       case n: ElectionNotification => ElectionNotification.jf.writes(n)
       case n: LiveEventNotification => LiveEventNotification.jf.writes(n)
+      case n: FootballMatchStatusNotification => FootballMatchStatusNotification.jf.writes(n)
     }
     override def reads(json: JsValue): JsResult[Notification] = {
-      json \ "type" match {
-        case JsDefined(JsString("news")) => BreakingNewsNotification.jf.reads(json)
-        case JsDefined(JsString("content")) => ContentNotification.jf.reads(json)
-        case JsDefined(JsString("goal")) => GoalAlertNotification.jf.reads(json)
-        case JsDefined(JsString("election")) => ElectionNotification.jf.reads(json)
-        case JsDefined(JsString("live-notification")) => LiveEventNotification.jf.reads(json)
-        case _ => JsError("Unknown notification type")
+      (json \ "type").validate[NotificationType].flatMap {
+        case BreakingNews => BreakingNewsNotification.jf.reads(json)
+        case Content => ContentNotification.jf.reads(json)
+        case GoalAlert => GoalAlertNotification.jf.reads(json)
+        case ElectionsAlert => ElectionNotification.jf.reads(json)
+        case LiveEventAlert => LiveEventNotification.jf.reads(json)
+        case FootballMatchStatus => FootballMatchStatusNotification.jf.reads(json)
       }
     }
   }
