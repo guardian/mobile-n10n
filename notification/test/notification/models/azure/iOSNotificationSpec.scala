@@ -380,10 +380,10 @@ class iOSNotificationSpec extends Specification with Mockito {
 
     val expected = Body(
       aps = APS(
-        alert = None,
-        category = None,
+        alert = Some(Left(Alert(title = Some("Some live event"), body = Some("normal message")))),
+        category = Some("football-match"),
         `content-available` = Some(1),
-        sound = None
+        sound = Some("default")
       ),
       customProperties = StandardProperties(
         t = "football-match-status",

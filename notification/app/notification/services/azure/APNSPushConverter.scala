@@ -96,7 +96,10 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
   }
 
   private def toMatchStatusAlert(matchStatus: FootballMatchStatusNotification) = {
-    ios.FootballMatchStatusNotification(FootballMatchStatusProperties(
+    ios.FootballMatchStatusNotification(
+      title = matchStatus.title,
+      body = matchStatus.message,
+      matchStatus = FootballMatchStatusProperties(
         homeTeamName = matchStatus.homeTeamName,
         homeTeamId = matchStatus.homeTeamId,
         homeTeamScore = matchStatus.homeTeamScore,

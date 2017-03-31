@@ -137,12 +137,13 @@ case class LiveEventNotification(liveEvent: LiveEventProperties) extends Notific
   )
 }
 
-case class FootballMatchStatusNotification(matchStatus: FootballMatchStatusProperties) extends Notification {
+case class FootballMatchStatusNotification(title: String, body: String, matchStatus: FootballMatchStatusProperties) extends Notification {
   def payload: Body = Body(
     aps = APS(
-      alert = None,
+      alert = Some(Left(Alert(title = Some(title), body = Some(body)))),
       `content-available` = Some(1),
-      sound = None
+      sound = Some("default"),
+      category = Some("football-match")
     ),
     customProperties = StandardProperties(
       t = MessageTypes.FootballMatchStatus,
