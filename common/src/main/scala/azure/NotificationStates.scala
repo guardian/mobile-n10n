@@ -14,7 +14,7 @@ object NotificationState {
 
   implicit val jf = JsonUtils.stringFormat((fromString _).andThen(_.toOption))
 
-  def fromString(s: String): Xor[HubInvalidResponse, NotificationState] = Xor.fromOption(condOpt(s) { // scalastyle:off cyclomatic.complexity
+  def fromString(s: String): Xor[HubInvalidResponse, NotificationState] = Xor.fromOption(condOpt(s) {
     case "Abandoned" => Abandoned
     case "Canceled" => Canceled
     case "Completed" => Completed

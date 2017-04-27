@@ -36,7 +36,7 @@ object OutcomeName {
 
   implicit val jf = JsonUtils.stringFormat((fromString _).andThen(_.toOption))
 
-  def fromString(s: String): Xor[HubInvalidResponse, OutcomeName] = Xor.fromOption(condOpt(s) { // scalastyle:off cyclomatic.complexity
+  def fromString(s: String): Xor[HubInvalidResponse, OutcomeName] = Xor.fromOption(condOpt(s) {
     case "AbandonedNotificationMessages" => AbandonedNotificationMessages
     case "BadChannel" => BadChannel
     case "ChannelDisconnected" => ChannelDisconnected
