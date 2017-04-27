@@ -141,7 +141,7 @@ object FootballMatchStatusNotification {
         mapiUrl <- (json \ "mapiUrl").validate[URI]
         importance <- (json \ "importance").validate[Importance]
         topic <- (json \ "topic").validate[Set[Topic]]
-        phase <- (json \ "phase").validate[String]
+        matchStatus <- (json \ "matchStatus").validate[String]
         eventId <- (json \ "eventId").validate[String]
         debug <- (json \ "debug").validate[Boolean]
       } yield FootballMatchStatusNotification(
@@ -165,7 +165,7 @@ object FootballMatchStatusNotification {
         mapiUrl,
         importance,
         topic,
-        phase,
+        matchStatus,
         eventId,
         debug
       )

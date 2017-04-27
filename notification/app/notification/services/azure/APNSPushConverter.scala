@@ -115,7 +115,8 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
         uri = "",
         competitionName = matchStatus.competitionName,
         venue = matchStatus.venue
-      )
+      ),
+      sound = matchStatus.importance == Importance.Major
     )
   }
 
