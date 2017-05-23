@@ -41,15 +41,7 @@ final class Main(
   private val logger = Logger(classOf[Main])
 
   def healthCheck: Action[AnyContent] = Action {
-    // This forces Play to close the connection rather than allowing
-    // keep-alive (because the content length is unknown)
-    Ok.sendEntity(
-      HttpEntity.Streamed(
-        data =  Source(Array(ByteString("Good")).toVector),
-        contentLength = None,
-        contentType = Some("text/plain")
-      )
-    )
+    Ok("Good")
   }
 
   def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(BodyJson[Registration]) { request =>
