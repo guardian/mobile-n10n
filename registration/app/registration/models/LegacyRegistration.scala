@@ -1,6 +1,6 @@
 package registration.models
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json._
 import LegacyJodaFormat._
 import models.UniqueDeviceIdentifier
 
@@ -16,7 +16,15 @@ object LegacyTopic {
 
   val NewsstandIos = LegacyTopic(`type` = "newsstand", `name` = "newsstandIos")
 
-  implicit val jf = Json.format[LegacyTopic]
+  implicit val jf = new Format[LegacyTopic] {
+    override def reads(json: JsValue): JsResult[LegacyTopic] = for {
+      tp <- (json \ "type").validate[String]
+      name <- (json \ "id").validate[String].orElse((json \ "name").validate[String])
+    } yield LegacyTopic(tp, name)
+
+    private val writer = Json.writes[LegacyTopic]
+    override def writes(o: LegacyTopic): JsValue = writer.writes(o)
+  }
 }
 
 case class LegacyTopic(
