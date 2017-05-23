@@ -10,6 +10,7 @@ import registration.services._
 
 import scala.concurrent.Future
 import cats.implicits._
+import models.TopicTypes.{FootballMatch, TagSeries}
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.mvc.AnyContentAsJson
 
@@ -69,6 +70,23 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       status(result) must equalTo(OK)
       contentAsString(result) must /("preferences") /("topics") /# 0 /("type" -> "breaking")
       contentAsString(result) must /("preferences") /("topics") /# 0 /("name" -> "uk")
+
+      contentAsString(result) must (/("preferences") / "topics" andHave size(1))
+    }
+
+    "migrate users from membership/series/weekend-round-up to membership/series/weekend-reading" in new RegistrationsContext {
+      val weekendReadingTopic = Topic(`type` = TagSeries, name = "membership/series/weekend-reading")
+      val weekendReadingTopics = Set(weekendReadingTopic)
+
+      override lazy val fakeTopicValidator = mock[TopicValidator]
+
+      fakeTopicValidator.removeInvalid(weekendReadingTopics) returns Future.successful(weekendReadingTopics.right)
+
+      val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationWithRoundUpTopic)))
+
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("preferences") /("topics") /# 0 /("type" -> "tag-series")
+      contentAsString(result) must /("preferences") /("topics") /# 0 /("name" -> "membership/series/weekend-reading")
 
       contentAsString(result) must (/("preferences") / "topics" andHave size(1))
     }

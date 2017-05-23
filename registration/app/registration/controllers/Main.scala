@@ -175,9 +175,14 @@ final class Main(
       case Success(Xor.Left(v)) => logger.error(s"Failed to register $registration with ${v.providerName}: ${v.reason}")
     }
 
+    def migrateWeekendReading(topics: Set[Topic]) = topics map {
+      case Topic(TopicTypes.TagSeries, "membership/series/weekend-round-up") => Topic(TopicTypes.TagSeries, "membership/series/weekend-reading")
+      case topic => topic
+    }
+
     registrarProvider.registrarFor(registration) match {
       case Xor.Right(registrar) =>
-        validate(registration.topics).flatMap(registerWith(registrar, _).andThen(logErrors))
+        validate(migrateWeekendReading(registration.topics)).flatMap(registerWith(registrar, _).andThen(logErrors))
       case Xor.Left(error) =>
         Future.successful(error.left)
     }
