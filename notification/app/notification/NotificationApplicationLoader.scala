@@ -9,7 +9,7 @@ import com.softwaremill.macwire._
 import notification.controllers.Main
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
-import notification.services.azure.{APNSEnterpriseSender, APNSSender, GCMSender, WNSSender}
+import notification.services.azure._
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
@@ -79,6 +79,8 @@ trait AzureHubComponents {
   lazy val gcmNotificationSender: GCMSender = wire[GCMSender]
 
   lazy val apnsNotificationSender: APNSSender = wire[APNSSender]
+
+  lazy val newsstandNotificationSender: NewsstandSender = wire[NewsstandSender]
 
   lazy val apnsEnterpriseNotificationSender: APNSEnterpriseSender = {
     val enterpriseHubClient = new NotificationHubClient(appConfig.enterpriseHub, wsClient)

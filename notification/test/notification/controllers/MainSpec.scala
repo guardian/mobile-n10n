@@ -1,5 +1,6 @@
 package notification.controllers
 
+import java.util.UUID
 import models.TopicTypes.{Breaking, TagSeries}
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
@@ -15,6 +16,7 @@ import tracking.InMemoryNotificationReportRepository
 
 import scala.concurrent.Future
 import cats.implicits._
+import notification.services.azure.NewsstandSender
 
 class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito with JsonMatchers with DateTimeFreezed {
   "Sending notification to topics" should {
@@ -120,10 +122,31 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     }
   }
 
+  "Sending notification for newsstand" should {
+    "successfully send a notification for newsstand" in new MainScope {
+      val request = authenticatedRequest
+      val id = UUID.randomUUID()
+      val response = main.pushNewsstand(id)(request)
+
+      status(response) must equalTo(CREATED)
+
+      there was one(newsstandNotificationSender).sendNotification(id)
+    }
+
+    "refuse a newsstand notification with an invalid key" in new MainScope {
+      val request = invalidAuthenticatedRequest
+      val response = main.pushNewsstand(UUID.randomUUID())(request)
+
+      status(response) must equalTo(UNAUTHORIZED)
+    }
+  }
+
   trait NotificationSenderSupportScope extends Scope {
     self: NotificationsFixtures =>
     var pushSent: Option[Push] = None
 
+    val newsstandNotificationSender = mock[NewsstandSender]
+    newsstandNotificationSender.sendNotification(any[UUID]) returns Future.successful("".some.right)
     val windowsNotificationSender = {
       new NotificationSender {
         override def sendNotification(push: Push): Future[SenderResult] = {
@@ -156,6 +179,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     val main = new Main(
       configuration = conf,
       senders = List(windowsNotificationSender, frontendAlerts),
+      newsstandSender = newsstandNotificationSender,
       notificationReportRepository = reportRepository
     )
   }

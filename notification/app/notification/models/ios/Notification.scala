@@ -8,8 +8,6 @@ import models.{NotificationType, Topic}
 import models.NotificationType.{BreakingNews, Content, ElectionsAlert, GoalAlert, LiveEventAlert}
 import notification.services.azure.PlatformUriType
 import utils.MapImplicits._
-import azure.apns.LegacyProperties._
-import play.api.libs.json.JsObject
 
 sealed trait Notification {
   def payload: Body
@@ -97,6 +95,17 @@ case class GoalAlertNotification(
       Keys.Uri -> uri.toString,
       Keys.UriType -> uriType.toString
     ))
+  )
+}
+
+case class NewsstandNotification(id: UUID) extends Notification {
+  def payload: Body = Body(
+    aps = APS(
+      alert = None,
+      `content-available` = Some(1),
+      sound = None
+    ),
+    customProperties = LegacyProperties(Map.empty)
   )
 }
 
