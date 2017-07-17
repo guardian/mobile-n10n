@@ -45,6 +45,11 @@ final class Main(
     Ok("Good")
   }
 
+  def newstandTest(id: UUID): Action[AnyContent] = Action {
+    logger.info(s"TEST. UUID: $id" )
+    Ok("Gotcha, bigboy")
+  }
+
   def pushNewsstand(id: UUID): Action[AnyContent] = AuthenticatedAction.async {
     newsstandSender.sendNotification(id) map {
       case Xor.Right(_) =>
