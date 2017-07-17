@@ -126,16 +126,16 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     "successfully send a notification for newsstand" in new MainScope {
       val request = authenticatedRequest
       val id = UUID.randomUUID()
-      val response = main.pushNewsstand(id)(request)
+      val response = main.pushNewsstand()(request)
 
       status(response) must equalTo(CREATED)
 
-      there was one(newsstandNotificationSender).sendNotification(id)
+      there was one(newsstandNotificationSender).sendNotification(any)
     }
 
     "refuse a newsstand notification with an invalid key" in new MainScope {
       val request = invalidAuthenticatedRequest
-      val response = main.pushNewsstand(UUID.randomUUID())(request)
+      val response = main.pushNewsstand()(request)
 
       status(response) must equalTo(UNAUTHORIZED)
     }
