@@ -2,5 +2,4 @@ GET         /healthcheck                        notification.controllers.Main.he
 POST        /push/user/:userId                  notification.controllers.Main.pushUser(userId: java.util.UUID)
 POST        /push/topic                         notification.controllers.Main.pushTopics
 POST        /push/topic/*topic                  notification.controllers.Main.pushTopic(topic: Topic)
-POST        /push/newsstand                     notification.controllers.Main.pushNewsstand(id: java.util.UUID)
-GET         /push/newsstand                     notification.controllers.Main.newstandTest(id: java.util.UUID)
+POST        /push/newsstand                     notification.controllers.Main.pushNewsstand
