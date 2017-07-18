@@ -80,8 +80,7 @@ GNLAppendLog "I'm going for it."
 
 # GNM INTERNAL Notification
 
-#/usr/bin/curl -X POST "https://notifications.guardianapis.com/push/newsstand?api-key=????????????????"
-/usr/bin/curl -X POST "https://notifications.guardian.co.uk/newsstand/trigger?api-key=9fpnUKZXKHx3ymRMoey7"
+/usr/bin/curl -v -X POST "https://notification.notifications.code.dev-guardianapis.com/push/newsstand?api-key=?????????"
 
 curlExit=$?
 
