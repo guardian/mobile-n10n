@@ -82,7 +82,7 @@ trait AzureHubComponents {
   lazy val apnsNotificationSender: APNSSender = wire[APNSSender]
 
   lazy val newsstandNotificationSender: NewsstandSender = {
-    val hubClient = new NotificationHubClient(appConfig.enterpriseHub, wsClient)
+    val hubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
     new NewsstandSender(hubClient)
   }
 
