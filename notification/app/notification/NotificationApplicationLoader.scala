@@ -72,6 +72,7 @@ trait AzureHubComponents {
     batching.scheduleFlush(appConfig.dynamoTopicsFlushInterval)
     batching
   }
+
   lazy val notificationReportRepository = new DynamoNotificationReportRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoReportsTableName)
 
   lazy val wnsNotificationSender: WNSSender = wire[WNSSender]
@@ -80,7 +81,10 @@ trait AzureHubComponents {
 
   lazy val apnsNotificationSender: APNSSender = wire[APNSSender]
 
-  lazy val newsstandNotificationSender: NewsstandSender = wire[NewsstandSender]
+  lazy val newsstandNotificationSender: NewsstandSender = {
+    val hubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
+    new NewsstandSender(hubClient)
+  }
 
   lazy val apnsEnterpriseNotificationSender: APNSEnterpriseSender = {
     val enterpriseHubClient = new NotificationHubClient(appConfig.enterpriseHub, wsClient)

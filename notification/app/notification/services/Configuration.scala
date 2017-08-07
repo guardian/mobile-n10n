@@ -11,14 +11,9 @@ class Configuration extends NotificationConfiguration("notification") {
     sharedAccessKey = getConfigString("azure.hub.sharedAccessKey")
   )
 
-  lazy val enterpriseHub = {
-    val hub = for {
-      endpoint <- conf.getStringProperty("enterprise.hub.endpoint")
-      sharedAccessKeyName <- conf.getStringProperty("enterprise.hub.sharedAccessKeyName")
-      sharedAccessKey <- conf.getStringProperty("enterprise.hub.sharedAccessKey")
-    } yield NotificationHubConnection(endpoint = endpoint, sharedAccessKeyName = sharedAccessKeyName, sharedAccessKey = sharedAccessKey)
-    hub getOrElse defaultHub
-  }
+  lazy val enterpriseHub = getConfigurableHubConnection("enterprise")
+
+  lazy val newsstandHub: NotificationHubConnection = getConfigurableHubConnection("newsstand.azure")
 
   lazy val hubSharedAccessKeyName = getConfigString("azure.hub.sharedAccessKeyName")
   lazy val hubSharedAccessKey = getConfigString("azure.hub.sharedAccessKey")
@@ -35,4 +30,14 @@ class Configuration extends NotificationConfiguration("notification") {
 
   lazy val disableElectionNotificationsAndroid = conf.getStringProperty("notifications.elections.android.disabled", "false").toBoolean
   lazy val disableElectionNotificationsIOS = conf.getStringProperty("notifications.elections.ios.disabled", "false").toBoolean
+
+  private def getConfigurableHubConnection(hubConfigurationName: String): NotificationHubConnection = {
+    val maybeEndpoint = conf.getStringProperty(hubConfigurationName)
+    val hub = for {
+      endpoint <- conf.getStringProperty(s"$hubConfigurationName.hub.endpoint")
+      sharedAccessKeyName <- conf.getStringProperty(s"$hubConfigurationName.hub.sharedAccessKeyName")
+      sharedAccessKey <- conf.getStringProperty(s"$hubConfigurationName.hub.sharedAccessKey")
+    } yield NotificationHubConnection(endpoint = endpoint, sharedAccessKeyName = sharedAccessKeyName, sharedAccessKey = sharedAccessKey)
+    hub getOrElse defaultHub
+  }
 }
