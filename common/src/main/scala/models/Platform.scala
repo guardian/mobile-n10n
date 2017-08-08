@@ -14,6 +14,7 @@ object Platform {
     case "android" => Android
     case "ios" => iOS
     case "windows-mobile" => WindowsMobile
+    case "newsstand" => Newsstand
   }
 
   implicit val jf = new Format[Platform] {
