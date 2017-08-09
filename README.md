@@ -19,7 +19,7 @@ gu.msnotifications.sharedKeyName=nameOfSharedKey
 gu.msnotifications.sharedKeyValue=sharedKeyActualValue
 
 notifications.auditor.content-notifications=http://content-notification-auditor.elb.amazonaws.com
-notifications.auditor.goal-alerts=hhttp://goal-alert-auditor.elb.amazonaws.com
+notifications.auditor.goal-alerts=http://goal-alert-auditor.elb.amazonaws.com
 ```
 
 ### Device registration create or udpate
