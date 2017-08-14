@@ -107,7 +107,7 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
   case class PlatformUri(uri: String, `type`: PlatformUriType)
 
   private def toPlatformLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _) => PlatformUri(s"x-gu://$contentApiId", Item)
+    case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
     case Link.External(url) => PlatformUri(url, External)
   }
 
