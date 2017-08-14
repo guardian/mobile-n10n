@@ -92,7 +92,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         "notificationType" -> "news",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "breaking/uk,breaking/us,breaking/au,breaking/international",
-        "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        "uri" -> "x-gu://world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         "imageUrl" -> "https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg",
         "uriType" -> "item"
       ))
@@ -128,7 +128,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         "notificationType" -> "news",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "breaking/uk,breaking/us,breaking/au,breaking/international",
-        "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        "uri" -> "x-gu://world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         "imageUrl" -> "https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg",
         "uriType" -> "item"
       ))
@@ -163,7 +163,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         "notificationType" -> "news",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "breaking/uk,breaking/us,breaking/au,breaking/international",
-        "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        "uri" -> "x-gu://world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         "uriType" -> "item"
       ))
     )
@@ -197,7 +197,7 @@ class iOSNotificationSpec extends Specification with Mockito {
         "notificationType" -> "content",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "tag-series/series-a,tag-series/series-b",
-        "uri" -> "x-gu:///items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        "uri" -> "x-gu://world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         "uriType" -> "item"
       ))
     )
