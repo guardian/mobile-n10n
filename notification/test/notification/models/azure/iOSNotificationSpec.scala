@@ -382,7 +382,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       aps = APS(
         alert = Some(Left(Alert(title = Some("Some live event"), body = Some("normal message")))),
         category = Some("football-match"),
-        `content-available` = Some(1),
+        `mutable-content` = Some(1),
         sound = Some("default")
       ),
       customProperties = StandardProperties(

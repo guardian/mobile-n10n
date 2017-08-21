@@ -141,9 +141,9 @@ case class FootballMatchStatusNotification(title: String, body: String, matchSta
   def payload: Body = Body(
     aps = APS(
       alert = Some(Left(Alert(title = Some(title), body = Some(body)))),
-      `content-available` = Some(1),
       sound = if (sound) Some("default") else None,
-      category = Some("football-match")
+      category = Some("football-match"),
+      `mutable-content` = Some(1)
     ),
     customProperties = StandardProperties(
       t = MessageTypes.FootballMatchStatus,
