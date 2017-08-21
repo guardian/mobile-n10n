@@ -303,8 +303,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "important" -> "Major",
       "matchStatus" -> "P",
       "matchId" -> "1000",
-      "mapiUrl" -> "http://football.mobile-apps.guardianapis.com/match-info/3955232",
-      "uri" -> "", // TODO:
+      "matchInfoUri" -> "http://football.mobile-apps.guardianapis.com/match-info/3955232",
       "competitionName" -> "Premier League",
       "venue" -> "Emirates Stadium"
     )

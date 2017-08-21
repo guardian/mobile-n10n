@@ -163,8 +163,8 @@ class GCMPushConverter(conf: Configuration) extends PushConverter {
       "important" -> Some(matchStatusAlert.importance.toString),
       "matchStatus" -> Some(matchStatusAlert.phase),
       "matchId" -> Some(matchStatusAlert.matchId),
-      "mapiUrl" -> Some(matchStatusAlert.mapiUrl.toString),
-      "uri" -> Some(""),
+      "matchInfoUri" -> Some(matchStatusAlert.mapiUrl.toString),
+      "articleUri" -> None,
       "competitionName" -> matchStatusAlert.competitionName,
       "venue" -> matchStatusAlert.venue
     ).flattenValues
