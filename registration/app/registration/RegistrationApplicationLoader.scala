@@ -36,7 +36,6 @@ trait AppComponents extends Controllers
   with WindowsRegistrations
   with GCMRegistrations
   with APNSRegistrations
-  with APNSEnterpriseRegistrations
   with NewsstandRegistrations
   with NotificationsHubClient
   with Tracking
@@ -64,7 +63,6 @@ trait Registrars {
   self: WindowsRegistrations
     with GCMRegistrations
     with APNSRegistrations
-    with APNSEnterpriseRegistrations
     with NewsstandRegistrations
     with ExecutionEnv =>
   lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
@@ -98,18 +96,6 @@ trait WindowsRegistrations {
     with ExecutionEnv =>
 
   lazy val winNotificationRegistrar: WindowsNotificationRegistrar = wire[WindowsNotificationRegistrar]
-}
-
-trait APNSEnterpriseRegistrations {
-  self: Tracking
-    with AppConfiguration
-    with AhcWSComponents
-    with ExecutionEnv =>
-
-  lazy val enterpriseHubClient = new NotificationHubClient(appConfig.enterpriseHub, wsClient)
-
-  lazy val apnsEnterpriseNotificationRegistrar: APNSEnterpriseNotifcationRegistrar =
-    new APNSEnterpriseNotifcationRegistrar(enterpriseHubClient, subscriptionTracker)
 }
 
 trait NewsstandRegistrations {

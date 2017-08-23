@@ -15,15 +15,6 @@ class Configuration extends NotificationConfiguration("registration") {
     sharedAccessKey = getConfigString("azure.hub.sharedAccessKey")
   )
 
-  lazy val enterpriseHub = {
-    val hub = for {
-      endpoint <- conf.getStringProperty("enterprise.hub.endpoint")
-      sharedAccessKeyName <- conf.getStringProperty("enterprise.hub.sharedAccessKeyName")
-      sharedAccessKey <- conf.getStringProperty("enterprise.hub.sharedAccessKey")
-    } yield NotificationHubConnection(endpoint = endpoint, sharedAccessKeyName = sharedAccessKeyName, sharedAccessKey = sharedAccessKey)
-    hub getOrElse defaultHub
-  }
-
   lazy val newsstandHub = NotificationHubConnection(
     endpoint = getConfigString("newsstand.azure.hub.endpoint"),
     sharedAccessKeyName = getConfigString("newsstand.azure.hub.sharedAccessKeyName"),
