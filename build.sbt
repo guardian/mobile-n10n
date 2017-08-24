@@ -1,9 +1,6 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
-import org.scalastyle.sbt.ScalastylePlugin._
 
 addCommandAlias("dist", ";riffRaffArtifact")
-
-lazy val testScalastyle = taskKey[Unit]("testScalastyle")
 
 val standardSettings = Seq[Setting[_]](
 
@@ -40,12 +37,10 @@ lazy val common = project
       "org.specs2" %% "specs2-core" % "3.8.5" % "test",
       "org.specs2" %% "specs2-cats" % "3.8.5" % "test"
     ),
-    scalastyleFailOnError := true,
-    testScalastyle := (scalastyle in Compile).toTask("").value,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
-    test in Test := (test in Test).dependsOn(startDynamoDBLocal, testScalastyle).value,
-    testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal, testScalastyle).evaluated,
-    testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal, testScalastyle).evaluated,
+    test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
+    testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
+    testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
     testOptions in Test += dynamoDBLocalTestCleanup.value
   )
 

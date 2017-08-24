@@ -51,6 +51,12 @@ class AndroidNotificationSpec extends Specification with Mockito {
     }
   }
 
+  "A football match status notification" should {
+    "serialize to map" in new FootballMatchStatusNotificationScope {
+      converter.toRawPush(push).get.body.data shouldEqual expected
+    }
+  }
+
   trait NotificationScope extends Scope {
     val converter = new GCMPushConverter(mock[Configuration])
     def expected: Map[String, String]
@@ -252,6 +258,54 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "message" -> "normal message",
       "imageUrl" -> "http://gu.com/some-image.png",
       "topics" -> "live-notification//super-bowl-li"
+    )
+  }
+
+  trait FootballMatchStatusNotificationScope extends NotificationScope {
+    val notification = models.FootballMatchStatusNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "some-sender",
+      title = "Some live event",
+      message = "normal message",
+      thumbnailUrl = None,
+      awayTeamName = "Burnley",
+      awayTeamScore = 1,
+      awayTeamMessage = "Andre Gray 90 +2:41 Pen",
+      awayTeamId = "70",
+      homeTeamName = "Arsenal",
+      homeTeamScore = 2,
+      homeTeamMessage = "Shkodran Mustafi 59\nAlexis Sanchez 90 +7:14 Pen",
+      homeTeamId = "1006",
+      competitionName = Some("Premier League"),
+      venue = Some("Emirates Stadium"),
+      matchId = "1000",
+      mapiUrl = new URI("http://football.mobile-apps.guardianapis.com/match-info/3955232"),
+      importance = Major,
+      topic = Set.empty,
+      phase = "P",
+      eventId = "1000",
+      debug = false
+    )
+
+    val push = Push(notification, Left(notification.topic))
+
+    val expected =  Map(
+      "type" -> "footballMatchAlert",
+      "homeTeamName" -> "Arsenal",
+      "homeTeamId" -> "1006",
+      "homeTeamScore" -> "2",
+      "homeTeamText" -> "Shkodran Mustafi 59\nAlexis Sanchez 90 +7:14 Pen",
+      "awayTeamName" -> "Burnley",
+      "awayTeamId" -> "70",
+      "awayTeamScore" -> "1",
+      "awayTeamText" -> "Andre Gray 90 +2:41 Pen",
+      "currentMinute" -> "", // TODO: 90:0
+      "important" -> "Major",
+      "matchStatus" -> "P",
+      "matchId" -> "1000",
+      "matchInfoUri" -> "http://football.mobile-apps.guardianapis.com/match-info/3955232",
+      "competitionName" -> "Premier League",
+      "venue" -> "Emirates Stadium"
     )
   }
 }

@@ -7,7 +7,7 @@ case class TopicType(name: String, priority: Int) {
 }
 
 object TopicTypes {
-  object Breaking extends TopicType("breaking", 100) // scalastyle:off magic.number
+  object Breaking extends TopicType("breaking", 100)
   object Content extends TopicType("content", 1)
   object TagContributor extends TopicType("tag-contributor", 1)
   object TagKeyword extends TopicType("tag-keyword", 1)
@@ -15,14 +15,14 @@ object TopicTypes {
   object TagBlog extends TopicType("tag-blog", 1)
   object FootballTeam extends TopicType("football-team", 1)
   object FootballMatch extends TopicType("football-match", 1)
-  object Newsstand extends TopicType("newsstand", 100) // scalastyle:off magic.number
-  object ElectionResults extends TopicType("election-results", 50) // scalastyle:off magic.number
-  object LiveNotification extends TopicType("live-notification", 51) // scalastyle:off magic.number
+  object Newsstand extends TopicType("newsstand", 100)
+  object ElectionResults extends TopicType("election-results", 50)
+  object LiveNotification extends TopicType("live-notification", 51)
 }
 
 object TopicType {
   import TopicTypes._
-  def fromString(s: String): Option[TopicType] = PartialFunction.condOpt(s) { // scalastyle:off cyclomatic.complexity
+  def fromString(s: String): Option[TopicType] = PartialFunction.condOpt(s) {
     case "breaking" => Breaking
     case "content" => Content
     case "tag-contributor" => TagContributor

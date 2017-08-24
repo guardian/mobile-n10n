@@ -10,8 +10,9 @@ import notification.models.{Push, ios}
 import notification.services.Configuration
 import play.api.Logger
 import PlatformUriTypes.{External, FootballMatch, Item}
-import azure.apns.LiveEventProperties
+import azure.apns.{FootballMatchStatusProperties, LiveEventProperties}
 import models.Importance.Major
+
 import PartialFunction.condOpt
 
 class APNSPushConverter(conf: Configuration) extends PushConverter {
@@ -61,16 +62,6 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
     )
   }
 
-  private def toGoalAlert(goalAlert: GoalAlertNotification) = {
-    ios.GoalAlertNotification(
-      message = goalAlert.message,
-      id = goalAlert.id,
-      uri = replaceHost(goalAlert.mapiUrl),
-      uriType = FootballMatch,
-      debug = false
-    )
-  }
-
   private def toElectionAlert(electionAlert: ElectionNotification) = {
     val democratVotes = electionAlert.results.candidates.find(_.name == "Clinton").map(_.electoralVotes).getOrElse(0)
     val republicanVotes = electionAlert.results.candidates.find(_.name == "Trump").map(_.electoralVotes).getOrElse(0)
@@ -104,6 +95,31 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
     )
   }
 
+  private def toMatchStatusAlert(matchStatus: FootballMatchStatusNotification) = {
+    ios.FootballMatchStatusNotification(
+      title = matchStatus.title,
+      body = matchStatus.message,
+      matchStatus = FootballMatchStatusProperties(
+        homeTeamName = matchStatus.homeTeamName,
+        homeTeamId = matchStatus.homeTeamId,
+        homeTeamScore = matchStatus.homeTeamScore,
+        homeTeamText = matchStatus.homeTeamMessage,
+        awayTeamName = matchStatus.awayTeamName,
+        awayTeamId = matchStatus.awayTeamId,
+        awayTeamScore = matchStatus.awayTeamScore,
+        awayTeamText = matchStatus.awayTeamMessage,
+        currentMinute = "",
+        matchStatus = matchStatus.phase,
+        matchId = matchStatus.matchId,
+        mapiUrl = matchStatus.mapiUrl.toString,
+        uri = "",
+        competitionName = matchStatus.competitionName,
+        venue = matchStatus.venue
+      ),
+      sound = matchStatus.importance == Importance.Major
+    )
+  }
+
   case class PlatformUri(uri: String, `type`: PlatformUriType)
 
   private def toPlatformLink(link: Link) = link match {
@@ -112,11 +128,11 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
   }
 
   private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): Option[ios.Notification] = condOpt(np) {
-    case ga: GoalAlertNotification => toGoalAlert(ga)
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
     case el: ElectionNotification => toElectionAlert(el)
     case mi: LiveEventNotification => toLiveEventAlert(mi)
+    case fa: FootballMatchStatusNotification => toMatchStatusAlert(fa)
   }
 
   private def toTags(destination: Destination) = destination match {

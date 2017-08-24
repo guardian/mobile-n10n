@@ -7,7 +7,7 @@ import azure.apns._
 import notification.services.Configuration
 import models.Importance.Major
 import models.Link.Internal
-import models.NotificationType.{ElectionsAlert, LiveEventAlert}
+import models.NotificationType.{ElectionsAlert, LiveEventAlert, FootballMatchStatus}
 import models._
 import models.TopicTypes.{Breaking, LiveNotification, TagSeries}
 import models.elections.{CandidateResults, ElectionResults}
@@ -39,12 +39,6 @@ class iOSNotificationSpec extends Specification with Mockito {
     }
   }
 
-  "A goal alert notification" should {
-    "serialize / deserialize to json" in new GoalAlertNotificationScope {
-      converter.toRawPush(push).map(_.body) should beSome(expected)
-    }
-  }
-
   "An election notification" should {
     "serialize / deserialize to json" in new ElectionNotificationScope {
       converter.toRawPush(push).map(_.body) should beSome(expected)
@@ -53,6 +47,12 @@ class iOSNotificationSpec extends Specification with Mockito {
 
   "A live notification" should {
     "serialize / deserialize to json" in new LiveEventNotificationScope {
+      converter.toRawPush(push).map(_.body) should beSome(expected)
+    }
+  }
+
+  "A match status notification" should {
+    "serialize / deserialize to json" in new MatchStatusNotificationScope {
       converter.toRawPush(push).map(_.body) should beSome(expected)
     }
   }
@@ -350,5 +350,63 @@ class iOSNotificationSpec extends Specification with Mockito {
     )
   }
 
-}
+  trait MatchStatusNotificationScope extends NotificationScope {
+    val notification = models.FootballMatchStatusNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "some-sender",
+      title = "Some live event",
+      message = "normal message",
+      thumbnailUrl = None,
+      awayTeamName = "Burnley",
+      awayTeamScore = 1,
+      awayTeamMessage = "Andre Gray 90 +2:41 Pen",
+      awayTeamId = "70",
+      homeTeamName = "Arsenal",
+      homeTeamScore = 2,
+      homeTeamMessage = "Shkodran Mustafi 59\nAlexis Sanchez 90 +7:14 Pen",
+      homeTeamId = "1006",
+      competitionName = Some("Premier League"),
+      venue = Some("Emirates Stadium"),
+      matchId = "1000",
+      mapiUrl = new URI("http://football.mobile-apps.guardianapis.com/match-info/3955232"),
+      importance = Major,
+      topic = Set.empty,
+      phase = "P",
+      eventId = "1000",
+      debug = false
+    )
 
+    val push = Push(notification, Left(notification.topic))
+
+    val expected = Body(
+      aps = APS(
+        alert = Some(Left(Alert(title = Some("Some live event"), body = Some("normal message")))),
+        category = Some("football-match"),
+        `mutable-content` = Some(1),
+        sound = Some("default")
+      ),
+      customProperties = StandardProperties(
+        t = "football-match-status",
+        notificationType = FootballMatchStatus,
+        footballMatch = Some(FootballMatchStatusProperties(
+          homeTeamName = "Arsenal",
+          homeTeamId = "1006",
+          homeTeamScore = 2,
+          homeTeamText = "Shkodran Mustafi 59\nAlexis Sanchez 90 +7:14 Pen",
+          awayTeamName = "Burnley",
+          awayTeamId = "70",
+          awayTeamScore = 1,
+          awayTeamText = "Andre Gray 90 +2:41 Pen",
+          currentMinute = "",
+          matchStatus = "P",
+          matchId = "1000",
+          mapiUrl = "http://football.mobile-apps.guardianapis.com/match-info/3955232",
+          uri = "",
+          competitionName = Some("Premier League"),
+          venue = Some("Emirates Stadium")
+        ))
+      )
+    )
+  }
+
+}

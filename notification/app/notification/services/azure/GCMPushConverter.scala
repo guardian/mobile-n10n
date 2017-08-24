@@ -36,6 +36,7 @@ class GCMPushConverter(conf: Configuration) extends PushConverter {
     case bn: BreakingNewsNotification => toBreakingNews(bn)
     case el: ElectionNotification => toElectionAlert(el)
     case mi: LiveEventNotification => toLiveEventAlert(mi)
+    case ms: FootballMatchStatusNotification => toMatchStatusAlert(ms)
   }
 
   private[services] def toTags(destination: Destination) = destination match {
@@ -144,6 +145,28 @@ class GCMPushConverter(conf: Configuration) extends PushConverter {
       Keys.Debug -> Some(conf.debug.toString),
       Keys.Title -> Some(innovationAlert.title),
       Keys.Type -> Some(AndroidMessageTypes.SuperbowlEvent)
+    ).flattenValues
+  )
+
+  private def toMatchStatusAlert(matchStatusAlert: FootballMatchStatusNotification) = android.FootballMatchStatusNotification(
+    payload = Map(
+      "type" -> Some(AndroidMessageTypes.FootballMatchAlert),
+      "homeTeamName" -> Some(matchStatusAlert.homeTeamName),
+      "homeTeamId" -> Some(matchStatusAlert.homeTeamId),
+      "homeTeamScore" -> Some(matchStatusAlert.homeTeamScore.toString),
+      "homeTeamText" -> Some(matchStatusAlert.homeTeamMessage),
+      "awayTeamName" -> Some(matchStatusAlert.awayTeamName),
+      "awayTeamId" -> Some(matchStatusAlert.awayTeamId),
+      "awayTeamScore" -> Some(matchStatusAlert.awayTeamScore.toString),
+      "awayTeamText" -> Some(matchStatusAlert.awayTeamMessage),
+      "currentMinute" -> Some(""),
+      "important" -> Some(matchStatusAlert.importance.toString),
+      "matchStatus" -> Some(matchStatusAlert.phase),
+      "matchId" -> Some(matchStatusAlert.matchId),
+      "matchInfoUri" -> Some(matchStatusAlert.mapiUrl.toString),
+      "articleUri" -> None,
+      "competitionName" -> matchStatusAlert.competitionName,
+      "venue" -> matchStatusAlert.venue
     ).flattenValues
   )
 

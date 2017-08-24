@@ -10,7 +10,7 @@ object TargetPlatform {
 
   implicit val jf = JsonUtils.stringFormat(fromString)
 
-  def fromString(s: String): Option[TargetPlatform] = condOpt(s) {  // scalastyle:off cyclomatic.complexity
+  def fromString(s: String): Option[TargetPlatform] = condOpt(s) {
     case "windows" => Windows
     case "apple" => Apple
     case "gcm" => Gcm

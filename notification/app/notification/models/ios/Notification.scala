@@ -5,7 +5,7 @@ import java.util.UUID
 
 import azure.apns._
 import models.{NotificationType, Topic}
-import models.NotificationType.{BreakingNews, Content, ElectionsAlert, GoalAlert, LiveEventAlert}
+import models.NotificationType.{BreakingNews, Content, ElectionsAlert, LiveEventAlert, FootballMatchStatus}
 import notification.services.azure.PlatformUriType
 import utils.MapImplicits._
 
@@ -74,30 +74,6 @@ case class ContentNotification(
   )
 }
 
-case class GoalAlertNotification(
-  `type`: String = MessageTypes.GoalAlert,
-  notificationType: NotificationType = GoalAlert,
-  message: String,
-  id: UUID,
-  uri: URI,
-  uriType: PlatformUriType,
-  debug: Boolean
-) extends Notification {
-  def payload: Body = Body(
-    aps = APS(
-      alert = Some(Right(message)),
-      `content-available` = Some(1),
-      sound = Some("default")
-    ),
-    customProperties = LegacyProperties(Map(
-      Keys.MessageType -> `type`,
-      Keys.NotificationType -> notificationType.value,
-      Keys.Uri -> uri.toString,
-      Keys.UriType -> uriType.toString
-    ))
-  )
-}
-
 case class NewsstandNotification(id: UUID) extends Notification {
   def payload: Body = Body(
     aps = APS(
@@ -157,6 +133,22 @@ case class LiveEventNotification(liveEvent: LiveEventProperties) extends Notific
       t = MessageTypes.LiveEventAlert,
       notificationType = LiveEventAlert,
       liveEvent = Some(liveEvent)
+    )
+  )
+}
+
+case class FootballMatchStatusNotification(title: String, body: String, matchStatus: FootballMatchStatusProperties, sound: Boolean) extends Notification {
+  def payload: Body = Body(
+    aps = APS(
+      alert = Some(Left(Alert(title = Some(title), body = Some(body)))),
+      sound = if (sound) Some("default") else None,
+      category = Some("football-match"),
+      `mutable-content` = Some(1)
+    ),
+    customProperties = StandardProperties(
+      t = MessageTypes.FootballMatchStatus,
+      notificationType = FootballMatchStatus,
+      footballMatch = Some(matchStatus)
     )
   )
 }
