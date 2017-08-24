@@ -41,8 +41,7 @@ trait Controllers {
     wnsNotificationSender,
     gcmNotificationSender,
     apnsNotificationSender,
-    frontendAlerts,
-    apnsEnterpriseNotificationSender
+    frontendAlerts
   )
   lazy val mainController = wire[Main]
 }
@@ -84,11 +83,6 @@ trait AzureHubComponents {
   lazy val newsstandNotificationSender: NewsstandSender = {
     val hubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
     new NewsstandSender(hubClient)
-  }
-
-  lazy val apnsEnterpriseNotificationSender: APNSEnterpriseSender = {
-    val enterpriseHubClient = new NotificationHubClient(appConfig.enterpriseHub, wsClient)
-    new APNSEnterpriseSender(enterpriseHubClient, appConfig, topicSubscriptionsRepository)
   }
 }
 
