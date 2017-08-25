@@ -279,7 +279,8 @@ class AndroidNotificationSpec extends Specification with Mockito {
       competitionName = Some("Premier League"),
       venue = Some("Emirates Stadium"),
       matchId = "1000",
-      mapiUrl = new URI("http://football.mobile-apps.guardianapis.com/match-info/3955232"),
+      matchInfoUri = new URI("https://mobile.guardianapis.com/sport/football/match-info/3955232"),
+      articleUri = Some(new URI("https://mobile.guardianapis.com/items/some-liveblog")),
       importance = Major,
       topic = Set.empty,
       phase = "P",
@@ -303,7 +304,8 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "important" -> "Major",
       "matchStatus" -> "P",
       "matchId" -> "1000",
-      "matchInfoUri" -> "http://football.mobile-apps.guardianapis.com/match-info/3955232",
+      "matchInfoUri" -> "https://mobile.guardianapis.com/sport/football/match-info/3955232",
+      "articleUri" -> "https://mobile.guardianapis.com/items/some-liveblog",
       "competitionName" -> "Premier League",
       "venue" -> "Emirates Stadium"
     )

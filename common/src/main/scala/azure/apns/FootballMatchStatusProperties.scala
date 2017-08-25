@@ -15,6 +15,8 @@ case class FootballMatchStatusProperties(
   matchStatus: String,
   matchId: String,
   mapiUrl: String,
+  matchInfoUri: String,
+  articleUri: Option[String],
   uri: String,
   competitionName: Option[String],
   venue: Option[String]

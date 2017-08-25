@@ -111,7 +111,9 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
         currentMinute = "",
         matchStatus = matchStatus.phase,
         matchId = matchStatus.matchId,
-        mapiUrl = matchStatus.mapiUrl.toString,
+        mapiUrl = matchStatus.matchInfoUri.toString,
+        matchInfoUri = matchStatus.matchInfoUri.toString,
+        articleUri = matchStatus.articleUri.map(_.toString),
         uri = "",
         competitionName = matchStatus.competitionName,
         venue = matchStatus.venue
