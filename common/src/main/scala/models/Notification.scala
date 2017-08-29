@@ -105,7 +105,8 @@ case class FootballMatchStatusNotification(
   competitionName: Option[String],
   venue: Option[String],
   matchId: String,
-  mapiUrl: URI,
+  matchInfoUri: URI,
+  articleUri: Option[URI],
   importance: Importance,
   topic: Set[Topic],
   phase: String,
@@ -138,7 +139,8 @@ object FootballMatchStatusNotification {
         competitionName <- (json \ "competitionName").validateOpt[String]
         venue <- (json \ "venue").validateOpt[String]
         matchId <- (json \ "matchId").validate[String]
-        mapiUrl <- (json \ "mapiUrl").validate[URI]
+        matchInfoUri <- (json \ "matchInfoUri").validate[URI]
+        articleUri <- (json \ "articleUri").validateOpt[URI]
         importance <- (json \ "importance").validate[Importance]
         topic <- (json \ "topic").validate[Set[Topic]]
         matchStatus <- (json \ "matchStatus").validate[String]
@@ -162,7 +164,8 @@ object FootballMatchStatusNotification {
         competitionName,
         venue,
         matchId,
-        mapiUrl,
+        matchInfoUri,
+        articleUri,
         importance,
         topic,
         matchStatus,
@@ -190,7 +193,8 @@ object FootballMatchStatusNotification {
         "competitionName" -> Json.toJson(o.competitionName),
         "venue" -> Json.toJson(o.venue),
         "matchId" -> Json.toJson(o.matchId),
-        "mapiUrl" -> Json.toJson(o.mapiUrl),
+        "matchInfoUri" -> Json.toJson(o.matchInfoUri),
+        "articleUri" -> Json.toJson(o.articleUri),
         "importance" -> Json.toJson(o.importance),
         "topic" -> Json.toJson(o.topic),
         "phase" -> Json.toJson(o.phase),
