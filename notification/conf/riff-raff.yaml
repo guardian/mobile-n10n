@@ -1,5 +1,5 @@
 stacks: [mobile-notifications]
-region: [eu-west-1]
+regions: [eu-west-1]
 deployments:
   mobile-notifications-notification-ami:
     type: ami-cloudformation-parameter
