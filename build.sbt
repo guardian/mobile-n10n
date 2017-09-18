@@ -85,6 +85,10 @@ lazy val notification = project
       "models._"
     ),
     riffRaffPackageType := (packageZipTarball in Universal).value,
+    riffRaffArtifactResources := Seq(
+      (file("notifications/conf/riff-raff.yaml"), "riff-raff.yaml"),
+      (riffRaffPackageType.value -> s"${name.value}/${riffRaffPackageType.value}")
+    ),
     version := "1.0-SNAPSHOT"
   )
 

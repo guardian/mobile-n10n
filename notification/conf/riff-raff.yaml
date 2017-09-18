@@ -1,4 +1,4 @@
-stacks: [mobile]
+stacks: [mobile-notifications]
 regions: [eu-west-1]
 deployments:
   mobile-notifications-notification-ami:
