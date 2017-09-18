@@ -13,5 +13,5 @@ deployments:
     type: autoscaling
     parameters:
       bucket: mobile-notifications-dist
-    dependenies: [mobile-notifications-notification-ami]
+    dependencies: [mobile-notifications-notification-ami]
 
