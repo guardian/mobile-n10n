@@ -3,7 +3,7 @@ regions: [eu-west-1]
 deployments:
   mobile-notifications-notification-ami:
     type: ami-cloudformation-parameter
-    app: mobile-notifications-notification
+    app: notification
     parameters:
       amiTags:
         Java: "8"
