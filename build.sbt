@@ -1,7 +1,5 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 
-addCommandAlias("dist", ";riffRaffArtifact")
-
 val standardSettings = Seq[Setting[_]](
 
   updateOptions := updateOptions.value.withCachedResolution(true),

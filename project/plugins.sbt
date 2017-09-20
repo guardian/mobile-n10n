@@ -2,7 +2,7 @@ resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releas
 
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.3")
 
-addSbtPlugin("com.gu" % "sbt-riffraff-artifact" % "0.8.4")
+addSbtPlugin("com.gu" % "sbt-riffraff-artifact" % "0.9.8")
 
 addSbtPlugin("com.localytics" % "sbt-dynamodb" % "1.5.5")
 

@@ -1,0 +1,17 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+deployments:
+  backup-ami:
+    type: ami-cloudformation-parameter
+    app: backup
+    parameters:
+      amiTags:
+        Java: "8"
+        OS_Version: Ubuntu
+        Stack: mobile
+  backup:
+    type: autoscaling
+    parameters:
+      bucket: mobile-notifications-dist
+    dependencies: [backup-ami]
+
