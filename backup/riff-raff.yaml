@@ -1,8 +1,8 @@
 stacks: [mobile-notifications]
 regions: [eu-west-1]
 deployments:
-  backup-ami:
-    type: ami-cloudformation-parameter
+  backup-cfn:
+    type: cloud-formation
     app: backup
     parameters:
       amiTags:
@@ -13,5 +13,5 @@ deployments:
     type: autoscaling
     parameters:
       bucket: mobile-notifications-dist
-    dependencies: [backup-ami]
+    dependencies: [backup-cfn]
 
