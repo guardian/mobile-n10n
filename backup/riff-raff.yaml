@@ -1,17 +1,16 @@
 stacks: [mobile-notifications]
 regions: [eu-west-1]
 deployments:
-  backup-cfn:
-    type: cloud-formation
+  backup-ami:
+    type: ami-cloudformation-parameter
     app: backup
     parameters:
       amiTags:
-        Java: "8"
-        OS_Version: Ubuntu
-        Stack: mobile
+        Recipe: xenial-mobile
+        AmigoStage: PROD
   backup:
     type: autoscaling
     parameters:
       bucket: mobile-notifications-dist
-    dependencies: [backup-cfn]
+    dependencies: [backup-ami]
 
