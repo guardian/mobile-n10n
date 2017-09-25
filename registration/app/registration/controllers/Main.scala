@@ -31,7 +31,6 @@ import scala.util.{Success, Try}
 final class Main(
   registrarProvider: RegistrarProvider,
   topicValidator: TopicValidator,
-  legacyClient: LegacyRegistrationClient,
   legacyRegistrationConverter: LegacyRegistrationConverter,
   legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter,
   config: Configuration)
@@ -83,7 +82,6 @@ final class Main(
       registration <- XorT.fromXor[Future](converter.toRegistration(legacyRegistration))
       registrationResponse <- XorT(registerCommon(registration.deviceId, registration))
     } yield {
-      unregisterFromLegacy(registration)
       converter.fromResponse(legacyRegistration, registrationResponse)
     }
 
@@ -144,13 +142,6 @@ final class Main(
       } yield result
       Ok(Json.toJson(allResults))
     }
-  }
-
-  private def unregisterFromLegacy(registration: Registration) = legacyClient.unregister(registration.udid).foreach {
-    case Xor.Right(_) =>
-      logger.debug(s"Unregistered ${registration.udid} from legacy notifications")
-    case Xor.Left(error) =>
-      logger.error(s"Failed to unregistered ${registration.udid} from legacy notifications: $error")
   }
 
   private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[NotificationsError Xor RegistrationResponse] = {

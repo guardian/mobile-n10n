@@ -34,18 +34,6 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       contentAsString(result) must /("topics") /# 0 /("name" -> "science")
     }
 
-    "accepts legacy ios registration and unregisters from pushy using uppercase uuid" in new RegistrationsContext {
-      val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationJson)))
-      status(result) must equalTo(OK)
-      eventually(there was one(wsClient).url("https://localhost/device/registrations/gia:0E980097-59FD-4047-B609-366C6D5BB1B3"))
-    }
-
-    "accepts legacy android registration and unregisters from pushy" in new RegistrationsContext {
-      val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyAndroidRegistrationJson)))
-      status(result) must equalTo(OK)
-      eventually(there was one(wsClient).url("https://localhost/device/registrations/0e980097-59fd-4047-b609-366c6d5bb1b3"))
-    }
-
     "return legacy formatted response for legacy registration" in new RegistrationsContext {
       val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationJson)))
 

@@ -8,12 +8,12 @@ import models._
 import models.pagination.Paginated
 import play.api.ApplicationLoader.Context
 import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
-import play.api.libs.ws.{WSClient}
+import play.api.libs.ws.WSClient
 import providers.ProviderError
 import registration.AppComponents
 import registration.services.azure.UdidNotFound
 import registration.services.topic.{TopicValidator, TopicValidatorError}
-import registration.services.{LegacyRegistrationClient, _}
+import registration.services._
 import cats.implicits._
 import scala.concurrent.duration._
 
@@ -121,14 +121,6 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     override def withAllRegistrars[T](fn: (NotificationRegistrar) => T): List[T] = List(fn(fakeNotificationRegistrar))
   }
 
-  lazy val fakeLegacyRegistrationClient = {
-    val conf = new Configuration {
-      override lazy val legacyNotficationsEndpoint = "https://localhost"
-    }
-
-    new LegacyRegistrationClient(wsClient, conf)(scala.concurrent.ExecutionContext.global)
-  }
-
   override def configureComponents(context: Context): BuiltInComponents = {
     new BuiltInComponentsFromContext(context) with AppComponents {
       override lazy val topicValidator = fakeTopicValidator
@@ -136,7 +128,6 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       override lazy val appConfig = new Configuration {
         override lazy val defaultTimeout = 1.seconds
       }
-      override lazy val legacyRegistrationClient = fakeLegacyRegistrationClient
     }
   }
 }
