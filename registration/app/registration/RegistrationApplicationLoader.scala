@@ -152,7 +152,6 @@ trait LegacyComponents {
   self: AppConfiguration
     with AhcWSComponents
     with ExecutionEnv =>
-  lazy val legacyRegistrationClient = wire[LegacyRegistrationClient]
   lazy val legacyRegistrationConverter = wire[LegacyRegistrationConverter]
   lazy val legacyNewsstandRegistrationConverter = wire[LegacyNewsstandRegistrationConverter]
 }
