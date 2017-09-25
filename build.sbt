@@ -13,6 +13,7 @@ val standardSettings = Seq[Setting[_]](
   riffRaffArtifactPublishPath := name.value
 )
 
+//Common project
 lazy val common = project
   .settings(LocalDynamoDB.settings)
   .settings(standardSettings: _*)
