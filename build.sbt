@@ -1,4 +1,5 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
+import com.typesafe.sbt.packager.archetypes.ServerLoader.Systemd
 
 val projectVersion = "1.0-latest"
 
@@ -56,6 +57,7 @@ lazy val backup = project
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
     version := projectVersion
   )
 
@@ -73,6 +75,7 @@ lazy val registration = project
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
     version := projectVersion
   )
 
@@ -89,6 +92,7 @@ lazy val notification = project
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
     version := projectVersion
   )
 
@@ -106,6 +110,7 @@ lazy val report = project
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
     version := projectVersion
   )
 
