@@ -1,5 +1,7 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 
+val projectVersion = "1.0-latest"
+
 val standardSettings = Seq[Setting[_]](
 
   updateOptions := updateOptions.value.withCachedResolution(true),
@@ -45,20 +47,20 @@ lazy val common = project
 
 lazy val backup = project
   .dependsOn(common)
-  .enablePlugins(RiffRaffArtifact, JavaAppPackaging)
+  .enablePlugins(RiffRaffArtifact, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-logback" % "2.5.3",
       "com.microsoft.azure" % "azure-storage" % "3.1.0"
     ),
-    riffRaffPackageType := (packageZipTarball in Universal).value,
-    version := "1.0-SNAPSHOT"
+    riffRaffPackageType := (packageBin in Debian).value,
+    version := projectVersion
   )
 
 lazy val registration = project
   .dependsOn(common % "test->test;compile->compile")
-  .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
+  .enablePlugins(PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
@@ -68,13 +70,13 @@ lazy val registration = project
       "models._",
       "models.pagination._"
     ),
-    riffRaffPackageType := (packageZipTarball in Universal).value,
-    version := "1.0-SNAPSHOT"
+    riffRaffPackageType := (packageBin in Debian).value,
+    version := projectVersion
   )
 
 lazy val notification = project
   .dependsOn(common)
-  .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
+  .enablePlugins(PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
@@ -83,13 +85,13 @@ lazy val notification = project
       "binders.pathbinders._",
       "models._"
     ),
-    riffRaffPackageType := (packageZipTarball in Universal).value,
-    version := "1.0-SNAPSHOT"
+    riffRaffPackageType := (packageBin in Debian).value,
+    version := projectVersion
   )
 
 lazy val report = project
   .dependsOn(common % "test->test;compile->compile")
-  .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
+  .enablePlugins(PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
@@ -99,8 +101,8 @@ lazy val report = project
       "org.joda.time.DateTime",
       "models._"
     ),
-    riffRaffPackageType := (packageZipTarball in Universal).value,
-    version := "1.0-SNAPSHOT"
+    riffRaffPackageType := (packageBin in Debian).value,
+    version := projectVersion
   )
 
 lazy val root = (project in file(".")).
