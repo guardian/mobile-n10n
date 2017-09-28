@@ -55,6 +55,7 @@ lazy val backup = project
       "com.microsoft.azure" % "azure-storage" % "3.1.0"
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    packageName in Debian := name.value,
     version := projectVersion
   )
 
@@ -71,6 +72,7 @@ lazy val registration = project
       "models.pagination._"
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    packageName in Debian := name.value,
     version := projectVersion
   )
 
@@ -86,6 +88,7 @@ lazy val notification = project
       "models._"
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    packageName in Debian := name.value,
     version := projectVersion
   )
 
@@ -102,6 +105,7 @@ lazy val report = project
       "models._"
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    packageName in Debian := name.value,
     version := projectVersion
   )
 
