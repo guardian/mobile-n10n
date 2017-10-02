@@ -2,8 +2,10 @@ package report
 
 import _root_.controllers.Assets
 import azure.NotificationHubClient
+import com.gu.AppIdentity
+import com.gu.conf.{ConfigurationLoader, S3ConfigurationLocation}
 import play.api.routing.Router
-import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
+import play.api._
 import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -17,6 +19,16 @@ import scala.concurrent.ExecutionContext
 class ReportApplicationLoader extends ApplicationLoader {
   override def load(context: Context): Application = {
     LoggerConfigurator(context.environment.classLoader) foreach { _.configure(context.environment) }
+    val identity = AppIdentity.whoAmI(defaultAppName = "report", defaultStackName = "mobile-notifications")
+    val config = ConfigurationLoader.load(identity) {
+      case AppIdentity(app, stack, stage, _) => S3ConfigurationLocation (
+        bucket = "mobile-notifications-dist",
+        path = s"$stage/$stack/$app.conf"
+
+      )
+    }
+    val loadedConfig = Configuration(config)
+    val newContext = context.copy(initialConfiguration = context.initialConfiguration ++ loadedConfig )
     (new BuiltInComponentsFromContext(context) with AppComponents).application
   }
 }

@@ -23,7 +23,8 @@ lazy val common = project
   .settings(
     resolvers ++= Seq(
       "Guardian GitHub Releases" at "http://guardian.github.com/maven/repo-releases",
-      "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
+      "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots",
+      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms"
     ),
     libraryDependencies ++= Seq(
       json,
@@ -36,6 +37,7 @@ lazy val common = project
       "io.spray" %% "spray-caching" % "1.3.3",
       "com.typesafe.play" %% "play-logback" % "2.5.3",
       "com.gu" %% "pa-client" % "6.0.2",
+      "com.gu" %% "simple-s3-configuration" % "1.0",
       "org.specs2" %% "specs2-core" % "3.8.5" % "test",
       "org.specs2" %% "specs2-cats" % "3.8.5" % "test"
     ),
