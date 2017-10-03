@@ -5,6 +5,8 @@ import java.net.URI
 import _root_.controllers.Assets
 import akka.actor.ActorSystem
 import azure.{NotificationHubClient, NotificationHubConnection}
+import com.gu.AppIdentity
+import com.gu.conf.{ConfigurationLoader, S3ConfigurationLocation}
 import com.softwaremill.macwire._
 import notification.controllers.Main
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
@@ -12,6 +14,7 @@ import notification.services._
 import notification.services.azure._
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
+import play.api.{Configuration => PlayConfiguration}
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.ApplicationLoader.Context
 import router.Routes
@@ -22,7 +25,16 @@ import scala.concurrent.ExecutionContext
 class NotificationApplicationLoader extends ApplicationLoader {
   override def load(context: Context): Application = {
     LoggerConfigurator(context.environment.classLoader) foreach { _.configure(context.environment) }
-    (new BuiltInComponentsFromContext(context) with AppComponents).application
+    val identity = AppIdentity.whoAmI(defaultAppName = "notification", defaultStackName = "mobile-notification")
+    val config = ConfigurationLoader.load(identity) {
+      case AppIdentity(app, stack, stage, _) => S3ConfigurationLocation (
+        bucket = "mobile-notifications-dist",
+        path = s"$stage/$stage/$app.conf"
+      )
+    }
+    val loadedConfig = PlayConfiguration(config)
+    val newContext = context.copy( initialConfiguration = context.initialConfiguration ++ loadedConfig )
+    (new BuiltInComponentsFromContext(newContext) with AppComponents).application
   }
 }
 

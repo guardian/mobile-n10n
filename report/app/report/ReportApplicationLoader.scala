@@ -24,7 +24,6 @@ class ReportApplicationLoader extends ApplicationLoader {
       case AppIdentity(app, stack, stage, _) => S3ConfigurationLocation (
         bucket = "mobile-notifications-dist",
         path = s"$stage/$stack/$app.conf"
-
       )
     }
     val loadedConfig = Configuration(config)
