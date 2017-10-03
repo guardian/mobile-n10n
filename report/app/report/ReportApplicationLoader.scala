@@ -29,7 +29,7 @@ class ReportApplicationLoader extends ApplicationLoader {
     }
     val loadedConfig = Configuration(config)
     val newContext = context.copy(initialConfiguration = context.initialConfiguration ++ loadedConfig )
-    (new BuiltInComponentsFromContext(context) with AppComponents).application
+    (new BuiltInComponentsFromContext(newContext) with AppComponents).application
   }
 }
 
