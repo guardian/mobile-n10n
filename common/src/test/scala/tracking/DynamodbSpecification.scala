@@ -2,10 +2,13 @@ package tracking
 
 import aws.AsyncDynamo
 import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider, AWSCredentialsProviderChain}
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient
+import com.amazonaws.client.builder.AwsAsyncClientBuilder
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsyncClient, AmazonDynamoDBAsyncClientBuilder}
 import com.amazonaws.services.dynamodbv2.model.{CreateTableRequest, DeleteTableRequest}
 import org.specs2.mutable.Specification
-import org.specs2.specification.{Scope, BeforeAfterAll}
+import org.specs2.specification.{BeforeAfterAll, Scope}
 
 trait DynamodbSpecification extends Specification with BeforeAfterAll {
 
@@ -36,8 +39,12 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll {
       }
     })
 
-    val client = new AmazonDynamoDBAsyncClient(chain)
-    client.setEndpoint(TestEndpoint)
+    //AmazonDynamoDBAsyncClientBuilder
+    val client = AmazonDynamoDBAsyncClientBuilder.standard()
+      .withCredentials(chain)
+      .withEndpointConfiguration( new EndpointConfiguration(TestEndpoint, Regions.EU_WEST_1.getName) )
+      .build
+
     client
   }
 

@@ -62,7 +62,7 @@ trait ReportRepository {
   import aws.AsyncDynamo
 
   lazy val notificationReportRepository: SentNotificationReportRepository =
-    new DynamoNotificationReportRepository(AsyncDynamo(region = EU_WEST_1), appConfig.dynamoReportsTableName)
+    new DynamoNotificationReportRepository(AsyncDynamo(regions = EU_WEST_1), appConfig.dynamoReportsTableName)
 }
 
 trait ReportEnricher {
