@@ -29,7 +29,7 @@ class NotificationApplicationLoader extends ApplicationLoader {
     val config = ConfigurationLoader.load(identity) {
       case AppIdentity(app, stack, stage, _) => S3ConfigurationLocation (
         bucket = "mobile-notifications-dist",
-        path = s"$stage/$stage/$app.conf"
+        path = s"$stage/$stack/$app.conf"
       )
     }
     val loadedConfig = PlayConfiguration(config)
