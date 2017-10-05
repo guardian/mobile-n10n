@@ -27,7 +27,7 @@ class NotificationApplicationLoader extends ApplicationLoader {
     LoggerConfigurator(context.environment.classLoader) foreach { _.configure(context.environment) }
     val identity = AppIdentity.whoAmI(defaultAppName = "notification", defaultStackName = "mobile-notification")
     val config = ConfigurationLoader.load(identity) {
-      case AppIdentity(app, stack, stage, _) => S3ConfigurationLocation (
+      case AppIdentity(app, stack, stage, _) if (stage != "DEV") =>  S3ConfigurationLocation (
         bucket = "mobile-notifications-dist",
         path = s"$stage/$stack/$app.conf"
       )
