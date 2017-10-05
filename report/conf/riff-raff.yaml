@@ -6,8 +6,9 @@ deployments:
     app: report
     parameters:
       amiTags:
-        Recipe: xenial-mobile
-        AmigoStage: PROD
+        Java: "8"
+        OS_Version: Ubuntu
+        Stack: mobile
   report:
     type: autoscaling
     parameters:

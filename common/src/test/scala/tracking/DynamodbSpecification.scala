@@ -8,7 +8,7 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsyncClient, AmazonDynamoDBAsyncClientBuilder}
 import com.amazonaws.services.dynamodbv2.model.{CreateTableRequest, DeleteTableRequest}
 import org.specs2.mutable.Specification
-import org.specs2.specification.{BeforeAfterAll, Scope}
+import org.specs2.specification.{Scope, BeforeAfterAll}
 
 trait DynamodbSpecification extends Specification with BeforeAfterAll {
 
@@ -39,7 +39,6 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll {
       }
     })
 
-    //AmazonDynamoDBAsyncClientBuilder
     val client = AmazonDynamoDBAsyncClientBuilder.standard()
       .withCredentials(chain)
       .withEndpointConfiguration( new EndpointConfiguration(TestEndpoint, Regions.EU_WEST_1.getName) )
