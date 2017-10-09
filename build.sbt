@@ -1,4 +1,7 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
+import com.typesafe.sbt.packager.archetypes.ServerLoader.Systemd
+
+val projectVersion = "1.0-latest"
 
 val standardSettings = Seq[Setting[_]](
 
@@ -13,13 +16,15 @@ val standardSettings = Seq[Setting[_]](
   riffRaffArtifactPublishPath := name.value
 )
 
+//Common project
 lazy val common = project
   .settings(LocalDynamoDB.settings)
   .settings(standardSettings: _*)
   .settings(
     resolvers ++= Seq(
       "Guardian GitHub Releases" at "http://guardian.github.com/maven/repo-releases",
-      "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots"
+      "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots",
+      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms"
     ),
     libraryDependencies ++= Seq(
       json,
@@ -27,11 +32,12 @@ lazy val common = project
       "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
       "org.typelevel" %% "cats" % "0.7.0",
       "joda-time" % "joda-time" % "2.8.2",
-      "com.amazonaws" % "aws-java-sdk" % "1.9.31",
+      "com.amazonaws" % "aws-java-sdk" % "1.11.205",
       "com.gu" %% "configuration" % "4.1",
       "io.spray" %% "spray-caching" % "1.3.3",
       "com.typesafe.play" %% "play-logback" % "2.5.3",
       "com.gu" %% "pa-client" % "6.0.2",
+      "com.gu" %% "simple-s3-configuration" % "1.0",
       "org.specs2" %% "specs2-core" % "3.8.5" % "test",
       "org.specs2" %% "specs2-cats" % "3.8.5" % "test"
     ),
@@ -57,7 +63,7 @@ lazy val backup = project
 
 lazy val registration = project
   .dependsOn(common % "test->test;compile->compile")
-  .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
+  .enablePlugins(PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
@@ -67,13 +73,15 @@ lazy val registration = project
       "models._",
       "models.pagination._"
     ),
-    riffRaffPackageType := (packageZipTarball in Universal).value,
-    version := "1.0-SNAPSHOT"
+    riffRaffPackageType := (packageBin in Debian).value,
+    packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
+    version := projectVersion
   )
 
 lazy val notification = project
   .dependsOn(common)
-  .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
+  .enablePlugins(PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
@@ -82,13 +90,15 @@ lazy val notification = project
       "binders.pathbinders._",
       "models._"
     ),
-    riffRaffPackageType := (packageZipTarball in Universal).value,
-    version := "1.0-SNAPSHOT"
+    riffRaffPackageType := (packageBin in Debian).value,
+    packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
+    version := projectVersion
   )
 
 lazy val report = project
   .dependsOn(common % "test->test;compile->compile")
-  .enablePlugins(PlayScala, RiffRaffArtifact, JavaAppPackaging)
+  .enablePlugins(PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
@@ -98,8 +108,10 @@ lazy val report = project
       "org.joda.time.DateTime",
       "models._"
     ),
-    riffRaffPackageType := (packageZipTarball in Universal).value,
-    version := "1.0-SNAPSHOT"
+    riffRaffPackageType := (packageBin in Debian).value,
+    packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
+    version := projectVersion
   )
 
 lazy val root = (project in file(".")).

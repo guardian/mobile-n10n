@@ -6,9 +6,8 @@ deployments:
     app: notification
     parameters:
       amiTags:
-        Java: "8"
-        OS_Version: Ubuntu
-        Stack: mobile
+        Recipe: xenial-mobile
+        AmigoStage: PROD
   notification:
     type: autoscaling
     parameters:

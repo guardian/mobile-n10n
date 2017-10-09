@@ -6,11 +6,14 @@ import auditor.{AuditorGroup, FootballMatchAuditor, LiveblogAuditor, TimeExpirin
 import azure.NotificationHubClient
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
+import play.api.{Configuration => PlayConfiguration}
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import _root_.models.Topic
 import _root_.models.TopicTypes.ElectionResults
+import com.gu.AppIdentity
+import com.gu.conf.{ConfigurationLoader, S3ConfigurationLocation}
 import org.joda.time.DateTime
 import registration.controllers.Main
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
@@ -26,7 +29,16 @@ import router.Routes
 class RegistrationApplicationLoader extends ApplicationLoader {
   override def load(context: Context): Application = {
     LoggerConfigurator(context.environment.classLoader) foreach { _.configure(context.environment) }
-    (new BuiltInComponentsFromContext(context) with AppComponents).application
+    val identity = AppIdentity.whoAmI(defaultAppName = "registration", defaultStackName = "mobile-notifications")
+    val config = ConfigurationLoader.load(identity){
+      case AppIdentity(app, stack, stage, _) if (stage != "DEV") => S3ConfigurationLocation (
+        bucket = "mobile-notifications-dist",
+        path = s"$stage/$stack/$app.conf"
+      )
+    }
+    val loadedConfig = PlayConfiguration(config)
+    val newContext = context.copy( initialConfiguration = context.initialConfiguration ++ loadedConfig)
+    (new BuiltInComponentsFromContext(newContext) with AppComponents).application
   }
 }
 

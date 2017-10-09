@@ -2,7 +2,8 @@ package aws
 
 import com.amazonaws.auth.{AWSCredentialsProvider, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient
+import com.amazonaws.regions.Regions.EU_WEST_1
+import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.amazonaws.services.dynamodbv2.model._
 
 import scala.concurrent.Future
@@ -24,13 +25,17 @@ object AsyncDynamo {
     .withComparisonOperator(ComparisonOperator.BETWEEN)
     .withAttributeValueList(new AttributeValue(a), new AttributeValue(b))
 
-  def apply(region: Regions, credentialsProvider: AWSCredentialsProvider = new DefaultAWSCredentialsProviderChain): AsyncDynamo = {
-    val dynamoClient: AmazonDynamoDBAsyncClient = new AmazonDynamoDBAsyncClient(credentialsProvider).withRegion(region)
+  def apply(regions: Regions, credentialsProvider: AWSCredentialsProvider = new DefaultAWSCredentialsProviderChain): AsyncDynamo = {
+    val dynamoClient: AmazonDynamoDBAsync = AmazonDynamoDBAsyncClientBuilder.standard()
+      .withCredentials(credentialsProvider)
+      .withRegion(regions.getName)
+      .build()
+
     new AsyncDynamo(dynamoClient)
   }
 }
 
-class AsyncDynamo(client: AmazonDynamoDBAsyncClient) {
+class AsyncDynamo(client: AmazonDynamoDBAsync) {
   import AWSAsync._
   // These work but are red because Intellij is broken
   def putItem(request: PutItemRequest): Future[PutItemResult] = wrapAsyncMethod(client.putItemAsync, request)
