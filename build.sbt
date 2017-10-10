@@ -3,13 +3,6 @@ import com.typesafe.sbt.packager.archetypes.ServerLoader.Systemd
 
 val projectVersion = "1.0-latest"
 
-assemblyMergeStrategy in assembly := {
-  case x =>
-    val oldStrategy = (assemblyMergeStrategy in assembly).value
-    oldStrategy(x)
-}
-
-
 val standardSettings = Seq[Setting[_]](
 
   updateOptions := updateOptions.value.withCachedResolution(true),
@@ -68,7 +61,11 @@ lazy val backup = project
     ),
     assemblyJarName := s"${name.value}.jar",
     riffRaffPackageType := assembly.value,
-    version := "1.0-SNAPSHOT"
+    assemblyMergeStrategy in assembly := {
+      case PathList("META-INF", xs @ _ *) => MergeStrategy.discard
+      case x => MergeStrategy.first
+    },
+     version := "1.0-SNAPSHOT"
   )
 
 lazy val registration = project
