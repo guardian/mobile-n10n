@@ -3,6 +3,13 @@ import com.typesafe.sbt.packager.archetypes.ServerLoader.Systemd
 
 val projectVersion = "1.0-latest"
 
+assemblyMergeStrategy in assembly := {
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
+
+
 val standardSettings = Seq[Setting[_]](
 
   updateOptions := updateOptions.value.withCachedResolution(true),
