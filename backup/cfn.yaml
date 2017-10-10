@@ -6,11 +6,11 @@ Parameters:
     Type: String
     Default: mobile-notifications
   App:
-    Description: ApplicationName
+    Description: Application Name
     Type: String
-    Default: mobile-notifications-backup
+    Default: backup
   Stage:
-    Description:
+    Description: Stage Name
     Type: String
     AllowedValues:
       - CODE
@@ -27,7 +27,7 @@ Parameters:
   ConfigurationFileName:
     Description: Name of the file containing the application configuration
     Type: String
-    Default: report.properties
+    Default: mobile-notifications.properties
 Resources:
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -40,7 +40,7 @@ Resources:
               - lambda.amazonaws.com
       Path: /
       Policies:
-        - PolicyName:
+        - PolicyName: logs
           PolicyDocument:
             Statement:
               Effect: Allow
@@ -73,16 +73,16 @@ Resources:
       FunctionName: !Sub ${App}-${Stage}
       Code:
         S3Bucket: !Ref DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/${App}/${App.properties}
+        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.properties
       Environment:
         Variables:
           ConfigurationBucket: !Ref ConfigurationBucket
-          ConfigurationKey: !Sub ${Stage}/${App}/${App}.properties
+          ConfigurationKey: !Sub ${Stage}/${ConfigurationFileName}
           Stage: !Sub ${Stage}
       Description: Lambda to backup notification azure hubs
-      Handler: com.vlag
+      Handler: backup.Lambda.handler
       MemorySize: 384
-      Role: !GetAtt ExecutionRule.getArn
+      Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 60
 
@@ -90,10 +90,10 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Description: Backs up every hour
-      ScheduleExpression: cron(* * * ? * *)
+      ScheduleExpression: cron(* * * * *)
       Targets:
         - Id: BackupLambda
-          Arn: !GetAtt BackupLamda.Arn
+          Arn: !GetAtt BackupLambda.Arn
 
   BackupHourlyEventPermission:
     Type: AWS::Lambda::Permission
