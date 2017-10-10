@@ -6,12 +6,12 @@ deployments:
     parameters:
       bucket: mobile-notifications-dist
       functionNames: [mobile-notifications-backup-]
-      filename: backup.jar
+      fileName: backup.jar
     dependencies: [backup-cfn]
   backup-cfn:
     type: cloud-formation
     app: report
     parameters:
-      prependStackToCloudFormationStrackName: true
-      cloudFormationStackname: report
+      prependStackToCloudFormationStackName: true
+      cloudFormationStackName: report
       templatePath: cfn.yamk
