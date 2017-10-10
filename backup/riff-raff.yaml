@@ -1,16 +1,17 @@
 stacks: [mobile-notifications]
 regions: [eu-west-1]
 deployments:
-  backup-ami:
-    type: ami-cloudformation-parameter
-    app: backup
-    parameters:
-      amiTags:
-        Recipe: xenial-mobile
-        AmigoStage: PROD
   backup:
-    type: autoscaling
+    type: aws-lambda
     parameters:
       bucket: mobile-notifications-dist
-    dependencies: [backup-ami]
-
+      functionNames: [mobile-notifications-backup-]
+      filename: backup.jar
+    dependencies: [backup-cfn]
+  backup-cfn:
+    type: cloud-formation
+    app: report
+    parameters:
+      prependStackToCloudFormationStrackName: true
+      cloudFormationStackname: report
+      templatePath: cfn.yamk
