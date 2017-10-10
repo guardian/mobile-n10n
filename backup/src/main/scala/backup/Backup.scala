@@ -15,7 +15,7 @@ import collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.Xor
 
-class Backup @Inject() (conf: Configuration, ws: WSClient)(implicit ec: ExecutionContext) extends Batch {
+class Backup(conf: Configuration, ws: WSClient)(implicit ec: ExecutionContext) extends Batch {
   val logger = Logger(classOf[Backup])
 
   val batchExecutionDeadline = DateTime.now(DateTimeZone.UTC).plusHours(3)
