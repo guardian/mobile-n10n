@@ -24,7 +24,8 @@ lazy val common = project
     resolvers ++= Seq(
       "Guardian GitHub Releases" at "http://guardian.github.com/maven/repo-releases",
       "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots",
-      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms"
+      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
+      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/frontend"
     ),
     libraryDependencies ++= Seq(
       json,
@@ -63,7 +64,7 @@ lazy val backup = project
     riffRaffPackageType := assembly.value,
     assemblyMergeStrategy in assembly := {
       case PathList("META-INF", xs @ _ *) => MergeStrategy.discard
-      case x => MergeStrategy.first
+      case x => MergeStrategy.last
     },
      version := "1.0-SNAPSHOT"
   )

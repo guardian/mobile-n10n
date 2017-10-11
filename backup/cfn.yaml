@@ -33,11 +33,12 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        - Effect: Allow
-          Action: sts:AssumeRole
-          Principal:
-            Service:
-              - lambda.amazonaws.com
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
       Path: /
       Policies:
         - PolicyName: logs
@@ -73,7 +74,7 @@ Resources:
       FunctionName: !Sub ${App}-${Stage}
       Code:
         S3Bucket: !Ref DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.properties
+        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
       Environment:
         Variables:
           ConfigurationBucket: !Ref ConfigurationBucket
@@ -87,10 +88,10 @@ Resources:
       Timeout: 60
 
   BackupHourlyEvent:
-    Type: AWS::Lambda::Function
+    Type: AWS::Events::Rule
     Properties:
       Description: Backs up every hour
-      ScheduleExpression: cron(* * * * *)
+      ScheduleExpression: cron(* * * * ? *)
       Targets:
         - Id: BackupLambda
           Arn: !GetAtt BackupLambda.Arn
