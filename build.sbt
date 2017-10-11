@@ -1,5 +1,6 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 import com.typesafe.sbt.packager.archetypes.ServerLoader.Systemd
+import com.lightbend.sbt.ProguardKeys
 
 val projectVersion = "1.0-latest"
 
@@ -53,7 +54,7 @@ lazy val common = project
 
 lazy val backup = project
   .dependsOn(common)
-  .enablePlugins(RiffRaffArtifact)
+  .enablePlugins(RiffRaffArtifact, SbtProguard)
   .settings(standardSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
@@ -66,7 +67,11 @@ lazy val backup = project
       case PathList("META-INF", xs @ _ *) => MergeStrategy.discard
       case x => MergeStrategy.last
     },
-     version := "1.0-SNAPSHOT"
+    proguardInputs in Proguard := Seq(baseDirectory.value / "backup" / "target" / s"scala-${scalaVersion.value.dropRight(2)}" / s"${name.value}.jar"),
+    proguardOptions in Proguard :=  Seq("-dontnote", "-dontwarn", "-ignorewarnings"),
+    (proguard in Proguard) <<= (proguard in Proguard).dependsOn(assembly),
+    javaOptions in (Proguard, proguard) := Seq("-Xmx2G"),
+    version := "1.0-SNAPSHOT"
   )
 
 lazy val registration = project
