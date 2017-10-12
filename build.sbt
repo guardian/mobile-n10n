@@ -1,6 +1,5 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 import com.typesafe.sbt.packager.archetypes.ServerLoader.Systemd
-import com.lightbend.sbt.ProguardKeys
 
 val projectVersion = "1.0-latest"
 
@@ -26,7 +25,7 @@ lazy val common = project
       "Guardian GitHub Releases" at "http://guardian.github.com/maven/repo-releases",
       "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots",
       "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
-      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/frontend"
+      "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
     ),
     libraryDependencies ++= Seq(
       json,
@@ -34,7 +33,7 @@ lazy val common = project
       "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
       "org.typelevel" %% "cats" % "0.7.0",
       "joda-time" % "joda-time" % "2.8.2",
-      "com.amazonaws" % "aws-java-sdk" % "1.11.205",
+      //"com.amazonaws" % "aws-java-sdk" % "1.11.205",
       "com.gu" %% "configuration" % "4.1",
       "io.spray" %% "spray-caching" % "1.3.3",
       "com.typesafe.play" %% "play-logback" % "2.5.3",
@@ -54,7 +53,7 @@ lazy val common = project
 
 lazy val backup = project
   .dependsOn(common)
-  .enablePlugins(RiffRaffArtifact, SbtProguard)
+  .enablePlugins(RiffRaffArtifact)
   .settings(standardSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
@@ -67,10 +66,6 @@ lazy val backup = project
       case PathList("META-INF", xs @ _ *) => MergeStrategy.discard
       case x => MergeStrategy.last
     },
-    proguardInputs in Proguard := Seq(baseDirectory.value / "backup" / "target" / s"scala-${scalaVersion.value.dropRight(2)}" / s"${name.value}.jar"),
-    proguardOptions in Proguard :=  Seq("-dontnote", "-dontwarn", "-ignorewarnings"),
-    (proguard in Proguard) <<= (proguard in Proguard).dependsOn(assembly),
-    javaOptions in (Proguard, proguard) := Seq("-Xmx2G"),
     version := "1.0-SNAPSHOT"
   )
 
