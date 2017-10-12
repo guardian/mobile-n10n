@@ -13,5 +13,5 @@ deployments:
     app: report
     parameters:
       prependStackToCloudFormationStackName: true
-      cloudFormationStackName: report
-      templatePath: cfn.yamk
+      cloudFormationStackName: backup
+      templatePath: cfn.yaml
