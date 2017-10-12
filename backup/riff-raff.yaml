@@ -5,7 +5,7 @@ deployments:
     type: aws-lambda
     parameters:
       bucket: mobile-notifications-dist
-      functionNames: [mobile-notifications-backup-]
+      functionNames: [-backup-]
       fileName: backup.jar
     dependencies: [backup-cfn]
   backup-cfn:
