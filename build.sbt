@@ -64,6 +64,7 @@ lazy val backup = project
     riffRaffPackageType := assembly.value,
     assemblyMergeStrategy in assembly := {
       case PathList("META-INF", xs @ _ *) => MergeStrategy.discard
+      case PathList("reference.cong") => MergeStrategy.concat
       case x => MergeStrategy.last
     },
     version := "1.0-SNAPSHOT"

@@ -81,7 +81,7 @@ Resources:
           ConfigurationKey: !Sub ${Stage}/${ConfigurationFileName}
           Stage: !Sub ${Stage}
       Description: Lambda to backup notification azure hubs
-      Handler: backup.Lambda.handler
+      Handler: backup.Lambda::handler
       MemorySize: 384
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
