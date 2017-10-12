@@ -98,8 +98,8 @@ Resources:
   BackupHourlyEvent:
     Type: AWS::Events::Rule
     Properties:
-      Description: Backs up every hour
-      ScheduleExpression: cron(* * * * ? *)
+      Description: Backs up every hour at 3 minutes past the hour
+      ScheduleExpression: cron(0 3 * * *)
       Targets:
         - Id: BackupLambda
           Arn: !GetAtt BackupLambda.Arn
