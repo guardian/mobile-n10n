@@ -67,6 +67,14 @@ Resources:
                 - iam:Get*
                 - iam:List*
               Resource: "*"
+        - PolicyName: s3Config
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub arn:aws:s3:::mobile-notifications-dist/${Stage}/*
+
 
   BackupLambda:
     Type: AWS::Lambda::Function
