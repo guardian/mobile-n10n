@@ -10,7 +10,7 @@ deployments:
     dependencies: [backup-cfn]
   backup-cfn:
     type: cloud-formation
-    app: report
+    app: backup
     parameters:
       prependStackToCloudFormationStackName: true
       cloudFormationStackName: backup
