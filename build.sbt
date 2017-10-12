@@ -65,7 +65,7 @@ lazy val backup = project
     riffRaffArtifactResources += (file(s"${name.value}/cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
     assemblyMergeStrategy in assembly := {
       case PathList("META-INF", xs @ _ *) => MergeStrategy.discard
-      case PathList("reference.cong") => MergeStrategy.concat
+      case PathList("reference.conf") => MergeStrategy.concat
       case x => MergeStrategy.last
     },
     version := "1.0-SNAPSHOT"
