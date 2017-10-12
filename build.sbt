@@ -33,7 +33,6 @@ lazy val common = project
       "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
       "org.typelevel" %% "cats" % "0.7.0",
       "joda-time" % "joda-time" % "2.8.2",
-      //"com.amazonaws" % "aws-java-sdk" % "1.11.205",
       "com.gu" %% "configuration" % "4.1",
       "io.spray" %% "spray-caching" % "1.3.3",
       "com.typesafe.play" %% "play-logback" % "2.5.3",
