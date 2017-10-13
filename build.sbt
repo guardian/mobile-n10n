@@ -24,7 +24,8 @@ lazy val common = project
     resolvers ++= Seq(
       "Guardian GitHub Releases" at "http://guardian.github.com/maven/repo-releases",
       "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots",
-      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms"
+      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
+      "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
     ),
     libraryDependencies ++= Seq(
       json,
@@ -32,12 +33,13 @@ lazy val common = project
       "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
       "org.typelevel" %% "cats" % "0.7.0",
       "joda-time" % "joda-time" % "2.8.2",
-      "com.amazonaws" % "aws-java-sdk" % "1.11.205",
       "com.gu" %% "configuration" % "4.1",
       "io.spray" %% "spray-caching" % "1.3.3",
       "com.typesafe.play" %% "play-logback" % "2.5.3",
       "com.gu" %% "pa-client" % "6.0.2",
       "com.gu" %% "simple-s3-configuration" % "1.0",
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.60",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
       "org.specs2" %% "specs2-core" % "3.8.5" % "test",
       "org.specs2" %% "specs2-cats" % "3.8.5" % "test"
     ),
@@ -50,14 +52,21 @@ lazy val common = project
 
 lazy val backup = project
   .dependsOn(common)
-  .enablePlugins(RiffRaffArtifact, JavaAppPackaging)
+  .enablePlugins(RiffRaffArtifact)
   .settings(standardSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-logback" % "2.5.3",
       "com.microsoft.azure" % "azure-storage" % "3.1.0"
     ),
-    riffRaffPackageType := (packageZipTarball in Universal).value,
+    assemblyJarName := s"${name.value}.jar",
+    riffRaffPackageType := assembly.value,
+    riffRaffArtifactResources += (file(s"${name.value}/cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    assemblyMergeStrategy in assembly := {
+      case PathList("META-INF", xs @ _ *) => MergeStrategy.discard
+      case PathList("reference.conf") => MergeStrategy.concat
+      case x => MergeStrategy.last
+    },
     version := "1.0-SNAPSHOT"
   )
 
