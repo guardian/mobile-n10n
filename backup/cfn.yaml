@@ -14,7 +14,6 @@ Parameters:
     Type: String
     AllowedValues:
       - CODE
-      - QA
       - PROD
   DeployBucket:
     Description: S3 Bucket where RiffRaff uploads artifacts on Deploy

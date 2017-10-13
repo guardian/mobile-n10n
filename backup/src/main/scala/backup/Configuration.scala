@@ -11,7 +11,6 @@ import conf.NotificationConfiguration
 
 import scala.util.Try
 
-@Singleton
 case class Configuration(
   storageConnectionString: String,
   containerName: String,
