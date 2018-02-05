@@ -27,15 +27,6 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       status(response) must equalTo(CREATED)
       pushSent must beSome.which(_.destination must beEqualTo(Left(validTopics)))
     }
-    "send weekend-reading notifications to weekend-round-up topic too" in new MainScope {
-      val weekendReadingTopic = Topic(TagSeries, "membership/series/weekend-reading")
-      val weekendRoundUpTopic = Topic(TagSeries, "membership/series/weekend-round-up")
-      val request = authenticatedRequest.withBody(breakingNewsNotification(Set(weekendReadingTopic)))
-      val response = main.pushTopics()(request)
-
-      status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(Left(Set(weekendReadingTopic, weekendRoundUpTopic))))
-    }
     "refuse a notification with an invalid key" in new MainScope {
       val request = invalidAuthenticatedRequest.withBody(breakingNewsNotification(validTopics))
       val response = main.pushTopics()(request)

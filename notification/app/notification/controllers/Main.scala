@@ -61,17 +61,7 @@ final class Main(
   def pushTopic(topic: Topic): Action[Notification] = pushTopics
 
   def pushTopics: Action[Notification] = AuthenticatedAction.async(BodyJson[Notification]) { request =>
-    // todo: remove once client-side migrates users from weekend-round-up to weekend-reading
-    val topics = {
-      val rawTopics = request.body.topic
-
-      if (rawTopics.contains(weekendReadingTopic)) {
-        rawTopics + weekendRoundUpTopic
-      } else {
-        rawTopics
-      }
-    }
-
+    val topics = request.body.topic
     val MaxTopics = 20
     topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
