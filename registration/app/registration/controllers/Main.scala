@@ -5,7 +5,7 @@ import akka.pattern.after
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
-import binders.querystringbinders.{RegistrationsSelector, RegistrationsByUdidParams, RegistrationsByTopicParams, RegistrationsByDeviceToken}
+import binders.querystringbinders.{RegistrationsByDeviceToken, RegistrationsByTopicParams, RegistrationsByUdidParams, RegistrationsSelector}
 import cats.data.XorT
 import cats.implicits._
 import error.{NotificationsError, RequestError}
@@ -13,7 +13,7 @@ import models._
 import play.api.Logger
 import play.api.libs.json.{Format, Json, Writes}
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
-import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty, BodyParser, BodyParsers, Controller, Request, Result}
+import play.api.mvc._
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
 import registration.services.azure.UdidNotFound
 import registration.services._
@@ -33,9 +33,11 @@ final class Main(
   topicValidator: TopicValidator,
   legacyRegistrationConverter: LegacyRegistrationConverter,
   legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter,
-  config: Configuration)
+  config: Configuration,
+  controllerComponents: ControllerComponents
+ )
   (implicit system: ActorSystem, executionContext: ExecutionContext)
-  extends Controller {
+  extends AbstractController(controllerComponents) {
 
   private val logger = Logger(classOf[Main])
 

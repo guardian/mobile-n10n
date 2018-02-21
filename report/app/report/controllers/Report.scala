@@ -6,7 +6,7 @@ import authentication.AuthenticationSupport
 import models._
 import org.joda.time.DateTime
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, Controller}
+import play.api.mvc._
 import report.services.{Configuration, NotificationReportEnricher}
 import tracking.SentNotificationReportRepository
 
@@ -16,10 +16,11 @@ import cats.implicits._
 
 final class Report(
   configuration: Configuration,
+  controllerComponents: ControllerComponents,
   reportRepository: SentNotificationReportRepository,
   reportEnricher: NotificationReportEnricher)
   (implicit executionContext: ExecutionContext)
-  extends Controller with AuthenticationSupport {
+  extends AbstractController(controllerComponents) with AuthenticationSupport {
 
   val allApiKeys = configuration.apiKeys ++ configuration.electionRestrictedApiKeys ++ configuration.reportsOnlyApiKeys
 

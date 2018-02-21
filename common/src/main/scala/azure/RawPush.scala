@@ -1,10 +1,20 @@
 package azure
 
-import play.api.libs.ws.{WSRequest, WSResponse}
+import akka.stream.scaladsl.JavaFlowSupport
+import akka.util.ByteString
+import play.api.libs.ws.{BodyWritable, InMemoryBody, WSRequest, WSResponse}
+import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.Future
 
-trait RawPush {
+trait RawPush[T] {
+
+  implicit def bodyWritable()(implicit format: Format[T]): BodyWritable[T] = {
+    def trasform(t: T) = {
+      InMemoryBody(ByteString.fromString(Json.toJson(t).toString()))
+    }
+    BodyWritable(trasform, "application/json;charset=utf-8")
+  }
 
   def tags: Option[Tags]
 

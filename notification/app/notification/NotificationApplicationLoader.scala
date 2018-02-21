@@ -2,13 +2,13 @@ package notification
 
 import java.net.URI
 
-import _root_.controllers.Assets
+import _root_.controllers.{Assets, AssetsComponents}
 import akka.actor.ActorSystem
 import azure.{NotificationHubClient, NotificationHubConnection}
 import com.gu.AppIdentity
 import com.gu.conf.{ConfigurationLoader, S3ConfigurationLocation}
 import com.softwaremill.macwire._
-import notification.controllers.Main
+import controllers.Main
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
 import notification.services.azure._
@@ -17,6 +17,7 @@ import play.api.routing.Router
 import play.api.{Configuration => PlayConfiguration}
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.ApplicationLoader.Context
+import play.filters.HttpFiltersComponents
 import router.Routes
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoNotificationReportRepository, DynamoTopicSubscriptionsRepository, TopicSubscriptionsRepository}
 
@@ -40,6 +41,8 @@ class NotificationApplicationLoader extends ApplicationLoader {
 
 trait AppComponents extends PlayComponents
   with AhcWSComponents
+  with HttpFiltersComponents
+  with AssetsComponents
   with Controllers
   with AzureHubComponents
   with FrontendAlertsComponents
@@ -62,9 +65,9 @@ trait ConfigurationComponents {
   lazy val appConfig = new Configuration
 }
 
-trait PlayComponents extends BuiltInComponents {
+trait PlayComponents extends BuiltInComponents with AssetsComponents {
   self: Controllers =>
-  lazy val assets: Assets = wire[Assets]
+//  lazy val assets: Assets = wire[Assets]
   lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
 }
