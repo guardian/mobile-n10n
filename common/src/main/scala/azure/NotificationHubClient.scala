@@ -77,7 +77,7 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
       }
   }
 
-  def sendNotification[T](rawPush: RawPush[T]): Future[HubResult[Option[String]]] = {
+  def sendNotification(rawPush: RawPush): Future[HubResult[Option[String]]] = {
     val serviceBusTags = rawPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
     logger.debug(s"Sending Raw Notification: $rawPush")
     rawPush.post(

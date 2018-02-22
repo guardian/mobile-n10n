@@ -15,10 +15,10 @@ object GCMBody {
   implicit val jf = Json.format[GCMBody]
 }
 
-case class GCMRawPush(body: GCMBody, tags: Option[Tags]) extends RawPush[GCMBody] {
+case class GCMRawPush(body: GCMBody, tags: Option[Tags]) extends RawPush {
   override def format: String = "gcm"
 
-  implicit val writer = implicitly(bodyWritable)
+  implicit val writer = implicitly(bodyWritable[GCMBody])
 
   override def post(request: WSRequest): Future[WSResponse] = request.post[GCMBody](body)
 }

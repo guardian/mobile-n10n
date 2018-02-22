@@ -15,6 +15,7 @@ import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import play.filters.HttpFiltersComponents
 import play.filters.hosts.AllowedHostsFilter
+import report.authentication.ReportAuthAction
 import report.controllers.Report
 import report.services.{Configuration, NotificationReportEnricher}
 import router.Routes
@@ -51,6 +52,8 @@ class ReportApplicationComponents(context: Context) extends BuiltInComponentsFro
   override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
 
   lazy val appConfig = new Configuration
+  lazy val authAction = wire[ReportAuthAction]
+
   lazy val reportController = wire[Report]
 
   lazy val notificationReportRepository: SentNotificationReportRepository =

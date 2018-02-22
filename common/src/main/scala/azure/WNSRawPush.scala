@@ -5,10 +5,8 @@ import utils.WriteableImplicits._
 
 import scala.concurrent.Future
 
-case class WNSRawPush(body: String, tags: Option[Tags]) extends RawPush[String] with DefaultBodyWritables {
+case class WNSRawPush(body: String, tags: Option[Tags]) extends RawPush with DefaultBodyWritables {
   override def format: String = "windows"
-
-  //private val writeable = implicitly[Writeable[String]].withContentType("application/octet-stream")
 
   override def extraHeaders: List[(String, String)] = List("X-WNS-Type" -> "wns/raw")
 

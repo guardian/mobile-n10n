@@ -40,9 +40,13 @@ class NotificationHubClientSpec(implicit ee: ExecutionEnv) extends Specification
     </entry>
 
   def withHubClient[T](response: Elem)(block: NotificationHubClient => T): T = {
-    Server.withRouter() {
-      case POST(p"/jobs") => Action { Results.Created(response) }
-    } { implicit port =>
+      Server.withRouterFromComponents() { cs => {
+        case POST(p"/jobs") => cs.defaultActionBuilder {
+          Results.Created(response)
+        }
+      }
+    }
+    { implicit port =>
       val connection = NotificationHubConnection(s"http://localhost:$port", "sharedKeyName", "sharedKey")
       WsTestClient.withClient { client =>
         block(new NotificationHubClient(connection, client))

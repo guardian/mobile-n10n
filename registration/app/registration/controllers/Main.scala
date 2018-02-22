@@ -53,7 +53,7 @@ final class Main(
     )
   }
 
-  def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(BodyJson[Registration]) { request =>
+  def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(parse.json[Registration]) { request =>
     registerCommon(lastKnownDeviceId, request.body).map(processResponse(_))
   }
 
@@ -78,7 +78,7 @@ final class Main(
   def legacyRegister: Action[LegacyRegistration] =
     registerWithConverter(legacyRegistrationConverter)
 
-  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(BodyJson[T]) { request =>
+  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(parse.json[T]) { request =>
     val legacyRegistration = request.body
     val result = for {
       registration <- XorT.fromXor[Future](converter.toRegistration(legacyRegistration))
@@ -207,6 +207,6 @@ final class Main(
   }
 
   private def actionWithTimeout(block: => Future[Result]): Action[AnyContent] =
-    actionWithTimeout(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
+    actionWithTimeout(parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
 
 }

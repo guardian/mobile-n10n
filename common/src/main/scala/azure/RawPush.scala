@@ -7,9 +7,9 @@ import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.Future
 
-trait RawPush[T] {
+trait RawPush {
 
-  implicit def bodyWritable()(implicit format: Format[T]): BodyWritable[T] = {
+  implicit def bodyWritable[T]()(implicit format: Format[T]): BodyWritable[T] = {
     def trasform(t: T) = {
       InMemoryBody(ByteString.fromString(Json.toJson(t).toString()))
     }

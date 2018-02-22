@@ -52,7 +52,7 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   with HttpFiltersComponents
   with AssetsComponents {
 
-  implicit val as: ActorSystem = actorSystem
+  implicit val implicitActorSystem: ActorSystem = actorSystem
 
   override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
 
@@ -66,7 +66,6 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
     batching
   }
   lazy val subscriptionTracker: SubscriptionTracker = wire[SubscriptionTracker]
-
 
   lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
@@ -92,4 +91,5 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
 }
+
 
