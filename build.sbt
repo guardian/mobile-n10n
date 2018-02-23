@@ -15,7 +15,7 @@ val standardSettings = Seq[Setting[_]](
 
   updateOptions := updateOptions.value.withCachedResolution(true),
 
-   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
+  riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   riffRaffManifestBranch := Option(System.getenv("BRANCH_NAME")).getOrElse("unknown_branch"),
   riffRaffBuildIdentifier := Option(System.getenv("BUILD_NUMBER")).getOrElse("DEV"),
   riffRaffManifestVcsUrl  := "git@github.com/guardian/mobile-n10n.git",

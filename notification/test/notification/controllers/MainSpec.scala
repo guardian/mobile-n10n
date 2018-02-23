@@ -2,7 +2,6 @@ package notification.controllers
 
 import models.TopicTypes.{Breaking, TagSeries}
 import java.util.UUID
-
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
 import notification.models.{Push, PushResult}

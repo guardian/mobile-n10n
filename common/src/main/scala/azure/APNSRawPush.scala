@@ -10,6 +10,5 @@ case class APNSRawPush(body: Body, tags: Option[Tags]) extends RawPush {
 
   implicit val writer = implicitly(bodyWritable[Body])
 
-  //TODO push pu
   override def post(request: WSRequest): Future[WSResponse] = request.post[Body](body)//(writeable)
 }

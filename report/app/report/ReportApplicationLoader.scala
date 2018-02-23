@@ -64,7 +64,4 @@ class ReportApplicationComponents(context: Context) extends BuiltInComponentsFro
   lazy val reportEnricher = wire[NotificationReportEnricher]
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
-
 }
-
-

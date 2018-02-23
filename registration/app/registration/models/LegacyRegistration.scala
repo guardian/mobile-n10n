@@ -2,7 +2,6 @@ package registration.models
 
 import play.api.libs.json._
 import play.api.libs.json.JodaReads._
-
 import LegacyJodaFormat._
 import models.UniqueDeviceIdentifier
 

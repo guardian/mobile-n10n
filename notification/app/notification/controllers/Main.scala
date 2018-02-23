@@ -28,10 +28,8 @@ final class Main(
   extends AbstractController(controllerComponents) {
 
   val logger = Logger(classOf[Main])
-
   val weekendReadingTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-reading")
   val weekendRoundUpTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-round-up")
-
 
   def healthCheck = Action {
     Ok("Good")

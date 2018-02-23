@@ -20,7 +20,7 @@ final class Report(
   controllerComponents: ControllerComponents,
   reportRepository: SentNotificationReportRepository,
   reportEnricher: NotificationReportEnricher,
-  authenticatedAction: AuthAction               )
+  authAction: AuthAction )
   (implicit executionContext: ExecutionContext)
   extends AbstractController(controllerComponents)  {
 
@@ -29,7 +29,7 @@ final class Report(
   }
 
   def notifications(notificationType: NotificationType, from: Option[DateTime], until: Option[DateTime]): Action[AnyContent] = {
-    authenticatedAction.async { request =>
+    authAction.async { request =>
 
       reportRepository.getByTypeWithDateRange(
         notificationType = notificationType,
@@ -42,7 +42,7 @@ final class Report(
     }
   }
 
-  def notification(id: UUID): Action[AnyContent] = authenticatedAction.async {
+  def notification(id: UUID): Action[AnyContent] = authAction.async {
     XorT(reportRepository.getByUuid(id)).semiflatMap(reportEnricher.enrich).fold(
       error => InternalServerError(error.message),
       result => Ok(Json.toJson(result))

@@ -91,5 +91,3 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
 }
-
-
