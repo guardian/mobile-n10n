@@ -10,5 +10,5 @@ case class APNSRawPush(body: Body, tags: Option[Tags]) extends RawPush {
 
   implicit val writer = implicitly(bodyWritable[Body])
 
-  override def post(request: WSRequest): Future[WSResponse] = request.post[Body](body)//(writeable)
+  override def post(request: WSRequest): Future[WSResponse] = request.post[Body](body)
 }

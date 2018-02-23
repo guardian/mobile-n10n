@@ -10,10 +10,10 @@ import scala.concurrent.Future
 trait RawPush {
 
   implicit def bodyWritable[T]()(implicit format: Format[T]): BodyWritable[T] = {
-    def trasform(t: T) = {
+    def transform(t: T) = {
       InMemoryBody(ByteString.fromString(Json.toJson(t).toString()))
     }
-    BodyWritable(trasform, "application/json;charset=utf-8")
+    BodyWritable(transform, "application/json;charset=utf-8")
   }
 
   def tags: Option[Tags]

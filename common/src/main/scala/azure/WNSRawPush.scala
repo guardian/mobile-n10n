@@ -1,11 +1,11 @@
 package azure
-import play.api.http.Writeable
-import play.api.libs.ws.{DefaultBodyWritables, WSRequest, WSResponse}
-import utils.WriteableImplicits._
+import play.api.libs.ws.{WSRequest, WSResponse}
+import play.api.libs.ws.DefaultBodyWritables._
+
 
 import scala.concurrent.Future
 
-case class WNSRawPush(body: String, tags: Option[Tags]) extends RawPush with DefaultBodyWritables {
+case class WNSRawPush(body: String, tags: Option[Tags]) extends RawPush  {
   override def format: String = "windows"
 
   override def extraHeaders: List[(String, String)] = List("X-WNS-Type" -> "wns/raw")
