@@ -38,7 +38,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
           from = interval.getStart,
           to = interval.getEnd
         )
-      } must beEqualTo(reportsInInterval).awaitFor(5 seconds)
+      } must beEqualTo(reportsInInterval.toSet).awaitFor(5 seconds)
     }
   }
 

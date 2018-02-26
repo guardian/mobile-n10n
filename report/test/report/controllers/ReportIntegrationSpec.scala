@@ -17,7 +17,7 @@ import org.specs2.mock.Mockito
 import play.api.ApplicationLoader.Context
 import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
 import play.api.test._
-import report.ReportApplicationComponents
+import report.AppComponents
 import report.services.{Configuration, NotificationReportEnricher}
 import tracking.InMemoryNotificationReportRepository
 import cats.implicits._
@@ -138,7 +138,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
     }
 
     override def configureComponents(context: Context): BuiltInComponents = {
-      new ReportApplicationComponents(context) {
+      new BuiltInComponentsFromContext(context) with AppComponents {
         override lazy val reportEnricher = notificationReportEnricherMock
         override lazy val notificationReportRepository = reportRepositoryMock
         override lazy val appConfig = appConfigMock

@@ -10,13 +10,13 @@ import play.api.ApplicationLoader.Context
 import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
 import play.api.libs.ws.WSClient
 import providers.ProviderError
-import registration.RegistrationApplicationComponents
+import registration.AppComponents
 import registration.services.azure.UdidNotFound
 import registration.services.topic.{TopicValidator, TopicValidatorError}
 import registration.services._
 import cats.implicits._
-
 import scala.concurrent.duration._
+
 import scala.concurrent.Future
 
 trait DelayedRegistrationsBase extends RegistrationsBase {
@@ -122,7 +122,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
   }
 
   override def configureComponents(context: Context): BuiltInComponents = {
-    new RegistrationApplicationComponents(context)  {
+    new BuiltInComponentsFromContext(context) with AppComponents {
       override lazy val topicValidator = fakeTopicValidator
       override lazy val registrarProvider: RegistrarProvider = fakeRegistrarProvider
       override lazy val appConfig = new Configuration {

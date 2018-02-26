@@ -32,11 +32,10 @@ class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with M
     }
 
     "successfully send notification" in new FrontendAlertsScope  {
-      Server.withRouterFromComponents() { cs => {
-        case POST(p"/alert") => cs.defaultActionBuilder {
+      Server.withRouter() {
+        case POST(p"/alert") => Action {
           Results.Created
         }
-      }
       } { implicit port =>
         WsTestClient.withClient { client =>
           val alerts = new FrontendAlerts(config, client)

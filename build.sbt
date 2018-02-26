@@ -1,15 +1,7 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
+import com.typesafe.sbt.packager.archetypes.ServerLoader.Systemd
 
 val projectVersion = "1.0-latest"
-
-scalaVersion in ThisBuild := "2.12.4"
-
-scalacOptions in ThisBuild ++= Seq(
-  "-deprecation",
-  "-Xfatal-warnings",
-  "-feature",
-  "-language:postfixOps",
-  "-language:implicitConversions")
 
 val standardSettings = Seq[Setting[_]](
 
@@ -36,15 +28,14 @@ lazy val common = project
       "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
     ),
     libraryDependencies ++= Seq(
+      json,
       ws,
       "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
       "org.typelevel" %% "cats" % "0.7.0",
       "joda-time" % "joda-time" % "2.8.2",
       "com.gu" %% "configuration" % "4.1",
       "io.spray" %% "spray-caching" % "1.3.3",
-      "com.typesafe.play" %% "play-json" % "2.6.8",
-      "com.typesafe.play" %% "play-json-joda" % "2.6.8",
-      "com.typesafe.play" %% "play-logback" % "2.6.11",
+      "com.typesafe.play" %% "play-logback" % "2.5.3",
       "com.gu" %% "pa-client" % "6.0.2",
       "com.gu" %% "simple-s3-configuration" % "1.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.60",
@@ -81,7 +72,7 @@ lazy val backup = project
 
 lazy val registration = project
   .dependsOn(common % "test->test;compile->compile")
-  .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
+  .enablePlugins(PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
@@ -93,12 +84,13 @@ lazy val registration = project
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
     version := projectVersion
   )
 
 lazy val notification = project
   .dependsOn(common)
-  .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
+  .enablePlugins(PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
@@ -109,12 +101,13 @@ lazy val notification = project
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
     version := projectVersion
   )
 
 lazy val report = project
   .dependsOn(common % "test->test;compile->compile")
-  .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
+  .enablePlugins(PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork in run := true,
@@ -126,6 +119,7 @@ lazy val report = project
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
+    serverLoading in Debian := Systemd,
     version := projectVersion
   )
 
