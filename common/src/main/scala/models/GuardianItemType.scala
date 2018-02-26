@@ -1,12 +1,11 @@
 package models
 
-import play.api.data.validation.ValidationError
-import play.api.libs.json.Json
+import play.api.libs.json._
 
 sealed case class GuardianItemType(mobileAggregatorPrefix: String)
 
 object GuardianItemType {
-  implicit val reads = Json.reads[GuardianItemType].collect(ValidationError("Unrecognised item type")) {
+  implicit val reads = Json.reads[GuardianItemType].collect(JsonValidationError("Unrecognised item type")) {
     case GuardianItemType("section") => GITSection
     case GuardianItemType("latest") => GITTag
     case GuardianItemType("item-trimmed") => GITContent

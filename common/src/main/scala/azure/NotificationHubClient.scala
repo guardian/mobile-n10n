@@ -43,7 +43,7 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
   def create(rawRegistration: NotificationsHubRegistration): Future[HubResult[RegistrationResponse]] = {
     logger.debug(s"Creating new registration: ${rawRegistration.toXml}")
     request(Endpoints.Registrations)
-      .withHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
+      .addHttpHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
       .post(rawRegistration.toXml)
       .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
@@ -54,7 +54,7 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
               ): Future[HubResult[RegistrationResponse]] = {
     logger.debug(s"Updating registration ($registrationId) with ${rawRegistration.toXml}")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
-      .withHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
+      .addHttpHeaders("Content-Type" -> "application/atom+xml;type=entry;charset=utf-8")
       .put(rawRegistration.toXml)
       .map { tryParse[AtomEntry[RegistrationResponse]](Status.OK, Status.CREATED) }
       .map(extractContent)
@@ -63,7 +63,7 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
   def delete(registrationId: NotificationHubRegistrationId): Future[HubResult[Unit]] = {
     logger.debug(s"deleting registration ($registrationId)")
     request(s"${Endpoints.Registrations}${registrationId.registrationId}")
-      .withHeaders(
+      .addHttpHeaders(
         "If-Match" -> "*",
         "Content-Type" -> "application/atom+xml;type=entry;charset=utf-8"
       )
@@ -77,14 +77,14 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
       }
   }
 
-  def sendNotification[T](rawPush: RawPush): Future[HubResult[Option[String]]] = {
+  def sendNotification(rawPush: RawPush): Future[HubResult[Option[String]]] = {
     val serviceBusTags = rawPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
     logger.debug(s"Sending Raw Notification: $rawPush")
     rawPush.post(
       request(Endpoints.Messages)
-        .withHeaders(rawPush.extraHeaders: _*)
-        .withHeaders("ServiceBusNotification-Format" -> rawPush.format)
-        .withHeaders(serviceBusTags: _*)
+        .addHttpHeaders(rawPush.extraHeaders: _*)
+        .addHttpHeaders("ServiceBusNotification-Format" -> rawPush.format)
+        .addHttpHeaders(serviceBusTags: _*)
     ).map {
       case r if r.isSuccess => r.header("Location").right
       case r => XmlParser.parseError(r).left
@@ -96,7 +96,7 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
     val uri = s"$endpoint$path$queryString"
     wsClient
       .url(uri)
-      .withHeaders("Authorization" -> authorizationHeader(uri))
+      .addHttpHeaders("Authorization" -> authorizationHeader(uri))
   }
 
   def registrationsByTag(tag: String, cursor: Option[String] = None): Future[HubResult[Registrations]] = {
@@ -122,7 +122,7 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
 
   def registrationsByChannelUri(channelUri: String): Future[HubResult[List[RegistrationResponse]]] = {
     request(Endpoints.Registrations)
-      .withQueryString("$filter" -> s"ChannelUri eq '$channelUri'")
+      .withQueryStringParameters("$filter" -> s"ChannelUri eq '$channelUri'")
       .get()
       .map { tryParse[AtomFeedResponse[RegistrationResponse]](Status.OK) }
       .map { hubResult => hubResult.map(_.items) }

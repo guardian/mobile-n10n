@@ -22,7 +22,7 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit 
 
   def sendBreakingNewsAlert(alert: NewsAlert): Future[String Xor Unit] =
     wsClient.url(s"${ config.endpoint }/alert")
-    .withHeaders("Content-Type" -> "application/json", "X-Gu-Api-Key" -> config.apiKey)
+    .addHttpHeaders("Content-Type" -> "application/json", "X-Gu-Api-Key" -> config.apiKey)
     .post(Json.toJson(alert))
     .map { response =>
       if (response.status == CREATED)

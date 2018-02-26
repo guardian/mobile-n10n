@@ -1,6 +1,6 @@
 package notification.controllers
 
-import models.TopicTypes.{TagSeries, Breaking}
+import models.TopicTypes.{Breaking, TagSeries}
 import java.util.UUID
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
@@ -16,7 +16,11 @@ import tracking.InMemoryNotificationReportRepository
 
 import scala.concurrent.Future
 import cats.implicits._
+import notification.authentication.NotificationAuthAction
 import notification.services.azure.NewsstandSender
+import play.api.mvc.DefaultControllerComponents
+import play.api.test.Helpers.stubControllerComponents
+
 
 class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito with JsonMatchers with DateTimeFreezed {
   "Sending notification to topics" should {
@@ -165,13 +169,17 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       m
     }
 
+    val controllerComponents = stubControllerComponents()
     val reportRepository = new InMemoryNotificationReportRepository
+    val authAction = new NotificationAuthAction(conf, controllerComponents)
 
     val main = new Main(
       configuration = conf,
       senders = List(windowsNotificationSender, frontendAlerts),
       newsstandSender = newsstandNotificationSender,
-      notificationReportRepository = reportRepository
+    notificationReportRepository = reportRepository,
+      controllerComponents = controllerComponents,
+      authAction = authAction
     )
   }
 

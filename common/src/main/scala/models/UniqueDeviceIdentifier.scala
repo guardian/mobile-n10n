@@ -2,7 +2,6 @@ package models
 
 import java.util.UUID
 
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 
 import scala.util.Try
@@ -18,7 +17,7 @@ object UniqueDeviceIdentifier {
   implicit val readsUserId = new Format[UniqueDeviceIdentifier] {
 
     override def reads(json: JsValue): JsResult[UniqueDeviceIdentifier] = {
-      val invalid = ValidationError(s"User ID is not a valid UUID")
+      val invalid = JsonValidationError(s"User ID is not a valid UUID")
       json.validate[String].map(UniqueDeviceIdentifier.fromString).collect(invalid) {
         case Some(udid) => udid
       }
