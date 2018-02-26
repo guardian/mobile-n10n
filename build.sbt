@@ -47,7 +47,6 @@ lazy val common = project
       "com.gu" %% "pa-client" % "6.0.2",
       "com.gu" %% "simple-configuration-ssm" % "1.4.1",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.60",
-      "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
       "org.specs2" %% "specs2-core" % "3.8.5" % "test",
       "org.specs2" %% "specs2-cats" % "3.8.5" % "test"
     ),
@@ -66,7 +65,8 @@ lazy val backup = project
     fork := true,
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-logback" % "2.5.3",
-      "com.microsoft.azure" % "azure-storage" % "3.1.0"
+      "com.microsoft.azure" % "azure-storage" % "3.1.0",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.1.0"
     ),
     assemblyJarName := s"${name.value}.jar",
     riffRaffPackageType := assembly.value,
