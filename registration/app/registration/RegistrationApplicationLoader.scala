@@ -1,6 +1,6 @@
 package registration
 
-import _root_.controllers.Assets
+import _root_.controllers.{Assets, AssetsComponents}
 import akka.actor.ActorSystem
 import auditor.{AuditorGroup, FootballMatchAuditor, LiveblogAuditor, TimeExpiringAuditor}
 import azure.NotificationHubClient
@@ -12,21 +12,26 @@ import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import _root_.models.Topic
 import _root_.models.TopicTypes.ElectionResults
+import aws.AsyncDynamo
+import com.amazonaws.regions.Regions.EU_WEST_1
 import com.gu.AppIdentity
 import com.gu.conf.{ConfigurationLoader, S3ConfigurationLocation}
 import org.joda.time.DateTime
-import registration.controllers.Main
+import controllers.Main
+import play.api.mvc.EssentialFilter
+import play.filters.HttpFiltersComponents
+import play.filters.hosts.AllowedHostsFilter
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
-import registration.services.azure.{APNSEnterpriseNotifcationRegistrar, APNSNotificationRegistrar,
-GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
+import registration.services.azure.{APNSEnterpriseNotifcationRegistrar, APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
 import registration.services._
+
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
-
-import scala.concurrent.ExecutionContext
-
 import router.Routes
 
 class RegistrationApplicationLoader extends ApplicationLoader {
+
+  def buildComponents(context: Context) : BuiltInComponents = new RegistrationApplicationComponents(context)
+
   override def load(context: Context): Application = {
     LoggerConfigurator(context.environment.classLoader) foreach { _.configure(context.environment) }
     val identity = AppIdentity.whoAmI(defaultAppName = "registration", defaultStackName = "mobile-notifications")
@@ -38,118 +43,40 @@ class RegistrationApplicationLoader extends ApplicationLoader {
     }
     val loadedConfig = PlayConfiguration(config)
     val newContext = context.copy( initialConfiguration = context.initialConfiguration ++ loadedConfig)
-    (new BuiltInComponentsFromContext(newContext) with AppComponents).application
+    buildComponents(newContext).application
   }
 }
 
-trait AppComponents extends Controllers
-  with Registrars
-  with LegacyComponents
-  with WindowsRegistrations
-  with GCMRegistrations
-  with APNSRegistrations
-  with NewsstandRegistrations
-  with NotificationsHubClient
-  with Tracking
-  with TopicValidation
-  with AppConfiguration
-  with PlayComponents
+class RegistrationApplicationComponents(context: Context) extends BuiltInComponentsFromContext(context)
   with AhcWSComponents
-  with ExecutionEnv
+  with HttpFiltersComponents
+  with AssetsComponents {
 
-trait Controllers {
-  self: Registrars
-    with TopicValidation
-    with PlayComponents
-    with AppConfiguration
-    with LegacyComponents
-    with ExecutionEnv =>
-  lazy val mainController = wire[Main]
-}
+  implicit val implicitActorSystem: ActorSystem = actorSystem
 
-trait AppConfiguration {
+  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
+
   lazy val appConfig = new Configuration
-}
 
-trait Registrars {
-  self: WindowsRegistrations
-    with GCMRegistrations
-    with APNSRegistrations
-    with NewsstandRegistrations
-    with ExecutionEnv =>
-  lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
-}
-
-trait GCMRegistrations {
-  self: Tracking
-    with AppConfiguration
-    with NotificationsHubClient
-    with AhcWSComponents
-    with ExecutionEnv =>
-
-  lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = wire[GCMNotificationRegistrar]
-}
-
-trait APNSRegistrations {
-  self: Tracking
-    with AppConfiguration
-    with NotificationsHubClient
-    with AhcWSComponents
-    with ExecutionEnv =>
-
-  lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = wire[APNSNotificationRegistrar]
-}
-
-trait WindowsRegistrations {
-  self: Tracking
-    with AppConfiguration
-    with NotificationsHubClient
-    with AhcWSComponents
-    with ExecutionEnv =>
-
-  lazy val winNotificationRegistrar: WindowsNotificationRegistrar = wire[WindowsNotificationRegistrar]
-}
-
-trait NewsstandRegistrations {
-  self: Tracking
-    with AppConfiguration
-    with AhcWSComponents
-    with ExecutionEnv =>
-
-  lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
-
-  lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
-}
-
-trait NotificationsHubClient {
-  self: AppConfiguration
-    with AhcWSComponents
-    with ExecutionEnv =>
-
-  lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
-}
-
-trait Tracking {
-  self: AppConfiguration
-    with ExecutionEnv =>
-
-  import com.amazonaws.regions.Regions.EU_WEST_1
-  import aws.AsyncDynamo
-
+  lazy val mainController = wire[Main]
   lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
     val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
     val batching = new BatchingTopicSubscriptionsRepository(underlying)
     batching.scheduleFlush(appConfig.dynamoTopicsFlushInterval)
     batching
   }
+  lazy val subscriptionTracker: SubscriptionTracker = wire[SubscriptionTracker]
 
-  lazy val subscriptionTracker = wire[SubscriptionTracker]
-}
+  lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
-trait TopicValidation {
-  self: AppConfiguration
-    with AhcWSComponents
-    with ExecutionEnv =>
+  lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
+  lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker)
+  lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker)
+
+  lazy val winNotificationRegistrar: WindowsNotificationRegistrar = new WindowsNotificationRegistrar(defaultHubClient, subscriptionTracker)
+  lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
+  lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
+
   lazy val auditorGroup: AuditorGroup = {
     AuditorGroup(Set(
       FootballMatchAuditor(new WSPaClient(appConfig.auditorConfiguration.paApiConfig, wsClient)),
@@ -158,25 +85,9 @@ trait TopicValidation {
     ))
   }
   lazy val topicValidator: TopicValidator = wire[AuditorTopicValidator]
-}
-
-trait LegacyComponents {
-  self: AppConfiguration
-    with AhcWSComponents
-    with ExecutionEnv =>
   lazy val legacyRegistrationConverter = wire[LegacyRegistrationConverter]
   lazy val legacyNewsstandRegistrationConverter = wire[LegacyNewsstandRegistrationConverter]
-}
 
-trait PlayComponents extends BuiltInComponents {
-  self: Controllers =>
-  lazy val assets: Assets = wire[Assets]
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
-}
-
-trait ExecutionEnv {
-  self: PlayComponents =>
-  implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
-  implicit lazy val implicitActorSystem: ActorSystem = actorSystem
 }

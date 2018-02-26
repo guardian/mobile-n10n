@@ -5,7 +5,7 @@ import akka.pattern.after
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
-import binders.querystringbinders.{RegistrationsSelector, RegistrationsByUdidParams, RegistrationsByTopicParams, RegistrationsByDeviceToken}
+import binders.querystringbinders.{RegistrationsByDeviceToken, RegistrationsByTopicParams, RegistrationsByUdidParams, RegistrationsSelector}
 import cats.data.XorT
 import cats.implicits._
 import error.{NotificationsError, RequestError}
@@ -13,7 +13,7 @@ import models._
 import play.api.Logger
 import play.api.libs.json.{Format, Json, Writes}
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
-import play.api.mvc.{Action, AnyContent, AnyContentAsEmpty, BodyParser, BodyParsers, Controller, Request, Result}
+import play.api.mvc._
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
 import registration.services.azure.UdidNotFound
 import registration.services._
@@ -33,9 +33,11 @@ final class Main(
   topicValidator: TopicValidator,
   legacyRegistrationConverter: LegacyRegistrationConverter,
   legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter,
-  config: Configuration)
+  config: Configuration,
+  controllerComponents: ControllerComponents
+ )
   (implicit system: ActorSystem, executionContext: ExecutionContext)
-  extends Controller {
+  extends AbstractController(controllerComponents) {
 
   private val logger = Logger(classOf[Main])
 
@@ -51,7 +53,7 @@ final class Main(
     )
   }
 
-  def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(BodyJson[Registration]) { request =>
+  def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(parse.json[Registration]) { request =>
     registerCommon(lastKnownDeviceId, request.body).map(processResponse(_))
   }
 
@@ -76,7 +78,7 @@ final class Main(
   def legacyRegister: Action[LegacyRegistration] =
     registerWithConverter(legacyRegistrationConverter)
 
-  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(BodyJson[T]) { request =>
+  private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(parse.json[T]) { request =>
     val legacyRegistration = request.body
     val result = for {
       registration <- XorT.fromXor[Future](converter.toRegistration(legacyRegistration))
@@ -205,6 +207,6 @@ final class Main(
   }
 
   private def actionWithTimeout(block: => Future[Result]): Action[AnyContent] =
-    actionWithTimeout(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
+    actionWithTimeout(parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
 
 }
