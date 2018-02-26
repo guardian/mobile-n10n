@@ -4,9 +4,6 @@ import cats.data.Xor
 import cats.implicits._
 import org.joda.time.DateTime
 import play.api.libs.json.Json
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
-
 import scala.xml.Elem
 
 case class NotificationDetails(

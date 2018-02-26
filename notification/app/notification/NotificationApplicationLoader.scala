@@ -2,16 +2,13 @@ package notification
 
 import java.net.URI
 
-import _root_.controllers.{Assets, AssetsComponents}
+import _root_.controllers.Assets
 import akka.actor.ActorSystem
-import aws.AsyncDynamo
-import com.amazonaws.regions.Regions.EU_WEST_1
 import azure.{NotificationHubClient, NotificationHubConnection}
 import com.gu.AppIdentity
 import com.gu.conf.{ConfigurationLoader, S3ConfigurationLocation}
 import com.softwaremill.macwire._
-import controllers.Main
-import notification.authentication.NotificationAuthAction
+import notification.controllers.Main
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
 import notification.services.azure._
@@ -20,17 +17,12 @@ import play.api.routing.Router
 import play.api.{Configuration => PlayConfiguration}
 import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
 import play.api.ApplicationLoader.Context
-import play.api.mvc.EssentialFilter
-import play.filters.HttpFiltersComponents
-import play.filters.hosts.AllowedHostsFilter
+import router.Routes
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoNotificationReportRepository, DynamoTopicSubscriptionsRepository, TopicSubscriptionsRepository}
 
-import router.Routes
+import scala.concurrent.ExecutionContext
 
 class NotificationApplicationLoader extends ApplicationLoader {
-
-  def buildComponents(context: Context) = new NotificationApplicationComponents(context)
-
   override def load(context: Context): Application = {
     LoggerConfigurator(context.environment.classLoader) foreach { _.configure(context.environment) }
     val identity = AppIdentity.whoAmI(defaultAppName = "notification", defaultStackName = "mobile-notification")
@@ -42,23 +34,21 @@ class NotificationApplicationLoader extends ApplicationLoader {
     }
     val loadedConfig = PlayConfiguration(config)
     val newContext = context.copy( initialConfiguration = context.initialConfiguration ++ loadedConfig )
-    buildComponents(newContext).application
+    (new BuiltInComponentsFromContext(newContext) with AppComponents).application
   }
 }
 
-class NotificationApplicationComponents(context: Context) extends BuiltInComponentsFromContext(context)
+trait AppComponents extends PlayComponents
   with AhcWSComponents
-  with HttpFiltersComponents
-  with AssetsComponents {
+  with Controllers
+  with AzureHubComponents
+  with FrontendAlertsComponents
+  with ConfigurationComponents
+  with ExecutionEnv
 
-  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
 
-  implicit lazy val implicitActorSystem: ActorSystem = actorSystem
-
-  lazy val appConfig = new Configuration
-
-  lazy val authAction = wire[NotificationAuthAction]
-
+trait Controllers {
+  self: AzureHubComponents with FrontendAlertsComponents with ConfigurationComponents with PlayComponents with ExecutionEnv =>
   lazy val notificationSenders = List(
     wnsNotificationSender,
     gcmNotificationSender,
@@ -66,9 +56,24 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     frontendAlerts
   )
   lazy val mainController = wire[Main]
-  lazy val router: Router = wire[Routes]
+}
 
+trait ConfigurationComponents {
+  lazy val appConfig = new Configuration
+}
+
+trait PlayComponents extends BuiltInComponents {
+  self: Controllers =>
+  lazy val assets: Assets = wire[Assets]
+  lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
+}
+
+trait AzureHubComponents {
+  self: ConfigurationComponents with AhcWSComponents with ExecutionEnv =>
+
+  import com.amazonaws.regions.Regions.EU_WEST_1
+  import aws.AsyncDynamo
 
   lazy val hubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
@@ -86,16 +91,28 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val gcmNotificationSender: GCMSender = wire[GCMSender]
 
   lazy val apnsNotificationSender: APNSSender = wire[APNSSender]
+
   lazy val newsstandNotificationSender: NewsstandSender = {
     val hubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
     new NewsstandSender(hubClient)
   }
+}
+
+
+trait FrontendAlertsComponents {
+  self: ConfigurationComponents with AhcWSComponents with ExecutionEnv =>
 
   lazy val frontendAlerts: NotificationSender = {
     val frontendConfig = FrontendAlertsConfig(new URI(appConfig.frontendNewsAlertEndpoint), appConfig.frontendNewsAlertApiKey)
     new FrontendAlerts(frontendConfig, wsClient)
   }
 
+}
+
+trait ExecutionEnv {
+  self: PlayComponents =>
+  implicit lazy val executionContext: ExecutionContext = actorSystem.dispatcher
+  implicit lazy val implicitActorSystem: ActorSystem = actorSystem
 }
 
 
