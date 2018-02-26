@@ -6,7 +6,6 @@ import org.joda.time.{DateTime, Interval}
 import tracking.Repository.RepositoryResult
 
 import scala.concurrent.Future
-import cats.data.Xor
 import cats.implicits._
 
 class InMemoryNotificationReportRepository extends SentNotificationReportRepository {
@@ -15,17 +14,19 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
 
   override def store(report: NotificationReport): Future[RepositoryResult[Unit]] = {
     db += report
-    Future.successful(().right)
+    Future.successful(Right(()))
   }
 
   override def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
-    Future.successful(Xor.fromOption(db.find(_.id == uuid), RepositoryError("Notification report not found")))
+    Future.successful(Either.fromOption(db.find(_.id == uuid), RepositoryError("Notification report not found")))
   }
 
   override def getByTypeWithDateRange(`type`: NotificationType, from: DateTime, until: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
     val interval = new Interval(from, until)
-    Future.successful(db.filter({report =>
-      report.`type` == `type` && (interval contains report.sentTime)
-    }).toList.right)
+    Future.successful(Right(
+      db.filter({report =>
+        report.`type` == `type` && (interval contains report.sentTime)
+      }).toList
+    ))
   }
 }

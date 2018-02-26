@@ -82,8 +82,8 @@ class BatchingTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extend
 
   trait TestScope extends Scope {
     val underlying = mock[TopicSubscriptionsRepository]
-    underlying.deviceSubscribed(any[Topic], any[Int]).returns(Future.successful(().right))
-    underlying.deviceUnsubscribed(any[String], any[Int]).returns(Future.successful(().right))
+    underlying.deviceSubscribed(any[Topic], any[Int]).returns(Future.successful(Right(())))
+    underlying.deviceUnsubscribed(any[String], any[Int]).returns(Future.successful(Right(())))
     val batching = new BatchingTopicSubscriptionsRepository(underlying)
     val topic1 = Topic(TopicTypes.Breaking, "test1")
     val topic2 = Topic(TopicTypes.Breaking, "test2")

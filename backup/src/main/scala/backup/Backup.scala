@@ -13,7 +13,6 @@ import play.api.Logger
 import collection.JavaConversions._
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.Xor
 
 class Backup(conf: Configuration, ws: WSClient)(implicit ec: ExecutionContext) extends Batch {
   val logger = Logger(classOf[Backup])
@@ -41,10 +40,10 @@ class Backup(conf: Configuration, ws: WSClient)(implicit ec: ExecutionContext) e
 
     val hubClient = new NotificationHubClient(conf.notificationHubConnection, ws)
     hubClient.submitNotificationHubJob(notificationJob).map {
-      case Xor.Right(job) =>
+      case Right(job) =>
         logger.info(s"Job successfully created with id ${job.jobId}")
         logger.debug(s"Job submitted to hub: $job")
-      case Xor.Left(failure: HubFailure) =>
+      case Left(failure: HubFailure) =>
         logger.error(s"Failed submitting job to hub (provider ${failure.providerName}, reason: ${failure.reason})")
     }
   }

@@ -14,8 +14,8 @@ import tracking.SentNotificationReportRepository
 
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.Xor
 import notification.services.azure.NewsstandSender
+import cats.syntax.either._
 
 final class Main(
     configuration: Configuration,
@@ -38,10 +38,10 @@ final class Main(
   def pushNewsstand: Action[AnyContent] = authAction.async {
     val id = UUID.randomUUID()
     newsstandSender.sendNotification(id) map {
-      case Xor.Right(_) =>
+      case Right(_) =>
         logger.info("Newsstand notification sent")
         Created(toJson(PushResult(id)))
-      case Xor.Left(error) =>
+      case Left(error) =>
         logger.error(s"Newsstand notification failed: $error")
         InternalServerError(s"Newsstand notification failed: $error")
     }
@@ -80,19 +80,19 @@ final class Main(
     sendNotifications(push, to = senders) flatMap {
       case (Nil, reports @ _ :: _) =>
         reportPushSent(push.notification, reports) map {
-          case Xor.Right(_) =>
+          case Right(_) =>
             logger.info(s"Notification was sent: $push")
             Created(toJson(PushResult(push.notification.id)))
-          case Xor.Left(error) =>
+          case Left(error) =>
             logger.error(s"Notification ($push) sent but report could not be stored ($error)")
             Created(toJson(PushResult(push.notification.id).withReportingError(error)))
         }
       case (rejected @ _ :: _, reports @ _ :: _) =>
         reportPushSent(push.notification, reports) map {
-          case Xor.Right(_) =>
+          case Right(_) =>
             logger.warn(s"Notification ($push) was rejected by some providers: ($rejected)")
             Created(toJson(PushResult(push.notification.id).withRejected(rejected)))
-          case Xor.Left(error) =>
+          case Left(error) =>
             logger.error(s"Notification ($push) was rejected by some providers and there was error in reporting")
             Created(toJson(PushResult(push.notification.id).withRejected(rejected).withReportingError(error)))
         }
@@ -107,7 +107,7 @@ final class Main(
   private def sendNotifications(push: Push, to: List[NotificationSender]) = {
     val sendResults = senders.map { _.sendNotification(push) }
     sequence(sendResults) map { results =>
-      val rejected = results.flatMap(_.swap.toOption)
+      val rejected = results.flatMap(s => s.swap.toOption)
       val reports = results.flatMap(_.toOption)
       (rejected, reports)
     }

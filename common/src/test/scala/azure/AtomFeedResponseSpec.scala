@@ -3,7 +3,7 @@ package azure
 import NotificationHubClient.HubResult
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import cats.implicits._
+import cats.syntax.either._
 
 import scala.xml.Elem
 
@@ -12,7 +12,7 @@ class AtomFeedResponseSpec extends Specification {
   "The AtomEntry parser" should {
     "parse a valid XML into an entry" in new AtomEntryScope {
       val parsedObject = atomReader.reads(xmlEntry("a value")).map(_.content)
-      parsedObject shouldEqual SomeObject("a value").right
+      parsedObject shouldEqual Right(SomeObject("a value"))
     }
   }
 
@@ -20,7 +20,7 @@ class AtomFeedResponseSpec extends Specification {
     "parse a valid XML into a feed" in new AtomFeedScope {
       val entries = List(xmlEntry("Hello"), xmlEntry("this"), xmlEntry("is"), xmlEntry("Doge"))
       val parsedObject = feedReader.reads(xmlFeed(entries)).map(_.items)
-      parsedObject shouldEqual List(SomeObject("Hello"), SomeObject("this"), SomeObject("is"), SomeObject("Doge")).right
+      parsedObject shouldEqual Right(List(SomeObject("Hello"), SomeObject("this"), SomeObject("is"), SomeObject("Doge")))
     }
   }
 
@@ -28,7 +28,7 @@ class AtomFeedResponseSpec extends Specification {
     case class SomeObject(someValue: String)
 
     implicit val someObjectReader = new XmlReads[SomeObject] {
-      override def reads(xml: Elem): HubResult[SomeObject] = SomeObject(xml \ "someValue" text).right
+      override def reads(xml: Elem): HubResult[SomeObject] = Right(SomeObject(xml \ "someValue" text))
     }
 
     implicit val atomReader = AtomEntry.reader[SomeObject]

@@ -12,7 +12,6 @@ import org.specs2.specification.Scope
 import tracking.TopicSubscriptionsRepository
 
 import scala.concurrent.Future
-import cats.data.Xor
 import cats.implicits._
 
 class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
@@ -21,7 +20,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
   "the notification sender" should {
     "filter out Minor notifications" in new GCMScope {
       override val importance = Minor
-      val expectedReport = senderReport(Senders.AzureNotificationsHub).right
+      val expectedReport = Right(senderReport(Senders.AzureNotificationsHub))
       val result = androidNotificationSender.sendNotification(userPush)
 
       result should beEqualTo(expectedReport).await
@@ -31,14 +30,14 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
     "process a Minor election notification" in new GCMScope {
       val result = androidNotificationSender.sendNotification(electionPush(Minor))
 
-      result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some, sendersId = "fake-id".some).right).await
+      result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(WindowsMobile, 1)), sendersId = Some("fake-id")))).await
       got {
         one(hubClient).sendNotification(pushConverter.toRawPush(electionPush(Minor)).get)
       }
     }
 
     "ignore a Minor election notification if election notifications are disabled" in new GCMScope {
-      val expectedReport = senderReport(Senders.AzureNotificationsHub).right
+      val expectedReport = Right(senderReport(Senders.AzureNotificationsHub))
       configuration.disableElectionNotificationsAndroid returns true
 
       val result = androidNotificationSender.sendNotification(electionPush(Minor))
@@ -51,7 +50,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
       "send two separate with notifications with differently encoded topics when addressed to topic" in new GCMScope {
         val result = androidNotificationSender.sendNotification(topicPush)
 
-        result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 2).some, sendersId = "fake-id".some).right).await
+        result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(WindowsMobile, 2)), sendersId = Some("fake-id")))).await
         got {
           one(hubClient).sendNotification(pushConverter.toRawPush(topicPush).get)
         }
@@ -60,7 +59,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
       "send only one notification when destination is user so that user do not receive the same message twice" in new GCMScope {
         val result = androidNotificationSender.sendNotification(userPush)
 
-        result should beEqualTo(senderReport(Senders.AzureNotificationsHub, platformStats = PlatformStatistics(WindowsMobile, 1).some, sendersId = "fake-id".some).right).await
+        result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(WindowsMobile, 1)), sendersId = Some("fake-id")))).await
         got {
           one(hubClient).sendNotification(pushConverter.toRawPush(userPush).get)
         }
@@ -85,7 +84,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
     configuration.debug returns true
     val hubClient = {
       val client = mock[NotificationHubClient]
-      client.sendNotification(any[GCMRawPush]) returns Future.successful(Some("fake-id").right)
+      client.sendNotification(any[GCMRawPush]) returns Future.successful(Right(Some("fake-id")))
       client
     }
 
@@ -93,7 +92,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
 
     val topicSubscriptionsRepository = {
       val m = mock[TopicSubscriptionsRepository]
-      m.count(any[Topic]) returns Future.successful(1.right)
+      m.count(any[Topic]) returns Future.successful(Right(1))
       m
     }
 

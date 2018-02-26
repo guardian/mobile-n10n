@@ -1,20 +1,20 @@
 package registration.services.topic
 
-import auditor.{Auditor, AuditorGroup, AuditorGroupConfig, ApiConfig}
+import auditor.{ApiConfig, Auditor, AuditorGroup, AuditorGroupConfig}
 import models.{Topic, TopicTypes}
 import models.TopicTypes.{Content, FootballMatch}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import org.specs2.matcher.XorMatchers
+import org.specs2.matcher.EitherMatchers
 import registration.services.Configuration
 
 import scala.concurrent.Future.successful
 import scala.concurrent.ExecutionContext
 import cats.implicits._
 
-class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification with Mockito with XorMatchers {
+class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification with Mockito with EitherMatchers {
   "Auditor Topic Validator" should {
     "return filtered list of topics from both auditors" in new validators {
       val validTopic = Topic(`type` = FootballMatch, name = "invalidFromAuditorA")
@@ -30,7 +30,7 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
 
       val validTopics = topicValidator.removeInvalid(topics)
 
-      validTopics must beEqualTo(Set(validTopic).right).await
+      validTopics must beEqualTo(Right(Set(validTopic))).await
     }
 
     "Limit the number of tags to 200" in new validators {
@@ -43,7 +43,7 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
 
       val validTopics = topicValidator.removeInvalid(topics.toSet)
 
-      validTopics must beXorRight(haveSize[Set[Topic]](testMaxTopics)).await
+      validTopics must beRight(haveSize[Set[Topic]](testMaxTopics)).await
     }
 
     "Do not filter breaking news if topic list too long" in new validators {
@@ -56,7 +56,7 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
       val breakingNewsTopic = Topic(TopicTypes.Breaking, "uk")
       val validTopics = topicValidator.removeInvalid(topics.toSet + breakingNewsTopic)
 
-      validTopics must beXorRight(contain(breakingNewsTopic)).await
+      validTopics must beRight(contain(breakingNewsTopic)).await
     }
   }
 

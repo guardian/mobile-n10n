@@ -4,7 +4,6 @@ import models._
 import providers.ProviderError
 
 import scala.concurrent.Future
-import cats.data.Xor
 import models.pagination.Paginated
 
 case class RegistrationResponse(deviceId: String, platform: Platform, userId: UniqueDeviceIdentifier, topics: Set[Topic])
@@ -35,11 +34,11 @@ object StoredRegistration {
 
 
 trait NotificationRegistrar {
-  type RegistrarResponse[T] = Future[ProviderError Xor T]
+  type RegistrarResponse[T] = Future[Either[ProviderError, T]]
   val providerIdentifier: String
   def register(oldDeviceId: String, registration: Registration): RegistrarResponse[RegistrationResponse]
   def unregister(udid: UniqueDeviceIdentifier): RegistrarResponse[Unit]
-  def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[ProviderError Xor Paginated[StoredRegistration]]
-  def findRegistrations(lastKnownChannelUri: String): Future[ProviderError Xor List[StoredRegistration]]
-  def findRegistrations(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Paginated[StoredRegistration]]
+  def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]]
+  def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]]
+  def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]]
 }

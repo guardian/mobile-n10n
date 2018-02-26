@@ -45,12 +45,12 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     "not include in invalid topics in response to legacy registration" in new RegistrationsContext {
       override lazy val fakeTopicValidator = {
         val validator = mock[TopicValidator]
-        validator.removeInvalid(topics) returns Future.successful(topics.right)
-        validator.removeInvalid(legacyTopics) returns Future.successful(legacyTopics.right)
+        validator.removeInvalid(topics) returns Future.successful(Right(topics))
+        validator.removeInvalid(legacyTopics) returns Future.successful(Right(legacyTopics))
         validator
       }
 
-      fakeTopicValidator.removeInvalid(topics) returns Future.successful((topics - footballMatchTopic).right)
+      fakeTopicValidator.removeInvalid(topics) returns Future.successful(Right(topics - footballMatchTopic))
 
       val Some(result) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationWithFootballMatchTopicJson)))
 
@@ -64,8 +64,8 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     "return 204 and empty response for unregistration of udid" in new RegistrationsContext {
       override lazy val fakeRegistrarProvider = {
         val provider = mock[RegistrarProvider]
-        provider.registrarFor(any[Platform], any[Option[String]]) returns fakeNotificationRegistrar.right
-        provider.registrarFor(any[Registration]) returns fakeNotificationRegistrar.right
+        provider.registrarFor(any[Platform], any[Option[String]]) returns Right(fakeNotificationRegistrar)
+        provider.registrarFor(any[Registration]) returns Right(fakeNotificationRegistrar)
         provider
       }
 
@@ -84,8 +84,8 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     "register with topics in registration when validation fails" in new RegistrationsContext {
       override lazy val fakeTopicValidator = {
         val validator = mock[TopicValidator]
-        validator.removeInvalid(topics) returns Future.successful(topics.right)
-        validator.removeInvalid(legacyTopics) returns Future.successful(legacyTopics.right)
+        validator.removeInvalid(topics) returns Future.successful(Right(topics))
+        validator.removeInvalid(legacyTopics) returns Future.successful(Right(legacyTopics))
         validator
       }
 
@@ -94,7 +94,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
         override def topicsQueried: Set[Topic] = topics
       }
 
-      fakeTopicValidator.removeInvalid(topics) returns Future.successful(validatorError.left)
+      fakeTopicValidator.removeInvalid(topics) returns Future.successful(Left(validatorError))
 
       val Some(result) = route(app, FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
       status(result) must equalTo(OK)
@@ -105,12 +105,12 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     "register only with valid topics" in new RegistrationsContext {
       override lazy val fakeTopicValidator = {
         val validator = mock[TopicValidator]
-        validator.removeInvalid(topics) returns Future.successful(topics.right)
-        validator.removeInvalid(legacyTopics) returns Future.successful(legacyTopics.right)
+        validator.removeInvalid(topics) returns Future.successful(Right(topics))
+        validator.removeInvalid(legacyTopics) returns Future.successful(Right(legacyTopics))
         validator
       }
 
-      fakeTopicValidator.removeInvalid(topics) returns Future.successful((topics - footballMatchTopic).right)
+      fakeTopicValidator.removeInvalid(topics) returns Future.successful(Right(topics - footballMatchTopic))
 
       val Some(result) = route(app, FakeRequest(PUT, "/registrations/anotherRegId").withJsonBody(Json.parse(registrationJson)))
       status(result) must equalTo(OK)

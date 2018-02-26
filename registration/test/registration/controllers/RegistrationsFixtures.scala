@@ -1,7 +1,6 @@
 package registration.controllers
 
 import application.WithPlayApp
-import cats.data.Xor
 import error.NotificationsError
 import models.TopicTypes.{Breaking, FootballMatch}
 import models._
@@ -23,31 +22,31 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
   override lazy val fakeNotificationRegistrar = new NotificationRegistrar {
     override val providerIdentifier: String = "test"
 
-    override def register(deviceId: String, registration: Registration): Future[Xor[ProviderError, RegistrationResponse]] = Future.successful {
+    override def register(deviceId: String, registration: Registration): Future[Either[ProviderError, RegistrationResponse]] = Future.successful {
       Thread.sleep(2000)
-      RegistrationResponse(
+      Right(RegistrationResponse(
         deviceId = "deviceAA",
         platform = WindowsMobile,
         userId = registration.udid,
         topics = registration.topics
-      ).right
+      ))
     }
 
-    override def unregister(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Unit] = Future.successful {
+    override def unregister(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Unit]] = Future.successful {
       if (existingDeviceIds.contains(udid)) {
-        ().right
+        Right(())
       } else {
-        UdidNotFound.left
+        Left(UdidNotFound)
       }
     }
 
     val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
 
-    override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Xor[ProviderError, Paginated[StoredRegistration]]] = ???
+    override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
 
-    override def findRegistrations(lastKnownChannelUri: String): Future[Xor[ProviderError, List[StoredRegistration]]] = ???
+    override def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]] = ???
 
-    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Xor[ProviderError, Paginated[StoredRegistration]]] = ???
+    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
   }
 }
 
@@ -64,8 +63,8 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
   val legacyTopics = Set(breakingNewsUk)
 
   lazy val fakeTopicValidator = new TopicValidator {
-    override def removeInvalid(topics: Set[Topic]): Future[Xor[TopicValidatorError, Set[Topic]]] = {
-      Future.successful(topics.right)
+    override def removeInvalid(topics: Set[Topic]): Future[Either[TopicValidatorError, Set[Topic]]] = {
+      Future.successful(Right(topics))
     }
   }
 
@@ -74,49 +73,49 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
 
     private var registrations = List.empty[Registration]
 
-    override def register(deviceId: String, registration: Registration): Future[Xor[ProviderError, RegistrationResponse]] = Future.successful {
+    override def register(deviceId: String, registration: Registration): Future[Either[ProviderError, RegistrationResponse]] = Future.successful {
       registrations = registration :: registrations
-      RegistrationResponse(
+      Right(RegistrationResponse(
         deviceId = "deviceAA",
         platform = WindowsMobile,
         userId = registration.udid,
         topics = registration.topics
-      ).right
+      ))
     }
 
-    override def unregister(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Unit] = Future.successful {
+    override def unregister(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Unit]] = Future.successful {
       registrations = registrations.filterNot(_.udid == udid)
       if (existingDeviceIds.contains(udid)) {
-        ().right
+        Right(())
       } else {
-        UdidNotFound.left
+        Left(UdidNotFound)
       }
     }
 
     val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
 
-    override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[ProviderError Xor Paginated[StoredRegistration]] = {
+    override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
       val selected = if (cursor.contains("abc")) {
         registrations.filter(_.topics.contains(topic)).map(StoredRegistration.fromRegistration).drop(5)
       } else {
         registrations.filter(_.topics.contains(topic)).map(StoredRegistration.fromRegistration).take(5)
       }
-      Future.successful(Paginated(selected.toList, None).right)
+      Future.successful(Right(Paginated(selected.toList, None)))
     }
 
-    override def findRegistrations(lastKnownChannelUri: String): Future[ProviderError Xor List[StoredRegistration]] = {
+    override def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
       val selected = registrations.filter(_.deviceId == lastKnownChannelUri).map(StoredRegistration.fromRegistration)
-      Future.successful(selected.toList.right)
+      Future.successful(Right(selected.toList))
     }
 
-    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Paginated[StoredRegistration]] = {
+    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
       val selected = registrations.filter(_.udid == udid).map(StoredRegistration.fromRegistration)
-      Future.successful(Paginated(selected.toList, None).right)
+      Future.successful(Right(Paginated(selected.toList, None)))
     }
   }
 
   lazy val fakeRegistrarProvider = new RegistrarProvider {
-    override def registrarFor(platform: Platform, buildTier: Option[String]): Xor[NotificationsError, NotificationRegistrar] = fakeNotificationRegistrar.right
+    override def registrarFor(platform: Platform, buildTier: Option[String]): Either[NotificationsError, NotificationRegistrar] = Right(fakeNotificationRegistrar)
 
     override def withAllRegistrars[T](fn: (NotificationRegistrar) => T): List[T] = List(fn(fakeNotificationRegistrar))
   }

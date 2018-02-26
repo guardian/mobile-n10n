@@ -5,7 +5,6 @@ import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.JavaConversions._
 
-import cats.data.Xor
 import cats.implicits._
 
 import org.joda.time.DateTime
@@ -31,7 +30,7 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
 
   override def store(report: NotificationReport): Future[RepositoryResult[Unit]] = {
     val putItemRequest = new PutItemRequest(tableName, toAttributeMap(report))
-    client.putItem(putItemRequest) map { _ => ().right }
+    client.putItem(putItemRequest) map { _ => Right(()) }
   }
 
   override def getByTypeWithDateRange(notificationType: NotificationType, from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
@@ -43,9 +42,9 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
       ))
 
     client.query(q) map { result =>
-      (result.getItems.toList.flatMap { item =>
+      Right(result.getItems.toList.flatMap { item =>
         fromAttributeMap[NotificationReport](item.toMap).asOpt
-      }).right
+      })
     }
   }
 
@@ -56,8 +55,8 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
 
     client.query(q) map { result =>
       for {
-        item <- Xor.fromOption(result.getItems.headOption, RepositoryError("UUID not found"))
-        parsed <- Xor.fromOption(fromAttributeMap[NotificationReport](item.toMap).asOpt, RepositoryError("Unable to parse report"))
+        item <- Either.fromOption(result.getItems.headOption, RepositoryError("UUID not found"))
+        parsed <- Either.fromOption(fromAttributeMap[NotificationReport](item.toMap).asOpt, RepositoryError("Unable to parse report"))
       } yield parsed
     }
   }

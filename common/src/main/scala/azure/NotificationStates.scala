@@ -1,10 +1,10 @@
 package azure
 
 import azure.HubFailure.HubInvalidResponse
-import cats.data.Xor
 import models.JsonUtils
 
 import scala.PartialFunction._
+import cats.syntax.either._
 
 sealed trait NotificationState
 
@@ -14,7 +14,7 @@ object NotificationState {
 
   implicit val jf = JsonUtils.stringFormat((fromString _).andThen(_.toOption))
 
-  def fromString(s: String): Xor[HubInvalidResponse, NotificationState] = Xor.fromOption(condOpt(s) {
+  def fromString(s: String): Either[HubInvalidResponse, NotificationState] = Either.fromOption(condOpt(s) {
     case "Abandoned" => Abandoned
     case "Canceled" => Canceled
     case "Completed" => Completed

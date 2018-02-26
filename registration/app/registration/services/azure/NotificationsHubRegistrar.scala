@@ -9,8 +9,9 @@ import registration.services.{NotificationRegistrar, RegistrationResponse, Store
 import tracking.{SubscriptionTracker, TopicSubscriptionTracking}
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.{Xor, XorT}
-import cats.implicits._
+import cats.data.EitherT
+import cats.syntax.either._
+import cats.instances.future._
 import models.pagination.{Paginated, ProviderCursor}
 
 class NotificationHubRegistrar(
@@ -24,45 +25,45 @@ class NotificationHubRegistrar(
 
   override def register(lastKnownChannelUri: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
     findRegistrations(lastKnownChannelUri, registration).flatMap {
-      case Xor.Right(Nil) => createRegistration(registration)
-      case Xor.Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
-      case Xor.Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
-      case Xor.Left(e: ProviderError) => Future.successful(e.left)
+      case Right(Nil) => createRegistration(registration)
+      case Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
+      case Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
+      case Left(e: ProviderError) => Future.successful(Left(e))
     }
   }
 
   override def unregister(udid: UniqueDeviceIdentifier): RegistrarResponse[Unit] = {
     val result = for {
-      registrationResponses <- XorT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
-      _ <- XorT(deleteRegistrations(registrationResponses.registrations)).ensure(UdidNotFound)(_ => registrationResponses.registrations.nonEmpty)
+      registrationResponses <- EitherT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
+      _ <- EitherT(deleteRegistrations(registrationResponses.registrations)).ensure(UdidNotFound)(_ => registrationResponses.registrations.nonEmpty)
     } yield ()
 
     result.value
   }
 
-  def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[ProviderError Xor Paginated[StoredRegistration]] = {
-    XorT(hubClient.registrationsByTag(Tag.fromTopic(topic).encodedTag, cursor))
+  def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
+    EitherT(hubClient.registrationsByTag(Tag.fromTopic(topic).encodedTag, cursor))
       .semiflatMap(responsesToStoredRegistrations)
       .value
   }
 
-  def findRegistrations(lastKnownChannelUri: String): Future[ProviderError Xor List[StoredRegistration]] = {
-    XorT(hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri))
+  def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
+    EitherT(hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri))
       .semiflatMap(responsesToStoredRegistrations)
       .value
   }
 
-  def findRegistrations(udid: UniqueDeviceIdentifier): Future[ProviderError Xor Paginated[StoredRegistration]] = {
-    XorT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
+  def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
+    EitherT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
       .semiflatMap(responsesToStoredRegistrations)
       .value
   }
 
-  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[ProviderError Xor List[azure.RegistrationResponse]] = {
+  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[Either[ProviderError, List[azure.RegistrationResponse]]] = {
     def extractResultFromResponse(
       userIdResults: HubResult[Registrations],
       deviceIdResults: HubResult[List[azure.RegistrationResponse]]
-    ): Xor[ProviderError, List[azure.RegistrationResponse]] = {
+    ): Either[ProviderError, List[azure.RegistrationResponse]] = {
       for {
         userIdRegistrations <- userIdResults
         deviceIdRegistrations <- deviceIdResults
@@ -99,12 +100,12 @@ class NotificationHubRegistrar(
     registrationsToDelete: List[azure.RegistrationResponse],
     registrationToCreate: Registration): RegistrarResponse[RegistrationResponse] = {
     deleteRegistrations(registrationsToDelete).flatMap {
-      case Xor.Right(_) => createRegistration(registrationToCreate)
-      case Xor.Left(error) => Future.successful(error.left)
+      case Right(_) => createRegistration(registrationToCreate)
+      case Left(error) => Future.successful(Left(error))
     }
   }
 
-  private def deleteRegistrations(registrations: List[azure.RegistrationResponse]): Future[ProviderError Xor Unit] = {
+  private def deleteRegistrations(registrations: List[azure.RegistrationResponse]): Future[Either[ProviderError, Unit]] = {
     Future.traverse(registrations) { registration =>
       logger.debug(s"deleting registration ${registration.registration}")
       hubClient
@@ -115,8 +116,8 @@ class NotificationHubRegistrar(
           )
         }
     } map { responses =>
-      val errors = responses.collect { case Xor.Left(error) => error }
-      if (errors.isEmpty) ().right else errors.head.left
+      val errors = responses.collect { case Left(error) => error }
+      if (errors.isEmpty) Right(()) else Left(errors.head)
     }
   }
 
@@ -144,10 +145,10 @@ class NotificationHubRegistrar(
     })
   }
 
-  private def toRegistrarResponse(topicsRegisteredFor: Set[Topic])(registration: azure.RegistrationResponse): Xor[ProviderError, RegistrationResponse] = {
+  private def toRegistrarResponse(topicsRegisteredFor: Set[Topic])(registration: azure.RegistrationResponse): Either[ProviderError, RegistrationResponse] = {
     val tags = tagsIn(registration)
     for {
-      userId <- Xor.fromOption(tags.findUserId, UserIdNotInTags)
+      userId <- Either.fromOption(tags.findUserId, UserIdNotInTags)
     } yield RegistrationResponse(
       deviceId = registration.deviceId,
       platform = registration.platform,

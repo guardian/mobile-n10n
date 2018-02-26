@@ -6,6 +6,7 @@ import models._
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import scala.concurrent.duration._
+import cats.syntax.either._
 
 import scala.collection.JavaConversions._
 
