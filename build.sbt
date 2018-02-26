@@ -30,8 +30,8 @@ lazy val common = project
   .settings(standardSettings: _*)
   .settings(
     resolvers ++= Seq(
-      "Guardian GitHub Releases" at "http://guardian.github.com/maven/repo-releases",
-      "Guardian GitHub Snapshots" at "http://guardian.github.com/maven/repo-snapshots",
+      "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
+      "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots",
       "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
       "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
     ),
