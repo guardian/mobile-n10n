@@ -84,7 +84,7 @@ lazy val registration = project
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
-    fork in run := true,
+    fork := true,
     routesImport ++= Seq(
       "binders.querystringbinders._",
       "binders.pathbinders._",
@@ -101,7 +101,7 @@ lazy val notification = project
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
-    fork in run := true,
+    fork := true,
     routesImport ++= Seq(
       "binders.querystringbinders._",
       "binders.pathbinders._",
@@ -117,7 +117,7 @@ lazy val report = project
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
-    fork in run := true,
+    fork := true,
     routesImport ++= Seq(
       "binders.querystringbinders._",
       "binders.pathbinders._",
