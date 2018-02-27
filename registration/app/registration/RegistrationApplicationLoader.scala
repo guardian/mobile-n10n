@@ -1,50 +1,33 @@
 package registration
 
-import _root_.controllers.{Assets, AssetsComponents}
+import _root_.controllers.AssetsComponents
 import akka.actor.ActorSystem
 import auditor.{AuditorGroup, FootballMatchAuditor, LiveblogAuditor, TimeExpiringAuditor}
 import azure.NotificationHubClient
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
-import play.api.{Configuration => PlayConfiguration}
-import play.api.{Application, ApplicationLoader, BuiltInComponents, BuiltInComponentsFromContext, LoggerConfigurator}
+import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
 import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import _root_.models.Topic
 import _root_.models.TopicTypes.ElectionResults
 import aws.AsyncDynamo
 import com.amazonaws.regions.Regions.EU_WEST_1
-import com.gu.AppIdentity
-import com.gu.conf.{ConfigurationLoader, S3ConfigurationLocation}
 import org.joda.time.DateTime
 import controllers.Main
 import play.api.mvc.EssentialFilter
 import play.filters.HttpFiltersComponents
 import play.filters.hosts.AllowedHostsFilter
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
-import registration.services.azure.{APNSEnterpriseNotifcationRegistrar, APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
+import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
 import registration.services._
-
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
+import utils.CustomApplicationLoader
+
 import router.Routes
 
-class RegistrationApplicationLoader extends ApplicationLoader {
-
+class RegistrationApplicationLoader extends CustomApplicationLoader("registration") {
   def buildComponents(context: Context) : BuiltInComponents = new RegistrationApplicationComponents(context)
-
-  override def load(context: Context): Application = {
-    LoggerConfigurator(context.environment.classLoader) foreach { _.configure(context.environment) }
-    val identity = AppIdentity.whoAmI(defaultAppName = "registration", defaultStackName = "mobile-notifications")
-    val config = ConfigurationLoader.load(identity){
-      case AppIdentity(app, stack, stage, _) if (stage != "DEV") => S3ConfigurationLocation (
-        bucket = "mobile-notifications-dist",
-        path = s"$stage/$stack/$app.conf"
-      )
-    }
-    val loadedConfig = PlayConfiguration(config)
-    val newContext = context.copy( initialConfiguration = context.initialConfiguration ++ loadedConfig)
-    buildComponents(newContext).application
-  }
 }
 
 class RegistrationApplicationComponents(context: Context) extends BuiltInComponentsFromContext(context)
@@ -56,7 +39,7 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
 
   override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
 
-  lazy val appConfig = new Configuration
+  lazy val appConfig = new Configuration(configuration)
 
   lazy val mainController = wire[Main]
   lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {

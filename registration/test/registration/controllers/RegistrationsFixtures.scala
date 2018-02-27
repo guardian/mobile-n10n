@@ -6,7 +6,7 @@ import models.TopicTypes.{Breaking, FootballMatch}
 import models._
 import models.pagination.Paginated
 import play.api.ApplicationLoader.Context
-import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
+import play.api.{BuiltInComponents, BuiltInComponentsFromContext, Configuration => PlayConfig}
 import play.api.libs.ws.WSClient
 import providers.ProviderError
 import registration.RegistrationApplicationComponents
@@ -124,7 +124,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     new RegistrationApplicationComponents(context)  {
       override lazy val topicValidator = fakeTopicValidator
       override lazy val registrarProvider: RegistrarProvider = fakeRegistrarProvider
-      override lazy val appConfig = new Configuration {
+      override lazy val appConfig = new Configuration(PlayConfig.empty) {
         override lazy val defaultTimeout = 1.seconds
       }
     }

@@ -3,6 +3,8 @@ package backup
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import backup.logging.BackupLogging
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.auth.{AWSCredentialsProviderChain, InstanceProfileCredentialsProvider}
 import play.api.libs.ws.ahc.AhcWSClient
 
 import scala.concurrent.ExecutionContext
@@ -14,7 +16,12 @@ object Lambda extends BackupLogging {
   implicit val actorSystem = ActorSystem()
   implicit val actorMaterializer = ActorMaterializer()
 
-  val config = Configuration.load()
+  val credentials = new AWSCredentialsProviderChain(
+    new ProfileCredentialsProvider("mobile"),
+    InstanceProfileCredentialsProvider.getInstance
+  )
+
+  val config = Configuration.load(credentials)
 
   def handler() : String = {
 

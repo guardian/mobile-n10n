@@ -9,6 +9,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import org.specs2.matcher.EitherMatchers
 import registration.services.Configuration
+import play.api.{Configuration => PlayConfig}
 
 import scala.concurrent.Future.successful
 import scala.concurrent.ExecutionContext
@@ -66,7 +67,7 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
     val auditorB = mock[Auditor]
     val testMaxTopics = 200
     val topicValidator = {
-      val configuration = new Configuration() {
+      val configuration = new Configuration(PlayConfig.empty) {
         override lazy val auditorConfiguration = AuditorGroupConfig(
           contentApiConfig = ApiConfig(apiKey = "test", url = "test"),
           paApiConfig = ApiConfig(apiKey = "test", url = "test")
