@@ -10,7 +10,7 @@ import com.microsoft.azure.storage.blob._
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.libs.ws.WSClient
 import play.api.Logger
-import collection.JavaConversions._
+import collection.JavaConverters._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -52,7 +52,7 @@ class Backup(conf: Configuration, ws: WSClient)(implicit ec: ExecutionContext) e
 
     def listAllFiles(directory: CloudBlobDirectory): List[CloudBlob] = {
       // toList to force the lazy list to be evaluated
-      val directoryContent = directory.listBlobs().toList
+      val directoryContent = directory.listBlobs().asScala.toList
       directoryContent.flatMap {
         case blob: CloudBlob => List(blob)
         case dir: CloudBlobDirectory => listAllFiles(dir)

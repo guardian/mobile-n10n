@@ -8,7 +8,7 @@ import org.specs2.mock.Mockito
 import scala.concurrent.duration._
 import cats.syntax.either._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends DynamodbSpecification with Mockito {
 
@@ -69,8 +69,8 @@ class DynamoTopicSubscriptionsRepositorySpec(implicit ev: ExecutionEnv) extends 
   def createTableRequest = {
     val TopicIdField = "topicId"
 
-    new CreateTableRequest(TableName, List(new KeySchemaElement(TopicIdField, KeyType.HASH)))
-      .withAttributeDefinitions(List(new AttributeDefinition(TopicIdField, ScalarAttributeType.S)))
+    new CreateTableRequest(TableName, List(new KeySchemaElement(TopicIdField, KeyType.HASH)).asJava)
+      .withAttributeDefinitions(List(new AttributeDefinition(TopicIdField, ScalarAttributeType.S)).asJava)
       .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
   }
 }

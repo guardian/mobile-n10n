@@ -14,7 +14,7 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import tracking.Repository.RepositoryResult
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
@@ -99,18 +99,18 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
       .withKeySchema(List(
         new KeySchemaElement(TypeField, KeyType.HASH),
         new KeySchemaElement(SentTimeField, KeyType.RANGE)
-      ))
+      ).asJava)
       .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
       .withProjection(new Projection().withProjectionType(ProjectionType.ALL))
 
-    new CreateTableRequest(TableName, List(new KeySchemaElement(IdField, KeyType.HASH)))
+    new CreateTableRequest(TableName, List(new KeySchemaElement(IdField, KeyType.HASH)).asJava)
       .withAttributeDefinitions(List(
         new AttributeDefinition(IdField, ScalarAttributeType.S),
         new AttributeDefinition(SentTimeField, ScalarAttributeType.S),
         new AttributeDefinition(TypeField, ScalarAttributeType.S)
-      ))
+      ).asJava)
       .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
-      .withGlobalSecondaryIndexes(List(sentTimeIndex))
+      .withGlobalSecondaryIndexes(List(sentTimeIndex).asJava)
   }
 
 }

@@ -11,7 +11,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import cats.implicits._
 import utils.LruCache
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import scala.util.Failure
 
 class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
   (implicit ec: ExecutionContext) extends TopicSubscriptionsRepository {
@@ -34,7 +35,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
       .withExpressionAttributeValues(Map(
         ":topic" -> new AttributeValue(topic.toString),
         ":amount" -> new AttributeValue().withN(subscriptionCountChange.toString)
-      ))
+      ).asJava)
     updateItem(req)
   }
 
@@ -46,18 +47,18 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
       .withUpdateExpression(s"ADD ${TopicFields.SubscriberCount} :amount")
       .withExpressionAttributeValues(Map(
         ":amount" -> new AttributeValue().withN(subscriptionCountChange.toString)
-      ))
+      ).asJava)
     updateItem(req)
   }
 
   override def count(topic: Topic): Future[RepositoryResult[Int]] = {
     val q = new QueryRequest(tableName)
-      .withKeyConditions(Map(TopicFields.Id -> keyEquals(topic.id)))
+      .withKeyConditions(Map(TopicFields.Id -> keyEquals(topic.id)).asJava)
       .withConsistentRead(true)
 
     client.query(q) map { result =>
       val count = for {
-        item <- result.getItems.headOption
+        item <- result.getItems.asScala.headOption
         countField <- Option(item.get(TopicFields.SubscriberCount))
         countFieldValue <- Option(countField.getN)
       } yield countFieldValue.toInt
@@ -68,12 +69,12 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
 
   override def topicFromId(topicId: String): Future[RepositoryResult[Topic]] = {
     val q = new QueryRequest(tableName)
-      .withKeyConditions(Map(TopicFields.Id -> keyEquals(topicId)))
+      .withKeyConditions(Map(TopicFields.Id -> keyEquals(topicId)).asJava)
       .withConsistentRead(true)
 
     def generate() = client.query(q) map { result =>
       for {
-        item <- result.getItems.headOption
+        item <- result.getItems.asScala.headOption
         topicField <- Option(item.get(TopicFields.Topic))
         topicFieldValue <- Option(topicField.getS)
         topic <- Topic.fromString(topicFieldValue).toOption
