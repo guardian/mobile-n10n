@@ -2,6 +2,8 @@ import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 
 val projectVersion = "1.0-latest"
 
+
+organization := "com.gu"
 scalaVersion in ThisBuild := "2.12.4"
 
 scalacOptions in ThisBuild ++= Seq(
@@ -12,19 +14,19 @@ scalacOptions in ThisBuild ++= Seq(
   "-language:implicitConversions")
 
 val standardSettings = Seq[Setting[_]](
-
-  updateOptions := updateOptions.value.withCachedResolution(true),
-
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
-  riffRaffManifestBranch := Option(System.getenv("BRANCH_NAME")).getOrElse("unknown_branch"),
-  riffRaffBuildIdentifier := Option(System.getenv("BUILD_NUMBER")).getOrElse("DEV"),
-  riffRaffManifestVcsUrl  := "git@github.com/guardian/mobile-n10n.git",
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
   riffRaffUploadManifestBucket := Option("riffraff-builds"),
-  riffRaffArtifactPublishPath := name.value
+  libraryDependencies ++= Seq(
+    "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
+    "org.scala-lang.modules" %% "scala-async" % "0.9.7",
+    "com.github.nscala-time" %% "nscala-time" % "2.18.0",
+    "com.softwaremill.macwire" %% "macros" % "2.3.0" % "provided",
+    specs2 % Test,
+    "org.specs2" %% "specs2-matcher-extra" % "3.8.9" % Test
+  )
 )
 
-//Common project
 lazy val common = project
   .settings(LocalDynamoDB.settings)
   .settings(standardSettings: _*)
@@ -37,18 +39,15 @@ lazy val common = project
     ),
     libraryDependencies ++= Seq(
       ws,
-      "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
+      "com.microsoft.azure" % "azure-servicebus" % "1.1.1",
       "org.typelevel" %% "cats-core" % "1.0.1",
-      "joda-time" % "joda-time" % "2.8.2",
-      "io.spray" %% "spray-caching" % "1.3.3",
+      "joda-time" % "joda-time" % "2.9.9",
       "com.typesafe.play" %% "play-json" % "2.6.8",
       "com.typesafe.play" %% "play-json-joda" % "2.6.8",
       "com.typesafe.play" %% "play-logback" % "2.6.11",
-      "com.gu" %% "pa-client" % "6.0.2",
+      "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % "1.4.1",
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.60",
-      "org.specs2" %% "specs2-core" % "3.8.5" % "test",
-      "org.specs2" %% "specs2-cats" % "3.8.5" % "test"
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.285"
     ),
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
@@ -64,9 +63,9 @@ lazy val backup = project
   .settings(
     fork := true,
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.5.3",
-      "com.microsoft.azure" % "azure-storage" % "3.1.0",
-      "com.amazonaws" % "aws-lambda-java-core" % "1.1.0"
+      "org.slf4j" % "slf4j-simple" % "1.7.25",
+      "com.microsoft.azure" % "azure-storage" % "7.0.0",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0"
     ),
     assemblyJarName := s"${name.value}.jar",
     riffRaffPackageType := assembly.value,
@@ -130,5 +129,4 @@ lazy val report = project
   )
 
 lazy val root = (project in file(".")).
-  dependsOn(registration, notification, report, backup, common).
   aggregate(registration, notification, report, backup, common)
