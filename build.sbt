@@ -45,7 +45,7 @@ lazy val common = project
       "com.typesafe.play" %% "play-json-joda" % "2.6.8",
       "com.typesafe.play" %% "play-logback" % "2.6.11",
       "com.gu" %% "pa-client" % "6.0.2",
-      "com.gu" %% "simple-configuration-s3" % "1.4.0",
+      "com.gu" %% "simple-configuration-ssm" % "1.4.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.60",
       "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
       "org.specs2" %% "specs2-core" % "3.8.5" % "test",

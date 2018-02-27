@@ -5,7 +5,7 @@ import backup.logging.BackupLogging
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.gu.AwsIdentity
-import com.gu.conf.{ConfigurationLoader, S3ConfigurationLocation}
+import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.typesafe.config.Config
 
 case class Configuration(
@@ -27,10 +27,7 @@ object Configuration extends BackupLogging {
 
     val identity = new AwsIdentity(app, stack, stage, Regions.EU_WEST_1.getName)
     val config = ConfigurationLoader.load(identity, credentials) {
-      case AwsIdentity(app, stack, stage, _) => S3ConfigurationLocation(
-        bucket = "mobile-notifications-dist",
-        path = s"$stage/$stack/$app.conf"
-      )
+      case AwsIdentity(app, stack, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/$stack")
     }
 
     logger.info(s"Loading config. Stage: $stage Bucket: $bucket Key: $configurationKey")
