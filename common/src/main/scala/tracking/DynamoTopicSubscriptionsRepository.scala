@@ -9,9 +9,9 @@ import tracking.Repository.RepositoryResult
 
 import scala.concurrent.{ExecutionContext, Future}
 import cats.implicits._
+import utils.LruCache
 
 import scala.collection.JavaConversions._
-import spray.caching.{Cache, LruCache}
 
 class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
   (implicit ec: ExecutionContext) extends TopicSubscriptionsRepository {
@@ -23,7 +23,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
     val SubscriberCount = "topicSubscriberCount"
   }
 
-  private val topicCache: Cache[Option[Topic]] = LruCache[Option[Topic]]()
+  private val topicCache: LruCache[Option[Topic]] = LruCache[Option[Topic]]()
 
   override def deviceSubscribed(topic: Topic, count: Int = 1): Future[RepositoryResult[Unit]] = {
     Logger.debug(s"Increasing subscriber count for $topic by $count")
@@ -80,7 +80,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
       } yield topic
     }
     val error: RepositoryResult[Topic] = Left(RepositoryError(s"Topic not found"))
-    topicCache.apply(topicId, generate).map(_.fold(error)(Right.apply))
+    topicCache.apply(topicId)(generate).map(_.fold(error)(Right.apply))
   }
 
   private def updateItem(req: UpdateItemRequest) = {

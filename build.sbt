@@ -47,7 +47,8 @@ lazy val common = project
       "com.typesafe.play" %% "play-logback" % "2.6.11",
       "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % "1.4.1",
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.285"
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.285",
+      "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2"
     ),
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,

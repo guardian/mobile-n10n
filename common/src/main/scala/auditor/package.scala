@@ -4,7 +4,7 @@ import pa.PaClient
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
-import spray.caching.{Cache, LruCache}
+import utils.LruCache
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -55,7 +55,7 @@ package object auditor {
 
   case class FootballMatchAuditor(client: PaClient)(implicit ec: ExecutionContext) extends Auditor {
 
-    private val matchStatusCache: Cache[String] = LruCache[String](timeToLive = 5 minutes)
+    private val matchStatusCache: LruCache[String] = LruCache[String](timeToLive = 5 minutes)
 
     private val matchEndedStatuses = List(
       "FT",
