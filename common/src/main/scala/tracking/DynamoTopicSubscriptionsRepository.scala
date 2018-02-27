@@ -86,7 +86,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
 
   private def updateItem(req: UpdateItemRequest) = {
     val eventualUpdate = client.updateItem(req)
-    eventualUpdate.onFailure {
+    eventualUpdate.failed.foreach {
       case t: Throwable => logger.error(s"DynamoDB communication error ($t)")
     }
     eventualUpdate map { _ => Right(()) }
