@@ -8,7 +8,6 @@ import play.api.Logger
 import tracking.Repository.RepositoryResult
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.Xor
 import cats.implicits._
 
 import scala.collection.JavaConversions._
@@ -63,7 +62,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
         countFieldValue <- Option(countField.getN)
       } yield countFieldValue.toInt
 
-      count.getOrElse(0).right
+      Right(count.getOrElse(0))
     }
   }
 
@@ -80,8 +79,8 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
         topic <- Topic.fromString(topicFieldValue).toOption
       } yield topic
     }
-    val error: RepositoryResult[Topic] = Xor.left(RepositoryError(s"Topic not found"))
-    topicCache.apply(topicId, generate).map(_.fold(error)(_.right))
+    val error: RepositoryResult[Topic] = Left(RepositoryError(s"Topic not found"))
+    topicCache.apply(topicId, generate).map(_.fold(error)(Right.apply))
   }
 
   private def updateItem(req: UpdateItemRequest) = {
@@ -89,7 +88,7 @@ class DynamoTopicSubscriptionsRepository(client: AsyncDynamo, tableName: String)
     eventualUpdate.onFailure {
       case t: Throwable => logger.error(s"DynamoDB communication error ($t)")
     }
-    eventualUpdate map { _ => ().right }
+    eventualUpdate map { _ => Right(()) }
   }
 
   private def newUpdateRequest = new UpdateItemRequest().withTableName(tableName)

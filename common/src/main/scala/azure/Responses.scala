@@ -6,10 +6,9 @@ import org.joda.time.DateTime
 import play.api.libs.ws.WSResponse
 import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
-import cats.data.Xor
-import cats.implicits._
 import models.{Android, Platform, WindowsMobile, iOS}
 import utils.WSImplicits._
+import cats.syntax.either._
 
 trait XmlReads[T] {
   def reads(xml: Elem): HubResult[T]
@@ -18,9 +17,9 @@ trait XmlReads[T] {
 object XmlParser {
   private def getXml(response: WSResponse): HubResult[Elem] = {
     if (response.isSuccess)
-      Xor.fromOption(Try(response.xml).toOption, HubParseFailed.invalidXml(response.body))
+      Either.fromOption(Try(response.xml).toOption, HubParseFailed.invalidXml(response.body))
     else
-      Xor.left(parseError(response))
+      Left(parseError(response))
   }
 
   def parseError(response: WSResponse): HubFailure = {
@@ -42,14 +41,14 @@ object Responses {
     def textNodes(s: String): Seq[String] = (xml \ s).map(_.text)
 
     def textNode(s: String): HubResult[String] =
-      Xor.fromOption(textNodes(s).headOption, HubParseFailed(body = xml.toString(), reason = s"Missing field $s"))
+      Either.fromOption(textNodes(s).headOption, HubParseFailed(body = xml.toString(), reason = s"Missing field $s"))
 
     def textNodeOption(s: String): HubResult[Option[String]] =
-      textNodes(s).headOption.right
+      Right(textNodes(s).headOption)
 
     def dateTimeNode(s: String): HubResult[DateTime] = {
       textNode(s).flatMap { dateTime =>
-        Xor.fromOption(
+        Either.fromOption(
           Try(DateTime.parse(dateTime)).toOption,
           HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTime' in field $s as datetime")
         )
@@ -59,34 +58,34 @@ object Responses {
     def dateTimeNodeOption(s: String): HubResult[Option[DateTime]] = {
       textNodeOption(s) flatMap {
         case Some(dateTimeValue) => Try(DateTime.parse(dateTimeValue)) match {
-          case Success(dateTime) => Some(dateTime).right
-          case Failure(_) => Xor.left(
+          case Success(dateTime) => Right(Some(dateTime))
+          case Failure(_) => Left(
             HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$dateTimeValue' in field $s as datetime")
           )
         }
-        case None => None.right
+        case None => Right(None)
       }
     }
 
     def integerNode(s: String): HubResult[Int] = {
       textNode(s).flatMap { integer =>
-        Xor.fromOption(Try(integer.toInt).toOption, HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$integer' in field $s as an integer"))
+        Either.fromOption(Try(integer.toInt).toOption, HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$integer' in field $s as an integer"))
       }
     }
 
     def doubleNode(s: String): HubResult[Double] = {
       textNode(s).flatMap { double =>
-        Xor.fromOption(Try(double.toDouble).toOption, HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$double' in field $s as a double"))
+        Either.fromOption(Try(double.toDouble).toOption, HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$double' in field $s as a double"))
       }
     }
 
     def doubleNodeOption(s: String): HubResult[Option[Double]] = {
       textNodeOption(s).flatMap {
         case Some(doubleValue) => Try(doubleValue.toDouble) match {
-          case Success(double) => Some(double).right
-          case Failure(_) => HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$doubleValue' in field $s as a double").left
+          case Success(double) => Right(Some(double))
+          case Failure(_) => Left(HubParseFailed(body = xml.toString(), reason = s"Failed to parse '$doubleValue' in field $s as a double"))
         }
-        case None => None.right
+        case None => Right(None)
       }
     }
   }
@@ -177,7 +176,7 @@ object AtomEntry {
     val results = (xml \ "content").flatMap(_.child).collectFirst {
       case elem: Elem => reader.reads(elem)
     }
-    results.getOrElse(HubFailure.HubParseFailed(xml.toString(), "No Content in the xml").left)
+    results.getOrElse(Left(HubFailure.HubParseFailed(xml.toString(), "No Content in the xml")))
   }
 }
 
@@ -201,9 +200,9 @@ object AtomFeedResponse {
     val errors = left.flatMap(_.swap.toOption)
     val successes = right.flatMap(_.toOption)
     if (errors.nonEmpty)
-      errors.head.left
+      Left(errors.head)
     else
-      successes.toList.right
+      Right(successes.toList)
   }
 }
 

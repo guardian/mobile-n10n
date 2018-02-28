@@ -6,11 +6,10 @@ import models.Topic
 import registration.services.Configuration
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.Xor
 import cats.implicits._
 
 trait TopicValidator {
-  def removeInvalid(topics: Set[Topic]): Future[TopicValidatorError Xor Set[Topic]]
+  def removeInvalid(topics: Set[Topic]): Future[Either[TopicValidatorError, Set[Topic]]]
 }
 
 trait TopicValidatorError {
@@ -22,14 +21,14 @@ trait TopicValidatorError {
 final class AuditorTopicValidator(configuration: Configuration, auditors: AuditorGroup)(implicit ec: ExecutionContext)
   extends TopicValidator {
 
-  override def removeInvalid(topics: Set[Topic]): Future[TopicValidatorError Xor Set[Topic]] =
+  override def removeInvalid(topics: Set[Topic]): Future[Either[TopicValidatorError, Set[Topic]]] =
     auditors
       .queryEach { _.expiredTopics(topics) }
       .map(expired => topics -- expired.flatten)
       .map(limitTopics(configuration.maxTopics))
-      .map(_.right)
+      .map(Right.apply)
       .recover {
-        case e: Throwable => AuditorClientError(e.getMessage, topics).left
+        case e: Throwable => Left(AuditorClientError(e.getMessage, topics))
       }
 
   private def limitTopics(maxTopics: Int)(topics: Set[Topic]): Set[Topic] =

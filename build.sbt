@@ -38,7 +38,7 @@ lazy val common = project
     libraryDependencies ++= Seq(
       ws,
       "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
-      "org.typelevel" %% "cats" % "0.7.0",
+      "org.typelevel" %% "cats-core" % "1.0.1",
       "joda-time" % "joda-time" % "2.8.2",
       "com.gu" %% "configuration" % "4.1",
       "io.spray" %% "spray-caching" % "1.3.3",

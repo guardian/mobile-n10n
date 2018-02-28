@@ -12,7 +12,6 @@ import play.api.libs.ws.WSClient
 import play.mvc.Http.Status.CREATED
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.Xor
 import cats.implicits._
 
 case class FrontendAlertsConfig(endpoint: URI, apiKey: String)
@@ -20,17 +19,17 @@ case class FrontendAlertsConfig(endpoint: URI, apiKey: String)
 class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit val ec: ExecutionContext) extends NotificationSender {
   val logger = Logger(classOf[FrontendAlerts])
 
-  def sendBreakingNewsAlert(alert: NewsAlert): Future[String Xor Unit] =
+  def sendBreakingNewsAlert(alert: NewsAlert): Future[Either[String, Unit]] =
     wsClient.url(s"${ config.endpoint }/alert")
     .addHttpHeaders("Content-Type" -> "application/json", "X-Gu-Api-Key" -> config.apiKey)
     .post(Json.toJson(alert))
     .map { response =>
       if (response.status == CREATED)
-        ().right
+        Right(())
       else {
         val msg = s"Failed sending breaking news alert, WS returned status code: ${ response.status }"
         logger.error(msg)
-        msg.left
+        Left(msg)
       }
     }
 
@@ -40,7 +39,7 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit 
     case _ =>
       logger.info(s"Frontend alert not sent. Push report ($push) ignored as notification is not BreakingNews.")
       Future.successful {
-        NotificationRejected(FrontendAlertsProviderError("Only Breaking News notification currently supported").some).left
+        Left(NotificationRejected(Some(FrontendAlertsProviderError("Only Breaking News notification currently supported"))))
       }
   }
 
@@ -48,13 +47,13 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit 
     NewsAlert.fromNotification(bn, DateTime.now) match {
       case Some(alert) =>
         sendBreakingNewsAlert(alert) map {
-          case Xor.Right(()) => SenderReport(Senders.FrontendAlerts, alert.publicationDate).right
-          case Xor.Left(e) => NotificationRejected(Some(FrontendAlertsProviderError(s"Could not send breaking news alert ($e)"))).left
+          case Right(()) => Right(SenderReport(Senders.FrontendAlerts, alert.publicationDate))
+          case Left(e) => Left(NotificationRejected(Some(FrontendAlertsProviderError(s"Could not send breaking news alert ($e)"))))
         }
       case _ =>
         logger.error(s"Frontend alert not sent. Could not create alert from notification ${ push.notification }")
         Future.successful {
-          NotificationRejected(FrontendAlertsProviderError("Alert could not be created").some).left
+          Left(NotificationRejected(Some(FrontendAlertsProviderError("Alert could not be created"))))
         }
     }
   }

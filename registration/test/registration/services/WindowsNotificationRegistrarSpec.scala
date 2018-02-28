@@ -23,35 +23,35 @@ class WindowsNotificationRegistrarSpec(implicit ev: ExecutionEnv) extends Specif
 with Mockito {
   "Windows Notification Provider registration" should {
     "create new registration when no registrations found for channel uri" in new registrations {
-      hubClient.create(fromMobileRegistration(registration)) returns Future.successful(hubRegResponse.right)
+      hubClient.create(fromMobileRegistration(registration)) returns Future.successful(Right(hubRegResponse))
 
       val response = provider.register(channelUri, registration)
 
-      response must beEqualTo(registrationResponse.right).await
+      response must beEqualTo(Right(registrationResponse)).await
       there was one(hubClient).create(any[RawWindowsRegistration])
       there was no(hubClient).update(any[NotificationHubRegistrationId], any[RawWindowsRegistration])
       there was no(hubClient).delete(any[NotificationHubRegistrationId])
     }
 
     "update existing registration when registration with same channel already exist" in new registrations {
-      hubClient.registrationsByChannelUri(channelUri) returns Future.successful(List(hubRegResponse).right)
-      hubClient.update(hubRegResponse.registration, fromMobileRegistration(registration)) returns Future.successful(hubRegResponse.right)
+      hubClient.registrationsByChannelUri(channelUri) returns Future.successful(Right(List(hubRegResponse)))
+      hubClient.update(hubRegResponse.registration, fromMobileRegistration(registration)) returns Future.successful(Right(hubRegResponse))
 
       val response = provider.register(channelUri, registration)
 
-      response must beEqualTo(registrationResponse.right).await
+      response must beEqualTo(Right(registrationResponse)).await
       there was no(hubClient).create(any[RawWindowsRegistration])
       there was one(hubClient).update(any[NotificationHubRegistrationId], any[RawWindowsRegistration])
       there was no(hubClient).delete(any[NotificationHubRegistrationId])
     }
 
     "update existing registration when registration with same userId already exist" in new registrations {
-      hubClient.registrationsByTag(userIdTag) returns Future.successful(Registrations(List(hubRegResponse), None).right)
-      hubClient.update(hubRegResponse.registration, fromMobileRegistration(registration)) returns Future.successful(hubRegResponse.right)
+      hubClient.registrationsByTag(userIdTag) returns Future.successful(Right(Registrations(List(hubRegResponse), None)))
+      hubClient.update(hubRegResponse.registration, fromMobileRegistration(registration)) returns Future.successful(Right(hubRegResponse))
 
       val response = provider.register(channelUri, registration)
 
-      response must beEqualTo(registrationResponse.right).await
+      response must beEqualTo(Right(registrationResponse)).await
       there was no(hubClient).create(any[RawWindowsRegistration])
       there was one(hubClient).update(any[NotificationHubRegistrationId], any[RawWindowsRegistration])
       there was no(hubClient).delete(any[NotificationHubRegistrationId])
@@ -59,13 +59,13 @@ with Mockito {
 
     "update existing registration, including channelUri when the registration already exist" in new registrations {
       val lastKnownChannelUri = "lastKnownChannelUri"
-      hubClient.registrationsByChannelUri(lastKnownChannelUri) returns Future.successful(List(hubRegResponse.copy(channelUri = lastKnownChannelUri)).right)
-      hubClient.registrationsByTag(userIdTag) returns Future.successful(Registrations(Nil, None).right)
-      hubClient.update(hubRegResponse.registration, fromMobileRegistration(registration)) returns Future.successful(hubRegResponse.right)
+      hubClient.registrationsByChannelUri(lastKnownChannelUri) returns Future.successful(Right(List(hubRegResponse.copy(channelUri = lastKnownChannelUri))))
+      hubClient.registrationsByTag(userIdTag) returns Future.successful(Right(Registrations(Nil, None)))
+      hubClient.update(hubRegResponse.registration, fromMobileRegistration(registration)) returns Future.successful(Right(hubRegResponse))
 
       val response = provider.register(lastKnownChannelUri, registration)
 
-      response must beEqualTo(registrationResponse.right).await
+      response must beEqualTo(Right(registrationResponse)).await
       there was no(hubClient).create(any[RawWindowsRegistration])
       there was one(hubClient).update(any[NotificationHubRegistrationId], any[RawWindowsRegistration])
       there was no(hubClient).delete(any[NotificationHubRegistrationId])
@@ -73,25 +73,25 @@ with Mockito {
 
     "delete a registration" in new registrations {
       val userRegistrations = (0 to 2).map(generateHubResponse).toList
-      hubClient.registrationsByTag(userIdTag) returns Future.successful(Registrations(userRegistrations, None).right)
-      hubClient.delete(any[NotificationHubRegistrationId]) returns Future.successful(().right)
+      hubClient.registrationsByTag(userIdTag) returns Future.successful(Right(Registrations(userRegistrations, None)))
+      hubClient.delete(any[NotificationHubRegistrationId]) returns Future.successful(Right(()))
 
       val response = provider.unregister(registration.udid)
 
-      response must beEqualTo(().right).await
+      response must beEqualTo(Right(())).await
       there was no(hubClient).create(any[RawWindowsRegistration])
       there was three(hubClient).delete(any[NotificationHubRegistrationId])
     }
 
     "delete all and replace by only one registration if more than one registration for the same userId" in new registrations {
       val userRegistrations = (0 to 2).map(generateHubResponse).toList
-      hubClient.registrationsByTag(userIdTag) returns Future.successful(Registrations(userRegistrations, None).right)
-      hubClient.delete(any[NotificationHubRegistrationId]) returns Future.successful(().right)
-      hubClient.create(fromMobileRegistration(registration)) returns Future.successful(hubRegResponse.right)
+      hubClient.registrationsByTag(userIdTag) returns Future.successful(Right(Registrations(userRegistrations, None)))
+      hubClient.delete(any[NotificationHubRegistrationId]) returns Future.successful(Right(()))
+      hubClient.create(fromMobileRegistration(registration)) returns Future.successful(Right(hubRegResponse))
 
       val response = provider.register(channelUri, registration)
 
-      response must beEqualTo(registrationResponse.right).await
+      response must beEqualTo(Right(registrationResponse)).await
       there was one(hubClient).create(any[RawWindowsRegistration])
       there was no(hubClient).update(any[NotificationHubRegistrationId], any[RawWindowsRegistration])
       there was three(hubClient).delete(any[NotificationHubRegistrationId])
@@ -99,14 +99,14 @@ with Mockito {
 
     "delete all and replace by only one registration if more than one registration" in new registrations {
       val userRegistrations = (0 to 1).map(generateHubResponse).toList
-      hubClient.registrationsByTag(userIdTag) returns Future.successful(Registrations(userRegistrations, None).right)
-      hubClient.registrationsByChannelUri(registration.deviceId) returns Future.successful(List(generateHubResponse(3)).right)
-      hubClient.delete(any[NotificationHubRegistrationId]) returns Future.successful(().right)
-      hubClient.create(fromMobileRegistration(registration)) returns Future.successful(hubRegResponse.right)
+      hubClient.registrationsByTag(userIdTag) returns Future.successful(Right(Registrations(userRegistrations, None)))
+      hubClient.registrationsByChannelUri(registration.deviceId) returns Future.successful(Right(List(generateHubResponse(3))))
+      hubClient.delete(any[NotificationHubRegistrationId]) returns Future.successful(Right(()))
+      hubClient.create(fromMobileRegistration(registration)) returns Future.successful(Right(hubRegResponse))
 
       val response = provider.register(channelUri, registration)
 
-      response must beEqualTo(registrationResponse.right).await
+      response must beEqualTo(Right(registrationResponse)).await
       there was one(hubClient).create(any[RawWindowsRegistration])
       there was no(hubClient).update(any[NotificationHubRegistrationId], any[RawWindowsRegistration])
       there was exactly(3)(hubClient).delete(any[NotificationHubRegistrationId])
@@ -114,7 +114,7 @@ with Mockito {
 
     "track topic subscriptons" in {
       "record added topic subscriptions from new registration" in new registrations {
-        hubClient.create(any) returns Future.successful(hubRegResponse.right)
+        hubClient.create(any) returns Future.successful(Right(hubRegResponse))
 
         Await.result(provider.register(channelUri, registrationWithTopics), 5.seconds)
 
@@ -123,8 +123,8 @@ with Mockito {
 
       "record updated topic subscriptions from existing registration" in new registrations {
         val hubResponseWithTopics = hubRegResponse.copy(tags = Tag.fromTopic(tagTopic).encodedTag :: hubRegResponse.tags)
-        hubClient.registrationsByTag(userIdTag) returns Future.successful(Registrations(List(hubResponseWithTopics), None).right)
-        hubClient.update(hubResponseWithTopics.registration, fromMobileRegistration(registrationWithTopics)) returns Future.successful(hubResponseWithTopics.right)
+        hubClient.registrationsByTag(userIdTag) returns Future.successful(Right(Registrations(List(hubResponseWithTopics), None)))
+        hubClient.update(hubResponseWithTopics.registration, fromMobileRegistration(registrationWithTopics)) returns Future.successful(Right(hubResponseWithTopics))
 
         Await.result(provider.register(channelUri, registrationWithTopics), 5.seconds)
 
@@ -163,8 +163,8 @@ with Mockito {
     )
     val hubClient = {
       val client = mock[NotificationHubClient]
-      client.registrationsByTag(userIdTag) returns Future.successful(Registrations(Nil, None).right)
-      client.registrationsByChannelUri(registration.deviceId) returns Future.successful(Nil.right)
+      client.registrationsByTag(userIdTag) returns Future.successful(Right(Registrations(Nil, None)))
+      client.registrationsByChannelUri(registration.deviceId) returns Future.successful(Right(Nil))
       client
     }
     val topicSubRepo = mock[TopicSubscriptionsRepository]

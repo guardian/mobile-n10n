@@ -3,6 +3,7 @@ package azure
 import play.api.libs.json.Json
 
 import scala.xml.Elem
+import cats.syntax.either._
 
 case class Outcome(name: OutcomeName, count: Int)
 

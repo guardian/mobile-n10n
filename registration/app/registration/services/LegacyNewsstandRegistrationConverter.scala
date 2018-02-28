@@ -1,6 +1,5 @@
 package registration.services
 
-import cats.data.Xor
 import cats.implicits._
 import error.NotificationsError
 import models._
@@ -8,15 +7,15 @@ import registration.models.LegacyNewsstandRegistration
 
 class LegacyNewsstandRegistrationConverter extends RegistrationConverter[LegacyNewsstandRegistration] {
 
-  def toRegistration(legacyRegistration: LegacyNewsstandRegistration): NotificationsError Xor Registration = {
+  def toRegistration(legacyRegistration: LegacyNewsstandRegistration): Either[NotificationsError, Registration] = {
     val udid = NewsstandUdid.fromDeviceToken(legacyRegistration.pushToken)
-    Registration(
+    Right(Registration(
       deviceId = legacyRegistration.pushToken,
       platform = Newsstand,
       udid = udid,
       topics = Set(Topic(TopicTypes.Newsstand, "newsstand")),
       buildTier = None
-    ).right
+    ))
   }
 
   def fromResponse(legacyRegistration: LegacyNewsstandRegistration, response: RegistrationResponse): LegacyNewsstandRegistration =

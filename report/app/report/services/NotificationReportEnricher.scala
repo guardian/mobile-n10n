@@ -8,6 +8,7 @@ import scala.concurrent.ExecutionContext
 import scala.PartialFunction._
 import scala.concurrent.Future
 import scala.util.Try
+import cats.syntax.either._
 
 class NotificationReportEnricher(hubClient: NotificationHubClient)(implicit ec: ExecutionContext) {
 

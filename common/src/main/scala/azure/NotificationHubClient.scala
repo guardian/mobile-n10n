@@ -6,14 +6,13 @@ import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.Xor
-import cats.implicits._
 import utils.WSImplicits._
+import cats.syntax.either._
 
 case class NotificationHubError(message: String)
 
 object NotificationHubClient {
-  type HubResult[T] = HubFailure Xor T
+  type HubResult[T] = Either[HubFailure, T]
 }
 /**
  * https://msdn.microsoft.com/en-us/library/azure/dn223264.aspx
@@ -70,9 +69,9 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
       .delete()
       .map { response =>
         if (response.status == 200 || response.status == 404) {
-          ().right
+          Right(())
         } else {
-          XmlParser.parseError(response).left
+          Left(XmlParser.parseError(response))
         }
       }
   }
@@ -86,8 +85,8 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
         .addHttpHeaders("ServiceBusNotification-Format" -> rawPush.format)
         .addHttpHeaders(serviceBusTags: _*)
     ).map {
-      case r if r.isSuccess => r.header("Location").right
-      case r => XmlParser.parseError(r).left
+      case r if r.isSuccess => Right(r.header("Location"))
+      case r => Left(XmlParser.parseError(r))
     }
   }
 
@@ -133,7 +132,7 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
       XmlParser.parse[T](response)
     else {
       logger.error(s"Error returned from Azure endpoint (code: ${response.status} with body: ${response.body}")
-      XmlParser.parseError(response).left
+      Left(XmlParser.parseError(response))
     }
   }
 }

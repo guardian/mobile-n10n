@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
 import binders.querystringbinders.{RegistrationsByDeviceToken, RegistrationsByTopicParams, RegistrationsByUdidParams, RegistrationsSelector}
-import cats.data.XorT
+import cats.data.EitherT
 import cats.implicits._
 import error.{NotificationsError, RequestError}
 import models._
@@ -20,7 +20,6 @@ import registration.services._
 import registration.services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.data.Xor
 import cats.implicits._
 import models.pagination.{CursorSet, Paginated}
 import play.api.http.HttpEntity
@@ -59,12 +58,12 @@ final class Main(
 
   def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = actionWithTimeout {
 
-    def registrarFor(platform: Platform) = XorT.fromXor[Future](
+    def registrarFor(platform: Platform) = EitherT.fromEither[Future](
       registrarProvider.registrarFor(platform, None)
     )
 
-    def unregisterFrom(registrar: NotificationRegistrar) = XorT(
-      registrar.unregister(udid): Future[Xor[NotificationsError, Unit]]
+    def unregisterFrom(registrar: NotificationRegistrar) = EitherT(
+      registrar.unregister(udid): Future[Either[NotificationsError, Unit]]
     )
 
     registrarFor(platform)
@@ -81,8 +80,8 @@ final class Main(
   private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(parse.json[T]) { request =>
     val legacyRegistration = request.body
     val result = for {
-      registration <- XorT.fromXor[Future](converter.toRegistration(legacyRegistration))
-      registrationResponse <- XorT(registerCommon(registration.deviceId, registration))
+      registration <- EitherT.fromEither[Future](converter.toRegistration(legacyRegistration))
+      registrationResponse <- EitherT(registerCommon(registration.deviceId, registration))
     } yield {
       converter.fromResponse(legacyRegistration, registrationResponse)
     }
@@ -125,8 +124,8 @@ final class Main(
 
   def registrationsByDeviceToken(platform: Platform, deviceToken: String): Action[AnyContent] = Action.async {
     val result = for {
-      registrar <- XorT.fromXor[Future](registrarProvider.registrarFor(platform, None))
-      registrations <- XorT(registrar.findRegistrations(deviceToken): Future[Xor[NotificationsError, List[StoredRegistration]]])
+      registrar <- EitherT.fromEither[Future](registrarProvider.registrarFor(platform, None))
+      registrations <- EitherT(registrar.findRegistrations(deviceToken): Future[Either[NotificationsError, List[StoredRegistration]]])
     } yield registrations
     result.fold(processErrors, res => Ok(Json.toJson(res)))
   }
@@ -146,16 +145,16 @@ final class Main(
     }
   }
 
-  private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[NotificationsError Xor RegistrationResponse] = {
+  private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {
 
     def validate(topics: Set[Topic]): Future[Set[Topic]] =
       topicValidator
         .removeInvalid(topics)
         .map {
-          case Xor.Right(filteredTopics) =>
+          case Right(filteredTopics) =>
             logger.debug(s"Successfully validated topics in registration (${registration.deviceId}), topics valid: [$filteredTopics]")
             filteredTopics
-          case Xor.Left(e) =>
+          case Left(e) =>
             logger.error(s"Could not validate topics ${e.topicsQueried} for registration (${registration.deviceId}), reason: ${e.reason}")
             topics
         }
@@ -164,19 +163,19 @@ final class Main(
       registrar
         .register(lastKnownDeviceId, registration.copy(topics = topics))
 
-    def logErrors: PartialFunction[Try[ProviderError Xor RegistrationResponse], Unit] = {
-      case Success(Xor.Left(v)) => logger.error(s"Failed to register $registration with ${v.providerName}: ${v.reason}")
+    def logErrors: PartialFunction[Try[Either[ProviderError, RegistrationResponse]], Unit] = {
+      case Success(Left(v)) => logger.error(s"Failed to register $registration with ${v.providerName}: ${v.reason}")
     }
 
     registrarProvider.registrarFor(registration) match {
-      case Xor.Right(registrar) =>
+      case Right(registrar) =>
         validate(registration.topics).flatMap(registerWith(registrar, _).andThen(logErrors))
-      case Xor.Left(error) =>
-        Future.successful(error.left)
+      case Left(error) =>
+        Future.successful(Left(error))
     }
   }
 
-  private def processResponse[T](result: NotificationsError Xor T)(implicit writer: Writes[T]) : Result =
+  private def processResponse[T](result: Either[NotificationsError, T])(implicit writer: Writes[T]) : Result =
     result.fold(processErrors, res => Ok(Json.toJson(res)))
 
   private def processErrors(error: NotificationsError): Result = error match {

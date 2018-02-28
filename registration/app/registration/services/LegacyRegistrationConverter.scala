@@ -4,24 +4,23 @@ import error.NotificationsError
 import registration.models.LegacyTopic
 import models._
 import registration.models.LegacyRegistration
-import cats.data.Xor
 import cats.implicits._
 
 class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistration] {
 
-  def toRegistration(legacyRegistration: LegacyRegistration): NotificationsError Xor Registration = {
-    val unsupportedPlatform: NotificationsError Xor Registration =
-      Xor.left(UnsupportedPlatform(legacyRegistration.device.platform))
+  def toRegistration(legacyRegistration: LegacyRegistration): Either[NotificationsError, Registration] = {
+    val unsupportedPlatform: Either[NotificationsError, Registration] =
+      Left(UnsupportedPlatform(legacyRegistration.device.platform))
 
     Platform.fromString(legacyRegistration.device.platform).fold(unsupportedPlatform) { platform =>
-      Registration(
+      Right(Registration(
         deviceId = legacyRegistration.device.pushToken,
         platform = platform,
         // The Windows app sends a device generated guid as the userId, not a real Guardian user id so udid is equivalent
         udid = legacyRegistration.device.udid,
         topics = topics(legacyRegistration),
         buildTier = Some(legacyRegistration.device.buildTier)
-      ).right
+      ))
     }
   }
 

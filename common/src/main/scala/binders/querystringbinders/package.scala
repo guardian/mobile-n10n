@@ -25,7 +25,7 @@ package object querystringbinders {
   }
 
   implicit def qsbindableTopic: QueryStringBindable[Topic] = new Parsing[Topic](
-    parse = Topic.fromString(_).toEither,
+    parse = Topic.fromString(_),
     serialize = _.toString,
     typeName = "Topic"
   )

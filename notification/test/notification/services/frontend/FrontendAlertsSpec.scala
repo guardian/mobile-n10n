@@ -26,7 +26,7 @@ class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with M
         notification = breakingNewsNotification(validTopics).asInstanceOf[BreakingNewsNotification].copy(link = External("url"))
       )
 
-      alerts.sendNotification(push) must beEqualTo(NotificationRejected(Some(FrontendAlertsProviderError("Alert could not be created"))).left).await
+      alerts.sendNotification(push) must beEqualTo(Left(NotificationRejected(Some(FrontendAlertsProviderError("Alert could not be created"))))).await
 
       there was no(wsClient).url(any)
     }
@@ -40,7 +40,7 @@ class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with M
       } { implicit port =>
         WsTestClient.withClient { client =>
           val alerts = new FrontendAlerts(config, client)
-          alerts.sendNotification(userTargetedBreakingNewsPush()) map { _.toEither } must beRight.await
+          alerts.sendNotification(userTargetedBreakingNewsPush()) must beRight.await
         }
       }
     }

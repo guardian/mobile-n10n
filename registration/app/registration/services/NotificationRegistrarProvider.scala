@@ -6,14 +6,13 @@ import registration.services.azure._
 
 import scala.collection.breakOut
 import scala.concurrent.ExecutionContext
-import cats.data.Xor
 import cats.implicits._
 
 trait RegistrarProvider {
-  def registrarFor(registration: Registration): Xor[NotificationsError, NotificationRegistrar] =
+  def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
     registrarFor(registration.platform, registration.buildTier)
 
-  def registrarFor(platform: Platform, buildTier: Option[String]): Xor[NotificationsError, NotificationRegistrar]
+  def registrarFor(platform: Platform, buildTier: Option[String]): Either[NotificationsError, NotificationRegistrar]
 
   def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T]
 }
@@ -36,12 +35,12 @@ final class NotificationRegistrarProvider(
       .values
       .flatMap(_.headOption)(breakOut)
 
-  override def registrarFor(platform: Platform, buildTier: Option[String]): NotificationsError Xor NotificationRegistrar = platform match {
-    case WindowsMobile => windowsRegistrar.right
-    case Android => gcmRegistrar.right
-    case `iOS` => apnsRegistrar.right
-    case Newsstand => newsstandRegistrar.right
-    case _ => UnsupportedPlatform(platform.toString).left
+  override def registrarFor(platform: Platform, buildTier: Option[String]): Either[NotificationsError, NotificationRegistrar] = platform match {
+    case WindowsMobile => Right(windowsRegistrar)
+    case Android => Right(gcmRegistrar)
+    case `iOS` => Right(apnsRegistrar)
+    case Newsstand => Right(newsstandRegistrar)
+    case _ => Left(UnsupportedPlatform(platform.toString))
   }
 
   def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T] =

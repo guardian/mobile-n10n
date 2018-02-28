@@ -1,8 +1,8 @@
 package tracking
 
-import cats.data.Xor
 import models.Topic
 import tracking.Repository._
+import cats.syntax.either._
 
 import scala.concurrent.Future
 
@@ -26,5 +26,5 @@ class InMemoryTopicSubscriptionsRepository extends TopicSubscriptionsRepository 
   }
 
   override def topicFromId(topicId: String): Future[RepositoryResult[Topic]] =
-    Future.successful(Xor.fromOption(counters.keys.find(_.id == topicId), RepositoryError("Topic not found")))
+    Future.successful(Either.fromOption(counters.keys.find(_.id == topicId), RepositoryError("Topic not found")))
 }

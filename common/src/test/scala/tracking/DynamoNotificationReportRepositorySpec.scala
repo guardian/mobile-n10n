@@ -18,7 +18,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-import cats.implicits._
+import cats.syntax.either._
 
 class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends DynamodbSpecification with Mockito {
 
@@ -82,7 +82,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
         topic = Set(Topic(Breaking, "uk"))
       ),
       reports = List(
-        SenderReport("Windows", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), Some(s"hub-$id"), PlatformStatistics(WindowsMobile, 5).some)
+        SenderReport("Windows", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), Some(s"hub-$id"), Some(PlatformStatistics(WindowsMobile, 5)))
       )
     )
   }

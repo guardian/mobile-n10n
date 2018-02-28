@@ -69,7 +69,7 @@ class NotificationReportEnricherSpec(implicit ev: ExecutionEnv) extends Specific
     }
 
     senderReportsWithDetails.foreach { case (sendersId, _, details) =>
-      hubClient.notificationDetails(sendersId) returns Future.successful(details.right)
+      hubClient.notificationDetails(sendersId) returns Future.successful(Right(details))
     }
 
     val report = NotificationReport(

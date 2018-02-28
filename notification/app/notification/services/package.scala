@@ -3,8 +3,6 @@ package notification
 import _root_.models.SenderReport
 import error.NotificationsError
 
-import cats.data.Xor
-
 package object services {
   trait SenderError extends NotificationsError {
     def senderName: String
@@ -21,5 +19,5 @@ package object services {
     val FrontendAlerts = "Frontend Alerts Sender"
   }
 
-  type SenderResult = NotificationRejected Xor SenderReport
+  type SenderResult = Either[NotificationRejected, SenderReport]
 }

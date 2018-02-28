@@ -23,13 +23,13 @@ package object pathbinders {
   )
 
   implicit def pathbindableNotificationHubRegistrationId: PathBindable[NotificationHubRegistrationId] = new Parsing[NotificationHubRegistrationId](
-    parse = NotificationHubRegistrationId.fromString(_).toEither,
+    parse = NotificationHubRegistrationId.fromString(_),
     serialize = _.toString,
     typeName = "registration id"
   )
 
   implicit def pathbindableTopic: play.api.mvc.PathBindable[Topic] = new Parsing[Topic](
-    parse = Topic.fromString(_).toEither,
+    parse = Topic.fromString(_),
     serialize = _.toString,
     typeName = "topic"
   )

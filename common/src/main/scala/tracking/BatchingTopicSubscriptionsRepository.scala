@@ -75,12 +75,12 @@ class BatchingTopicSubscriptionsRepository(underlying: TopicSubscriptionsReposit
 
   override def deviceSubscribed(topic: Topic, count: Int = 1): Future[RepositoryResult[Unit]] = {
     actor ! SubscriptionEvent(Some(topic), topic.id, count)
-    Future.successful(().right)
+    Future.successful(Right(()))
   }
 
   override def deviceUnsubscribed(topicId: String, count: Int = 1): Future[RepositoryResult[Unit]] = {
     actor ! SubscriptionEvent(None, topicId, -count)
-    Future.successful(().right)
+    Future.successful(Right(()))
   }
 
   override def count(topic: Topic): Future[RepositoryResult[Int]] = underlying.count(topic)

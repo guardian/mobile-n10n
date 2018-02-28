@@ -69,7 +69,7 @@ class NotificationReportTest extends Specification {
             topic = Set(Topic(Breaking, "uk"))
           ),
           reports = List(
-            SenderReport("Windows", sentTime, None, PlatformStatistics(WindowsMobile, recipientsCount = 3).some)
+            SenderReport("Windows", sentTime, None, Some(PlatformStatistics(WindowsMobile, recipientsCount = 3)))
           )
         )
       }

@@ -15,11 +15,12 @@ import play.api.test.PlaySpecification
 import tracking.InMemoryNotificationReportRepository
 
 import scala.concurrent.Future
-import cats.implicits._
 import notification.authentication.NotificationAuthAction
 import notification.services.azure.NewsstandSender
 import play.api.mvc.DefaultControllerComponents
 import play.api.test.Helpers.stubControllerComponents
+import cats.instances.future._
+import cats.syntax.either._
 
 
 class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito with JsonMatchers with DateTimeFreezed {
@@ -78,12 +79,12 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
 
       status(response) must equalTo(CREATED)
-      reportRepository.getByUuid(expectedReport.notification.id) must equalTo(expectedReport.right).await
+      reportRepository.getByUuid(expectedReport.notification.id) must equalTo(Right(expectedReport)).await
     }
 
     "report frontend alerts rejected notifications" in new MainScope {
       val request = requestWithValidTopics
-      frontendAlerts.sendNotification(any) returns Future.successful(NotificationRejected(Some(providerError)).left)
+      frontendAlerts.sendNotification(any) returns Future.successful(Left(NotificationRejected(Some(providerError))))
 
       val response = main.pushTopics()(request)
 
@@ -104,7 +105,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     "notification report has sent time of last sender report" in new MainScope {
       val request = requestWithValidTopics
       val frontendAlertsReport = senderReport(Senders.FrontendAlerts, sentTimeOffsetSeconds = 1)
-      frontendAlerts.sendNotification(any) returns Future.successful(frontendAlertsReport.right)
+      frontendAlerts.sendNotification(any) returns Future.successful(Right(frontendAlertsReport))
 
       val response = main.pushTopics()(request)
 
@@ -113,7 +114,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       val sentTime = reportRepository.getByUuid(breakingNewsNotification(Set.empty).id).map(_.map(_.sentTime))
 
-      sentTime must beEqualTo(frontendAlertsReport.sentTime.right).await
+      sentTime must beEqualTo(Right(frontendAlertsReport.sentTime)).await
     }
   }
 
@@ -141,12 +142,12 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     var pushSent: Option[Push] = None
 
     val newsstandNotificationSender = mock[NewsstandSender]
-    newsstandNotificationSender.sendNotification(any[UUID]) returns Future.successful("".some.right)
+    newsstandNotificationSender.sendNotification(any[UUID]) returns Future.successful(Right(Some("")))
     val windowsNotificationSender = {
       new NotificationSender {
         override def sendNotification(push: Push): Future[SenderResult] = {
           pushSent = Some(push)
-          Future.successful(senderReport(Senders.AzureNotificationsHub).right)
+          Future.successful(Right(senderReport(Senders.AzureNotificationsHub)))
         }
       }
     }
@@ -155,7 +156,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
   trait FrontendAlertsScope extends Scope {
     self: NotificationsFixtures =>
     val frontendAlerts = mock[FrontendAlerts]
-    frontendAlerts.sendNotification(any) returns Future.successful(senderReport(Senders.FrontendAlerts, None).right)
+    frontendAlerts.sendNotification(any) returns Future.successful(Right(senderReport(Senders.FrontendAlerts, None)))
   }
 
   trait MainScope extends Scope
