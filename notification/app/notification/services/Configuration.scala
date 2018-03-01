@@ -33,7 +33,6 @@ class Configuration(conf: PlayConfig) {
   val disableElectionNotificationsIOS: Boolean = conf.getOptional[Boolean]("notifications.elections.ios.disabled").getOrElse(false)
 
   private def getConfigurableHubConnection(hubConfigurationName: String): NotificationHubConnection = {
-    val maybeEndpoint = conf.getOptional[String](hubConfigurationName)
     val hub = for {
       endpoint <- conf.getOptional[String](s"$hubConfigurationName.hub.endpoint")
       sharedAccessKeyName <- conf.getOptional[String](s"$hubConfigurationName.hub.sharedAccessKeyName")
