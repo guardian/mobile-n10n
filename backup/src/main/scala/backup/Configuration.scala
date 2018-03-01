@@ -19,8 +19,6 @@ case class Configuration(
 object Configuration extends BackupLogging {
 
   def load(credentials: AWSCredentialsProvider): Configuration = {
-    val bucket: String = getEnvironmentValueOrDie("ConfigurationBucket", "No S3 Configuration bucket provided")
-    val configurationKey: String = getEnvironmentValueOrDie("ConfigurationKey", "No S3 key for configuration provided")
     val app: String = getEnvironmentValueOrDie("App", "No app tag set")
     val stack: String = getEnvironmentValueOrDie("Stack", "No stack tag set")
     val stage: String = getEnvironmentValueOrDie("Stage", "No stage tag set")
@@ -30,7 +28,7 @@ object Configuration extends BackupLogging {
       case AwsIdentity(app, stack, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/$stack")
     }
 
-    logger.info(s"Loading config. Stage: $stage Bucket: $bucket Key: $configurationKey")
+    logger.info(s"Loading config. Stage: $stage")
 
     val storageConnectionString = config.getString("azure.storage.connectionString")
     logger.info(s"storageConnectionKey: $storageConnectionString")
