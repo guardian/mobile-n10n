@@ -5,41 +5,47 @@ import akka.stream.ActorMaterializer
 import backup.logging.BackupLogging
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.auth.{AWSCredentialsProviderChain, InstanceProfileCredentialsProvider}
+import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
 
-import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 object Lambda extends BackupLogging {
 
   implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
-  implicit val actorSystem = ActorSystem()
-  implicit val actorMaterializer = ActorMaterializer()
 
-  val credentials = new AWSCredentialsProviderChain(
-    new ProfileCredentialsProvider("mobile"),
-    InstanceProfileCredentialsProvider.getInstance
-  )
+  private def withWsClient[A](block: WSClient => Future[A]): Future[A] = {
+    implicit val actorSystem: ActorSystem = ActorSystem()
+    implicit val actorMaterializer: ActorMaterializer = ActorMaterializer()
+    val ws = AhcWSClient()
 
-  val config = Configuration.load(credentials)
+    block(ws)
+      .andThen { case _ => ws.close() }
+      .andThen { case _ => actorSystem.terminate() }
+  }
 
   def handler() : String = {
+    val credentials = new AWSCredentialsProviderChain(
+      new ProfileCredentialsProvider("mobile"),
+      InstanceProfileCredentialsProvider.getInstance
+    )
 
-    val wSClient = AhcWSClient()
-    val backup = new Backup(config, wSClient)
+    val config = Configuration.load(credentials)
 
-    logger.info("Starting backup")
-    backup.execute().onComplete {
-      case Success(_) =>
-        logger.info("End of backup")
-        wSClient.close()
-        actorSystem.terminate()
-      case Failure(error)  =>
-        logger.error(error.getMessage, error)
-        wSClient.close()
-        actorSystem.terminate()
+    withWsClient { ws =>
+      val backup = new Backup(config, ws)
+
+      logger.info("Starting backup")
+      backup.execute().andThen {
+        case Success(_) =>
+          logger.info("End of backup")
+        case Failure(error) =>
+          logger.error(error.getMessage, error)
+      }
     }
    "Done"
   }
 
+  def main(args: Array[String]): Unit = handler()
 }

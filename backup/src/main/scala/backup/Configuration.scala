@@ -3,8 +3,7 @@ package backup
 import azure.NotificationHubConnection
 import backup.logging.BackupLogging
 import com.amazonaws.auth.AWSCredentialsProvider
-import com.amazonaws.regions.Regions
-import com.gu.AwsIdentity
+import com.gu.{AppIdentity, AwsIdentity}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.typesafe.config.Config
 
@@ -19,16 +18,10 @@ case class Configuration(
 object Configuration extends BackupLogging {
 
   def load(credentials: AWSCredentialsProvider): Configuration = {
-    val app: String = getEnvironmentValueOrDie("App", "No app tag set")
-    val stack: String = getEnvironmentValueOrDie("Stack", "No stack tag set")
-    val stage: String = getEnvironmentValueOrDie("Stage", "No stage tag set")
-
-    val identity = new AwsIdentity(app, stack, stage, Regions.EU_WEST_1.getName)
+    val identity = AppIdentity.whoAmI("notifications")
     val config = ConfigurationLoader.load(identity, credentials) {
-      case AwsIdentity(app, stack, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/$stack")
+      case AwsIdentity(_, stack, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/$stack")
     }
-
-    logger.info(s"Loading config. Stage: $stage")
 
     val storageConnectionString = config.getString("azure.storage.connectionString")
     logger.info(s"storageConnectionKey: $storageConnectionString")
@@ -56,10 +49,6 @@ object Configuration extends BackupLogging {
 
     NotificationHubConnection(endpoint, sharedAccessKeyName, sharedAccessKey)
 
-  }
-
-  private def getEnvironmentValueOrDie(configurationKey: String, errorMessage: String): String = {
-    Option(System.getenv(configurationKey)).getOrElse(sys.error(s"$errorMessage. Lambda will not run"))
   }
 
 }
