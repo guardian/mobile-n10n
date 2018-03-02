@@ -6,31 +6,31 @@ import play.api.{Configuration => PlayConfig}
 import scala.concurrent.duration._
 
 class Configuration(conf: PlayConfig) {
-  val defaultHub = NotificationHubConnection(
+  lazy val defaultHub = NotificationHubConnection(
     endpoint = conf.get[String]("azure.hub.endpoint"),
     sharedAccessKeyName = conf.get[String]("azure.hub.sharedAccessKeyName"),
     sharedAccessKey = conf.get[String]("azure.hub.sharedAccessKey")
   )
 
-  val enterpriseHub: NotificationHubConnection = getConfigurableHubConnection("enterprise")
+  lazy val enterpriseHub: NotificationHubConnection = getConfigurableHubConnection("enterprise")
 
-  val newsstandHub: NotificationHubConnection = getConfigurableHubConnection("newsstand.azure")
+  lazy val newsstandHub: NotificationHubConnection = getConfigurableHubConnection("newsstand.azure")
 
-  val hubSharedAccessKeyName: String = conf.get[String]("azure.hub.sharedAccessKeyName")
-  val hubSharedAccessKey: String = conf.get[String]("azure.hub.sharedAccessKey")
-  val apiKeys: Seq[String] = conf.get[Seq[String]]("notifications.api.secretKeys")
-  val electionRestrictedApiKeys: Seq[String] = conf.get[Seq[String]]("notifications.api.electionRestrictedKeys")
-  val mapiItemEndpoint: String = conf.getOptional[String]("mapi.items.endpoint").getOrElse("http://mobile-apps.guardianapis.com/items")
-  val debug: Boolean = conf.get[Boolean]("notifications.api.debug")
-  val frontendNewsAlertEndpoint: String = conf.get[String]("notifications.frontendNewsAlert.endpoint")
-  val frontendNewsAlertApiKey: String = conf.get[String]("notifications.frontendNewsAlert.apiKey")
-  val dynamoReportsTableName: String = conf.get[String]("db.dynamo.reports.table-name")
-  val dynamoTopicsTableName: String = conf.get[String]("db.dynamo.topics.table-name")
-  val dynamoTopicsFlushInterval: FiniteDuration = conf.getOptional[FiniteDuration]("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
-  val frontendBaseUrl: String = conf.get[String]("frontend.baseUrl")
+  lazy val hubSharedAccessKeyName: String = conf.get[String]("azure.hub.sharedAccessKeyName")
+  lazy val hubSharedAccessKey: String = conf.get[String]("azure.hub.sharedAccessKey")
+  lazy val apiKeys: Seq[String] = conf.get[Seq[String]]("notifications.api.secretKeys")
+  lazy val electionRestrictedApiKeys: Seq[String] = conf.get[Seq[String]]("notifications.api.electionRestrictedKeys")
+  lazy val mapiItemEndpoint: String = conf.getOptional[String]("mapi.items.endpoint").getOrElse("http://mobile-apps.guardianapis.com/items")
+  lazy val debug: Boolean = conf.get[Boolean]("notifications.api.debug")
+  lazy val frontendNewsAlertEndpoint: String = conf.get[String]("notifications.frontendNewsAlert.endpoint")
+  lazy val frontendNewsAlertApiKey: String = conf.get[String]("notifications.frontendNewsAlert.apiKey")
+  lazy val dynamoReportsTableName: String = conf.get[String]("db.dynamo.reports.table-name")
+  lazy val dynamoTopicsTableName: String = conf.get[String]("db.dynamo.topics.table-name")
+  lazy val dynamoTopicsFlushInterval: FiniteDuration = conf.getOptional[FiniteDuration]("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
+  lazy val frontendBaseUrl: String = conf.get[String]("frontend.baseUrl")
 
-  val disableElectionNotificationsAndroid: Boolean = conf.getOptional[Boolean]("notifications.elections.android.disabled").getOrElse(false)
-  val disableElectionNotificationsIOS: Boolean = conf.getOptional[Boolean]("notifications.elections.ios.disabled").getOrElse(false)
+  lazy val disableElectionNotificationsAndroid: Boolean = conf.getOptional[Boolean]("notifications.elections.android.disabled").getOrElse(false)
+  lazy val disableElectionNotificationsIOS: Boolean = conf.getOptional[Boolean]("notifications.elections.ios.disabled").getOrElse(false)
 
   private def getConfigurableHubConnection(hubConfigurationName: String): NotificationHubConnection = {
     val hub = for {
