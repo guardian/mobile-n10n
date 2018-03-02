@@ -25,7 +25,7 @@ import utils.CustomApplicationLoader
 
 import router.Routes
 
-class NotificationApplicationLoader extends CustomApplicationLoader("notification") {
+class NotificationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(context: Context) = new NotificationApplicationComponents(context)
 }
 

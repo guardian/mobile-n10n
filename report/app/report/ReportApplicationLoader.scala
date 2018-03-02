@@ -21,7 +21,7 @@ import utils.CustomApplicationLoader
 
 import router.Routes
 
-class ReportApplicationLoader extends CustomApplicationLoader("report") {
+class ReportApplicationLoader extends CustomApplicationLoader {
   def buildComponents(context: Context): BuiltInComponents = new ReportApplicationComponents(context)
 }
 

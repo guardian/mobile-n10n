@@ -26,7 +26,7 @@ import utils.CustomApplicationLoader
 
 import router.Routes
 
-class RegistrationApplicationLoader extends CustomApplicationLoader("registration") {
+class RegistrationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(context: Context) : BuiltInComponents = new RegistrationApplicationComponents(context)
 }
 

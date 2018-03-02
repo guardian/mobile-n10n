@@ -7,7 +7,7 @@ import com.gu.{AppIdentity, AwsIdentity}
 import play.api.ApplicationLoader.Context
 import play.api._
 
-abstract class CustomApplicationLoader(appName: String) extends ApplicationLoader {
+abstract class CustomApplicationLoader extends ApplicationLoader {
   def buildComponents(context: Context): BuiltInComponents
 
   lazy val credentials = new AWSCredentialsProviderChain(
@@ -17,7 +17,7 @@ abstract class CustomApplicationLoader(appName: String) extends ApplicationLoade
 
   override def load(context: Context): Application = {
     LoggerConfigurator(context.environment.classLoader) foreach { _.configure(context.environment) }
-    val identity = AppIdentity.whoAmI(defaultAppName = appName)
+    val identity = AppIdentity.whoAmI("notifications")
     val config = ConfigurationLoader.load(identity, credentials) {
       case AwsIdentity(app, stack, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/$stack")
     }
