@@ -40,13 +40,12 @@ lazy val common = project
       "com.microsoft.azure" % "azure-servicebus" % "0.7.0",
       "org.typelevel" %% "cats-core" % "1.0.1",
       "joda-time" % "joda-time" % "2.8.2",
-      "com.gu" %% "configuration" % "4.1",
       "io.spray" %% "spray-caching" % "1.3.3",
       "com.typesafe.play" %% "play-json" % "2.6.8",
       "com.typesafe.play" %% "play-json-joda" % "2.6.8",
       "com.typesafe.play" %% "play-logback" % "2.6.11",
       "com.gu" %% "pa-client" % "6.0.2",
-      "com.gu" %% "simple-s3-configuration" % "1.0",
+      "com.gu" %% "simple-configuration-ssm" % "1.4.1",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.60",
       "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
       "org.specs2" %% "specs2-core" % "3.8.5" % "test",
@@ -64,6 +63,7 @@ lazy val backup = project
   .enablePlugins(RiffRaffArtifact)
   .settings(standardSettings: _*)
   .settings(
+    fork := true,
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-logback" % "2.5.3",
       "com.microsoft.azure" % "azure-storage" % "3.1.0"

@@ -1,17 +1,17 @@
 package report.services
 
 import azure.NotificationHubConnection
-import conf.NotificationConfiguration
+import play.api.{Configuration => PlayConfig}
 
-class Configuration extends NotificationConfiguration("report") {
-  lazy val apiKeys = conf.getStringPropertiesSplitByComma("notifications.api.secretKeys")
-  lazy val electionRestrictedApiKeys = conf.getStringPropertiesSplitByComma("notifications.api.electionRestrictedKeys")
-  lazy val reportsOnlyApiKeys = conf.getStringPropertiesSplitByComma("notifications.api.reportsOnlyKeys")
-  lazy val dynamoReportsTableName = getConfigString("db.dynamo.reports.table-name")
+class Configuration(conf: PlayConfig) {
+  lazy val apiKeys: Seq[String] = conf.get[Seq[String]]("notifications.api.secretKeys")
+  lazy val electionRestrictedApiKeys: Seq[String] = conf.get[Seq[String]]("notifications.api.electionRestrictedKeys")
+  lazy val reportsOnlyApiKeys: Seq[String] = conf.get[Seq[String]]("notifications.api.reportsOnlyKeys")
+  lazy val dynamoReportsTableName: String = conf.get[String]("db.dynamo.reports.table-name")
 
   lazy val defaultHub = NotificationHubConnection(
-    endpoint = getConfigString("azure.hub.endpoint"),
-    sharedAccessKeyName = getConfigString("azure.hub.sharedAccessKeyName"),
-    sharedAccessKey = getConfigString("azure.hub.sharedAccessKey")
+    endpoint = conf.get[String]("azure.hub.endpoint"),
+    sharedAccessKeyName = conf.get[String]("azure.hub.sharedAccessKeyName"),
+    sharedAccessKey = conf.get[String]("azure.hub.sharedAccessKey")
   )
 }

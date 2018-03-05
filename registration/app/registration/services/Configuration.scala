@@ -2,38 +2,36 @@ package registration.services
 
 import auditor.{AuditorGroupConfig, ApiConfig}
 import _root_.azure.NotificationHubConnection
-import conf.NotificationConfiguration
+import play.api.{Configuration => PlayConfig}
 
 import scala.concurrent.duration._
 
-class Configuration extends NotificationConfiguration("registration") {
-  lazy val legacyNotficationsEndpoint = getConfigString("legacy_notifications.endpoint")
-
+class Configuration(conf: PlayConfig) {
   lazy val defaultHub = NotificationHubConnection(
-    endpoint = getConfigString("azure.hub.endpoint"),
-    sharedAccessKeyName = getConfigString("azure.hub.sharedAccessKeyName"),
-    sharedAccessKey = getConfigString("azure.hub.sharedAccessKey")
+    endpoint = conf.get[String]("azure.hub.endpoint"),
+    sharedAccessKeyName = conf.get[String]("azure.hub.sharedAccessKeyName"),
+    sharedAccessKey = conf.get[String]("azure.hub.sharedAccessKey")
   )
 
   lazy val newsstandHub = NotificationHubConnection(
-    endpoint = getConfigString("newsstand.azure.hub.endpoint"),
-    sharedAccessKeyName = getConfigString("newsstand.azure.hub.sharedAccessKeyName"),
-    sharedAccessKey = getConfigString("newsstand.azure.hub.sharedAccessKey")
+    endpoint = conf.get[String]("newsstand.azure.hub.endpoint"),
+    sharedAccessKeyName = conf.get[String]("newsstand.azure.hub.sharedAccessKeyName"),
+    sharedAccessKey = conf.get[String]("newsstand.azure.hub.sharedAccessKey")
   )
 
   lazy val auditorConfiguration = AuditorGroupConfig(
     contentApiConfig = ApiConfig(
-      apiKey = getConfigString("notifications.auditor.contentApi.apiKey"),
-      url = getConfigString("notifications.auditor.contentApi.url")
+      apiKey = conf.get[String]("notifications.auditor.contentApi.apiKey"),
+      url = conf.get[String]("notifications.auditor.contentApi.url")
     ),
     paApiConfig = ApiConfig(
-      apiKey = getConfigString("notifications.auditor.paApi.apiKey"),
-      url = getConfigString("notifications.auditor.paApi.url")
+      apiKey = conf.get[String]("notifications.auditor.paApi.apiKey"),
+      url = conf.get[String]("notifications.auditor.paApi.url")
     )
   )
-  lazy val maxTopics = getConfigInt("notifications.max_topics")
-  lazy val dynamoTopicsTableName = getConfigString("db.dynamo.topics.table-name")
-  lazy val dynamoTopicsFlushInterval = getFiniteDuration("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
+  lazy val maxTopics: Int = conf.get[Int]("notifications.max_topics")
+  lazy val dynamoTopicsTableName: String = conf.get[String]("db.dynamo.topics.table-name")
+  lazy val dynamoTopicsFlushInterval: FiniteDuration = conf.getOptional[FiniteDuration]("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
 
-  lazy val defaultTimeout = getFiniteDuration("routes.defaultTimeout").getOrElse(30.seconds)
+  lazy val defaultTimeout: FiniteDuration = conf.getOptional[FiniteDuration]("routes.defaultTimeout").getOrElse(30.seconds)
 }

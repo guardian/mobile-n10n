@@ -19,14 +19,6 @@ Parameters:
     Description: S3 Bucket where RiffRaff uploads artifacts on Deploy
     Type: String
     Default: mobile-notifications-dist
-  ConfigurationBucket:
-    Description: S3 Bucket where the app configuration is hosted
-    Type: String
-    Default: mobile-notifications-dist
-  ConfigurationFileName:
-    Description: Name of the file containing the application configuration
-    Type: String
-    Default: mobile-notifications.properties
 Resources:
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -66,14 +58,12 @@ Resources:
                 - iam:Get*
                 - iam:List*
               Resource: "*"
-        - PolicyName: s3Config
+        - PolicyName: conf
           PolicyDocument:
             Statement:
+            - Action: ssm:GetParametersByPath
               Effect: Allow
-              Action:
-                - s3:GetObject
-              Resource: !Sub arn:aws:s3:::mobile-notifications-dist/${Stage}/*
-
+              Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/${Stack}
 
   BackupLambda:
     Type: AWS::Lambda::Function
@@ -84,8 +74,8 @@ Resources:
         S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
       Environment:
         Variables:
-          ConfigurationBucket: !Ref ConfigurationBucket
-          ConfigurationKey: !Sub ${Stage}/${ConfigurationFileName}
+          App: !Sub ${App}
+          Stack: !Sub ${Stack}
           Stage: !Sub ${Stage}
       Description: Lambda to backup notification azure hubs
       Handler: backup.Lambda::handler
