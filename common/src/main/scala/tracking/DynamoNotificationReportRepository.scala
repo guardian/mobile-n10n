@@ -3,7 +3,7 @@ package tracking
 import java.util.UUID
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import cats.implicits._
 
@@ -29,7 +29,7 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
   private val SentTimeIndex = "sentTime-index"
 
   override def store(report: NotificationReport): Future[RepositoryResult[Unit]] = {
-    val putItemRequest = new PutItemRequest(tableName, toAttributeMap(report))
+    val putItemRequest = new PutItemRequest(tableName, toAttributeMap(report).asJava)
     client.putItem(putItemRequest) map { _ => Right(()) }
   }
 
@@ -39,24 +39,24 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
       .withKeyConditions(Map(
         TypeField -> keyEquals(notificationType.value),
         SentTimeField -> keyBetween(from.toString, to.toString)
-      ))
+      ).asJava)
 
     client.query(q) map { result =>
-      Right(result.getItems.toList.flatMap { item =>
-        fromAttributeMap[NotificationReport](item.toMap).asOpt
+      Right(result.getItems.asScala.toList.flatMap { item =>
+        fromAttributeMap[NotificationReport](item.asScala.toMap).asOpt
       })
     }
   }
 
   override def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
     val q = new QueryRequest(tableName)
-      .withKeyConditions(Map(IdField -> keyEquals(uuid.toString)))
+      .withKeyConditions(Map(IdField -> keyEquals(uuid.toString)).asJava)
       .withConsistentRead(true)
 
     client.query(q) map { result =>
       for {
-        item <- Either.fromOption(result.getItems.headOption, RepositoryError("UUID not found"))
-        parsed <- Either.fromOption(fromAttributeMap[NotificationReport](item.toMap).asOpt, RepositoryError("Unable to parse report"))
+        item <- Either.fromOption(result.getItems.asScala.headOption, RepositoryError("UUID not found"))
+        parsed <- Either.fromOption(fromAttributeMap[NotificationReport](item.asScala.toMap).asOpt, RepositoryError("Unable to parse report"))
       } yield parsed
     }
   }
