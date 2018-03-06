@@ -87,7 +87,7 @@ Resources:
   BackupHourlyEvent:
     Type: AWS::Events::Rule
     Properties:
-      Description: Backs up every day
+      Description: Backs up twice a day
       ScheduleExpression: rate(12 hours)
       Targets:
         - Id: BackupLambda
