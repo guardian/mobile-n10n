@@ -19,7 +19,7 @@ import play.api.mvc.EssentialFilter
 import play.filters.HttpFiltersComponents
 import play.filters.hosts.AllowedHostsFilter
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
-import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar, WindowsNotificationRegistrar}
+import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar}
 import registration.services._
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
 import utils.CustomApplicationLoader
@@ -56,7 +56,6 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker)
 
-  lazy val winNotificationRegistrar: WindowsNotificationRegistrar = new WindowsNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
   lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
 

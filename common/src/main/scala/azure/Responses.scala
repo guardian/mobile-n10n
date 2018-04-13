@@ -6,7 +6,7 @@ import org.joda.time.DateTime
 import play.api.libs.ws.WSResponse
 import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
-import models.{Android, Platform, WindowsMobile, iOS}
+import models.{Android, Platform, iOS}
 import utils.WSImplicits._
 import cats.syntax.either._
 
@@ -97,13 +97,6 @@ object RegistrationResponse {
   implicit val reader = new XmlReads[RegistrationResponse] {
     def reads(xml: Elem) = {
       xml.label match {
-        case "WindowsRegistrationDescription" =>
-          for {
-            expirationTime <- xml.dateTimeNode("ExpirationTime")
-            registrationId <- xml.textNode("RegistrationId").map(NotificationHubRegistrationId.apply)
-            channelUri <- xml.textNode("ChannelUri")
-            tags = xml.textNodes("Tags").flatMap(_.split(",").map(_.stripPrefix(" ")))
-          } yield WNSRegistrationResponse(registrationId, tags.toList, channelUri, expirationTime)
         case "GcmRegistrationDescription" =>
           for {
             expirationTime <- xml.dateTimeNode("ExpirationTime")
@@ -129,16 +122,6 @@ sealed trait RegistrationResponse {
   def tagsAsSet: Set[String]
   def platform: Platform
   def deviceId: String
-}
-
-case class WNSRegistrationResponse(
-  registration: NotificationHubRegistrationId,
-  tags: List[String],
-  channelUri: String,
-  expirationTime: DateTime) extends RegistrationResponse {
-  lazy val tagsAsSet = tags.toSet
-  override def platform: Platform = WindowsMobile
-  override def deviceId: String = channelUri
 }
 
 case class GCMRegistrationResponse(

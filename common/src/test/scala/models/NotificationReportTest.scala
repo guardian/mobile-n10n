@@ -46,7 +46,7 @@ class NotificationReportTest extends Specification {
           |     "senderName": "Windows",
           |     "sentTime": "2015-01-01T00:00:00.000Z",
           |     "platformStatistics": {
-          |       "platform": "windows-mobile",
+          |       "platform": "android",
           |       "recipientsCount": 3
           |     }
           |    }
@@ -69,7 +69,7 @@ class NotificationReportTest extends Specification {
             topic = Set(Topic(Breaking, "uk"))
           ),
           reports = List(
-            SenderReport("Windows", sentTime, None, Some(PlatformStatistics(WindowsMobile, recipientsCount = 3)))
+            SenderReport("Windows", sentTime, None, Some(PlatformStatistics(Android, recipientsCount = 3)))
           )
         )
       }

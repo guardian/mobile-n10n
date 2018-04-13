@@ -3,7 +3,7 @@ package azure
 import java.util.UUID
 
 import models.TopicTypes.FootballMatch
-import models.{Registration, Topic, UniqueDeviceIdentifier, WindowsMobile}
+import models.{Android, Registration, Topic, UniqueDeviceIdentifier}
 import org.specs2.mutable.Specification
 
 class RawGCMRegistrationSpec extends Specification {
@@ -14,7 +14,7 @@ class RawGCMRegistrationSpec extends Specification {
     "be created from mobile registration with user tag without topics" in {
       val registration = Registration(
         deviceId = "deviceId",
-        platform = WindowsMobile,
+        platform = Android,
         udid = userId,
         topics = Set.empty,
         buildTier = None
@@ -30,7 +30,7 @@ class RawGCMRegistrationSpec extends Specification {
       val topic = Topic(`type` = FootballMatch, "arsenal-chelsea")
       val registration = Registration(
         deviceId = "device2",
-        platform = WindowsMobile,
+        platform = Android,
         udid = userId,
         topics = Set(topic),
         buildTier = None

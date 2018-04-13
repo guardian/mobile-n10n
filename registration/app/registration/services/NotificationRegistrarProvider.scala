@@ -22,13 +22,12 @@ case class UnsupportedPlatform(platform: String) extends RequestError {
 }
 
 final class NotificationRegistrarProvider(
-  windowsRegistrar: WindowsNotificationRegistrar,
   gcmRegistrar: GCMNotificationRegistrar,
   apnsRegistrar: APNSNotificationRegistrar,
   newsstandRegistrar: NewsstandNotificationRegistrar)
   (implicit executionContext: ExecutionContext) extends RegistrarProvider {
 
-  private val registrars = List(windowsRegistrar, gcmRegistrar, apnsRegistrar, newsstandRegistrar)
+  private val registrars = List(gcmRegistrar, apnsRegistrar, newsstandRegistrar)
   private val uniqueProviders: List[NotificationRegistrar] =
     registrars
       .groupBy(_.hubClient.notificationHubConnection)
@@ -36,7 +35,6 @@ final class NotificationRegistrarProvider(
       .flatMap(_.headOption)(breakOut)
 
   override def registrarFor(platform: Platform, buildTier: Option[String]): Either[NotificationsError, NotificationRegistrar] = platform match {
-    case WindowsMobile => Right(windowsRegistrar)
     case Android => Right(gcmRegistrar)
     case `iOS` => Right(apnsRegistrar)
     case Newsstand => Right(newsstandRegistrar)

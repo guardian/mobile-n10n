@@ -26,13 +26,15 @@ abstract class NotificationsHubSender(
 
   protected def converter: PushConverter
 
+  protected def platform: Platform
+
   def sendNotification(push: Push): Future[SenderResult] = {
 
     def report(sendersId: Option[String], recipientsCount: Option[Int]) = SenderReport(
       sendersId = sendersId,
       senderName = Senders.AzureNotificationsHub,
       sentTime = DateTime.now,
-      platformStatistics = recipientsCount map { PlatformStatistics(WindowsMobile, _) }
+      platformStatistics = recipientsCount map { PlatformStatistics(platform , _) }
     )
 
     converter.toRawPush(push) match {

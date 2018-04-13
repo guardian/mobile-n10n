@@ -26,7 +26,7 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
       Thread.sleep(2000)
       Right(RegistrationResponse(
         deviceId = "deviceAA",
-        platform = WindowsMobile,
+        platform = Android,
         userId = registration.udid,
         topics = registration.topics
       ))
@@ -77,7 +77,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       registrations = registration :: registrations
       Right(RegistrationResponse(
         deviceId = "deviceAA",
-        platform = WindowsMobile,
+        platform = Android,
         userId = registration.udid,
         topics = registration.topics
       ))
@@ -197,7 +197,7 @@ trait RegistrationsJson {
       |{
       |  "deviceId": "someId",
       |  "userId": "83B148C0-8951-11E5-865A-222E69A460B9",
-      |  "platform": "windows-mobile",
+      |  "platform": "android",
       |  "topics": [
       |    {"type": "football-match", "name": "science"},
       |    {"type": "breaking", "name": "uk"}
