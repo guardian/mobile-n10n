@@ -43,7 +43,6 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val authAction = wire[NotificationAuthAction]
 
   lazy val notificationSenders = List(
-    wnsNotificationSender,
     gcmNotificationSender,
     apnsNotificationSender,
     frontendAlerts
@@ -63,8 +62,6 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   }
 
   lazy val notificationReportRepository = new DynamoNotificationReportRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoReportsTableName)
-
-  lazy val wnsNotificationSender: WNSSender = wire[WNSSender]
 
   lazy val gcmNotificationSender: GCMSender = wire[GCMSender]
 
