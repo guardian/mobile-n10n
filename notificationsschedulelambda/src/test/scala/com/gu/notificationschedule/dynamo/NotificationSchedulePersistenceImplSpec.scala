@@ -12,7 +12,7 @@ import org.specs2.specification.BeforeAfterEach
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-class NotificationSchedulePersistenceSpec extends Specification with BeforeAfterEach {
+class NotificationSchedulePersistenceImplSpec extends Specification with BeforeAfterEach {
   val config = NotificationScheduleConfig("test-app", "test-stage", "test-stack")
   val chain = new AWSCredentialsProviderChain(new AWSCredentialsProvider {
     override def refresh(): Unit = {}
@@ -27,9 +27,9 @@ class NotificationSchedulePersistenceSpec extends Specification with BeforeAfter
   "NotificationSchedulePersistence" should {
     "read" in {
 
-      val notificationSchedulePersistence = maybeClient.map(new NotificationSchedulePersistence(config, _)).getOrElse(throw new IllegalStateException())
+      val notificationSchedulePersistence = maybeClient.map(new NotificationSchedulePersistenceImpl(config, _)).getOrElse(throw new IllegalStateException())
       notificationSchedulePersistence.write(NotificationsScheduleEntry("test-uuid", "test-notification", 0L, 0L), false, 0L)
-      val entries: mutable.Buffer[NotificationsScheduleEntry] = notificationSchedulePersistence.query()
+      val entries: Seq[NotificationsScheduleEntry] = notificationSchedulePersistence.query()
       entries must not be empty
     }
   }
