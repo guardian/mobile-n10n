@@ -14,4 +14,6 @@ libraryDependencies += "org.scalariform" %% "scalariform" % "0.1.7"
 
 libraryDependencies += "org.vafer" % "jdeb" % "1.6" artifacts (Artifact("jdeb", "jar", "jar"))
 
+libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.10.0"
+
 addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.1")
