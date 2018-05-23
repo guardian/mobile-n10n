@@ -1,4 +1,4 @@
-package com.gu.notificationshards.external
+package com.gu.notificationschedule.external
 
 object HttpStatusCodes {
   val internalServerError: Int = 500

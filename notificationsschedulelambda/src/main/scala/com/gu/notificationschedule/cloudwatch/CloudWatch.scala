@@ -1,4 +1,4 @@
-package com.gu.notificationshards.cloudwatch
+package com.gu.notificationschedule.cloudwatch
 
 import java.time.{Duration, Instant}
 import java.util
@@ -8,7 +8,7 @@ import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsync
 import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest, PutMetricDataResult, StandardUnit}
-import com.gu.notificationshards.external.Parallelism
+
 import org.apache.logging.log4j.{LogManager, Logger}
 
 import scala.annotation.tailrec
@@ -37,7 +37,7 @@ sealed class Timer(metricName: String, cloudWatch: CloudWatchMetrics, start: Ins
 class CloudWatchImpl(stage: String, lambdaname: String, cw: AmazonCloudWatchAsync) extends CloudWatch {
 
   private val logger: Logger = LogManager.getLogger(classOf[CloudWatchImpl])
-  implicit private val ec: ExecutionContext = Parallelism.largeGlobalExecutionContext
+  implicit private val ec: ExecutionContext = ExecutionContext.global
   private val queue: ConcurrentLinkedQueue[MetricDatum] = new ConcurrentLinkedQueue[MetricDatum]()
 
   def queueMetric(metricName: String, value: Double, standardUnit: StandardUnit, instant: Instant): Boolean = {
@@ -53,7 +53,7 @@ class CloudWatchImpl(stage: String, lambdaname: String, cw: AmazonCloudWatchAsyn
 
     if (!bufferOfMetrics.isEmpty) {
       val request: PutMetricDataRequest = new PutMetricDataRequest()
-        .withNamespace(s"mobile-notifications-shards/$stage/$lambdaname")
+        .withNamespace(s"mobile-notifications-schedule/$stage/$lambdaname")
         .withMetricData(bufferOfMetrics)
       val promise: Promise[PutMetricDataResult] = Promise[PutMetricDataResult]
       val value: AsyncHandler[PutMetricDataRequest, PutMetricDataResult] = new AsyncHandler[PutMetricDataRequest, PutMetricDataResult] {

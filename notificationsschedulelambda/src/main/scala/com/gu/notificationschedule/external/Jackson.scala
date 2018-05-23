@@ -1,4 +1,4 @@
-package com.gu.notificationshards.external
+package com.gu.notificationschedule.external
 
 import com.fasterxml.jackson.databind.{ DeserializationFeature, ObjectMapper }
 import com.fasterxml.jackson.module.scala.DefaultScalaModule

@@ -7,7 +7,7 @@ object LocalDynamoDB {
   val settings: Seq[Setting[_]] = DynamoDBLocalKeys.baseDynamoDBSettings ++ Seq(
     dynamoDBLocalDownloadDir := file("dynamodb-local"),
     dynamoDBLocalInMemory := true,
-    dynamoDBLocalVersion := "2014-10-07"
+    dynamoDBLocalVersion := "latest"
   )
 
 }

@@ -115,8 +115,9 @@ lazy val notification = project
     version := projectVersion
   )
 
-lazy val notificationshardslambda = project
+lazy val notificationsschedulelambda = project
   .enablePlugins(RiffRaffArtifact)
+  .settings(LocalDynamoDB.settings)
   .settings{
     val simpleConfigurationVersion: String = "1.4.3"
     val awsVersion: String = "1.11.320"
@@ -129,11 +130,10 @@ lazy val notificationshardslambda = project
     assemblyMergeStrategy in assembly := {
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
       case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeFilesStrategy
-      case x =>
-        val oldStrategy = (assemblyMergeStrategy in assembly).value
-        oldStrategy(x)
+      case x => (assemblyMergeStrategy in assembly).value(x)
     },
     libraryDependencies ++= Seq(
+
       "commons-io" % "commons-io" % "2.6",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
@@ -147,12 +147,18 @@ lazy val notificationshardslambda = project
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
       "com.squareup.okhttp3" % "okhttp" % "3.10.0"
 
+
     ),
     riffRaffPackageType := file(".nothing"),
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := s"Mobile::${name.value}",
     riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
+    startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
+    test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
+    testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
+    testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
+    testOptions in Test += dynamoDBLocalTestCleanup.value,
     organization := "com.gu",
     scalacOptions ++= Seq(
       "-deprecation",
@@ -182,4 +188,4 @@ lazy val report = project
   )
 
 lazy val root = (project in file(".")).
-  aggregate(registration, notification, report, backup, common, notificationshardslambda)
+  aggregate(registration, notification, report, backup, common, notificationsschedulelambda)
