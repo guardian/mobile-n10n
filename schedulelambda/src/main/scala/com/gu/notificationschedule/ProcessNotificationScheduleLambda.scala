@@ -14,7 +14,7 @@ import scala.util.{Failure, Success, Try}
 
 
 case class NotificationScheduleConfig(app: String, stage: String, stack: String) {
-  val notificationScheduleTable: String = s"$app-$stage-$stack-mobile-notifications-schedule"
+  val notificationScheduleTable: String = s"$app-$stage-$stack"
 }
 
 
@@ -35,9 +35,10 @@ class ProcessNotificationScheduleLambda(config: NotificationScheduleConfig, clou
     }
     val triedAll: Try[Unit] = triedFetch match {
       case Success(notificationsScheduleEntries) => triggerNotifications(notificationsScheduleEntries)
-      case failure => {
+      case Failure(throwable) => {
         cloudWatch.queueMetric("discovery-failed", 1, StandardUnit.Count)
-        failure.map(_ => ())
+        logger.warn("Error running query", throwable)
+        Failure(throwable)
       }
     }
     triedAll.fold(throwable => timer.fail, unit => timer.succeed)
