@@ -115,7 +115,7 @@ lazy val notification = project
     version := projectVersion
   )
 
-lazy val notificationsschedulelambda = project
+lazy val schedulelambda = project
   .enablePlugins(RiffRaffArtifact)
   .settings(LocalDynamoDB.settings)
   .settings{
@@ -155,6 +155,7 @@ lazy val notificationsschedulelambda = project
     riffRaffManifestProjectName := s"Mobile::${name.value}",
     riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
+    name := s"mobile-notifications-schedulelambda",
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
     testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
     testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
@@ -188,4 +189,4 @@ lazy val report = project
   )
 
 lazy val root = (project in file(".")).
-  aggregate(registration, notification, report, backup, common, notificationsschedulelambda)
+  aggregate(registration, notification, report, backup, common, schedulelambda)
