@@ -15,9 +15,9 @@ class ProcessNotificationScheduleLambdaSpec extends Specification with Mockito{
       val cloudWatch = new CloudWatch {
         override def sendMetricsSoFar(): Unit = sentMetricsCalled = true
 
-        override def queueMetric(metricName: String, value: Double, standardUnit: StandardUnit, instant: Instant): Boolean = ???
+        override def queueMetric(metricName: String, value: Double, standardUnit: StandardUnit, instant: Instant): Boolean = true
 
-        override def startTimer(metricName: String): Timer = ???
+        override def startTimer(metricName: String): Timer = mock[Timer]
 
         override def meterHttpStatusResponses(metricName: String, code: Int): Unit = ???
       }
