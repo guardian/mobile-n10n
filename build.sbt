@@ -30,7 +30,7 @@ val standardSettings = Seq[Setting[_]](
 )
 
 lazy val common = project
-  .settings(LocalDynamoDB.settings)
+  .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
     resolvers ++= Seq(
@@ -53,6 +53,7 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.285",
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2"
     ),
+    fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
     testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
@@ -117,7 +118,7 @@ lazy val notification = project
 
 lazy val schedulelambda = project
   .enablePlugins(RiffRaffArtifact)
-  .settings(LocalDynamoDB.settings)
+  .settings(LocalDynamoDBScheduleLambda.settings)
   .settings{
     val simpleConfigurationVersion: String = "1.4.3"
     val awsVersion: String = "1.11.320"
@@ -130,10 +131,9 @@ lazy val schedulelambda = project
     assemblyMergeStrategy in assembly := {
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
       case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeFilesStrategy
-      case x => (assemblyMergeStrategy in assembly).value(x)
+      case resource => (assemblyMergeStrategy in assembly).value(resource)
     },
     libraryDependencies ++= Seq(
-
       "commons-io" % "commons-io" % "2.6",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
@@ -146,9 +146,8 @@ lazy val schedulelambda = project
       "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
       "com.squareup.okhttp3" % "okhttp" % "3.10.0"
-
-
     ),
+    fork := true,
     riffRaffPackageType := file(".nothing"),
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),

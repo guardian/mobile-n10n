@@ -42,7 +42,7 @@ class NotificationSchedulePersistenceImplSpec extends Specification with BeforeA
   override def before: Any = {
     val client = AmazonDynamoDBAsyncClientBuilder.standard()
       .withCredentials(chain)
-      .withEndpointConfiguration(new EndpointConfiguration("http://localhost:8000", Regions.EU_WEST_1.getName))
+      .withEndpointConfiguration(new EndpointConfiguration("http://localhost:8001", Regions.EU_WEST_1.getName))
       .build
     val createTableRequest = new CreateTableRequest()
       .withTableName(config.notificationScheduleTable)
