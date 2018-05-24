@@ -35,13 +35,11 @@ class NotificationSchedulePersistenceImplSpec extends Specification with BeforeA
   }
 
   override def after: Any = {
-    println("after")
     maybeClient.foreach(_.deleteTable(config.notificationScheduleTable))
 
   }
 
   override def before: Any = {
-    println("Before")
     val client = AmazonDynamoDBAsyncClientBuilder.standard()
       .withCredentials(chain)
       .withEndpointConfiguration(new EndpointConfiguration("http://localhost:8000", Regions.EU_WEST_1.getName))
