@@ -7,8 +7,8 @@ import sbtassembly.MergeStrategy
 
 import scala.collection.JavaConverters.asJavaEnumerationConverter
 
-class MergeFilesStrategy extends MergeStrategy {
-  override def name: String = "mergeFilesStrategy"
+class MergeLog4j2PluginCachesStrategy extends MergeStrategy {
+  override def name: String = "MergeLog4j2PluginCachesStrategy"
 
   override def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] = {
     val pluginCache = new PluginCache

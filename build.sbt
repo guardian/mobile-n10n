@@ -130,7 +130,7 @@ lazy val schedulelambda = project
     assemblyJarName := s"${name.value}.jar",
     assemblyMergeStrategy in assembly := {
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeFilesStrategy
+      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
       case resource => (assemblyMergeStrategy in assembly).value(resource)
     },
     libraryDependencies ++= Seq(
