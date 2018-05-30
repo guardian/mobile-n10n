@@ -124,7 +124,6 @@ lazy val schedulelambda = project
     val awsVersion: String = "1.11.320"
     val specsVersion: String = "4.0.3"
     val log4j2Version: String = "2.10.0"
-    val jacksonVersion: String = "2.9.5"
     val byteBuddyVersion = "1.8.8"
     List(resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
     assemblyJarName := s"${name.value}.jar",
@@ -139,7 +138,6 @@ lazy val schedulelambda = project
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsVersion,
       "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
       "com.gu" %% "scanamo" % "1.0.0-M6",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
