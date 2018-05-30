@@ -1,4 +1,6 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
+import sbtassembly.AssemblyPlugin.autoImport.assemblyMergeStrategy
+import sbtassembly.MergeStrategy
 
 val projectVersion = "1.0-latest"
 
@@ -28,7 +30,7 @@ val standardSettings = Seq[Setting[_]](
 )
 
 lazy val common = project
-  .settings(LocalDynamoDB.settings)
+  .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
     resolvers ++= Seq(
@@ -51,6 +53,7 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.285",
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2"
     ),
+    fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
     testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
@@ -113,6 +116,58 @@ lazy val notification = project
     version := projectVersion
   )
 
+lazy val schedulelambda = project
+  .enablePlugins(RiffRaffArtifact)
+  .settings(LocalDynamoDBScheduleLambda.settings)
+  .settings{
+    val simpleConfigurationVersion: String = "1.4.3"
+    val awsVersion: String = "1.11.320"
+    val specsVersion: String = "4.0.3"
+    val log4j2Version: String = "2.10.0"
+    val byteBuddyVersion = "1.8.8"
+    List(resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
+    assemblyJarName := s"${name.value}.jar",
+    assemblyMergeStrategy in assembly := {
+      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
+      case resource => (assemblyMergeStrategy in assembly).value(resource)
+    },
+    libraryDependencies ++= Seq(
+      "commons-io" % "commons-io" % "2.6",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
+      "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsVersion,
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
+      "com.gu" %% "scanamo" % "1.0.0-M6",
+      "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
+      "org.specs2" %% "specs2-core" % specsVersion % "test",
+      "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
+      "org.specs2" %% "specs2-mock" % specsVersion % "test",
+      "com.squareup.okhttp3" % "okhttp" % "3.10.0"
+    ),
+    fork := true,
+    riffRaffPackageType := file(".nothing"),
+    riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
+    riffRaffUploadManifestBucket := Option("riffraff-builds"),
+    riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
+    riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
+    startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
+    name := "schedule",
+    test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
+    testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
+    testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
+    testOptions in Test += dynamoDBLocalTestCleanup.value,
+    organization := "com.gu",
+    scalacOptions ++= Seq(
+      "-deprecation",
+      "-encoding", "UTF-8",
+      "-target:jvm-1.8",
+      "-Ywarn-dead-code",
+      "-Xfatal-warnings",
+      "-Ypartial-unification"
+    )
+  )}
+
 lazy val report = project
   .dependsOn(common % "test->test;compile->compile")
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
@@ -131,4 +186,4 @@ lazy val report = project
   )
 
 lazy val root = (project in file(".")).
-  aggregate(registration, notification, report, backup, common)
+  aggregate(registration, notification, report, backup, common, schedulelambda)
