@@ -58,6 +58,11 @@ trait NotificationsFixtures {
     )),
     topic = Set(Topic(ElectionResults, "us-presidential-2016"))
   )
+
+  def newsstandShardNotification() = NewsstandShardNotification(
+    id = UUID.fromString("41D80477-E4DE-42AD-B490-AE99951E7F37"),
+    shard = 1
+  )
   
   def userTargetedBreakingNewsPush(importance: Importance = Major): Push = Push(
     notification = BreakingNewsNotification(
@@ -88,6 +93,7 @@ trait NotificationsFixtures {
   val invalidAuthenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=wrong-key")
   val validTopics = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"))
   val validElectionTopics = Set(Topic(ElectionResults, "uk"), Topic(ElectionResults, "us"))
+  val validNewsstandNotificationsTopic = Set(Topic(TopicTypes.NewsstandShard, "newsstand-shard-1"))
   val requestWithValidTopics = authenticatedRequest.withBody(breakingNewsNotification(validTopics))
 
   def senderReport(

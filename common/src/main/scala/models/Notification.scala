@@ -27,6 +27,7 @@ object Notification {
       case n: ElectionNotification => ElectionNotification.jf.writes(n)
       case n: LiveEventNotification => LiveEventNotification.jf.writes(n)
       case n: FootballMatchStatusNotification => FootballMatchStatusNotification.jf.writes(n)
+      case n: NewsstandShardNotification => NewsstandShardNotification.jf.writes(n)
     }
     override def reads(json: JsValue): JsResult[Notification] = {
       (json \ "type").validate[NotificationType].flatMap {
@@ -36,6 +37,7 @@ object Notification {
         case ElectionsAlert => ElectionNotification.jf.reads(json)
         case LiveEventAlert => LiveEventNotification.jf.reads(json)
         case FootballMatchStatus => FootballMatchStatusNotification.jf.reads(json)
+        case NewsstandShard => NewsstandShardNotification.jf.reads(json)
       }
     }
   }
@@ -65,6 +67,25 @@ object BreakingNewsNotification {
   import JsonUtils._
   implicit val jf = Json.format[BreakingNewsNotification]
 }
+
+case class NewsstandShardNotification(
+                                       id: UUID,
+                                       shard:Int
+                                     ) extends Notification {
+  override def title = ""
+  override def message: String = ""
+  override def sender: String = "newsstand-shard"
+  override def importance: Importance = Importance.Minor
+  override def withTopics(topics: Set[Topic]): Notification = this
+  override def `type`: NotificationType = NewsstandShard
+  override def topic: Set[Topic] = Set(Topic(TopicTypes.NewsstandShard, s"newsstand-shard-$shard"))
+
+}
+object NewsstandShardNotification {
+  import JsonUtils._
+  implicit val jf = Json.format[NewsstandShardNotification]
+}
+
 
 case class ContentNotification(
   id: UUID,

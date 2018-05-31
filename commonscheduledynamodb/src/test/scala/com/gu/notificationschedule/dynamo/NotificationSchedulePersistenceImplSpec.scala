@@ -5,15 +5,13 @@ import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
-import com.gu.notificationschedule.NotificationScheduleConfig
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeAfterEach
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 class NotificationSchedulePersistenceImplSpec extends Specification with BeforeAfterEach {
-  val config = NotificationScheduleConfig("test-app", "test-stage", "test-stack")
+  val tableName = "test-table"
   val chain = new AWSCredentialsProviderChain(new AWSCredentialsProvider {
     override def refresh(): Unit = {}
 
@@ -27,15 +25,15 @@ class NotificationSchedulePersistenceImplSpec extends Specification with BeforeA
   "NotificationSchedulePersistence" should {
     "read" in {
 
-      val notificationSchedulePersistence = maybeClient.map(new NotificationSchedulePersistenceImpl(config, _)).getOrElse(throw new IllegalStateException())
-      notificationSchedulePersistence.write(NotificationsScheduleEntry("test-uuid", "test-notification", 0L, 0L), false, 0L)
-      val entries: Seq[NotificationsScheduleEntry] = notificationSchedulePersistence.query()
+      val notificationSchedulePersistence = maybeClient.map(new NotificationSchedulePersistenceImpl(tableName, _)).getOrElse(throw new IllegalStateException())
+      notificationSchedulePersistence.writeAsync(NotificationsScheduleEntry("test-uuid", "test-notification", 0L, 0L), None)
+      val entries: Seq[NotificationsScheduleEntry] = notificationSchedulePersistence.querySync()
       entries must not be empty
     }
   }
 
   override def after: Any = {
-    maybeClient.foreach(_.deleteTable(config.notificationScheduleTable))
+    maybeClient.foreach(_.deleteTable(tableName))
 
   }
 
@@ -45,7 +43,7 @@ class NotificationSchedulePersistenceImplSpec extends Specification with BeforeA
       .withEndpointConfiguration(new EndpointConfiguration("http://localhost:8001", Regions.EU_WEST_1.getName))
       .build
     val createTableRequest = new CreateTableRequest()
-      .withTableName(config.notificationScheduleTable)
+      .withTableName(tableName)
       .withKeySchema(new KeySchemaElement("uuid", KeyType.HASH))
       .withAttributeDefinitions(List(
         new AttributeDefinition("uuid", ScalarAttributeType.S),
@@ -61,10 +59,7 @@ class NotificationSchedulePersistenceImplSpec extends Specification with BeforeA
         ).asJava)
         .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L))
         .withProjection(new Projection().withProjectionType(ProjectionType.ALL))
-
       )
-
-
     client.createTable(createTableRequest)
     maybeClient = Some(client)
 

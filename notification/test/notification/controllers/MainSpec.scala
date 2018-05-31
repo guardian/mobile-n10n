@@ -135,6 +135,14 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       status(response) must equalTo(UNAUTHORIZED)
     }
+
+    "Send a newstand notification shard" in new MainScope {
+      val request = authenticatedRequest.withBody(newsstandShardNotification())
+      val response = main.pushTopics(request)
+      status(response) must equalTo(CREATED)
+      pushSent must beSome.which(_.destination must beEqualTo(Left(validNewsstandNotificationsTopic)))
+
+    }
   }
 
   trait NotificationSenderSupportScope extends Scope {
