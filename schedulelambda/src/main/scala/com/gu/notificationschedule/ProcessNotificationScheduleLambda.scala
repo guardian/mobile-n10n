@@ -6,14 +6,16 @@ import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClientBuilder
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.gu.notificationschedule.cloudwatch.{CloudWatch, CloudWatchImpl}
-import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceSync, NotificationSchedulePersistenceImpl, NotificationsScheduleEntry, ScheduleTableConfig}
+import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, NotificationSchedulePersistenceSync, NotificationsScheduleEntry, ScheduleTableConfig}
 import com.gu.{AppIdentity, AwsIdentity}
 import org.apache.logging.log4j.{LogManager, Logger}
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 class ProcessNotificationScheduleLambda(config: ScheduleTableConfig, cloudWatch: CloudWatch, notificationSchedulePersistence: NotificationSchedulePersistenceSync) {
-  def this(config: ScheduleTableConfig, lambdaName: String) = this(config, new CloudWatchImpl(config.stage, lambdaName, AmazonCloudWatchAsyncClientBuilder.defaultClient()), new NotificationSchedulePersistenceImpl(config.scheduleTableName, AmazonDynamoDBAsyncClientBuilder.defaultClient()))
+
+  def this(config: ScheduleTableConfig, lambdaName: String) = this(config, new CloudWatchImpl(config.stage, lambdaName, AmazonCloudWatchAsyncClientBuilder.defaultClient())(ExecutionContext.Implicits.global), new NotificationSchedulePersistenceImpl(config.scheduleTableName, AmazonDynamoDBAsyncClientBuilder.defaultClient()))
 
   def this() = this(AppIdentity.whoAmI(defaultAppName = "mobile-notifications-schedule") match {
     case awsIdentity: AwsIdentity => ScheduleTableConfig(awsIdentity.app, awsIdentity.stage, awsIdentity.stack)

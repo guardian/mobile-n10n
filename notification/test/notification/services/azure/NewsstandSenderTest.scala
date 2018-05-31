@@ -8,11 +8,12 @@ import azure.apns.{APS, Body, LegacyProperties}
 import azure.{APNSRawPush, NotificationHubClient, Tags}
 import com.gu.notificationschedule.dynamo.NotificationsScheduleEntry
 import models.TopicTypes.Newsstand
-import models.{NewsstandShardConfig, Topic}
+import models.{NewsstandShardConfig, NewsstandShardNotification, Notification, Topic}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.mutable.ExecutionEnvironment
+import play.api.libs.json.Json
 
 import scala.concurrent.{Future, Promise}
 import scala.util.Try
@@ -63,23 +64,32 @@ class NewsstandSenderTest extends Specification with Mockito with ExecutionEnvir
         val sevenDaysFromNowSeconds = nowSeconds + 604800
         val uuidMsb = randomId.getMostSignificantBits
         val uuidLsb = randomId.getLeastSignificantBits
-        notificationsScheduleEntries must be equalTo Set(
+        val firstUuid = new UUID(uuidMsb, uuidLsb + 1)
+        val secondUuid = new UUID(uuidMsb, uuidLsb + 2)
+        val thirdUuid = new UUID(uuidMsb, uuidLsb + 3)
+        notificationsScheduleEntries.map(_.copy(notification = "")) must be equalTo Set(
           NotificationsScheduleEntry(
-            new UUID(uuidMsb, uuidLsb + 1).toString,
-            1.toString,
+            firstUuid.toString,
+            "",
             nowSeconds + 60,
             sevenDaysFromNowSeconds + 60
           ), NotificationsScheduleEntry(
-            new UUID(uuidMsb, uuidLsb + 2).toString,
-            2.toString ,
+            secondUuid.toString,
+            "",
             nowSeconds + 120,
             sevenDaysFromNowSeconds  + 120
           ), NotificationsScheduleEntry(
-            new UUID(uuidMsb, uuidLsb + 3).toString,
-            3.toString,
+            thirdUuid.toString,
+            "",
             nowSeconds + 180,
             sevenDaysFromNowSeconds + 180
           ))
+
+         notificationsScheduleEntries.map(_.notification).map(jsonString => Notification.jf.reads(Json.parse(jsonString)).get) must be equalTo Set(
+           NewsstandShardNotification(firstUuid, 1),
+           NewsstandShardNotification(secondUuid, 2),
+           NewsstandShardNotification(thirdUuid, 3)
+         )
         there was one(hubClient).sendNotification(rawPush)
       }
     }

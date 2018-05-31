@@ -70,14 +70,14 @@ object BreakingNewsNotification {
 
 case class NewsstandShardNotification(
                                        id: UUID,
-                                       shard:Int
+                                       shard:Int,
+                                       `type`: NotificationType = NewsstandShard,
                                      ) extends Notification {
   override def title = ""
   override def message: String = ""
   override def sender: String = "newsstand-shard"
   override def importance: Importance = Importance.Minor
   override def withTopics(topics: Set[Topic]): Notification = this
-  override def `type`: NotificationType = NewsstandShard
   override def topic: Set[Topic] = Set(Topic(TopicTypes.NewsstandShard, s"newsstand-shard-$shard"))
 
 }
