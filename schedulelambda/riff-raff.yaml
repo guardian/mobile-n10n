@@ -4,7 +4,7 @@ deployments:
   schedule:
     type: aws-lambda
     parameters:
-      bucket: mobile-dist
+      bucket: mobile-notifications-dist
       functionNames: [mobile-notifications-schedule-]
       fileName: schedule.jar
       prefixStack: false
