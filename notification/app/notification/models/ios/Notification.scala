@@ -85,6 +85,17 @@ case class NewsstandNotification(id: UUID) extends Notification {
   )
 }
 
+case class NewsstandNotificationShard(id:UUID, shard:Number) extends Notification {
+  override def payload: Body = Body(
+    aps = APS(
+      alert = None,
+      `content-available` = Some(1),
+      sound = None
+    ),
+    customProperties = LegacyProperties(Map.empty)
+  )
+}
+
 case class ElectionNotification(
   `type`: String = MessageTypes.ElectionAlert,
   notificationType: NotificationType = ElectionsAlert,

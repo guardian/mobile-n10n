@@ -9,6 +9,8 @@ import com.amazonaws.regions.Regions.EU_WEST_1
 import azure.NotificationHubClient
 import com.softwaremill.macwire._
 import controllers.Main
+import _root_.models.NewsstandShardConfig
+import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, ScheduleTableConfig}
 import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
@@ -55,8 +57,9 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
 
   lazy val hubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
+  val asyncDynamo: AsyncDynamo = AsyncDynamo(EU_WEST_1)
   lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
-    val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
+    val underlying = new DynamoTopicSubscriptionsRepository(asyncDynamo, appConfig.dynamoTopicsTableName)
     val batching = new BatchingTopicSubscriptionsRepository(underlying)
     batching.scheduleFlush(appConfig.dynamoTopicsFlushInterval)
     batching
@@ -71,7 +74,10 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val apnsNotificationSender: APNSSender = wire[APNSSender]
   lazy val newsstandNotificationSender: NewsstandSender = {
     val hubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
-    new NewsstandSender(hubClient)
+    new NewsstandSender(
+      hubClient,
+      NewsstandShardConfig(appConfig.newsstandShards),
+      new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client))
   }
 
   lazy val frontendAlerts: NotificationSender = {

@@ -34,10 +34,9 @@ sealed class Timer(metricName: String, cloudWatch: CloudWatchMetrics, start: Ins
 
 }
 
-class CloudWatchImpl(stage: String, lambdaname: String, cw: AmazonCloudWatchAsync) extends CloudWatch {
+class CloudWatchImpl(stage: String, lambdaname: String, cw: AmazonCloudWatchAsync)(implicit executionContext: ExecutionContext) extends CloudWatch {
 
   private val logger: Logger = LogManager.getLogger(classOf[CloudWatchImpl])
-  implicit private val ec: ExecutionContext = ExecutionContext.global
   private val queue: ConcurrentLinkedQueue[MetricDatum] = new ConcurrentLinkedQueue[MetricDatum]()
 
   def queueMetric(metricName: String, value: Double, standardUnit: StandardUnit, instant: Instant): Boolean = {

@@ -16,11 +16,13 @@ object TopicTypes {
   object FootballTeam extends TopicType("football-team", 1)
   object FootballMatch extends TopicType("football-match", 1)
   object Newsstand extends TopicType("newsstand", 100)
+  object NewsstandShard extends TopicType("newsstand-shard", 100)
   object ElectionResults extends TopicType("election-results", 50)
   object LiveNotification extends TopicType("live-notification", 51)
 }
 
 object TopicType {
+  val newsstandShardPattern = "newsstand-(\\d+)".r
   import TopicTypes._
   def fromString(s: String): Option[TopicType] = PartialFunction.condOpt(s) {
     case "breaking" => Breaking
@@ -31,7 +33,8 @@ object TopicType {
     case "tag-blog" => TagBlog
     case "football-team" => FootballTeam
     case "football-match" => FootballMatch
-    case "newsstand" => Newsstand
+    case "newsstand" => TopicTypes.Newsstand
+    case "newsstand-shard" => TopicTypes.NewsstandShard
     case "election-results" => ElectionResults
     case "live-notification" => LiveNotification
   }
