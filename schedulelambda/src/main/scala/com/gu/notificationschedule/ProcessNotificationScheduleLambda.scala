@@ -8,13 +8,14 @@ import com.amazonaws.services.cloudwatch.model.StandardUnit
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.gu.notificationschedule.ProcessNotificationScheduleLambda.{lambdaClock, lambdaCloudWatch, lambdaConfig, lambdaOkHttpClient}
 import com.gu.notificationschedule.cloudwatch.{CloudWatch, CloudWatchImpl}
-import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistence, NotificationSchedulePersistenceImpl, NotificationsScheduleEntry}
+import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, NotificationSchedulePersistenceSync, NotificationsScheduleEntry}
 import com.gu.notificationschedule.external.{SsmConfig, SsmConfigLoader}
 import com.gu.notificationschedule.notifications.{RequestNewsstandShardNotification, RequestNewsstandShardNotificationImpl}
 import com.gu.{AppIdentity, AwsIdentity}
 import okhttp3.{ConnectionPool, OkHttpClient}
 import org.apache.logging.log4j.{LogManager, Logger}
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 
@@ -36,14 +37,17 @@ object ProcessNotificationScheduleLambda {
     case _: AwsIdentity => new NotificationScheduleConfig(SsmConfigLoader("mobile-notifications-schedule"))
     case _ => throw new IllegalStateException("Not in aws")
   }
-  private lazy val lambdaCloudWatch = new CloudWatchImpl(lambdaConfig.stage, "MobileNotificationSchedule", AmazonCloudWatchAsyncClientBuilder.defaultClient())
+  private lazy val lambdaCloudWatch = new CloudWatchImpl(
+    lambdaConfig.stage,
+    "MobileNotificationSchedule",
+    AmazonCloudWatchAsyncClientBuilder.defaultClient())(ExecutionContext.Implicits.global)
   private lazy val lambdaClock = Clock.systemUTC()
 }
 
 class ProcessNotificationScheduleLambda(
                                          config: NotificationScheduleConfig,
                                          cloudWatch: CloudWatch,
-                                         notificationSchedulePersistence: NotificationSchedulePersistence,
+                                         notificationSchedulePersistence: NotificationSchedulePersistenceSync,
                                          requestNewsstandShardNotification: RequestNewsstandShardNotification,
                                          clock: Clock
                                        ) {
@@ -53,7 +57,7 @@ class ProcessNotificationScheduleLambda(
   def this() = this(
     lambdaConfig,
     lambdaCloudWatch,
-    new NotificationSchedulePersistenceImpl(lambdaConfig, AmazonDynamoDBAsyncClientBuilder.defaultClient()),
+    new NotificationSchedulePersistenceImpl(lambdaConfig.notificationScheduleTable, AmazonDynamoDBAsyncClientBuilder.defaultClient()),
     new RequestNewsstandShardNotificationImpl(lambdaConfig, lambdaOkHttpClient, lambdaCloudWatch),
     lambdaClock
   )
@@ -72,7 +76,7 @@ class ProcessNotificationScheduleLambda(
 
 
   private def queryNotificationsToSchedule: Try[Seq[NotificationsScheduleEntry]] = cloudWatch.timeTry("query", () => Try {
-      val notificationsScheduleEntries = notificationSchedulePersistence.query()
+      val notificationsScheduleEntries = notificationSchedulePersistence.querySync()
       cloudWatch.queueMetric("discovered", notificationsScheduleEntries.size, StandardUnit.Count)
       notificationsScheduleEntries
     })
@@ -98,7 +102,7 @@ class ProcessNotificationScheduleLambda(
   private def setSent(nowEpoch: Long, notificationsScheduleEntry: NotificationsScheduleEntry) =
     cloudWatch.timeTry("set-sent", () => {
       val attemptPersistence = Try {
-        notificationSchedulePersistence.write(notificationsScheduleEntry, true, nowEpoch)
+        notificationSchedulePersistence.writeSync(notificationsScheduleEntry, Some(nowEpoch))
       }
       attemptPersistence.fold((t: Throwable) => logger.warn(s"Error persisting sent $notificationsScheduleEntry", t), _ => ())
       attemptPersistence

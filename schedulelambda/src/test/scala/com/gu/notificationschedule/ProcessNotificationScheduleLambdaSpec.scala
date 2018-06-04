@@ -5,7 +5,7 @@ import java.util.UUID
 
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import com.gu.notificationschedule.cloudwatch.{CloudWatch, Timer}
-import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistence, NotificationsScheduleEntry}
+import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceSync, NotificationsScheduleEntry}
 import com.gu.notificationschedule.external.SsmConfig
 import com.typesafe.config.ConfigFactory
 import org.specs2.mock.Mockito
@@ -35,10 +35,10 @@ class ProcessNotificationScheduleLambdaSpec extends Specification with Mockito {
       val processNotificationScheduleLambda = new ProcessNotificationScheduleLambda(
         new NotificationScheduleConfig(SsmConfig("test-app", "test-stage", "test-stack", config)),
         cloudWatch,
-        new NotificationSchedulePersistence {
-          override def query(): Seq[NotificationsScheduleEntry] = List()
+        new NotificationSchedulePersistenceSync {
+          override def querySync(): Seq[NotificationsScheduleEntry] = List()
 
-          override def write(notificationsScheduleEntry: NotificationsScheduleEntry, sent: Boolean, sent_epoch_s: Long): Unit = ()
+          override def writeSync(notificationsScheduleEntry: NotificationsScheduleEntry, maybeSent: Option[Long]): Unit = ()
         }, (nowEpoch: Long, notificationsScheduleEntry: NotificationsScheduleEntry) => Success(()),
         Clock.systemUTC()
 
@@ -70,13 +70,13 @@ class ProcessNotificationScheduleLambdaSpec extends Specification with Mockito {
       val processNotificationScheduleLambda = new ProcessNotificationScheduleLambda(
         new NotificationScheduleConfig(SsmConfig("test-app", "test-stage", "test-stack", config)),
         cloudWatch,
-        new NotificationSchedulePersistence {
-          override def query(): Seq[NotificationsScheduleEntry] = {
+        new NotificationSchedulePersistenceSync {
+          override def querySync(): Seq[NotificationsScheduleEntry] = {
 
             List(testNotificationScheduleEntry)
           }
 
-          override def write(notificationsScheduleEntry: NotificationsScheduleEntry, sent: Boolean, sent_epoch_s: Long): Unit = ()
+          override def writeSync(notificationsScheduleEntry: NotificationsScheduleEntry, maybeSent: Option[Long]): Unit = ()
         }, (nowEpoch: Long, notificationsScheduleEntry: NotificationsScheduleEntry) => {
           notificationsScheduleEntry must beEqualTo( testNotificationScheduleEntry)
           nowEpoch must beEqualTo(now.getEpochSecond)
