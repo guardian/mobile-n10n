@@ -39,7 +39,7 @@ class RequestNewsstandShardNotificationImpl(
 
         }
         case Success(None) => {
-          logger.warn("No response: request: {}\nGot response {} ", notificationsScheduleEntry)
+          logger.warn("No response: request: {}", notificationsScheduleEntry)
           Failure(new RequestNotificationException(s"Missing response.\nRequest: $notificationsScheduleEntry\n"))
         }
         case Failure(t) => {
