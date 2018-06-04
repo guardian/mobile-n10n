@@ -8,16 +8,23 @@ import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsync
 import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest, PutMetricDataResult, StandardUnit}
-
 import org.apache.logging.log4j.{LogManager, Logger}
 
 import scala.annotation.tailrec
 import scala.concurrent.{Await, ExecutionContext, Future, Promise, duration}
+import scala.util.Try
 
 trait CloudWatchMetrics {
   def queueMetric(metricName: String, value: Double, standardUnit: StandardUnit, instant: Instant = Instant.now()): Boolean
 
   def startTimer(metricName: String): Timer
+
+  def timeTry[T](metricName: String, function: Function0[Try[T]]):Try[T] = {
+    val timer = startTimer(metricName)
+    val tried = function()
+    tried.fold((_:Throwable) => timer.fail, _ => timer.succeed)
+    tried
+  }
 
   def meterHttpStatusResponses(metricName: String, code: Int): Unit
 }

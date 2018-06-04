@@ -155,6 +155,7 @@ lazy val schedulelambda = project
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsVersion,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
+        "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
         "org.specs2" %% "specs2-core" % specsVersion % "test",
         "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
         "org.specs2" %% "specs2-mock" % specsVersion % "test",
