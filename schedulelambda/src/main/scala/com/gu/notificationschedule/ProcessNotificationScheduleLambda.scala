@@ -21,8 +21,8 @@ import scala.util.{Failure, Success, Try}
 class NotificationScheduleConfig(ssmConfig: SsmConfig) {
   val notificationScheduleTable: String = s"${ssmConfig.app}-${ssmConfig.stage}-${ssmConfig.stack}"
   val stage: String = ssmConfig.stage
-  val pushTopicsUrl: String = ssmConfig.config.getString("schedule.notifications.pushTopicUrl")
-  val apiKey: String = ssmConfig.config.getString("notifications.api.secretKeys.0")
+  val pushTopicsUrl: String = ssmConfig.config.getString("pushTopicUrl")
+  val apiKey: String = ssmConfig.config.getString("notificationsSecretKey")
 }
 
 object ProcessNotificationScheduleLambda {
