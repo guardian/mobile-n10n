@@ -11,16 +11,16 @@ import scala.util.{Failure, Success, Try}
 
 class RequestNotificationException(message: String) extends Exception(message)
 
-trait RequestNewsstandShardNotification {
+trait RequestNotification {
   def apply(nowEpoch: Long, notificationsScheduleEntry: NotificationsScheduleEntry): Try[Unit]
 }
 
-class RequestNewsstandShardNotificationImpl(
-                                             config: NotificationScheduleConfig,
-                                             okHttpClient: OkHttpClient,
-                                             cloudWatchMetrics: CloudWatchMetrics
-                                           ) extends RequestNewsstandShardNotification {
-  private val logger: Logger = LogManager.getLogger(classOf[RequestNewsstandShardNotificationImpl])
+class RequestNotificationImpl(
+                               config: NotificationScheduleConfig,
+                               okHttpClient: OkHttpClient,
+                               cloudWatchMetrics: CloudWatchMetrics
+                             ) extends RequestNotification {
+  private val logger: Logger = LogManager.getLogger(classOf[RequestNotificationImpl])
   private val url = new URIBuilder(config.pushTopicsUrl).addParameter("api-key", config.apiKey).build().toURL
   private val jsonMediaType = MediaType.parse("application/json; charset=utf-8")
 

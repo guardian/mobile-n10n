@@ -30,7 +30,7 @@ class ProcessNotificationScheduleLambdaSpec extends Specification with Mockito {
 
       val config = ConfigFactory.parseMap(Map(
         "schedule.notifications.pushTopicUrl" -> "http://push.topic.invalid",
-        "notifications.api.secretKeys.0" -> "secretkey"
+        "schedule.notifications.secretKey" -> "secretkey"
       ).asJava)
       val processNotificationScheduleLambda = new ProcessNotificationScheduleLambda(
         new NotificationScheduleConfig(SsmConfig("test-app", "test-stage", "test-stack", config)),
@@ -64,7 +64,7 @@ class ProcessNotificationScheduleLambdaSpec extends Specification with Mockito {
 
       val config = ConfigFactory.parseMap(Map(
         "schedule.notifications.pushTopicUrl" -> "http://push.topic.invalid",
-        "notifications.api.secretKeys.0" -> "secretkey"
+        "schedule.notifications.secretKey" -> "secretkey"
       ).asJava)
       val testNotificationScheduleEntry = NotificationsScheduleEntry(UUID.randomUUID().toString, "notification", 1, 1)
       val processNotificationScheduleLambda = new ProcessNotificationScheduleLambda(

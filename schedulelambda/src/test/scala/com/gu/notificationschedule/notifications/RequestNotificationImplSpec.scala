@@ -11,18 +11,18 @@ import com.gu.notificationschedule.dynamo.NotificationsScheduleEntry
 import com.gu.notificationschedule.external.SsmConfig
 import com.typesafe.config.ConfigFactory
 import okhttp3._
-import okio.{Buffer, BufferedSink}
+import okio.Buffer
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Success}
+import scala.util.Success
 
-class RequestNewsstandShardNotificationImplSpec extends Specification with Mockito{
-  "RequestNewsstandShardNotificationImpl" should {
+class RequestNotificationImplSpec extends Specification with Mockito {
+  "RequestNotificationImpl" should {
     val config = ConfigFactory.parseMap(Map(
       "schedule.notifications.pushTopicUrl" -> "http://push.topic.invalid",
-      "notifications.api.secretKeys.0" -> "secretkey"
+      "schedule.notifications.secretKey" -> "secretkey"
     ).asJava)
     val notificationsScheduleEntry = NotificationsScheduleEntry(UUID.randomUUID().toString, "notification", 1, 1)
     val cloudWatchMetrics = new CloudWatchMetrics {
@@ -49,16 +49,16 @@ class RequestNewsstandShardNotificationImplSpec extends Specification with Mocki
               .protocol(Protocol.HTTP_2)
               .request(request)
               .message("status message")
-              .headers(Headers.of(Map[String,String]().asJava))
+              .headers(Headers.of(Map[String, String]().asJava))
               .build()
             mockCall
           }
         }
       }
-      val requestNewsstandShardNotificationImpl = new RequestNewsstandShardNotificationImpl(
+      val requestNotification = new RequestNotificationImpl(
         new NotificationScheduleConfig(SsmConfig("app", "stack", "stage", config)), okHttpClient,
         cloudWatchMetrics)
-      requestNewsstandShardNotificationImpl(1, notificationsScheduleEntry) must beEqualTo(Success(()))
+      requestNotification(1, notificationsScheduleEntry) must beEqualTo(Success(()))
     }
     "handle bad status" in {
       val okHttpClient = mock[OkHttpClient]
@@ -70,16 +70,16 @@ class RequestNewsstandShardNotificationImplSpec extends Specification with Mocki
               .protocol(Protocol.HTTP_2)
               .request(request)
               .message("status message")
-              .headers(Headers.of(Map[String,String]().asJava))
+              .headers(Headers.of(Map[String, String]().asJava))
               .build()
             mockCall
           }
         }
       }
-      val requestNewsstandShardNotificationImpl = new RequestNewsstandShardNotificationImpl(
+      val requestNotification = new RequestNotificationImpl(
         new NotificationScheduleConfig(SsmConfig("app", "stack", "stage", config)), okHttpClient,
         cloudWatchMetrics)
-      requestNewsstandShardNotificationImpl(1, notificationsScheduleEntry).get must throwA[RequestNotificationException]
+      requestNotification(1, notificationsScheduleEntry).get must throwA[RequestNotificationException]
     }
     "handle no response" in {
       val okHttpClient = mock[OkHttpClient]
@@ -90,10 +90,10 @@ class RequestNewsstandShardNotificationImplSpec extends Specification with Mocki
 
         }
       }
-      val requestNewsstandShardNotificationImpl = new RequestNewsstandShardNotificationImpl(
+      val requestNofication = new RequestNotificationImpl(
         new NotificationScheduleConfig(SsmConfig("app", "stack", "stage", config)), okHttpClient,
         cloudWatchMetrics)
-      requestNewsstandShardNotificationImpl(1, notificationsScheduleEntry).get must throwA[RequestNotificationException]
+      requestNofication(1, notificationsScheduleEntry).get must throwA[RequestNotificationException]
     }
     "handle error" in {
       val okHttpClient = mock[OkHttpClient]
@@ -109,10 +109,10 @@ class RequestNewsstandShardNotificationImplSpec extends Specification with Mocki
 
         }
       }
-      val requestNewsstandShardNotificationImpl = new RequestNewsstandShardNotificationImpl(
+      val requestNotification = new RequestNotificationImpl(
         new NotificationScheduleConfig(SsmConfig("app", "stack", "stage", config)), okHttpClient,
         cloudWatchMetrics)
-      requestNewsstandShardNotificationImpl(1, notificationsScheduleEntry).get must throwA(exception)
+      requestNotification(1, notificationsScheduleEntry).get must throwA(exception)
     }
   }
 }

@@ -16,10 +16,10 @@ case class SsmConfig(
 
 object SsmConfigLoader {
 
-  def apply(lambdaname: String, awsIdentitySupplier: () => AppIdentity = () => AppIdentity.whoAmI(defaultAppName = "schedule")): SsmConfig = {
+  def load(awsIdentitySupplier: () => AppIdentity = () => AppIdentity.whoAmI(defaultAppName = "schedule")): SsmConfig = {
     Try {
       val identity: AppIdentity = awsIdentitySupplier()
-      val config: Config = ConfigurationLoader.load(identity){
+      val config: Config = ConfigurationLoader.load(identity) {
         case identity: AwsIdentity => SSMConfigurationLocation(s"/notifications/${identity.stage}/${identity.stack}")
       }
       identity match {

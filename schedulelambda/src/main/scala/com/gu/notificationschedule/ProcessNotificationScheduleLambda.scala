@@ -1,7 +1,6 @@
 package com.gu.notificationschedule
 
 import java.time.{Clock, Instant}
-import java.util.concurrent.TimeUnit
 
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClientBuilder
 import com.amazonaws.services.cloudwatch.model.StandardUnit
@@ -10,9 +9,9 @@ import com.gu.notificationschedule.ProcessNotificationScheduleLambda.{lambdaCloc
 import com.gu.notificationschedule.cloudwatch.{CloudWatch, CloudWatchImpl}
 import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, NotificationSchedulePersistenceSync, NotificationsScheduleEntry}
 import com.gu.notificationschedule.external.{SsmConfig, SsmConfigLoader}
-import com.gu.notificationschedule.notifications.{RequestNewsstandShardNotification, RequestNewsstandShardNotificationImpl}
+import com.gu.notificationschedule.notifications.{RequestNotification, RequestNotificationImpl}
 import com.gu.{AppIdentity, AwsIdentity}
-import okhttp3.{ConnectionPool, OkHttpClient}
+import okhttp3.OkHttpClient
 import org.apache.logging.log4j.{LogManager, Logger}
 
 import scala.concurrent.ExecutionContext
@@ -23,18 +22,14 @@ class NotificationScheduleConfig(ssmConfig: SsmConfig) {
   val notificationScheduleTable: String = s"${ssmConfig.app}-${ssmConfig.stage}-${ssmConfig.stack}"
   val stage: String = ssmConfig.stage
   val pushTopicsUrl: String = ssmConfig.config.getString("schedule.notifications.pushTopicUrl")
-  val apiKey: String = ssmConfig.config.getString("notifications.api.secretKeys.0")
+  val apiKey: String = ssmConfig.config.getString("schedule.notifications.secretKey")
 }
 
 object ProcessNotificationScheduleLambda {
-  private lazy val lambdaOkHttpClient = new OkHttpClient.Builder()
-    .connectTimeout(20, TimeUnit.SECONDS)
-    .readTimeout(20, TimeUnit.SECONDS)
-    .writeTimeout(20, TimeUnit.SECONDS)
-    .connectionPool(new ConnectionPool(30, 30, TimeUnit.MINUTES))
-    .build()
+
+  private lazy val lambdaOkHttpClient = new OkHttpClient.Builder().build()
   private lazy val lambdaConfig = AppIdentity.whoAmI(defaultAppName = "mobile-notifications-schedule") match {
-    case _: AwsIdentity => new NotificationScheduleConfig(SsmConfigLoader("mobile-notifications-schedule"))
+    case _: AwsIdentity => new NotificationScheduleConfig(SsmConfigLoader.load())
     case _ => throw new IllegalStateException("Not in aws")
   }
   private lazy val lambdaCloudWatch = new CloudWatchImpl(
@@ -48,7 +43,7 @@ class ProcessNotificationScheduleLambda(
                                          config: NotificationScheduleConfig,
                                          cloudWatch: CloudWatch,
                                          notificationSchedulePersistence: NotificationSchedulePersistenceSync,
-                                         requestNewsstandShardNotification: RequestNewsstandShardNotification,
+                                         requestNotification: RequestNotification,
                                          clock: Clock
                                        ) {
 
@@ -58,28 +53,28 @@ class ProcessNotificationScheduleLambda(
     lambdaConfig,
     lambdaCloudWatch,
     new NotificationSchedulePersistenceImpl(lambdaConfig.notificationScheduleTable, AmazonDynamoDBAsyncClientBuilder.defaultClient()),
-    new RequestNewsstandShardNotificationImpl(lambdaConfig, lambdaOkHttpClient, lambdaCloudWatch),
+    new RequestNotificationImpl(lambdaConfig, lambdaOkHttpClient, lambdaCloudWatch),
     lambdaClock
   )
 
 
-  def apply(): Unit = cloudWatch.timeTry("process", () => {
-      val queryTried: Try[Seq[NotificationsScheduleEntry]] = queryNotificationsToSchedule
-      queryTried.flatMap(sendNotificationsAndStoreSent)
-    }).map(_ => cloudWatch.sendMetricsSoFar()) match {
+  def apply(): Unit = {
+    val queryTried: Try[Seq[NotificationsScheduleEntry]] = queryNotificationsToSchedule
+    queryTried.flatMap(sendNotificationsAndStoreSent).map(_ => cloudWatch.sendMetricsSoFar()) match {
       case Success(_) => ()
       case Failure(t) => {
         logger.warn("Error executing schedule", t)
         throw t
       }
     }
+  }
 
 
   private def queryNotificationsToSchedule: Try[Seq[NotificationsScheduleEntry]] = cloudWatch.timeTry("query", () => Try {
-      val notificationsScheduleEntries = notificationSchedulePersistence.querySync()
-      cloudWatch.queueMetric("discovered", notificationsScheduleEntries.size, StandardUnit.Count)
-      notificationsScheduleEntries
-    })
+    val notificationsScheduleEntries = notificationSchedulePersistence.querySync()
+    cloudWatch.queueMetric("discovered", notificationsScheduleEntries.size, StandardUnit.Count)
+    notificationsScheduleEntries
+  })
 
 
   private def sendNotificationsAndStoreSent(notificationsScheduleEntries: Seq[NotificationsScheduleEntry]): Try[Unit] = {
@@ -95,7 +90,7 @@ class ProcessNotificationScheduleLambda(
 
 
   private def sendNotificationAndStoreSent(nowEpoch: Long, notificationsScheduleEntry: NotificationsScheduleEntry): Try[Unit] =
-    requestNewsstandShardNotification(nowEpoch, notificationsScheduleEntry)
+    requestNotification(nowEpoch, notificationsScheduleEntry)
       .flatMap(_ => setSent(nowEpoch, notificationsScheduleEntry))
 
 
