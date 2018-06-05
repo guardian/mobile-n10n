@@ -23,18 +23,18 @@ class ApnsConfigConverter(conf: Configuration) {
 
   val logger = Logger(classOf[ApnsConfigConverter])
 
-  def toIosConfig(push: Push): ApnsConfig = {
+  def toIosConfig(push: Push): Option[ApnsConfig] = {
     logger.debug(s"Converting push to Azure: $push")
 
     // Builders are mutable, keep that in mind while reading the following
-    val firebaseApnsNotification = push.notification match {
+    val firebaseApnsNotification = PartialFunction.condOpt(push.notification) {
       case contentNotification: ContentNotification => toContent(contentNotification)
       case breakingNews: BreakingNewsNotification => toBreakingNews(breakingNews)
       case election: ElectionNotification => toElectionAlert(election)
       case live: LiveEventNotification => toLiveEventAlert(live)
       case football: FootballMatchStatusNotification => toMatchStatusAlert(football)
     }
-    firebaseApnsNotification.toApnsConfig
+    firebaseApnsNotification.map(_.toApnsConfig)
   }
 
   private case class FirebaseApsAlert(title: String, body: String)

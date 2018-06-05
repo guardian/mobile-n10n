@@ -1,5 +1,6 @@
 package notification.services.fcm
 
+import akka.actor.ActorSystem
 import com.google.firebase.messaging._
 import models.SenderReport
 import notification.models.Destination.Destination
@@ -11,9 +12,12 @@ import play.api.Logger
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class FCMNotificationSender(apnsConfigConverter: ApnsConfigConverter, gcmPushConverter: AndroidConfigConverter)(fcmExecutionContext: ExecutionContext) extends NotificationSender {
+class FCMNotificationSender(apnsConfigConverter: ApnsConfigConverter, gcmPushConverter: AndroidConfigConverter)(implicit ec: ExecutionContext, actorSystem: ActorSystem) extends NotificationSender {
 
   private val logger = Logger(classOf[FCMNotificationSender])
+
+  // FCM calls are blocking, this is to block on a separate thread pool
+  private val fcmExecutionContext: ExecutionContext = actorSystem.dispatchers.lookup("fcm-io")
 
   private implicit class MessageBuilder(messageBuilder: Message.Builder) {
     def setDestination(destination: Destination): Message.Builder = destination match {
@@ -28,13 +32,14 @@ class FCMNotificationSender(apnsConfigConverter: ApnsConfigConverter, gcmPushCon
   }
 
   override def sendNotification(push: Push): Future[SenderResult] = {
-    val message = Message.builder()
-      .setApnsConfig(apnsConfigConverter.toIosConfig(push))
-      .setAndroidConfig(gcmPushConverter.toAndroidConfig(push))
+    val messageBuilder = Message.builder()
       .setNotification(notification(push))
       .setDestination(push.destination)
-      .build()
 
+    apnsConfigConverter.toIosConfig(push).foreach(messageBuilder.setApnsConfig)
+    gcmPushConverter.toAndroidConfig(push).foreach(messageBuilder.setAndroidConfig)
+
+    val message = messageBuilder.build()
 
     // FCM's async calls doesn't come with its own thread pool, so we may as well block in a separate thread pool
     Future(FirebaseMessaging.getInstance().send(message))(fcmExecutionContext)

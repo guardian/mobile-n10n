@@ -15,6 +15,7 @@ import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
 import notification.services.azure._
+import notification.services.fcm.{AndroidConfigConverter, ApnsConfigConverter, FCMNotificationSender}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.BuiltInComponentsFromContext
@@ -47,7 +48,8 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     gcmNotificationSender,
     apnsNotificationSender,
     newsstandShardNotificationSender,
-    frontendAlerts
+    frontendAlerts,
+    fcmNotificationSender
   )
   lazy val mainController = wire[Main]
   lazy val router: Router = wire[Routes]
@@ -79,6 +81,10 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
       new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client))
   }
   lazy val newsstandShardNotificationSender: NewsstandShardSender = new NewsstandShardSender(newsstandHubClient,appConfig, topicSubscriptionsRepository)
+
+  lazy val androidConfigConverter: AndroidConfigConverter = wire[AndroidConfigConverter]
+  lazy val apnsConfigConverter: ApnsConfigConverter = wire[ApnsConfigConverter]
+  lazy val fcmNotificationSender: FCMNotificationSender = wire[FCMNotificationSender]
 
   lazy val frontendAlerts: NotificationSender = {
     val frontendConfig = FrontendAlertsConfig(new URI(appConfig.frontendNewsAlertEndpoint), appConfig.frontendNewsAlertApiKey)

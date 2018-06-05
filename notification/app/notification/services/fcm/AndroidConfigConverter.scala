@@ -20,17 +20,16 @@ class AndroidConfigConverter(conf: Configuration) {
 
   val logger = Logger(classOf[AndroidConfigConverter])
 
-  def toAndroidConfig(push: Push): AndroidConfig = {
+  def toAndroidConfig(push: Push): Option[AndroidConfig] = {
     logger.debug(s"Converting push to android FCM: $push")
-    val firebaseAndroidNotification = push.notification match {
-      case ga: GoalAlertNotification => toGoalAlert(ga)
+    val firebaseAndroidNotification = PartialFunction.condOpt(push.notification) {
       case ca: ContentNotification => toContent(ca)
       case bn: BreakingNewsNotification => toBreakingNews(bn)
       case el: ElectionNotification => toElectionAlert(el)
       case mi: LiveEventNotification => toLiveEventAlert(mi)
       case ms: FootballMatchStatusNotification => toMatchStatusAlert(ms)
     }
-    firebaseAndroidNotification.toAndroidConfig
+    firebaseAndroidNotification.map(_.toAndroidConfig)
   }
 
   private case class FirebaseAndroidNotification(
@@ -108,28 +107,6 @@ class AndroidConfigConverter(conf: Configuration) {
       ) ++ Map(
         Keys.ThumbnailUrl -> cn.thumbnailUrl.map(_.toString)
       ).flattenValues
-    )
-  }
-
-  private def toGoalAlert(goalAlert: GoalAlertNotification): FirebaseAndroidNotification = {
-    FirebaseAndroidNotification(
-      Map(
-        Keys.Type -> AndroidMessageTypes.GoalAlert,
-        Keys.UniqueIdentifier -> goalAlert.id.toString,
-        Keys.AwayTeamName -> goalAlert.awayTeamName,
-        Keys.AwayTeamScore -> goalAlert.awayTeamScore.toString,
-        Keys.HomeTeamName -> goalAlert.homeTeamName,
-        Keys.HomeTeamScore -> goalAlert.homeTeamScore.toString,
-        Keys.ScoringTeamName -> goalAlert.scoringTeamName,
-        Keys.ScorerName -> goalAlert.scorerName,
-        Keys.GoalMins -> goalAlert.goalMins.toString,
-        Keys.OtherTeamName -> goalAlert.otherTeamName,
-        Keys.MatchId -> goalAlert.matchId,
-        Keys.MapiUrl -> goalAlert.mapiUrl.toString,
-        Keys.Uri -> new URI(replaceHost(goalAlert.mapiUrl)).toString,
-        Keys.UriType -> "football-match",
-        Keys.Debug -> conf.debug.toString
-      )
     )
   }
 
