@@ -25,6 +25,7 @@ import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsR
 import utils.CustomApplicationLoader
 
 import router.Routes
+import _root_.models.NewsstandShardConfig
 
 class RegistrationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(context: Context) : BuiltInComponents = new RegistrationApplicationComponents(context)
@@ -59,7 +60,7 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val winNotificationRegistrar: WindowsNotificationRegistrar = new WindowsNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
   lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
-
+  lazy val legacyNewsstandRegistrationConverterConfig:NewsstandShardConfig = NewsstandShardConfig(appConfig.newsstandShards)
   lazy val auditorGroup: AuditorGroup = {
     AuditorGroup(Set(
       FootballMatchAuditor(new WSPaClient(appConfig.auditorConfiguration.paApiConfig, wsClient)),
