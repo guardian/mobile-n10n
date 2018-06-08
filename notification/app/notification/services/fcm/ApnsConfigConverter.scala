@@ -3,19 +3,17 @@ package notification.services.fcm
 import java.net.URI
 
 import azure._
-import azure.apns.{Alert, ElectionProperties, FootballMatchStatusProperties, LiveEventProperties}
+import azure.apns.FootballMatchStatusProperties
 import com.google.firebase.messaging.{ApnsConfig, Aps, ApsAlert}
-import models.Importance.Major
-import models.NotificationType.{BreakingNews, Content, ElectionsAlert, FootballMatchStatus, LiveEventAlert}
+import models.NotificationType.{BreakingNews, Content, FootballMatchStatus}
 import models._
 import notification.models.Destination._
 import notification.models.ios.{Keys, MessageTypes}
-import notification.models.{Push, ios}
+import notification.models.Push
 import notification.services.Configuration
 import notification.services.azure.PlatformUriType
 import notification.services.azure.PlatformUriTypes.{External, Item}
 import play.api.Logger
-import utils.MapImplicits.RichOptionMap
 
 import collection.JavaConverters._
 
@@ -24,22 +22,22 @@ class ApnsConfigConverter(conf: Configuration) {
   val logger = Logger(classOf[ApnsConfigConverter])
 
   def toIosConfig(push: Push): Option[ApnsConfig] = {
-    logger.debug(s"Converting push to Azure: $push")
-
-    // Builders are mutable, keep that in mind while reading the following
-    val firebaseApnsNotification = PartialFunction.condOpt(push.notification) {
-      case contentNotification: ContentNotification => toContent(contentNotification)
-      case breakingNews: BreakingNewsNotification => toBreakingNews(breakingNews)
-      case election: ElectionNotification => toElectionAlert(election)
-      case live: LiveEventNotification => toLiveEventAlert(live)
-      case football: FootballMatchStatusNotification => toMatchStatusAlert(football)
-    }
-    firebaseApnsNotification.map(_.toApnsConfig)
+    toFirebaseApnsNotification(push).map(_.toApnsConfig)
   }
 
-  private case class FirebaseApsAlert(title: String, body: String)
+  def toFirebaseApnsNotification(push: Push): Option[FirebaseApnsNotification] = {
+    logger.debug(s"Converting push to Azure: $push")
 
-  private case class FirebaseApnsNotification(
+    PartialFunction.condOpt(push.notification) {
+      case contentNotification: ContentNotification => toContent(contentNotification)
+      case breakingNews: BreakingNewsNotification => toBreakingNews(breakingNews)
+      case football: FootballMatchStatusNotification => toMatchStatusAlert(football)
+    }
+  }
+
+  case class FirebaseApsAlert(title: String, body: String)
+
+  case class FirebaseApnsNotification(
     category: Option[String],
     alert: Option[Either[String, FirebaseApsAlert]],
     contentAvailable: Option[Boolean],
@@ -86,7 +84,6 @@ class ApnsConfigConverter(conf: Configuration) {
       mutableContent = None,
       sound = Some("default"),
       customData = List(
-        Keys.MessageType -> Some(MessageTypes.NewsAlert),
         Keys.NotificationType -> Some(Content.value),
         Keys.Link -> Some(toIosLink(cn.link).toString),
         Keys.Topics -> Some(cn.topic.map(_.toString).mkString(",")),
@@ -112,64 +109,12 @@ class ApnsConfigConverter(conf: Configuration) {
       mutableContent = if (imageUrl.isDefined) Some(true) else None,
       sound = Some("default"),
       customData = List(
-        Keys.MessageType -> Some(MessageTypes.NewsAlert),
         Keys.NotificationType -> Some(BreakingNews.value),
         Keys.Link -> Some(toIosLink(breakingNews.link).toString),
         Keys.Topics -> Some(breakingNews.topic.map(_.toString).mkString(",")),
         Keys.Uri -> Some(new URI(link.uri).toString),
         Keys.UriType -> Some(link.`type`.toString),
-        Keys.ImageUrl -> imageUrl
-      )
-    )
-  }
-
-  private def toElectionAlert(electionAlert: ElectionNotification): FirebaseApnsNotification = {
-    val democratVotes = electionAlert.results.candidates.find(_.name == "Clinton").map(_.electoralVotes).getOrElse(0)
-    val republicanVotes = electionAlert.results.candidates.find(_.name == "Trump").map(_.electoralVotes).getOrElse(0)
-
-    FirebaseApnsNotification(
-      category = None,
-      alert = None,
-      contentAvailable = Some(true),
-      mutableContent = None,
-      sound = None,
-      customData = List(
-        Keys.MessageType -> Some(MessageTypes.ElectionAlert),
-        Keys.NotificationType -> Some(ElectionsAlert.value),
-        "election" -> Some(ElectionProperties(
-          title = electionAlert.title,
-          body = electionAlert.message,
-          richviewbody = electionAlert.expandedMessage.getOrElse(electionAlert.message),
-          sound = if (electionAlert.importance == Major) 1 else 0,
-          dem = democratVotes,
-          rep = republicanVotes,
-          link = toIosLink(electionAlert.link).toString,
-          results = toIosLink(electionAlert.resultsLink).toString
-        ))
-      )
-    )
-  }
-
-  private def toLiveEventAlert(liveEvent: LiveEventNotification): FirebaseApnsNotification = {
-    FirebaseApnsNotification(
-      category = None,
-      alert = None,
-      contentAvailable = Some(true),
-      mutableContent = None,
-      sound = None,
-      customData = List(
-        Keys.MessageType -> Some(MessageTypes.LiveEventAlert),
-        Keys.NotificationType -> Some(LiveEventAlert.value),
-        "liveEvent" -> Some(LiveEventProperties(
-          title = liveEvent.title,
-          body = liveEvent.message,
-          richviewbody = liveEvent.expandedMessage.getOrElse(liveEvent.message),
-          sound = if (liveEvent.importance == Major) 1 else 0,
-          link1 = toIosLink(liveEvent.link1).toString,
-          link2 = toIosLink(liveEvent.link2).toString,
-          imageURL = liveEvent.imageUrl.map(_.toString),
-          topics = liveEvent.topic.toList.map(_.toString).mkString(",")
-        ))
+        Keys.ImageUrl -> imageUrl.map(_.toString)
       )
     )
   }
@@ -182,7 +127,6 @@ class ApnsConfigConverter(conf: Configuration) {
       mutableContent = Some(true),
       sound = if (matchStatus.importance == Importance.Major) Some("default") else None,
       customData = List(
-        Keys.MessageType -> Some(MessageTypes.FootballMatchStatus),
         Keys.NotificationType -> Some(FootballMatchStatus.value),
         "matchStatus" -> Some(FootballMatchStatusProperties(
           homeTeamName = matchStatus.homeTeamName,

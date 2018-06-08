@@ -8,7 +8,7 @@ import models._
 import notification.models.Destination._
 import notification.models.android.Editions.Edition
 import notification.models.android.{AndroidMessageTypes, Keys}
-import notification.models.{Push, android}
+import notification.models.Push
 import notification.services.Configuration
 import play.api.Logger
 import utils.MapImplicits._
@@ -20,19 +20,9 @@ class AndroidConfigConverter(conf: Configuration) {
 
   val logger = Logger(classOf[AndroidConfigConverter])
 
-  def toAndroidConfig(push: Push): Option[AndroidConfig] = {
-    logger.debug(s"Converting push to android FCM: $push")
-    val firebaseAndroidNotification = PartialFunction.condOpt(push.notification) {
-      case ca: ContentNotification => toContent(ca)
-      case bn: BreakingNewsNotification => toBreakingNews(bn)
-      case el: ElectionNotification => toElectionAlert(el)
-      case mi: LiveEventNotification => toLiveEventAlert(mi)
-      case ms: FootballMatchStatusNotification => toMatchStatusAlert(ms)
-    }
-    firebaseAndroidNotification.map(_.toAndroidConfig)
-  }
+  def toAndroidConfig(push: Push): Option[AndroidConfig] = toFirebaseAndroidNotification(push).map(_.toAndroidConfig)
 
-  private case class FirebaseAndroidNotification(
+  case class FirebaseAndroidNotification(
     data: Map[String, String]
   ) {
     def toAndroidConfig: AndroidConfig =
@@ -41,6 +31,15 @@ class AndroidConfigConverter(conf: Configuration) {
         .setPriority(AndroidConfig.Priority.HIGH)
         .setTtl(86400000L) // 24 hours
         .build()
+  }
+
+  def toFirebaseAndroidNotification(push: Push): Option[FirebaseAndroidNotification] = {
+    logger.debug(s"Converting push to android FCM: $push")
+    PartialFunction.condOpt(push.notification) {
+      case ca: ContentNotification => toContent(ca)
+      case bn: BreakingNewsNotification => toBreakingNews(bn)
+      case ms: FootballMatchStatusNotification => toMatchStatusAlert(ms)
+    }
   }
 
 
@@ -110,54 +109,6 @@ class AndroidConfigConverter(conf: Configuration) {
     )
   }
 
-  private def toElectionAlert(electionAlert: ElectionNotification): FirebaseAndroidNotification = {
-    def resultsFlattened: List[(String, String)] = {
-      val data = electionAlert.results.candidates.zipWithIndex.flatMap { case (candidate, index) =>
-        List(
-          s"candidates[$index].name" -> candidate.name,
-          s"candidates[$index].electoralVotes" -> candidate.electoralVotes.toString,
-          s"candidates[$index].color" -> candidate.color
-        ) ++ candidate.avatar.map({ avatar => s"candidates[$index].avatar" -> avatar.toString }).toList
-      }
-      val length = "candidates.length" -> electionAlert.results.candidates.size.toString
-      length :: data
-    }
-
-    FirebaseAndroidNotification(
-      Map(
-        Keys.Type -> AndroidMessageTypes.ElectionAlert,
-        Keys.UniqueIdentifier -> electionAlert.id.toString,
-        Keys.ExpandedMessage -> electionAlert.expandedMessage.getOrElse(electionAlert.message),
-        Keys.ShortMessage -> electionAlert.shortMessage.getOrElse(electionAlert.message),
-        Keys.Debug -> conf.debug.toString,
-        Keys.ElectoralCollegeSize -> "538",
-        Keys.Link -> toAndroidLink(electionAlert.link).toString,
-        Keys.ResultsLink -> toAndroidLink(electionAlert.resultsLink).toString,
-        Keys.Title -> electionAlert.title,
-        Keys.Importance -> electionAlert.importance.toString
-      ) ++ resultsFlattened.toMap
-    )
-  }
-
-  private def toLiveEventAlert(innovationAlert: LiveEventNotification): FirebaseAndroidNotification = {
-    FirebaseAndroidNotification(
-      Map(
-        Keys.UniqueIdentifier -> Some(innovationAlert.id.toString),
-        Keys.Message -> Some(innovationAlert.message),
-        Keys.ShortMessage -> Some(innovationAlert.shortMessage.getOrElse(innovationAlert.message)),
-        Keys.ExpandedMessage -> Some(innovationAlert.expandedMessage.getOrElse(innovationAlert.message)),
-        Keys.Importance -> Some(innovationAlert.importance.toString),
-        Keys.Link1 -> Some(toAndroidLink(innovationAlert.link1).toString),
-        Keys.Link2 -> Some(toAndroidLink(innovationAlert.link2).toString),
-        Keys.ImageUrl -> innovationAlert.imageUrl.map(_.toString),
-        Keys.Topics -> Some(innovationAlert.topic.map(toAndroidTopic).mkString(",")),
-        Keys.Debug -> Some(conf.debug.toString),
-        Keys.Title -> Some(innovationAlert.title),
-        Keys.Type -> Some(AndroidMessageTypes.SuperbowlEvent)
-      ).flattenValues
-    )
-  }
-
   private def toMatchStatusAlert(matchStatusAlert: FootballMatchStatusNotification): FirebaseAndroidNotification = FirebaseAndroidNotification(
     Map(
       "type" -> Some(AndroidMessageTypes.FootballMatchAlert),
@@ -179,8 +130,6 @@ class AndroidConfigConverter(conf: Configuration) {
       "venue" -> matchStatusAlert.venue
     ).flattenValues
   )
-
-  protected def replaceHost(uri: URI): String = List(Some("x-gu://"), Option(uri.getPath), Option(uri.getQuery).map("?" + _)).flatten.mkString
 
   case class PlatformUri(uri: String, `type`: String)
 

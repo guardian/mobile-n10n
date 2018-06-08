@@ -11,7 +11,7 @@
     </rollingPolicy>
 
     <encoder>
-      <pattern>%date [%level] from %logger in %thread - %message%n%xException</pattern>
+      <pattern>%date [%level] [%logger] [%thread] - %message%n%xException</pattern>
     </encoder>
   </appender>
 

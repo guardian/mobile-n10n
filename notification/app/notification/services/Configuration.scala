@@ -1,9 +1,11 @@
 package notification.services
 
 import _root_.azure.NotificationHubConnection
+import com.typesafe.config.{Config, ConfigFactory}
 import play.api.{Configuration => PlayConfig}
 
 import scala.concurrent.duration._
+import scala.collection.JavaConverters._
 
 class Configuration(conf: PlayConfig) {
   lazy val defaultHub = NotificationHubConnection(
