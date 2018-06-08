@@ -86,9 +86,9 @@ class NewsstandSenderTest extends Specification with Mockito with ExecutionEnvir
           ))
 
          notificationsScheduleEntries.map(_.notification).map(jsonString => Notification.jf.reads(Json.parse(jsonString)).get) must be equalTo Set(
-           NewsstandShardNotification(firstUuid, 1),
-           NewsstandShardNotification(secondUuid, 2),
-           NewsstandShardNotification(thirdUuid, 3)
+           NewsstandShardNotification(firstUuid, 0),
+           NewsstandShardNotification(secondUuid, 1),
+           NewsstandShardNotification(thirdUuid, 2)
          )
         there was one(hubClient).sendNotification(rawPush)
       }

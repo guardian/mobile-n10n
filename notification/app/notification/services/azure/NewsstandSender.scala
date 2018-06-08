@@ -34,13 +34,14 @@ class NewsstandSender(
   private def scheduleShards (id: UUID): Future[immutable.IndexedSeq[Unit]] = {
     val nowSeconds = Instant.now(clock).getEpochSecond
     Future.sequence {
-      Range(1, legacyNewsstandRegistrationConverterConfig.shards.toInt + 1).map(shard => {
-        val shardUuid = new UUID(id.getMostSignificantBits, id.getLeastSignificantBits + shard)
+      Range(0, legacyNewsstandRegistrationConverterConfig.shards.toInt).map(registeredShard => {
+        val offset = registeredShard + 1
+        val shardUuid = new UUID(id.getMostSignificantBits, id.getLeastSignificantBits + offset)
         notificationSchedulePersistence.writeAsync(NotificationsScheduleEntry(
           shardUuid.toString,
-          Json.prettyPrint(NewsstandShardNotification.jf.writes(NewsstandShardNotification(shardUuid, shard))),
-          nowSeconds + (60L * shard),
-          nowSeconds + (60L * shard) + sevenDaysInSeconds
+          Json.prettyPrint(NewsstandShardNotification.jf.writes(NewsstandShardNotification(shardUuid, registeredShard))),
+          nowSeconds + (60L * offset),
+          nowSeconds + (60L * offset) + sevenDaysInSeconds
         ), None).future
       })
     }
