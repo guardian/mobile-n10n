@@ -5,7 +5,7 @@ import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import play.api.libs.json.Json
 import play.api.test.{FakeRequest, PlaySpecification}
-import registration.services.topic.{TopicValidator, TopicValidatorError}
+import registration.services.topic.TopicValidator
 import registration.services._
 
 import scala.concurrent.Future
@@ -68,17 +68,25 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       status(result) must equalTo(NOT_FOUND)
     }
 
+    "return registrations for topic" in new RegistrationsContext {
+      val Some(register) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationWithFootballMatchTopicJson)))
+      status(register) must equalTo(OK)
+
+      val Some(result) = route(app, FakeRequest(GET, "/registrations?topic=breaking/uk"))
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("results") /#(0) /("platform" -> "ios")
+      contentAsString(result) must /("results") /#(0) /("deviceId" -> "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4")
+      contentAsString(result) must (/("results") andHave size(1))
+    }
   }
 
   trait RegistrationsContext extends RegistrationsBase with withMockedWSClient {
-    def testRegistrations(registrationJson: String): List[FakeRequest[AnyContentAsJson]] = {
-      for { i <- (1 to 8).toList } yield {
-        val body = Json.parse(registrationJson.replace("someId", s"someId$i"))
-        FakeRequest(
-          method = PUT,
-          path = s"/registrations/someId$i"
-        ).withJsonBody(body)
-      }
+    def testRegistrations(registrationJson: String): FakeRequest[AnyContentAsJson] = {
+      val body = Json.parse(registrationJson)
+      FakeRequest(
+        method = POST,
+        path = s"/legacy/device/register"
+      ).withJsonBody(body)
     }
   }
 
