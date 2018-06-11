@@ -14,9 +14,9 @@ class APNSSender(hubClient: NotificationHubClient, configuration: Configuration,
   override protected val converter = new APNSPushConverter(configuration)
 
   override protected def shouldSendToApps(notification: Notification) =
+    notification.`type` == NewsstandShard ||
     super.shouldSendToApps(notification) && !filterAlert(notification)
 
   private def filterAlert(notification: Notification) =
-    notification.`type` == NewsstandShard ||
     notification.`type` == ElectionsAlert && configuration.disableElectionNotificationsIOS
 }
