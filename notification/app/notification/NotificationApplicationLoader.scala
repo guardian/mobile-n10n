@@ -48,6 +48,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     wnsNotificationSender,
     gcmNotificationSender,
     apnsNotificationSender,
+    newsstandShardNotificationSender,
     frontendAlerts
   )
   lazy val mainController = wire[Main]
@@ -67,18 +68,19 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
 
   lazy val notificationReportRepository = new DynamoNotificationReportRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoReportsTableName)
 
-  lazy val wnsNotificationSender: WNSSender = wire[WNSSender]
+  lazy val wnsNotificationSender: WNSSender = new WNSSender(hubClient, appConfig, topicSubscriptionsRepository)
 
-  lazy val gcmNotificationSender: GCMSender = wire[GCMSender]
+  lazy val gcmNotificationSender: GCMSender = new GCMSender(hubClient, appConfig, topicSubscriptionsRepository)
 
-  lazy val apnsNotificationSender: APNSSender = wire[APNSSender]
+  lazy val apnsNotificationSender: APNSSender = new APNSSender(hubClient, appConfig, topicSubscriptionsRepository)
+  lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
   lazy val newsstandNotificationSender: NewsstandSender = {
-    val hubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
     new NewsstandSender(
-      hubClient,
+      newsstandHubClient,
       NewsstandShardConfig(appConfig.newsstandShards),
       new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client))
   }
+  lazy val newsstandShardNotificationSender: NewsstandShardSender = new NewsstandShardSender(newsstandHubClient,appConfig, topicSubscriptionsRepository)
 
   lazy val frontendAlerts: NotificationSender = {
     val frontendConfig = FrontendAlertsConfig(new URI(appConfig.frontendNewsAlertEndpoint), appConfig.frontendNewsAlertApiKey)
