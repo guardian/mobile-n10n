@@ -39,7 +39,7 @@ class RequestNotificationImpl(
             }
           }
           finally {
-            response.close()
+            Option(response.body).foreach(_.close)
           }
 
 
