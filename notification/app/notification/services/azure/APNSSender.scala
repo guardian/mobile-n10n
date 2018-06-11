@@ -2,7 +2,7 @@ package notification.services.azure
 
 import azure.NotificationHubClient
 import models.Notification
-import models.NotificationType.ElectionsAlert
+import models.NotificationType.{ElectionsAlert, NewsstandShard}
 import notification.services.Configuration
 import tracking.TopicSubscriptionsRepository
 
@@ -17,5 +17,6 @@ class APNSSender(hubClient: NotificationHubClient, configuration: Configuration,
     super.shouldSendToApps(notification) && !filterAlert(notification)
 
   private def filterAlert(notification: Notification) =
+    notification.`type` == NewsstandShard ||
     notification.`type` == ElectionsAlert && configuration.disableElectionNotificationsIOS
 }
