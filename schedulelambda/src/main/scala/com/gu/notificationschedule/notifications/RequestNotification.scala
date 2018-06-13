@@ -28,14 +28,20 @@ class RequestNotificationImpl(
     cloudWatchMetrics.timeTry("notification-request", () =>
       tryRequestNotification(notificationsScheduleEntry) match {
         case Success(Some(response)) => {
-          if (response.isSuccessful) {
-            logger.info("Success: request: {}\n Got response {} ", notificationsScheduleEntry: Any, response: Any)
-            Success(())
+          try {
+            if (response.isSuccessful) {
+              logger.info("Success: request: {}\n Got response {} ", notificationsScheduleEntry: Any, response: Any)
+              Success(())
+            }
+            else {
+              logger.warn("Unsuccessful response: request: {}\nGot response {} ", notificationsScheduleEntry: Any, response: Any)
+              Failure(new RequestNotificationException(s"Unsuccessful response.\nRequest: $notificationsScheduleEntry\nResponse: $response"))
+            }
           }
-          else {
-            logger.warn("Unsuccessful response: request: {}\nGot response {} ", notificationsScheduleEntry: Any, response: Any)
-            Failure(new RequestNotificationException(s"Unsuccessful response.\nRequest: $notificationsScheduleEntry\nResponse: $response"))
+          finally {
+            Option(response.body).foreach(_.close)
           }
+
 
         }
         case Success(None) => {
