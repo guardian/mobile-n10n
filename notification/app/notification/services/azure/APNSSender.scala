@@ -2,7 +2,7 @@ package notification.services.azure
 
 import azure.NotificationHubClient
 import models.{Notification, Platform, iOS}
-import models.NotificationType.ElectionsAlert
+import models.NotificationType.{ElectionsAlert, NewsstandShard}
 import notification.services.Configuration
 import tracking.TopicSubscriptionsRepository
 

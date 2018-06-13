@@ -126,6 +126,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       override lazy val registrarProvider: RegistrarProvider = fakeRegistrarProvider
       override lazy val appConfig = new Configuration(PlayConfig.empty) {
         override lazy val defaultTimeout = 1.seconds
+        override lazy val newsstandShards: Int = 10
       }
     }
   }

@@ -129,12 +129,18 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
     case Link.External(url) => PlatformUri(url, External)
   }
 
+  def toNewsstandShardAlert(ns: NewsstandShardNotification) = ios.NewsstandNotificationShard(
+    ns.id,
+    ns.shard
+  )
+
   private def toAzure(np: Notification, editions: Set[Edition] = Set.empty): Option[ios.Notification] = condOpt(np) {
     case ca: ContentNotification => toContent(ca)
     case bn: BreakingNewsNotification => toBreakingNews(bn, editions)
     case el: ElectionNotification => toElectionAlert(el)
     case mi: LiveEventNotification => toLiveEventAlert(mi)
     case fa: FootballMatchStatusNotification => toMatchStatusAlert(fa)
+    case ns: NewsstandShardNotification => toNewsstandShardAlert(ns)
   }
 
   private def toTags(destination: Destination) = destination match {

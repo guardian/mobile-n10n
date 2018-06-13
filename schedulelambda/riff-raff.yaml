@@ -1,0 +1,10 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+deployments:
+  schedule:
+    type: aws-lambda
+    parameters:
+      bucket: mobile-notifications-dist
+      functionNames: [mobile-notifications-schedule-]
+      fileName: schedule.jar
+      prefixStack: false
