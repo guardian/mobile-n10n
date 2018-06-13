@@ -30,7 +30,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
     "process a Minor election notification" in new GCMScope {
       val result = androidNotificationSender.sendNotification(electionPush(Minor))
 
-      result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(WindowsMobile, 1)), sendersId = Some("fake-id")))).await
+      result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(Android, 1)), sendersId = Some("fake-id")))).await
       got {
         one(hubClient).sendNotification(pushConverter.toRawPush(electionPush(Minor)).get)
       }
@@ -50,7 +50,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
       "send two separate with notifications with differently encoded topics when addressed to topic" in new GCMScope {
         val result = androidNotificationSender.sendNotification(topicPush)
 
-        result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(WindowsMobile, 2)), sendersId = Some("fake-id")))).await
+        result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(Android, 2)), sendersId = Some("fake-id")))).await
         got {
           one(hubClient).sendNotification(pushConverter.toRawPush(topicPush).get)
         }
@@ -59,7 +59,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
       "send only one notification when destination is user so that user do not receive the same message twice" in new GCMScope {
         val result = androidNotificationSender.sendNotification(userPush)
 
-        result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(WindowsMobile, 1)), sendersId = Some("fake-id")))).await
+        result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(Android, 1)), sendersId = Some("fake-id")))).await
         got {
           one(hubClient).sendNotification(pushConverter.toRawPush(userPush).get)
         }

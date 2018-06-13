@@ -21,7 +21,7 @@ class NotificationHubRegistrar(
   extends NotificationRegistrar {
 
   override val providerIdentifier = "azure"
-  val logger = Logger(classOf[WindowsNotificationRegistrar])
+  val logger = Logger(classOf[NotificationHubRegistrar])
 
   override def register(lastKnownChannelUri: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
     findRegistrations(lastKnownChannelUri, registration).flatMap {

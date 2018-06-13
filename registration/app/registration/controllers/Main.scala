@@ -52,10 +52,6 @@ final class Main(
     )
   }
 
-  def register(lastKnownDeviceId: String): Action[Registration] = actionWithTimeout(parse.json[Registration]) { request =>
-    registerCommon(lastKnownDeviceId, request.body).map(processResponse(_))
-  }
-
   def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = actionWithTimeout {
 
     def registrarFor(platform: Platform) = EitherT.fromEither[Future](

@@ -1,7 +1,7 @@
 package notification.services.azure
 
 import azure.NotificationHubClient
-import models.Notification
+import models.{Notification, Platform, iOS}
 import models.NotificationType.{ElectionsAlert, NewsstandShard}
 import notification.services.Configuration
 import tracking.TopicSubscriptionsRepository
@@ -10,6 +10,8 @@ import scala.concurrent.ExecutionContext
 
 class APNSSender(hubClient: NotificationHubClient, configuration: Configuration, topicSubscriptionsRepository: TopicSubscriptionsRepository)
   (implicit ec: ExecutionContext) extends NotificationsHubSender(hubClient, configuration, topicSubscriptionsRepository)(ec) {
+
+  override protected def platform: Platform = iOS
 
   override protected val converter = new APNSPushConverter(configuration)
 
