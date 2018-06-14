@@ -23,8 +23,7 @@ import play.api.mvc.EssentialFilter
 import play.filters.HttpFiltersComponents
 import play.filters.hosts.AllowedHostsFilter
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoNotificationReportRepository, DynamoTopicSubscriptionsRepository, TopicSubscriptionsRepository}
-import utils.CustomApplicationLoader
-
+import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
@@ -57,7 +56,9 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
 
   lazy val hubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
-  val asyncDynamo: AsyncDynamo = AsyncDynamo(EU_WEST_1)
+  val credentialsProvider = new MobileAwsCredentialsProvider()
+
+  val asyncDynamo: AsyncDynamo = AsyncDynamo(EU_WEST_1, credentialsProvider)
   lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
     val underlying = new DynamoTopicSubscriptionsRepository(asyncDynamo, appConfig.dynamoTopicsTableName)
     val batching = new BatchingTopicSubscriptionsRepository(underlying)
@@ -65,7 +66,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     batching
   }
 
-  lazy val notificationReportRepository = new DynamoNotificationReportRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoReportsTableName)
+  lazy val notificationReportRepository = new DynamoNotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
 
   lazy val gcmNotificationSender: GCMSender = new GCMSender(hubClient, appConfig, topicSubscriptionsRepository)
 

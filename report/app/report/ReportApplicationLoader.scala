@@ -17,8 +17,7 @@ import report.authentication.ReportAuthAction
 import report.controllers.Report
 import report.services.{Configuration, NotificationReportEnricher}
 import tracking.{DynamoNotificationReportRepository, SentNotificationReportRepository}
-import utils.CustomApplicationLoader
-
+import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
 
 class ReportApplicationLoader extends CustomApplicationLoader {
@@ -39,8 +38,10 @@ class ReportApplicationComponents(context: Context) extends BuiltInComponentsFro
 
   lazy val reportController = wire[Report]
 
+  val credentialsProvider = new MobileAwsCredentialsProvider()
+
   lazy val notificationReportRepository: SentNotificationReportRepository =
-    new DynamoNotificationReportRepository(AsyncDynamo(regions = EU_WEST_1), appConfig.dynamoReportsTableName)
+    new DynamoNotificationReportRepository(AsyncDynamo(regions = EU_WEST_1, credentialsProvider), appConfig.dynamoReportsTableName)
 
   lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 

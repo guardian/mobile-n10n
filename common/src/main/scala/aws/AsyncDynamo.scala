@@ -1,6 +1,6 @@
 package aws
 
-import com.amazonaws.auth.{AWSCredentialsProvider, DefaultAWSCredentialsProviderChain}
+import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
@@ -25,7 +25,7 @@ object AsyncDynamo {
     .withComparisonOperator(ComparisonOperator.BETWEEN)
     .withAttributeValueList(new AttributeValue(a), new AttributeValue(b))
 
-  def apply(regions: Regions, credentialsProvider: AWSCredentialsProvider = new DefaultAWSCredentialsProviderChain): AsyncDynamo = {
+  def apply(regions: Regions, credentialsProvider: AWSCredentialsProvider): AsyncDynamo = {
     val dynamoClient: AmazonDynamoDBAsync = AmazonDynamoDBAsyncClientBuilder.standard()
       .withCredentials(credentialsProvider)
       .withRegion(regions.getName)

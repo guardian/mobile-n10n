@@ -22,8 +22,7 @@ import registration.services.topic.{AuditorTopicValidator, TopicValidator}
 import registration.services.azure.{APNSNotificationRegistrar, GCMNotificationRegistrar, NewsstandNotificationRegistrar}
 import registration.services._
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsRepository, SubscriptionTracker, TopicSubscriptionsRepository}
-import utils.CustomApplicationLoader
-
+import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
 import _root_.models.NewsstandShardConfig
 
@@ -42,9 +41,11 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
 
   lazy val appConfig = new Configuration(configuration)
 
+  val credentialsProvider = new MobileAwsCredentialsProvider()
+
   lazy val mainController = wire[Main]
   lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
-    val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1), appConfig.dynamoTopicsTableName)
+    val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1, credentialsProvider), appConfig.dynamoTopicsTableName)
     val batching = new BatchingTopicSubscriptionsRepository(underlying)
     batching.scheduleFlush(appConfig.dynamoTopicsFlushInterval)
     batching
