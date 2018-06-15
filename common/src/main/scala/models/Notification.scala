@@ -1,9 +1,12 @@
 package models
 
 import java.util.UUID
+
 import models.NotificationType._
 import play.api.libs.json._
 import java.net.URI
+
+import ai.x.play.json.Jsonx
 import models.elections.ElectionResults
 
 sealed trait Notification {
@@ -130,7 +133,7 @@ case class FootballMatchStatusNotification(
   articleUri: Option[URI],
   importance: Importance,
   topic: Set[Topic],
-  phase: String,
+  matchStatus: String,
   eventId: String,
   debug: Boolean
 ) extends Notification {
@@ -140,90 +143,7 @@ case class FootballMatchStatusNotification(
 object FootballMatchStatusNotification {
   import JsonUtils._
 
-  implicit val jf = new Format[FootballMatchStatusNotification] {
-    override def reads(json: JsValue): JsResult[FootballMatchStatusNotification] = {
-      for {
-        id <- (json \ "id").validate[UUID]
-        typ <- (json \ "type").validate[NotificationType]
-        title <- (json \ "title").validate[String]
-        message <- (json \ "message").validate[String]
-        thumbnailUrl <- (json \ "thumbnailUrl").validateOpt[URI]
-        sender <- (json \ "sender").validate[String]
-        awayTeamName <- (json \ "awayTeamName").validate[String]
-        awayTeamScore <- (json \ "awayTeamScore").validate[Int]
-        awayTeamMessage <- (json \ "awayTeamMessage").validate[String]
-        awayTeamId <- (json \ "awayTeamId").validate[String]
-        homeTeamName <- (json \ "homeTeamName").validate[String]
-        homeTeamScore <- (json \ "homeTeamScore").validate[Int]
-        homeTeamMessage <- (json \ "homeTeamMessage").validate[String]
-        homeTeamId <- (json \ "homeTeamId").validate[String]
-        competitionName <- (json \ "competitionName").validateOpt[String]
-        venue <- (json \ "venue").validateOpt[String]
-        matchId <- (json \ "matchId").validate[String]
-        matchInfoUri <- (json \ "matchInfoUri").validate[URI]
-        articleUri <- (json \ "articleUri").validateOpt[URI]
-        importance <- (json \ "importance").validate[Importance]
-        topic <- (json \ "topic").validate[Set[Topic]]
-        matchStatus <- (json \ "matchStatus").validate[String]
-        eventId <- (json \ "eventId").validate[String]
-        debug <- (json \ "debug").validate[Boolean]
-      } yield FootballMatchStatusNotification(
-        id,
-        typ,
-        title,
-        message,
-        thumbnailUrl,
-        sender,
-        awayTeamName,
-        awayTeamScore,
-        awayTeamMessage,
-        awayTeamId,
-        homeTeamName,
-        homeTeamScore,
-        homeTeamMessage,
-        homeTeamId,
-        competitionName,
-        venue,
-        matchId,
-        matchInfoUri,
-        articleUri,
-        importance,
-        topic,
-        matchStatus,
-        eventId,
-        debug
-      )
-    }
-
-    override def writes(o: FootballMatchStatusNotification): JsValue = JsObject(
-      Seq(
-        "id" -> Json.toJson(o.id),
-        "type" -> Json.toJson(o.`type`),
-        "title" -> Json.toJson(o.title),
-        "message" -> Json.toJson(o.message),
-        "thumbnailUrl" -> Json.toJson(o.thumbnailUrl),
-        "sender" -> Json.toJson(o.sender),
-        "awayTeamName" -> Json.toJson(o.awayTeamName),
-        "awayTeamScore" -> Json.toJson(o.awayTeamScore),
-        "awayTeamMessage" -> Json.toJson(o.awayTeamMessage),
-        "awayTeamId" -> Json.toJson(o.awayTeamId),
-        "homeTeamName" -> Json.toJson(o.homeTeamName),
-        "homeTeamScore" -> Json.toJson(o.homeTeamScore),
-        "homeTeamMessage" -> Json.toJson(o.homeTeamMessage),
-        "homeTeamId" -> Json.toJson(o.homeTeamId),
-        "competitionName" -> Json.toJson(o.competitionName),
-        "venue" -> Json.toJson(o.venue),
-        "matchId" -> Json.toJson(o.matchId),
-        "matchInfoUri" -> Json.toJson(o.matchInfoUri),
-        "articleUri" -> Json.toJson(o.articleUri),
-        "importance" -> Json.toJson(o.importance),
-        "topic" -> Json.toJson(o.topic),
-        "phase" -> Json.toJson(o.phase),
-        "eventId" -> Json.toJson(o.eventId),
-        "debug" -> Json.toJson(o.debug)
-      )
-    )
-  }
+  implicit val jf: Format[FootballMatchStatusNotification] = Jsonx.formatCaseClass[FootballMatchStatusNotification]
 }
 
 case class GoalAlertNotification(

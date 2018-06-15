@@ -161,7 +161,7 @@ class GCMPushConverter(conf: Configuration) extends PushConverter {
       "awayTeamText" -> Some(matchStatusAlert.awayTeamMessage),
       "currentMinute" -> Some(""),
       "important" -> Some(matchStatusAlert.importance.toString),
-      "matchStatus" -> Some(matchStatusAlert.phase),
+      "matchStatus" -> Some(matchStatusAlert.matchStatus),
       "matchId" -> Some(matchStatusAlert.matchId),
       "matchInfoUri" -> Some(matchStatusAlert.matchInfoUri.toString),
       "articleUri" -> matchStatusAlert.articleUri.map(_.toString),
