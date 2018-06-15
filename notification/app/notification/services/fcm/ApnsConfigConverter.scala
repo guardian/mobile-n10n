@@ -138,7 +138,7 @@ class ApnsConfigConverter(conf: Configuration) {
           awayTeamScore = matchStatus.awayTeamScore,
           awayTeamText = matchStatus.awayTeamMessage,
           currentMinute = "",
-          matchStatus = matchStatus.phase,
+          matchStatus = matchStatus.matchStatus,
           matchId = matchStatus.matchId,
           mapiUrl = matchStatus.matchInfoUri.toString,
           matchInfoUri = matchStatus.matchInfoUri.toString,

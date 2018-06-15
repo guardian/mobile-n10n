@@ -108,7 +108,7 @@ class AndroidConfigConverterSpec extends Specification {
           matchId = "123456",
           matchInfoUri = new URI("https://some.invalid.url/detail"),
           articleUri = Some(new URI("https://some.other.invalid.url/detail")),
-          phase = "1",
+          matchStatus = "1",
           eventId = "2",
           debug = true
         ),
