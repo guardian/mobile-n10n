@@ -372,7 +372,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       articleUri = Some(new URI("https://mobile.guardianapis.com/items/some-liveblog")),
       importance = Major,
       topic = Set.empty,
-      phase = "P",
+      matchStatus = "P",
       eventId = "1000",
       debug = false
     )

@@ -51,7 +51,8 @@ lazy val common = project
       "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % "1.4.3",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.285",
-      "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2"
+      "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
+      "ai.x" %% "play-json-extensions" % "0.10.0"
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
