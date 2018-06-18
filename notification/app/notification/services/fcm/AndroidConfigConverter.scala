@@ -61,7 +61,7 @@ class AndroidConfigConverter(conf: Configuration) {
       .collect(Edition.fromString)
 
     val androidLink = toAndroidLink(breakingNews.link)
-    val patformLink = toPlatformLink(breakingNews.link)
+    val platformLink = toPlatformLink(breakingNews.link)
     val edition = if (editions.size == 1) Some(editions.head) else None
     val keyword = tagLink.map(new URI(_))
 
@@ -76,8 +76,8 @@ class AndroidConfigConverter(conf: Configuration) {
         Keys.Debug -> conf.debug.toString,
         Keys.Editions -> editions.mkString(","),
         Keys.Link -> toAndroidLink(breakingNews.link).toString,
-        Keys.UriType -> patformLink.`type`,
-        Keys.Uri -> patformLink.uri
+        Keys.UriType -> platformLink.`type`,
+        Keys.Uri -> platformLink.uri
       ) ++ Map(
         Keys.Section -> sectionLink.map(new URI(_)).map(_.toString),
         Keys.Edition -> edition.map(_.toString),
@@ -111,20 +111,21 @@ class AndroidConfigConverter(conf: Configuration) {
 
   private def toMatchStatusAlert(matchStatusAlert: FootballMatchStatusNotification): FirebaseAndroidNotification = FirebaseAndroidNotification(
     Map(
-      "type" -> Some(AndroidMessageTypes.FootballMatchAlert),
-      "homeTeamName" -> Some(matchStatusAlert.homeTeamName),
-      "homeTeamId" -> Some(matchStatusAlert.homeTeamId),
-      "homeTeamScore" -> Some(matchStatusAlert.homeTeamScore.toString),
-      "homeTeamText" -> Some(matchStatusAlert.homeTeamMessage),
-      "awayTeamName" -> Some(matchStatusAlert.awayTeamName),
-      "awayTeamId" -> Some(matchStatusAlert.awayTeamId),
-      "awayTeamScore" -> Some(matchStatusAlert.awayTeamScore.toString),
-      "awayTeamText" -> Some(matchStatusAlert.awayTeamMessage),
-      "currentMinute" -> Some(""),
-      "important" -> Some(matchStatusAlert.importance.toString),
-      "matchStatus" -> Some(matchStatusAlert.matchStatus),
-      "matchId" -> Some(matchStatusAlert.matchId),
-      "matchInfoUri" -> Some(matchStatusAlert.matchInfoUri.toString),
+      "type" -> AndroidMessageTypes.FootballMatchAlert,
+      "homeTeamName" -> matchStatusAlert.homeTeamName,
+      "homeTeamId" -> matchStatusAlert.homeTeamId,
+      "homeTeamScore" -> matchStatusAlert.homeTeamScore.toString,
+      "homeTeamText" -> matchStatusAlert.homeTeamMessage,
+      "awayTeamName" -> matchStatusAlert.awayTeamName,
+      "awayTeamId" -> matchStatusAlert.awayTeamId,
+      "awayTeamScore" -> matchStatusAlert.awayTeamScore.toString,
+      "awayTeamText" -> matchStatusAlert.awayTeamMessage,
+      "currentMinute" -> "",
+      "important" -> matchStatusAlert.importance.toString,
+      "matchStatus" -> matchStatusAlert.matchStatus,
+      "matchId" -> matchStatusAlert.matchId,
+      "matchInfoUri" -> matchStatusAlert.matchInfoUri.toString
+    ) ++ Map(
       "articleUri" -> matchStatusAlert.articleUri.map(_.toString),
       "competitionName" -> matchStatusAlert.competitionName,
       "venue" -> matchStatusAlert.venue
