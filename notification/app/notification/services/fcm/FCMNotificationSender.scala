@@ -2,17 +2,22 @@ package notification.services.fcm
 
 import akka.actor.ActorSystem
 import com.google.firebase.messaging._
-import models.SenderReport
+import models.{SenderReport, Topic}
 import notification.models.Destination.Destination
 import notification.models.Push
-import notification.services.{NotificationRejected, NotificationSender, SenderError, SenderResult}
+import notification.services._
 import org.joda.time.DateTime
 import play.api.Logger
+import com.google.firebase.FirebaseApp
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class FCMNotificationSender(apnsConfigConverter: ApnsConfigConverter, gcmPushConverter: AndroidConfigConverter)(implicit ec: ExecutionContext, actorSystem: ActorSystem) extends NotificationSender {
+class FCMNotificationSender(
+  apnsConfigConverter: ApnsConfigConverter,
+  gcmPushConverter: AndroidConfigConverter,
+  firebaseApp: FirebaseApp
+)(implicit ec: ExecutionContext, actorSystem: ActorSystem) extends NotificationSender {
 
   private val logger = Logger(classOf[FCMNotificationSender])
 
@@ -20,10 +25,14 @@ class FCMNotificationSender(apnsConfigConverter: ApnsConfigConverter, gcmPushCon
   private val fcmExecutionContext: ExecutionContext = actorSystem.dispatchers.lookup("fcm-io")
 
   private implicit class MessageBuilder(messageBuilder: Message.Builder) {
-    def setDestination(destination: Destination): Message.Builder = destination match {
-      case Left(topics) if topics.size == 1 => messageBuilder.setTopic(topics.head.toString)
-      case Left(topics) if topics.size != 1 => messageBuilder.setCondition(topics.map(topic => s"'$topic' in topics").mkString("||"))
-      case Right(token) => messageBuilder.setToken(token.id.toString)
+    def setDestination(destination: Destination): Message.Builder = {
+      def topicToFirebase(topic: Topic): String = s"${topic.`type`}/${topic.name}".replaceAll("/", "%")
+      destination match {
+        case Left(topics) if topics.size == 1 => messageBuilder.setTopic(topicToFirebase(topics.head))
+        case Left(topics) if topics.size != 1 =>
+          messageBuilder.setCondition(topics.map(topic => s"'${topicToFirebase(topic)}' in topics").mkString("||"))
+        case Right(token) => messageBuilder.setToken(token.id.toString)
+      }
     }
   }
 
@@ -42,7 +51,7 @@ class FCMNotificationSender(apnsConfigConverter: ApnsConfigConverter, gcmPushCon
     val message = messageBuilder.build()
 
     // FCM's async calls doesn't come with its own thread pool, so we may as well block in a separate thread pool
-    Future(FirebaseMessaging.getInstance().send(message))(fcmExecutionContext)
+    Future(FirebaseMessaging.getInstance(firebaseApp).send(message))(fcmExecutionContext)
       .map(messageId => Right(SenderReport("FCM", DateTime.now(), sendersId = Some(messageId), None)))
       .recover {
         case NonFatal(exception) =>

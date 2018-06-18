@@ -1,5 +1,6 @@
 package notification
 
+import java.io.ByteArrayInputStream
 import java.net.URI
 
 import _root_.controllers.AssetsComponents
@@ -10,6 +11,8 @@ import azure.NotificationHubClient
 import com.softwaremill.macwire._
 import controllers.Main
 import _root_.models.NewsstandShardConfig
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.firebase.{FirebaseApp, FirebaseOptions}
 import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, ScheduleTableConfig}
 import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
@@ -26,6 +29,8 @@ import play.filters.hosts.AllowedHostsFilter
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoNotificationReportRepository, DynamoTopicSubscriptionsRepository, TopicSubscriptionsRepository}
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
+
+import scala.concurrent.Future
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(context: Context) = new NotificationApplicationComponents(context)
@@ -81,6 +86,17 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
       new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client))
   }
   lazy val newsstandShardNotificationSender: NewsstandShardSender = new NewsstandShardSender(newsstandHubClient,appConfig, topicSubscriptionsRepository)
+
+  lazy val firebaseApp = {
+    val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
+      .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(appConfig.firebaseServiceAccountKey.getBytes)))
+      .setDatabaseUrl(appConfig.firebaseDatabaseUrl)
+      .build
+
+    val fApp = FirebaseApp.initializeApp(firebaseOptions)
+    applicationLifecycle.addStopHook(() => Future(fApp.delete()))
+    fApp
+  }
 
   lazy val androidConfigConverter: AndroidConfigConverter = wire[AndroidConfigConverter]
   lazy val apnsConfigConverter: ApnsConfigConverter = wire[ApnsConfigConverter]
