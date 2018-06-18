@@ -18,7 +18,7 @@ import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
 import notification.services.azure._
-import notification.services.fcm.{AndroidConfigConverter, ApnsConfigConverter, FCMNotificationSender}
+import notification.services.fcm.{AndroidConfigConverter, APNSConfigConverter, FCMNotificationSender}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.BuiltInComponentsFromContext
@@ -99,7 +99,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   }
 
   lazy val androidConfigConverter: AndroidConfigConverter = wire[AndroidConfigConverter]
-  lazy val apnsConfigConverter: ApnsConfigConverter = wire[ApnsConfigConverter]
+  lazy val apnsConfigConverter: APNSConfigConverter = wire[APNSConfigConverter]
   lazy val fcmNotificationSender: FCMNotificationSender = wire[FCMNotificationSender]
 
   lazy val frontendAlerts: NotificationSender = {

@@ -14,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class FCMNotificationSender(
-  apnsConfigConverter: ApnsConfigConverter,
+  apnsConfigConverter: APNSConfigConverter,
   gcmPushConverter: AndroidConfigConverter,
   firebaseApp: FirebaseApp
 )(implicit ec: ExecutionContext, actorSystem: ActorSystem) extends NotificationSender {
