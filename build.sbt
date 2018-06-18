@@ -43,6 +43,7 @@ lazy val common = project
       ws,
       // be careful upgrading the following, recent azure-servicebus version rely on an alpha of slf4j, breaking play logging...
       "com.microsoft.azure" % "azure-servicebus" % "0.9.8",
+      "com.google.firebase" % "firebase-admin" % "6.1.0",
       "org.typelevel" %% "cats-core" % "1.0.1",
       "joda-time" % "joda-time" % "2.9.9",
       "com.typesafe.play" %% "play-json" % "2.6.8",
