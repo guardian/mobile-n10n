@@ -17,11 +17,11 @@ import play.api.Logger
 
 import collection.JavaConverters._
 
-class APNSConfigConverter(conf: Configuration) {
+class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsConfig] {
 
   val logger = Logger(classOf[APNSConfigConverter])
 
-  def toIosConfig(push: Push): Option[ApnsConfig] = {
+  override def toFCM(push: Push): Option[ApnsConfig] = {
     toFirebaseApnsNotification(push).map(_.toApnsConfig)
   }
 
