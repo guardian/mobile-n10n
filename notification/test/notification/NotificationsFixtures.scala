@@ -9,6 +9,7 @@ import _root_.models.TopicTypes.Breaking
 import _root_.models._
 import _root_.models.TopicTypes.ElectionResults
 import _root_.models.elections
+import error.NotificationsError
 import notification.models.Push
 import notification.services.azure.NotificationHubSenderError
 import org.joda.time.DateTime
@@ -84,7 +85,9 @@ trait NotificationsFixtures {
     destination = Left(notification.topic)
   )
 
-  val providerError = new NotificationHubSenderError(None)
+  val providerError = new NotificationHubSenderError(new NotificationsError {
+    override def reason: String = "test"
+  })
 
   val apiKey = "test"
   val electionsApiKey = "elections-test"
