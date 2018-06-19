@@ -12,13 +12,14 @@ import com.softwaremill.macwire._
 import controllers.Main
 import _root_.models.NewsstandShardConfig
 import com.google.auth.oauth2.GoogleCredentials
+import com.google.firebase.messaging.{AndroidConfig, FirebaseMessaging}
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
 import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, ScheduleTableConfig}
 import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
 import notification.services.azure._
-import notification.services.fcm.{AndroidConfigConverter, ApnsConfigConverter, FCMNotificationSender}
+import notification.services.fcm.{APNSConfigConverter, AndroidConfigConverter, FCMConfigConverter, FCMNotificationSender}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.BuiltInComponentsFromContext
@@ -87,7 +88,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   }
   lazy val newsstandShardNotificationSender: NewsstandShardSender = new NewsstandShardSender(newsstandHubClient,appConfig, topicSubscriptionsRepository)
 
-  lazy val firebaseApp = {
+  lazy val firebaseMessaging = {
     val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
       .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(appConfig.firebaseServiceAccountKey.getBytes)))
       .setDatabaseUrl(appConfig.firebaseDatabaseUrl)
@@ -95,12 +96,17 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
 
     val fApp = FirebaseApp.initializeApp(firebaseOptions)
     applicationLifecycle.addStopHook(() => Future(fApp.delete()))
-    fApp
+    FirebaseMessaging.getInstance(fApp)
   }
 
   lazy val androidConfigConverter: AndroidConfigConverter = wire[AndroidConfigConverter]
-  lazy val apnsConfigConverter: ApnsConfigConverter = wire[ApnsConfigConverter]
-  lazy val fcmNotificationSender: FCMNotificationSender = wire[FCMNotificationSender]
+  lazy val apnsConfigConverter: APNSConfigConverter = wire[APNSConfigConverter]
+  lazy val fcmNotificationSender: FCMNotificationSender = new FCMNotificationSender(
+    apnsConfigConverter,
+    androidConfigConverter,
+    firebaseMessaging,
+    actorSystem.dispatchers.lookup("fcm-io") // FCM calls are blocking
+  )
 
   lazy val frontendAlerts: NotificationSender = {
     val frontendConfig = FrontendAlertsConfig(new URI(appConfig.frontendNewsAlertEndpoint), appConfig.frontendNewsAlertApiKey)
