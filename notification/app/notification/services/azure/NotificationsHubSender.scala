@@ -1,14 +1,12 @@
 package notification.services.azure
 
 import azure.NotificationHubClient
-import azure.NotificationHubClient.HubResult
 import error.NotificationsError
 import models.Importance.Major
 import models._
 import notification.models.Destination.Destination
 import notification.models.Push
-import notification.services.{NotificationRejected, Senders, _}
-import _root_.azure.RawPush
+import notification.services.{Senders, _}
 import org.joda.time.DateTime
 import tracking.Repository._
 import tracking.{RepositoryResult, TopicSubscriptionsRepository}
@@ -44,7 +42,7 @@ abstract class NotificationsHubSender(
           count <- count(push.destination)
         } yield {
           result.fold(
-            e => Left(NotificationRejected(Some(NotificationHubSenderError(Some(e))))),
+            e => Left(NotificationHubSenderError(Some(e))),
             id => Right(report(id, count.toOption))
           )
         }

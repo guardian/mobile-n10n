@@ -1,8 +1,9 @@
 package notification.models
 
 import java.util.UUID
+
 import models.NotificationReport
-import notification.services.NotificationRejected
+import notification.services.SenderError
 import play.api.libs.json._
 import tracking.RepositoryError
 
@@ -11,7 +12,7 @@ case class PushResult(
   reportingError: Option[String] = None,
   rejectedNotifications: Option[List[String]] = None
 ) {
-  def withRejected(rejected: List[NotificationRejected]) = copy(rejectedNotifications = Some(rejected map { _.toString }))
+  def withRejected(rejected: List[SenderError]) = copy(rejectedNotifications = Some(rejected map { _.toString }))
 
   def withReportingError(error: RepositoryError) = copy(reportingError = Some(error.message))
 }

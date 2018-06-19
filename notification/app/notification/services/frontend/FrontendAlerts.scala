@@ -4,7 +4,7 @@ import java.net.URI
 
 import models.{BreakingNewsNotification, SenderReport}
 import notification.models.Push
-import notification.services.{NotificationRejected, NotificationSender, SenderError, SenderResult, Senders}
+import notification.services.{NotificationSender, SenderError, SenderResult, Senders}
 import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json.Json
@@ -39,7 +39,7 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit 
     case _ =>
       logger.info(s"Frontend alert not sent. Push report ($push) ignored as notification is not BreakingNews.")
       Future.successful {
-        Left(NotificationRejected(Some(FrontendAlertsProviderError("Only Breaking News notification currently supported"))))
+        Left(FrontendAlertsProviderError("Only Breaking News notification currently supported"))
       }
   }
 
@@ -48,12 +48,12 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit 
       case Some(alert) =>
         sendBreakingNewsAlert(alert) map {
           case Right(()) => Right(SenderReport(Senders.FrontendAlerts, alert.publicationDate))
-          case Left(e) => Left(NotificationRejected(Some(FrontendAlertsProviderError(s"Could not send breaking news alert ($e)"))))
+          case Left(e) => Left(FrontendAlertsProviderError(s"Could not send breaking news alert ($e)"))
         }
       case _ =>
         logger.error(s"Frontend alert not sent. Could not create alert from notification ${ push.notification }")
         Future.successful {
-          Left(NotificationRejected(Some(FrontendAlertsProviderError("Alert could not be created"))))
+          Left(FrontendAlertsProviderError("Alert could not be created"))
         }
     }
   }

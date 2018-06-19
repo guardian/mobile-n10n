@@ -5,7 +5,6 @@ import java.net.URI
 import models.BreakingNewsNotification
 import models.Link.External
 import notification.NotificationsFixtures
-import notification.services.NotificationRejected
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.Scope
 import org.specs2.mock.Mockito
@@ -26,7 +25,7 @@ class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with M
         notification = breakingNewsNotification(validTopics).asInstanceOf[BreakingNewsNotification].copy(link = External("url"))
       )
 
-      alerts.sendNotification(push) must beEqualTo(Left(NotificationRejected(Some(FrontendAlertsProviderError("Alert could not be created"))))).await
+      alerts.sendNotification(push) must beEqualTo(Left(FrontendAlertsProviderError("Alert could not be created"))).await
 
       there was no(wsClient).url(any)
     }
