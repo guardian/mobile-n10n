@@ -6,12 +6,7 @@ import error.NotificationsError
 package object services {
   trait SenderError extends NotificationsError {
     def senderName: String
-  }
-
-  case class NotificationRejected(error: Option[SenderError] = None) {
-    override def toString: String = error map { e =>
-      s"Notification rejected by ${ e.senderName }, reason: ${ e.reason }"
-    } getOrElse "Notification rejected"
+    override def toString: String = s"Notification rejected by $senderName, reason: $reason"
   }
 
   object Senders {
@@ -19,5 +14,5 @@ package object services {
     val FrontendAlerts = "Frontend Alerts Sender"
   }
 
-  type SenderResult = Either[NotificationRejected, SenderReport]
+  type SenderResult = Either[SenderError, SenderReport]
 }

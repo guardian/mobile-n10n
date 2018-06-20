@@ -1,14 +1,12 @@
 package notification.services.azure
 
 import azure.NotificationHubClient
-import azure.NotificationHubClient.HubResult
 import error.NotificationsError
 import models.Importance.Major
 import models._
 import notification.models.Destination.Destination
 import notification.models.Push
-import notification.services.{NotificationRejected, Senders, _}
-import _root_.azure.RawPush
+import notification.services.{Senders, _}
 import org.joda.time.DateTime
 import tracking.Repository._
 import tracking.{RepositoryResult, TopicSubscriptionsRepository}
@@ -44,7 +42,7 @@ abstract class NotificationsHubSender(
           count <- count(push.destination)
         } yield {
           result.fold(
-            e => Left(NotificationRejected(Some(NotificationHubSenderError(Some(e))))),
+            e => Left(NotificationHubSenderError(e)),
             id => Right(report(id, count.toOption))
           )
         }
@@ -79,7 +77,7 @@ abstract class NotificationsHubSender(
   }
 }
 
-case class NotificationHubSenderError(underlying: Option[NotificationsError]) extends SenderError {
+case class NotificationHubSenderError(underlying: NotificationsError) extends SenderError {
   override def senderName: String = Senders.AzureNotificationsHub
-  override def reason: String = s"Sender: $senderName ${ underlying.fold("")(_.reason) }"
+  override def reason: String = s"Sender: $senderName ${underlying.reason}"
 }

@@ -17,7 +17,6 @@ import tracking.InMemoryNotificationReportRepository
 import scala.concurrent.Future
 import notification.authentication.NotificationAuthAction
 import notification.services.azure.NewsstandSender
-import play.api.mvc.DefaultControllerComponents
 import play.api.test.Helpers.stubControllerComponents
 import cats.instances.future._
 import cats.syntax.either._
@@ -84,7 +83,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
     "report frontend alerts rejected notifications" in new MainScope {
       val request = requestWithValidTopics
-      frontendAlerts.sendNotification(any) returns Future.successful(Left(NotificationRejected(Some(providerError))))
+      frontendAlerts.sendNotification(any) returns Future.successful(Left(providerError))
 
       val response = main.pushTopics()(request)
 
