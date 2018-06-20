@@ -12,14 +12,14 @@ import com.softwaremill.macwire._
 import controllers.Main
 import _root_.models.NewsstandShardConfig
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.firebase.messaging.{AndroidConfig, FirebaseMessaging}
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
-import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, ScheduleTableConfig}
+import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
 import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
 import notification.services.azure._
-import notification.services.fcm.{APNSConfigConverter, AndroidConfigConverter, FCMConfigConverter, FCMNotificationSender}
+import notification.services.fcm.{APNSConfigConverter, AndroidConfigConverter, FCMNotificationSender}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.BuiltInComponentsFromContext
