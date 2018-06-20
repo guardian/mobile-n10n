@@ -2,6 +2,7 @@ package notification
 
 import java.io.ByteArrayInputStream
 import java.net.URI
+import java.nio.charset.StandardCharsets
 
 import _root_.controllers.AssetsComponents
 import akka.actor.ActorSystem
@@ -90,7 +91,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
 
   lazy val firebaseMessaging = {
     val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
-      .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(appConfig.firebaseServiceAccountKey.getBytes)))
+      .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(appConfig.firebaseServiceAccountKey.getBytes(StandardCharsets.UTF_8))))
       .setDatabaseUrl(appConfig.firebaseDatabaseUrl)
       .build
 
