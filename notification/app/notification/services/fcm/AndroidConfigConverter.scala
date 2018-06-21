@@ -16,11 +16,11 @@ import utils.MapImplicits._
 import scala.PartialFunction._
 import collection.JavaConverters._
 
-class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[AndroidConfig] {
+class AndroidConfigConverter(conf: Configuration) {
 
   val logger = Logger(classOf[AndroidConfigConverter])
 
-  override def toFCM(push: Push): Option[AndroidConfig] = toFirebaseAndroidNotification(push).map(_.toAndroidConfig)
+  def toAndroidConfig(push: Push): Option[AndroidConfig] = toFirebaseAndroidNotification(push).map(_.toAndroidConfig)
 
   case class FirebaseAndroidNotification(
     data: Map[String, String]

@@ -16,7 +16,7 @@ import PlatformUriTypes.{External, FootballMatch, Item}
 import notification.models.android.Keys
 import utils.MapImplicits._
 
-class GCMPushConverter(conf: Configuration) extends AzurePushConverter {
+class GCMPushConverter(conf: Configuration) extends PushConverter {
 
   val logger = Logger(classOf[GCMPushConverter])
 

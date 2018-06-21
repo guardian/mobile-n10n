@@ -15,7 +15,7 @@ import models.Importance.Major
 
 import PartialFunction.condOpt
 
-class APNSPushConverter(conf: Configuration) extends AzurePushConverter {
+class APNSPushConverter(conf: Configuration) extends PushConverter {
 
   val logger = Logger(classOf[APNSPushConverter])
 

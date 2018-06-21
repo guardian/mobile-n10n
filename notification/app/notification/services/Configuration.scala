@@ -35,9 +35,6 @@ class Configuration(conf: PlayConfig) {
 
   lazy val newsstandShards: Int = conf.get[Int]("newsstand.shards")
 
-  lazy val firebaseServiceAccountKey: String = conf.get[String]("notifications.firebase.serviceAccountKey")
-  lazy val firebaseDatabaseUrl: String = conf.get[String]("notifications.firebase.databaseUrl")
-
   private def getConfigurableHubConnection(hubConfigurationName: String): NotificationHubConnection = {
     val hub = for {
       endpoint <- conf.getOptional[String](s"$hubConfigurationName.hub.endpoint")
