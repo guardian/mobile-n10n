@@ -1,6 +1,8 @@
 package notification
 
+import java.io.ByteArrayInputStream
 import java.net.URI
+import java.nio.charset.StandardCharsets
 
 import _root_.controllers.AssetsComponents
 import akka.actor.ActorSystem
@@ -10,11 +12,15 @@ import azure.NotificationHubClient
 import com.softwaremill.macwire._
 import controllers.Main
 import _root_.models.NewsstandShardConfig
-import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, ScheduleTableConfig}
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.{FirebaseApp, FirebaseOptions}
+import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
 import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
 import notification.services.azure._
+import notification.services.fcm.{APNSConfigConverter, AndroidConfigConverter, FCMNotificationSender}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.BuiltInComponentsFromContext
@@ -25,6 +31,8 @@ import play.filters.hosts.AllowedHostsFilter
 import tracking.{BatchingTopicSubscriptionsRepository, DynamoNotificationReportRepository, DynamoTopicSubscriptionsRepository, TopicSubscriptionsRepository}
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
+
+import scala.concurrent.Future
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(context: Context) = new NotificationApplicationComponents(context)
@@ -47,7 +55,8 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     gcmNotificationSender,
     apnsNotificationSender,
     newsstandShardNotificationSender,
-    frontendAlerts
+    frontendAlerts,
+    fcmNotificationSender
   )
   lazy val mainController = wire[Main]
   lazy val router: Router = wire[Routes]
@@ -79,6 +88,26 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
       new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client))
   }
   lazy val newsstandShardNotificationSender: NewsstandShardSender = new NewsstandShardSender(newsstandHubClient,appConfig, topicSubscriptionsRepository)
+
+  lazy val firebaseMessaging = {
+    val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
+      .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(appConfig.firebaseServiceAccountKey.getBytes(StandardCharsets.UTF_8))))
+      .setDatabaseUrl(appConfig.firebaseDatabaseUrl)
+      .build
+
+    val fApp = FirebaseApp.initializeApp(firebaseOptions)
+    applicationLifecycle.addStopHook(() => Future(fApp.delete()))
+    FirebaseMessaging.getInstance(fApp)
+  }
+
+  lazy val androidConfigConverter: AndroidConfigConverter = wire[AndroidConfigConverter]
+  lazy val apnsConfigConverter: APNSConfigConverter = wire[APNSConfigConverter]
+  lazy val fcmNotificationSender: FCMNotificationSender = new FCMNotificationSender(
+    apnsConfigConverter,
+    androidConfigConverter,
+    firebaseMessaging,
+    actorSystem.dispatchers.lookup("fcm-io") // FCM calls are blocking
+  )
 
   lazy val frontendAlerts: NotificationSender = {
     val frontendConfig = FrontendAlertsConfig(new URI(appConfig.frontendNewsAlertEndpoint), appConfig.frontendNewsAlertApiKey)
