@@ -169,7 +169,6 @@ trait RegistrationsJson {
     """
       |{
       |  "deviceId": "someId",
-      |  "userId": "83B148C0-8951-11E5-865A-222E69A460B9",
       |  "platform": "android",
       |  "topics": [
       |    {"type": "football-match", "name": "science"},

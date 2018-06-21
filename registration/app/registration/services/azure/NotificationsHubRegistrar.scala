@@ -149,7 +149,4 @@ sealed trait WindowsNotificationProviderError extends ProviderError {
   override def providerName: String = "WNS"
 }
 
-case object UserIdNotInTags extends WindowsNotificationProviderError {
-  override def reason: String = "Could not find userId in response from Hub"
-}
 
