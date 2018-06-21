@@ -17,7 +17,6 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
         deviceId = legacyRegistration.device.pushToken,
         platform = platform,
         // The Windows app sends a device generated guid as the userId, not a real Guardian user id so udid is equivalent
-        udid = legacyRegistration.device.udid,
         topics = topics(legacyRegistration),
         buildTier = Some(legacyRegistration.device.buildTier)
       ))

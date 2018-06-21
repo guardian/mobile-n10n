@@ -29,7 +29,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
 
       status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(Left(validTopics)))
+      pushSent must beSome.which(_.destination must beEqualTo(validTopics))
     }
     "refuse a notification with an invalid key" in new MainScope {
       val request = invalidAuthenticatedRequest.withBody(breakingNewsNotification(validTopics))
@@ -48,7 +48,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
 
       status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(Left(validElectionTopics)))
+      pushSent must beSome.which(_.destination must beEqualTo(validElectionTopics))
     }
     "refuse a notification that is sent twice" in new MainScope {
       val request = requestWithValidTopics
@@ -139,7 +139,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val request = authenticatedRequest.withBody(newsstandShardNotification())
       val response = main.pushTopics(request)
       status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(Left(validNewsstandNotificationsTopic)))
+      pushSent must beSome.which(_.destination must beEqualTo(validNewsstandNotificationsTopic))
 
     }
   }

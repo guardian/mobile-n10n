@@ -143,10 +143,7 @@ class APNSPushConverter(conf: Configuration) extends PushConverter {
     case ns: NewsstandShardNotification => toNewsstandShardAlert(ns)
   }
 
-  private def toTags(destination: Destination) = destination match {
-    case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
-    case Right(user: UniqueDeviceIdentifier) => Some(Tags.fromUserId(user))
-  }
+  private def toTags(destination: Destination) = Some(Tags.fromTopics(destination))
 
   private def toIosLink(link: Link) = link match {
     case Link.Internal(contentApiId, Some(shortUrl), _) => new URI(s"x-gu://${new URI(shortUrl).getPath}")

@@ -5,7 +5,7 @@ import akka.pattern.after
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
-import binders.querystringbinders.{RegistrationsByDeviceToken, RegistrationsByTopicParams, RegistrationsByUdidParams, RegistrationsSelector}
+import binders.querystringbinders.{RegistrationsByDeviceToken, RegistrationsByTopicParams, RegistrationsSelector}
 import cats.data.EitherT
 import cats.implicits._
 import error.{NotificationsError, RequestError}
@@ -52,20 +52,6 @@ final class Main(
     )
   }
 
-  def unregister(platform: Platform, udid: UniqueDeviceIdentifier): Action[AnyContent] = actionWithTimeout {
-
-    def registrarFor(platform: Platform) = EitherT.fromEither[Future](
-      registrarProvider.registrarFor(platform, None)
-    )
-
-    def unregisterFrom(registrar: NotificationRegistrar) = EitherT(
-      registrar.unregister(udid): Future[Either[NotificationsError, Unit]]
-    )
-
-    registrarFor(platform)
-      .flatMap(unregisterFrom)
-      .fold(processErrors, _ => NoContent)
-  }
 
   def newsstandRegister: Action[LegacyNewsstandRegistration] =
     registerWithConverter(legacyNewsstandRegistrationConverter)
@@ -87,7 +73,7 @@ final class Main(
 
   def registrations(selector: RegistrationsSelector): Action[AnyContent] = {
     selector match {
-      case v: RegistrationsByUdidParams => registrationsByUdid(v.udid)
+
       case v: RegistrationsByTopicParams => registrationsByTopic(v.topic, v.cursor)
       case v: RegistrationsByDeviceToken => registrationsByDeviceToken(v.platform, v.deviceToken)
     }
@@ -124,21 +110,6 @@ final class Main(
       registrations <- EitherT(registrar.findRegistrations(deviceToken): Future[Either[NotificationsError, List[StoredRegistration]]])
     } yield registrations
     result.fold(processErrors, res => Ok(Json.toJson(res)))
-  }
-
-  def registrationsByUdid(udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
-    Future.sequence {
-      registrarProvider.withAllRegistrars { registrar =>
-        registrar.findRegistrations(udid)
-      }
-    } map { responses =>
-      val allResults = for {
-        response <- responses
-        successfulResponse <- response.toList
-        result <- successfulResponse.results
-      } yield result
-      Ok(Json.toJson(allResults))
-    }
   }
 
   private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {

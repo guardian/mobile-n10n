@@ -144,8 +144,5 @@ class AndroidConfigConverter(conf: Configuration) {
     case Link.External(url) => new URI(url)
   }
 
-  private[services] def toTags(destination: Destination) = destination match {
-    case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
-    case Right(user: UniqueDeviceIdentifier) => Some(Tags.fromUserId(user))
-  }
+  private[services] def toTags(destination: Destination) = Some(Tags.fromTopics(destination))
 }

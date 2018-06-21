@@ -197,7 +197,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       topic = Set.empty
     )
 
-    val push = Push(notification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+    val push = Push(notification, Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b")))
 
     val expected =  Map(
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
@@ -225,7 +225,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
   trait MinorElectionNotificationScope extends ElectionNotificationScope {
     val minorNotification = notification.copy(importance = Minor)
     val minorExpected = expected.updated("importance", "Minor")
-    val minorPush = Push(minorNotification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+    val minorPush = Push(minorNotification, Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b")))
   }
 
   trait LiveEventNotificationScope extends NotificationScope {
@@ -243,7 +243,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       topic = Set(Topic(LiveNotification, "super-bowl-li"))
     )
 
-    val push = Push(notification, Left(notification.topic))
+    val push = Push(notification, notification.topic)
 
     val expected =  Map(
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
@@ -288,7 +288,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       debug = false
     )
 
-    val push = Push(notification, Left(notification.topic))
+    val push = Push(notification, notification.topic)
 
     val expected =  Map(
       "type" -> "footballMatchAlert",

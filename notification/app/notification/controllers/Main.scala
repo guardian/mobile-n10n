@@ -58,13 +58,8 @@ final class Main(
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{request.isPermittedTopic} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(request.isPermittedTopic)}."))
-      case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), Left(topics)))
+      case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), topics))
     }
-  }
-
-  def pushUser(userId: UUID): Action[Notification] = authAction.async(parse.json[Notification]) { request =>
-    val push = Push(request.body, Right(UniqueDeviceIdentifier(userId)))
-    pushWithDuplicateProtection(push)
   }
 
   private def pushWithDuplicateProtection(push: Push): Future[Result] = {

@@ -39,10 +39,7 @@ class GCMPushConverter(conf: Configuration) extends PushConverter {
     case ms: FootballMatchStatusNotification => toMatchStatusAlert(ms)
   }
 
-  private[services] def toTags(destination: Destination) = destination match {
-    case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
-    case Right(user: UniqueDeviceIdentifier) => Some(Tags.fromUserId(user))
-  }
+  private[services] def toTags(destination: Destination) = Some(Tags.fromTopics(destination))
 
   private def toAndroidTopic(topic: Topic) = s"${topic.`type`}//${topic.name}"
 

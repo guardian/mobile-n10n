@@ -16,7 +16,7 @@ import org.joda.time.DateTime
 import play.api.test.FakeRequest
 
 trait NotificationsFixtures {
-  def breakingNewsNotification(topics: Set[Topic]): Notification = BreakingNewsNotification(
+  def breakingNewsNotification(topics: Set[Topic]): BreakingNewsNotification = BreakingNewsNotification(
     id = UUID.fromString("30aac5f5-34bb-4a88-8b69-97f995a4907b"),
     title = "The Guardian",
     message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
@@ -65,7 +65,7 @@ trait NotificationsFixtures {
     shard = 1
   )
   
-  def userTargetedBreakingNewsPush(importance: Importance = Major): Push = Push(
+  def electionTargetedBreakingNewsPush(importance: Importance = Major): Push = Push(
     notification = BreakingNewsNotification(
       id = UUID.randomUUID(),
       title = "",
@@ -77,12 +77,12 @@ trait NotificationsFixtures {
       importance = importance,
       topic = Set()
     ),
-    destination = Right(UniqueDeviceIdentifier(UUID.randomUUID()))
+    destination = Set(Topic(ElectionResults, "us-presidential-2016"))
   )
 
   def topicTargetedBreakingNewsPush(notification: Notification): Push = Push(
     notification = notification,
-    destination = Left(notification.topic)
+    destination = notification.topic
   )
 
   val providerError = new NotificationHubSenderError(new NotificationsError {

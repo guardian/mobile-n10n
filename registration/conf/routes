@@ -1,4 +1,3 @@
-DELETE      /registrations/:platform/:udid       registration.controllers.Main.unregister(platform: Platform, udid: UniqueDeviceIdentifier)
 GET         /healthcheck                         registration.controllers.Main.healthCheck
 
 GET         /registrations                       registration.controllers.Main.registrations(selector: RegistrationsSelector)

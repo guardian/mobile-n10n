@@ -25,7 +25,7 @@ class APNSPushConverterSpec extends Specification with Mockito {
       )
 
 
-      val maybeAPNSRawPush = aPNSPushConverter.toRawPush(Push(newsstandShardNotification, Left(newsstandShardNotification.topic)))
+      val maybeAPNSRawPush = aPNSPushConverter.toRawPush(Push(newsstandShardNotification, newsstandShardNotification.topic))
       maybeAPNSRawPush must be_==(Some(APNSRawPush(
         body = Body(
           aps = APS(

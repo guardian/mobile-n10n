@@ -27,26 +27,15 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
       Right(RegistrationResponse(
         deviceId = "deviceAA",
         platform = Android,
-        userId = registration.udid,
         topics = registration.topics
       ))
     }
 
-    override def unregister(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Unit]] = Future.successful {
-      if (existingDeviceIds.contains(udid)) {
-        Right(())
-      } else {
-        Left(UdidNotFound)
-      }
-    }
-
-    val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
 
     override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
 
     override def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]] = ???
 
-    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
   }
 }
 
@@ -78,21 +67,11 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       Right(RegistrationResponse(
         deviceId = "deviceAA",
         platform = Android,
-        userId = registration.udid,
         topics = registration.topics
       ))
     }
 
-    override def unregister(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Unit]] = Future.successful {
-      registrations = registrations.filterNot(_.udid == udid)
-      if (existingDeviceIds.contains(udid)) {
-        Right(())
-      } else {
-        Left(UdidNotFound)
-      }
-    }
 
-    val existingDeviceIds = Set(UniqueDeviceIdentifier.fromString("gia:00000000-0000-0000-0000-000000000000").get)
 
     override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
       val selected = if (cursor.contains("abc")) {
@@ -108,10 +87,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       Future.successful(Right(selected.toList))
     }
 
-    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
-      val selected = registrations.filter(_.udid == udid).map(StoredRegistration.fromRegistration)
-      Future.successful(Right(Paginated(selected.toList, None)))
-    }
+
   }
 
   lazy val fakeRegistrarProvider = new RegistrarProvider {

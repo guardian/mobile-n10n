@@ -11,17 +11,16 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import play.api.libs.ws.{WSClient, WSRequest}
 import play.core.server.Server
-
 import play.api.routing.sird._
 import play.api.mvc._
 import play.api.test._
-
 import cats.implicits._
+import models.Importance.Minor
 
 class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "Frontend alerts notified about notification" should {
     "skip breaking news notification without capi id (i.e. with non-internal Link)" in new FrontendAlertsScope {
-      val push = userTargetedBreakingNewsPush().copy(
+      val push = electionTargetedBreakingNewsPush().copy(
         notification = breakingNewsNotification(validTopics).asInstanceOf[BreakingNewsNotification].copy(link = External("url"))
       )
 
@@ -39,7 +38,7 @@ class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with M
       } { implicit port =>
         WsTestClient.withClient { client =>
           val alerts = new FrontendAlerts(config, client)
-          alerts.sendNotification(userTargetedBreakingNewsPush()) must beRight.await
+          alerts.sendNotification(electionTargetedBreakingNewsPush()) must beRight.await
         }
       }
     }

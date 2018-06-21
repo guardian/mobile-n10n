@@ -32,15 +32,6 @@ class NotificationHubRegistrar(
     }
   }
 
-  override def unregister(udid: UniqueDeviceIdentifier): RegistrarResponse[Unit] = {
-    val result = for {
-      registrationResponses <- EitherT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
-      _ <- EitherT(deleteRegistrations(registrationResponses.registrations)).ensure(UdidNotFound)(_ => registrationResponses.registrations.nonEmpty)
-    } yield ()
-
-    result.value
-  }
-
   def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
     EitherT(hubClient.registrationsByTag(Tag.fromTopic(topic).encodedTag, cursor))
       .semiflatMap(responsesToStoredRegistrations)
@@ -53,27 +44,20 @@ class NotificationHubRegistrar(
       .value
   }
 
-  def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
-    EitherT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
-      .semiflatMap(responsesToStoredRegistrations)
-      .value
-  }
 
   private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[Either[ProviderError, List[azure.RegistrationResponse]]] = {
     def extractResultFromResponse(
-      userIdResults: HubResult[Registrations],
       deviceIdResults: HubResult[List[azure.RegistrationResponse]]
     ): Either[ProviderError, List[azure.RegistrationResponse]] = {
       for {
-        userIdRegistrations <- userIdResults
+
         deviceIdRegistrations <- deviceIdResults
-      } yield (deviceIdRegistrations ++ userIdRegistrations.registrations).distinct
+      } yield (deviceIdRegistrations).distinct
     }
 
     for {
-      userIdResults <- hubClient.registrationsByTag(Tag.fromUserId(registration.udid).encodedTag)
       deviceIdResults <- hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri)
-    } yield extractResultFromResponse(userIdResults, deviceIdResults)
+    } yield extractResultFromResponse(deviceIdResults)
   }
 
   private def createRegistration(registration: Registration): RegistrarResponse[RegistrationResponse] = {
@@ -137,7 +121,6 @@ class NotificationHubRegistrar(
         StoredRegistration(
           deviceId = response.deviceId,
           platform = response.platform,
-          userId = tags.findUserId,
           tagIds = tags.asSet,
           topics = topics
         )
@@ -145,20 +128,16 @@ class NotificationHubRegistrar(
     })
   }
 
-  private def toRegistrarResponse(topicsRegisteredFor: Set[Topic])(registration: azure.RegistrationResponse): Either[ProviderError, RegistrationResponse] = {
-    val tags = tagsIn(registration)
-    for {
-      userId <- Either.fromOption(tags.findUserId, UserIdNotInTags)
-    } yield RegistrationResponse(
+  private def toRegistrarResponse(topicsRegisteredFor: Set[Topic])(registration: azure.RegistrationResponse): RegistrationResponse = {
+    RegistrationResponse(
       deviceId = registration.deviceId,
       platform = registration.platform,
-      userId = userId,
       topics = topicsRegisteredFor
     )
   }
 
   private def hubResultToRegistrationResponse(topicsRegisteredFor: Set[Topic])(hubResult: HubResult[azure.RegistrationResponse]) = {
-    hubResult.flatMap(toRegistrarResponse(topicsRegisteredFor))
+    hubResult.map(toRegistrarResponse(topicsRegisteredFor))
   }
 
 

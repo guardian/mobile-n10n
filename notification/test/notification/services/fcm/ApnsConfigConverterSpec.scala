@@ -30,7 +30,7 @@ class ApnsConfigConverterSpec extends Specification {
           importance = Major,
           topic = Set(Topic(`type` = Breaking, name = "uk"))
         ),
-        destination = Left(Set())
+        destination = Set()
       )
 
       val apnsNotification = convert(push)
@@ -68,7 +68,7 @@ class ApnsConfigConverterSpec extends Specification {
           topic = Set(Topic(`type` = TagSeries, name = "some/tag")),
           iosUseMessage = Some(true)
         ),
-        destination = Left(Set())
+        destination = Set()
       )
 
       val apnsNotification = convert(push)
@@ -119,7 +119,7 @@ class ApnsConfigConverterSpec extends Specification {
           eventId = "2",
           debug = true
         ),
-        destination = Left(Set())
+        destination = Set()
       )
 
       val apnsNotification = convert(push)
