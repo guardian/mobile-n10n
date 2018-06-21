@@ -15,7 +15,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.{Configuration => PlayConfig}
 
-class APNSConfigConverterSpec extends Specification {
+class ApnsConfigConverterSpec extends Specification {
   "ApnsConfigConverter" should {
     "convert a breaking news to the firebase format" in new ApnsConfigConverterScope {
       val push = Push(
@@ -164,7 +164,7 @@ class APNSConfigConverterSpec extends Specification {
       override lazy val debug: Boolean = true
       override lazy val frontendBaseUrl: String = "https://www.theguardian.com/"
     }
-    val apnsConfigConverter = new APNSConfigConverter(configuration)
+    val apnsConfigConverter = new ApnsConfigConverter(configuration)
 
     def convert(push: Push) = {
       val Some(firebaseAndroidNotification) = apnsConfigConverter.toFirebaseApnsNotification(push)

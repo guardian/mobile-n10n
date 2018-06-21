@@ -22,7 +22,7 @@ abstract class NotificationsHubSender(
 )
   (implicit ec: ExecutionContext) extends NotificationSender {
 
-  protected def converter: AzurePushConverter
+  protected def converter: PushConverter
 
   protected def platform: Platform
 
