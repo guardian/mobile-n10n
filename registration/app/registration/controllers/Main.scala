@@ -15,7 +15,6 @@ import play.api.libs.json.{Format, Json, Writes}
 import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc._
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
-import registration.services.azure.UdidNotFound
 import registration.services._
 import registration.services.topic.TopicValidator
 
@@ -146,8 +145,6 @@ final class Main(
     result.fold(processErrors, res => Ok(Json.toJson(res)))
 
   private def processErrors(error: NotificationsError): Result = error match {
-    case UdidNotFound =>
-      NotFound("Udid not found")
     case HubServiceError(reason, code) =>
       logger.error(s"Service error code $code: $reason")
       Status(code.toInt)(s"Upstream service failed with code $code.")

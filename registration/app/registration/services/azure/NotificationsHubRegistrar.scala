@@ -153,6 +153,3 @@ case object UserIdNotInTags extends WindowsNotificationProviderError {
   override def reason: String = "Could not find userId in response from Hub"
 }
 
-case object UdidNotFound extends WindowsNotificationProviderError {
-  override def reason: String = "Udid not found"
-}

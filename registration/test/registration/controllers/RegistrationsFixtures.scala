@@ -10,7 +10,6 @@ import play.api.{BuiltInComponents, BuiltInComponentsFromContext, Configuration 
 import play.api.libs.ws.WSClient
 import providers.ProviderError
 import registration.RegistrationApplicationComponents
-import registration.services.azure.UdidNotFound
 import registration.services.topic.{TopicValidator, TopicValidatorError}
 import registration.services._
 import cats.implicits._
@@ -19,7 +18,7 @@ import scala.concurrent.duration._
 import scala.concurrent.Future
 
 trait DelayedRegistrationsBase extends RegistrationsBase {
-  override lazy val fakeNotificationRegistrar = new NotificationRegistrar {
+  override lazy val fakeNotificationRegistrar: NotificationRegistrar = new NotificationRegistrar {
     override val providerIdentifier: String = "test"
 
     override def register(deviceId: String, registration: Registration): Future[Either[ProviderError, RegistrationResponse]] = Future.successful {
@@ -115,7 +114,6 @@ trait RegistrationsJson {
       |	"device": {
       |		"pushToken": "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4",
       |		"buildTier": "debug",
-      |		"udid": "gia:0E980097-59FD-4047-B609-366C6D5BB1B3",
       |		"platform": "ios"
       |	},
       |	"preferences": {
@@ -135,7 +133,6 @@ trait RegistrationsJson {
       |	"device": {
       |		"pushToken": "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4",
       |		"buildTier": "debug",
-      |		"udid": "gia:0E980097-59FD-4047-B609-366C6D5BB1B3",
       |		"platform": "ios"
       |	},
       |	"preferences": {
@@ -155,7 +152,6 @@ trait RegistrationsJson {
       |	"device": {
       |		"pushToken": "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4",
       |		"buildTier": "debug",
-      |		"udid": "0e980097-59fd-4047-b609-366c6d5bb1b3",
       |		"platform": "android"
       |	},
       |	"preferences": {
