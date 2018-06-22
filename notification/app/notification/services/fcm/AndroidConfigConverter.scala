@@ -5,7 +5,6 @@ import java.net.URI
 import _root_.azure.Tags
 import com.google.firebase.messaging.AndroidConfig
 import models._
-import notification.models.Destination._
 import notification.models.android.Editions.Edition
 import notification.models.android.{AndroidMessageTypes, Keys}
 import notification.models.Push
@@ -144,5 +143,5 @@ class AndroidConfigConverter(conf: Configuration) {
     case Link.External(url) => new URI(url)
   }
 
-  private[services] def toTags(destination: Destination) = Some(Tags.fromTopics(destination))
+  private[services] def toTags(destination: Set[Topic]) = Some(Tags.fromTopics(destination))
 }

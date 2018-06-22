@@ -14,8 +14,6 @@ import play.core.server.Server
 import play.api.routing.sird._
 import play.api.mvc._
 import play.api.test._
-import cats.implicits._
-import models.Importance.Minor
 
 class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "Frontend alerts notified about notification" should {

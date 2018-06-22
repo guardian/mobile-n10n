@@ -11,7 +11,6 @@ object Tag {
     Tag(s"$TopicTagPrefix${t.id}")
   }
 
-
 }
 
 case class Tags(tags: Set[Tag] = Set.empty) {
@@ -22,8 +21,6 @@ case class Tags(tags: Set[Tag] = Set.empty) {
 
   def topicIds: Set[String] = encodedTags
     .collect { case TopicTagRegex(topicId) => topicId }
-
-
 
   def withTopics(topics: Set[Topic]): Tags = copy(tags ++ topics.map(Tag.fromTopic))
 

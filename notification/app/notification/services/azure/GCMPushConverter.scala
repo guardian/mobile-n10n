@@ -4,7 +4,6 @@ import java.net.URI
 
 import _root_.azure.{GCMBody, GCMRawPush, Tags}
 import models._
-import notification.models.Destination._
 import notification.models.android.AndroidMessageTypes
 import notification.models.android.Editions.Edition
 import notification.models.{Push, android}
@@ -39,7 +38,7 @@ class GCMPushConverter(conf: Configuration) extends PushConverter {
     case ms: FootballMatchStatusNotification => toMatchStatusAlert(ms)
   }
 
-  private[services] def toTags(destination: Destination) = Some(Tags.fromTopics(destination))
+  private[services] def toTags(destination: Set[Topic]) = Some(Tags.fromTopics(destination))
 
   private def toAndroidTopic(topic: Topic) = s"${topic.`type`}//${topic.name}"
 

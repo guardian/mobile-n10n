@@ -10,7 +10,7 @@ import models.Link.Internal
 import models.TopicTypes.{Breaking, FootballMatch, FootballTeam, TagSeries}
 import models._
 import notification.models.android.Editions
-import notification.models.{Destination, android}
+import notification.models.android
 import notification.services.Configuration
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -33,7 +33,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
   "GCMPushConverter.toTag" should {
     "convert a topic into a tag" in new PushConverterScope {
       val topic = Topic(TopicTypes.Breaking, "business/currencies")
-      val topicDestination = Destination(topic)
+      val topicDestination = Set(topic)
       val expected = Tag(s"topic:${topic.id}")
       azureRawPushConverter.toTags(topicDestination) shouldEqual Some(Tags(Set(expected)))
     }

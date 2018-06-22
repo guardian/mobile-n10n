@@ -51,7 +51,6 @@ final class Main(
     )
   }
 
-
   def newsstandRegister: Action[LegacyNewsstandRegistration] =
     registerWithConverter(legacyNewsstandRegistrationConverter)
 

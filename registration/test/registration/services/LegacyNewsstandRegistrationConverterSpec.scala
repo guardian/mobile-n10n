@@ -1,7 +1,5 @@
 package registration.services
 
-import java.util.UUID
-
 import models.TopicTypes.NewsstandShard
 import models._
 import org.specs2.mutable.Specification

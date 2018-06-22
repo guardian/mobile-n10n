@@ -24,7 +24,7 @@ class NotificationHubRegistrar(
   val logger = Logger(classOf[NotificationHubRegistrar])
 
   override def register(lastKnownChannelUri: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
-    findRegistrations(lastKnownChannelUri, registration).flatMap {
+    findRegistrationResponses(lastKnownChannelUri).flatMap {
       case Right(Nil) => createRegistration(registration)
       case Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
       case Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
@@ -44,20 +44,8 @@ class NotificationHubRegistrar(
       .value
   }
 
-
-  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[Either[ProviderError, List[azure.RegistrationResponse]]] = {
-    def extractResultFromResponse(
-      deviceIdResults: HubResult[List[azure.RegistrationResponse]]
-    ): Either[ProviderError, List[azure.RegistrationResponse]] = {
-      for {
-
-        deviceIdRegistrations <- deviceIdResults
-      } yield (deviceIdRegistrations).distinct
-    }
-
-    for {
-      deviceIdResults <- hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri)
-    } yield extractResultFromResponse(deviceIdResults)
+  def findRegistrationResponses(lastKnownChannelUri: String): Future[Either[ProviderError, List[azure.RegistrationResponse]]] = {
+    hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri).map(_.right.map(_.distinct))
   }
 
   private def createRegistration(registration: Registration): RegistrarResponse[RegistrationResponse] = {

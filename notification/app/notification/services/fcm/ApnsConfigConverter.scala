@@ -7,8 +7,7 @@ import azure.apns.FootballMatchStatusProperties
 import com.google.firebase.messaging.{ApnsConfig, Aps, ApsAlert}
 import models.NotificationType.{BreakingNews, Content, FootballMatchStatus}
 import models._
-import notification.models.Destination._
-import notification.models.ios.{Keys, MessageTypes}
+import notification.models.ios.Keys
 import notification.models.Push
 import notification.services.Configuration
 import notification.services.azure.PlatformUriType
@@ -158,7 +157,7 @@ class ApnsConfigConverter(conf: Configuration) {
     case Link.External(url) => PlatformUri(url, External)
   }
 
-  private def toTags(destination: Destination) = Some(Tags.fromTopics(destination))
+  private def toTags(destination: Set[Topic]) = Some(Tags.fromTopics(destination))
 
   private def toIosLink(link: Link) = link match {
     case Link.Internal(contentApiId, Some(shortUrl), _) => new URI(s"x-gu://${new URI(shortUrl).getPath}")

@@ -6,13 +6,12 @@ import models.TopicTypes.{Breaking, FootballMatch}
 import models._
 import models.pagination.Paginated
 import play.api.ApplicationLoader.Context
-import play.api.{BuiltInComponents, BuiltInComponentsFromContext, Configuration => PlayConfig}
+import play.api.{BuiltInComponents, Configuration => PlayConfig}
 import play.api.libs.ws.WSClient
 import providers.ProviderError
 import registration.RegistrationApplicationComponents
 import registration.services.topic.{TopicValidator, TopicValidatorError}
 import registration.services._
-import cats.implicits._
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -29,7 +28,6 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
         topics = registration.topics
       ))
     }
-
 
     override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
 
@@ -70,8 +68,6 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       ))
     }
 
-
-
     override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
       val selected = if (cursor.contains("abc")) {
         registrations.filter(_.topics.contains(topic)).map(StoredRegistration.fromRegistration).drop(5)
@@ -85,7 +81,6 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       val selected = registrations.filter(_.deviceId == lastKnownChannelUri).map(StoredRegistration.fromRegistration)
       Future.successful(Right(selected.toList))
     }
-
 
   }
 

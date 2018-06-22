@@ -13,7 +13,6 @@ class LegacyNewsstandRegistrationConverter(config: NewsstandShardConfig) extends
   val logger = Logger(classOf[LegacyNewsstandRegistrationConverter])
   private val shards = config.shards
   def toRegistration(legacyRegistration: LegacyNewsstandRegistration): Either[NotificationsError, Registration] = {
-
     val shard = deterministicallyShard(legacyRegistration.pushToken, shards)
     val newstandShardTopic = s"newsstand-shard-$shard"
     logger.info(s"User registered to Newsstand Shard Topic: $newstandShardTopic")

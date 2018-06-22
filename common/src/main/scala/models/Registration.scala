@@ -7,11 +7,6 @@ object Registration {
 
   implicit val writes = Json.writes[Registration]
 
-  implicit val reads = new Reads[Registration] {
-    override def reads(json: JsValue): JsResult[Registration] =
-      basicReader.reads(json)
+  implicit val reads = Json.reads[Registration]
 
-    private val basicReader = Json.reads[Registration]
-
-  }
 }

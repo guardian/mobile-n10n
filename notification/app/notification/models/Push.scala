@@ -1,7 +1,5 @@
 package notification.models
 
-import models.Notification
-import notification.models.Destination.Destination
-import play.api.libs.json._
+import models.{Notification, Topic}
 
-case class Push(notification: Notification, destination: Destination)
+case class Push(notification: Notification, destination: Set[Topic])

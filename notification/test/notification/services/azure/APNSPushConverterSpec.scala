@@ -8,7 +8,7 @@ import models.Importance.Major
 import models.NotificationType.NewsstandShard
 import models.TopicTypes.Newsstand
 import models.{Importance, NewsstandShardNotification, Topic, TopicTypes}
-import notification.models.{Destination, Push}
+import notification.models.Push
 import notification.models.ios.{NewsstandNotification, NewsstandNotificationShard}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification

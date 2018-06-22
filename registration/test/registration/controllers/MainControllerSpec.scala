@@ -48,7 +48,6 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       contentAsString(result) must (/("preferences") / "topics" andHave size(1))
     }
 
-
     "return registrations for topic" in new RegistrationsContext {
       val Some(register) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationWithFootballMatchTopicJson)))
       status(register) must equalTo(OK)

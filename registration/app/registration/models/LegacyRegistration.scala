@@ -4,7 +4,6 @@ import play.api.libs.json._
 import play.api.libs.json.JodaReads._
 import LegacyJodaFormat._
 
-
 object LegacyJodaFormat {
   val DateTimePattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
   implicit val dateTimeFormat = JodaReads.jodaDateReads(DateTimePattern)

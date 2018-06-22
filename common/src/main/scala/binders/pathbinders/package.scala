@@ -34,7 +34,6 @@ package object pathbinders {
     typeName = "topic"
   )
 
-
   implicit def pathbindablePlatform: PathBindable[Platform] = new Parsing[Platform](
     parse = Platform.fromString(_).toRight("Invalid platform"),
     serialize = _.toString,
