@@ -4,6 +4,6 @@ import azure.RawPush
 import notification.models.Push
 
 
-trait PushConverter {
+trait AzurePushConverter {
   def toRawPush(push: Push): Option[RawPush]
 }
