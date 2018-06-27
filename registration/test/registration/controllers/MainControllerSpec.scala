@@ -48,26 +48,6 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       contentAsString(result) must (/("preferences") / "topics" andHave size(1))
     }
 
-    "return 204 and empty response for unregistration of udid" in new RegistrationsContext {
-      override lazy val fakeRegistrarProvider = {
-        val provider = mock[RegistrarProvider]
-        provider.registrarFor(any[Platform], any[Option[String]]) returns Right(fakeNotificationRegistrar)
-        provider.registrarFor(any[Registration]) returns Right(fakeNotificationRegistrar)
-        provider
-      }
-
-      val Some(result) = route(app, FakeRequest(DELETE, "/registrations/ios/gia:00000000-0000-0000-0000-000000000000"))
-      status(result) must equalTo(NO_CONTENT)
-      contentAsString(result) must beEmpty
-      there was one(fakeRegistrarProvider).registrarFor(iOS, None)
-      there was one(fakeRegistrarProvider).registrarFor(any[Platform], any[Option[String]])
-    }
-
-    "return 404 for unregistration of udid that is not found" in new RegistrationsContext {
-      val Some(result) = route(app, FakeRequest(DELETE, "/registrations/ios/gia:F0000000-0000-0000-0000-000000000000"))
-      status(result) must equalTo(NOT_FOUND)
-    }
-
     "return registrations for topic" in new RegistrationsContext {
       val Some(register) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationWithFootballMatchTopicJson)))
       status(register) must equalTo(OK)

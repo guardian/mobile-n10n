@@ -24,21 +24,12 @@ class NotificationHubRegistrar(
   val logger = Logger(classOf[NotificationHubRegistrar])
 
   override def register(lastKnownChannelUri: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
-    findRegistrations(lastKnownChannelUri, registration).flatMap {
+    findRegistrationResponses(lastKnownChannelUri).flatMap {
       case Right(Nil) => createRegistration(registration)
       case Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
       case Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
       case Left(e: ProviderError) => Future.successful(Left(e))
     }
-  }
-
-  override def unregister(udid: UniqueDeviceIdentifier): RegistrarResponse[Unit] = {
-    val result = for {
-      registrationResponses <- EitherT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
-      _ <- EitherT(deleteRegistrations(registrationResponses.registrations)).ensure(UdidNotFound)(_ => registrationResponses.registrations.nonEmpty)
-    } yield ()
-
-    result.value
   }
 
   def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
@@ -53,27 +44,8 @@ class NotificationHubRegistrar(
       .value
   }
 
-  def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
-    EitherT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
-      .semiflatMap(responsesToStoredRegistrations)
-      .value
-  }
-
-  private def findRegistrations(lastKnownChannelUri: String, registration: Registration): Future[Either[ProviderError, List[azure.RegistrationResponse]]] = {
-    def extractResultFromResponse(
-      userIdResults: HubResult[Registrations],
-      deviceIdResults: HubResult[List[azure.RegistrationResponse]]
-    ): Either[ProviderError, List[azure.RegistrationResponse]] = {
-      for {
-        userIdRegistrations <- userIdResults
-        deviceIdRegistrations <- deviceIdResults
-      } yield (deviceIdRegistrations ++ userIdRegistrations.registrations).distinct
-    }
-
-    for {
-      userIdResults <- hubClient.registrationsByTag(Tag.fromUserId(registration.udid).encodedTag)
-      deviceIdResults <- hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri)
-    } yield extractResultFromResponse(userIdResults, deviceIdResults)
+  def findRegistrationResponses(lastKnownChannelUri: String): Future[Either[ProviderError, List[azure.RegistrationResponse]]] = {
+    hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri).map(_.right.map(_.distinct))
   }
 
   private def createRegistration(registration: Registration): RegistrarResponse[RegistrationResponse] = {
@@ -137,7 +109,6 @@ class NotificationHubRegistrar(
         StoredRegistration(
           deviceId = response.deviceId,
           platform = response.platform,
-          userId = tags.findUserId,
           tagIds = tags.asSet,
           topics = topics
         )
@@ -145,20 +116,16 @@ class NotificationHubRegistrar(
     })
   }
 
-  private def toRegistrarResponse(topicsRegisteredFor: Set[Topic])(registration: azure.RegistrationResponse): Either[ProviderError, RegistrationResponse] = {
-    val tags = tagsIn(registration)
-    for {
-      userId <- Either.fromOption(tags.findUserId, UserIdNotInTags)
-    } yield RegistrationResponse(
+  private def toRegistrarResponse(topicsRegisteredFor: Set[Topic])(registration: azure.RegistrationResponse): RegistrationResponse = {
+    RegistrationResponse(
       deviceId = registration.deviceId,
       platform = registration.platform,
-      userId = userId,
       topics = topicsRegisteredFor
     )
   }
 
   private def hubResultToRegistrationResponse(topicsRegisteredFor: Set[Topic])(hubResult: HubResult[azure.RegistrationResponse]) = {
-    hubResult.flatMap(toRegistrarResponse(topicsRegisteredFor))
+    hubResult.map(toRegistrarResponse(topicsRegisteredFor))
   }
 
 
@@ -170,10 +137,4 @@ sealed trait WindowsNotificationProviderError extends ProviderError {
   override def providerName: String = "WNS"
 }
 
-case object UserIdNotInTags extends WindowsNotificationProviderError {
-  override def reason: String = "Could not find userId in response from Hub"
-}
 
-case object UdidNotFound extends WindowsNotificationProviderError {
-  override def reason: String = "Udid not found"
-}

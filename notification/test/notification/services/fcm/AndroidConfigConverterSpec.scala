@@ -29,7 +29,7 @@ class AndroidConfigConverterSpec extends Specification {
           importance = Major,
           topic = Set(Topic(`type` = Breaking, name = "uk"))
         ),
-        destination = Left(Set())
+        destination = Set()
       )
 
       val data = convert(push)
@@ -65,7 +65,7 @@ class AndroidConfigConverterSpec extends Specification {
           topic = Set(Topic(`type` = Breaking, name = "uk")),
           iosUseMessage = Some(true)
         ),
-        destination = Left(Set())
+        destination = Set()
       )
 
       val data = convert(push)
@@ -112,7 +112,7 @@ class AndroidConfigConverterSpec extends Specification {
           eventId = "2",
           debug = true
         ),
-        destination = Left(Set())
+        destination = Set()
       )
 
       val data = convert(push)

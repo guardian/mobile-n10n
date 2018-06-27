@@ -10,7 +10,6 @@ import PartialFunction.condOpt
 package object querystringbinders {
 
   sealed trait RegistrationsSelector
-  case class RegistrationsByUdidParams(udid: UniqueDeviceIdentifier) extends RegistrationsSelector
   case class RegistrationsByTopicParams(topic: Topic, cursor: Option[CursorSet]) extends RegistrationsSelector
   case class RegistrationsByDeviceToken(platform: Platform, deviceToken: String)extends RegistrationsSelector
 
@@ -28,12 +27,6 @@ package object querystringbinders {
     parse = Topic.fromString(_),
     serialize = _.toString,
     typeName = "Topic"
-  )
-
-  implicit def qsbindableUniqueDeviceIdentifier: QueryStringBindable[UniqueDeviceIdentifier] = new Parsing[UniqueDeviceIdentifier](
-    parse = UniqueDeviceIdentifier.fromString(_).toRight("Invalid udid"),
-    serialize = _.toString,
-    typeName = "udid"
   )
 
   implicit def qsbindablePlatform: QueryStringBindable[Platform] = new Parsing[Platform](
@@ -63,25 +56,15 @@ package object querystringbinders {
   implicit def qsbindableRegistrationsSelector: QueryStringBindable[RegistrationsSelector] = new QueryStringBindable[RegistrationsSelector] {
     override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, RegistrationsSelector]] = {
       List(
-        qsbindableRegistrationsByUdidParams,
         qsbindableRegistrationsByTopicParams,
         qsbindableRegistrationsByDeviceToken).view.map(_.bind(key, params)
       ).collectFirst { case Some(result) => result }
     }
 
     override def unbind(key: String, value: RegistrationsSelector): String = value match {
-      case v: RegistrationsByUdidParams => qsbindableRegistrationsByUdidParams.unbind(key, v)
       case v: RegistrationsByTopicParams => qsbindableRegistrationsByTopicParams.unbind(key, v)
       case v: RegistrationsByDeviceToken => qsbindableRegistrationsByDeviceToken.unbind(key, v)
     }
-  }
-
-  implicit def qsbindableRegistrationsByUdidParams: QueryStringBindable[RegistrationsByUdidParams] = new QueryStringBindable[RegistrationsByUdidParams] {
-    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, RegistrationsByUdidParams]] =
-      qsbindableUniqueDeviceIdentifier.bind("udid", params).map { _.right.map(RegistrationsByUdidParams.apply) }
-
-    override def unbind(key: String, value: RegistrationsByUdidParams): String =
-      qsbindableUniqueDeviceIdentifier.unbind("udid", value.udid)
   }
 
   implicit def qsbindableRegistrationsByTopicParams: QueryStringBindable[RegistrationsByTopicParams] = new QueryStringBindable[RegistrationsByTopicParams] {

@@ -4,12 +4,11 @@ import java.net.URI
 
 import azure._
 import models._
-import notification.models.Destination._
 import notification.models.android.Editions.Edition
 import notification.models.{Push, ios}
 import notification.services.Configuration
 import play.api.Logger
-import PlatformUriTypes.{External, FootballMatch, Item}
+import PlatformUriTypes.{External, Item}
 import azure.apns.{FootballMatchStatusProperties, LiveEventProperties}
 import models.Importance.Major
 
@@ -143,10 +142,7 @@ class APNSPushConverter(conf: Configuration) extends AzurePushConverter {
     case ns: NewsstandShardNotification => toNewsstandShardAlert(ns)
   }
 
-  private def toTags(destination: Destination) = destination match {
-    case Left(topics: Set[Topic]) => Some(Tags.fromTopics(topics))
-    case Right(user: UniqueDeviceIdentifier) => Some(Tags.fromUserId(user))
-  }
+  private def toTags(destination: Set[Topic]) = Some(Tags.fromTopics(destination))
 
   private def toIosLink(link: Link) = link match {
     case Link.Internal(contentApiId, Some(shortUrl), _) => new URI(s"x-gu://${new URI(shortUrl).getPath}")

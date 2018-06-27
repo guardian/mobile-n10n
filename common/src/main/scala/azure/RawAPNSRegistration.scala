@@ -7,7 +7,6 @@ object RawAPNSRegistration {
     RawAPNSRegistration(
       deviceToken = m.deviceId,
       tags = Tags()
-        .withUserId(m.udid)
         .withTopics(m.topics)
         .asSet
     )

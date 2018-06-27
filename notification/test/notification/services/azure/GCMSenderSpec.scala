@@ -21,7 +21,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
     "filter out Minor notifications" in new GCMScope {
       override val importance = Minor
       val expectedReport = Right(senderReport(Senders.AzureNotificationsHub))
-      val result = androidNotificationSender.sendNotification(userPush)
+      val result = androidNotificationSender.sendNotification(topicPush)
 
       result should beEqualTo(expectedReport).await
       there was no(hubClient).sendNotification(any[GCMRawPush])
@@ -56,25 +56,16 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
         }
       }
 
-      "send only one notification when destination is user so that user do not receive the same message twice" in new GCMScope {
-        val result = androidNotificationSender.sendNotification(userPush)
-
-        result should beEqualTo(Right(senderReport(Senders.AzureNotificationsHub, platformStats = Some(PlatformStatistics(Android, 1)), sendersId = Some("fake-id")))).await
-        got {
-          one(hubClient).sendNotification(pushConverter.toRawPush(userPush).get)
-        }
-      }
     }
   }
 
   trait GCMScope extends Scope with NotificationsFixtures {
     def importance: Importance = Major
-    val userPush = userTargetedBreakingNewsPush(importance)
     val topicPush = topicTargetedBreakingNewsPush(
       breakingNewsNotification(Set(
         Topic(TopicTypes.Breaking, "world/religion"),
         Topic(TopicTypes.Breaking, "world/isis")
-      ))
+      )).copy(importance = importance)
     )
     def electionPush(importance: Importance) = topicTargetedBreakingNewsPush(
       electionNotification(importance)

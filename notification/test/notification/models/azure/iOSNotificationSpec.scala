@@ -77,7 +77,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       topic = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
 
-    val push = Push(notification, Left(Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))))
+    val push = Push(notification, Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")))
 
     val expected = Body(
       aps = APS(
@@ -113,7 +113,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       topic = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
 
-    val push = Push(notification, Left(Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))))
+    val push = Push(notification, Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")))
 
     val expected = Body(
       aps = APS(
@@ -149,7 +149,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       topic = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
 
-    val push = Push(notification, Left(Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))))
+    val push = Push(notification, Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")))
 
     val expected = Body(
       aps = APS(
@@ -183,7 +183,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       topic = Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))
     )
 
-    val push = Push(notification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+    val push = Push(notification, Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b")))
 
     val expected = Body(
       aps = APS(
@@ -233,7 +233,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       addedTime = None
     )
 
-    val push = Push(notification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+    val push = Push(notification, Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b")))
 
     val expected = Body(
       aps = APS(
@@ -283,7 +283,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       topic = Set.empty
     )
 
-    val push = Push(notification, Left(Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))))
+    val push = Push(notification, Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b")))
 
     val expected = Body(
       aps = APS(
@@ -324,7 +324,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       topic = Set(Topic(LiveNotification, "super-bowl-li"))
     )
 
-    val push = Push(notification, Left(notification.topic))
+    val push = Push(notification, notification.topic)
 
     val expected = Body(
       aps = APS(
@@ -377,7 +377,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       debug = false
     )
 
-    val push = Push(notification, Left(notification.topic))
+    val push = Push(notification, notification.topic)
 
     val expected = Body(
       aps = APS(

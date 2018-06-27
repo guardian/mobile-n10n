@@ -1,6 +1,6 @@
 package azure
 
-import models.{UniqueDeviceIdentifier, Topic}
+import models.Topic
 
 case class Tag(encodedTag: String)
 
@@ -11,10 +11,6 @@ object Tag {
     Tag(s"$TopicTagPrefix${t.id}")
   }
 
-  def fromUserId(u: UniqueDeviceIdentifier): Tag = {
-    Tag(s"$UserTagPrefix${u.id}")
-  }
-
 }
 
 case class Tags(tags: Set[Tag] = Set.empty) {
@@ -22,15 +18,9 @@ case class Tags(tags: Set[Tag] = Set.empty) {
 
   def asSet: Set[String] = tags.map(_.encodedTag)
 
-  def findUserId: Option[UniqueDeviceIdentifier] = encodedTags
-    .find(_.matches(UserTagRegex.regex))
-    .collect { case UserTagRegex(s) => UniqueDeviceIdentifier.fromString(s) }
-    .flatten
 
   def topicIds: Set[String] = encodedTags
     .collect { case TopicTagRegex(topicId) => topicId }
-
-  def withUserId(userId: UniqueDeviceIdentifier): Tags = copy(tags + Tag.fromUserId(userId))
 
   def withTopics(topics: Set[Topic]): Tags = copy(tags ++ topics.map(Tag.fromTopic))
 
@@ -47,6 +37,5 @@ object Tags {
 
   def fromTopics(topics: Set[Topic]): Tags = Tags(topics map Tag.fromTopic)
 
-  def fromUserId(u: UniqueDeviceIdentifier): Tags = Tags(Set(Tag.fromUserId(u)))
 
 }

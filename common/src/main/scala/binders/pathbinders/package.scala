@@ -34,12 +34,6 @@ package object pathbinders {
     typeName = "topic"
   )
 
-  implicit def pathbindableUniqueDeviceIdentifier: PathBindable[UniqueDeviceIdentifier] = new Parsing[UniqueDeviceIdentifier](
-    parse = UniqueDeviceIdentifier.fromString(_).toRight("Invalid udid"),
-    serialize = _.toString,
-    typeName = "udid"
-  )
-
   implicit def pathbindablePlatform: PathBindable[Platform] = new Parsing[Platform](
     parse = Platform.fromString(_).toRight("Invalid platform"),
     serialize = _.toString,
