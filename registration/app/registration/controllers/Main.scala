@@ -51,14 +51,14 @@ final class Main(
     )
   }
 
-  def unregister(platform: Platform, lastKnownChannelUri: String): Action[AnyContent] = actionWithTimeout {
+  def unregister(platform: Platform, pushToken: String): Action[AnyContent] = actionWithTimeout {
 
     def registrarFor(platform: Platform) = EitherT.fromEither[Future](
       registrarProvider.registrarFor(platform, None)
     )
 
     def unregisterFrom(registrar: NotificationRegistrar): EitherT[Future, NotificationsError, Unit] = EitherT(
-      registrar.unregister(lastKnownChannelUri): Future[Either[NotificationsError, Unit]]
+      registrar.unregister(pushToken): Future[Either[NotificationsError, Unit]]
     )
 
     registrarFor(platform)

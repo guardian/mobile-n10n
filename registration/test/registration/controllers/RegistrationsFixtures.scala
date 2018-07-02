@@ -29,12 +29,12 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
       ))
     }
 
-    override def unregister(lastKnownChannelUri: String): Future[Either[ProviderError, Unit]] =
+    override def unregister(pushToken: String): Future[Either[ProviderError, Unit]] =
       Future.successful(Right(()))
 
     override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
 
-    override def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]] = ???
+    override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = ???
 
   }
 }
@@ -71,7 +71,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       ))
     }
 
-    override def unregister(lastKnownChannelUri: String): Future[Either[ProviderError, Unit]] =
+    override def unregister(pushToken: String): Future[Either[ProviderError, Unit]] =
       Future.successful(Right(()))
 
     override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
@@ -83,8 +83,8 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       Future.successful(Right(Paginated(selected.toList, None)))
     }
 
-    override def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
-      val selected = registrations.filter(_.deviceId == lastKnownChannelUri).map(StoredRegistration.fromRegistration)
+    override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
+      val selected = registrations.filter(_.deviceId == pushToken).map(StoredRegistration.fromRegistration)
       Future.successful(Right(selected.toList))
     }
 

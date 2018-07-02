@@ -23,8 +23,8 @@ class NotificationHubRegistrar(
   override val providerIdentifier = "azure"
   val logger = Logger(classOf[NotificationHubRegistrar])
 
-  override def register(lastKnownChannelUri: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
-    findRegistrationResponses(lastKnownChannelUri).flatMap {
+  override def register(pushToken: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
+    findRegistrationResponses(pushToken).flatMap {
       case Right(Nil) => createRegistration(registration)
       case Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
       case Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
@@ -32,8 +32,8 @@ class NotificationHubRegistrar(
     }
   }
 
-  override def unregister(lastKnownChannelUri: String): RegistrarResponse[Unit] = {
-    findRegistrationResponses(lastKnownChannelUri).flatMap {
+  override def unregister(pushToken: String): RegistrarResponse[Unit] = {
+    findRegistrationResponses(pushToken).flatMap {
       case Right(Nil) => Future.successful(Right(()))
       case Right(manyRegistrations) => deleteRegistrations(manyRegistrations)
       case Left(e: ProviderError) => Future.successful(Left(e))
@@ -46,14 +46,14 @@ class NotificationHubRegistrar(
       .value
   }
 
-  def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
-    EitherT(hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri))
+  def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
+    EitherT(hubClient.registrationsByChannelUri(channelUri = pushToken))
       .semiflatMap(responsesToStoredRegistrations)
       .value
   }
 
-  def findRegistrationResponses(lastKnownChannelUri: String): Future[Either[ProviderError, List[azure.RegistrationResponse]]] = {
-    hubClient.registrationsByChannelUri(channelUri = lastKnownChannelUri).map(_.right.map(_.distinct))
+  def findRegistrationResponses(pushToken: String): Future[Either[ProviderError, List[azure.RegistrationResponse]]] = {
+    hubClient.registrationsByChannelUri(channelUri = pushToken).map(_.right.map(_.distinct))
   }
 
   private def createRegistration(registration: Registration): RegistrarResponse[RegistrationResponse] = {
