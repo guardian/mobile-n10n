@@ -62,7 +62,7 @@ class GCMSenderSpec(implicit ev: ExecutionEnv) extends Specification
   trait GCMScope extends Scope with NotificationsFixtures {
     def importance: Importance = Major
     val topicPush = topicTargetedBreakingNewsPush(
-      breakingNewsNotification(Set(
+      breakingNewsNotification(List(
         Topic(TopicTypes.Breaking, "world/religion"),
         Topic(TopicTypes.Breaking, "world/isis")
       )).copy(importance = importance)

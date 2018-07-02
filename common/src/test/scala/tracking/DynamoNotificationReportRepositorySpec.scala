@@ -79,7 +79,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
         link = Internal("some/capi/id-with-dashes", None, GITContent),
         imageUrl = Some(new URI("http://some.url/i.jpg")),
         importance = Major,
-        topic = Set(Topic(Breaking, "uk"))
+        topic = List(Topic(Breaking, "uk"))
       ),
       reports = List(
         SenderReport("Firebase", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))

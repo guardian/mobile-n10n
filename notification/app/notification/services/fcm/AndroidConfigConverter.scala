@@ -2,7 +2,6 @@ package notification.services.fcm
 
 import java.net.URI
 
-import _root_.azure.Tags
 import com.google.firebase.messaging.AndroidConfig
 import models._
 import notification.models.android.Editions.Edition
@@ -15,11 +14,11 @@ import utils.MapImplicits._
 import scala.PartialFunction._
 import collection.JavaConverters._
 
-class AndroidConfigConverter(conf: Configuration) {
+class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[AndroidConfig] {
 
   val logger = Logger(classOf[AndroidConfigConverter])
 
-  def toAndroidConfig(push: Push): Option[AndroidConfig] = toFirebaseAndroidNotification(push).map(_.toAndroidConfig)
+  override def toFCM(push: Push): Option[AndroidConfig] = toFirebaseAndroidNotification(push).map(_.toAndroidConfig)
 
   case class FirebaseAndroidNotification(
     data: Map[String, String]
@@ -142,6 +141,4 @@ class AndroidConfigConverter(conf: Configuration) {
     case Link.Internal(contentApiId, _, _) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId")
     case Link.External(url) => new URI(url)
   }
-
-  private[services] def toTags(destination: Set[Topic]) = Some(Tags.fromTopics(destination))
 }

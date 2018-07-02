@@ -16,8 +16,8 @@ sealed trait Notification {
   def title: String
   def message: String
   def importance: Importance
-  def topic: Set[Topic]
-  def withTopics(topics: Set[Topic]): Notification
+  def topic: List[Topic]
+  def withTopics(topics: List[Topic]): Notification
 }
 
 object Notification {
@@ -61,9 +61,9 @@ case class BreakingNewsNotification(
   link: Link,
   imageUrl: Option[URI],
   importance: Importance,
-  topic: Set[Topic]
+  topic: List[Topic]
 ) extends Notification with NotificationWithLink {
-  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
 
 object BreakingNewsNotification {
@@ -80,8 +80,8 @@ case class NewsstandShardNotification(
   override def message: String = ""
   override def sender: String = "newsstand-shard"
   override def importance: Importance = Importance.Minor
-  override def withTopics(topics: Set[Topic]): Notification = this
-  override def topic: Set[Topic] = Set(Topic(TopicTypes.NewsstandShard, s"newsstand-shard-$shard"))
+  override def withTopics(topics: List[Topic]): Notification = this
+  override def topic: List[Topic] = List(Topic(TopicTypes.NewsstandShard, s"newsstand-shard-$shard"))
 
 }
 object NewsstandShardNotification {
@@ -100,9 +100,9 @@ case class ContentNotification(
   sender: String,
   link: Link,
   importance: Importance,
-  topic: Set[Topic]
+  topic: List[Topic]
 ) extends Notification with NotificationWithLink {
-  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
 
 object ContentNotification {
@@ -132,12 +132,12 @@ case class FootballMatchStatusNotification(
   matchInfoUri: URI,
   articleUri: Option[URI],
   importance: Importance,
-  topic: Set[Topic],
+  topic: List[Topic],
   matchStatus: String,
   eventId: String,
   debug: Boolean
 ) extends Notification {
-  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
 
 object FootballMatchStatusNotification {
@@ -165,10 +165,10 @@ case class GoalAlertNotification(
   matchId: String,
   mapiUrl: URI,
   importance: Importance,
-  topic: Set[Topic],
+  topic: List[Topic],
   addedTime: Option[String]
 ) extends Notification {
-  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
 
 object GoalAlertNotification {
@@ -188,9 +188,9 @@ case class ElectionNotification(
   link: Link,
   resultsLink: Link,
   results: ElectionResults,
-  topic: Set[Topic]
+  topic: List[Topic]
 ) extends Notification {
-  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
 
 object ElectionNotification {
@@ -210,9 +210,9 @@ case class LiveEventNotification(
   link1: Link,
   link2: Link,
   imageUrl: Option[URI],
-  topic: Set[Topic]
+  topic: List[Topic]
 ) extends Notification {
-  override def withTopics(topics: Set[Topic]): Notification = copy(topic = topics)
+  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
 
 object LiveEventNotification {

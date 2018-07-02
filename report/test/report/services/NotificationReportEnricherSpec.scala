@@ -38,7 +38,7 @@ class NotificationReportEnricherSpec(implicit ev: ExecutionEnv) extends Specific
       link = Link.External("http://www.theguardian.com"),
       imageUrl = None,
       importance = Major,
-      topic = Set(Topic(TopicTypes.Breaking, "uk"))
+      topic = List(Topic(TopicTypes.Breaking, "uk"))
     )
 
     def createSenderReport(id: String) = SenderReport(

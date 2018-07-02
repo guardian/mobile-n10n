@@ -38,7 +38,7 @@ object NewsAlert {
         thumbnailUrl = notification.thumbnailUrl,
         imageUrl = notification.thumbnailUrl,
         publicationDate = sent,
-        topics = notification.topic.map(_.toString)
+        topics = notification.topic.map(_.toString).toSet
       )
     }
   }

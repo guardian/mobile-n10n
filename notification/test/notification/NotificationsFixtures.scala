@@ -16,7 +16,7 @@ import org.joda.time.DateTime
 import play.api.test.FakeRequest
 
 trait NotificationsFixtures {
-  def breakingNewsNotification(topics: Set[Topic]): BreakingNewsNotification = BreakingNewsNotification(
+  def breakingNewsNotification(topics: List[Topic]): BreakingNewsNotification = BreakingNewsNotification(
     id = UUID.fromString("30aac5f5-34bb-4a88-8b69-97f995a4907b"),
     title = "The Guardian",
     message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
@@ -57,7 +57,7 @@ trait NotificationsFixtures {
         color = "#d61d00"
       )
     )),
-    topic = Set(Topic(ElectionResults, "us-presidential-2016"))
+    topic = List(Topic(ElectionResults, "us-presidential-2016"))
   )
 
   def newsstandShardNotification() = NewsstandShardNotification(
@@ -75,14 +75,14 @@ trait NotificationsFixtures {
       link = Internal("capiId", None, GITContent),
       imageUrl = None,
       importance = importance,
-      topic = Set()
+      topic = List()
     ),
     destination = Set(Topic(ElectionResults, "us-presidential-2016"))
   )
 
   def topicTargetedBreakingNewsPush(notification: Notification): Push = Push(
     notification = notification,
-    destination = notification.topic
+    destination = notification.topic.toSet
   )
 
   val providerError = new NotificationHubSenderError(new NotificationsError {
@@ -94,9 +94,9 @@ trait NotificationsFixtures {
   val authenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$apiKey")
   val electionsAuthenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$electionsApiKey")
   val invalidAuthenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=wrong-key")
-  val validTopics = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"))
-  val validElectionTopics = Set(Topic(ElectionResults, "uk"), Topic(ElectionResults, "us"))
-  val validNewsstandNotificationsTopic = Set(Topic(TopicTypes.NewsstandShard, "newsstand-shard-1"))
+  val validTopics = List(Topic(Breaking, "uk"), Topic(Breaking, "us"))
+  val validElectionTopics = List(Topic(ElectionResults, "uk"), Topic(ElectionResults, "us"))
+  val validNewsstandNotificationsTopic = List(Topic(TopicTypes.NewsstandShard, "newsstand-shard-1"))
   val requestWithValidTopics = authenticatedRequest.withBody(breakingNewsNotification(validTopics))
 
   def senderReport(

@@ -74,7 +74,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       imageUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg")),
       importance = Major,
-      topic = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
+      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
 
     val push = Push(notification, Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")))
@@ -110,7 +110,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       imageUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg")),
       importance = Major,
-      topic = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
+      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
 
     val push = Push(notification, Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")))
@@ -146,7 +146,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       imageUrl = None,
       importance = Major,
-      topic = Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
+      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
 
     val push = Push(notification, Set(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")))
@@ -180,7 +180,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       sender = "matt.wells@guardian.co.uk",
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       importance = Major,
-      topic = Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))
+      topic = List(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b"))
     )
 
     val push = Push(notification, Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b")))
@@ -204,7 +204,7 @@ class iOSNotificationSpec extends Specification with Mockito {
   }
 
   trait GoalAlertNotificationScope extends NotificationScope {
-    val topics = Set(
+    val topics = List(
       Topic(TopicTypes.FootballTeam, "home-team-id"),
       Topic(TopicTypes.FootballTeam, "away-team-id"),
       Topic(TopicTypes.FootballMatch, "match-id")
@@ -280,7 +280,7 @@ class iOSNotificationSpec extends Specification with Mockito {
           color = "#d61d00"
         )
       )),
-      topic = Set.empty
+      topic = List.empty
     )
 
     val push = Push(notification, Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b")))
@@ -321,10 +321,10 @@ class iOSNotificationSpec extends Specification with Mockito {
       link1 = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       link2 = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent),
       imageUrl = Some(new URI("http://gu.com/some-image.png")),
-      topic = Set(Topic(LiveNotification, "super-bowl-li"))
+      topic = List(Topic(LiveNotification, "super-bowl-li"))
     )
 
-    val push = Push(notification, notification.topic)
+    val push = Push(notification, notification.topic.toSet)
 
     val expected = Body(
       aps = APS(
@@ -371,13 +371,13 @@ class iOSNotificationSpec extends Specification with Mockito {
       matchInfoUri = new URI("https://mobile.guardianapis.com/sport/football/match-info/3955232"),
       articleUri = Some(new URI("https://mobile.guardianapis.com/items/some-liveblog")),
       importance = Major,
-      topic = Set.empty,
+      topic = List.empty,
       matchStatus = "P",
       eventId = "1000",
       debug = false
     )
 
-    val push = Push(notification, notification.topic)
+    val push = Push(notification, notification.topic.toSet)
 
     val expected = Body(
       aps = APS(

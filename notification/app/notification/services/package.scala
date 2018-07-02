@@ -12,6 +12,7 @@ package object services {
   object Senders {
     val AzureNotificationsHub = "Azure Notifications Hub"
     val FrontendAlerts = "Frontend Alerts Sender"
+    val FCM = "FCM Notification Sender"
   }
 
   type SenderResult = Either[SenderError, SenderReport]

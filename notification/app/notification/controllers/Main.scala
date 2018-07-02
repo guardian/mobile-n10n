@@ -8,14 +8,12 @@ import notification.models.{Push, PushResult}
 import notification.services.{Configuration, NotificationSender}
 import play.api.Logger
 import play.api.libs.json.Json.toJson
-import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc._
 import tracking.SentNotificationReportRepository
 
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
 import notification.services.azure.NewsstandSender
-import cats.syntax.either._
 
 final class Main(
     configuration: Configuration,
@@ -52,13 +50,13 @@ final class Main(
 
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
     val topics = request.body.topic
-    val MaxTopics = 20
+    val MaxTopics = 3
     topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{request.isPermittedTopic} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(request.isPermittedTopic)}."))
-      case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), topics))
+      case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), topics.toSet))
     }
   }
 

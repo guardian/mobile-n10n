@@ -71,7 +71,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
           link = Internal(s"content/api/id/$prefix", None, GITContent),
           imageUrl = Some(new URI(s"http://some.url/$prefix.jpg")),
           importance = Major,
-          topic = Set(Topic(Breaking, "uk"))
+          topic = List(Topic(Breaking, "uk"))
         ),
         reports = List(
           SenderReport("Firebase", DateTime.now.withZone(UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
