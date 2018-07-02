@@ -29,6 +29,9 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
       ))
     }
 
+    override def unregister(lastKnownChannelUri: String): Future[Either[ProviderError, Unit]] =
+      Future.successful(Right(()))
+
     override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
 
     override def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]] = ???
@@ -67,6 +70,9 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
         topics = registration.topics
       ))
     }
+
+    override def unregister(lastKnownChannelUri: String): Future[Either[ProviderError, Unit]] =
+      Future.successful(Right(()))
 
     override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
       val selected = if (cursor.contains("abc")) {

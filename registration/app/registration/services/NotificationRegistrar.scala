@@ -36,6 +36,7 @@ trait NotificationRegistrar {
   type RegistrarResponse[T] = Future[Either[ProviderError, T]]
   val providerIdentifier: String
   def register(oldDeviceId: String, registration: Registration): RegistrarResponse[RegistrationResponse]
+  def unregister(lastKnownChannelUri: String): RegistrarResponse[Unit]
   def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]]
   def findRegistrations(lastKnownChannelUri: String): Future[Either[ProviderError, List[StoredRegistration]]]
 }

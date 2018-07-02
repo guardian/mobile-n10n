@@ -32,6 +32,14 @@ class NotificationHubRegistrar(
     }
   }
 
+  override def unregister(lastKnownChannelUri: String): RegistrarResponse[Unit] = {
+    findRegistrationResponses(lastKnownChannelUri).flatMap {
+      case Right(Nil) => Future.successful(Right(()))
+      case Right(manyRegistrations) => deleteRegistrations(manyRegistrations)
+      case Left(e: ProviderError) => Future.successful(Left(e))
+    }
+  }
+
   def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
     EitherT(hubClient.registrationsByTag(Tag.fromTopic(topic).encodedTag, cursor))
       .semiflatMap(responsesToStoredRegistrations)
