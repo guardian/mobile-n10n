@@ -1,9 +1,7 @@
 package notification.services.fcm
 
-import akka.actor.ActorSystem
 import com.google.firebase.messaging._
 import models.{SenderReport, Topic}
-import notification.models.Destination.Destination
 import notification.models.Push
 import notification.services._
 import org.joda.time.DateTime
@@ -38,13 +36,12 @@ class FCMNotificationSender(
     }
   }
 
-  def setDestination(messageBuilder: Message.Builder, destination: Destination): Message.Builder = {
+  def setDestination(messageBuilder: Message.Builder, destination: List[Topic]): Message.Builder = {
     def topicToFirebase(topic: Topic): String = s"${topic.`type`}/${topic.name}".replaceAll("/", "%")
     destination match {
-      case Left(topics) if topics.size == 1 => messageBuilder.setTopic(topicToFirebase(topics.head))
-      case Left(topics) if topics.size != 1 =>
+      case topic :: Nil => messageBuilder.setTopic(topicToFirebase(topic))
+      case topics: List[Topic] =>
         messageBuilder.setCondition(topics.map(topic => s"'${topicToFirebase(topic)}' in topics").mkString("||"))
-      case Right(token) => messageBuilder.setToken(token.id.toString)
     }
     messageBuilder
   }
@@ -54,7 +51,7 @@ class FCMNotificationSender(
     val messageBuilder = Message.builder()
       .setNotification(new Notification(push.notification.title, push.notification.message))
 
-    setDestination(messageBuilder, push.destination)
+    setDestination(messageBuilder, push.destination.toList)
 
     androidConfig.foreach(messageBuilder.setAndroidConfig)
     apnsConfig.foreach(messageBuilder.setApnsConfig)

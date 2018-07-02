@@ -34,7 +34,7 @@ class FCMNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specification
     }
 
     "Set the topic attribute if the destination is only one topic" in new FCMNotificationSenderScope {
-      val destination = Left(Set(Topic(Breaking, "uk")))
+      val destination = List(Topic(Breaking, "uk"))
 
       val messageBuilder = mock[Message.Builder]
       fcmNotificationSender(androidConfig = Some(mock[AndroidConfig])).setDestination(messageBuilder, destination)
@@ -47,7 +47,7 @@ class FCMNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specification
     }
 
     "Set the condition attribute if the destination is more than one topic" in new FCMNotificationSenderScope {
-      val destination = Left(Set(Topic(Breaking, "uk"), Topic(Breaking, "us")))
+      val destination = List(Topic(Breaking, "uk"), Topic(Breaking, "us"))
 
       val messageBuilder = mock[Message.Builder]
       fcmNotificationSender(androidConfig = Some(mock[AndroidConfig])).setDestination(messageBuilder, destination)
@@ -57,19 +57,6 @@ class FCMNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specification
       there was one(messageBuilder).setCondition(conditionCaptor.capture())
       conditionCaptor.getValue shouldEqual "'breaking%uk' in topics||'breaking%us' in topics"
       there was no(messageBuilder).setToken(any)
-    }
-
-    "Set the token attribute if the destination is a token" in new FCMNotificationSenderScope {
-      val destination = Right(UniqueDeviceIdentifierImpl(UUID.fromString("2977fe3e-f3ec-4986-9d08-00e5b8b7636b")))
-
-      val messageBuilder = mock[Message.Builder]
-      fcmNotificationSender(androidConfig = Some(mock[AndroidConfig])).setDestination(messageBuilder, destination)
-
-      val token = ArgumentCaptor.forClass(classOf[String])
-      there was no(messageBuilder).setTopic(any)
-      there was no(messageBuilder).setCondition(any)
-      there was one(messageBuilder).setToken(token.capture())
-      token.getValue shouldEqual "2977fe3e-f3ec-4986-9d08-00e5b8b7636b"
     }
   }
 
@@ -107,7 +94,7 @@ class FCMNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specification
         importance = Major,
         topic = Set()
       ),
-      destination = Right(UniqueDeviceIdentifierImpl(UUID.randomUUID()))
+      destination = Set(Topic(`type` = TopicTypes.Breaking, name = "uk"))
     )
   }
 }

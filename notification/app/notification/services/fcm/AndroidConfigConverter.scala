@@ -2,7 +2,6 @@ package notification.services.fcm
 
 import java.net.URI
 
-import _root_.azure.Tags
 import com.google.firebase.messaging.AndroidConfig
 import models._
 import notification.models.android.Editions.Edition
@@ -142,6 +141,4 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
     case Link.Internal(contentApiId, _, _) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId")
     case Link.External(url) => new URI(url)
   }
-
-  private[services] def toTags(destination: Set[Topic]) = Some(Tags.fromTopics(destination))
 }

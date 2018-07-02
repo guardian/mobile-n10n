@@ -2,7 +2,6 @@ package notification.services.fcm
 
 import java.net.URI
 
-import azure._
 import azure.apns.FootballMatchStatusProperties
 import com.google.firebase.messaging.{ApnsConfig, Aps, ApsAlert}
 import models.NotificationType.{BreakingNews, Content, FootballMatchStatus}
@@ -156,8 +155,6 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
     case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
     case Link.External(url) => PlatformUri(url, External)
   }
-
-  private def toTags(destination: Set[Topic]) = Some(Tags.fromTopics(destination))
 
   private def toIosLink(link: Link) = link match {
     case Link.Internal(contentApiId, Some(shortUrl), _) => new URI(s"x-gu://${new URI(shortUrl).getPath}")

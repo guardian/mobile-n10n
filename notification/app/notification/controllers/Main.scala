@@ -8,14 +8,12 @@ import notification.models.{Push, PushResult}
 import notification.services.{Configuration, NotificationSender}
 import play.api.Logger
 import play.api.libs.json.Json.toJson
-import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc._
 import tracking.SentNotificationReportRepository
 
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
 import notification.services.azure.NewsstandSender
-import cats.syntax.either._
 
 final class Main(
     configuration: Configuration,
