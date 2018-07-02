@@ -28,7 +28,7 @@ class APNSConfigConverterSpec extends Specification {
           link = Internal("some/capi/id", None, GITContent),
           imageUrl = Some(new URI("https://invalid.url/img.png")),
           importance = Major,
-          topic = Set(Topic(`type` = Breaking, name = "uk"))
+          topic = List(Topic(`type` = Breaking, name = "uk"))
         ),
         destination = Set()
       )
@@ -65,7 +65,7 @@ class APNSConfigConverterSpec extends Specification {
           sender = "UnitTests",
           link = Internal("some/capi/id", None, GITContent),
           importance = Major,
-          topic = Set(Topic(`type` = TagSeries, name = "some/tag")),
+          topic = List(Topic(`type` = TagSeries, name = "some/tag")),
           iosUseMessage = Some(true)
         ),
         destination = Set()
@@ -101,7 +101,7 @@ class APNSConfigConverterSpec extends Specification {
           thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
           sender = "UnitTests",
           importance = Major,
-          topic = Set(Topic(`type` = Breaking, name = "uk")),
+          topic = List(Topic(`type` = Breaking, name = "uk")),
           awayTeamName = "Team1",
           awayTeamScore = 0,
           awayTeamMessage = "team1 message",

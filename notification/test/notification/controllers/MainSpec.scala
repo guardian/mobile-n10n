@@ -58,12 +58,12 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       status(secondResponse) must equalTo(BAD_REQUEST)
     }
     "refuse a notification without a topic" in new MainScope {
-      val request = authenticatedRequest.withBody(breakingNewsNotification(Set()))
+      val request = authenticatedRequest.withBody(breakingNewsNotification(List()))
       status(main.pushTopics()(request)) must equalTo(BAD_REQUEST)
     }
     "refuse a notification with too many topics" in new MainScope {
       val topics = (1 to 21).map(i => Topic(Breaking, s"$i"))
-      val request = authenticatedRequest.withBody(breakingNewsNotification(Set()))
+      val request = authenticatedRequest.withBody(breakingNewsNotification(List()))
       status(main.pushTopics()(request)) must equalTo(BAD_REQUEST)
     }
   }
@@ -111,7 +111,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       status(response) must equalTo(CREATED)
 
-      val sentTime = reportRepository.getByUuid(breakingNewsNotification(Set.empty).id).map(_.map(_.sentTime))
+      val sentTime = reportRepository.getByUuid(breakingNewsNotification(List.empty).id).map(_.map(_.sentTime))
 
       sentTime must beEqualTo(Right(frontendAlertsReport.sentTime)).await
     }

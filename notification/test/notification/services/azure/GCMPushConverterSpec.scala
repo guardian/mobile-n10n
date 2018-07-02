@@ -60,7 +60,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       link = Internal("world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates", None, GITContent),
       imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
       importance = Major,
-      topic = Set(Topic(Breaking, "uk"))
+      topic = List(Topic(Breaking, "uk"))
     )
 
     val azureNotification = android.BreakingNewsNotification(
@@ -91,7 +91,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       sender = "test",
       link = Internal("environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming", None, GITContent),
       importance = Major,
-      topic = Set(Topic(TagSeries, "environment/series/keep-it-in-the-ground"))
+      topic = List(Topic(TagSeries, "environment/series/keep-it-in-the-ground"))
     )
 
     val azureNotification = android.ContentNotification(
@@ -126,7 +126,7 @@ class GCMPushConverterSpec extends Specification with Mockito {
       matchId = "3833380",
       mapiUrl = new URI("http://football.mobile-apps.guardianapis.com/match-info/3833380"),
       importance = Major,
-      topic = Set(
+      topic = List(
         Topic(FootballTeam, "29"),
         Topic(FootballTeam, "41"),
         Topic(FootballMatch, "3833380")

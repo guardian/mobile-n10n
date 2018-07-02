@@ -194,7 +194,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
           color = "#d61d00"
         )
       )),
-      topic = Set.empty
+      topic = List.empty
     )
 
     val push = Push(notification, Set(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b")))
@@ -240,10 +240,10 @@ class AndroidNotificationSpec extends Specification with Mockito {
       link1 = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       link2 = Internal("world/2016/oct/26/canada-women-un-ranking-discrimination-justin-trudeau", Some("https://gu.com/p/5982v"), GITContent),
       imageUrl = Some(new URI("http://gu.com/some-image.png")),
-      topic = Set(Topic(LiveNotification, "super-bowl-li"))
+      topic = List(Topic(LiveNotification, "super-bowl-li"))
     )
 
-    val push = Push(notification, notification.topic)
+    val push = Push(notification, notification.topic.toSet)
 
     val expected =  Map(
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
@@ -282,13 +282,13 @@ class AndroidNotificationSpec extends Specification with Mockito {
       matchInfoUri = new URI("https://mobile.guardianapis.com/sport/football/match-info/3955232"),
       articleUri = Some(new URI("https://mobile.guardianapis.com/items/some-liveblog")),
       importance = Major,
-      topic = Set.empty,
+      topic = List.empty,
       matchStatus = "P",
       eventId = "1000",
       debug = false
     )
 
-    val push = Push(notification, notification.topic)
+    val push = Push(notification, notification.topic.toSet)
 
     val expected =  Map(
       "type" -> "footballMatchAlert",

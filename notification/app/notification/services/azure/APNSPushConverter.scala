@@ -39,7 +39,7 @@ class APNSPushConverter(conf: Configuration) extends AzurePushConverter {
       },
       message = breakingNews.message,
       link = toIosLink(breakingNews.link), //check this
-      topics = breakingNews.topic,
+      topics = breakingNews.topic.toSet,
       uri = new URI(link.uri),
       uriType = link.`type`,
       legacyLink = toIosLink(breakingNews.link).toString, //check this
@@ -54,7 +54,7 @@ class APNSPushConverter(conf: Configuration) extends AzurePushConverter {
       category = "ITEM_CATEGORY",
       message = if (cn.iosUseMessage.contains(true)) cn.message else cn.title,
       link = toIosLink(cn.link),
-      topics = cn.topic,
+      topics = cn.topic.toSet,
       uri = new URI(link.uri),
       uriType = link.`type`,
       legacyLink = toIosLink(cn.link).toString

@@ -92,7 +92,7 @@ class FCMNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specification
         link = Internal("world/2018/jun/19/eu-migrant-processing-centres-north-africa-refugees", None, GITContent),
         imageUrl = None,
         importance = Major,
-        topic = Set()
+        topic = List()
       ),
       destination = Set(Topic(`type` = TopicTypes.Breaking, name = "uk"))
     )

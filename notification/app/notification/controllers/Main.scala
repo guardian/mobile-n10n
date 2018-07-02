@@ -50,13 +50,13 @@ final class Main(
 
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
     val topics = request.body.topic
-    val MaxTopics = 20
+    val MaxTopics = 3
     topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{request.isPermittedTopic} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(request.isPermittedTopic)}."))
-      case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), topics))
+      case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), topics.toSet))
     }
   }
 

@@ -58,6 +58,7 @@ class GCMPushConverter(conf: Configuration) extends AzurePushConverter {
       .filter(_.`type` == TopicTypes.Breaking)
       .map(_.name)
       .collect(Edition.fromString)
+      .toSet
 
     android.BreakingNewsNotification(
       `type` = AndroidMessageTypes.Custom,
@@ -88,7 +89,7 @@ class GCMPushConverter(conf: Configuration) extends AzurePushConverter {
       ticker = cn.message,
       message = cn.message,
       link = toAndroidLink(cn.link),
-      topics = cn.topic.map(toAndroidTopic),
+      topics = cn.topic.map(toAndroidTopic).toSet,
       uriType = link.`type`,
       uri = new URI(link.uri),
       thumbnailUrl = cn.thumbnailUrl,
