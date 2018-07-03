@@ -58,6 +58,11 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       contentAsString(result) must /("results") /#(0) /("deviceId" -> "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4")
       contentAsString(result) must (/("results") andHave size(1))
     }
+
+    "return 204 when unregistering" in new RegistrationsContext {
+      val Some(register) = route(app, FakeRequest(DELETE, "/azure/registrations/ios/4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4"))
+      status(register) must equalTo(NO_CONTENT)
+    }
   }
 
   trait RegistrationsContext extends RegistrationsBase with withMockedWSClient {
@@ -75,12 +80,12 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
   trait withMockedWSClient { self: RegistrationsBase =>
     override val wsClient = mock[WSClient]
 
-    val deleteRequest = {
+    /*val deleteRequest = {
       val request = mock[WSRequest]
       val response = mock[WSResponse]
       response.status returns 200
       request.delete() returns Future.successful(response)
     }
-    wsClient.url(any[String]) returns deleteRequest
+    wsClient.url(any[String]) returns deleteRequest*/
   }
 }
