@@ -51,6 +51,21 @@ final class Main(
     )
   }
 
+  def unregister(platform: Platform, pushToken: String): Action[AnyContent] = actionWithTimeout {
+
+    def registrarFor(platform: Platform) = EitherT.fromEither[Future](
+      registrarProvider.registrarFor(platform, None)
+    )
+
+    def unregisterFrom(registrar: NotificationRegistrar): EitherT[Future, NotificationsError, Unit] = EitherT(
+      registrar.unregister(pushToken): Future[Either[NotificationsError, Unit]]
+    )
+
+    registrarFor(platform)
+      .flatMap(unregisterFrom)
+      .fold(processErrors, _ => NoContent)
+  }
+
   def newsstandRegister: Action[LegacyNewsstandRegistration] =
     registerWithConverter(legacyNewsstandRegistrationConverter)
 
