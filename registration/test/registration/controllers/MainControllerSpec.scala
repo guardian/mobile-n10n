@@ -79,13 +79,5 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
   trait withMockedWSClient { self: RegistrationsBase =>
     override val wsClient = mock[WSClient]
-
-    /*val deleteRequest = {
-      val request = mock[WSRequest]
-      val response = mock[WSResponse]
-      response.status returns 200
-      request.delete() returns Future.successful(response)
-    }
-    wsClient.url(any[String]) returns deleteRequest*/
   }
 }
