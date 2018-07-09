@@ -3,10 +3,9 @@ mobile-n10n or "mobile-notification" is our next generation of push-notification
 This project will focus on connecting directly to cloud providers (Azure, GCM) and act as an interface to it.
 
 ## Modules
- * registration: Handles the registration requests received from the device, and redirect them to the correct provider
- * notification: Handler notification messages and redirects them to correct provider
- * report: TODO
- * backup: TODO
+ * registration: Handles the registration requests received from the device, and redirect them to the correct provider. This is soon to be deprecated as we are moving towards Firebase and device will register directly with Firebase.
+ * notification: Handles notification messages and redirects them to correct provider
+ * report: Exposes data about past notifications
  * common: The common stuff
 
 ## Registration

@@ -75,30 +75,7 @@ lazy val commonscheduledynamodb = project
     testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
     testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
     testOptions in Test += dynamoDBLocalTestCleanup.value
-  )
-  )
-
-lazy val backup = project
-  .dependsOn(common)
-  .enablePlugins(RiffRaffArtifact)
-  .settings(standardSettings: _*)
-  .settings(
-    fork := true,
-    libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-simple" % "1.7.25",
-      "com.microsoft.azure" % "azure-storage" % "7.0.0",
-      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0"
-    ),
-    assemblyJarName := s"${name.value}.jar",
-    riffRaffPackageType := assembly.value,
-    riffRaffArtifactResources += (file(s"${name.value}/cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
-    assemblyMergeStrategy in assembly := {
-      case PathList("META-INF", xs @ _ *) => MergeStrategy.discard
-      case PathList("reference.conf") => MergeStrategy.concat
-      case x => MergeStrategy.last
-    },
-    version := "1.0-SNAPSHOT"
-  )
+  ))
 
 lazy val registration = project
   .dependsOn(common % "test->test;compile->compile")
@@ -200,4 +177,4 @@ lazy val report = project
   )
 
 lazy val root = (project in file(".")).
-  aggregate(registration, notification, report, backup, common, commonscheduledynamodb, schedulelambda)
+  aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda)
