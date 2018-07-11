@@ -1,6 +1,8 @@
 package azure
 
-import models.Topic
+import java.util.UUID
+
+import models.{IosUdid, Topic, UniqueDeviceIdentifier}
 import models.TopicTypes.{Content, FootballMatch, TagContributor}
 import org.specs2.mutable.Specification
 
@@ -35,6 +37,28 @@ class TagSpec extends Specification {
       val tag = Tag.fromTopic(topic)
 
       tag.encodedTag must haveLength(beLessThan(120))
+    }
+
+    "encoded tag must contain user id" in {
+      val uuid = UUID.randomUUID
+      val userId = UniqueDeviceIdentifier(uuid)
+      val tag = Tag.fromUserId(userId)
+
+      tag.encodedTag must endWith(uuid.toString)
+    }
+
+    "encoded tag should not be influenced by 'gia:' prefix" in {
+      val uuid = UUID.randomUUID
+      val userId = UniqueDeviceIdentifier(uuid)
+      val userIdWithPrefix = new IosUdid(s"gia:$uuid", uuid)
+      Tag.fromUserId(userId) must beEqualTo(Tag.fromUserId(userIdWithPrefix))
+    }
+
+    "encoded tag should not be influenced by uuid case" in {
+      val uuid = UUID.randomUUID
+      val userIdUppercase = new IosUdid(s"gia:${uuid.toString.toUpperCase}", uuid)
+      val userIdLowercase = new IosUdid(s"gia:$uuid", uuid)
+      Tag.fromUserId(userIdUppercase) must beEqualTo(Tag.fromUserId(userIdLowercase))
     }
   }
 }
