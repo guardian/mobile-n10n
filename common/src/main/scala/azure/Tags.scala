@@ -1,6 +1,6 @@
 package azure
 
-import models.Topic
+import models.{Topic, UniqueDeviceIdentifier}
 
 case class Tag(encodedTag: String)
 
@@ -9,6 +9,10 @@ object Tag {
 
   def fromTopic(t: Topic): Tag = {
     Tag(s"$TopicTagPrefix${t.id}")
+  }
+
+  def fromUserId(u: UniqueDeviceIdentifier): Tag = {
+    Tag(s"$UserTagPrefix${u.id}")
   }
 
 }

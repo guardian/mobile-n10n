@@ -56,6 +56,12 @@ class NotificationHubRegistrar(
     hubClient.registrationsByChannelUri(channelUri = pushToken).map(_.right.map(_.distinct))
   }
 
+  def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
+    EitherT(hubClient.registrationsByTag(Tag.fromUserId(udid).encodedTag))
+      .semiflatMap(responsesToStoredRegistrations)
+      .value
+  }
+
   private def createRegistration(registration: Registration): RegistrarResponse[RegistrationResponse] = {
     logger.debug(s"creating registration $registration")
     hubClient.create(registrationExtractor(registration))

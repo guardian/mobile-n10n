@@ -36,6 +36,7 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
 
     override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = ???
 
+    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
   }
 }
 
@@ -88,6 +89,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       Future.successful(Right(selected.toList))
     }
 
+    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
   }
 
   lazy val fakeRegistrarProvider = new RegistrarProvider {

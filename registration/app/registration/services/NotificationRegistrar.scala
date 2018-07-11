@@ -39,4 +39,5 @@ trait NotificationRegistrar {
   def unregister(pushToken: String): RegistrarResponse[Unit]
   def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]]
   def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]]
+  def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]]
 }
