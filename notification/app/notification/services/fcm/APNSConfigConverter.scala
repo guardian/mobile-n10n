@@ -12,6 +12,7 @@ import notification.services.Configuration
 import notification.services.azure.PlatformUriType
 import notification.services.azure.PlatformUriTypes.{External, Item}
 import play.api.Logger
+import collection.JavaConverters._
 
 import collection.JavaConverters._
 
@@ -126,7 +127,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
       sound = if (matchStatus.importance == Importance.Major) Some("default") else None,
       customData = List(
         Keys.NotificationType -> Some(FootballMatchStatus.value),
-        "matchStatus" -> Some(FootballMatchStatusProperties(
+        "footballMatch" -> Some(FootballMatchStatusProperties(
           homeTeamName = matchStatus.homeTeamName,
           homeTeamId = matchStatus.homeTeamId,
           homeTeamScore = matchStatus.homeTeamScore,
@@ -144,7 +145,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
           uri = "",
           competitionName = matchStatus.competitionName,
           venue = matchStatus.venue
-        ))
+        ).toMap.asJava)
       )
     )
   }
