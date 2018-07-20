@@ -127,7 +127,8 @@ class NotificationHubRegistrar(
           deviceId = response.deviceId,
           platform = response.platform,
           tagIds = tags.asSet,
-          topics = topics
+          topics = topics,
+          provider = "azure"
         )
       }
     })

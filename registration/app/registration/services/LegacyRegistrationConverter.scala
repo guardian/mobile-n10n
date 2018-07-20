@@ -9,17 +9,32 @@ import cats.implicits._
 class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistration] {
 
   def toRegistration(legacyRegistration: LegacyRegistration): Either[NotificationsError, Registration] = {
-    val unsupportedPlatform: Either[NotificationsError, Registration] =
-      Left(UnsupportedPlatform(legacyRegistration.device.platform))
 
-    Platform.fromString(legacyRegistration.device.platform).fold(unsupportedPlatform) { platform =>
-      Right(Registration(
-        deviceToken = AzureToken(legacyRegistration.device.pushToken),
-        platform = platform,
-        topics = topics(legacyRegistration),
-        buildTier = Some(legacyRegistration.device.buildTier)
-      ))
+    def deviceTokenFromRegistration: Either[NotificationsError, DeviceToken] = {
+      (legacyRegistration.device.pushToken, legacyRegistration.device.firebaseToken) match {
+        case (Some(azureToken), Some(fcmToken)) => Right(BothTokens(azureToken, fcmToken))
+        case (Some(azureToken), None) => Right(AzureToken(azureToken))
+        case (None, Some(fcmToken)) => Right(FcmToken(fcmToken))
+        case _ => Left(MalformattedRegistration("no fcm token nor azure token"))
+      }
     }
+
+    def platformFromRegistration: Either[NotificationsError, Platform] = {
+      Either.fromOption(
+        Platform.fromString(legacyRegistration.device.platform),
+        UnsupportedPlatform(legacyRegistration.device.platform)
+      )
+    }
+
+    for {
+      deviceToken <- deviceTokenFromRegistration
+      platform <- platformFromRegistration
+    } yield Registration(
+      deviceToken = deviceToken,
+      platform = platform,
+      topics = topics(legacyRegistration),
+      buildTier = Some(legacyRegistration.device.buildTier)
+    )
   }
 
   def fromResponse(legacyRegistration: LegacyRegistration, response: RegistrationResponse): LegacyRegistration = {

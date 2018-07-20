@@ -34,7 +34,12 @@ case class LegacyTopic(
   def toTopicString: String = `type` + "//" + name
 }
 
-case class LegacyDevice(platform: String, pushToken: String, buildTier: String)
+case class LegacyDevice(
+  platform: String,
+  pushToken: Option[String],
+  firebaseToken: Option[String],
+  buildTier: String
+)
 object LegacyDevice {
   implicit val jf = Json.format[LegacyDevice]
 }
