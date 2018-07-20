@@ -8,7 +8,7 @@ class RegistrationSpec extends Specification {
     "parse json representation" in {
       val json =
         """{
-          |  "deviceId": "some-device-id",
+          |  "deviceToken": "some-device-token",
           |  "platform": "android",
           |  "topics": [{
           |    "type": "breaking",
@@ -17,7 +17,7 @@ class RegistrationSpec extends Specification {
           |}
         """.stripMargin
       val expected = Registration(
-        deviceId = "some-device-id",
+        deviceToken = "some-device-token",
         platform = Android,
         topics = Set(Topic(TopicTypes.Breaking, "uk")),
         buildTier = None

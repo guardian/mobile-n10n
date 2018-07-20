@@ -23,7 +23,7 @@ object StoredRegistration {
 
   def fromRegistration(registration: Registration): StoredRegistration = {
     StoredRegistration(
-      deviceId = registration.deviceId,
+      deviceId = registration.deviceToken,
       platform = registration.platform,
       tagIds = registration.topics.map(_.id),
       topics = registration.topics

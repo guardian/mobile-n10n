@@ -76,7 +76,7 @@ final class Main(
     val legacyRegistration = request.body
     val result = for {
       registration <- EitherT.fromEither[Future](converter.toRegistration(legacyRegistration))
-      registrationResponse <- EitherT(registerCommon(registration.deviceId, registration))
+      registrationResponse <- EitherT(registerCommon(registration.deviceToken, registration))
     } yield {
       converter.fromResponse(legacyRegistration, registrationResponse)
     }
@@ -140,23 +140,23 @@ final class Main(
     }
   }
 
-  private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {
+  private def registerCommon(deviceToken: String, registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {
 
     def validate(topics: Set[Topic]): Future[Set[Topic]] =
       topicValidator
         .removeInvalid(topics)
         .map {
           case Right(filteredTopics) =>
-            logger.debug(s"Successfully validated topics in registration (${registration.deviceId}), topics valid: [$filteredTopics]")
+            logger.debug(s"Successfully validated topics in registration (${registration.deviceToken}), topics valid: [$filteredTopics]")
             filteredTopics
           case Left(e) =>
-            logger.error(s"Could not validate topics ${e.topicsQueried} for registration (${registration.deviceId}), reason: ${e.reason}")
+            logger.error(s"Could not validate topics ${e.topicsQueried} for registration (${registration.deviceToken}), reason: ${e.reason}")
             topics
         }
 
     def registerWith(registrar: NotificationRegistrar, topics: Set[Topic]) =
       registrar
-        .register(lastKnownDeviceId, registration.copy(topics = topics))
+        .register(deviceToken, registration.copy(topics = topics))
 
     def logErrors: PartialFunction[Try[Either[ProviderError, RegistrationResponse]], Unit] = {
       case Success(Left(v)) => logger.error(s"Failed to register $registration with ${v.providerName}: ${v.reason}")
