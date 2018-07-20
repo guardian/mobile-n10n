@@ -11,7 +11,7 @@ class RawGCMRegistrationSpec extends Specification {
     "be created from mobile registration with topics as tags" in {
       val topic = Topic(`type` = FootballMatch, "arsenal-chelsea")
       val registration = Registration(
-        deviceId = "device2",
+        deviceToken = "device2",
         platform = Android,
         topics = Set(topic),
         buildTier = None

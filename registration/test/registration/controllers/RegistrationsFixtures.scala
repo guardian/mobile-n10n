@@ -85,7 +85,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     }
 
     override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
-      val selected = registrations.filter(_.deviceId == pushToken).map(StoredRegistration.fromRegistration)
+      val selected = registrations.filter(_.deviceToken == pushToken).map(StoredRegistration.fromRegistration)
       Future.successful(Right(selected.toList))
     }
 
