@@ -10,9 +10,9 @@ import cats.implicits._
 
 trait RegistrarProvider {
   def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
-    registrarFor(registration.platform, registration.buildTier)
+    registrarFor(registration.platform)
 
-  def registrarFor(platform: Platform, buildTier: Option[String]): Either[NotificationsError, NotificationRegistrar]
+  def registrarFor(platform: Platform): Either[NotificationsError, NotificationRegistrar]
 
   def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T]
 }
@@ -34,7 +34,7 @@ final class NotificationRegistrarProvider(
       .values
       .flatMap(_.headOption)(breakOut)
 
-  override def registrarFor(platform: Platform, buildTier: Option[String]): Either[NotificationsError, NotificationRegistrar] = platform match {
+  override def registrarFor(platform: Platform): Either[NotificationsError, NotificationRegistrar] = platform match {
     case Android => Right(gcmRegistrar)
     case `iOS` => Right(apnsRegistrar)
     case Newsstand => Right(newsstandRegistrar)
