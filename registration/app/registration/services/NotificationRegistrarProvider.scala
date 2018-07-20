@@ -7,6 +7,7 @@ import registration.services.azure._
 import scala.collection.breakOut
 import scala.concurrent.ExecutionContext
 import cats.implicits._
+import registration.services.fcm.FcmRegistrar
 
 trait RegistrarProvider {
   def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
@@ -22,14 +23,15 @@ case class UnsupportedPlatform(platform: String) extends RequestError {
 }
 
 final class NotificationRegistrarProvider(
+  fcmRegistrar: FcmRegistrar,
   gcmRegistrar: GCMNotificationRegistrar,
   apnsRegistrar: APNSNotificationRegistrar,
   newsstandRegistrar: NewsstandNotificationRegistrar)
   (implicit executionContext: ExecutionContext) extends RegistrarProvider {
 
-  private val registrars = List(gcmRegistrar, apnsRegistrar, newsstandRegistrar)
-  private val uniqueProviders: List[NotificationRegistrar] =
-    registrars
+  private val azureBasedRegistrars = List(gcmRegistrar, apnsRegistrar, newsstandRegistrar)
+  private val uniqueAzureProviders: List[NotificationRegistrar] =
+    azureBasedRegistrars
       .groupBy(_.hubClient.notificationHubConnection)
       .values
       .flatMap(_.headOption)(breakOut)
@@ -42,5 +44,5 @@ final class NotificationRegistrarProvider(
   }
 
   def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T] =
-    uniqueProviders.map(fn)
+    uniqueAzureProviders.map(fn)
 }
