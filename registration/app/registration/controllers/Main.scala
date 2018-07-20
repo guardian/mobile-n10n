@@ -76,7 +76,7 @@ final class Main(
     val legacyRegistration = request.body
     val result = for {
       registration <- EitherT.fromEither[Future](converter.toRegistration(legacyRegistration))
-      registrationResponse <- EitherT(registerCommon(registration.deviceToken, registration))
+      registrationResponse <- EitherT(registerCommon(registration))
     } yield {
       converter.fromResponse(legacyRegistration, registrationResponse)
     }
@@ -140,7 +140,7 @@ final class Main(
     }
   }
 
-  private def registerCommon(deviceToken: String, registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {
+  private def registerCommon(registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {
 
     def validate(topics: Set[Topic]): Future[Set[Topic]] =
       topicValidator
@@ -156,7 +156,7 @@ final class Main(
 
     def registerWith(registrar: NotificationRegistrar, topics: Set[Topic]) =
       registrar
-        .register(deviceToken, registration.copy(topics = topics))
+        .register(registration.deviceToken, registration.copy(topics = topics))
 
     def logErrors: PartialFunction[Try[Either[ProviderError, RegistrationResponse]], Unit] = {
       case Success(Left(v)) => logger.error(s"Failed to register $registration with ${v.providerName}: ${v.reason}")
