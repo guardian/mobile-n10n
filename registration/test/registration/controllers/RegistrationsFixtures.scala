@@ -20,7 +20,7 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
   override lazy val fakeNotificationRegistrar: NotificationRegistrar = new NotificationRegistrar {
     override val providerIdentifier: String = "test"
 
-    override def register(deviceId: String, registration: Registration): Future[Either[ProviderError, RegistrationResponse]] = Future.successful {
+    override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = Future.successful {
       Thread.sleep(2000)
       Right(RegistrationResponse(
         deviceId = "deviceAA",
@@ -63,7 +63,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
 
     private var registrations = List.empty[Registration]
 
-    override def register(deviceId: String, registration: Registration): Future[Either[ProviderError, RegistrationResponse]] = Future.successful {
+    override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = Future.successful {
       registrations = registration :: registrations
       Right(RegistrationResponse(
         deviceId = "deviceAA",
@@ -85,7 +85,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     }
 
     override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
-      val selected = registrations.filter(_.deviceToken == pushToken).map(StoredRegistration.fromRegistration)
+      val selected = registrations.filter(_.deviceToken.azureToken == pushToken).map(StoredRegistration.fromRegistration)
       Future.successful(Right(selected.toList))
     }
 
