@@ -95,6 +95,9 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
   lazy val fakeRegistrarProvider = new RegistrarProvider {
     override def registrarFor(platform: Platform): Either[NotificationsError, NotificationRegistrar] = Right(fakeNotificationRegistrar)
 
+
+    override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] = registrarFor(registration.platform)
+
     override def withAllRegistrars[T](fn: (NotificationRegistrar) => T): List[T] = List(fn(fakeNotificationRegistrar))
   }
 

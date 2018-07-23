@@ -9,8 +9,7 @@ import scala.concurrent.ExecutionContext
 import cats.implicits._
 
 trait RegistrarProvider {
-  def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
-    registrarFor(registration.platform)
+  def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar]
 
   def registrarFor(platform: Platform): Either[NotificationsError, NotificationRegistrar]
 
@@ -33,6 +32,10 @@ final class NotificationRegistrarProvider(
       .groupBy(_.hubClient.notificationHubConnection)
       .values
       .flatMap(_.headOption)(breakOut)
+
+
+  override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
+    registrarFor(registration.platform)
 
   override def registrarFor(platform: Platform): Either[NotificationsError, NotificationRegistrar] = platform match {
     case Android => Right(gcmRegistrar)
