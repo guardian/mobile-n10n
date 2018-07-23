@@ -14,7 +14,7 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
 
     Platform.fromString(legacyRegistration.device.platform).fold(unsupportedPlatform) { platform =>
       Right(Registration(
-        deviceToken = legacyRegistration.device.pushToken,
+        deviceToken = AzureToken(legacyRegistration.device.pushToken),
         platform = platform,
         topics = topics(legacyRegistration),
         buildTier = Some(legacyRegistration.device.buildTier)

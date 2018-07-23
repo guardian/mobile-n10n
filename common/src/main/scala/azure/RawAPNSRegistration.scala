@@ -5,7 +5,7 @@ import models.Registration
 object RawAPNSRegistration {
   def fromMobileRegistration(m: Registration): RawAPNSRegistration = {
     RawAPNSRegistration(
-      deviceToken = m.deviceToken,
+      deviceToken = m.deviceToken.azureToken,
       tags = Tags()
         .withTopics(m.topics)
         .asSet

@@ -23,8 +23,9 @@ class NotificationHubRegistrar(
   override val providerIdentifier = "azure"
   val logger = Logger(classOf[NotificationHubRegistrar])
 
-  override def register(pushToken: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
-    findRegistrationResponses(pushToken).flatMap {
+
+  override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = {
+    findRegistrationResponses(deviceToken.azureToken).flatMap {
       case Right(Nil) => createRegistration(registration)
       case Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
       case Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
