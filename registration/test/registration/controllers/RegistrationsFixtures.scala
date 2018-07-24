@@ -10,6 +10,7 @@ import play.api.{BuiltInComponents, Configuration => PlayConfig}
 import play.api.libs.ws.WSClient
 import providers.ProviderError
 import registration.RegistrationApplicationComponents
+import registration.services.NotificationRegistrar.RegistrarResponse
 import registration.services.topic.{TopicValidator, TopicValidatorError}
 import registration.services._
 
@@ -29,12 +30,13 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
       ))
     }
 
-    override def unregister(pushToken: String): Future[Either[ProviderError, Unit]] =
+
+    override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] =
       Future.successful(Right(()))
 
-    override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
+    override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = ???
 
-    override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = ???
+    override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = ???
 
     override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
   }
@@ -72,7 +74,8 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       ))
     }
 
-    override def unregister(pushToken: String): Future[Either[ProviderError, Unit]] =
+
+    override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] =
       Future.successful(Right(()))
 
     override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
@@ -84,8 +87,8 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       Future.successful(Right(Paginated(selected.toList, None)))
     }
 
-    override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
-      val selected = registrations.filter(_.deviceToken.azureToken == pushToken).map(StoredRegistration.fromRegistration)
+    override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
+      val selected = registrations.filter(_.deviceToken.azureToken == deviceToken.azureToken).map(StoredRegistration.fromRegistration)
       Future.successful(Right(selected.toList))
     }
 
