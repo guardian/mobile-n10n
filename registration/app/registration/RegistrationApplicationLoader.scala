@@ -25,6 +25,7 @@ import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsR
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
 import _root_.models.NewsstandShardConfig
+import registration.services.fcm.FcmRegistrar
 
 class RegistrationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(context: Context) : BuiltInComponents = new RegistrationApplicationComponents(context)
@@ -57,6 +58,7 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
   lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker)
+  lazy val fcmNotificationRegistrar: FcmRegistrar = new FcmRegistrar
 
   lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
   lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
