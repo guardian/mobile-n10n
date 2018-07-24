@@ -47,3 +47,26 @@ final class NotificationRegistrarProvider(
   def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T] =
     uniqueProviders.map(fn)
 }
+
+
+class MigratingRegistrarProvider(
+  notificationRegistrarProvider: NotificationRegistrarProvider,
+  fcmRegistrar: FcmRegistrar
+)(implicit executionContext: ExecutionContext) extends RegistrarProvider {
+  override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] = registration.deviceToken match {
+    case AzureToken(_) => notificationRegistrarProvider.registrarFor(registration)
+    case FcmToken(_) => Right(fcmRegistrar)
+    case BothTokens(_, _) =>
+      notificationRegistrarProvider
+        .registrarFor(registration)
+        .map(legacyRegistrar => new MigratingRegistrar(fcmRegistrar, legacyRegistrar))
+  }
+
+  // delegate to the registrar provider
+  override def registrarFor(platform: Platform): Either[NotificationsError, NotificationRegistrar] =
+    notificationRegistrarProvider.registrarFor(platform)
+
+  // delegate to the registrar provider
+  override def withAllRegistrars[T](fn: NotificationRegistrar => T): List[T] =
+    notificationRegistrarProvider.withAllRegistrars(fn)
+}

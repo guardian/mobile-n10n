@@ -5,6 +5,8 @@ case class Paginated[T](results: List[T], cursor: Option[Cursor])
 object Paginated {
   import play.api.libs.json._
 
+  def empty[T]: Paginated[T] = Paginated(results = List.empty[T], cursor = None)
+
   implicit def reads[T](implicit reader: Reads[List[T]]): Reads[Paginated[T]] = new Reads[Paginated[T]] {
     def reads(json: JsValue): JsResult[Paginated[T]] = for {
       results <- (json \ "results").validate[List[T]](reader)
