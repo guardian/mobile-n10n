@@ -11,8 +11,8 @@ import scala.concurrent.Future
 class FcmRegistrar extends NotificationRegistrar {
   override val providerIdentifier: String = "FCM"
   override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = ???
-  override def unregister(pushToken: String): RegistrarResponse[Unit] = ???
+  override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = ???
   override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
-  override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = ???
+  override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = ???
   override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
 }
