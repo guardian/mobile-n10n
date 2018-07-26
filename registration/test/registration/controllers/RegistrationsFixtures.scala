@@ -10,6 +10,7 @@ import play.api.{BuiltInComponents, Configuration => PlayConfig}
 import play.api.libs.ws.WSClient
 import providers.ProviderError
 import registration.RegistrationApplicationComponents
+import registration.services.NotificationRegistrar.RegistrarResponse
 import registration.services.topic.{TopicValidator, TopicValidatorError}
 import registration.services._
 

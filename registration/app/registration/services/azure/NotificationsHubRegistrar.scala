@@ -13,6 +13,7 @@ import cats.data.EitherT
 import cats.syntax.either._
 import cats.instances.future._
 import models.pagination.{Paginated, ProviderCursor}
+import registration.services.NotificationRegistrar.RegistrarResponse
 
 class NotificationHubRegistrar(
   val hubClient: NotificationHubClient,

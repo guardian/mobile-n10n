@@ -1,10 +1,10 @@
 package registration.services.fcm
 
-import error.NotificationsError
 import models.pagination.Paginated
 import models._
 import providers.ProviderError
-import registration.services.{NotificationRegistrar, RegistrarProvider, RegistrationResponse, StoredRegistration}
+import registration.services.NotificationRegistrar.RegistrarResponse
+import registration.services.{NotificationRegistrar, RegistrationResponse, StoredRegistration}
 
 import scala.concurrent.Future
 
