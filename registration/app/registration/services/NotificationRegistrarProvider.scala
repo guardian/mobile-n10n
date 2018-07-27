@@ -7,6 +7,7 @@ import registration.services.azure._
 import scala.collection.breakOut
 import scala.concurrent.ExecutionContext
 import cats.implicits._
+import registration.services.fcm.FcmRegistrar
 
 trait RegistrarProvider {
   def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar]
@@ -20,15 +21,19 @@ case class UnsupportedPlatform(platform: String) extends RequestError {
   override def reason: String = s"Platform '$platform' is not supported"
 }
 
+case class MalformattedRegistration(description: String) extends RequestError {
+  override def reason: String = s"Malformatred request: $reason"
+}
+
 final class NotificationRegistrarProvider(
   gcmRegistrar: GCMNotificationRegistrar,
   apnsRegistrar: APNSNotificationRegistrar,
   newsstandRegistrar: NewsstandNotificationRegistrar)
   (implicit executionContext: ExecutionContext) extends RegistrarProvider {
 
-  private val registrars = List(gcmRegistrar, apnsRegistrar, newsstandRegistrar)
-  private val uniqueProviders: List[NotificationRegistrar] =
-    registrars
+  private val azureBasedRegistrars = List(gcmRegistrar, apnsRegistrar, newsstandRegistrar)
+  private val uniqueAzureProviders: List[NotificationRegistrar] =
+    azureBasedRegistrars
       .groupBy(_.hubClient.notificationHubConnection)
       .values
       .flatMap(_.headOption)(breakOut)
@@ -45,28 +50,28 @@ final class NotificationRegistrarProvider(
   }
 
   def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T] =
-    uniqueProviders.map(fn)
+    uniqueAzureProviders.map(fn)
 }
 
 
 class MigratingRegistrarProvider(
-  notificationRegistrarProvider: NotificationRegistrarProvider,
+  standardRegistrarProvider: RegistrarProvider,
   fcmRegistrar: FcmRegistrar
 )(implicit executionContext: ExecutionContext) extends RegistrarProvider {
   override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] = registration.deviceToken match {
-    case AzureToken(_) => notificationRegistrarProvider.registrarFor(registration)
+    case AzureToken(_) => standardRegistrarProvider.registrarFor(registration)
     case FcmToken(_) => Right(fcmRegistrar)
     case BothTokens(_, _) =>
-      notificationRegistrarProvider
+      standardRegistrarProvider
         .registrarFor(registration)
         .map(legacyRegistrar => new MigratingRegistrar(fcmRegistrar, legacyRegistrar))
   }
 
   // delegate to the registrar provider
   override def registrarFor(platform: Platform): Either[NotificationsError, NotificationRegistrar] =
-    notificationRegistrarProvider.registrarFor(platform)
+    standardRegistrarProvider.registrarFor(platform)
 
   // delegate to the registrar provider
   override def withAllRegistrars[T](fn: NotificationRegistrar => T): List[T] =
-    notificationRegistrarProvider.withAllRegistrars(fn)
+    standardRegistrarProvider.withAllRegistrars(fn)
 }
