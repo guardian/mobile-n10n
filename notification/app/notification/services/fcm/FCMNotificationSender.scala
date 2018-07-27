@@ -55,11 +55,10 @@ class FCMNotificationSender(
   }
 
   def setDestination(messageBuilder: Message.Builder, destination: List[Topic]): Message.Builder = {
-    def topicToFirebase(topic: Topic): String = s"${topic.`type`}/${topic.name}".replaceAll("/", "%")
     destination match {
-      case topic :: Nil => messageBuilder.setTopic(topicToFirebase(topic))
+      case topic :: Nil => messageBuilder.setTopic(topic.toFirebaseString)
       case topics: List[Topic] =>
-        messageBuilder.setCondition(topics.map(topic => s"'${topicToFirebase(topic)}' in topics").mkString("||"))
+        messageBuilder.setCondition(topics.map(topic => s"'${topic.toFirebaseString}' in topics").mkString("||"))
     }
     messageBuilder
   }
