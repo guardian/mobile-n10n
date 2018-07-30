@@ -51,7 +51,7 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
 
   val credentialsProvider = new MobileAwsCredentialsProvider()
 
-  lazy val mainController = wire[Main]
+  lazy val mainController = new Main(migratingRegistrarProvider, topicValidator, legacyRegistrationConverter, legacyNewsstandRegistrationConverter, appConfig, controllerComponents)
   lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
     val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1, credentialsProvider), appConfig.dynamoTopicsTableName)
     val batching = new BatchingTopicSubscriptionsRepository(underlying)
@@ -74,7 +74,8 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
 
   lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
-  lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
+  lazy val registrarProvider: RegistrarProvider = new NotificationRegistrarProvider(gcmNotificationRegistrar, apnsNotificationRegistrar, newsstandNotificationRegistrar)
+  lazy val migratingRegistrarProvider: RegistrarProvider = new MigratingRegistrarProvider(registrarProvider, fcmNotificationRegistrar)
   lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val fcmNotificationRegistrar: FcmRegistrar = wire[FcmRegistrar]
@@ -91,7 +92,7 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   }
   lazy val topicValidator: TopicValidator = wire[AuditorTopicValidator]
   lazy val legacyRegistrationConverter = wire[LegacyRegistrationConverter]
-  lazy val legacyNewsstandRegistrationConverter = wire[LegacyNewsstandRegistrationConverter]
+  lazy val legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter = wire[LegacyNewsstandRegistrationConverter]
 
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
