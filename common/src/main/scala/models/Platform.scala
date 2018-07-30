@@ -11,7 +11,7 @@ case object Newsstand extends Platform { override def toString: String = "newsst
 case object WindowsMobile extends Platform { override def toString: String = "windows-mobile" }
 
 object Platform {
-  def fromString(s: String): Option[Platform] = PartialFunction.condOpt(s) {
+  def fromString(s: String): Option[Platform] = PartialFunction.condOpt(s.toLowerCase) {
     case "android" => Android
     case "ios" => iOS
     case "newsstand" => Newsstand

@@ -1,5 +1,7 @@
 package registration
 
+import java.io.ByteArrayInputStream
+
 import _root_.controllers.AssetsComponents
 import akka.actor.ActorSystem
 import auditor.{AuditorGroup, FootballMatchAuditor, LiveblogAuditor, TimeExpiringAuditor}
@@ -25,7 +27,12 @@ import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsR
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
 import _root_.models.NewsstandShardConfig
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.{FirebaseApp, FirebaseOptions}
 import registration.services.fcm.FcmRegistrar
+
+import scala.concurrent.Future
 
 class RegistrationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(context: Context) : BuiltInComponents = new RegistrationApplicationComponents(context)
@@ -51,6 +58,18 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
     batching.scheduleFlush(appConfig.dynamoTopicsFlushInterval)
     batching
   }
+
+  lazy val firebaseMessaging = {
+    val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
+      .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(appConfig.firebaseServiceAccountKey.getBytes)))
+      .setDatabaseUrl(appConfig.firebaseDatabaseUrl)
+      .build
+
+    val fApp = FirebaseApp.initializeApp(firebaseOptions)
+    applicationLifecycle.addStopHook(() => Future(fApp.delete()))
+    FirebaseMessaging.getInstance(fApp)
+  }
+
   lazy val subscriptionTracker: SubscriptionTracker = wire[SubscriptionTracker]
 
   lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
@@ -58,7 +77,7 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val registrarProvider: RegistrarProvider = wire[NotificationRegistrarProvider]
   lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker)
-  lazy val fcmNotificationRegistrar: FcmRegistrar = new FcmRegistrar
+  lazy val fcmNotificationRegistrar: FcmRegistrar = wire[FcmRegistrar]
 
   lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
   lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)

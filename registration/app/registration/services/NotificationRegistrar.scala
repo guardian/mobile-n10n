@@ -14,7 +14,13 @@ object RegistrationResponse {
   implicit val jf = Json.format[RegistrationResponse]
 }
 
-case class StoredRegistration(deviceId: String, platform: Platform, tagIds: Set[String], topics: Set[Topic])
+case class StoredRegistration(
+  deviceId: String,
+  platform: Platform,
+  tagIds: Set[String],
+  topics: Set[Topic],
+  provider: String
+)
 
 object StoredRegistration {
   import play.api.libs.json._
@@ -26,7 +32,8 @@ object StoredRegistration {
       deviceId = registration.deviceToken.azureToken,
       platform = registration.platform,
       tagIds = registration.topics.map(_.id),
-      topics = registration.topics
+      topics = registration.topics,
+      provider = "unknown"
     )
   }
 }
