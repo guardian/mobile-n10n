@@ -1,11 +1,10 @@
 GET         /healthcheck                                    registration.controllers.Main.healthCheck
 
 GET         /registrations                                  registration.controllers.Main.registrations(selector: RegistrationsSelector)
+DELETE      /registrations                                  registration.controllers.Main.unregister(selector: RegistrationsByDeviceToken)
 
 # Legacy Android/iOS API registration endpoint
 POST        /legacy/device/register                         registration.controllers.Main.legacyRegister
 
 # Legacy Newsstand registration endpoint
 POST        /legacy/newsstand/register                      registration.controllers.Main.newsstandRegister
-
-DELETE      /azure/registrations/:platform/:azureToken      registration.controllers.Main.unregister(platform: Platform, azureToken: String)
