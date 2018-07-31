@@ -17,7 +17,8 @@ object Topic {
   implicit val jf = Json.format[Topic]
 
   def fromString(s: String): Either[String, Topic] = {
-    val (topicType, topicName) = s.replaceAll("%", "/").splitAt(s.indexOf("/"))
+    val formattedTopicString = s.replaceAll("%", "/")
+    val (topicType, topicName) = formattedTopicString.splitAt(formattedTopicString.indexOf("/"))
     for {
       tt <- Either.fromOption(TopicType.fromString(topicType), s"Invalid topic type $topicType")
       tn = topicName.drop(1)
