@@ -71,7 +71,9 @@ class FcmRegistrar(
     val response = Future(f(firebaseMessaging))(fcmExecutionContext)
     response.map { r =>
       if (r.getSuccessCount != 1) {
-        Left(FcmProviderError(s"Failed to $description"))
+        val errors = r.getErrors.asScala.toList.map(_.getReason).mkString(",")
+        logger.error(s"Failed to $description, encountered following errors: $errors")
+        Left(FcmProviderError(s"Failed to $description, encountered following errors: $errors"))
       } else Right(())
     } recover {
       case NonFatal(e) =>
