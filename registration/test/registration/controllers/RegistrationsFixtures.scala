@@ -6,13 +6,14 @@ import models.TopicTypes.{Breaking, FootballMatch}
 import models._
 import models.pagination.Paginated
 import play.api.ApplicationLoader.Context
-import play.api.{BuiltInComponents, Configuration => PlayConfig}
+import play.api.{BuiltInComponents, Logger, Configuration => PlayConfig}
 import play.api.libs.ws.WSClient
 import providers.ProviderError
 import registration.RegistrationApplicationComponents
 import registration.services.NotificationRegistrar.RegistrarResponse
 import registration.services.topic.{TopicValidator, TopicValidatorError}
 import registration.services._
+import registration.services.fcm.FcmRegistrar
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -96,10 +97,11 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
   }
 
   lazy val fakeRegistrarProvider = new RegistrarProvider {
-    override def registrarFor(platform: Platform): Either[NotificationsError, NotificationRegistrar] = Right(fakeNotificationRegistrar)
 
+    override def registrarFor(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar] = Right(fakeNotificationRegistrar)
 
-    override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] = registrarFor(registration.platform)
+    override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
+      registrarFor(registration.platform, registration.deviceToken)
 
     override def withAllRegistrars[T](fn: (NotificationRegistrar) => T): List[T] = List(fn(fakeNotificationRegistrar))
   }
@@ -108,6 +110,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     new RegistrationApplicationComponents(context)  {
       override lazy val topicValidator = fakeTopicValidator
       override lazy val registrarProvider: RegistrarProvider = fakeRegistrarProvider
+      override lazy val migratingRegistrarProvider: RegistrarProvider = fakeRegistrarProvider
       override lazy val appConfig = new Configuration(PlayConfig.empty) {
         override lazy val defaultTimeout = 1.seconds
         override lazy val newsstandShards: Int = 10
