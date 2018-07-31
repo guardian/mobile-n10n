@@ -78,7 +78,12 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val migratingRegistrarProvider: RegistrarProvider = new MigratingRegistrarProvider(registrarProvider, fcmNotificationRegistrar)
   lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker)
-  lazy val fcmNotificationRegistrar: FcmRegistrar = wire[FcmRegistrar]
+  lazy val fcmNotificationRegistrar: FcmRegistrar = new FcmRegistrar(
+    firebaseMessaging = firebaseMessaging,
+    ws = wsClient,
+    configuration = appConfig,
+    fcmExecutionContext = actorSystem.dispatchers.lookup("fcm-io") // FCM calls are blocking
+  )
 
   lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
   lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
