@@ -6,7 +6,6 @@ import org.specs2.mock.Mockito
 import play.api.libs.json.Json
 import play.api.test.{FakeRequest, PlaySpecification}
 import registration.services.topic.TopicValidator
-import registration.services._
 
 import scala.concurrent.Future
 import cats.implicits._
@@ -60,7 +59,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
     }
 
     "return 204 when unregistering" in new RegistrationsContext {
-      val Some(register) = route(app, FakeRequest(DELETE, "/azure/registrations/ios/4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4"))
+      val Some(register) = route(app, FakeRequest(DELETE, "/registrations?platform=ios&azureToken=4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4"))
       status(register) must equalTo(NO_CONTENT)
     }
   }
