@@ -128,7 +128,7 @@ class AndroidConfigConverterSpec extends Specification {
         "awayTeamScore" -> "0",
         "awayTeamText" -> "team1 message",
         "currentMinute" -> "",
-        "important" -> "Major",
+        "importance" -> "Major",
         "matchStatus" -> "1",
         "matchId" -> "123456",
         "matchInfoUri" -> "https://some.invalid.url/detail",

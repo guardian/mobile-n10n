@@ -157,7 +157,7 @@ class GCMPushConverter(conf: Configuration) extends AzurePushConverter {
       "awayTeamScore" -> Some(matchStatusAlert.awayTeamScore.toString),
       "awayTeamText" -> Some(matchStatusAlert.awayTeamMessage),
       "currentMinute" -> Some(""),
-      "important" -> Some(matchStatusAlert.importance.toString),
+      "importance" -> Some(matchStatusAlert.importance.toString),
       "matchStatus" -> Some(matchStatusAlert.matchStatus),
       "matchId" -> Some(matchStatusAlert.matchId),
       "matchInfoUri" -> Some(matchStatusAlert.matchInfoUri.toString),
