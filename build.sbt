@@ -51,7 +51,7 @@ lazy val common = project
       "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % "1.5.0",
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.285",
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.377",
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
       "ai.x" %% "play-json-extensions" % "0.10.0"
     ),
@@ -67,7 +67,7 @@ lazy val commonscheduledynamodb = project
   .settings(LocalDynamoDBScheduleLambda.settings)
   .settings(List(
     libraryDependencies ++= List(
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.285",
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.377",
       specs2 % Test
 
     ),
@@ -116,7 +116,7 @@ lazy val schedulelambda = project
   .enablePlugins(RiffRaffArtifact)
   .settings {
     val simpleConfigurationVersion: String = "1.4.3"
-    val awsVersion: String = "1.11.320"
+    val awsVersion: String = "1.11.377"
     val specsVersion: String = "4.0.3"
     val log4j2Version: String = "2.10.0"
     val byteBuddyVersion = "1.8.8"
