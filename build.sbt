@@ -6,7 +6,7 @@ val projectVersion = "1.0-latest"
 
 
 organization := "com.gu"
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.6"
 
 scalacOptions in ThisBuild ++= Seq(
   "-deprecation",
@@ -43,12 +43,12 @@ lazy val common = project
       ws,
       // be careful upgrading the following, recent azure-servicebus version rely on an alpha of slf4j, breaking play logging...
       "com.microsoft.azure" % "azure-servicebus" % "0.9.8",
-      "com.google.firebase" % "firebase-admin" % "6.1.0",
+      "com.google.firebase" % "firebase-admin" % "6.3.0",
       "org.typelevel" %% "cats-core" % "1.0.1",
       "joda-time" % "joda-time" % "2.9.9",
-      "com.typesafe.play" %% "play-json" % "2.6.8",
-      "com.typesafe.play" %% "play-json-joda" % "2.6.8",
-      "com.typesafe.play" %% "play-logback" % "2.6.11",
+      "com.typesafe.play" %% "play-json" % "2.6.9",
+      "com.typesafe.play" %% "play-json-joda" % "2.6.9",
+      "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % "1.5.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.285",
