@@ -115,7 +115,7 @@ lazy val schedulelambda = project
   .dependsOn(commonscheduledynamodb)
   .enablePlugins(RiffRaffArtifact)
   .settings {
-    val simpleConfigurationVersion: String = "1.4.3"
+    val simpleConfigurationVersion: String = "1.5.0"
     val awsVersion: String = "1.11.377"
     val specsVersion: String = "4.0.3"
     val log4j2Version: String = "2.10.0"
