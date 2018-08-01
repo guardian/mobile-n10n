@@ -65,7 +65,7 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
 
     FirebaseAndroidNotification(
       Map(
-        Keys.NotificationType -> AndroidMessageTypes.Custom,
+        Keys.NotificationType -> breakingNews.`type`.value,
         Keys.UniqueIdentifier -> breakingNews.id.toString,
         Keys.Type -> AndroidMessageTypes.Custom,
         Keys.Title -> breakingNews.title,
@@ -119,7 +119,7 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
       "awayTeamScore" -> matchStatusAlert.awayTeamScore.toString,
       "awayTeamText" -> matchStatusAlert.awayTeamMessage,
       "currentMinute" -> "",
-      "important" -> matchStatusAlert.importance.toString,
+      "importance" -> matchStatusAlert.importance.toString,
       "matchStatus" -> matchStatusAlert.matchStatus,
       "matchId" -> matchStatusAlert.matchId,
       "matchInfoUri" -> matchStatusAlert.matchInfoUri.toString

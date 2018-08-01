@@ -36,7 +36,7 @@ class AndroidConfigConverterSpec extends Specification {
 
       data shouldEqual Map(
         Keys.UniqueIdentifier -> "4c261110-4672-4451-a5b8-3422c6839c42",
-        Keys.NotificationType -> "custom",
+        Keys.NotificationType -> "news",
         Keys.Type -> "custom",
         Keys.Title -> "Test notification",
         Keys.Ticker -> "The message",
@@ -128,7 +128,7 @@ class AndroidConfigConverterSpec extends Specification {
         "awayTeamScore" -> "0",
         "awayTeamText" -> "team1 message",
         "currentMinute" -> "",
-        "important" -> "Major",
+        "importance" -> "Major",
         "matchStatus" -> "1",
         "matchId" -> "123456",
         "matchInfoUri" -> "https://some.invalid.url/detail",
