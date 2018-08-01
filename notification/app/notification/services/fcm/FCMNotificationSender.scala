@@ -39,7 +39,6 @@ class FCMNotificationSender(
   def buildAndSendMessage(push: Push, androidConfig: Option[AndroidConfig], apnsConfig: Option[ApnsConfig]): Future[SenderResult] = {
 
     val messageBuilder = Message.builder()
-      .setNotification(new Notification(push.notification.title, push.notification.message))
 
     setDestination(messageBuilder, push.destination.toList)
 

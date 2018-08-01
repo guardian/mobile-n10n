@@ -301,7 +301,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
       "awayTeamScore" -> "1",
       "awayTeamText" -> "Andre Gray 90 +2:41 Pen",
       "currentMinute" -> "", // TODO: 90:0
-      "important" -> "Major",
+      "importance" -> "Major",
       "matchStatus" -> "P",
       "matchId" -> "1000",
       "matchInfoUri" -> "https://mobile.guardianapis.com/sport/football/match-info/3955232",
