@@ -15,7 +15,7 @@ scalacOptions in ThisBuild ++= Seq(
   "-language:postfixOps",
   "-language:implicitConversions")
 
-val minJacksonVersion: String = "2.8.6"
+val minJacksonVersion: String = "2.8.9"
 val minJacksonLibs = Seq(
   "com.fasterxml.jackson.core" % "jackson-core" % minJacksonVersion,
   "com.fasterxml.jackson.core" % "jackson-databind" % minJacksonVersion,
