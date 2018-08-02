@@ -15,6 +15,14 @@ scalacOptions in ThisBuild ++= Seq(
   "-language:postfixOps",
   "-language:implicitConversions")
 
+val minJacksonVersion: String = "2.8.6"
+val minJacksonLibs = Seq(
+  "com.fasterxml.jackson.core" % "jackson-core" % minJacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-databind" % minJacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-annotations" % minJacksonVersion,
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion
+)
+
 val standardSettings = Seq[Setting[_]](
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
@@ -55,6 +63,7 @@ lazy val common = project
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
       "ai.x" %% "play-json-extensions" % "0.10.0"
     ),
+    libraryDependencies ++= minJacksonLibs,
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
@@ -71,6 +80,7 @@ lazy val commonscheduledynamodb = project
       specs2 % Test
 
     ),
+    libraryDependencies ++= minJacksonLibs,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
     testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
     testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
