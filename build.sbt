@@ -69,7 +69,9 @@ lazy val common = project
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
     testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
     testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
-    testOptions in Test += dynamoDBLocalTestCleanup.value
+    testOptions in Test += dynamoDBLocalTestCleanup.value,
+    // the following option is to allow tests using wsClient such as NotificationHubClientSpec
+    testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "sequential", "true")
   )
 
 lazy val commonscheduledynamodb = project
