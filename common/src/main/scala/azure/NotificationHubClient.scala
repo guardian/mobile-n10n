@@ -86,15 +86,24 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
           .addHttpHeaders("ServiceBusNotification-Format" -> rawPush.format)
           .addHttpHeaders(serviceBusTags: _*)
       ).flatMap {
-        case r if r.isSuccess =>
-          Future.successful(Right(r.header("Location")))
-        case r =>
-          val error = XmlParser.parseError(r)
+        case response if response.isSuccess =>
+          Future.successful(Right(response.header("Location")))
+        case response =>
+          val error = XmlParser.parseError(response)
+          // retry three times, fail on the third
           if (count < 3 && error.reason.contains("Azure Notifications Hub Server Busy")) {
-            logger.error(s"Unable to push notification, try $count/3. Got response code: ${r.status} got the following error: $error for the notification $rawPush")
+            logger.error(
+              s"Unable to push notification, try $count/3. " +
+                s"Got response code: ${response.status} " +
+                s"got the following error: $error for the notification $rawPush"
+            )
             retry(count + 1)
           } else {
-            logger.error(s"Unable to push notification, response code: ${r.status} got the following error: $error for the notification $rawPush")
+            logger.error(
+              s"Unable to push notification, " +
+                s"response code: ${response.status} " +
+                s"got the following error: $error for the notification $rawPush"
+            )
             Future.successful(Left(error))
           }
       }

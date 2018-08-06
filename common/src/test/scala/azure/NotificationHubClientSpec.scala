@@ -1,11 +1,11 @@
 package azure
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import play.api.BuiltInComponents
-import play.api.libs.ws.ahc.AhcWSResponse
-import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.test._
 import play.api.mvc._
 import play.api.routing.sird._
@@ -13,7 +13,6 @@ import play.core.server.Server
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-import scala.xml.Elem
 
 class NotificationHubClientSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
 
@@ -44,11 +43,11 @@ class NotificationHubClientSpec(implicit ee: ExecutionEnv) extends Specification
 
     "try to send a notification twice if the first try fails" in {
       val rawPush = GCMRawPush(GCMBody(data = Map.empty), None)
-      var tryCount = 0
+      val tryCount = new AtomicInteger(0)
       val result = withHubClient { cs => {
         case POST(p"/messages/") =>
-          tryCount += 1
-          if (tryCount <= 1) {
+          tryCount.incrementAndGet()
+          if (tryCount.intValue <= 1) {
             cs.defaultActionBuilder(Results.ServiceUnavailable(errorResponse))
           } else {
             cs.defaultActionBuilder(Results.Ok)
@@ -62,11 +61,11 @@ class NotificationHubClientSpec(implicit ee: ExecutionEnv) extends Specification
 
     "Fails after trying three times" in {
       val rawPush = GCMRawPush(GCMBody(data = Map.empty), None)
-      var tryCount = 0
+      var tryCount = new AtomicInteger(0)
       val result = withHubClient { cs => {
         case POST(p"/messages/") =>
-          tryCount += 1
-          if (tryCount <= 3) {
+          tryCount.incrementAndGet()
+          if (tryCount.intValue <= 3) {
             cs.defaultActionBuilder(Results.ServiceUnavailable(errorResponse))
           } else {
             cs.defaultActionBuilder(Results.Ok)
