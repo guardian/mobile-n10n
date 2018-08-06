@@ -77,17 +77,38 @@ class NotificationHubClient(val notificationHubConnection: NotificationHubConnec
   }
 
   def sendNotification(rawPush: RawPush): Future[HubResult[Option[String]]] = {
-    val serviceBusTags = rawPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
-    logger.debug(s"Sending Raw Notification: $rawPush")
-    rawPush.post(
-      request(Endpoints.Messages)
-        .addHttpHeaders(rawPush.extraHeaders: _*)
-        .addHttpHeaders("ServiceBusNotification-Format" -> rawPush.format)
-        .addHttpHeaders(serviceBusTags: _*)
-    ).map {
-      case r if r.isSuccess => Right(r.header("Location"))
-      case r => Left(XmlParser.parseError(r))
+    def retry(count: Int): Future[HubResult[Option[String]]] = {
+      val serviceBusTags = rawPush.tagQuery.map(tagQuery => "ServiceBusNotification-Tags" -> tagQuery).toList
+      logger.debug(s"Sending Raw Notification: $rawPush")
+      rawPush.post(
+        request(Endpoints.Messages)
+          .addHttpHeaders(rawPush.extraHeaders: _*)
+          .addHttpHeaders("ServiceBusNotification-Format" -> rawPush.format)
+          .addHttpHeaders(serviceBusTags: _*)
+      ).flatMap {
+        case response if response.isSuccess =>
+          Future.successful(Right(response.header("Location")))
+        case response =>
+          val error = XmlParser.parseError(response)
+          // retry three times, fail on the third
+          if (count < 3 && error.reason.contains("Azure Notifications Hub Server Busy")) {
+            logger.error(
+              s"Unable to push notification, try $count/3. " +
+                s"Got response code: ${response.status} " +
+                s"got the following error: $error for the notification $rawPush"
+            )
+            retry(count + 1)
+          } else {
+            logger.error(
+              s"Unable to push notification, " +
+                s"response code: ${response.status} " +
+                s"got the following error: $error for the notification $rawPush"
+            )
+            Future.successful(Left(error))
+          }
+      }
     }
+    retry(1)
   }
 
   private def request(path: String, queryParams: Map[String, String] = Map.empty) = {
