@@ -103,19 +103,26 @@ package object querystringbinders {
 
   implicit def qsbindableRegistrationsByDeviceToken: QueryStringBindable[RegistrationsByDeviceToken] = new QueryStringBindable[RegistrationsByDeviceToken] {
     override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, RegistrationsByDeviceToken]] = {
-      val optEitherPlatform = qsbindablePlatform.bind("platform", params)
-      val optEitherDeviceToken = QueryStringBindable.bindableString.bind("azureToken", params)
-      val optEitherFirebaseToken = QueryStringBindable.bindableString.bind("firebaseToken", params)
 
-      condOpt((optEitherPlatform, optEitherDeviceToken, optEitherFirebaseToken)) {
-        case (Some(Right(platform)), Some(Right(azureToken)), Some(Right(fcmToken))) =>
-          Right(RegistrationsByDeviceToken(platform, BothTokens(azureToken, fcmToken)))
-        case (Some(Right(platform)), Some(Right(azureToken)), _) =>
-          Right(RegistrationsByDeviceToken(platform, AzureToken(azureToken)))
-        case (Some(Right(platform)), _, Some(Right(fcmToken))) =>
-          Right(RegistrationsByDeviceToken(platform, FcmToken(fcmToken)))
-        case (Some(Right(platform)), _, _) => Left("Missing parameter azureToken or firebaseToken")
-        case _ => Left("Missing parameter: platform")
+      def toRegistrationByDevice(platform: Platform): Option[Either[String, RegistrationsByDeviceToken]] = {
+
+        val optEitherAzureToken = QueryStringBindable.bindableString.bind("azureToken", params)
+        val optEitherFirebaseToken = QueryStringBindable.bindableString.bind("firebaseToken", params)
+
+        condOpt((optEitherAzureToken, optEitherFirebaseToken)) {
+          case (Some(Right(azureToken)), Some(Right(fcmToken))) =>
+            Right(RegistrationsByDeviceToken(platform, BothTokens(azureToken, fcmToken)))
+          case (Some(Right(azureToken)), _) =>
+            Right(RegistrationsByDeviceToken(platform, AzureToken(azureToken)))
+          case (_, Some(Right(fcmToken))) =>
+            Right(RegistrationsByDeviceToken(platform, FcmToken(fcmToken)))
+          case (_, _) => Left("Missing parameter azureToken or firebaseToken")
+        }
+      }
+
+      qsbindablePlatform.bind("platform", params) match {
+        case Some(Right(platform)) => toRegistrationByDevice(platform)
+        case _ => Some(Left("Missing or invalid parameter: platform"))
       }
     }
 
