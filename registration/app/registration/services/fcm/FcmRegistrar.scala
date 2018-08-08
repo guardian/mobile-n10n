@@ -43,7 +43,7 @@ class FcmRegistrar(
         for {
           topicMap <- (json \ "rel" \ "topics").validateOpt[Map[String, JsObject]]
           platform <- (json \ "platform").validate[Platform]
-          topics <- Topic.fromStrings(topicMap.getOrElse(Map.empty).keys.toList).fold(JsError.apply, t => JsSuccess.apply(t))
+          topics = Topic.fromStringsIgnoringErrors(topicMap.getOrElse(Map.empty).keys.toList)
         } yield Instance(topics, platform)
       }
     }

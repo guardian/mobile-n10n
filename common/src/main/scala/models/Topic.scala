@@ -25,9 +25,7 @@ object Topic {
     } yield Topic(tt, tn)
   }
 
-  def fromStrings(strings: List[String]): Either[String, List[Topic]] = {
-    // partially applied type to make the traverse type signature happy
-    type EitherString[T] = Either[String, T]
-    strings.traverse[EitherString, Topic](fromString)
+  def fromStringsIgnoringErrors(strings: List[String]): List[Topic] = {
+    strings.map(fromString).collect { case Right(topic) => topic}
   }
 }
