@@ -13,7 +13,7 @@ package object querystringbinders {
   sealed trait RegistrationsSelector
   case class RegistrationsByUdidParams(udid: UniqueDeviceIdentifier) extends RegistrationsSelector
   case class RegistrationsByTopicParams(topic: Topic, cursor: Option[CursorSet]) extends RegistrationsSelector
-  case class RegistrationsByDeviceToken(platform: Platform, deviceToken: String)extends RegistrationsSelector
+  case class RegistrationsByDeviceToken(platform: Platform, deviceToken: DeviceToken)extends RegistrationsSelector
 
   class Parsing[A](parse: String => Either[String, A], serialize: A => String, typeName: String)
     extends QueryStringBindable[A] {
@@ -103,25 +103,40 @@ package object querystringbinders {
 
   implicit def qsbindableRegistrationsByDeviceToken: QueryStringBindable[RegistrationsByDeviceToken] = new QueryStringBindable[RegistrationsByDeviceToken] {
     override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, RegistrationsByDeviceToken]] = {
-      val optEitherPlatform = qsbindablePlatform.bind("platform", params)
-      val optEitherDeviceToken = QueryStringBindable.bindableString.bind("deviceToken", params)
 
-      condOpt((optEitherPlatform, optEitherDeviceToken)) {
-        case (Some(eitherPlatform), Some(eitherDeviceToken)) =>
-          for {
-            platform <- eitherPlatform.right
-            deviceToken <- eitherDeviceToken.right
-          } yield {
-            RegistrationsByDeviceToken(platform, deviceToken)
-          }
+      def toRegistrationByDevice(platform: Platform): Option[Either[String, RegistrationsByDeviceToken]] = {
 
-        case (Some(_), None) => Left("Missing parameter: deviceToken")
-        case (None, Some(_)) => Left("Missing parameter: platform")
+        val optEitherAzureToken = QueryStringBindable.bindableString.bind("azureToken", params)
+        val optEitherFirebaseToken = QueryStringBindable.bindableString.bind("firebaseToken", params)
+
+        condOpt((optEitherAzureToken, optEitherFirebaseToken)) {
+          case (Some(Right(azureToken)), Some(Right(fcmToken))) =>
+            Right(RegistrationsByDeviceToken(platform, BothTokens(azureToken, fcmToken)))
+          case (Some(Right(azureToken)), _) =>
+            Right(RegistrationsByDeviceToken(platform, AzureToken(azureToken)))
+          case (_, Some(Right(fcmToken))) =>
+            Right(RegistrationsByDeviceToken(platform, FcmToken(fcmToken)))
+          case (_, _) => Left("Missing parameter azureToken or firebaseToken")
+        }
+      }
+
+      qsbindablePlatform.bind("platform", params) match {
+        case Some(Right(platform)) => toRegistrationByDevice(platform)
+        case _ => Some(Left("Missing or invalid parameter: platform"))
       }
     }
 
     override def unbind(key: String, value: RegistrationsByDeviceToken): String = {
-      s"${qsbindablePlatform.unbind("topic", value.platform)}&${QueryStringBindable.bindableString.unbind("deviceToken", value.deviceToken)}"
+      val platformParam = qsbindablePlatform.unbind("platform", value.platform)
+      val deviceTokenParam = value.deviceToken match {
+        case BothTokens(azureToken, fcmToken) =>
+          val azureParam = QueryStringBindable.bindableString.unbind("azureToken", azureToken)
+          val fcmParam = QueryStringBindable.bindableString.unbind("firebaseToken", fcmToken)
+          s"$azureParam&$fcmParam"
+        case AzureToken(azureToken) => QueryStringBindable.bindableString.unbind("azureToken", azureToken)
+        case FcmToken(fcmToken) => QueryStringBindable.bindableString.unbind("fcmToken", fcmToken)
+      }
+      s"$platformParam&$deviceTokenParam"
     }
   }
 

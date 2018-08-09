@@ -6,12 +6,14 @@ import models.TopicTypes.{Breaking, FootballMatch}
 import models._
 import models.pagination.Paginated
 import play.api.ApplicationLoader.Context
-import play.api.{BuiltInComponents, Configuration => PlayConfig}
+import play.api.{BuiltInComponents, Logger, Configuration => PlayConfig}
 import play.api.libs.ws.WSClient
 import providers.ProviderError
 import registration.RegistrationApplicationComponents
+import registration.services.NotificationRegistrar.RegistrarResponse
 import registration.services.topic.{TopicValidator, TopicValidatorError}
 import registration.services._
+import registration.services.fcm.FcmRegistrar
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -20,7 +22,7 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
   override lazy val fakeNotificationRegistrar: NotificationRegistrar = new NotificationRegistrar {
     override val providerIdentifier: String = "test"
 
-    override def register(deviceId: String, registration: Registration): Future[Either[ProviderError, RegistrationResponse]] = Future.successful {
+    override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = Future.successful {
       Thread.sleep(2000)
       Right(RegistrationResponse(
         deviceId = "deviceAA",
@@ -29,12 +31,13 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
       ))
     }
 
-    override def unregister(pushToken: String): Future[Either[ProviderError, Unit]] =
+
+    override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] =
       Future.successful(Right(()))
 
-    override def findRegistrations(topic: Topic, cursor: Option[String]): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
+    override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = ???
 
-    override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = ???
+    override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = ???
 
     override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
   }
@@ -63,7 +66,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
 
     private var registrations = List.empty[Registration]
 
-    override def register(deviceId: String, registration: Registration): Future[Either[ProviderError, RegistrationResponse]] = Future.successful {
+    override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = Future.successful {
       registrations = registration :: registrations
       Right(RegistrationResponse(
         deviceId = "deviceAA",
@@ -72,7 +75,8 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       ))
     }
 
-    override def unregister(pushToken: String): Future[Either[ProviderError, Unit]] =
+
+    override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] =
       Future.successful(Right(()))
 
     override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
@@ -84,8 +88,8 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       Future.successful(Right(Paginated(selected.toList, None)))
     }
 
-    override def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
-      val selected = registrations.filter(_.deviceId == pushToken).map(StoredRegistration.fromRegistration)
+    override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
+      val selected = registrations.filter(_.deviceToken.azureToken == deviceToken.azureToken).map(StoredRegistration.fromRegistration)
       Future.successful(Right(selected.toList))
     }
 
@@ -93,7 +97,11 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
   }
 
   lazy val fakeRegistrarProvider = new RegistrarProvider {
-    override def registrarFor(platform: Platform, buildTier: Option[String]): Either[NotificationsError, NotificationRegistrar] = Right(fakeNotificationRegistrar)
+
+    override def registrarFor(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar] = Right(fakeNotificationRegistrar)
+
+    override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
+      registrarFor(registration.platform, registration.deviceToken)
 
     override def withAllRegistrars[T](fn: (NotificationRegistrar) => T): List[T] = List(fn(fakeNotificationRegistrar))
   }
@@ -102,6 +110,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     new RegistrationApplicationComponents(context)  {
       override lazy val topicValidator = fakeTopicValidator
       override lazy val registrarProvider: RegistrarProvider = fakeRegistrarProvider
+      override lazy val migratingRegistrarProvider: RegistrarProvider = fakeRegistrarProvider
       override lazy val appConfig = new Configuration(PlayConfig.empty) {
         override lazy val defaultTimeout = 1.seconds
         override lazy val newsstandShards: Int = 10

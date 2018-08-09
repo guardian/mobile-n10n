@@ -5,7 +5,7 @@ import models.Registration
 object RawGCMRegistration {
   def fromMobileRegistration(m: Registration): RawGCMRegistration = {
     RawGCMRegistration(
-      gcmRegistrationId = m.deviceId,
+      gcmRegistrationId = m.deviceToken.azureToken,
       tags = Tags()
         .withTopics(m.topics)
         .asSet

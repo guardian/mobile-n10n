@@ -13,6 +13,7 @@ import cats.data.EitherT
 import cats.syntax.either._
 import cats.instances.future._
 import models.pagination.{Paginated, ProviderCursor}
+import registration.services.NotificationRegistrar.RegistrarResponse
 
 class NotificationHubRegistrar(
   val hubClient: NotificationHubClient,
@@ -23,8 +24,9 @@ class NotificationHubRegistrar(
   override val providerIdentifier = "azure"
   val logger = Logger(classOf[NotificationHubRegistrar])
 
-  override def register(pushToken: String, registration: Registration): RegistrarResponse[RegistrationResponse] = {
-    findRegistrationResponses(pushToken).flatMap {
+
+  override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = {
+    findRegistrationResponses(deviceToken.azureToken).flatMap {
       case Right(Nil) => createRegistration(registration)
       case Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
       case Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
@@ -32,8 +34,8 @@ class NotificationHubRegistrar(
     }
   }
 
-  override def unregister(pushToken: String): RegistrarResponse[Unit] = {
-    findRegistrationResponses(pushToken).flatMap {
+  override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = {
+    findRegistrationResponses(deviceToken.azureToken).flatMap {
       case Right(Nil) => Future.successful(Right(()))
       case Right(manyRegistrations) => deleteRegistrations(manyRegistrations)
       case Left(e: ProviderError) => Future.successful(Left(e))
@@ -46,8 +48,9 @@ class NotificationHubRegistrar(
       .value
   }
 
-  def findRegistrations(pushToken: String): Future[Either[ProviderError, List[StoredRegistration]]] = {
-    EitherT(hubClient.registrationsByChannelUri(channelUri = pushToken))
+
+  override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
+    EitherT(hubClient.registrationsByChannelUri(channelUri = deviceToken.azureToken))
       .semiflatMap(responsesToStoredRegistrations)
       .value
   }
@@ -124,7 +127,8 @@ class NotificationHubRegistrar(
           deviceId = response.deviceId,
           platform = response.platform,
           tagIds = tags.asSet,
-          topics = topics
+          topics = topics,
+          provider = "azure"
         )
       }
     })

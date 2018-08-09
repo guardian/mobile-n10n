@@ -51,17 +51,17 @@ final class Main(
     )
   }
 
-  def unregister(platform: Platform, pushToken: String): Action[AnyContent] = actionWithTimeout {
+  def unregister(selector: RegistrationsByDeviceToken): Action[AnyContent] = actionWithTimeout {
 
-    def registrarFor(platform: Platform) = EitherT.fromEither[Future](
-      registrarProvider.registrarFor(platform, None)
+    def registrarForSelector = EitherT.fromEither[Future](
+      registrarProvider.registrarFor(selector.platform, selector.deviceToken)
     )
 
     def unregisterFrom(registrar: NotificationRegistrar): EitherT[Future, NotificationsError, Unit] = EitherT(
-      registrar.unregister(pushToken): Future[Either[NotificationsError, Unit]]
+      registrar.unregister(selector.deviceToken): Future[Either[NotificationsError, Unit]]
     )
 
-    registrarFor(platform)
+    registrarForSelector
       .flatMap(unregisterFrom)
       .fold(processErrors, _ => NoContent)
   }
@@ -76,7 +76,7 @@ final class Main(
     val legacyRegistration = request.body
     val result = for {
       registration <- EitherT.fromEither[Future](converter.toRegistration(legacyRegistration))
-      registrationResponse <- EitherT(registerCommon(registration.deviceId, registration))
+      registrationResponse <- EitherT(registerCommon(registration))
     } yield {
       converter.fromResponse(legacyRegistration, registrationResponse)
     }
@@ -117,9 +117,9 @@ final class Main(
     }
   }
 
-  def registrationsByDeviceToken(platform: Platform, deviceToken: String): Action[AnyContent] = Action.async {
+  def registrationsByDeviceToken(platform: Platform, deviceToken: DeviceToken): Action[AnyContent] = Action.async {
     val result = for {
-      registrar <- EitherT.fromEither[Future](registrarProvider.registrarFor(platform, None))
+      registrar <- EitherT.fromEither[Future](registrarProvider.registrarFor(platform, deviceToken))
       registrations <- EitherT(registrar.findRegistrations(deviceToken): Future[Either[NotificationsError, List[StoredRegistration]]])
     } yield registrations
     result.fold(processErrors, res => Ok(Json.toJson(res)))
@@ -140,23 +140,23 @@ final class Main(
     }
   }
 
-  private def registerCommon(lastKnownDeviceId: String, registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {
+  private def registerCommon(registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {
 
     def validate(topics: Set[Topic]): Future[Set[Topic]] =
       topicValidator
         .removeInvalid(topics)
         .map {
           case Right(filteredTopics) =>
-            logger.debug(s"Successfully validated topics in registration (${registration.deviceId}), topics valid: [$filteredTopics]")
+            logger.debug(s"Successfully validated topics in registration (${registration.deviceToken}), topics valid: [$filteredTopics]")
             filteredTopics
           case Left(e) =>
-            logger.error(s"Could not validate topics ${e.topicsQueried} for registration (${registration.deviceId}), reason: ${e.reason}")
+            logger.error(s"Could not validate topics ${e.topicsQueried} for registration (${registration.deviceToken}), reason: ${e.reason}")
             topics
         }
 
     def registerWith(registrar: NotificationRegistrar, topics: Set[Topic]) =
       registrar
-        .register(lastKnownDeviceId, registration.copy(topics = topics))
+        .register(registration.deviceToken, registration.copy(topics = topics))
 
     def logErrors: PartialFunction[Try[Either[ProviderError, RegistrationResponse]], Unit] = {
       case Success(Left(v)) => logger.error(s"Failed to register $registration with ${v.providerName}: ${v.reason}")

@@ -15,7 +15,7 @@ class LegacyNewsstandRegistrationConverterSpec extends Specification {
         case (pushToken, shardExpected) =>
           val legacyNewsstandRegistration = LegacyNewsstandRegistration(pushToken)
           legacyNewsstandRegistrationConverter.toRegistration(legacyNewsstandRegistration) must beRight(
-            Registration(pushToken, Newsstand, Set(Topic(NewsstandShard, s"newsstand-shard-$shardExpected")), None))
+            Registration(AzureToken(pushToken), Newsstand, Set(Topic(NewsstandShard, s"newsstand-shard-$shardExpected")), None))
       }
       ok
     }

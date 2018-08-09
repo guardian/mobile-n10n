@@ -35,4 +35,9 @@ class Configuration(conf: PlayConfig) {
   lazy val dynamoTopicsFlushInterval: FiniteDuration = conf.getOptional[FiniteDuration]("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
 
   lazy val defaultTimeout: FiniteDuration = conf.getOptional[FiniteDuration]("routes.defaultTimeout").getOrElse(30.seconds)
+
+  lazy val firebaseServerKey: String = conf.get[String]("notifications.firebase.serverKey")
+
+  lazy val firebaseServiceAccountKey: String = conf.get[String]("notifications.firebase.serviceAccountKey")
+  lazy val firebaseDatabaseUrl: String = conf.get[String]("notifications.firebase.databaseUrl")
 }
