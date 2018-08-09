@@ -54,7 +54,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     gcmNotificationSender,
     apnsNotificationSender,
     newsstandShardNotificationSender,
-    frontendAlerts,
+    //frontendAlerts, //disabled until frontend decides whether to fix this feature or not.
     fcmNotificationSender
   )
   lazy val mainController = wire[Main]
