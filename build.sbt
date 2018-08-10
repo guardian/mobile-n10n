@@ -22,6 +22,8 @@ val minJacksonLibs = Seq(
   "com.fasterxml.jackson.core" % "jackson-annotations" % minJacksonVersion,
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion
 )
+val playJsonVersion = "2.6.9"
+val specsVersion: String = "4.0.3"
 
 val standardSettings = Seq[Setting[_]](
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
@@ -54,8 +56,8 @@ lazy val common = project
       "com.google.firebase" % "firebase-admin" % "6.3.0",
       "org.typelevel" %% "cats-core" % "1.0.1",
       "joda-time" % "joda-time" % "2.9.9",
-      "com.typesafe.play" %% "play-json" % "2.6.9",
-      "com.typesafe.play" %% "play-json-joda" % "2.6.9",
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % "1.5.0",
@@ -129,7 +131,6 @@ lazy val schedulelambda = project
   .settings {
     val simpleConfigurationVersion: String = "1.5.0"
     val awsVersion: String = "1.11.377"
-    val specsVersion: String = "4.0.3"
     val log4j2Version: String = "2.10.0"
     val byteBuddyVersion = "1.8.8"
     List(resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
@@ -188,5 +189,56 @@ lazy val report = project
     version := projectVersion
   )
 
+lazy val apiClient = {
+  import sbt.Keys.organization
+  import sbtrelease._
+  import ReleaseStateTransformations._
+  Project("api-client", file("api-client")).settings(Seq(
+    name := "mobile-notifications-client",
+    scalaVersion := "2.11.12",
+    crossScalaVersions := Seq("2.11.12", "2.12.6"),
+    releaseCrossBuild := true,
+    resolvers ++= Seq(
+      "Guardian GitHub Releases" at "http://guardian.github.io/maven/repo-releases",
+      "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+    ),
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "org.specs2" %% "specs2-core" % specsVersion % "test",
+      "org.specs2" %% "specs2-mock" % specsVersion % "test"
+    ),
+    description := "Scala client for the Guardian Push Notifications API",
+    scmInfo := Some(ScmInfo(
+      url("https://github.com/guardian/mobile-n10n"),
+      "scm:git:git@github.com:guardian/mobile-n10n.git"
+    )), pomExtra in Global := {
+      <url>https://github.com/guardian/mobile-notifications-api-client</url>
+        <developers>
+          <developer>
+            <id>@guardian</id>
+            <name>The guardian</name>
+            <url>https://github.com/guardian</url>
+          </developer>
+        </developers>
+    },
+    releaseVersionFile := file("api-client/version.sbt"),
+    licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
+      setNextVersion,
+      commitNextVersion,
+      ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
+      pushChanges
+    )
+  ))
+}
+
 lazy val root = (project in file(".")).
-  aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda)
+  aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda, apiClient)
