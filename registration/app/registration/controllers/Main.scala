@@ -81,6 +81,8 @@ final class Main(
       converter.fromResponse(legacyRegistration, registrationResponse)
     }
 
+    logger.info(s"Received registration: $legacyRegistration")
+
     result.value.map(processResponse(_))
   }
 
