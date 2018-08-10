@@ -5,15 +5,13 @@ import models.Topic
 import play.api.Logger
 import tracking.Repository.RepositoryResult
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class SubscriptionTracker(topicSubscriptionsRepository: TopicSubscriptionsRepository) {
   val logger = Logger(classOf[SubscriptionTracker])
 
-  def recordSubscriptionChange(topicSubscriptionTracking: TopicSubscriptionTracking): PartialFunction[Try[HubResult[_]], Unit] = {
+  def recordSubscriptionChange(topicSubscriptionTracking: TopicSubscriptionTracking)(implicit executionContext: ExecutionContext): PartialFunction[Try[HubResult[_]], Unit] = {
     case Success(Right(_)) =>
       Future.traverse(topicSubscriptionTracking.addedTopics) { topic =>
         logger.debug(s"Informing about new topic registrations. [$topic]")
