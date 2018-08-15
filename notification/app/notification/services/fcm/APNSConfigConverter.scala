@@ -66,6 +66,10 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
         .collect { case (key, Some(value)) => key -> value }
         .toMap.asJava
 
+      apnsConfigBuilder.putAllHeaders(Map(
+        "apns-expiration" -> ((System.currentTimeMillis / 1000) + 86400L).toString, // 24 hours
+        "apns-priority" -> 10.toString
+      ).asJava)
       apnsConfigBuilder.setAps(aps)
       apnsConfigBuilder.putAllCustomData(allCustomData)
       apnsConfigBuilder.build()
