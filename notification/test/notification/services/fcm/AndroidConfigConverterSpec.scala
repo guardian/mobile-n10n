@@ -34,21 +34,23 @@ class AndroidConfigConverterSpec extends Specification {
 
       val data = convert(push)
 
-      data shouldEqual Map(
-        Keys.UniqueIdentifier -> "4c261110-4672-4451-a5b8-3422c6839c42",
-        Keys.NotificationType -> "news",
-        Keys.Type -> "custom",
-        Keys.Title -> "Test notification",
-        Keys.Ticker -> "The message",
-        Keys.Message -> "The message",
-        Keys.Debug -> "true",
-        Keys.Editions -> "uk",
-        Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id",
-        Keys.UriType -> "item",
-        Keys.Uri -> "x-gu:///items/some/capi/id",
-        Keys.Edition -> "uk",
-        Keys.ImageUrl -> "https://invalid.url/img.png",
-        Keys.ThumbnailUrl -> "https://invalid.url/img.png"
+      data shouldEqual androidConfigConverter.FirebaseAndroidNotification(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
+          Keys.NotificationType -> "news",
+          Keys.Type -> "custom",
+          Keys.Title -> "Test notification",
+          Keys.Ticker -> "The message",
+          Keys.Message -> "The message",
+          Keys.Debug -> "true",
+          Keys.Editions -> "uk",
+          Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id",
+          Keys.UriType -> "item",
+          Keys.Uri -> "x-gu:///items/some/capi/id",
+          Keys.Edition -> "uk",
+          Keys.ImageUrl -> "https://invalid.url/img.png",
+          Keys.ThumbnailUrl -> "https://invalid.url/img.png"
+        )
       )
     }
 
@@ -70,18 +72,20 @@ class AndroidConfigConverterSpec extends Specification {
 
       val data = convert(push)
 
-      data shouldEqual Map(
-        Keys.UniqueIdentifier -> "4c261110-4672-4451-a5b8-3422c6839c42",
-        Keys.Type -> "custom",
-        Keys.Title -> "Test notification",
-        Keys.Ticker -> "The message",
-        Keys.Message -> "The message",
-        Keys.Debug -> "true",
-        Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id",
-        Keys.Topics -> "breaking//uk",
-        Keys.UriType -> "item",
-        Keys.Uri -> "x-gu:///items/some/capi/id",
-        Keys.ThumbnailUrl -> "https://invalid.url/img.png"
+      data shouldEqual androidConfigConverter.FirebaseAndroidNotification(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
+          Keys.Type -> "custom",
+          Keys.Title -> "Test notification",
+          Keys.Ticker -> "The message",
+          Keys.Message -> "The message",
+          Keys.Debug -> "true",
+          Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id",
+          Keys.Topics -> "breaking//uk",
+          Keys.UriType -> "item",
+          Keys.Uri -> "x-gu:///items/some/capi/id",
+          Keys.ThumbnailUrl -> "https://invalid.url/img.png"
+        )
       )
     }
 
@@ -117,24 +121,27 @@ class AndroidConfigConverterSpec extends Specification {
 
       val data = convert(push)
 
-      data shouldEqual Map(
-        "type" -> "footballMatchAlert",
-        "homeTeamName" -> "Team2",
-        "homeTeamId" -> "456",
-        "homeTeamScore" -> "1",
-        "homeTeamText" -> "team2 message",
-        "awayTeamName" -> "Team1",
-        "awayTeamId" -> "123",
-        "awayTeamScore" -> "0",
-        "awayTeamText" -> "team1 message",
-        "currentMinute" -> "",
-        "importance" -> "Major",
-        "matchStatus" -> "1",
-        "matchId" -> "123456",
-        "matchInfoUri" -> "https://some.invalid.url/detail",
-        "articleUri" -> "https://some.other.invalid.url/detail",
-        "competitionName" -> "World cup 3012",
-        "venue" -> "Venue"
+      data shouldEqual androidConfigConverter.FirebaseAndroidNotification(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
+          "type" -> "footballMatchAlert",
+          "homeTeamName" -> "Team2",
+          "homeTeamId" -> "456",
+          "homeTeamScore" -> "1",
+          "homeTeamText" -> "team2 message",
+          "awayTeamName" -> "Team1",
+          "awayTeamId" -> "123",
+          "awayTeamScore" -> "0",
+          "awayTeamText" -> "team1 message",
+          "currentMinute" -> "",
+          "importance" -> "Major",
+          "matchStatus" -> "1",
+          "matchId" -> "123456",
+          "matchInfoUri" -> "https://some.invalid.url/detail",
+          "articleUri" -> "https://some.other.invalid.url/detail",
+          "competitionName" -> "World cup 3012",
+          "venue" -> "Venue"
+        )
       )
     }
   }
@@ -147,9 +154,8 @@ class AndroidConfigConverterSpec extends Specification {
     }
     val androidConfigConverter = new AndroidConfigConverter(configuration)
 
-    def convert(push: Push) = {
-      val Some(firebaseAndroidNotification) = androidConfigConverter.toFirebaseAndroidNotification(push)
-      firebaseAndroidNotification.data
+    def convert(push: Push): androidConfigConverter.FirebaseAndroidNotification = {
+      androidConfigConverter.toFirebaseAndroidNotification(push).get
     }
   }
 }

@@ -83,6 +83,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
     val expected = Map(
       "uniqueIdentifier" -> "30aac5f5-34bb-4a88-8b69-97f995a4907b",
+      "provider" -> "azure",
       "editions" -> "",
       "uri" -> "http://mobile-apps.guardianapis.com/items/world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates-uri",
       "debug" -> "true",
@@ -116,6 +117,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
     val expected = Map(
       "topics" -> "tag-series//environment/series/keep-it-in-the-ground",
       "uniqueIdentifier" -> "c8bd6aaa-072f-4593-a38b-322f3ecd6bd3",
+      "provider" -> "azure",
       "uri" -> "test-uri",
       "debug" -> "true",
       "uriType" -> "item",
@@ -147,6 +149,8 @@ class AndroidNotificationSpec extends Specification with Mockito {
     )
 
     val expected =  Map(
+      "uniqueIdentifier" -> "3e0bc788-a27c-4864-bb71-77a80aadcce4",
+      "provider" -> "azure",
       "AWAY_TEAM_SCORE" -> "1",
       "uniqueIdentifier" -> "3e0bc788-a27c-4864-bb71-77a80aadcce4",
       "GOAL_MINS" -> "75",
@@ -201,6 +205,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
     val expected =  Map(
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+      "provider" -> "azure",
       "debug" -> "false",
       "type" -> "liveElections",
       "candidates.length" -> "2",
@@ -247,6 +252,7 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
     val expected =  Map(
       "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+      "provider" -> "azure",
       "debug" -> "false",
       "type" -> "superBowl",
       "link1" -> "x-gu://www.guardian.co.uk/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
@@ -292,6 +298,8 @@ class AndroidNotificationSpec extends Specification with Mockito {
 
     val expected =  Map(
       "type" -> "footballMatchAlert",
+      "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+      "provider" -> "azure",
       "homeTeamName" -> "Arsenal",
       "homeTeamId" -> "1006",
       "homeTeamScore" -> "2",

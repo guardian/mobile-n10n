@@ -90,6 +90,8 @@ class iOSNotificationSpec extends Specification with Mockito {
       customProperties = LegacyProperties(Map(
         "t" -> "m",
         "notificationType" -> "news",
+        "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+        "provider" -> "azure",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "breaking/uk,breaking/us,breaking/au,breaking/international",
         "uri" -> "https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
@@ -126,6 +128,8 @@ class iOSNotificationSpec extends Specification with Mockito {
       customProperties = LegacyProperties(Map(
         "t" -> "m",
         "notificationType" -> "news",
+        "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+        "provider" -> "azure",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "breaking/uk,breaking/us,breaking/au,breaking/international",
         "uri" -> "https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
@@ -161,6 +165,8 @@ class iOSNotificationSpec extends Specification with Mockito {
       customProperties = LegacyProperties(Map(
         "t" -> "m",
         "notificationType" -> "news",
+        "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+        "provider" -> "azure",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "breaking/uk,breaking/us,breaking/au,breaking/international",
         "uri" -> "https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
@@ -194,6 +200,8 @@ class iOSNotificationSpec extends Specification with Mockito {
       ),
       customProperties = LegacyProperties(Map(
         "t" -> "m",
+        "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+        "provider" -> "azure",
         "notificationType" -> "content",
         "link" -> "x-gu:///p/4p7xt",
         "topics" -> "tag-series/series-a,tag-series/series-b",
@@ -244,6 +252,8 @@ class iOSNotificationSpec extends Specification with Mockito {
       ),
       customProperties = LegacyProperties(Map(
         "t" -> "g",
+        "uniqueIdentifier" -> "068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+        "provider" -> "azure",
         "notificationType" -> "goal",
         "uri" -> "x-gu:///match-info/3833380",
         "uriType" -> "football-match"
@@ -293,6 +303,8 @@ class iOSNotificationSpec extends Specification with Mockito {
         sound = None
       ),
       customProperties = StandardProperties(
+        uniqueIdentifier = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+        provider = Provider.Azure,
         t = "us-election",
         notificationType = ElectionsAlert,
         election = Some(ElectionProperties(
@@ -335,6 +347,8 @@ class iOSNotificationSpec extends Specification with Mockito {
       ),
       customProperties = StandardProperties(
         t = "live",
+        uniqueIdentifier = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+        provider = Provider.Azure,
         notificationType = LiveEventAlert,
         liveEvent = Some(LiveEventProperties(
           title = "Some live event",
@@ -388,6 +402,8 @@ class iOSNotificationSpec extends Specification with Mockito {
       ),
       customProperties = StandardProperties(
         t = "football-match-status",
+        uniqueIdentifier = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+        provider = Provider.Azure,
         notificationType = FootballMatchStatus,
         footballMatch = Some(FootballMatchStatusProperties(
           homeTeamName = "Arsenal",

@@ -1,6 +1,7 @@
 package notification.services.fcm
 
 import java.net.URI
+import java.util.UUID
 
 import com.google.firebase.messaging.AndroidConfig
 import models._
@@ -21,12 +22,16 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
   override def toFCM(push: Push): Option[AndroidConfig] = toFirebaseAndroidNotification(push).map(_.toAndroidConfig)
 
   case class FirebaseAndroidNotification(
+    notificationId: UUID,
     data: Map[String, String]
   ) {
     def toAndroidConfig: AndroidConfig =
       AndroidConfig.builder()
-        .putAllData(data.asJava)
-        .setPriority(AndroidConfig.Priority.HIGH)
+        .putAllData(data
+          .updated(Keys.UniqueIdentifier, notificationId.toString)
+          .updated(Keys.Provider, Provider.FCM)
+          .asJava
+        ).setPriority(AndroidConfig.Priority.HIGH)
         .setTtl(86400000L) // 24 hours
         .build()
   }
@@ -64,9 +69,9 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
     val keyword = tagLink.map(new URI(_))
 
     FirebaseAndroidNotification(
+      notificationId = breakingNews.id,
       Map(
         Keys.NotificationType -> breakingNews.`type`.value,
-        Keys.UniqueIdentifier -> breakingNews.id.toString,
         Keys.Type -> AndroidMessageTypes.Custom,
         Keys.Title -> breakingNews.title,
         Keys.Ticker -> breakingNews.message,
@@ -90,9 +95,9 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
     val link = toPlatformLink(cn.link)
 
     FirebaseAndroidNotification(
+      notificationId = cn.id,
       Map(
         Keys.Type -> AndroidMessageTypes.Custom,
-        Keys.UniqueIdentifier -> cn.id.toString,
         Keys.Title -> cn.title,
         Keys.Ticker -> cn.message,
         Keys.Message -> cn.message,
@@ -108,6 +113,7 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
   }
 
   private def toMatchStatusAlert(matchStatusAlert: FootballMatchStatusNotification): FirebaseAndroidNotification = FirebaseAndroidNotification(
+    notificationId = matchStatusAlert.id,
     Map(
       "type" -> AndroidMessageTypes.FootballMatchAlert,
       "homeTeamName" -> matchStatusAlert.homeTeamName,

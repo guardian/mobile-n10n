@@ -33,6 +33,7 @@ class APNSPushConverter(conf: Configuration) extends AzurePushConverter {
     val link = toPlatformLink(breakingNews.link)
 
     ios.BreakingNewsNotification(
+      notificationId = breakingNews.id,
       category = breakingNews.link match {
         case _: Link.External => ""
         case _: Link.Internal => "ITEM_CATEGORY"
@@ -51,6 +52,7 @@ class APNSPushConverter(conf: Configuration) extends AzurePushConverter {
     val link = toPlatformLink(cn.link)
 
     ios.ContentNotification(
+      notificationId = cn.id,
       category = "ITEM_CATEGORY",
       message = if (cn.iosUseMessage.contains(true)) cn.message else cn.title,
       link = toIosLink(cn.link),
@@ -81,7 +83,9 @@ class APNSPushConverter(conf: Configuration) extends AzurePushConverter {
   }
 
   private def toLiveEventAlert(liveEvent: LiveEventNotification) = {
-    ios.LiveEventNotification(LiveEventProperties(
+    ios.LiveEventNotification(
+      notificationId = liveEvent.id,
+      liveEvent = LiveEventProperties(
         title = liveEvent.title,
         body = liveEvent.message,
         richviewbody = liveEvent.expandedMessage.getOrElse(liveEvent.message),
@@ -96,6 +100,7 @@ class APNSPushConverter(conf: Configuration) extends AzurePushConverter {
 
   private def toMatchStatusAlert(matchStatus: FootballMatchStatusNotification) = {
     ios.FootballMatchStatusNotification(
+      notificationId = matchStatus.id,
       title = matchStatus.title,
       body = matchStatus.message,
       matchStatus = FootballMatchStatusProperties(

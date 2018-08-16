@@ -21,7 +21,7 @@ class NotificationHubRegistrar(
   registrationExtractor: Registration => NotificationsHubRegistration)(implicit ec: ExecutionContext)
   extends NotificationRegistrar {
 
-  override val providerIdentifier = "azure"
+  override val providerIdentifier = Provider.Azure
   val logger = Logger(classOf[NotificationHubRegistrar])
 
 
@@ -128,7 +128,7 @@ class NotificationHubRegistrar(
           platform = response.platform,
           tagIds = tags.asSet,
           topics = topics,
-          provider = "azure"
+          provider = Provider.Azure
         )
       }
     })

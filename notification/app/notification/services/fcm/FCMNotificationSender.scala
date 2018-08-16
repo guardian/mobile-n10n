@@ -1,7 +1,7 @@
 package notification.services.fcm
 
 import com.google.firebase.messaging._
-import models.{SenderReport, Topic}
+import models.{Provider, SenderReport, Topic}
 import notification.models.Push
 import notification.services._
 import org.joda.time.DateTime
@@ -49,7 +49,7 @@ class FCMNotificationSender(
 
     // FCM's async calls doesn't come with its own thread pool, so we may as well block in a separate thread pool
     Future(firebaseMessaging.send(firebaseNotification))(fcmExecutionContext)
-      .map(messageId => Right(SenderReport("FCM", DateTime.now(), sendersId = Some(messageId), None)))
+      .map(messageId => Right(SenderReport(Provider.FCM, DateTime.now(), sendersId = Some(messageId), None)))
 
   }
 

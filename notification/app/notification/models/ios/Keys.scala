@@ -8,4 +8,6 @@ object Keys {
   final val Uri = "uri"
   final val UriType = "uriType"
   final val ImageUrl = "imageUrl"
+  final val Provider = "provider"
+  final val UniqueIdentifier = "uniqueIdentifier"
 }
