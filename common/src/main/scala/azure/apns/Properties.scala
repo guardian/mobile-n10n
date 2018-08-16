@@ -1,5 +1,7 @@
 package azure.apns
 
+import java.util.UUID
+
 import play.api.libs.json.{JsResult, Reads, _}
 import models.NotificationType
 
@@ -19,6 +21,8 @@ object LegacyProperties {
 
 case class StandardProperties(
   t: String,
+  uniqueIdentifier: UUID,
+  provider: String,
   notificationType: NotificationType,
   election: Option[ElectionProperties] = None,
   liveEvent: Option[LiveEventProperties] = None,

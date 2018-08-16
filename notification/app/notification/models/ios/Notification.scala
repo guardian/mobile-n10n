@@ -4,8 +4,8 @@ import java.net.URI
 import java.util.UUID
 
 import azure.apns._
-import models.{NotificationType, Topic}
-import models.NotificationType.{BreakingNews, Content, ElectionsAlert, LiveEventAlert, FootballMatchStatus}
+import models.{NotificationType, Provider, Topic}
+import models.NotificationType.{BreakingNews, Content, ElectionsAlert, FootballMatchStatus, LiveEventAlert}
 import notification.services.azure.PlatformUriType
 import utils.MapImplicits._
 
@@ -14,6 +14,7 @@ sealed trait Notification {
 }
 
 case class BreakingNewsNotification(
+  notificationId: UUID,
   notificationType: NotificationType = BreakingNews,
   `type`: String = MessageTypes.NewsAlert,
   category: String,
@@ -35,6 +36,8 @@ case class BreakingNewsNotification(
       sound = Some("default")
     ),
     customProperties = LegacyProperties(Map(
+      Keys.UniqueIdentifier -> notificationId.toString,
+      Keys.Provider -> Provider.Azure,
       Keys.MessageType -> `type`,
       Keys.NotificationType -> notificationType.value,
       Keys.Link -> legacyLink,
@@ -46,6 +49,7 @@ case class BreakingNewsNotification(
 }
 
 case class ContentNotification(
+  notificationId: UUID,
   notificationType: NotificationType = Content,
   `type`: String = MessageTypes.NewsAlert,
   category: String,
@@ -64,6 +68,8 @@ case class ContentNotification(
       sound = Some("default")
     ),
     customProperties = LegacyProperties(Map(
+      Keys.UniqueIdentifier -> notificationId.toString,
+      Keys.Provider -> Provider.Azure,
       Keys.MessageType -> `type`,
       Keys.NotificationType -> notificationType.value,
       Keys.Link -> legacyLink,
@@ -117,6 +123,8 @@ case class ElectionNotification(
       sound = None
     ),
     customProperties = StandardProperties(
+      uniqueIdentifier = id,
+      provider = Provider.Azure,
       t = `type`,
       notificationType = notificationType,
       election = Some(ElectionProperties(
@@ -133,7 +141,7 @@ case class ElectionNotification(
   )
 }
 
-case class LiveEventNotification(liveEvent: LiveEventProperties) extends Notification {
+case class LiveEventNotification(notificationId: UUID, liveEvent: LiveEventProperties) extends Notification {
   def payload: Body = Body(
     aps = APS(
       alert = None,
@@ -141,6 +149,8 @@ case class LiveEventNotification(liveEvent: LiveEventProperties) extends Notific
       sound = None
     ),
     customProperties = StandardProperties(
+      uniqueIdentifier = notificationId,
+      provider = Provider.Azure,
       t = MessageTypes.LiveEventAlert,
       notificationType = LiveEventAlert,
       liveEvent = Some(liveEvent)
@@ -148,7 +158,13 @@ case class LiveEventNotification(liveEvent: LiveEventProperties) extends Notific
   )
 }
 
-case class FootballMatchStatusNotification(title: String, body: String, matchStatus: FootballMatchStatusProperties, sound: Boolean) extends Notification {
+case class FootballMatchStatusNotification(
+  notificationId: UUID,
+  title: String,
+  body: String,
+  matchStatus: FootballMatchStatusProperties,
+  sound: Boolean
+) extends Notification {
   def payload: Body = Body(
     aps = APS(
       alert = Some(Left(Alert(title = Some(title), body = Some(body)))),
@@ -157,6 +173,8 @@ case class FootballMatchStatusNotification(title: String, body: String, matchSta
       `mutable-content` = Some(1)
     ),
     customProperties = StandardProperties(
+      uniqueIdentifier = notificationId,
+      provider = Provider.Azure,
       t = MessageTypes.FootballMatchStatus,
       notificationType = FootballMatchStatus,
       footballMatch = Some(matchStatus)

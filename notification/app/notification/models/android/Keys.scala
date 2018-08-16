@@ -35,4 +35,5 @@ object Keys {
   final val UniqueIdentifier = "uniqueIdentifier"
   final val ElectoralCollegeSize = "electoralCollegeSize"
   final val Importance = "importance"
+  final val Provider = "provider"
 }

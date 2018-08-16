@@ -35,6 +35,7 @@ case class BreakingNewsNotification(
   def payload: Map[String, String] = Map(
     Keys.NotificationType -> notificationType.value,
     Keys.UniqueIdentifier -> id.toString,
+    Keys.Provider -> Provider.Azure,
     Keys.Type -> `type`,
     Keys.Title -> title,
     Keys.Ticker -> ticker,
@@ -68,6 +69,7 @@ case class ContentNotification(
   def payload: Map[String, String] = Map(
     Keys.Type -> `type`,
     Keys.UniqueIdentifier -> id.toString,
+    Keys.Provider -> Provider.Azure,
     Keys.Title -> title,
     Keys.Ticker -> ticker,
     Keys.Message -> message,
@@ -99,6 +101,7 @@ case class GoalAlertNotification(
   def payload: Map[String, String] = Map(
     Keys.Type -> `type`,
     Keys.UniqueIdentifier -> id.toString,
+    Keys.Provider -> Provider.Azure,
     Keys.AwayTeamName -> awayTeamName,
     Keys.AwayTeamScore -> awayTeamScore.toString,
     Keys.HomeTeamName -> homeTeamName,
@@ -143,6 +146,7 @@ case class ElectionNotification(
   def payload: Map[String, String] = Map(
     Keys.Type -> `type`,
     Keys.UniqueIdentifier -> id.toString,
+    Keys.Provider -> Provider.Azure,
     Keys.ExpandedMessage -> expandedMessage,
     Keys.ShortMessage -> shortMessage,
     Keys.Debug -> debug.toString,

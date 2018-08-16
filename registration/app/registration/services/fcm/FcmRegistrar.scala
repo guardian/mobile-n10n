@@ -17,11 +17,11 @@ import scala.util.control.NonFatal
 import cats.implicits._
 
 case class FcmProviderError(reason: String) extends ProviderError {
-  override val providerName: String = "FCM"
+  override val providerName: String = Provider.FCM
 }
 
 case object InstanceNotFound extends ProviderError {
-  override val providerName: String = "FCM"
+  override val providerName: String = Provider.FCM
   override val reason: String = "Instance not found"
 }
 
@@ -34,7 +34,7 @@ class FcmRegistrar(
 
   val logger = Logger(classOf[FcmRegistrar])
 
-  override val providerIdentifier: String = "FCM"
+  override val providerIdentifier: String = Provider.FCM
 
   case class Instance(topics: List[Topic], platform: Platform)
   object Instance {
@@ -148,7 +148,7 @@ class FcmRegistrar(
 
   override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
     def instanceToStoredRegistrations(instance: Instance): List[StoredRegistration] =
-      List(StoredRegistration(deviceToken.fcmToken, instance.platform, Set(), instance.topics.toSet, "FCM"))
+      List(StoredRegistration(deviceToken.fcmToken, instance.platform, Set(), instance.topics.toSet, Provider.FCM))
 
     fetchInstance(deviceToken).map(_.map(instanceToStoredRegistrations))
   }

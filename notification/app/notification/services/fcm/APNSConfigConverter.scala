@@ -1,6 +1,7 @@
 package notification.services.fcm
 
 import java.net.URI
+import java.util.UUID
 
 import azure.apns.FootballMatchStatusProperties
 import com.google.firebase.messaging.{ApnsConfig, Aps, ApsAlert}
@@ -36,6 +37,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
   case class FirebaseApsAlert(title: String, body: String)
 
   case class FirebaseApnsNotification(
+    notificationId: UUID,
     category: Option[String],
     alert: Option[Either[String, FirebaseApsAlert]],
     contentAvailable: Option[Boolean],
@@ -64,7 +66,10 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
 
       val allCustomData = customData
         .collect { case (key, Some(value)) => key -> value }
-        .toMap.asJava
+        .toMap
+        .updated(Keys.Provider, Provider.FCM)
+        .updated(Keys.UniqueIdentifier, notificationId.toString)
+        .asJava
 
       apnsConfigBuilder.putAllHeaders(Map(
         "apns-expiration" -> ((System.currentTimeMillis / 1000) + 86400L).toString, // 24 hours
@@ -80,6 +85,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
     val link = toPlatformLink(cn.link)
 
     FirebaseApnsNotification(
+      notificationId = cn.id,
       category = Some("ITEM_CATEGORY"),
       alert = if (cn.iosUseMessage.contains(true)) Some(Left(cn.message)) else Some(Left(cn.title)),
       contentAvailable = Some(true),
@@ -105,6 +111,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
     val imageUrl = breakingNews.thumbnailUrl orElse breakingNews.imageUrl
 
     FirebaseApnsNotification(
+      notificationId = breakingNews.id,
       category = category,
       alert = Some(Left(breakingNews.message)),
       contentAvailable = Some(true),
@@ -123,6 +130,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
 
   private def toMatchStatusAlert(matchStatus: FootballMatchStatusNotification): FirebaseApnsNotification = {
     FirebaseApnsNotification(
+      notificationId = matchStatus.id,
       category = Some("football-match"),
       alert = Some(Right(FirebaseApsAlert(matchStatus.title, matchStatus.message))),
       contentAvailable = Some(true),
