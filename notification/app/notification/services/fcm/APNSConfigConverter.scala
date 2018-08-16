@@ -37,7 +37,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
   case class FirebaseApsAlert(title: String, body: String)
 
   case class FirebaseApnsNotification(
-    notificationId: UUID,
+    id: UUID,
     category: Option[String],
     alert: Option[Either[String, FirebaseApsAlert]],
     contentAvailable: Option[Boolean],
@@ -68,7 +68,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
         .collect { case (key, Some(value)) => key -> value }
         .toMap
         .updated(Keys.Provider, Provider.FCM)
-        .updated(Keys.UniqueIdentifier, notificationId.toString)
+        .updated(Keys.UniqueIdentifier, id.toString)
         .asJava
 
       apnsConfigBuilder.putAllHeaders(Map(
@@ -85,7 +85,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
     val link = toPlatformLink(cn.link)
 
     FirebaseApnsNotification(
-      notificationId = cn.id,
+      id = cn.id,
       category = Some("ITEM_CATEGORY"),
       alert = if (cn.iosUseMessage.contains(true)) Some(Left(cn.message)) else Some(Left(cn.title)),
       contentAvailable = Some(true),
@@ -111,7 +111,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
     val imageUrl = breakingNews.thumbnailUrl orElse breakingNews.imageUrl
 
     FirebaseApnsNotification(
-      notificationId = breakingNews.id,
+      id = breakingNews.id,
       category = category,
       alert = Some(Left(breakingNews.message)),
       contentAvailable = Some(true),
@@ -130,7 +130,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
 
   private def toMatchStatusAlert(matchStatus: FootballMatchStatusNotification): FirebaseApnsNotification = {
     FirebaseApnsNotification(
-      notificationId = matchStatus.id,
+      id = matchStatus.id,
       category = Some("football-match"),
       alert = Some(Right(FirebaseApsAlert(matchStatus.title, matchStatus.message))),
       contentAvailable = Some(true),
