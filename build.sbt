@@ -24,6 +24,7 @@ val minJacksonLibs = Seq(
 )
 val playJsonVersion = "2.6.9"
 val specsVersion: String = "4.0.3"
+val awsSdkVersion: String = "1.11.388"
 
 val standardSettings = Seq[Setting[_]](
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
@@ -61,7 +62,7 @@ lazy val common = project
       "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % "1.5.0",
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.377",
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
       "ai.x" %% "play-json-extensions" % "0.10.0"
     ),
@@ -80,7 +81,7 @@ lazy val commonscheduledynamodb = project
   .settings(LocalDynamoDBScheduleLambda.settings)
   .settings(List(
     libraryDependencies ++= List(
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.377",
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       specs2 % Test
 
     ),
@@ -130,7 +131,6 @@ lazy val schedulelambda = project
   .enablePlugins(RiffRaffArtifact)
   .settings {
     val simpleConfigurationVersion: String = "1.5.0"
-    val awsVersion: String = "1.11.377"
     val log4j2Version: String = "2.10.0"
     val byteBuddyVersion = "1.8.8"
     List(resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
@@ -143,8 +143,8 @@ lazy val schedulelambda = project
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
         "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
-        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsVersion,
-        "com.amazonaws" % "aws-java-sdk-dynamodb" % awsVersion,
+        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
+        "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
         "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
@@ -240,5 +240,23 @@ lazy val apiClient = {
   ))
 }
 
+lazy val eventconsumer = project.enablePlugins(RiffRaffArtifact)
+  .settings(Seq(
+    description:= "Consumes events produced when an app receives a notification",
+
+    libraryDependencies ++= Seq(
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+      "org.slf4j" % "slf4j-simple" % "1.7.25",
+      "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
+      "com.typesafe.play" %% "play-json" % playJsonVersion
+    ),
+
+    assemblyJarName := s"${name.value}.jar",
+    riffRaffPackageType := assembly.value,
+    riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
+    riffRaffUploadManifestBucket := Option("riffraff-builds"),
+    riffRaffArtifactResources += (file("cfn.yaml"), s"${name.value}-cfn/cfn.yaml")
+))
+
 lazy val root = (project in file(".")).
-  aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda, apiClient)
+  aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda, apiClient, eventconsumer)
