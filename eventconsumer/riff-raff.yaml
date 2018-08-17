@@ -14,6 +14,7 @@ deployments:
     dependencies: [eventconsumer-cfn]
   eventconsumer-cfn:
     type: cloud-formation
+    app: eventconsumer
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: eventconsumer

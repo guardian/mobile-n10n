@@ -172,7 +172,6 @@ lazy val schedulelambda = project
   .dependsOn(commonscheduledynamodb)
   .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
   .settings {
-
     val byteBuddyVersion = "1.8.8"
     List(resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
       assemblyJarName := s"${name.value}.jar",
@@ -297,6 +296,7 @@ lazy val eventconsumer = project
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
+        "org.slf4j" % "slf4j-simple" % "1.7.25",
         specs2 % Test
       ),
       fork := true,

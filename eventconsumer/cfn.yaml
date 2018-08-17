@@ -13,8 +13,8 @@ Parameters:
     Description: Stage name
     Type: String
     AllowedValues:
-    - CODE
-    - PROD
+      - CODE
+      - PROD
     Default: CODE
   DeployBucket:
     Description: Bucket where RiffRaff uploads artifacts on deploy
@@ -79,7 +79,13 @@ Resources:
             Resource:
             - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-${Stage}:*"
             - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-sqs-${Stage}:*"
-
+      - PolicyName: lambda
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: "*"
       - PolicyName: s3
         PolicyDocument:
           Statement:
@@ -106,7 +112,6 @@ Resources:
             Effect: Allow
             Action: sqs:*
             Resource: !GetAtt Sqs.Arn
-
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -124,11 +129,28 @@ Resources:
           - aws-mobile-event-logs-${BucketStage}
           - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
       Description: Consumes events produced when an app receives a notification
-      Handler: com.gu.notifications.events.Lambda::handleRequest
+      Handler: com.gu.notifications.events.Lambda::handler
       MemorySize: 384
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
+
+  DailyEvent:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Event sent to process the previous day of data
+      ScheduleExpression: cron(14 3 * * ? *)
+      Targets:
+        - Id: Lambda
+          Arn: !GetAtt Lambda.Arn
+
+  DailyEventLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt Lambda.Arn
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt DailyEvent.Arn
 
   SqsLambda:
     Type: AWS::Lambda::Function
