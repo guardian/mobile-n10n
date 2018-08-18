@@ -1,0 +1,19 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+
+deployments:
+  eventconsumer:
+    type: aws-lambda
+    parameters:
+      bucket: mobile-notifications-dist
+      functionNames: [eventconsumer-]
+      fileName: eventconsumer.jar
+      prefixStack: false
+    dependencies: [eventconsumer-cfn]
+  eventconsumer-cfn:
+    type: cloud-formation
+    app: eventconsumer
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: eventconsumer
+      templatePath: cfn.yaml
