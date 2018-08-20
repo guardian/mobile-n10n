@@ -7,12 +7,14 @@ import java.util.UUID
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.services.lambda.runtime.Context
+import com.amazonaws.services.s3.model.{ListObjectsRequest, S3ObjectSummary}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3Client}
 import org.apache.http.client.utils.URLEncodedUtils
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json
 
 import collection.JavaConverters._
+import scala.annotation.tailrec
 import scala.util.Try
 
 
@@ -54,9 +56,26 @@ object Lambda {
    * Logic
    */
   def process(env: Env): String = {
+
+    def allFileRequests = new Iterator[List[S3ObjectSummary]] {
+      private var nextMarker: Option[String] = None
+      private var firstRequest: Boolean = true
+      override def hasNext: Boolean = firstRequest || nextMarker.isDefined
+      override def next(): List[S3ObjectSummary] = {
+        val lor = new ListObjectsRequest()
+          .withBucketName("aws-mobile-logs")
+          .withPrefix("fastly/events.mobile.guardianapis.com")
+          .withMarker(nextMarker.orNull)
+        val list = s3Client.listObjects(lor)
+        nextMarker = Option(list.getNextMarker)
+        firstRequest = false
+        logger.info(s"Adding ${list.getObjectSummaries.size} files to the processing list")
+        list.getObjectSummaries.asScala.toList
+      }
+    }
+
     def forAllLineOfAllFiles: Iterator[String] = {
-      val list = s3Client.listObjects("aws-mobile-logs", "fastly/events.mobile.guardianapis.com")
-      list.getObjectSummaries.asScala.toIterator.flatMap { objectSummary =>
+      allFileRequests.flatMap(_.toIterator).flatMap { objectSummary =>
         logger.info(s"Fetching ${objectSummary.getBucketName}/${objectSummary.getKey}")
         val s3Object = s3Client.getObject(objectSummary.getBucketName, objectSummary.getKey)
         val b = new BufferedReader(new InputStreamReader(s3Object.getObjectContent))
@@ -82,10 +101,8 @@ object Lambda {
       } yield EventsPerNotification.from(notificationId, rawEvent.dateTime, platform, provider)
     }
 
-    val rawEvents = forAllLineOfAllFiles.flatMap(toRawEvent)
-    logger.info(rawEvents.hasNext.toString)
-    val events = rawEvents.flatMap(toEvent).reduce(EventsPerNotification.combine)
-    events.toString
+    val events = forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent).reduce(EventsPerNotification.combine)
+    events.aggregations.toList.sortBy(- _._2.providerCounts.total).mkString("\n")
   }
 }
 

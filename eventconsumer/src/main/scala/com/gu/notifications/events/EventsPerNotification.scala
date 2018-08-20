@@ -23,12 +23,30 @@ object PlatformCount {
     ios = countsA.ios + countsB.ios,
     android = countsA.android + countsB.android
   )
+}
 
+case class ProviderCount(
+  total: Int,
+  azure: Int,
+  firebase: Int
+)
+
+object ProviderCount {
+  def from(provider: Provider): ProviderCount = provider match {
+    case Azure => ProviderCount(1, 1, 0)
+    case Fcm => ProviderCount(1, 0, 1)
+  }
+  def combine(countsA: ProviderCount, countsB: ProviderCount): ProviderCount = ProviderCount(
+    total = countsA.total + countsB.total,
+    azure = countsA.azure + countsB.azure,
+    firebase = countsA.firebase + countsB.firebase
+  )
 }
 
 case class EventAggregation(
   notificationId: UUID,
-  counts: PlatformCount,
+  platformCounts: PlatformCount,
+  providerCounts: ProviderCount,
   timing: Map[LocalDateTime, Int]
 )
 
@@ -41,7 +59,8 @@ object EventAggregation {
   ): EventAggregation = {
     EventAggregation(
       notificationId = notificationId,
-      counts = PlatformCount.from(platform),
+      platformCounts = PlatformCount.from(platform),
+      providerCounts = ProviderCount.from(provider),
       timing = Map(dateTime -> 1)
     )
   }
@@ -60,7 +79,8 @@ object EventAggregation {
 
   def combine(aggA: EventAggregation, aggB: EventAggregation): EventAggregation = EventAggregation(
     notificationId = aggA.notificationId,
-    counts = PlatformCount.combine(aggA.counts, aggB.counts),
+    platformCounts = PlatformCount.combine(aggA.platformCounts, aggB.platformCounts),
+    providerCounts = ProviderCount.combine(aggA.providerCounts, aggB.providerCounts),
     timing = combineTimings(aggA.timing, aggB.timing)
   )
 
