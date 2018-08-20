@@ -15,6 +15,8 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.{Configuration => PlayConfig}
 
+import scala.collection.JavaConverters.mapAsJavaMap
+
 class APNSConfigConverterSpec extends Specification {
   "ApnsConfigConverter" should {
     "convert a breaking news to the firebase format" in new ApnsConfigConverterScope {
@@ -135,25 +137,25 @@ class APNSConfigConverterSpec extends Specification {
         mutableContent = Some(true),
         customData = List(
           Keys.NotificationType -> Some("football-match-status"),
-          "matchStatus" -> Some(FootballMatchStatusProperties(
-            homeTeamName = "Team2",
-            homeTeamId = "456",
-            homeTeamScore = 1,
-            homeTeamText = "team2 message",
-            awayTeamName = "Team1",
-            awayTeamId = "123",
-            awayTeamScore = 0,
-            awayTeamText = "team1 message",
-            currentMinute = "",
-            matchStatus = "1",
-            matchId = "123456",
-            mapiUrl = "https://some.invalid.url/detail",
-            matchInfoUri = "https://some.invalid.url/detail",
-            articleUri = Some("https://some.other.invalid.url/detail"),
-            uri = "",
-            competitionName = Some("World cup 3012"),
-            venue = Some("Venue")
-          ))
+          "footballMatch" -> Some(mapAsJavaMap(Map(
+            "homeTeamName" -> "Team2",
+            "homeTeamId" -> "456",
+            "homeTeamScore" -> 1,
+            "homeTeamText" -> "team2 message",
+            "awayTeamName" -> "Team1",
+            "awayTeamId" -> "123",
+            "awayTeamScore" -> 0,
+            "awayTeamText" -> "team1 message",
+            "currentMinute" -> "",
+            "matchStatus" -> "1",
+            "matchId" -> "123456",
+            "mapiUrl" -> "https://some.invalid.url/detail",
+            "matchInfoUri" -> "https://some.invalid.url/detail",
+            "uri" -> "",
+            "articleUri" -> "https://some.other.invalid.url/detail",
+            "competitionName" -> "World cup 3012",
+            "venue" -> "Venue"
+          )))
         )
       )
 

@@ -3,7 +3,6 @@ package notification.services.fcm
 import java.net.URI
 import java.util.UUID
 
-import azure.apns.FootballMatchStatusProperties
 import com.google.firebase.messaging.{ApnsConfig, Aps, ApsAlert}
 import models.NotificationType.{BreakingNews, Content, FootballMatchStatus}
 import models._
@@ -13,6 +12,7 @@ import notification.services.Configuration
 import notification.services.azure.PlatformUriType
 import notification.services.azure.PlatformUriTypes.{External, Item}
 import play.api.Logger
+import utils.MapImplicits.RichOptionMap
 
 import collection.JavaConverters._
 
@@ -138,25 +138,26 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
       sound = if (matchStatus.importance == Importance.Major) Some("default") else None,
       customData = List(
         Keys.NotificationType -> Some(FootballMatchStatus.value),
-        "matchStatus" -> Some(FootballMatchStatusProperties(
-          homeTeamName = matchStatus.homeTeamName,
-          homeTeamId = matchStatus.homeTeamId,
-          homeTeamScore = matchStatus.homeTeamScore,
-          homeTeamText = matchStatus.homeTeamMessage,
-          awayTeamName = matchStatus.awayTeamName,
-          awayTeamId = matchStatus.awayTeamId,
-          awayTeamScore = matchStatus.awayTeamScore,
-          awayTeamText = matchStatus.awayTeamMessage,
-          currentMinute = "",
-          matchStatus = matchStatus.matchStatus,
-          matchId = matchStatus.matchId,
-          mapiUrl = matchStatus.matchInfoUri.toString,
-          matchInfoUri = matchStatus.matchInfoUri.toString,
-          articleUri = matchStatus.articleUri.map(_.toString),
-          uri = "",
-          competitionName = matchStatus.competitionName,
-          venue = matchStatus.venue
-        ))
+        "footballMatch" -> Some(mapAsJavaMap(Map(
+          "homeTeamName" -> matchStatus.homeTeamName,
+          "homeTeamId" -> matchStatus.homeTeamId,
+          "homeTeamScore" -> matchStatus.homeTeamScore,
+          "homeTeamText" -> matchStatus.homeTeamMessage,
+          "awayTeamName" -> matchStatus.awayTeamName,
+          "awayTeamId" -> matchStatus.awayTeamId,
+          "awayTeamScore" -> matchStatus.awayTeamScore,
+          "awayTeamText" -> matchStatus.awayTeamMessage,
+          "currentMinute" -> "",
+          "matchStatus" -> matchStatus.matchStatus,
+          "matchId" -> matchStatus.matchId,
+          "mapiUrl" -> matchStatus.matchInfoUri.toString,
+          "matchInfoUri" -> matchStatus.matchInfoUri.toString,
+          "uri" -> ""
+        ) ++ Map(
+          "articleUri" -> matchStatus.articleUri.map(_.toString),
+          "competitionName" -> matchStatus.competitionName,
+          "venue" -> matchStatus.venue
+        ).flattenValues))
       )
     )
   }
