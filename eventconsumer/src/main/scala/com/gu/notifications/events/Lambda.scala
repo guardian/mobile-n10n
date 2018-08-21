@@ -49,13 +49,12 @@ object Lambda {
   def handler(context: Context): Unit = {
     val env = Env()
     logger.info(s"Starting $env")
-    logger.info(process(env))
   }
 
   /*
    * Logic
    */
-  def process(env: Env): String = {
+  def process(env: Env, date: String, id: UUID): String = {
 
     def allFileRequests = new Iterator[List[S3ObjectSummary]] {
       private var nextMarker: Option[String] = None
@@ -64,7 +63,7 @@ object Lambda {
       override def next(): List[S3ObjectSummary] = {
         val lor = new ListObjectsRequest()
           .withBucketName("aws-mobile-logs")
-          .withPrefix("fastly/events.mobile.guardianapis.com")
+          .withPrefix(s"fastly/events.mobile.guardianapis.com/$date")
           .withMarker(nextMarker.orNull)
         val list = s3Client.listObjects(lor)
         nextMarker = Option(list.getNextMarker)
@@ -96,18 +95,27 @@ object Lambda {
         platformString <- queryParams.get("platform")
         providerString <- queryParams.get("provider").orElse(Some("android"))
         notificationId <- Try(UUID.fromString(notificationIdString)).toOption
+        if notificationId == id
         platform <- Platform.fromString(platformString)
         provider <- Provider.fromString(providerString)
       } yield EventsPerNotification.from(notificationId, rawEvent.dateTime, platform, provider)
     }
-
     val events = forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent).reduce(EventsPerNotification.combine)
+    val agg = events.aggregations(id)
+    logger.info(
+      s"""
+         |Total: ${agg.providerCounts.total}
+         |iOS: ${agg.platformCounts.ios}
+         |Android: ${agg.platformCounts.android}
+         |Azure: ${agg.providerCounts.azure}
+         |Firebase: ${agg.providerCounts.firebase}
+       """.stripMargin)
     events.aggregations.toList.sortBy(- _._2.providerCounts.total).mkString("\n")
   }
 }
 
 object TestIt {
   def main(args: Array[String]): Unit = {
-    println(Lambda.process(Env()))
+    println(Lambda.process(Env(), args(0), UUID.fromString(args(1))))
   }
 }
