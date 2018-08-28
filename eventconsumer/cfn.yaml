@@ -69,19 +69,12 @@ Resources:
       Runtime: java8
       Timeout: 60
 
-  DailyEvent:
-    Type: AWS::Events::Rule
+  S3Bucket:
+    Type: AWS::S3::Bucket
     Properties:
-      Description: Event sent to process the previous day of data
-      ScheduleExpression: cron(14 3 * * ? *)
-      Targets:
-        - Id: Lambda
-          Arn: !GetAtt Lambda.Arn
-
-  DailyEventLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt Lambda.Arn
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt DailyEvent.Arn
+      AccessControl: Private
+      BucketName: !Sub aws-mobile-event-logs-${Stage}
+      NotificationConfiguration:
+        LambdaConfigurations:
+          Event: s3:ObjectCreated:*
+          Function: !Ref Lambda
