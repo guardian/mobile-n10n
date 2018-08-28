@@ -13,6 +13,7 @@ deployments:
   eventconsumer-cfn:
     type: cloud-formation
     app: eventconsumer
+    contentDirectory: eventconsumer
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: eventconsumer
