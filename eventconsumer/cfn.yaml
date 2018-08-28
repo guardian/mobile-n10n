@@ -63,8 +63,8 @@ Resources:
           Stack: !Ref Stack
           App: !Ref App
       Description: Consumes events produced when an app receives a notification
-      Handler: com.gu.notifications.events.Lambda::handler
-      MemorySize: 128
+      Handler: com.gu.notifications.events.TestLambda::handleRequest
+      MemorySize: 320
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 60

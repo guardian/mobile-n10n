@@ -4,8 +4,6 @@ import java.time.{Duration, LocalDateTime}
 import java.time.temporal.{ChronoUnit, Temporal, TemporalUnit}
 import java.util.UUID
 
-import scala.collection.SortedMap
-
 case class PlatformCount(
   total: Int,
   ios: Int,
