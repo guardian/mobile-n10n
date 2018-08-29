@@ -83,7 +83,3 @@ Resources:
       BucketName: !Sub
                     - aws-mobile-event-logs-${BucketStage}
                     - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
-      NotificationConfiguration:
-        LambdaConfigurations:
-        - Event: s3:ObjectCreated:*
-          Function: !GetAtt Lambda.Arn
