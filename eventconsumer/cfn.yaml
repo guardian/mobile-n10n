@@ -77,9 +77,24 @@ Resources:
 
   S3Bucket:
     Type: AWS::S3::Bucket
-    DependsOn: Lambda
+    DependsOn: LambdaPermissionS3Bucket
     Properties:
       AccessControl: Private
       BucketName: !Sub
                     - aws-mobile-event-logs-${BucketStage}
                     - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
+      NotificationConfiguration:
+        LambdaConfigurations:
+        - Event: s3:ObjectCreated:*
+          Function: !GetAtt Lambda.Arn
+  LambdaPermissionS3Bucket:
+    DependsOn:
+    - Lambda
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Lambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !Sub
+      - arn:aws:s3:::aws-mobile-event-logs-${BucketStage}
+      - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
