@@ -9,8 +9,7 @@ import com.amazonaws.util.IOUtils
 class TestLambda extends RequestStreamHandler{
   override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     try {
-      IOUtils.toString(input)
-      println(input)
+      println(IOUtils.toString(input))
     }
     finally {
       input.close()
