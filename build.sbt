@@ -1,4 +1,5 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
+import play.sbt.PlayImport.specs2
 import sbtassembly.AssemblyPlugin.autoImport.assemblyMergeStrategy
 import sbtassembly.MergeStrategy
 
@@ -246,30 +247,37 @@ lazy val apiClient = {
 }
 
 lazy val eventconsumer = project.enablePlugins(RiffRaffArtifact, AssemblyPlugin)
-  .settings(Seq(
-    description:= "Consumes events produced when an app receives a notification",
-    libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-      "org.slf4j" % "slf4j-simple" % "1.7.25",
-      "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
-      "com.typesafe.play" %% "play-json" % playJsonVersion
-    ),
+  .settings({
+    val log4j2Version: String = "2.10.0"
+    Seq(
+      description:= "Consumes events produced when an app receives a notification",
+      libraryDependencies ++= Seq(
+        "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+        "org.slf4j" % "slf4j-simple" % "1.7.25",
+        "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
+        "com.typesafe.play" %% "play-json" % playJsonVersion,
+        "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
+        "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
 
-    assemblyJarName := s"${name.value}.jar",
-    assemblyMergeStrategy in assembly := {
-      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
-      case resource => (assemblyMergeStrategy in assembly).value(resource)
-    },
-    riffRaffPackageType := file(".nothing"),
-    riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
-    riffRaffUploadManifestBucket := Option("riffraff-builds"),
-    riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
-    riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
-    riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
+        specs2 % Test
+      ),
+
+      assemblyJarName := s"${name.value}.jar",
+      assemblyMergeStrategy in assembly := {
+        case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+        case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
+        case resource => (assemblyMergeStrategy in assembly).value(resource)
+      },
+      riffRaffPackageType := file(".nothing"),
+      riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
+      riffRaffUploadManifestBucket := Option("riffraff-builds"),
+      riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
+      riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
+      riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
 
 
-))
+    )
+  })
 
 lazy val root = (project in file(".")).disablePlugins(AssemblyPlugin).
   aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda, apiClient, eventconsumer)
