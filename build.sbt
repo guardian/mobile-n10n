@@ -253,12 +253,10 @@ lazy val eventconsumer = project.enablePlugins(RiffRaffArtifact, AssemblyPlugin)
       description:= "Consumes events produced when an app receives a notification",
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-        "org.slf4j" % "slf4j-simple" % "1.7.25",
         "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
-
         specs2 % Test
       ),
 
