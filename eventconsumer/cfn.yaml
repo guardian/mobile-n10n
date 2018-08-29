@@ -85,4 +85,4 @@ Resources:
       NotificationConfiguration:
         LambdaConfigurations:
         - Event: s3:ObjectCreated:*
-          Function: !Ref Lambda
+          Function: !GetAtt Lambda.Arn
