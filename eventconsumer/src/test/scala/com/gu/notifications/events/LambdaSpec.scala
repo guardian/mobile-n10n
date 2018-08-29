@@ -19,7 +19,8 @@ class LambdaSpec extends Specification {
       val os: OutputStream = new ByteArrayOutputStream()
       var queue: mutable.Queue[S3Event] = mutable.Queue.empty
       new Lambda(event=> queue += event).handleRequest(is, os, null)
-      queue.toList must beEqualTo(List(S3Event(List(S3EventRecord(Some(S3EventRecordS3(Some(S3EventRecordS3Object(Some("tests4"))))))))))
+      queue.toList must beEqualTo(List(S3Event(List(S3EventRecord(Some(S3EventRecordS3(
+        Some(S3EventRecordS3Object(Some("tests4"))),Some(S3EventRecordS3Bucket(Some("aws-mobile-event-logs-code"))))))))))
 
     }
   }

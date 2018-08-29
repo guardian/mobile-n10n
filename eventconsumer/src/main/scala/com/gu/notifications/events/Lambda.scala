@@ -8,12 +8,12 @@ import org.apache.logging.log4j.LogManager
 import play.api.libs.json.Json
 
 object Lambda extends App {
-  new Lambda("aws-mobile-event-logs-CODE")
+
+  new Lambda().handleRequest(System.in, System.out, null)
 }
 class Lambda(eventConsumer: S3Event => Unit) extends RequestStreamHandler {
   val logger = LogManager.getLogger(classOf[Lambda])
-  def this(eventBucket:String) = this(e => new ProcessEvents(eventBucket))
-  def this() = this(System.getenv("EventBucket"))
+  def this() = this(e => new ProcessEvents())
   override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     val inputString = try {
       IOUtils.toString(input)

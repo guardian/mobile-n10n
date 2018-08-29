@@ -12,7 +12,7 @@ import play.api.libs.json.Json
 import scala.collection.JavaConverters._
 import scala.util.Try
 
-class ProcessEvents(bucketName: String) {
+class ProcessEvents {
   val logger: log4j.Logger = LogManager.getLogger(classOf[ProcessEvents])
 
   /*
@@ -25,10 +25,13 @@ class ProcessEvents(bucketName: String) {
         for {
           s3 <- record.s3
           s3Object <- s3.`object`
+          s3Bucket <- s3.bucket
           key <- s3Object.key
-        } yield key
+          bucket <- s3Bucket.name
+        } yield (bucket, key)
       })
-      keys.flatMap(key => {
+      keys.flatMap{ case
+        (bucketName, key) => {
         logger.info(s"Fetching ${bucketName}/${key}")
         val s3Object = AwsClient.s3Client.getObject(bucketName, key)
         val is = s3Object.getObjectContent
@@ -38,8 +41,9 @@ class ProcessEvents(bucketName: String) {
         finally {
           is.close()
         }
+        logger.info(content)
         content.lines
-      })
+      }}
     }
 
     def toRawEvent(string: String): Option[RawEvent] = {
@@ -61,6 +65,6 @@ class ProcessEvents(bucketName: String) {
     }
 
     val events = forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent).reduce(EventsPerNotification.combine)
-    println(events.aggregations.toList.sortBy(-_._2.providerCounts.total).mkString("\n"))
+    logger.info(events.aggregations.toList.sortBy(-_._2.providerCounts.total).mkString("\n"))
   }
 }
