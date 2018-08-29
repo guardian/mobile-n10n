@@ -20,18 +20,18 @@ class ProcessEvents {
    */
   def process(s3Event: S3Event): Unit = {
 
-    def forAllLineOfAllFiles: Iterator[String] = {
-      val keys = s3Event.Records.iterator.flatMap(record => {
+    def forAllLineOfAllFiles: Seq[String] = {
+      val keys = s3Event.Records.seq.flatMap(record => {
         for {
-          s3 <- record.s3
-          s3Object <- s3.`object`
-          s3Bucket <- s3.bucket
-          key <- s3Object.key
-          bucket <- s3Bucket.name
+            s3 <- record.s3
+              s3Object <- s3.`object`
+              s3Bucket <- s3.bucket
+              key <- s3Object.key
+              bucket <- s3Bucket.name
         } yield (bucket, key)
       })
-      keys.flatMap{ case
-        (bucketName, key) => {
+      logger.info(s"Keys: ${keys}")
+      keys.flatMap{ case (bucketName, key) => {
         logger.info(s"Fetching ${bucketName}/${key}")
         val s3Object = AwsClient.s3Client.getObject(bucketName, key)
         val is = s3Object.getObjectContent
