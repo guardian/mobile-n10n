@@ -72,7 +72,7 @@ Resources:
           - aws-mobile-event-logs-${BucketStage}
           - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
       Description: Consumes events produced when an app receives a notification
-      Handler: com.gu.notifications.events.TestLambda::handleRequest
+      Handler: com.gu.notifications.events.Lambda::handleRequest
       MemorySize: 320
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
