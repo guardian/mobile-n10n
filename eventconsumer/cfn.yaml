@@ -20,6 +20,12 @@ Parameters:
     Description: Bucket where RiffRaff uploads artifacts on deploy
     Type: String
     Default: mobile-notifications-dist
+Mappings:
+  StageVariables:
+    CODE:
+      BucketStage: code
+    PROD:
+      BucketStage: prod
 Resources:
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -73,7 +79,9 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       AccessControl: Private
-      BucketName: !Sub aws-mobile-event-logs-${Stage}
+      BucketName: !Sub
+                    - aws-mobile-event-logs-${BucketStage}
+                    - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
       NotificationConfiguration:
         LambdaConfigurations:
         - Event: s3:ObjectCreated:*
