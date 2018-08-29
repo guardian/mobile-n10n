@@ -76,5 +76,5 @@ Resources:
       BucketName: !Sub aws-mobile-event-logs-${Stage}
       NotificationConfiguration:
         LambdaConfigurations:
-          Event: s3:ObjectCreated:*
+        - Event: s3:ObjectCreated:*
           Function: !Ref Lambda
