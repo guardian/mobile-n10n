@@ -269,6 +269,7 @@ lazy val eventconsumer = project.enablePlugins(RiffRaffArtifact, AssemblyPlugin)
       riffRaffPackageType := file(".nothing"),
       riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
       riffRaffUploadManifestBucket := Option("riffraff-builds"),
+      riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
       riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
       riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
