@@ -63,10 +63,10 @@ Resources:
             - s3:GetObject
             Resource:
             - !Sub
-              - aws-mobile-event-logs-${BucketStage}
+              - arn:aws:s3:::aws-mobile-event-logs-${BucketStage}
               - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
             - !Sub
-              - aws-mobile-event-logs-${BucketStage}/*
+              - arn:aws:s3:::aws-mobile-event-logs-${BucketStage}/*
               - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
 
   Lambda:
