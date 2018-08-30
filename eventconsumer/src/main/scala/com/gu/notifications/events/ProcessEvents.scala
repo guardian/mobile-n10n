@@ -1,6 +1,7 @@
 package com.gu.notifications.events
 
-import java.nio.charset.Charset
+import java.net.URLDecoder
+import java.nio.charset.{Charset, StandardCharsets}
 import java.util.UUID
 
 import com.amazonaws.util.IOUtils
@@ -28,7 +29,8 @@ class ProcessEvents extends (S3Event  => Unit){
               s3Bucket <- s3.bucket
               key <- s3Object.key
               bucket <- s3Bucket.name
-        } yield (bucket, key)
+              decodedKey = URLDecoder.decode(key, StandardCharsets.UTF_8.name() )
+        } yield (bucket, decodedKey)
       })
       logger.info(s"Keys: ${keys}")
       keys.flatMap{ case (bucketName, key) => {
