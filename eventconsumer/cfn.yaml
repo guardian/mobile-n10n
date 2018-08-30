@@ -13,8 +13,8 @@ Parameters:
     Description: Stage name
     Type: String
     AllowedValues:
-      - CODE
-      - PROD
+    - CODE
+    - PROD
     Default: CODE
   DeployBucket:
     Description: Bucket where RiffRaff uploads artifacts on deploy
@@ -32,29 +32,43 @@ Resources:
     Properties:
       AssumeRolePolicyDocument:
         Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action: sts:AssumeRole
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action: sts:AssumeRole
       Path: /
       Policies:
-        - PolicyName: logs
-          PolicyDocument:
-            Statement:
-              Effect: Allow
-              Action:
-                - logs:CreateLogGroup
-                - logs:CreateLogStream
-                - logs:PutLogEvents
-              Resource: arn:aws:logs:*:*:*
-        - PolicyName: lambda
-          PolicyDocument:
-            Statement:
-              Effect: Allow
-              Action:
-                - lambda:InvokeFunction
-              Resource: "*"
+      - PolicyName: logs
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+      - PolicyName: lambda
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action:
+            - lambda:InvokeFunction
+            Resource: "*"
+      - PolicyName: s3
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action:
+            - s3:GetObject
+            Resource:
+            - !Sub
+              - aws-mobile-event-logs-${BucketStage}
+              - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
+            - !Sub
+              - aws-mobile-event-logs-${BucketStage}/*
+              - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
+
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -84,8 +98,8 @@ Resources:
     Properties:
       AccessControl: Private
       BucketName: !Sub
-                    - aws-mobile-event-logs-${BucketStage}
-                    - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
+      - aws-mobile-event-logs-${BucketStage}
+      - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
       NotificationConfiguration:
         LambdaConfigurations:
         - Event: s3:ObjectCreated:*

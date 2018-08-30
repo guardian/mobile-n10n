@@ -16,17 +16,22 @@ class Lambda(eventConsumer: S3Event => Unit) extends RequestStreamHandler {
   def this() = this(new ProcessEvents())
 
   override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
-    val inputString = try {
-      IOUtils.toString(input)
+    try {
+      val inputString = try {
+        IOUtils.toString(input)
+      }
+      finally {
+        input.close()
+      }
+      logger.info(inputString)
+      S3Event.jf.reads(Json.parse(inputString)).foreach(e => {
+        logger.info(e)
+        eventConsumer(e)
+      })
     }
     finally {
-      input.close()
+      output.close()
     }
-    logger.info(inputString)
-    S3Event.jf.reads(Json.parse(inputString)).foreach(e => {
-      logger.info(e)
-      eventConsumer(e)
-    })
   }
 
 }
