@@ -14,6 +14,7 @@ object Lambda extends App {
 class Lambda(eventConsumer: S3Event => Unit) extends RequestStreamHandler {
   val logger = LogManager.getLogger(classOf[Lambda])
   def this() = this(new ProcessEvents())
+
   override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     val inputString = try {
       IOUtils.toString(input)

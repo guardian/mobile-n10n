@@ -12,13 +12,13 @@ import play.api.libs.json.Json
 import scala.collection.JavaConverters._
 import scala.util.Try
 
-class ProcessEvents {
+class ProcessEvents extends (S3Event  => Unit){
   val logger: log4j.Logger = LogManager.getLogger(classOf[ProcessEvents])
 
   /*
    * Logic
    */
-  def process(s3Event: S3Event): Unit = {
+  def apply(s3Event: S3Event): Unit = {
 
     def forAllLineOfAllFiles: Seq[String] = {
       val keys = s3Event.Records.seq.flatMap(record => {
@@ -67,4 +67,6 @@ class ProcessEvents {
     val events = forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent).reduce(EventsPerNotification.combine)
     logger.info(events.aggregations.toList.sortBy(-_._2.providerCounts.total).mkString("\n"))
   }
+
+
 }
