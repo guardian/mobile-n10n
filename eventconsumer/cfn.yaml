@@ -60,7 +60,7 @@ Resources:
           Statement:
             Effect: Allow
             Action:
-            - s3:GetObject
+            - s3:*
             Resource:
             - !Sub
               - arn:aws:s3:::aws-mobile-event-logs-${BucketStage}
