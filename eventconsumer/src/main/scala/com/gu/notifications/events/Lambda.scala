@@ -22,7 +22,10 @@ class Lambda(eventConsumer: S3Event => Unit) extends RequestStreamHandler {
       input.close()
     }
     logger.info(inputString)
-    S3Event.jf.reads(Json.parse(inputString)).foreach(eventConsumer)
+    S3Event.jf.reads(Json.parse(inputString)).foreach(e => {
+      logger.info(e)
+      eventConsumer(e)
+    })
   }
 
 }
