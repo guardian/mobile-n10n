@@ -32,9 +32,7 @@ class ProcessEvents extends (S3Event  => Unit){
               decodedKey = URLDecoder.decode(key, StandardCharsets.UTF_8.name() )
         } yield (bucket, decodedKey)
       })
-      logger.info(s"Keys: ${keys}")
       keys.flatMap{ case (bucketName, key) => {
-        logger.info(s"Fetching ${bucketName}/${key}")
         val s3Object = AwsClient.s3Client.getObject(bucketName, key)
         val is = s3Object.getObjectContent
         val content = try {
@@ -43,7 +41,6 @@ class ProcessEvents extends (S3Event  => Unit){
         finally {
           is.close()
         }
-        logger.info(content)
         content.lines
       }}
     }
