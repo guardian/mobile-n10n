@@ -1,4 +1,5 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
+import play.sbt.PlayImport.specs2
 import sbtassembly.AssemblyPlugin.autoImport.assemblyMergeStrategy
 import sbtassembly.MergeStrategy
 
@@ -24,6 +25,7 @@ val minJacksonLibs = Seq(
 )
 val playJsonVersion = "2.6.9"
 val specsVersion: String = "4.0.3"
+val awsSdkVersion: String = "1.11.388"
 
 val standardSettings = Seq[Setting[_]](
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
@@ -61,7 +63,7 @@ lazy val common = project
       "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % "1.5.0",
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.377",
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
       "ai.x" %% "play-json-extensions" % "0.10.0"
     ),
@@ -80,7 +82,7 @@ lazy val commonscheduledynamodb = project
   .settings(LocalDynamoDBScheduleLambda.settings)
   .settings(List(
     libraryDependencies ++= List(
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % "1.11.377",
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       specs2 % Test
 
     ),
@@ -127,10 +129,9 @@ lazy val notification = project
 
 lazy val schedulelambda = project
   .dependsOn(commonscheduledynamodb)
-  .enablePlugins(RiffRaffArtifact)
+  .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
   .settings {
     val simpleConfigurationVersion: String = "1.5.0"
-    val awsVersion: String = "1.11.377"
     val log4j2Version: String = "2.10.0"
     val byteBuddyVersion = "1.8.8"
     List(resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
@@ -143,8 +144,8 @@ lazy val schedulelambda = project
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
         "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
-        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsVersion,
-        "com.amazonaws" % "aws-java-sdk-dynamodb" % awsVersion,
+        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
+        "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
         "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
@@ -168,7 +169,8 @@ lazy val schedulelambda = project
         "-Ywarn-dead-code",
         "-Xfatal-warnings",
         "-Ypartial-unification"
-      )
+      ),
+      riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
     )
   }
 
@@ -240,5 +242,34 @@ lazy val apiClient = {
   ))
 }
 
+lazy val eventconsumer = project.enablePlugins(RiffRaffArtifact, AssemblyPlugin)
+  .settings({
+    val log4j2Version: String = "2.10.0"
+    Seq(
+      description:= "Consumes events produced when an app receives a notification",
+      libraryDependencies ++= Seq(
+        "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+        "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
+        "com.typesafe.play" %% "play-json" % playJsonVersion,
+        "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
+        "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
+        specs2 % Test
+      ),
+      assemblyJarName := s"${name.value}.jar",
+      assemblyMergeStrategy in assembly := {
+        case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+        case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
+        case resource => (assemblyMergeStrategy in assembly).value(resource)
+      },
+      riffRaffPackageType := file(".nothing"),
+      riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
+      riffRaffUploadManifestBucket := Option("riffraff-builds"),
+      riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
+      riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
+      riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
+      riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
+    )
+  })
+
 lazy val root = (project in file(".")).
-  aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda, apiClient)
+  aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda, apiClient, eventconsumer)
