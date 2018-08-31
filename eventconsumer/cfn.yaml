@@ -41,16 +41,15 @@ Resources:
       Policies:
       - PolicyName: logs
         PolicyDocument:
-          - Statement:
-              Effect: Allow
-              Action: logs:CreateLogGroup
-              Resource: !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:*"
-          - Statement:
-              Effect: Allow
-              Action:
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-              Resource: !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-${Stage}:*"
+          Statement:
+          - Effect: Allow
+            Action: logs:CreateLogGroup
+            Resource: !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:*"
+          - Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-${Stage}:*"
 
       - PolicyName: s3
         PolicyDocument:
