@@ -2,6 +2,8 @@
 
     <contextName>report</contextName>
 
+    <logger name="akka.actor.ActorSystemImpl" level="ERROR" />
+
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/application.log</file>
 
@@ -11,7 +13,7 @@
         </rollingPolicy>
 
         <encoder>
-            <pattern>%date [%level] from %logger in %thread - %message%n%xException</pattern>
+      <pattern>%date [%level] [%logger] [%thread] - %message%n%xException</pattern>
         </encoder>
     </appender>
 
