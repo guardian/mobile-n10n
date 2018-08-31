@@ -3,6 +3,7 @@ package metrics
 import akka.actor.{ActorSystem, Props}
 import com.amazonaws.regions.{Region, Regions}
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
+import com.gu.AppIdentity
 import play.api.Environment
 import play.api.inject.ApplicationLifecycle
 
@@ -14,7 +15,7 @@ trait Metrics {
   def executionContext: ExecutionContext
 }
 
-class CloudWatchMetrics(applicationLifecycle: ApplicationLifecycle, env: Environment, app: App) extends Metrics {
+class CloudWatchMetrics(applicationLifecycle: ApplicationLifecycle, env: Environment, identity: AppIdentity) extends Metrics {
 
   private val actorSystem: ActorSystem = ActorSystem(
     name = "Blocking-Cloudwatch-Metrics",
@@ -32,7 +33,7 @@ class CloudWatchMetrics(applicationLifecycle: ApplicationLifecycle, env: Environ
     AmazonCloudWatchClientBuilder.standard().withRegion(region).build
   }
 
-  private val metricActor = actorSystem.actorOf(Props(classOf[MetricActor], cloudWatchClient, app, env))
+  private val metricActor = actorSystem.actorOf(Props(classOf[MetricActor], cloudWatchClient, identity, env))
 
   actorSystem.scheduler.schedule(
     initialDelay = 0.second,

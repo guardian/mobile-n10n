@@ -30,15 +30,17 @@ import _root_.models.NewsstandShardConfig
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
+import com.gu.AppIdentity
+import metrics.{CloudWatchMetrics, Metrics}
 import registration.services.fcm.FcmRegistrar
 
 import scala.concurrent.Future
 
 class RegistrationApplicationLoader extends CustomApplicationLoader {
-  def buildComponents(context: Context) : BuiltInComponents = new RegistrationApplicationComponents(context)
+  def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new RegistrationApplicationComponents(identity, context)
 }
 
-class RegistrationApplicationComponents(context: Context) extends BuiltInComponentsFromContext(context)
+class RegistrationApplicationComponents(identity: AppIdentity, context: Context) extends BuiltInComponentsFromContext(context)
   with AhcWSComponents
   with HttpFiltersComponents
   with AssetsComponents {
@@ -75,7 +77,8 @@ class RegistrationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
   lazy val registrarProvider: RegistrarProvider = new NotificationRegistrarProvider(gcmNotificationRegistrar, apnsNotificationRegistrar, newsstandNotificationRegistrar)
-  lazy val migratingRegistrarProvider: RegistrarProvider = new MigratingRegistrarProvider(registrarProvider, fcmNotificationRegistrar)
+  lazy val metrics: Metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
+  lazy val migratingRegistrarProvider: RegistrarProvider = new MigratingRegistrarProvider(registrarProvider, fcmNotificationRegistrar, metrics)
   lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker)
   lazy val fcmNotificationRegistrar: FcmRegistrar = new FcmRegistrar(

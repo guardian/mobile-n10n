@@ -7,6 +7,8 @@ import registration.services.azure._
 import scala.collection.breakOut
 import scala.concurrent.ExecutionContext
 import cats.implicits._
+import com.amazonaws.services.cloudwatch.model.StandardUnit
+import metrics.{MetricDataPoint, Metrics}
 import registration.services.fcm.FcmRegistrar
 
 trait RegistrarProvider {
@@ -55,15 +57,20 @@ final class NotificationRegistrarProvider(
     uniqueAzureProviders.map(fn)
 }
 
-
 class MigratingRegistrarProvider(
   standardRegistrarProvider: RegistrarProvider,
-  fcmRegistrar: FcmRegistrar
+  fcmRegistrar: FcmRegistrar,
+  metrics: Metrics
 )(implicit executionContext: ExecutionContext) extends RegistrarProvider {
   override def registrarFor(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar] = deviceToken match {
-    case AzureToken(_) => standardRegistrarProvider.registrarFor(platform, deviceToken)
-    case FcmToken(_) => Right(fcmRegistrar)
+    case AzureToken(_) =>
+      metrics.send(MetricDataPoint(name = "RegistrationAzure", value = 1d, unit = StandardUnit.Count))
+      standardRegistrarProvider.registrarFor(platform, deviceToken)
+    case FcmToken(_) =>
+      metrics.send(MetricDataPoint(name = "RegistrationFcm", value = 1d, unit = StandardUnit.Count))
+      Right(fcmRegistrar)
     case BothTokens(_, _) =>
+      metrics.send(MetricDataPoint(name = "RegistrationBoth", value = 1d, unit = StandardUnit.Count))
       standardRegistrarProvider
         .registrarFor(platform, deviceToken)
         .map(legacyRegistrar => new MigratingRegistrar(fcmRegistrar, legacyRegistrar))
