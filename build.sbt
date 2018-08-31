@@ -23,9 +23,10 @@ val minJacksonLibs = Seq(
   "com.fasterxml.jackson.core" % "jackson-annotations" % minJacksonVersion,
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion
 )
+
 val playJsonVersion = "2.6.9"
 val specsVersion: String = "4.0.3"
-val awsSdkVersion: String = "1.11.388"
+val awsSdkVersion: String = "1.11.400"
 
 val standardSettings = Seq[Setting[_]](
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
@@ -64,6 +65,7 @@ lazy val common = project
       "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % "1.5.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+      "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
       "ai.x" %% "play-json-extensions" % "0.10.0"
     ),
