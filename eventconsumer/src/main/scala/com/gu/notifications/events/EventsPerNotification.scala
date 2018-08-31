@@ -27,19 +27,21 @@ object PlatformCount {
 
 case class ProviderCount(
   total: Int,
-  azure: Int,
-  firebase: Int
+  azure: PlatformCount,
+  firebase: PlatformCount
 )
 
 object ProviderCount {
-  def from(provider: Provider): ProviderCount = provider match {
-    case Azure => ProviderCount(1, 1, 0)
-    case Fcm => ProviderCount(1, 0, 1)
+  def from(provider: Provider, platform: Platform): ProviderCount = (provider, platform) match {
+    case (Azure, Ios) => ProviderCount(1, PlatformCount(1, 1, 0), PlatformCount(0, 0, 0))
+    case (Azure, Android) => ProviderCount(1, PlatformCount(1, 0, 1), PlatformCount(0, 0, 0))
+    case (Fcm, Ios) => ProviderCount(1, PlatformCount(0, 0, 0), PlatformCount(1, 1, 0))
+    case (Fcm, Android) => ProviderCount(1, PlatformCount(0, 0, 0), PlatformCount(1, 0, 1))
   }
   def combine(countsA: ProviderCount, countsB: ProviderCount): ProviderCount = ProviderCount(
     total = countsA.total + countsB.total,
-    azure = countsA.azure + countsB.azure,
-    firebase = countsA.firebase + countsB.firebase
+    azure = PlatformCount.combine(countsA.azure, countsB.azure),
+    firebase = PlatformCount.combine(countsA.firebase, countsB.firebase)
   )
 }
 
@@ -60,7 +62,7 @@ object EventAggregation {
     EventAggregation(
       notificationId = notificationId,
       platformCounts = PlatformCount.from(platform),
-      providerCounts = ProviderCount.from(provider),
+      providerCounts = ProviderCount.from(provider, platform),
       timing = Map(dateTime -> 1)
     )
   }

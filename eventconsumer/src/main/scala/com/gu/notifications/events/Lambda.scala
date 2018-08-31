@@ -107,8 +107,12 @@ object Lambda {
          |Total: ${agg.providerCounts.total}
          |iOS: ${agg.platformCounts.ios}
          |Android: ${agg.platformCounts.android}
-         |Azure: ${agg.providerCounts.azure}
-         |Firebase: ${agg.providerCounts.firebase}
+         |Azure: ${agg.providerCounts.azure.total}
+         |Azure (iOS): ${agg.providerCounts.azure.ios}
+         |Azure (Android): ${agg.providerCounts.azure.android}
+         |Firebase: ${agg.providerCounts.firebase.total}
+         |Firebase (iOS): ${agg.providerCounts.firebase.ios}
+         |Firebase (Android): ${agg.providerCounts.firebase.android}
        """.stripMargin)
     events.aggregations.toList.sortBy(- _._2.providerCounts.total).mkString("\n")
   }
