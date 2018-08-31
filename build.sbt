@@ -42,7 +42,6 @@ val standardSettings = Seq[Setting[_]](
 )
 
 lazy val common = project
-  .disablePlugins(AssemblyPlugin)
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
@@ -80,7 +79,6 @@ lazy val common = project
   )
 
 lazy val commonscheduledynamodb = project
-    .disablePlugins(AssemblyPlugin)
   .settings(LocalDynamoDBScheduleLambda.settings)
   .settings(List(
     libraryDependencies ++= List(
@@ -96,7 +94,6 @@ lazy val commonscheduledynamodb = project
   ))
 
 lazy val registration = project
-  .disablePlugins(AssemblyPlugin)
   .dependsOn(common % "test->test;compile->compile")
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
@@ -114,7 +111,6 @@ lazy val registration = project
   )
 
 lazy val notification = project
-  .disablePlugins(AssemblyPlugin)
   .dependsOn(common)
   .dependsOn(commonscheduledynamodb)
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
@@ -173,12 +169,12 @@ lazy val schedulelambda = project
         "-Ywarn-dead-code",
         "-Xfatal-warnings",
         "-Ypartial-unification"
-      )
+      ),
+      riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
     )
   }
 
 lazy val report = project
-  .disablePlugins(AssemblyPlugin)
   .dependsOn(common % "test->test;compile->compile")
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
@@ -199,7 +195,7 @@ lazy val apiClient = {
   import sbt.Keys.organization
   import sbtrelease._
   import ReleaseStateTransformations._
-  Project("api-client", file("api-client")).disablePlugins(AssemblyPlugin).settings(Seq(
+  Project("api-client", file("api-client")).settings(Seq(
     name := "mobile-notifications-client",
     scalaVersion := "2.11.12",
     crossScalaVersions := Seq("2.11.12", "2.12.6"),
@@ -259,7 +255,6 @@ lazy val eventconsumer = project.enablePlugins(RiffRaffArtifact, AssemblyPlugin)
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         specs2 % Test
       ),
-
       assemblyJarName := s"${name.value}.jar",
       assemblyMergeStrategy in assembly := {
         case "META-INF/MANIFEST.MF" => MergeStrategy.discard
@@ -273,10 +268,8 @@ lazy val eventconsumer = project.enablePlugins(RiffRaffArtifact, AssemblyPlugin)
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
       riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
       riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
-
-
     )
   })
 
-lazy val root = (project in file(".")).disablePlugins(AssemblyPlugin).
+lazy val root = (project in file(".")).
   aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda, apiClient, eventconsumer)
