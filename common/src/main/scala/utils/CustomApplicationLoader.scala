@@ -8,7 +8,7 @@ import play.api.ApplicationLoader.Context
 import play.api._
 
 abstract class CustomApplicationLoader extends ApplicationLoader {
-  def buildComponents(context: Context): BuiltInComponents
+  def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents
 
   lazy val credentials = new AWSCredentialsProviderChain(
     new ProfileCredentialsProvider("mobile"),
@@ -23,6 +23,6 @@ abstract class CustomApplicationLoader extends ApplicationLoader {
     }
     val loadedConfig = Configuration(config)
     val newContext = context.copy(initialConfiguration = context.initialConfiguration ++ loadedConfig )
-    buildComponents(newContext).application
+    buildComponents(identity, newContext).application
   }
 }

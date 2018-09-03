@@ -1,6 +1,7 @@
 package registration.controllers
 
 import application.WithPlayApp
+import com.gu.DevIdentity
 import error.NotificationsError
 import models.TopicTypes.{Breaking, FootballMatch}
 import models._
@@ -107,7 +108,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
   }
 
   override def configureComponents(context: Context): BuiltInComponents = {
-    new RegistrationApplicationComponents(context)  {
+    new RegistrationApplicationComponents(DevIdentity("notifications"), context)  {
       override lazy val topicValidator = fakeTopicValidator
       override lazy val registrarProvider: RegistrarProvider = fakeRegistrarProvider
       override lazy val migratingRegistrarProvider: RegistrarProvider = fakeRegistrarProvider

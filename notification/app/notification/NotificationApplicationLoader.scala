@@ -14,6 +14,7 @@ import _root_.models.NewsstandShardConfig
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging.{AndroidConfig, FirebaseMessaging}
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
+import com.gu.AppIdentity
 import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, ScheduleTableConfig}
 import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
@@ -22,7 +23,7 @@ import notification.services.azure._
 import notification.services.fcm.{APNSConfigConverter, AndroidConfigConverter, FCMConfigConverter, FCMNotificationSender}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
-import play.api.BuiltInComponentsFromContext
+import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
 import play.api.ApplicationLoader.Context
 import play.api.mvc.EssentialFilter
 import play.filters.HttpFiltersComponents
@@ -34,7 +35,7 @@ import router.Routes
 import scala.concurrent.Future
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
-  def buildComponents(context: Context) = new NotificationApplicationComponents(context)
+  def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new NotificationApplicationComponents(context)
 }
 
 class NotificationApplicationComponents(context: Context) extends BuiltInComponentsFromContext(context)

@@ -5,6 +5,7 @@ import akka.actor.ActorSystem
 import aws.AsyncDynamo
 import azure.NotificationHubClient
 import com.amazonaws.regions.Regions.EU_WEST_1
+import com.gu.AppIdentity
 import play.api.routing.Router
 import play.api._
 import play.api.ApplicationLoader.Context
@@ -21,7 +22,7 @@ import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
 
 class ReportApplicationLoader extends CustomApplicationLoader {
-  def buildComponents(context: Context): BuiltInComponents = new ReportApplicationComponents(context)
+  def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new ReportApplicationComponents(context)
 }
 
 class ReportApplicationComponents(context: Context) extends BuiltInComponentsFromContext(context)
