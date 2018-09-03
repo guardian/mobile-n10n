@@ -35,7 +35,7 @@ class AndroidConfigConverterSpec extends Specification {
       val data = convert(push)
 
       data shouldEqual androidConfigConverter.FirebaseAndroidNotification(
-        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
         data = Map(
           Keys.NotificationType -> "news",
           Keys.Type -> "custom",
@@ -73,7 +73,7 @@ class AndroidConfigConverterSpec extends Specification {
       val data = convert(push)
 
       data shouldEqual androidConfigConverter.FirebaseAndroidNotification(
-        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
         data = Map(
           Keys.Type -> "custom",
           Keys.Title -> "Test notification",
@@ -122,7 +122,7 @@ class AndroidConfigConverterSpec extends Specification {
       val data = convert(push)
 
       data shouldEqual androidConfigConverter.FirebaseAndroidNotification(
-        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
         data = Map(
           "type" -> "footballMatchAlert",
           "homeTeamName" -> "Team2",

@@ -22,13 +22,13 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
   override def toFCM(push: Push): Option[AndroidConfig] = toFirebaseAndroidNotification(push).map(_.toAndroidConfig)
 
   case class FirebaseAndroidNotification(
-    notificationId: UUID,
+    id: UUID,
     data: Map[String, String]
   ) {
     def toAndroidConfig: AndroidConfig =
       AndroidConfig.builder()
         .putAllData(data
-          .updated(Keys.UniqueIdentifier, notificationId.toString)
+          .updated(Keys.UniqueIdentifier, id.toString)
           .updated(Keys.Provider, Provider.FCM)
           .asJava
         ).setPriority(AndroidConfig.Priority.HIGH)
@@ -69,7 +69,7 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
     val keyword = tagLink.map(new URI(_))
 
     FirebaseAndroidNotification(
-      notificationId = breakingNews.id,
+      id = breakingNews.id,
       Map(
         Keys.NotificationType -> breakingNews.`type`.value,
         Keys.Type -> AndroidMessageTypes.Custom,
@@ -95,7 +95,7 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
     val link = toPlatformLink(cn.link)
 
     FirebaseAndroidNotification(
-      notificationId = cn.id,
+      id = cn.id,
       Map(
         Keys.Type -> AndroidMessageTypes.Custom,
         Keys.Title -> cn.title,
@@ -113,7 +113,7 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
   }
 
   private def toMatchStatusAlert(matchStatusAlert: FootballMatchStatusNotification): FirebaseAndroidNotification = FirebaseAndroidNotification(
-    notificationId = matchStatusAlert.id,
+    id = matchStatusAlert.id,
     Map(
       "type" -> AndroidMessageTypes.FootballMatchAlert,
       "homeTeamName" -> matchStatusAlert.homeTeamName,

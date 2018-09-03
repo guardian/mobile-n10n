@@ -39,7 +39,7 @@ class APNSConfigConverterSpec extends Specification {
 
 
       val expected = apnsConfigConverter.FirebaseApnsNotification(
-        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
         category = Some("ITEM_CATEGORY"),
         alert = Some(Left("The message")),
         contentAvailable = Some(true),
@@ -78,7 +78,7 @@ class APNSConfigConverterSpec extends Specification {
 
 
       val expected = apnsConfigConverter.FirebaseApnsNotification(
-        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
         category = Some("ITEM_CATEGORY"),
         alert = Some(Left("The message")),
         contentAvailable = Some(true),
@@ -129,7 +129,7 @@ class APNSConfigConverterSpec extends Specification {
       val apnsNotification = convert(push)
 
       val expected = apnsConfigConverter.FirebaseApnsNotification(
-        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
         category = Some("football-match"),
         alert = Some(Right(apnsConfigConverter.FirebaseApsAlert("Test notification", "The message"))),
         contentAvailable = Some(true),
