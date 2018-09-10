@@ -84,7 +84,7 @@ class ReportUpdater(stage:String) {
         ReadVersionedEvents(
           version = if (item.containsKey("version")) Some(item.get("version").getS) else None,
           events = if (item.containsKey("events")) {
-            Some(DynamoConversion.fromAttributeValue(item.get("events"), notificationId, sentTime))
+            Some(DynamoConversion.fromAttributeValue(item.get("events"), notificationId, sentTime.truncatedTo(TenSecondUnit)))
           }
           else {
             None
