@@ -39,13 +39,20 @@ class Lambda(eventConsumer: S3EventProcessor, stage: String)(implicit executionC
       S3Event.jf.reads(Json.parse(inputString)).foreach(e => {
         val events = eventConsumer.process(e)
         val attemptsToUpdateEachEvent = reportUpdater.update(events.aggregations.map { case (k, v) => NotificationReportEvent(k.toString, v) }.toList)
-        val countedAttempts = attemptsToUpdateEachEvent.foldRight(Future.successful(AttemptedCount(0, 0))) {
+        val attemptToCount = attemptsToUpdateEachEvent.foldRight(Future.successful(AttemptedCount(0, 0))) {
           case (attempt, futureCount) => attempt.transformWith {
             case Success(_) => futureCount.map(lastAttemptCount => lastAttemptCount.copy(success = lastAttemptCount.success + 1))
-            case Failure(_) => futureCount.map(lastAttemptCount => lastAttemptCount.copy(failure = lastAttemptCount.failure + 1))
+            case Failure(throwable) => {
+              logger.warn("An attempt failed", throwable)
+              futureCount.map(lastAttemptCount => lastAttemptCount.copy(failure = lastAttemptCount.failure + 1))
+            }
           }
         }
-        logger.info(Await.result(countedAttempts, Duration(4, TimeUnit.MINUTES)))
+        val counted = Await.result(attemptToCount, Duration(4, TimeUnit.MINUTES))
+        logger.info(counted)
+        if(counted.failure > 0) {
+          throw new Exception("Failure happened")
+        }
       })
     }
     catch {
