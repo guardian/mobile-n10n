@@ -16,18 +16,14 @@ case class ReadVersionedEvents(version: Option[String], events: Option[EventAggr
 
 case class UpdateVersionedEvents(lastVersion: Option[String], nextVersion: String, events: NotificationReportEvent)
 
-object ReportUpdater {
-  lazy val reportUpdater = new ReportUpdater
-}
-
-class ReportUpdater {
+class ReportUpdater(stage:String) {
   private val newVersionKey = ":newversion"
   private val newEventsKey = ":newevents"
   private val oldVersionKey = ":oldversion"
-  val logger = LogManager.getLogger(classOf[ReportUpdater])
-  val tableName: String = "mobile-notifications-reports-CODE"
+  private val logger = LogManager.getLogger(classOf[ReportUpdater])
+  private val tableName: String = s"mobile-notifications-reports-$stage"
 
-  def apply(eventAggregations: List[NotificationReportEvent])(implicit executionContext: ExecutionContext): List[Future[Unit]] = {
+  def update(eventAggregations: List[NotificationReportEvent])(implicit executionContext: ExecutionContext): List[Future[Unit]] = {
     eventAggregations.map(aggregation => {
       def nextVersion = UUID.randomUUID().toString
 
@@ -52,7 +48,7 @@ class ReportUpdater {
 
   private def update(versionedEvents: UpdateVersionedEvents, sentTime: LocalDateTime): Future[Unit] = {
     val promise = Promise[Unit]
-    val attributeValueUpdates = Map(
+    val attributeValuesForUpdate = Map(
       newEventsKey -> DynamoConversion.toAttributeValue(versionedEvents.events.eventAggregation, sentTime),
       newVersionKey -> new AttributeValue().withS(versionedEvents.nextVersion)
     )
@@ -64,13 +60,11 @@ class ReportUpdater {
       .lastVersion
       .map(version => updateItemRequestWithoutCondition
           .withConditionExpression(s"version = $oldVersionKey")
-          .withExpressionAttributeValues((attributeValueUpdates ++ Map(oldVersionKey -> new AttributeValue().withS(version))).asJava)
+          .withExpressionAttributeValues((attributeValuesForUpdate ++ Map(oldVersionKey -> new AttributeValue().withS(version))).asJava)
       )
-      .getOrElse(updateItemRequestWithoutCondition.withExpressionAttributeValues(attributeValueUpdates.asJava))
-    logger.info("Updating {}", updateItemRequest)
+      .getOrElse(updateItemRequestWithoutCondition.withExpressionAttributeValues(attributeValuesForUpdate.asJava))
     val handler = new AsyncHandler[UpdateItemRequest, UpdateItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(updateItemRequest.toString, exception))
-
       override def onSuccess(request: UpdateItemRequest, result: UpdateItemResult): Unit = promise.success(())
     }
     AwsClient.dynamoDbClient.updateItemAsync(updateItemRequestWithoutCondition, handler)
@@ -82,24 +76,24 @@ class ReportUpdater {
     val getItemRequest = new GetItemRequest()
       .withTableName(tableName)
       .withKey(Map("id" -> new AttributeValue("id").withS(notificationId)).asJava)
-    logger.info("Getting {}", getItemRequest)
     val handler = new AsyncHandler[GetItemRequest, GetItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(getItemRequest.toString, exception))
-
       override def onSuccess(request: GetItemRequest, result: GetItemResult): Unit = Try {
-        logger.info("Got {}", result)
         val item = result.getItem
-        val version = if (item.containsKey("version")) Some(item.get("version").getS) else None
         val sentTime = ZonedDateTime.parse(item.get("sentTime").getS).toLocalDateTime
-        val events: Option[EventAggregation] = if (item.containsKey("events")) {
-          Some(DynamoConversion.fromAttributeValue(item.get("events"), notificationId, sentTime))
-        }
-        else {
-          None
-        }
-
-        ReadVersionedEvents(version, events, sentTime)
-      }.fold(t => promise.failure(new Exception(request.toString, t)), promise.success)
+        ReadVersionedEvents(
+          version = if (item.containsKey("version")) Some(item.get("version").getS) else None,
+          events = if (item.containsKey("events")) {
+            Some(DynamoConversion.fromAttributeValue(item.get("events"), notificationId, sentTime))
+          }
+          else {
+            None
+          },
+          sentTime = sentTime)
+      } match {
+        case Failure(exception) => promise.failure(new Exception(request.toString, exception))
+        case Success(value) => promise.success(value)
+      }
     }
     AwsClient.dynamoDbClient.getItemAsync(getItemRequest, handler)
     promise.future

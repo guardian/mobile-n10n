@@ -41,7 +41,7 @@ val standardSettings = Seq[Setting[_]](
     "org.specs2" %% "specs2-matcher-extra" % "3.8.9" % Test
   )
 )
-
+val log4j2Version: String = "2.10.0"
 lazy val commoneventconsumer = project
   .settings(Seq(
     resolvers ++= Seq(
@@ -51,9 +51,11 @@ lazy val commoneventconsumer = project
       "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playJsonVersion
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "org.apache.logging.log4j" % "log4j-api" % log4j2Version
     )
   ))
+
 
 lazy val common = project
   .dependsOn(commoneventconsumer)
@@ -81,7 +83,8 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
-      "ai.x" %% "play-json-extensions" % "0.10.0"
+      "ai.x" %% "play-json-extensions" % "0.10.0",
+      "org.apache.logging.log4j" % "log4j-to-slf4j" % log4j2Version
     ),
     libraryDependencies ++= minJacksonLibs,
     fork := true,
@@ -148,7 +151,7 @@ lazy val schedulelambda = project
   .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
   .settings {
     val simpleConfigurationVersion: String = "1.5.0"
-    val log4j2Version: String = "2.10.0"
+
     val byteBuddyVersion = "1.8.8"
     List(resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
       assemblyJarName := s"${name.value}.jar",
@@ -262,7 +265,6 @@ lazy val eventconsumer = project
   .dependsOn(commoneventconsumer)
   .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
   .settings({
-    val log4j2Version: String = "2.10.0"
     Seq(
       description := "Consumes events produced when an app receives a notification",
       libraryDependencies ++= Seq(

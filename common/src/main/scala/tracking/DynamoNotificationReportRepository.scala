@@ -26,12 +26,8 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
   private val SentTimeIndex = "sentTime-index"
 
   override def store(report: NotificationReport): Future[RepositoryResult[Unit]] = {
-    logger.info(s"Storing: ${report}")
     val putItemRequest = new PutItemRequest(tableName, toAttributeMap(report).asJava)
-    (client.putItem(putItemRequest) map { _ => Right(()) }).transform(attempt => {
-      logger.info(s"Store attempted: ${report.id}\n $attempt")
-      attempt
-    })
+    client.putItem(putItemRequest) map { _ => Right(()) }
   }
 
   override def getByTypeWithDateRange(notificationType: NotificationType, from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
@@ -53,23 +49,18 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
     val q = new QueryRequest(tableName)
       .withKeyConditions(Map(IdField -> keyEquals(uuid.toString)).asJava)
       .withConsistentRead(true)
+
     client.query(q) map { result =>
       for {
         item <- Either.fromOption(result.getItems.asScala.headOption, RepositoryError("UUID not found"))
-        parsed <- {
-          logger.info(s"Read from dynamodb: $item")
-          val parsedLocal = Either.fromOption(fromAttributeMap[NotificationReport](item.asScala.toMap).asOpt, RepositoryError("Unable to parse report"))
-          logger.info(s"ParsedLocal $parsedLocal")
-          parsedLocal
-        }
+        parsed <- Either.fromOption(fromAttributeMap[NotificationReport](item.asScala.toMap).asOpt, RepositoryError("Unable to parse report"))
       } yield parsed
     }
   }
 
   override def update(report: NotificationReport): Future[RepositoryResult[Unit]] = {
     def updateAttempt: Future[RepositoryResult[Unit]] = {
-      logger.info(s"Updating: ${report}")
-      (for {
+      for {
         lastResult: RepositoryResult[NotificationReport] <- getByUuid(report.id)
         updated: Either[RepositoryError, Unit] <- lastResult match {
           case Left(error) => Future.successful(Left(error))
@@ -84,21 +75,25 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
               .withExpected(Map("version" -> new ExpectedAttributeValue().withValue(new AttributeValue().withS(lastNotificationReport.version.get.toString)).withComparisonOperator(ComparisonOperator.EQ)).asJava)
             client.updateItem(updateItemRequest).map { _ => Right(()) }
         }
-      } yield updated).transform(attempt => {
-        logger.info(s"Update attempted: ${report.id}\n $attempt")
-        attempt
-      })
-
+      } yield updated
     }
 
     def retry(left: Int): Future[RepositoryResult[Unit]] = updateAttempt.transformWith {
       case Success(repositoryResult) => {
         repositoryResult match {
-          case Left(_) if left <= 0 => retry(left - 1)
+          case Left(error) if left <= 0 => {
+            logger.warn(s"Retry of report: $report\nError: $error")
+            retry(left - 1)
+          }
           case _ => Future.successful(repositoryResult)
         }
       }
-      case Failure(exception) => if (left <= 0) retry(left - 1) else Future.failed[RepositoryResult[Unit]](exception)
+      case Failure(exception) => {
+        if (left <= 0) {
+          logger.warn(s"Retry error $report", exception)
+          retry(left - 1)
+        } else Future.failed[RepositoryResult[Unit]](exception)
+      }
     }
 
     retry(5)

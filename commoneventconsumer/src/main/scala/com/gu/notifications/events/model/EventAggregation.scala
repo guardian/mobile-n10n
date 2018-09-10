@@ -4,6 +4,7 @@ import java.time.{Duration, LocalDateTime}
 import java.time.temporal.{ChronoUnit, Temporal, TemporalUnit}
 import java.util.UUID
 
+import org.apache.logging.log4j.LogManager
 import play.api.libs.json.{JsValue, Json, OFormat}
 
 case class EventAggregation(
@@ -29,7 +30,7 @@ object TenSecondUnit extends TemporalUnit {
 }
 
 object EventAggregation {
-
+  val logger = LogManager.getLogger(classOf[EventAggregation])
   def from(dynamoEventAggregation: DynamoEventAggregation, originalSentTime:LocalDateTime): EventAggregation = {
     val sentTime = originalSentTime.truncatedTo(TenSecondUnit)
     EventAggregation(
@@ -58,8 +59,9 @@ object EventAggregation {
   }
 
   def combineTimings(timingA: Map[LocalDateTime, Int], timingB: Map[LocalDateTime, Int]): Map[LocalDateTime, Int] = {
+    logger.info(s"Combining $timingA and $timingB")
     val keys = timingA.keySet ++ timingB.keySet
-    keys.map(dateTime =>
+    val aggregated = keys.map(dateTime =>
       (timingA.get(dateTime), timingB.get(dateTime)) match {
         case (Some(a), Some(b)) => dateTime -> (a + b)
         case (Some(a), _) => dateTime -> a
@@ -67,13 +69,20 @@ object EventAggregation {
         case _ => dateTime -> 0
       }
     ).toMap
+    logger.info(s"Combined timings $aggregated")
+    aggregated
   }
 
-  def combine(aggA: EventAggregation, aggB: EventAggregation): EventAggregation = EventAggregation(
-    platformCounts = PlatformCount.combine(aggA.platformCounts, aggB.platformCounts),
-    providerCounts = ProviderCount.combine(aggA.providerCounts, aggB.providerCounts),
-    timing = combineTimings(aggA.timing, aggB.timing)
-  )
+  def combine(aggA: EventAggregation, aggB: EventAggregation): EventAggregation = {
+    logger.info(s"Combining $aggA and $aggB")
+    val aggregated = EventAggregation(
+      platformCounts = PlatformCount.combine(aggA.platformCounts, aggB.platformCounts),
+      providerCounts = ProviderCount.combine(aggA.providerCounts, aggB.providerCounts),
+      timing = combineTimings(aggA.timing, aggB.timing)
+    )
+    logger.info(s"Combined events $aggregated")
+    aggregated
+  }
   implicit  val mapLocalDateTimeToInt = OFormat[Map[LocalDateTime, Int]](
     (value: JsValue) => value.validate[Map[String, Int]].map(_.map { case (k, v) => (LocalDateTime.parse(k), v) }),
     (dateTimeMap:Map[LocalDateTime,Int])=> Json.toJsObject(dateTimeMap.map { case (k,v) => (k.toString, v)})

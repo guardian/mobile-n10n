@@ -20,13 +20,15 @@ class LambdaSpec(implicit ee: ExecutionEnv) extends Specification {
       val os: OutputStream = new ByteArrayOutputStream()
       var queue: mutable.Queue[S3Event] = mutable.Queue.empty
 
-      val processEvents = new ProcessEvents {
-        override def apply(s3Event: S3Event)(implicit executionContext: ExecutionContext): Unit = queue += s3Event
+      val processEvents = new S3EventProcessor {
+        override def process(s3Event: S3Event)(implicit executionContext: ExecutionContext) = {
+          queue += s3Event
+          EventsPerNotification(Map())
+        }
       }
-      new Lambda(processEvents).handleRequest(is, os, null)
+      new Lambda(processEvents, "CODE").handleRequest(is, os, null)
       queue.toList must beEqualTo(List(S3Event(List(S3EventRecord(Some(S3EventRecordS3(
         Some(S3EventRecordS3Object(Some("tests4"))),Some(S3EventRecordS3Bucket(Some("aws-mobile-event-logs-code"))))))))))
-
     }
   }
 }
