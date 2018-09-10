@@ -5,23 +5,26 @@ import java.util.UUID
 import authentication.AuthAction
 import models._
 import notification.models.{Push, PushResult}
+import notification.services
+import notification.services.azure.NewsstandSender
 import notification.services.{Configuration, NotificationSender}
+import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Logger
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
+import tracking.Repository.RepositoryResult
 import tracking.SentNotificationReportRepository
 
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
-import notification.services.azure.NewsstandSender
 
 final class Main(
-    configuration: Configuration,
-    senders: List[NotificationSender],
-    newsstandSender: NewsstandSender,
-    notificationReportRepository: SentNotificationReportRepository,
-    controllerComponents: ControllerComponents,
-    authAction: AuthAction
+  configuration: Configuration,
+  senders: List[NotificationSender],
+  newsstandSender: NewsstandSender,
+  notificationReportRepository: SentNotificationReportRepository,
+  controllerComponents: ControllerComponents,
+  authAction: AuthAction
 )(implicit executionContext: ExecutionContext)
   extends AbstractController(controllerComponents) {
 
@@ -70,8 +73,8 @@ final class Main(
   }
 
   private def pushGeneric(push: Push) = {
-    sendNotifications(push, to = senders) flatMap {
-      case (Nil, reports @ _ :: _) =>
+    prepareReportAndSendPush(push) flatMap {
+      case (Nil, reports@_ :: _) =>
         reportPushSent(push.notification, reports) map {
           case Right(_) =>
             logger.info(s"Notification was sent: $push")
@@ -80,7 +83,7 @@ final class Main(
             logger.error(s"Notification ($push) sent but report could not be stored ($error)")
             Created(toJson(PushResult(push.notification.id).withReportingError(error)))
         }
-      case (rejected @ _ :: _, reports @ _ :: _) =>
+      case (rejected@_ :: _, reports@_ :: _) =>
         reportPushSent(push.notification, reports) map {
           case Right(_) =>
             logger.warn(s"Notification ($push) was rejected by some providers: ($rejected)")
@@ -89,7 +92,7 @@ final class Main(
             logger.error(s"Notification ($push) was rejected by some providers and there was error in reporting")
             Created(toJson(PushResult(push.notification.id).withRejected(rejected).withReportingError(error)))
         }
-      case (allRejected @ _ :: _, Nil) =>
+      case (allRejected@_ :: _, Nil) =>
         logger.error(s"Notification ($push) could not be sent: $allRejected")
         Future.successful(InternalServerError)
       case _ =>
@@ -97,16 +100,27 @@ final class Main(
     }
   }
 
-  private def sendNotifications(push: Push, to: List[NotificationSender]) = {
-    val sendResults = senders.map { _.sendNotification(push) }
-    sequence(sendResults) map { results =>
+  private def sendPush(push: Push): Future[(List[services.SenderError], List[SenderReport])] = {
+    sequence(senders.map(_.sendNotification(push))) map { results =>
       val rejected = results.flatMap(s => s.swap.toOption)
       val reports = results.flatMap(_.toOption)
       (rejected, reports)
     }
   }
 
-  private def reportPushSent(notification: Notification, reports: List[SenderReport]) =
-    notificationReportRepository.store(NotificationReport.create(notification, reports))
+  private def prepareReportAndSendPush(push: Push): Future[(List[services.SenderError], List[SenderReport])] = {
+      val notificationReport = NotificationReport(push.notification.id, push.notification.`type`, push.notification, DateTime.now(DateTimeZone.UTC), List(), Some(UUID.randomUUID()), None)
+      for {
+        initialEmptyNotificationReport <- notificationReportRepository.store(notificationReport)
+        sentPush <- initialEmptyNotificationReport match {
+          case Left(error) => Future.failed(new Exception(error.message))
+          case Right(_) => sendPush(push)
+        }
+      } yield sentPush
+
+    }
+
+  private def reportPushSent(notification: Notification, reports: List[SenderReport]): Future[RepositoryResult[Unit]] =
+    notificationReportRepository.update(NotificationReport.create(notification, reports, Some(UUID.randomUUID())))
 }
 

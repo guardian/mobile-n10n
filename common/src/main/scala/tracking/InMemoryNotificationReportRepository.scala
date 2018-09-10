@@ -29,4 +29,12 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
       }).toList
     ))
   }
+
+  override def update(report: NotificationReport): Future[RepositoryResult[Unit]] = {
+    db.transform {
+      case existingReport if existingReport.id == report.id && existingReport.reports == Nil => report
+      case report => report
+    }
+    Future.successful(Right(()))
+  }
 }

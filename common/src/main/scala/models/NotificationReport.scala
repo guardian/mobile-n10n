@@ -1,18 +1,20 @@
 package models
 
 import java.util.UUID
-
-import org.joda.time.DateTime
 import JsonUtils._
-import play.api.libs.json.Json
 import com.github.nscala_time.time.Imports._
+import com.gu.notifications.events.model.DynamoEventAggregation
+import org.joda.time.DateTime
+import play.api.libs.json.Json
 
 case class NotificationReport(
   id: UUID,
   `type`: NotificationType,
   notification: Notification,
   sentTime: DateTime,
-  reports: List[SenderReport]
+  reports: List[SenderReport],
+  version: Option[UUID],
+  events: Option[DynamoEventAggregation]
 )
 
 case class SenderReport(
@@ -27,18 +29,20 @@ object SenderReport {
 }
 
 object NotificationReport {
-  def create(notification: Notification, reports: List[SenderReport]): NotificationReport = {
+  def create(notification: Notification, reports: List[SenderReport], version: Option[UUID]): NotificationReport = {
     require(reports.nonEmpty)
     NotificationReport(
       id = notification.id,
       `type` = notification.`type`,
       notification = notification,
-      sentTime = reports.map { _.sentTime }.sorted.last,
-      reports
+      sentTime = reports.map {
+        _.sentTime
+      }.sorted.last,
+      reports,
+      version,
+      None
     )
   }
-
-  import play.api.libs.json._
 
   implicit val jf = Json.format[NotificationReport]
 }

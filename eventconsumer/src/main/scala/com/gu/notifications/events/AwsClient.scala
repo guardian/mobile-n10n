@@ -1,11 +1,12 @@
 package com.gu.notifications.events
 
-import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
+import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3Client}
 
 object AwsClient {
-  lazy val credentials = new AWSCredentialsProviderChain(
+  lazy val credentials: AWSCredentialsProviderChain = new AWSCredentialsProviderChain(
     new ProfileCredentialsProvider("mobile"),
     DefaultAWSCredentialsProviderChain.getInstance)
 
@@ -13,4 +14,9 @@ object AwsClient {
     .withCredentials(credentials)
     .withRegion("eu-west-1")
     .build
+
+  lazy val dynamoDbClient: AmazonDynamoDBAsync = AmazonDynamoDBAsyncClientBuilder.standard()
+    .withCredentials(credentials)
+    .withRegion("eu-west-1")
+    .build()
 }

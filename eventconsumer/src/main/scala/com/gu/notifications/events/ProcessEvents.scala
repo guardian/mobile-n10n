@@ -3,24 +3,30 @@ package com.gu.notifications.events
 import java.net.URLDecoder
 import java.nio.charset.{Charset, StandardCharsets}
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 import com.amazonaws.util.IOUtils
+import com.gu.notifications.events.model.{EventAggregation, NotificationReportEvent, Platform, Provider}
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.logging.log4j
 import org.apache.logging.log4j.LogManager
-import play.api.libs.json.Json
 
 import scala.collection.JavaConverters._
 import scala.util.Try
+import play.api.libs.json._
 
-class ProcessEvents extends (S3Event  => Unit){
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+trait ProcessEvents {
+  def apply(s3Event: S3Event)(implicit executionContext: ExecutionContext): Unit
+}
+class ProcessEventsImpl extends ProcessEvents {
   val logger: log4j.Logger = LogManager.getLogger(classOf[ProcessEvents])
 
   /*
    * Logic
    */
-  def apply(s3Event: S3Event): Unit = {
-
+  def apply(s3Event: S3Event)(implicit executionContext: ExecutionContext): Unit = {
     def forAllLineOfAllFiles: Seq[String] = {
       val keys = s3Event.Records.seq.flatMap(record => {
         for {
@@ -46,6 +52,7 @@ class ProcessEvents extends (S3Event  => Unit){
     }
 
     def toRawEvent(string: String): Option[RawEvent] = {
+      logger.info(string)
       Json.parse(string).validate[RawEvent].asOpt
     }
 
@@ -64,7 +71,13 @@ class ProcessEvents extends (S3Event  => Unit){
     }
 
     val events = forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent).reduce(EventsPerNotification.combine)
-    logger.info(events.aggregations.toList.sortBy(-_._2.providerCounts.total).mkString("\n"))
+    val tuples: List[(UUID, EventAggregation)] = events.aggregations.toList.sortBy(-_._2.providerCounts.total)
+
+    logger.info(tuples.mkString("\n"))
+
+    Await.result(Future.sequence(ReportUpdater.reportUpdater.apply(events.aggregations.map { case (k,v) => NotificationReportEvent(k.toString,v)}.toList)), Duration(4, TimeUnit.MINUTES))
+
+
   }
 
 

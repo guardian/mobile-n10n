@@ -51,22 +51,22 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
   }
 
   trait ExampleReports {
-    val singleReport = createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z")
+    val singleReport = createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z", version = Some(UUID.randomUUID()))
 
     val allReports = List(
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-02T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-03T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-04T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-05T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-06T10:11:12Z")
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-02T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-03T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-04T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-05T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-06T10:11:12Z",version = Some(UUID.randomUUID()))
     )
 
     val interval = new Interval(DateTime.parse("2015-01-02T00:00:00Z"), DateTime.parse("2015-01-05T12:00:00Z"))
 
     val reportsInInterval = allReports.filter(report => interval.contains(report.sentTime))
 
-    def createNotificationReport(id: UUID, sentTime: String): NotificationReport = NotificationReport(
+    def createNotificationReport(id: UUID, sentTime: String, version: Option[UUID]): NotificationReport = NotificationReport(
       id = id,
       `type` = BreakingNews,
       sentTime = DateTime.parse(sentTime).withZone(DateTimeZone.UTC),
@@ -83,7 +83,9 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
       ),
       reports = List(
         SenderReport("Firebase", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
-      )
+      ),
+      version = version,
+      events = None
     )
   }
 

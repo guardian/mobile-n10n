@@ -51,7 +51,8 @@ class NotificationReportTest extends Specification {
           |     }
           |    }
           |
-          | ]
+          | ],
+          | "version":"524dd8a4-b12d-427b-a3e9-ddbc9c2380d2"
           |}""".stripMargin
 
       val report = {
@@ -70,7 +71,8 @@ class NotificationReportTest extends Specification {
           ),
           reports = List(
             SenderReport("Firebase", sentTime, None, Some(PlatformStatistics(Android, recipientsCount = 3)))
-          )
+          ),
+          Some(UUID.fromString("524dd8a4-b12d-427b-a3e9-ddbc9c2380d2"))
         )
       }
 

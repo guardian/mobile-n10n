@@ -75,7 +75,9 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         ),
         reports = List(
           SenderReport("Firebase", DateTime.now.withZone(UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
-        )
+        ),
+        version = Some(UUID.randomUUID()),
+        events = None
       )
     }
 

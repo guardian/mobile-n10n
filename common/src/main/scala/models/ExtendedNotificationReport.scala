@@ -1,10 +1,12 @@
 package models
 
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import azure.NotificationDetails
+import com.gu.notifications.events.model.{DynamoEventAggregation, EventAggregation}
 import org.joda.time.DateTime
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 
@@ -13,7 +15,8 @@ case class ExtendedNotificationReport(
   `type`: NotificationType,
   notification: Notification,
   sentTime: DateTime,
-  reports: List[ExtendedSenderReport]
+  reports: List[ExtendedSenderReport],
+  events: Option[EventAggregation]
 )
 
 object ExtendedSenderReport {
@@ -37,7 +40,8 @@ object ExtendedNotificationReport {
     `type` = r.`type`,
     notification = r.notification,
     sentTime = r.sentTime,
-    reports = r.reports.map(ExtendedSenderReport.fromSenderReport)
+    reports = r.reports.map(ExtendedSenderReport.fromSenderReport),
+    events = r.events.map((d:DynamoEventAggregation) => EventAggregation.from(d, LocalDateTime.ofInstant( Instant.ofEpochMilli(r.sentTime.toInstant.getMillis),ZoneOffset.UTC)))
   )
 }
 

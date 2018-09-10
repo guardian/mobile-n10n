@@ -109,7 +109,8 @@ trait NotificationsFixtures {
 
   def reportWithSenderReports(reports: List[SenderReport]): NotificationReport = NotificationReport.create(
     breakingNewsNotification(validTopics),
-    reports = reports
+    reports = reports,
+    version = None
   )
 }
 

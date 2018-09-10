@@ -1,101 +1,104 @@
 package com.gu.notifications.events
 
-import java.time.{Duration, LocalDateTime}
 import java.time.temporal.{ChronoUnit, Temporal, TemporalUnit}
+import java.time.{Duration, LocalDateTime}
 import java.util.UUID
 
-case class PlatformCount(
-  total: Int,
-  ios: Int,
-  android: Int
-)
+import com.amazonaws.services.dynamodbv2.model.AttributeValue
+import com.gu.notifications.events.model.{EventAggregation, Platform, PlatformCount, Provider, ProviderCount}
 
-object PlatformCount {
-  def from(platform: Platform): PlatformCount = platform match {
-    case Ios => PlatformCount(1, 1, 0)
-    case Android => PlatformCount(1, 0, 1)
-  }
+import scala.collection.JavaConverters._
 
-  def combine(countsA: PlatformCount, countsB: PlatformCount): PlatformCount = PlatformCount(
-    total = countsA.total + countsB.total,
-    ios = countsA.ios + countsB.ios,
-    android = countsA.android + countsB.android
-  )
-}
 
-case class ProviderCount(
-  total: Int,
-  azure: Int,
-  firebase: Int
-)
+object DynamoConversion {
+  implicit val localDateOrdering: Ordering[LocalDateTime] = _ compareTo _
 
-object ProviderCount {
-  def from(provider: Provider): ProviderCount = provider match {
-    case Azure => ProviderCount(1, 1, 0)
-    case Fcm => ProviderCount(1, 0, 1)
-  }
-  def combine(countsA: ProviderCount, countsB: ProviderCount): ProviderCount = ProviderCount(
-    total = countsA.total + countsB.total,
-    azure = countsA.azure + countsB.azure,
-    firebase = countsA.firebase + countsB.firebase
-  )
-}
+  def fromAttributeValue(eventAggregationAv: AttributeValue, notificationid: String, sentTime: LocalDateTime): EventAggregation = {
+    val eventMap = eventAggregationAv.getM.asScala
+    val platformAv = eventMap("platform")
+    val providerMap = eventMap("provider").getM.asScala
+    val timings = eventMap("timing").getL.asScala.toList.map(av => {
+      val list = av.getL.asScala.toList
+      (list(0).getN.toInt, list(1).getN.toInt)
+    }).foldLeft((sentTime, Seq[(LocalDateTime, Int)]())) {
+      case ((lastTime, newList), (offset, count)) => {
+        val nextTime = lastTime.plusSeconds(offset * 10)
+        (nextTime, newList :+ (nextTime, count))
+      }
+    }._2.toMap
 
-case class EventAggregation(
-  notificationId: UUID,
-  platformCounts: PlatformCount,
-  providerCounts: ProviderCount,
-  timing: Map[LocalDateTime, Int]
-)
-
-object EventAggregation {
-  def from(
-    notificationId: UUID,
-    dateTime: LocalDateTime,
-    platform: Platform,
-    provider: Provider
-  ): EventAggregation = {
     EventAggregation(
-      notificationId = notificationId,
-      platformCounts = PlatformCount.from(platform),
-      providerCounts = ProviderCount.from(provider),
-      timing = Map(dateTime -> 1)
+      platformFromAttributeValue(platformAv),
+      ProviderCount(providerMap("total").getN.toInt, platformFromAttributeValue(providerMap("azure")), platformFromAttributeValue(providerMap("firebase"))),
+      timings
+
     )
   }
 
-  def combineTimings(timingA: Map[LocalDateTime, Int], timingB: Map[LocalDateTime, Int]): Map[LocalDateTime, Int] = {
-    val keys = timingA.keySet ++ timingB.keySet
-    keys.map( dateTime =>
-      (timingA.get(dateTime), timingB.get(dateTime)) match {
-        case (Some(a), Some(b)) => dateTime -> (a + b)
-        case (Some(a), _) => dateTime -> a
-        case (_, Some(b)) => dateTime -> b
-        case _ => dateTime -> 0
-      }
-    ).toMap
+  private def platformFromAttributeValue(platformAv: AttributeValue) = {
+    val platformMap = platformAv.getM.asScala
+    PlatformCount(platformMap("total").getN.toInt, platformMap("ios").getN.toInt, platformMap("android").getN.toInt)
   }
 
-  def combine(aggA: EventAggregation, aggB: EventAggregation): EventAggregation = EventAggregation(
-    notificationId = aggA.notificationId,
-    platformCounts = PlatformCount.combine(aggA.platformCounts, aggB.platformCounts),
-    providerCounts = ProviderCount.combine(aggA.providerCounts, aggB.providerCounts),
-    timing = combineTimings(aggA.timing, aggB.timing)
-  )
+  def toAttributeValue(platform: PlatformCount): AttributeValue = {
+    new AttributeValue().withM(Map(
+      "total" -> new AttributeValue().withN(platform.total.toString),
+      "ios" -> new AttributeValue().withN(platform.ios.toString),
+      "android" -> new AttributeValue().withN(platform.android.toString)
+    ).asJava)
+  }
+
+  def toAttributeValue(eventAggregation: EventAggregation, sent: LocalDateTime): AttributeValue = {
+    val platform = eventAggregation.platformCounts
+    val provider = eventAggregation.providerCounts
+
+
+    new AttributeValue().withM(Map(
+      "platform" -> new AttributeValue().withM(Map(
+        "total" -> new AttributeValue().withN(platform.total.toString),
+        "ios" -> new AttributeValue().withN(platform.ios.toString),
+        "android" -> new AttributeValue().withN(platform.android.toString)
+      ).asJava),
+      "provider" -> new AttributeValue().withM(Map(
+        "total" -> new AttributeValue().withN(provider.total.toString),
+        "azure" -> toAttributeValue(provider.azure),
+        "firebase" -> toAttributeValue(provider.firebase)
+      ).asJava),
+      "timing" -> new AttributeValue().withL(
+        eventAggregation.timing.toList
+          .sortBy(_._1)
+          .foldLeft((sent, Seq[(Int, Int)]())) {
+            case ((lastDateTime, newList), (currentDateTime, count)) =>
+              (currentDateTime, newList :+ (Duration.between(lastDateTime, currentDateTime).getSeconds.toInt / 10, count))
+          }._2
+          .map {
+            case (offset, count) => new AttributeValue().withL(new AttributeValue().withN(offset.toString), new AttributeValue().withN(count.toString))
+          }.asJava)
+    ).asJava)
+  }
 
 }
+
 
 case class EventsPerNotification(aggregations: Map[UUID, EventAggregation])
 
 object EventsPerNotification {
   val tenSeconds = new TemporalUnit() {
     private val duration = Duration.ofSeconds(10L)
+
     override def isDurationEstimated: Boolean = false
+
     override def getDuration: Duration = duration
+
     override def isTimeBased: Boolean = true
+
     override def addTo[R <: Temporal](r: R, l: Long): R = r.plus(10, ChronoUnit.SECONDS).asInstanceOf[R]
+
     override def isDateBased: Boolean = true
+
     override def between(temporal: Temporal, temporal1: Temporal): Long = temporal.until(temporal1, ChronoUnit.SECONDS) / 10
   }
+
   def from(
     notificationId: UUID,
     dateTime: LocalDateTime,
@@ -114,7 +117,7 @@ object EventsPerNotification {
 
   def combine(eventsA: EventsPerNotification, eventsB: EventsPerNotification): EventsPerNotification = {
     val keys = eventsA.aggregations.keySet ++ eventsB.aggregations.keySet
-    val combined = keys.map ( notificationId =>
+    val combined = keys.map(notificationId =>
       (eventsA.aggregations.get(notificationId), eventsB.aggregations.get(notificationId)) match {
         case (Some(a), Some(b)) => notificationId -> EventAggregation.combine(a, b)
         case (Some(a), _) => notificationId -> a

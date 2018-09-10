@@ -10,6 +10,8 @@ trait SentNotificationReportRepository {
 
   def store(report: NotificationReport): Future[RepositoryResult[Unit]]
 
+  def update(report: NotificationReport): Future[RepositoryResult[Unit]]
+
   def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]]
 
   def getByTypeWithDateRange(notificationType: NotificationType, from: DateTime, to: DateTime): Future[RepositoryResult[List[NotificationReport]]]

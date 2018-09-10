@@ -42,7 +42,21 @@ val standardSettings = Seq[Setting[_]](
   )
 )
 
+lazy val commoneventconsumer = project
+  .settings(Seq(
+    resolvers ++= Seq(
+      "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
+      "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots",
+      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
+      "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
+    ),
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-json" % playJsonVersion
+    )
+  ))
+
 lazy val common = project
+  .dependsOn(commoneventconsumer)
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
@@ -244,16 +258,19 @@ lazy val apiClient = {
   ))
 }
 
-lazy val eventconsumer = project.enablePlugins(RiffRaffArtifact, AssemblyPlugin)
+lazy val eventconsumer = project
+  .dependsOn(commoneventconsumer)
+  .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
   .settings({
     val log4j2Version: String = "2.10.0"
     Seq(
-      description:= "Consumes events produced when an app receives a notification",
+      description := "Consumes events produced when an app receives a notification",
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
         "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
+        "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         specs2 % Test
       ),
