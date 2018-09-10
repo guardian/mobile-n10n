@@ -5,7 +5,7 @@ import java.util.UUID
 
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.dynamodbv2.model._
-import com.gu.notifications.events.model.{EventAggregation, NotificationReportEvent}
+import com.gu.notifications.events.model.{EventAggregation, NotificationReportEvent, TenSecondUnit}
 import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
@@ -31,7 +31,7 @@ class ReportUpdater(stage:String) {
         previousEvents <- read(aggregation.id.toString)
         nextEvents = previousEvents.events.map(previous => aggregation.copy(eventAggregation = EventAggregation.combine(previous, aggregation.eventAggregation))).getOrElse(aggregation)
         updatedEvents = UpdateVersionedEvents(previousEvents.version, nextVersion, nextEvents)
-        updatedEventsSuccess <- update(updatedEvents, previousEvents.sentTime)
+        updatedEventsSuccess <- update(updatedEvents, previousEvents.sentTime.truncatedTo(TenSecondUnit))
       } yield updatedEventsSuccess
 
       def retryUpdate(retriesLeft: Int): Future[Unit] = updateAttempt().transformWith {
