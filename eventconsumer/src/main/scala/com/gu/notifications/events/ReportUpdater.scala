@@ -47,7 +47,6 @@ class ReportUpdater(stage:String) {
   }
 
   private def update(versionedEvents: UpdateVersionedEvents, sentTime: LocalDateTime): Future[Unit] = {
-    val promise = Promise[Unit]
     val attributeValuesForUpdate = Map(
       newEventsKey -> DynamoConversion.toAttributeValue(versionedEvents.events.eventAggregation, sentTime),
       newVersionKey -> new AttributeValue().withS(versionedEvents.nextVersion)
@@ -63,6 +62,8 @@ class ReportUpdater(stage:String) {
           .withExpressionAttributeValues((attributeValuesForUpdate ++ Map(oldVersionKey -> new AttributeValue().withS(version))).asJava)
       )
       .getOrElse(updateItemRequestWithoutCondition.withExpressionAttributeValues(attributeValuesForUpdate.asJava))
+
+    val promise = Promise[Unit]
     val handler = new AsyncHandler[UpdateItemRequest, UpdateItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(updateItemRequest.toString, exception))
       override def onSuccess(request: UpdateItemRequest, result: UpdateItemResult): Unit = promise.success(())
