@@ -37,12 +37,12 @@ class ReportUpdater(stage:String) {
       def retryUpdate(retriesLeft: Int): Future[Unit] = updateAttempt().transformWith {
         case Success(value) => Future.successful(value)
         case Failure(t) => if (retriesLeft == 0) Future.failed[Unit](t) else {
-          logger.warn(t)
+          logger.warn(s"Retry failed for $aggregation", t)
           retryUpdate(retriesLeft - 1)
         }
       }
 
-      retryUpdate(5)
+      retryUpdate(20)
     })
   }
 

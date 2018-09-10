@@ -29,6 +29,12 @@ val specsVersion: String = "4.0.3"
 val awsSdkVersion: String = "1.11.400"
 
 val standardSettings = Seq[Setting[_]](
+  resolvers ++= Seq(
+    "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
+    "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots",
+    "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
+    "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
+  ),
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
   riffRaffUploadManifestBucket := Option("riffraff-builds"),
@@ -44,15 +50,8 @@ val standardSettings = Seq[Setting[_]](
 val log4j2Version: String = "2.10.0"
 lazy val commoneventconsumer = project
   .settings(Seq(
-    resolvers ++= Seq(
-      "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
-      "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots",
-      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
-      "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
-    ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.apache.logging.log4j" % "log4j-api" % log4j2Version
+      "com.typesafe.play" %% "play-json" % playJsonVersion
     )
   ))
 
@@ -62,12 +61,6 @@ lazy val common = project
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
-    resolvers ++= Seq(
-      "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
-      "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots",
-      "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
-      "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
-    ),
     libraryDependencies ++= Seq(
       ws,
       // be careful upgrading the following, recent azure-servicebus version rely on an alpha of slf4j, breaking play logging...
@@ -83,8 +76,7 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
-      "ai.x" %% "play-json-extensions" % "0.10.0",
-      "org.apache.logging.log4j" % "log4j-to-slf4j" % log4j2Version
+      "ai.x" %% "play-json-extensions" % "0.10.0"
     ),
     libraryDependencies ++= minJacksonLibs,
     fork := true,

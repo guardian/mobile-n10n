@@ -96,6 +96,6 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
       }
     }
 
-    retry(5)
+    retry(20)
   }
 }
