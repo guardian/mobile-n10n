@@ -45,7 +45,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
   trait RepositoryScope extends AsyncDynamoScope {
     val repository = new DynamoNotificationReportRepository(asyncClient, TableName)
 
-    def afterStoringReports[T](reports: List[NotificationReport])(fn: => Future[RepositoryResult[T]]): Future[T] = {
+    def afterStoringReports[T](reports: List[DynamoNotificationReport])(fn: => Future[RepositoryResult[T]]): Future[T] = {
       Future.sequence(reports map repository.store) flatMap { _ => fn.map(_.toOption.get) }
     }
   }
@@ -66,7 +66,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
 
     val reportsInInterval = allReports.filter(report => interval.contains(report.sentTime))
 
-    def createNotificationReport(id: UUID, sentTime: String, version: Option[UUID]): NotificationReport = NotificationReport(
+    def createNotificationReport(id: UUID, sentTime: String, version: Option[UUID]): DynamoNotificationReport = DynamoNotificationReport(
       id = id,
       `type` = BreakingNews,
       sentTime = DateTime.parse(sentTime).withZone(DateTimeZone.UTC),

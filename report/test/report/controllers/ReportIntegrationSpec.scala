@@ -34,7 +34,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
-      contentAsJson(result).as[List[NotificationReport]] mustEqual recentReports
+      contentAsJson(result).as[List[DynamoNotificationReport]] mustEqual recentReports
     }
 
     "Return a list of notification reports filtered by date" in new ReportTestScope {
@@ -42,7 +42,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
-      contentAsJson(result).as[List[NotificationReport]] mustEqual reportsInRange
+      contentAsJson(result).as[List[DynamoNotificationReport]] mustEqual reportsInRange
     }
 
     "Return an individual notification report complete with platform specific data" in new ReportTestScope {
@@ -58,7 +58,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
   trait ReportTestScope extends WithPlayApp {
     private def notificationReport(date: String, prefix: String) = {
       val id = UUID.randomUUID
-      NotificationReport(
+      DynamoNotificationReport(
         id = id,
         sentTime = DateTime.parse(date).withZone(UTC),
         `type` = BreakingNews,

@@ -36,7 +36,7 @@ final class Report(
         from = from.getOrElse(DateTime.now.minusWeeks(1)),
         to = until.getOrElse(DateTime.now)
       ) map {
-        case Right(result) => Ok(Json.toJson(result))
+        case Right(result) => Ok(Json.toJson(result.map(new NotificationReport(_))))
         case Left(error) => InternalServerError(error.message)
       }
     }

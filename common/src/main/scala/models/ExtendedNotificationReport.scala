@@ -38,7 +38,7 @@ object ExtendedSenderReport {
 object ExtendedNotificationReport {
   implicit val jf = Json.format[ExtendedNotificationReport]
 
-  def fromNotificationReport(r: NotificationReport): ExtendedNotificationReport = ExtendedNotificationReport(
+  def fromNotificationReport(r: DynamoNotificationReport): ExtendedNotificationReport = ExtendedNotificationReport(
     id = r.id,
     `type` = r.`type`,
     notification = r.notification,

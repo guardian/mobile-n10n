@@ -73,7 +73,7 @@ class NotificationReportEnricherSpec(implicit ev: ExecutionEnv) extends Specific
       hubClient.notificationDetails(sendersId) returns Future.successful(Right(details))
     }
 
-    val report = NotificationReport(
+    val report = DynamoNotificationReport(
       id = id,
       `type` =  BreakingNews,
       notification = notification,

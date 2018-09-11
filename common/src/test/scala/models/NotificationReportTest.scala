@@ -57,7 +57,7 @@ class NotificationReportTest extends Specification {
 
       val report = {
         val sentTime = DateTime.parse("2015-01-01T00:00:00Z").withZone(DateTimeZone.UTC)
-        NotificationReport.create(
+        DynamoNotificationReport.create(
           notification = BreakingNewsNotification(
             id = UUID.fromString("d00ceaea-8a27-11a5-9da0-a51c69a460b9"),
             sender = "sender",

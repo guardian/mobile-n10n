@@ -3,7 +3,7 @@ package report.services
 import java.net.URI
 
 import azure.NotificationHubClient
-import models.{ExtendedNotificationReport, ExtendedSenderReport, NotificationReport}
+import models.{ExtendedNotificationReport, ExtendedSenderReport, DynamoNotificationReport}
 import scala.concurrent.ExecutionContext
 import scala.PartialFunction._
 import scala.concurrent.Future
@@ -12,7 +12,7 @@ import cats.syntax.either._
 
 class NotificationReportEnricher(hubClient: NotificationHubClient)(implicit ec: ExecutionContext) {
 
-  def enrich(notificationReport: NotificationReport): Future[ExtendedNotificationReport] = {
+  def enrich(notificationReport: DynamoNotificationReport): Future[ExtendedNotificationReport] = {
     val extended = ExtendedNotificationReport.fromNotificationReport(notificationReport)
     Future.sequence(extended.reports.map(addDebugField)).map { extendedReports =>
       extended.copy(reports = extendedReports)

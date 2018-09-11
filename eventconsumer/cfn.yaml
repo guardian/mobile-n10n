@@ -90,7 +90,7 @@ Resources:
           - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
       Description: Consumes events produced when an app receives a notification
       Handler: com.gu.notifications.events.Lambda::handleRequest
-      MemorySize: 320
+      MemorySize: 384
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
