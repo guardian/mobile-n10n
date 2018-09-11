@@ -15,6 +15,8 @@ import collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import cats.implicits._
+import com.amazonaws.services.cloudwatch.model.StandardUnit
+import metrics.{MetricDataPoint, Metrics}
 
 case class FcmProviderError(reason: String) extends ProviderError {
   override val providerName: String = Provider.FCM
@@ -29,6 +31,7 @@ class FcmRegistrar(
   firebaseMessaging: FirebaseMessaging,
   ws: WSClient,
   configuration: Configuration,
+  metrics: Metrics,
   fcmExecutionContext: ExecutionContext
 )(implicit ec: ExecutionContext) extends NotificationRegistrar {
 
@@ -58,6 +61,7 @@ class FcmRegistrar(
       case 404 => Left(InstanceNotFound)
       case status => Left(FcmProviderError(s"Unable to fetch topics, got status $status back from the server"))
     }
+    metrics.send(MetricDataPoint(name = "FcmRead", value = 1d, unit = StandardUnit.Count))
 
     val response = ws.url(s"$instanceIdService/iid/info/${deviceToken.fcmToken}")
       .addQueryStringParameters("details" -> "true")
@@ -68,6 +72,7 @@ class FcmRegistrar(
   }
 
   private def executeFirebaseTopicOperation[A](description: String)(f: FirebaseMessaging => TopicManagementResponse): RegistrarResponse[Unit] = {
+    metrics.send(MetricDataPoint(name = "FcmWrite", value = 1d, unit = StandardUnit.Count))
     val response = Future(f(firebaseMessaging))(fcmExecutionContext)
     response.map { r =>
       if (r.getSuccessCount != 1) {

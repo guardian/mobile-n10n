@@ -1,6 +1,7 @@
 package registration.services.fcm
 
 import com.google.firebase.messaging.FirebaseMessaging
+import metrics.DummyMetrics
 import models.TopicTypes.Breaking
 import models.{Android, Topic}
 import org.specs2.concurrent.ExecutionEnv
@@ -58,6 +59,7 @@ class FcmRegistrarSpec(implicit ee: ExecutionEnv) extends Specification with Moc
       firebaseMessaging = mock[FirebaseMessaging],
       ws = mock[WSClient],
       configuration = mock[Configuration],
+      metrics = DummyMetrics,
       fcmExecutionContext = ee.executionContext
     )
   }

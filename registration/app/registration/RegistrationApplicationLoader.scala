@@ -79,17 +79,18 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
   lazy val registrarProvider: RegistrarProvider = new NotificationRegistrarProvider(gcmNotificationRegistrar, apnsNotificationRegistrar, newsstandNotificationRegistrar)
   lazy val metrics: Metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
   lazy val migratingRegistrarProvider: RegistrarProvider = new MigratingRegistrarProvider(registrarProvider, fcmNotificationRegistrar, metrics)
-  lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker)
-  lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker)
+  lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker, metrics)
+  lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker, metrics)
   lazy val fcmNotificationRegistrar: FcmRegistrar = new FcmRegistrar(
     firebaseMessaging = firebaseMessaging,
     ws = wsClient,
     configuration = appConfig,
+    metrics = metrics,
     fcmExecutionContext = actorSystem.dispatchers.lookup("fcm-io") // FCM calls are blocking
   )
 
   lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
-  lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker)
+  lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker, metrics)
   lazy val legacyNewsstandRegistrationConverterConfig:NewsstandShardConfig = NewsstandShardConfig(appConfig.newsstandShards)
   lazy val auditorGroup: AuditorGroup = {
     AuditorGroup(Set(
