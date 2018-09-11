@@ -93,7 +93,7 @@ Resources:
       MemorySize: 320
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
-      Timeout: 60
+      Timeout: 300
 
   S3Bucket:
     Type: AWS::S3::Bucket
