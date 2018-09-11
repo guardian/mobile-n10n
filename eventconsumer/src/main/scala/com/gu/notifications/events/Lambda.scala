@@ -24,7 +24,7 @@ class Lambda(eventConsumer: S3EventProcessor, stage: String)(implicit executionC
   def this() = this(
     new S3EventProcessorImpl(),
     System.getenv().getOrDefault("Stage", "CODE")
-  )(ExecutionContext.fromExecutor(new ForkJoinPool(25)))
+  )(ExecutionContext.fromExecutor(new ForkJoinPool(3)))
 
   val reportUpdater = new ReportUpdater(stage)
 
