@@ -1,4 +1,4 @@
-package com.gu.notifications.events
+package com.gu.notifications.events.model
 
 sealed trait Provider
 
@@ -11,4 +11,5 @@ object Provider {
     case "fcm" => Some(Fcm)
     case _ => None
   }
+
 }

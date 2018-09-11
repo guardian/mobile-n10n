@@ -2,6 +2,7 @@ package notification.controllers
 
 import models.TopicTypes.{Breaking, TagSeries}
 import java.util.UUID
+
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
 import notification.models.{Push, PushResult}
@@ -20,6 +21,7 @@ import notification.services.azure.NewsstandSender
 import play.api.test.Helpers.stubControllerComponents
 import cats.instances.future._
 import cats.syntax.either._
+import org.joda.time.DateTime
 
 
 class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito with JsonMatchers with DateTimeFreezed {
@@ -74,11 +76,12 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val expectedReport = reportWithSenderReports(List(
         senderReport(Senders.AzureNotificationsHub), senderReport(Senders.FrontendAlerts)
       ))
-
       val response = main.pushTopics()(request)
-
       status(response) must equalTo(CREATED)
-      reportRepository.getByUuid(expectedReport.notification.id) must equalTo(Right(expectedReport)).await
+      val dateTime = DateTime.now
+      def normalise(notificationReport: DynamoNotificationReport) = notificationReport.copy(version = None, sentTime = dateTime, reports = notificationReport.reports.map(_.copy(sentTime = dateTime)))
+
+      reportRepository.getByUuid(expectedReport.notification.id).map(_.right.map(normalise)) must equalTo(Right(normalise(expectedReport))).await
     }
 
     "report frontend alerts rejected notifications" in new MainScope {

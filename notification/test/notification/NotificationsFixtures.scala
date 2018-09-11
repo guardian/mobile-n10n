@@ -107,9 +107,10 @@ trait NotificationsFixtures {
   ): SenderReport =
     SenderReport(senderName, DateTime.now.plusSeconds(sentTimeOffsetSeconds), sendersId, platformStats)
 
-  def reportWithSenderReports(reports: List[SenderReport]): NotificationReport = NotificationReport.create(
+  def reportWithSenderReports(reports: List[SenderReport]): DynamoNotificationReport = DynamoNotificationReport.create(
     breakingNewsNotification(validTopics),
-    reports = reports
+    reports = reports,
+    version = None
   )
 }
 

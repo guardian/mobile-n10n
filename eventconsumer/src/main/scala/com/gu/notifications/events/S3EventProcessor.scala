@@ -5,34 +5,36 @@ import java.nio.charset.{Charset, StandardCharsets}
 import java.util.UUID
 
 import com.amazonaws.util.IOUtils
+import com.gu.notifications.events.model.{Platform, Provider}
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.logging.log4j
 import org.apache.logging.log4j.LogManager
-import play.api.libs.json.Json
+import play.api.libs.json._
 
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-class ProcessEvents extends (S3Event  => Unit){
-  val logger: log4j.Logger = LogManager.getLogger(classOf[ProcessEvents])
+trait S3EventProcessor {
+  def process(s3Event: S3Event)(implicit executionContext: ExecutionContext): EventsPerNotification
+}
 
-  /*
-   * Logic
-   */
-  def apply(s3Event: S3Event): Unit = {
+class S3EventProcessorImpl extends S3EventProcessor {
+  val logger: log4j.Logger = LogManager.getLogger(classOf[S3EventProcessor])
 
+  def process(s3Event: S3Event)(implicit executionContext: ExecutionContext): EventsPerNotification = {
     def forAllLineOfAllFiles: Seq[String] = {
       val keys = s3Event.Records.seq.flatMap(record => {
         for {
-            s3 <- record.s3
-              s3Object <- s3.`object`
-              s3Bucket <- s3.bucket
-              key <- s3Object.key
-              bucket <- s3Bucket.name
-              decodedKey = URLDecoder.decode(key, StandardCharsets.UTF_8.name() )
+          s3 <- record.s3
+          s3Object <- s3.`object`
+          s3Bucket <- s3.bucket
+          key <- s3Object.key
+          bucket <- s3Bucket.name
+          decodedKey = URLDecoder.decode(key, StandardCharsets.UTF_8.name())
         } yield (bucket, decodedKey)
       })
-      keys.flatMap{ case (bucketName, key) => {
+      keys.flatMap { case (bucketName, key) => {
         val s3Object = AwsClient.s3Client.getObject(bucketName, key)
         val is = s3Object.getObjectContent
         val content = try {
@@ -42,17 +44,18 @@ class ProcessEvents extends (S3Event  => Unit){
           is.close()
         }
         content.lines
-      }}
+      }
+      }
     }
 
     def toRawEvent(string: String): Option[RawEvent] = {
+      logger.info(string)
       Json.parse(string).validate[RawEvent].asOpt
     }
 
     def toEvent(rawEvent: RawEvent): Option[EventsPerNotification] = {
       val parsed = URLEncodedUtils.parse(rawEvent.queryString.dropWhile(_ == '?'), Charset.forName("UTF-8"))
       val queryParams = parsed.iterator.asScala.map(kv => kv.getName -> kv.getValue).toMap
-
       for {
         notificationIdString <- queryParams.get("notificationId")
         platformString <- queryParams.get("platform")
@@ -63,8 +66,8 @@ class ProcessEvents extends (S3Event  => Unit){
       } yield EventsPerNotification.from(notificationId, rawEvent.dateTime, platform, provider)
     }
 
-    val events = forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent).reduce(EventsPerNotification.combine)
-    logger.info(events.aggregations.toList.sortBy(-_._2.providerCounts.total).mkString("\n"))
+    forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent).reduce(EventsPerNotification.combine)
+
   }
 
 

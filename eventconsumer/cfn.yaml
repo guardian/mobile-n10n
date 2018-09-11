@@ -65,6 +65,13 @@ Resources:
               - arn:aws:s3:::aws-mobile-event-logs-${BucketStage}/*
               - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
 
+      - PolicyName: Dynamo
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action: dynamodb:*
+            Resource: !Sub "arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-reports-${Stage}"
+
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -83,10 +90,10 @@ Resources:
           - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
       Description: Consumes events produced when an app receives a notification
       Handler: com.gu.notifications.events.Lambda::handleRequest
-      MemorySize: 320
+      MemorySize: 384
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
-      Timeout: 60
+      Timeout: 300
 
   S3Bucket:
     Type: AWS::S3::Bucket
@@ -96,6 +103,10 @@ Resources:
       BucketName: !Sub
       - aws-mobile-event-logs-${BucketStage}
       - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays: 7
+            Status: Enabled
       NotificationConfiguration:
         LambdaConfigurations:
         - Event: s3:ObjectCreated:*

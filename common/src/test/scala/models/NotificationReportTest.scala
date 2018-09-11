@@ -51,12 +51,13 @@ class NotificationReportTest extends Specification {
           |     }
           |    }
           |
-          | ]
+          | ],
+          | "version":"524dd8a4-b12d-427b-a3e9-ddbc9c2380d2"
           |}""".stripMargin
 
       val report = {
         val sentTime = DateTime.parse("2015-01-01T00:00:00Z").withZone(DateTimeZone.UTC)
-        NotificationReport.create(
+        DynamoNotificationReport.create(
           notification = BreakingNewsNotification(
             id = UUID.fromString("d00ceaea-8a27-11a5-9da0-a51c69a460b9"),
             sender = "sender",
@@ -70,7 +71,8 @@ class NotificationReportTest extends Specification {
           ),
           reports = List(
             SenderReport("Firebase", sentTime, None, Some(PlatformStatistics(Android, recipientsCount = 3)))
-          )
+          ),
+          Some(UUID.fromString("524dd8a4-b12d-427b-a3e9-ddbc9c2380d2"))
         )
       }
 

@@ -45,28 +45,28 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
   trait RepositoryScope extends AsyncDynamoScope {
     val repository = new DynamoNotificationReportRepository(asyncClient, TableName)
 
-    def afterStoringReports[T](reports: List[NotificationReport])(fn: => Future[RepositoryResult[T]]): Future[T] = {
+    def afterStoringReports[T](reports: List[DynamoNotificationReport])(fn: => Future[RepositoryResult[T]]): Future[T] = {
       Future.sequence(reports map repository.store) flatMap { _ => fn.map(_.toOption.get) }
     }
   }
 
   trait ExampleReports {
-    val singleReport = createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z")
+    val singleReport = createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z", version = Some(UUID.randomUUID()))
 
     val allReports = List(
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-02T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-03T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-04T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-05T10:11:12Z"),
-      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-06T10:11:12Z")
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-01T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-02T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-03T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-04T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-05T10:11:12Z",version = Some(UUID.randomUUID())),
+      createNotificationReport(id = UUID.randomUUID(), sentTime = "2015-01-06T10:11:12Z",version = Some(UUID.randomUUID()))
     )
 
     val interval = new Interval(DateTime.parse("2015-01-02T00:00:00Z"), DateTime.parse("2015-01-05T12:00:00Z"))
 
     val reportsInInterval = allReports.filter(report => interval.contains(report.sentTime))
 
-    def createNotificationReport(id: UUID, sentTime: String): NotificationReport = NotificationReport(
+    def createNotificationReport(id: UUID, sentTime: String, version: Option[UUID]): DynamoNotificationReport = DynamoNotificationReport(
       id = id,
       `type` = BreakingNews,
       sentTime = DateTime.parse(sentTime).withZone(DateTimeZone.UTC),
@@ -83,7 +83,9 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
       ),
       reports = List(
         SenderReport("Firebase", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
-      )
+      ),
+      version = version,
+      events = None
     )
   }
 

@@ -27,6 +27,7 @@ class NotificationReportEnricherSpec(implicit ev: ExecutionEnv) extends Specific
     val enricher = new NotificationReportEnricher(hubClient)
 
     val id = UUID.randomUUID()
+    val version = UUID.randomUUID()
     val sentTime = DateTime.now
 
     val notification = BreakingNewsNotification(
@@ -72,12 +73,14 @@ class NotificationReportEnricherSpec(implicit ev: ExecutionEnv) extends Specific
       hubClient.notificationDetails(sendersId) returns Future.successful(Right(details))
     }
 
-    val report = NotificationReport(
+    val report = DynamoNotificationReport(
       id = id,
       `type` =  BreakingNews,
       notification = notification,
       sentTime = sentTime,
-      reports = senderReportsWithDetails.map(_._2)
+      reports = senderReportsWithDetails.map(_._2),
+      version = Some(version),
+      None
     )
 
     val expected = {

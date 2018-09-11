@@ -1,19 +1,32 @@
 package com.gu.notifications.events
 
 import java.io.{InputStream, OutputStream}
+import java.util.concurrent.{ForkJoinPool, TimeUnit}
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.amazonaws.util.IOUtils
-import org.apache.logging.log4j.LogManager
+import com.gu.notifications.events.model.NotificationReportEvent
+import org.apache.logging.log4j.{LogManager, Logger}
 import play.api.libs.json.Json
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 object Lambda extends App {
 
   new Lambda().handleRequest(System.in, System.out, null)
 }
-class Lambda(eventConsumer: S3Event => Unit) extends RequestStreamHandler {
-  val logger = LogManager.getLogger(classOf[Lambda])
-  def this() = this(new ProcessEvents())
+case class AttemptedCount(success:Int, failure:Int)
+class Lambda(eventConsumer: S3EventProcessor, stage: String)(implicit executionContext: ExecutionContext) extends RequestStreamHandler {
+  private val logger: Logger = LogManager.getLogger(classOf[Lambda])
+
+  def this() = this(
+    new S3EventProcessorImpl(),
+    System.getenv().getOrDefault("Stage", "CODE")
+  )(ExecutionContext.fromExecutor(new ForkJoinPool(25)))
+
+  val reportUpdater = new ReportUpdater(stage)
 
   override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     try {
@@ -24,14 +37,29 @@ class Lambda(eventConsumer: S3Event => Unit) extends RequestStreamHandler {
         input.close()
       }
       S3Event.jf.reads(Json.parse(inputString)).foreach(e => {
-        eventConsumer(e)
+        val events = eventConsumer.process(e)
+        val attemptsToUpdateEachEvent = reportUpdater.update(events.aggregations.map { case (k, v) => NotificationReportEvent(k.toString, v) }.toList)
+        val attemptToCount = attemptsToUpdateEachEvent.foldRight(Future.successful(AttemptedCount(0, 0))) {
+          case (attempt, futureCount) => attempt.transformWith {
+            case Success(_) => futureCount.map(lastAttemptCount => lastAttemptCount.copy(success = lastAttemptCount.success + 1))
+            case Failure(throwable) => {
+              logger.warn("An attempt failed", throwable)
+              futureCount.map(lastAttemptCount => lastAttemptCount.copy(failure = lastAttemptCount.failure + 1))
+            }
+          }
+        }
+        val counted = Await.result(attemptToCount, Duration(4, TimeUnit.MINUTES))
+        logger.info(counted)
+        if(counted.failure > 0) {
+          throw new Exception("Failure happened")
+        }
       })
     }
-      catch {
-        case t: Throwable =>
-          logger.warn(t)
-          throw t
-      }
+    catch {
+      case t: Throwable =>
+        logger.warn("Error running lambda", t)
+        throw t
+    }
     finally {
       output.close()
     }
