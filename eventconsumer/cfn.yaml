@@ -103,6 +103,10 @@ Resources:
       BucketName: !Sub
       - aws-mobile-event-logs-${BucketStage}
       - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays: 7
+            Status: Enabled
       NotificationConfiguration:
         LambdaConfigurations:
         - Event: s3:ObjectCreated:*
