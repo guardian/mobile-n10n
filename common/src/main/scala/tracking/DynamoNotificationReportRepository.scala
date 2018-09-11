@@ -62,20 +62,11 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
     def updateAttempt: Future[RepositoryResult[Unit]] = {
       for {
         lastResult: RepositoryResult[NotificationReport] <- getByUuid(report.id)
-        updated: Either[RepositoryError, Unit] <- lastResult match {
+        updateResult: Either[RepositoryError, Unit] <- lastResult match {
           case Left(error) => Future.successful(Left(error))
-          case Right(lastNotificationReport) =>
-            val updateItemRequest = new UpdateItemRequest()
-              .withKey(Map("id" -> new AttributeValue().withS(report.id.toString)).asJava)
-              .withTableName(tableName)
-              .withAttributeUpdates(
-                toAttributeMap(report)
-                  .filterNot { case (key, _) => key == "id" }
-                  .mapValues(value => new AttributeValueUpdate().withAction(AttributeAction.PUT).withValue(value)).asJava)
-              .withExpected(Map("version" -> new ExpectedAttributeValue().withValue(new AttributeValue().withS(lastNotificationReport.version.get.toString)).withComparisonOperator(ComparisonOperator.EQ)).asJava)
-            client.updateItem(updateItemRequest).map { _ => Right(()) }
+          case Right(lastNotificationReport) => updateNotificationReport(report, lastNotificationReport)
         }
-      } yield updated
+      } yield updateResult
     }
 
     def retry(left: Int): Future[RepositoryResult[Unit]] = updateAttempt.transformWith {
@@ -97,5 +88,17 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
     }
 
     retry(20)
+  }
+
+  private def updateNotificationReport(report: NotificationReport, lastNotificationReport: NotificationReport): Future[Right[Nothing, Unit]] = {
+    val updateItemRequest = new UpdateItemRequest()
+      .withKey(Map("id" -> new AttributeValue().withS(report.id.toString)).asJava)
+      .withTableName(tableName)
+      .withAttributeUpdates(
+        toAttributeMap(report)
+          .filterNot { case (key, _) => key == "id" }
+          .mapValues(value => new AttributeValueUpdate().withAction(AttributeAction.PUT).withValue(value)).asJava)
+      .withExpected(Map("version" -> new ExpectedAttributeValue().withValue(new AttributeValue().withS(lastNotificationReport.version.get.toString)).withComparisonOperator(ComparisonOperator.EQ)).asJava)
+    client.updateItem(updateItemRequest).map { _ => Right(()) }
   }
 }
