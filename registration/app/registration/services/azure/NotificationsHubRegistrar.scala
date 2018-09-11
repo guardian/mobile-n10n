@@ -12,13 +12,17 @@ import scala.concurrent.{ExecutionContext, Future}
 import cats.data.EitherT
 import cats.syntax.either._
 import cats.instances.future._
+import com.amazonaws.services.cloudwatch.model.StandardUnit
+import metrics.{MetricDataPoint, Metrics}
 import models.pagination.{Paginated, ProviderCursor}
 import registration.services.NotificationRegistrar.RegistrarResponse
 
 class NotificationHubRegistrar(
   val hubClient: NotificationHubClient,
   subscriptionTracker: SubscriptionTracker,
-  registrationExtractor: Registration => NotificationsHubRegistration)(implicit ec: ExecutionContext)
+  registrationExtractor: Registration => NotificationsHubRegistration,
+  metrics: Metrics
+)(implicit ec: ExecutionContext)
   extends NotificationRegistrar {
 
   override val providerIdentifier = Provider.Azure
@@ -26,6 +30,7 @@ class NotificationHubRegistrar(
 
 
   override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = {
+    metrics.send(MetricDataPoint(name = "AzureWrite", value = 1d, unit = StandardUnit.Count))
     findRegistrationResponses(deviceToken.azureToken).flatMap {
       case Right(Nil) => createRegistration(registration)
       case Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
@@ -35,6 +40,7 @@ class NotificationHubRegistrar(
   }
 
   override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = {
+    metrics.send(MetricDataPoint(name = "AzureWrite", value = 1d, unit = StandardUnit.Count))
     findRegistrationResponses(deviceToken.azureToken).flatMap {
       case Right(Nil) => Future.successful(Right(()))
       case Right(manyRegistrations) => deleteRegistrations(manyRegistrations)
@@ -43,6 +49,7 @@ class NotificationHubRegistrar(
   }
 
   def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
+    metrics.send(MetricDataPoint(name = "AzureRead", value = 1d, unit = StandardUnit.Count))
     EitherT(hubClient.registrationsByTag(Tag.fromTopic(topic).encodedTag, cursor))
       .semiflatMap(responsesToStoredRegistrations)
       .value
@@ -50,12 +57,14 @@ class NotificationHubRegistrar(
 
 
   override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
+    metrics.send(MetricDataPoint(name = "AzureRead", value = 1d, unit = StandardUnit.Count))
     EitherT(hubClient.registrationsByChannelUri(channelUri = deviceToken.azureToken))
       .semiflatMap(responsesToStoredRegistrations)
       .value
   }
 
   def findRegistrationResponses(pushToken: String): Future[Either[ProviderError, List[azure.RegistrationResponse]]] = {
+    metrics.send(MetricDataPoint(name = "AzureRead", value = 1d, unit = StandardUnit.Count))
     hubClient.registrationsByChannelUri(channelUri = pushToken).map(_.right.map(_.distinct))
   }
 
