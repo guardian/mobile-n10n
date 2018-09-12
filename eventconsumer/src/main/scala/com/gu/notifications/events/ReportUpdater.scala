@@ -1,7 +1,9 @@
 package com.gu.notifications.events
 
+import java.time.temporal.{ChronoField, ChronoUnit}
 import java.time.{LocalDateTime, ZonedDateTime}
 import java.util.UUID
+import java.util.concurrent.{ScheduledExecutorService, TimeUnit}
 
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.dynamodbv2.model._
@@ -10,13 +12,13 @@ import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Random, Success, Try}
 
 case class ReadVersionedEvents(version: Option[String], events: Option[EventAggregation], sentTime: LocalDateTime)
 
 case class UpdateVersionedEvents(lastVersion: Option[String], nextVersion: String, events: NotificationReportEvent)
 
-class ReportUpdater(stage:String) {
+class ReportUpdater(stage:String, scheduledExecutorService: ScheduledExecutorService) {
   private val newVersionKey = ":newversion"
   private val newEventsKey = ":newevents"
   private val oldVersionKey = ":oldversion"
@@ -27,12 +29,21 @@ class ReportUpdater(stage:String) {
     eventAggregations.map(aggregation => {
       def nextVersion = UUID.randomUUID().toString
 
-      def updateAttempt() = for {
-        previousEvents <- read(aggregation.id.toString)
-        nextEvents = previousEvents.events.map(previous => aggregation.copy(eventAggregation = EventAggregation.combine(previous, aggregation.eventAggregation))).getOrElse(aggregation)
-        updatedEvents = UpdateVersionedEvents(previousEvents.version, nextVersion, nextEvents)
-        updatedEventsSuccess <- update(updatedEvents, previousEvents.sentTime.truncatedTo(TenSecondUnit))
-      } yield updatedEventsSuccess
+      def updateAttempt() = {
+        val promisedUnit = Promise[Unit]
+        scheduledExecutorService.schedule(new Runnable {
+          override def run(): Unit = promisedUnit.success(())
+        }, Random.nextInt(1000), TimeUnit.MILLISECONDS)
+        promisedUnit.future.flatMap{ _=>
+          for {
+            previousEvents <- read(aggregation.id.toString)
+            nextEvents = previousEvents.events.map(previous => aggregation.copy(eventAggregation = EventAggregation.combine(previous, aggregation.eventAggregation))).getOrElse(aggregation)
+            updatedEvents = UpdateVersionedEvents(previousEvents.version, nextVersion, nextEvents)
+            updatedEventsSuccess <- update(updatedEvents, previousEvents.sentTime.truncatedTo(TenSecondUnit))
+          } yield updatedEventsSuccess
+        }
+
+      }
 
       def retryUpdate(retriesLeft: Int): Future[Unit] = updateAttempt().transformWith {
         case Success(value) => Future.successful(value)
