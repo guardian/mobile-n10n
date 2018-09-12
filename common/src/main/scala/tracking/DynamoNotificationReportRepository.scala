@@ -92,6 +92,7 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
   }
 
   private def updateNotificationReport(report: DynamoNotificationReport, lastNotificationReport: DynamoNotificationReport): Future[Right[Nothing, Unit]] = {
+    logger.warn(s"Report: $report")
     val updateItemRequest = new UpdateItemRequest()
       .withKey(Map("id" -> new AttributeValue().withS(report.id.toString)).asJava)
       .withTableName(tableName)
