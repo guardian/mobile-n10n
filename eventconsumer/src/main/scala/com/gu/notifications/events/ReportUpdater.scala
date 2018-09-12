@@ -96,10 +96,9 @@ class ReportUpdater(stage: String, scheduledExecutorService: ScheduledExecutorSe
       override def onError(exception: Exception): Unit = promise.failure(new Exception(getItemRequest.toString, exception))
 
       override def onSuccess(request: GetItemRequest, result: GetItemResult): Unit = Try {
-        if (result.getItem != null) {
-          val item = result.getItem
+        Option(result.getItem).map { item =>
           val sentTime = ZonedDateTime.parse(item.get("sentTime").getS).toLocalDateTime
-          Some(ReadVersionedEvents(
+          ReadVersionedEvents(
             version = if (item.containsKey("version")) Some(item.get("version").getS) else None,
             events = if (item.containsKey("events")) {
               Some(DynamoConversion.fromAttributeValue(item.get("events"), notificationId, sentTime.truncatedTo(TenSecondUnit)))
@@ -107,10 +106,7 @@ class ReportUpdater(stage: String, scheduledExecutorService: ScheduledExecutorSe
             else {
               None
             },
-            sentTime = sentTime))
-        }
-        else {
-          None
+            sentTime = sentTime)
         }
       } match {
         case Failure(exception) => promise.failure(new Exception(request.toString, exception))
