@@ -87,6 +87,7 @@ class ReportUpdater(stage:String, scheduledExecutorService: ScheduledExecutorSer
     val promise = Promise[ReadVersionedEvents]
     val getItemRequest = new GetItemRequest()
       .withTableName(tableName)
+      .withConsistentRead(true)
       .withKey(Map("id" -> new AttributeValue("id").withS(notificationId)).asJava)
     val handler = new AsyncHandler[GetItemRequest, GetItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(getItemRequest.toString, exception))
