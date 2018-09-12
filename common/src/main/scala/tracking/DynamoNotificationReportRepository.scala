@@ -46,13 +46,14 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
   }
 
   override def getByUuid(uuid: UUID): Future[RepositoryResult[DynamoNotificationReport]] = {
-    val q = new QueryRequest(tableName)
-      .withKeyConditions(Map(IdField -> keyEquals(uuid.toString)).asJava)
+    val getItemRequest = new GetItemRequest()
+      .withTableName(tableName)
+      .withKey(Map(IdField -> new AttributeValue().withS(uuid.toString)).asJava)
       .withConsistentRead(true)
 
-    client.query(q) map { result =>
+    client.get(getItemRequest) map { result =>
       for {
-        item <- Either.fromOption(result.getItems.asScala.headOption, RepositoryError("UUID not found"))
+        item <- Either.fromOption(Option(result.getItem), RepositoryError("UUID not found"))
         parsed <- Either.fromOption(fromAttributeMap[DynamoNotificationReport](item.asScala.toMap).asOpt, RepositoryError("Unable to parse report"))
       } yield parsed
     }

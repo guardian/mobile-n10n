@@ -48,10 +48,8 @@ class S3EventProcessorImpl extends S3EventProcessor {
       }
     }
 
-    def toRawEvent(string: String): Option[RawEvent] = {
-      logger.info(string)
-      Json.parse(string).validate[RawEvent].asOpt
-    }
+    def toRawEvent(string: String): Option[RawEvent] = Json.parse(string).validate[RawEvent].asOpt
+
 
     def toEvent(rawEvent: RawEvent): Option[EventsPerNotification] = {
       val parsed = URLEncodedUtils.parse(rawEvent.queryString.dropWhile(_ == '?'), Charset.forName("UTF-8"))
