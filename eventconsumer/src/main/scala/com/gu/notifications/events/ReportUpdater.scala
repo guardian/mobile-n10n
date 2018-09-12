@@ -22,9 +22,11 @@ class ReportUpdater(stage: String, scheduledExecutorService: ScheduledExecutorSe
   private val newEventsKey = ":newevents"
   private val oldVersionKey = ":oldversion"
   private val logger = LogManager.getLogger(classOf[ReportUpdater])
+
   def nextVersion = UUID.randomUUID().toString
 
   private val tableName: String = s"mobile-notifications-reports-$stage"
+
   def update(eventAggregations: List[NotificationReportEvent])(implicit executionContext: ExecutionContext): List[Future[Unit]] = {
     eventAggregations.map(aggregation => {
 
