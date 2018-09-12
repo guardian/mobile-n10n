@@ -1,6 +1,5 @@
 package com.gu.notifications.events
 
-import java.time.temporal.{ChronoField, ChronoUnit}
 import java.time.{LocalDateTime, ZonedDateTime}
 import java.util.UUID
 import java.util.concurrent.{ScheduledExecutorService, TimeUnit}
@@ -18,29 +17,24 @@ case class ReadVersionedEvents(version: Option[String], events: Option[EventAggr
 
 case class UpdateVersionedEvents(lastVersion: Option[String], nextVersion: String, events: NotificationReportEvent)
 
-class ReportUpdater(stage:String, scheduledExecutorService: ScheduledExecutorService) {
+class ReportUpdater(stage: String, scheduledExecutorService: ScheduledExecutorService) {
   private val newVersionKey = ":newversion"
   private val newEventsKey = ":newevents"
   private val oldVersionKey = ":oldversion"
   private val logger = LogManager.getLogger(classOf[ReportUpdater])
-  private val tableName: String = s"mobile-notifications-reports-$stage"
+  def nextVersion = UUID.randomUUID().toString
 
+  private val tableName: String = s"mobile-notifications-reports-$stage"
   def update(eventAggregations: List[NotificationReportEvent])(implicit executionContext: ExecutionContext): List[Future[Unit]] = {
     eventAggregations.map(aggregation => {
-      def nextVersion = UUID.randomUUID().toString
 
       def updateAttempt() = {
         val promisedUnit = Promise[Unit]
         scheduledExecutorService.schedule(new Runnable {
           override def run(): Unit = promisedUnit.success(())
         }, Random.nextInt(1000), TimeUnit.MILLISECONDS)
-        promisedUnit.future.flatMap{ _=>
-          for {
-            previousEvents <- read(aggregation.id.toString)
-            nextEvents = previousEvents.events.map(previous => aggregation.copy(eventAggregation = EventAggregation.combine(previous, aggregation.eventAggregation))).getOrElse(aggregation)
-            updatedEvents = UpdateVersionedEvents(previousEvents.version, nextVersion, nextEvents)
-            updatedEventsSuccess <- update(updatedEvents, previousEvents.sentTime.truncatedTo(TenSecondUnit))
-          } yield updatedEventsSuccess
+        promisedUnit.future.flatMap { _ =>
+          read(aggregation.id.toString).flatMap(_.map(updateFromPreviousEvents(aggregation, _)).getOrElse(Future.successful(())))
         }
 
       }
@@ -57,6 +51,12 @@ class ReportUpdater(stage:String, scheduledExecutorService: ScheduledExecutorSer
     })
   }
 
+  private def updateFromPreviousEvents(aggregation: NotificationReportEvent, previousEvents: ReadVersionedEvents) = {
+    val nextEvents = previousEvents.events.map(previous => aggregation.copy(eventAggregation = EventAggregation.combine(previous, aggregation.eventAggregation))).getOrElse(aggregation)
+    val updatedEvents = UpdateVersionedEvents(previousEvents.version, nextVersion, nextEvents)
+    update(updatedEvents, previousEvents.sentTime.truncatedTo(TenSecondUnit))
+  }
+
   private def update(versionedEvents: UpdateVersionedEvents, sentTime: LocalDateTime): Future[Unit] = {
     val attributeValuesForUpdate = Map(
       newEventsKey -> DynamoConversion.toAttributeValue(versionedEvents.events.eventAggregation, sentTime),
@@ -69,33 +69,35 @@ class ReportUpdater(stage:String, scheduledExecutorService: ScheduledExecutorSer
     val updateItemRequest = versionedEvents
       .lastVersion
       .map(version => updateItemRequestWithoutCondition
-          .withConditionExpression(s"version = $oldVersionKey")
-          .withExpressionAttributeValues((attributeValuesForUpdate ++ Map(oldVersionKey -> new AttributeValue().withS(version))).asJava)
+        .withConditionExpression(s"version = $oldVersionKey")
+        .withExpressionAttributeValues((attributeValuesForUpdate ++ Map(oldVersionKey -> new AttributeValue().withS(version))).asJava)
       )
       .getOrElse(updateItemRequestWithoutCondition.withExpressionAttributeValues(attributeValuesForUpdate.asJava))
 
     val promise = Promise[Unit]
     val handler = new AsyncHandler[UpdateItemRequest, UpdateItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(updateItemRequest.toString, exception))
+
       override def onSuccess(request: UpdateItemRequest, result: UpdateItemResult): Unit = promise.success(())
     }
     AwsClient.dynamoDbClient.updateItemAsync(updateItemRequestWithoutCondition, handler)
     promise.future
   }
 
-  private def read(notificationId: String): Future[ReadVersionedEvents] = {
-    val promise = Promise[ReadVersionedEvents]
+  private def read(notificationId: String): Future[Option[ReadVersionedEvents]] = {
+    val promise = Promise[Option[ReadVersionedEvents]]
     val getItemRequest = new GetItemRequest()
       .withTableName(tableName)
       .withConsistentRead(true)
       .withKey(Map("id" -> new AttributeValue("id").withS(notificationId)).asJava)
     val handler = new AsyncHandler[GetItemRequest, GetItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(getItemRequest.toString, exception))
+
       override def onSuccess(request: GetItemRequest, result: GetItemResult): Unit = Try {
-        if(result.getItem != null) {
+        if (result.getItem != null) {
           val item = result.getItem
           val sentTime = ZonedDateTime.parse(item.get("sentTime").getS).toLocalDateTime
-          ReadVersionedEvents(
+          Some(ReadVersionedEvents(
             version = if (item.containsKey("version")) Some(item.get("version").getS) else None,
             events = if (item.containsKey("events")) {
               Some(DynamoConversion.fromAttributeValue(item.get("events"), notificationId, sentTime.truncatedTo(TenSecondUnit)))
@@ -103,7 +105,10 @@ class ReportUpdater(stage:String, scheduledExecutorService: ScheduledExecutorSer
             else {
               None
             },
-            sentTime = sentTime)
+            sentTime = sentTime))
+        }
+        else {
+          None
         }
       } match {
         case Failure(exception) => promise.failure(new Exception(request.toString, exception))
