@@ -92,17 +92,19 @@ class ReportUpdater(stage:String, scheduledExecutorService: ScheduledExecutorSer
     val handler = new AsyncHandler[GetItemRequest, GetItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(getItemRequest.toString, exception))
       override def onSuccess(request: GetItemRequest, result: GetItemResult): Unit = Try {
-        val item = result.getItem
-        val sentTime = ZonedDateTime.parse(item.get("sentTime").getS).toLocalDateTime
-        ReadVersionedEvents(
-          version = if (item.containsKey("version")) Some(item.get("version").getS) else None,
-          events = if (item.containsKey("events")) {
-            Some(DynamoConversion.fromAttributeValue(item.get("events"), notificationId, sentTime.truncatedTo(TenSecondUnit)))
-          }
-          else {
-            None
-          },
-          sentTime = sentTime)
+        if(result.getItem != null) {
+          val item = result.getItem
+          val sentTime = ZonedDateTime.parse(item.get("sentTime").getS).toLocalDateTime
+          ReadVersionedEvents(
+            version = if (item.containsKey("version")) Some(item.get("version").getS) else None,
+            events = if (item.containsKey("events")) {
+              Some(DynamoConversion.fromAttributeValue(item.get("events"), notificationId, sentTime.truncatedTo(TenSecondUnit)))
+            }
+            else {
+              None
+            },
+            sentTime = sentTime)
+        }
       } match {
         case Failure(exception) => promise.failure(new Exception(request.toString, exception))
         case Success(value) => promise.success(value)
