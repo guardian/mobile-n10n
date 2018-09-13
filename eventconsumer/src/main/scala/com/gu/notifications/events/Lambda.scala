@@ -54,16 +54,18 @@ object Lambda {
   /*
    * Logic
    */
-  def process(env: Env, date: String, id: UUID): String = {
+  def process(env: Env, date: String, ids: Set[UUID]): String = {
 
     def allFileRequests = new Iterator[List[S3ObjectSummary]] {
       private var nextMarker: Option[String] = None
       private var firstRequest: Boolean = true
+
       override def hasNext: Boolean = firstRequest || nextMarker.isDefined
+
       override def next(): List[S3ObjectSummary] = {
         val lor = new ListObjectsRequest()
-          .withBucketName("aws-mobile-logs")
-          .withPrefix(s"fastly/events.mobile.guardianapis.com/$date")
+          .withBucketName("aws-mobile-event-logs-prod")
+          .withPrefix(s"fastly/$date")
           .withMarker(nextMarker.orNull)
         val list = s3Client.listObjects(lor)
         nextMarker = Option(list.getNextMarker)
@@ -95,31 +97,36 @@ object Lambda {
         platformString <- queryParams.get("platform")
         providerString <- queryParams.get("provider").orElse(Some("android"))
         notificationId <- Try(UUID.fromString(notificationIdString)).toOption
-        if notificationId == id
+        if ids.contains(notificationId)
         platform <- Platform.fromString(platformString)
         provider <- Provider.fromString(providerString)
       } yield EventsPerNotification.from(notificationId, rawEvent.dateTime, platform, provider)
     }
+
     val events = forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent).reduce(EventsPerNotification.combine)
-    val agg = events.aggregations(id)
-    logger.info(
-      s"""
-         |Total: ${agg.providerCounts.total}
-         |iOS: ${agg.platformCounts.ios}
-         |Android: ${agg.platformCounts.android}
-         |Azure: ${agg.providerCounts.azure.total}
-         |Azure (iOS): ${agg.providerCounts.azure.ios}
-         |Azure (Android): ${agg.providerCounts.azure.android}
-         |Firebase: ${agg.providerCounts.firebase.total}
-         |Firebase (iOS): ${agg.providerCounts.firebase.ios}
-         |Firebase (Android): ${agg.providerCounts.firebase.android}
-       """.stripMargin)
-    events.aggregations.toList.sortBy(- _._2.providerCounts.total).mkString("\n")
+    ids.foreach { id: UUID =>
+      val agg = events.aggregations(id)
+      logger.info(
+        s"""
+           |ID: $id
+           |Total: ${agg.providerCounts.total}
+           |iOS: ${agg.platformCounts.ios}
+           |Android: ${agg.platformCounts.android}
+           |Azure: ${agg.providerCounts.azure.total}
+           |Azure (iOS): ${agg.providerCounts.azure.ios}
+           |Azure (Android): ${agg.providerCounts.azure.android}
+           |Firebase: ${agg.providerCounts.firebase.total}
+           |Firebase (iOS): ${agg.providerCounts.firebase.ios}
+           |Firebase (Android): ${agg.providerCounts.firebase.android}
+         """.stripMargin)
+    }
+    ""
   }
 }
 
 object TestIt {
   def main(args: Array[String]): Unit = {
-    println(Lambda.process(Env(), args(0), UUID.fromString(args(1))))
+    val uuids = args.drop(1).map(UUID.fromString).toSet
+    println(Lambda.process(Env(), args(0), uuids))
   }
 }
