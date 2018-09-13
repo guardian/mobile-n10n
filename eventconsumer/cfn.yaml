@@ -27,8 +27,35 @@ Mappings:
     PROD:
       BucketStage: prod
 Resources:
+  Sqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 300
+  SqsPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+      - Ref: Sqs
+      PolicyDocument:
+        Version: "2012-10-17"
+        Id: !Sub "Sqs${Stage}Policy"
+        Statement:
+        - Resource: !GetAtt Sqs.Arn
+          Effect: "Allow"
+          Sid: "Allow-User-SendMessage"
+          Action:
+          - "sqs:*"
+          Condition:
+            ArnLike:
+              aws:SourceArn:
+              - !Sub
+                - arn:aws:s3:::aws-mobile-event-logs-${BucketStage}
+                - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
+          Principal:
+            AWS: "*"
   ExecutionRole:
     Type: AWS::IAM::Role
+    DependsOn: Sqs
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -49,7 +76,9 @@ Resources:
             Action:
             - logs:CreateLogStream
             - logs:PutLogEvents
-            Resource: !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-${Stage}:*"
+            Resource:
+            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-${Stage}:*"
+            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-sqs-${Stage}:*"
 
       - PolicyName: s3
         PolicyDocument:
@@ -71,6 +100,12 @@ Resources:
             Effect: Allow
             Action: dynamodb:*
             Resource: !Sub "arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-reports-${Stage}"
+      - PolicyName: SQS
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action: sqs:*
+            Resource: !GetAtt Sqs.Arn
 
   Lambda:
     Type: AWS::Lambda::Function
@@ -95,9 +130,33 @@ Resources:
       Runtime: java8
       Timeout: 300
 
+  SqsLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${App}-sqs-${Stage}
+      Code:
+        S3Bucket:
+          Ref: DeployBucket
+        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+          Stack: !Ref Stack
+          App: !Ref App
+      Description: Consumes queue events
+      Handler: com.gu.notifications.events.SqsLambda::handleRequest
+      MemorySize: 384
+      Role: !GetAtt ExecutionRole.Arn
+      Runtime: java8
+      Timeout: 300
+      ReservedConcurrentExecutions: 1
+
   S3Bucket:
     Type: AWS::S3::Bucket
-    DependsOn: LambdaPermissionS3Bucket
+    DependsOn:
+    - LambdaPermissionS3Bucket
+    - Sqs
+    - SqsPolicy
     Properties:
       AccessControl: Private
       BucketName: !Sub
@@ -108,9 +167,9 @@ Resources:
           - ExpirationInDays: 7
             Status: Enabled
       NotificationConfiguration:
-        LambdaConfigurations:
+        QueueConfigurations:
         - Event: s3:ObjectCreated:*
-          Function: !GetAtt Lambda.Arn
+          Queue: !GetAtt Sqs.Arn
   LambdaPermissionS3Bucket:
     DependsOn:
     - Lambda
@@ -122,3 +181,14 @@ Resources:
       SourceArn: !Sub
       - arn:aws:s3:::aws-mobile-event-logs-${BucketStage}
       - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
+
+  SqsEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    DependsOn:
+    - Sqs
+    - SqsLambda
+    Properties:
+      BatchSize: 1
+      Enabled: True
+      EventSourceArn: !GetAtt Sqs.Arn
+      FunctionName: !Sub ${App}-sqs-${Stage}

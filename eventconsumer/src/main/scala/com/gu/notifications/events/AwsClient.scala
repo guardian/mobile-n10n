@@ -11,7 +11,6 @@ object AwsClient {
     DefaultAWSCredentialsProviderChain.getInstance)
 
 
-
   lazy val s3Client: AmazonS3 = AmazonS3Client.builder()
     .withCredentials(credentials)
     .withRegion("eu-west-1")

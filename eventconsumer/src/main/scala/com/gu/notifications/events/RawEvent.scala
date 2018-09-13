@@ -12,5 +12,5 @@ case class RawEvent(
 )
 
 object RawEvent {
-  implicit val rawEventJF: Reads[RawEvent] = Json.reads[RawEvent].map(rawEvent => rawEvent.copy(dateTime =  rawEvent.dateTime.truncatedTo(TenSecondUnit)))
+  implicit val rawEventJF: Reads[RawEvent] = Json.reads[RawEvent].map(rawEvent => rawEvent.copy(dateTime = rawEvent.dateTime.truncatedTo(TenSecondUnit)))
 }

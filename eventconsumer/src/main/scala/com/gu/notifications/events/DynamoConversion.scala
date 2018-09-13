@@ -37,13 +37,6 @@ object DynamoConversion {
       android = platformMap("android").getN.toInt)
   }
 
-  def toAttributeValue(platform: PlatformCount): AttributeValue = new AttributeValue().withM(Map(
-    "total" -> new AttributeValue().withN(platform.total.toString),
-    "ios" -> new AttributeValue().withN(platform.ios.toString),
-    "android" -> new AttributeValue().withN(platform.android.toString)
-  ).asJava)
-
-
   def toAttributeValue(eventAggregation: EventAggregation, sent: LocalDateTime): AttributeValue = {
     val platform = eventAggregation.platformCounts
     val provider = eventAggregation.providerCounts
@@ -70,5 +63,11 @@ object DynamoConversion {
           }.asJava)
     ).asJava)
   }
+
+  def toAttributeValue(platform: PlatformCount): AttributeValue = new AttributeValue().withM(Map(
+    "total" -> new AttributeValue().withN(platform.total.toString),
+    "ios" -> new AttributeValue().withN(platform.ios.toString),
+    "android" -> new AttributeValue().withN(platform.android.toString)
+  ).asJava)
 
 }
