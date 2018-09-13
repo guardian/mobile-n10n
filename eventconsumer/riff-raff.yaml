@@ -6,7 +6,9 @@ deployments:
     type: aws-lambda
     parameters:
       bucket: mobile-notifications-dist
-      functionNames: [eventconsumer-]
+      functionNames:
+      - eventconsumer-
+      - eventconsumer-sqs-
       fileName: eventconsumer.jar
       prefixStack: false
     dependencies: [eventconsumer-cfn]

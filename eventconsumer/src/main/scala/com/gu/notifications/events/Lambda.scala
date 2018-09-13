@@ -7,7 +7,7 @@ import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.amazonaws.util.IOUtils
 import com.gu.notifications.events.model.NotificationReportEvent
 import org.apache.logging.log4j.{LogManager, Logger}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -38,24 +38,8 @@ class Lambda(eventConsumer: S3EventProcessor, stage: String)(implicit executionC
       finally {
         input.close()
       }
-      S3Event.jf.reads(Json.parse(inputString)).foreach(e => {
-        val events = eventConsumer.process(e)
-        val attemptsToUpdateEachEvent = reportUpdater.update(events.aggregations.map { case (k, v) => NotificationReportEvent(k.toString, v) }.toList)
-        val attemptToCount = attemptsToUpdateEachEvent.foldRight(Future.successful(AttemptedCount(0, 0))) {
-          case (attempt, futureCount) => attempt.transformWith {
-            case Success(_) => futureCount.map(lastAttemptCount => lastAttemptCount.copy(success = lastAttemptCount.success + 1))
-            case Failure(throwable) => {
-              logger.warn("An attempt failed", throwable)
-              futureCount.map(lastAttemptCount => lastAttemptCount.copy(failure = lastAttemptCount.failure + 1))
-            }
-          }
-        }
-        val counted = Await.result(attemptToCount, Duration(4, TimeUnit.MINUTES))
-        logger.info(counted)
-        if(counted.failure > 0) {
-          throw new Exception("Failure happened")
-        }
-      })
+      val s3EventJson = Json.parse(inputString)
+      processS3EventJson(s3EventJson)
     }
     catch {
       case t: Throwable =>
@@ -67,4 +51,24 @@ class Lambda(eventConsumer: S3EventProcessor, stage: String)(implicit executionC
     }
   }
 
+  def processS3EventJson(s3EventJson: JsValue) = {
+    S3Event.jf.reads(s3EventJson).foreach(e => {
+      val events = eventConsumer.process(e)
+      val attemptsToUpdateEachEvent = reportUpdater.update(events.aggregations.map { case (k, v) => NotificationReportEvent(k.toString, v) }.toList)
+      val attemptToCount = attemptsToUpdateEachEvent.foldRight(Future.successful(AttemptedCount(0, 0))) {
+        case (attempt, futureCount) => attempt.transformWith {
+          case Success(_) => futureCount.map(lastAttemptCount => lastAttemptCount.copy(success = lastAttemptCount.success + 1))
+          case Failure(throwable) => {
+            logger.warn("An attempt failed", throwable)
+            futureCount.map(lastAttemptCount => lastAttemptCount.copy(failure = lastAttemptCount.failure + 1))
+          }
+        }
+      }
+      val counted = Await.result(attemptToCount, Duration(4, TimeUnit.MINUTES))
+      logger.info(counted)
+      if (counted.failure > 0) {
+        throw new Exception("Failure happened")
+      }
+    })
+  }
 }
