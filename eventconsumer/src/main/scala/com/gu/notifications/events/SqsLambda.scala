@@ -11,18 +11,24 @@ import play.api.libs.json._
 object SqsLambda extends App {
   new SqsLambda().handleRequest(System.in, System.out, null)
 }
+
 case class Record(body: String)
+
 object Record {
   implicit val jf = Json.format[Record]
 }
+
 case class SqsEvent(Records: List[Record])
+
 object SqsEvent {
   implicit val jf = Json.format[SqsEvent]
 }
+
 class SqsLambda extends RequestStreamHandler {
 
   private val logger: Logger = LogManager.getLogger(classOf[Lambda])
   private val lambda = new Lambda()
+
   override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     try {
       val inputString = try {

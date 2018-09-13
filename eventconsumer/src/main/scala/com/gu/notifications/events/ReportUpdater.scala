@@ -2,7 +2,6 @@ package com.gu.notifications.events
 
 import java.time.{LocalDateTime, ZonedDateTime}
 import java.util.UUID
-import java.util.concurrent.{ScheduledExecutorService, TimeUnit}
 
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.dynamodbv2.model._
@@ -11,34 +10,24 @@ import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.{Failure, Random, Success, Try}
+import scala.util.{Failure, Success, Try}
 
 case class ReadVersionedEvents(version: Option[String], events: Option[EventAggregation], sentTime: LocalDateTime)
 
 case class UpdateVersionedEvents(lastVersion: Option[String], nextVersion: String, events: NotificationReportEvent)
 
-class ReportUpdater(stage: String, scheduledExecutorService: ScheduledExecutorService) {
+class ReportUpdater(stage: String) {
   private val newVersionKey = ":newversion"
   private val newEventsKey = ":newevents"
   private val oldVersionKey = ":oldversion"
   private val logger = LogManager.getLogger(classOf[ReportUpdater])
-
-  def nextVersion = UUID.randomUUID().toString
-
   private val tableName: String = s"mobile-notifications-reports-$stage"
 
   def update(eventAggregations: List[NotificationReportEvent])(implicit executionContext: ExecutionContext): List[Future[Unit]] = {
     eventAggregations.map(aggregation => {
 
       def updateAttempt() = {
-        val promisedUnit = Promise[Unit]
-        scheduledExecutorService.schedule(new Runnable {
-          override def run(): Unit = promisedUnit.success(())
-        }, Random.nextInt(1000), TimeUnit.MILLISECONDS)
-        promisedUnit.future.flatMap { _ =>
-          read(aggregation.id.toString).flatMap(_.map(updateFromPreviousEvents(aggregation, _)).getOrElse(Future.successful(())))
-        }
-
+        read(aggregation.id.toString).flatMap(_.map(updateFromPreviousEvents(aggregation, _)).getOrElse(Future.successful(())))
       }
 
       def retryUpdate(retriesLeft: Int): Future[Unit] = updateAttempt().transformWith {
@@ -58,6 +47,8 @@ class ReportUpdater(stage: String, scheduledExecutorService: ScheduledExecutorSe
     val updatedEvents = UpdateVersionedEvents(previousEvents.version, nextVersion, nextEvents)
     update(updatedEvents, previousEvents.sentTime.truncatedTo(TenSecondUnit))
   }
+
+  def nextVersion = UUID.randomUUID().toString
 
   private def update(versionedEvents: UpdateVersionedEvents, sentTime: LocalDateTime): Future[Unit] = {
     val attributeValuesForUpdate = Map(

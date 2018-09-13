@@ -1,7 +1,7 @@
 package com.gu.notifications.events
 
 import java.io.{InputStream, OutputStream}
-import java.util.concurrent.{Executors, ForkJoinPool, TimeUnit}
+import java.util.concurrent.{ForkJoinPool, TimeUnit}
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.amazonaws.util.IOUtils
@@ -14,21 +14,21 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 object Lambda extends App {
-
   new Lambda().handleRequest(System.in, System.out, null)
 }
-case class AttemptedCount(success:Int, failure:Int)
+
+case class AttemptedCount(success: Int, failure: Int)
+
 class Lambda(eventConsumer: S3EventProcessor, stage: String)(implicit executionContext: ExecutionContext) extends RequestStreamHandler {
 
-  private val scheduledES = Executors.newScheduledThreadPool(1)
+
+  val reportUpdater = new ReportUpdater(stage)
   private val logger: Logger = LogManager.getLogger(classOf[Lambda])
 
   def this() = this(
     new S3EventProcessorImpl(),
     System.getenv().getOrDefault("Stage", "CODE")
-  )(ExecutionContext.fromExecutor(new ForkJoinPool(3)))
-
-  val reportUpdater = new ReportUpdater(stage, scheduledES)
+  )(ExecutionContext.fromExecutor(new ForkJoinPool(25)))
 
   override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     try {
