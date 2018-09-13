@@ -149,6 +149,7 @@ Resources:
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
+      ReservedConcurrentExecutions: 1
 
   S3Bucket:
     Type: AWS::S3::Bucket
