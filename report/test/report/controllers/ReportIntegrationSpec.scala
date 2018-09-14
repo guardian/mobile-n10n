@@ -22,6 +22,7 @@ import report.services.{Configuration, NotificationReportEnricher}
 import tracking.InMemoryNotificationReportRepository
 import cats.implicits._
 import com.softwaremill.macwire._
+import report.models.ExtendedNotificationReport
 
 import scala.concurrent.Future
 

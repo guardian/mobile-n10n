@@ -1,13 +1,13 @@
-package models
+package report.models
 
 import java.time.Instant.ofEpochMilli
 import java.time.LocalDateTime.ofInstant
 import java.time.ZoneOffset.UTC
-import java.time.{Instant, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import azure.NotificationDetails
-import com.gu.notifications.events.model.{DynamoEventAggregation, EventAggregation}
+import com.gu.notifications.events.model.EventAggregation
+import models._
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 import play.api.libs.json.JodaWrites._

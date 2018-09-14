@@ -3,12 +3,13 @@ package report.services
 import java.net.URI
 
 import azure.NotificationHubClient
-import models.{ExtendedNotificationReport, ExtendedSenderReport, DynamoNotificationReport}
+import models.DynamoNotificationReport
+
 import scala.concurrent.ExecutionContext
 import scala.PartialFunction._
 import scala.concurrent.Future
 import scala.util.Try
-import cats.syntax.either._
+import report.models.{ExtendedNotificationReport, ExtendedSenderReport}
 
 class NotificationReportEnricher(hubClient: NotificationHubClient)(implicit ec: ExecutionContext) {
 
