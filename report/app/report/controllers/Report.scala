@@ -14,6 +14,7 @@ import scala.concurrent.ExecutionContext
 import cats.data.EitherT
 import cats.implicits._
 import play.mvc.Security.AuthenticatedAction
+import report.models.ExtendedNotificationReport
 
 final class Report(
   configuration: Configuration,
@@ -36,7 +37,7 @@ final class Report(
         from = from.getOrElse(DateTime.now.minusWeeks(1)),
         to = until.getOrElse(DateTime.now)
       ) map {
-        case Right(result) => Ok(Json.toJson(result.map(new NotificationReport(_))))
+        case Right(result) => Ok(Json.toJson(result.map(ExtendedNotificationReport.summary)))
         case Left(error) => InternalServerError(error.message)
       }
     }

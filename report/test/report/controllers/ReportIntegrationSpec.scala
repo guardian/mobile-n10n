@@ -116,7 +116,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
       val report = reportsInRange.head
 
-      val enrichedReport = ExtendedNotificationReport.fromNotificationReport(report)
+      val enrichedReport = ExtendedNotificationReport.full(report)
 
       val details = NotificationDetails(
         state = NotificationStates.Completed,

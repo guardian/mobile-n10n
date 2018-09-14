@@ -14,7 +14,7 @@ import report.models.{ExtendedNotificationReport, ExtendedSenderReport}
 class NotificationReportEnricher(hubClient: NotificationHubClient)(implicit ec: ExecutionContext) {
 
   def enrich(notificationReport: DynamoNotificationReport): Future[ExtendedNotificationReport] = {
-    val extended = ExtendedNotificationReport.fromNotificationReport(notificationReport)
+    val extended = ExtendedNotificationReport.full(notificationReport)
     Future.sequence(extended.reports.map(addDebugField)).map { extendedReports =>
       extended.copy(reports = extendedReports)
     }
