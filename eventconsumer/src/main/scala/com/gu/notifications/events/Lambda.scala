@@ -1,7 +1,10 @@
 package com.gu.notifications.events
 
-import java.io.{BufferedReader, InputStreamReader}
+import java.io.{BufferedReader, FileOutputStream, InputStreamReader}
 import java.nio.charset.Charset
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalField
 import java.util.UUID
 
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
@@ -15,6 +18,7 @@ import play.api.libs.json.Json
 
 import collection.JavaConverters._
 import scala.annotation.tailrec
+import scala.io.Source
 import scala.util.Try
 
 
@@ -51,6 +55,8 @@ object Lambda {
     logger.info(s"Starting $env")
   }
 
+  val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
   /*
    * Logic
    */
@@ -65,13 +71,16 @@ object Lambda {
       override def next(): List[S3ObjectSummary] = {
         val lor = new ListObjectsRequest()
           .withBucketName("aws-mobile-event-logs-prod")
-          .withPrefix(s"fastly/$date")
+          .withPrefix(s"fastly")
           .withMarker(nextMarker.orNull)
         val list = s3Client.listObjects(lor)
         nextMarker = Option(list.getNextMarker)
         firstRequest = false
         logger.info(s"Adding ${list.getObjectSummaries.size} files to the processing list")
-        list.getObjectSummaries.asScala.toList
+        println(list.getObjectSummaries.asScala.toList.map(_.getKey).mkString("\n"))
+        val fileList = list.getObjectSummaries.asScala.toList.filter(f => f.getKey > "fastly/2018-09-15T15:40" && f.getKey < "fastly/2018-09-16T06:00")
+        println(s"File list: ${fileList.size}")
+        fileList
       }
     }
 
@@ -119,6 +128,16 @@ object Lambda {
            |Firebase (iOS): ${agg.providerCounts.firebase.ios}
            |Firebase (Android): ${agg.providerCounts.firebase.android}
          """.stripMargin)
+
+      val fileContent = agg.timing
+        .toList
+        .sortBy(_._1.toInstant(ZoneOffset.UTC).toEpochMilli)
+        .map(c => s"${dateFormat.format(c._1)}\t${c._2.azure}\t${c._2.firebase}")
+        .mkString("\n")
+
+      val fos = new FileOutputStream(s"$id.csv")
+      fos.write(fileContent.getBytes)
+      fos.close()
     }
     ""
   }

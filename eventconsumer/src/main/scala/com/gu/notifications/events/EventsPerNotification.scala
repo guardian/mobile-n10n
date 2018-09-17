@@ -45,11 +45,23 @@ object ProviderCount {
   )
 }
 
+case class Stuff(azure: Int, firebase: Int)
+
+object Stuff {
+  def from(provider: Provider): Stuff = {
+    provider match {
+      case Azure => Stuff(0, 1)
+      case Fcm => Stuff(1, 0)
+    }
+  }
+  def combine(a: Stuff, b: Stuff): Stuff = Stuff(a.azure + b.azure, a.firebase + b.firebase)
+}
+
 case class EventAggregation(
   notificationId: UUID,
   platformCounts: PlatformCount,
   providerCounts: ProviderCount,
-  timing: Map[LocalDateTime, Int]
+  timing: Map[LocalDateTime, Stuff]
 )
 
 object EventAggregation {
@@ -63,18 +75,18 @@ object EventAggregation {
       notificationId = notificationId,
       platformCounts = PlatformCount.from(platform),
       providerCounts = ProviderCount.from(provider, platform),
-      timing = Map(dateTime -> 1)
+      timing = Map(dateTime -> Stuff.from(provider))
     )
   }
 
-  def combineTimings(timingA: Map[LocalDateTime, Int], timingB: Map[LocalDateTime, Int]): Map[LocalDateTime, Int] = {
+  def combineTimings(timingA: Map[LocalDateTime, Stuff], timingB: Map[LocalDateTime, Stuff]): Map[LocalDateTime, Stuff] = {
     val keys = timingA.keySet ++ timingB.keySet
     keys.map( dateTime =>
       (timingA.get(dateTime), timingB.get(dateTime)) match {
-        case (Some(a), Some(b)) => dateTime -> (a + b)
+        case (Some(a), Some(b)) => dateTime -> Stuff.combine(a, b)
         case (Some(a), _) => dateTime -> a
         case (_, Some(b)) => dateTime -> b
-        case _ => dateTime -> 0
+        case _ => dateTime -> Stuff(0, 0)
       }
     ).toMap
   }
