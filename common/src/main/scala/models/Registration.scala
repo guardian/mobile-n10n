@@ -5,5 +5,6 @@ case class Registration(
   deviceToken: DeviceToken,
   platform: Platform,
   topics: Set[Topic],
-  buildTier: Option[String]
+  buildTier: Option[String],
+  provider: Option[Provider]
 )

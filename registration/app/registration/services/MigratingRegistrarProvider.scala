@@ -3,35 +3,51 @@ package registration.services
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import error.NotificationsError
 import metrics.{MetricDataPoint, Metrics}
+import models.Provider.{Azure, FCM}
 import models._
 import registration.services.fcm.FcmRegistrar
 
 import scala.concurrent.ExecutionContext
 
 class MigratingRegistrarProvider(
-  standardRegistrarProvider: RegistrarProvider,
+  azureRegistrarProvider: RegistrarProvider,
   fcmRegistrar: FcmRegistrar,
   metrics: Metrics
 )(implicit executionContext: ExecutionContext) extends RegistrarProvider {
-  override def registrarFor(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar] = deviceToken match {
+  override def registrarFor(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = deviceToken match {
     case AzureToken(_) =>
       metrics.send(MetricDataPoint(name = "RegistrationAzure", value = 1d, unit = StandardUnit.Count))
-      standardRegistrarProvider.registrarFor(platform, deviceToken)
+      azureRegistrarProvider.registrarFor(platform, deviceToken, currentProvider)
     case FcmToken(_) =>
       metrics.send(MetricDataPoint(name = "RegistrationFcm", value = 1d, unit = StandardUnit.Count))
       Right(fcmRegistrar)
-    case BothTokens(_, _) =>
+    case BothTokens(_, _) if platform == Android =>
       metrics.send(MetricDataPoint(name = "RegistrationBoth", value = 1d, unit = StandardUnit.Count))
-      standardRegistrarProvider
-        .registrarFor(platform, deviceToken)
-        .map(legacyRegistrar => new MigratingRegistrar("AzureToFirebaseRegistrar", fcmRegistrar, legacyRegistrar))
+      androidMigration(platform, deviceToken, currentProvider)
+    case BothTokens(_, _) if platform == iOS =>
+      metrics.send(MetricDataPoint(name = "RegistrationBoth", value = 1d, unit = StandardUnit.Count))
+      iosMigration(platform, deviceToken, currentProvider)
   }
 
-  // delegate to the registrar provider
-  override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
-    registrarFor(registration.platform, registration.deviceToken)
+  private def androidMigration(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = {
+    azureRegistrarProvider
+      .registrarFor(platform, deviceToken, Some(Azure))
+      .map(azureRegistrar => new MigratingRegistrar("AzureToFirebaseRegistrar", fcmRegistrar, azureRegistrar))
+  }
 
-  // delegate to the registrar provider
+  private def iosMigration(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = {
+    currentProvider match {
+      case Some(FCM) =>
+        azureRegistrarProvider
+          .registrarFor(platform, deviceToken, Some(Azure))
+          .map(azureRegistrar => new MigratingRegistrar("FirebaseToAzureRegistrar", azureRegistrar, fcmRegistrar))
+      case _ => azureRegistrarProvider.registrarFor(platform, deviceToken, Some(Azure))
+    }
+  }
+
+  override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
+    registrarFor(registration.platform, registration.deviceToken, registration.provider)
+
   override def withAllRegistrars[T](fn: NotificationRegistrar => T): List[T] =
-    standardRegistrarProvider.withAllRegistrars(fn)
+    azureRegistrarProvider.withAllRegistrars(fn)
 }

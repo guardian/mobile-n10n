@@ -14,6 +14,7 @@ import cats.syntax.either._
 import cats.instances.future._
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{MetricDataPoint, Metrics}
+import models.Provider.Azure
 import models.pagination.{Paginated, ProviderCursor}
 import registration.services.NotificationRegistrar.RegistrarResponse
 
@@ -147,7 +148,8 @@ class NotificationHubRegistrar(
     RegistrationResponse(
       deviceId = registration.deviceId,
       platform = registration.platform,
-      topics = topicsRegisteredFor
+      topics = topicsRegisteredFor,
+      provider = Azure
     )
   }
 

@@ -11,21 +11,7 @@ import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{MetricDataPoint, Metrics}
 import registration.services.fcm.FcmRegistrar
 
-trait RegistrarProvider {
-  def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar]
 
-  def registrarFor(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar]
-
-  def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T]
-}
-
-case class UnsupportedPlatform(platform: String) extends RequestError {
-  override def reason: String = s"Platform '$platform' is not supported"
-}
-
-case class MalformattedRegistration(description: String) extends RequestError {
-  override def reason: String = s"Malformatred request: $reason"
-}
 
 final class AzureRegistrarProvider(
   gcmRegistrar: GCMNotificationRegistrar,
@@ -42,9 +28,9 @@ final class AzureRegistrarProvider(
 
 
   override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
-    registrarFor(registration.platform, registration.deviceToken)
+    registrarFor(registration.platform, registration.deviceToken, registration.provider)
 
-  override def registrarFor(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar] = {
+  override def registrarFor(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = {
     platform match {
       case Android => Right(gcmRegistrar)
       case `iOS` => Right(apnsRegistrar)

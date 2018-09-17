@@ -3,6 +3,7 @@ package registration.controllers
 import application.WithPlayApp
 import com.gu.DevIdentity
 import error.NotificationsError
+import models.Provider.Unknown
 import models.TopicTypes.{Breaking, FootballMatch}
 import models._
 import models.pagination.Paginated
@@ -28,7 +29,8 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
       Right(RegistrationResponse(
         deviceId = "deviceAA",
         platform = Android,
-        topics = registration.topics
+        topics = registration.topics,
+        provider = Unknown
       ))
     }
 
@@ -72,7 +74,8 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       Right(RegistrationResponse(
         deviceId = "deviceAA",
         platform = Android,
-        topics = registration.topics
+        topics = registration.topics,
+        provider = Unknown
       ))
     }
 
@@ -99,10 +102,10 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
 
   lazy val fakeRegistrarProvider = new RegistrarProvider {
 
-    override def registrarFor(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar] = Right(fakeNotificationRegistrar)
+    override def registrarFor(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = Right(fakeNotificationRegistrar)
 
     override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
-      registrarFor(registration.platform, registration.deviceToken)
+      registrarFor(registration.platform, registration.deviceToken, registration.provider)
 
     override def withAllRegistrars[T](fn: (NotificationRegistrar) => T): List[T] = List(fn(fakeNotificationRegistrar))
   }

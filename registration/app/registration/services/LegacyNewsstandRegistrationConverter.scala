@@ -20,7 +20,8 @@ class LegacyNewsstandRegistrationConverter(config: NewsstandShardConfig) extends
       deviceToken = AzureToken(legacyRegistration.pushToken),
       platform = Newsstand,
       topics = Set(Topic(TopicTypes.NewsstandShard, newstandShardTopic)),
-      buildTier = None
+      buildTier = None,
+      provider = None
     ))
   }
 

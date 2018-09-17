@@ -87,7 +87,7 @@ class MigratingRegistrarSpec(implicit ee: ExecutionEnv) extends Specification wi
 
     val fcmRegistrar = mock[FcmRegistrar]
     val azureRegistrar = mock[NotificationRegistrar]
-    val migratingRegistrar = new MigratingRegistrar(fcmRegistrar, azureRegistrar)
+    val migratingRegistrar = new MigratingRegistrar("testRegistrar", fcmRegistrar, azureRegistrar)
   }
 
 }

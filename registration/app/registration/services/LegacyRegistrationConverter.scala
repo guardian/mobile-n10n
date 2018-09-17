@@ -33,7 +33,8 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
       deviceToken = deviceToken,
       platform = platform,
       topics = topics(legacyRegistration),
-      buildTier = Some(legacyRegistration.device.buildTier)
+      buildTier = Some(legacyRegistration.device.buildTier),
+      provider = None
     )
   }
 
@@ -42,7 +43,10 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
       LegacyTopic(topic.`type`.toString, topic.name)
     }
 
-    val preferences = legacyRegistration.preferences.copy(topics = Some(topics.toSeq))
+    val preferences = legacyRegistration.preferences.copy(
+      topics = Some(topics.toSeq),
+      provider = Some(response.provider)
+    )
 
     legacyRegistration.copy(preferences = preferences)
   }

@@ -17,6 +17,7 @@ import scala.util.control.NonFatal
 import cats.implicits._
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{MetricDataPoint, Metrics}
+import models.Provider.FCM
 
 case class FcmProviderError(reason: String) extends ProviderError {
   override val providerName: String = Provider.FCM.value
@@ -127,7 +128,12 @@ class FcmRegistrar(
       _ <- EitherT(forEachTopic(topicsToDelete)(unsubscribeFromTopic(deviceToken)))
       topicsToAdd = registration.topics -- existingTopics
       _ <- EitherT(forEachTopic(topicsToAdd)(subscribeToTopic(deviceToken)))
-    } yield RegistrationResponse(deviceToken.fcmToken, registration.platform, registration.topics)
+    } yield RegistrationResponse(
+      deviceId = deviceToken.fcmToken,
+      platform = registration.platform,
+      topics = registration.topics,
+      provider = FCM
+    )
 
     result.value
   }

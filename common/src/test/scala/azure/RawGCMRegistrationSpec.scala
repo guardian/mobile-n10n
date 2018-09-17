@@ -14,7 +14,8 @@ class RawGCMRegistrationSpec extends Specification {
         deviceToken = AzureToken("device2"),
         platform = Android,
         topics = Set(topic),
-        buildTier = None
+        buildTier = None,
+        provider = None
       )
 
       val rawRegistration = RawGCMRegistration.fromMobileRegistration(registration)

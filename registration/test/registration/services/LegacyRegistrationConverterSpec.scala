@@ -56,14 +56,16 @@ class LegacyRegistrationConverterSpec extends Specification {
         edition = "uk",
         teams = None,
         matches = None,
-        topics = None
+        topics = None,
+        provider = None,
       )
     )
     val expectedDefaultRegistration = Registration(
       deviceToken = AzureToken("abc"),
       platform = iOS,
       topics = Set(Topic(TopicTypes.Breaking, "uk")),
-      buildTier = Some("test")
+      buildTier = Some("test"),
+      provider = None
     )
   }
 }
