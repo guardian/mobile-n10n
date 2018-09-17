@@ -67,7 +67,7 @@ class APNSConfigConverter(conf: Configuration) extends FCMConfigConverter[ApnsCo
       val allCustomData = customData
         .collect { case (key, Some(value)) => key -> value }
         .toMap
-        .updated(Keys.Provider, Provider.FCM)
+        .updated(Keys.Provider, Provider.FCM.value)
         .updated(Keys.UniqueIdentifier, notificationId.toString)
         .asJava
 

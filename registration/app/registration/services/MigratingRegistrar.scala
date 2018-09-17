@@ -2,7 +2,6 @@ package registration.services
 
 import models.{DeviceToken, Registration, Topic, UniqueDeviceIdentifier}
 import models.pagination.Paginated
-import registration.services.fcm.FcmRegistrar
 import cats.implicits._
 
 import scala.concurrent.ExecutionContext
@@ -10,10 +9,10 @@ import NotificationRegistrar.RegistrarResponse
 import cats.data.EitherT
 
 class MigratingRegistrar(
-  fcmRegistrar: FcmRegistrar,
+  val providerIdentifier: String,
+  fcmRegistrar: NotificationRegistrar,
   legacyRegistrar: NotificationRegistrar
 )(implicit ec: ExecutionContext) extends NotificationRegistrar {
-  override val providerIdentifier: String = "AzureToFirebaseRegistrar"
 
   override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = {
     for {

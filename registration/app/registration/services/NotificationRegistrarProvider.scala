@@ -73,7 +73,18 @@ class MigratingRegistrarProvider(
       metrics.send(MetricDataPoint(name = "RegistrationBoth", value = 1d, unit = StandardUnit.Count))
       standardRegistrarProvider
         .registrarFor(platform, deviceToken)
-        .map(legacyRegistrar => new MigratingRegistrar(fcmRegistrar, legacyRegistrar))
+        .map(legacyRegistrar => new MigratingRegistrar("AzureToFirebaseRegistrar", fcmRegistrar, legacyRegistrar))
+  }
+
+  private def decideWhichIosMigrationToExecute(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar] = {
+    val migrationState: Option[Int] = Some(1)
+    migrationState match {
+      case Some(1) =>
+        standardRegistrarProvider
+          .registrarFor(platform, deviceToken)
+          .map(azureRegistrar => new MigratingRegistrar("FirebaseToAzureRegistrar", azureRegistrar, fcmRegistrar))
+      case _ => standardRegistrarProvider.registrarFor(platform, deviceToken)
+    }
   }
 
   // delegate to the registrar provider

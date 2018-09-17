@@ -131,7 +131,7 @@ class GCMPushConverter(conf: Configuration) extends AzurePushConverter {
   private def toLiveEventAlert(innovationAlert: LiveEventNotification) = android.LiveEventAlert(
     payload = Map(
       Keys.UniqueIdentifier -> Some(innovationAlert.id.toString),
-      Keys.Provider -> Some(Provider.Azure),
+      Keys.Provider -> Some(Provider.Azure.value),
       Keys.Message -> Some(innovationAlert.message),
       Keys.ShortMessage -> Some(innovationAlert.shortMessage.getOrElse(innovationAlert.message)),
       Keys.ExpandedMessage -> Some(innovationAlert.expandedMessage.getOrElse(innovationAlert.message)),
@@ -149,7 +149,7 @@ class GCMPushConverter(conf: Configuration) extends AzurePushConverter {
   private def toMatchStatusAlert(matchStatusAlert: FootballMatchStatusNotification) = android.FootballMatchStatusNotification(
     payload = Map(
       Keys.UniqueIdentifier -> Some(matchStatusAlert.id.toString),
-      Keys.Provider -> Some(Provider.Azure),
+      Keys.Provider -> Some(Provider.Azure.value),
       "type" -> Some(AndroidMessageTypes.FootballMatchAlert),
       "homeTeamName" -> Some(matchStatusAlert.homeTeamName),
       "homeTeamId" -> Some(matchStatusAlert.homeTeamId),

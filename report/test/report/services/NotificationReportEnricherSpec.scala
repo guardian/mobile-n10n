@@ -43,7 +43,7 @@ class NotificationReportEnricherSpec(implicit ev: ExecutionEnv) extends Specific
     )
 
     def createSenderReport(id: String) = SenderReport(
-      senderName = Provider.Azure,
+      senderName = Provider.Azure.value,
       sentTime = sentTime,
       sendersId = Some(s"https://guardian-windows-10-live-ns.servicebus.windows.net/guardian-notification-prod/messages/$id?api-version=2015-01"),
       platformStatistics = None

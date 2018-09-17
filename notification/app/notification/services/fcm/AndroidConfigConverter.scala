@@ -29,7 +29,7 @@ class AndroidConfigConverter(conf: Configuration) extends FCMConfigConverter[And
       AndroidConfig.builder()
         .putAllData(data
           .updated(Keys.UniqueIdentifier, notificationId.toString)
-          .updated(Keys.Provider, Provider.FCM)
+          .updated(Keys.Provider, Provider.FCM.value)
           .asJava
         ).setPriority(AndroidConfig.Priority.HIGH)
         .setTtl(86400000L) // 24 hours

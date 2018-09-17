@@ -33,7 +33,7 @@ object StoredRegistration {
       platform = registration.platform,
       tagIds = registration.topics.map(_.id),
       topics = registration.topics,
-      provider = Provider.Unknown
+      provider = Provider.Unknown.value
     )
   }
 }

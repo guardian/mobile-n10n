@@ -304,7 +304,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       ),
       customProperties = StandardProperties(
         uniqueIdentifier = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-        provider = Provider.Azure,
+        provider = Provider.Azure.value,
         t = "us-election",
         notificationType = ElectionsAlert,
         election = Some(ElectionProperties(
@@ -348,7 +348,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       customProperties = StandardProperties(
         t = "live",
         uniqueIdentifier = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-        provider = Provider.Azure,
+        provider = Provider.Azure.value,
         notificationType = LiveEventAlert,
         liveEvent = Some(LiveEventProperties(
           title = "Some live event",
@@ -403,7 +403,7 @@ class iOSNotificationSpec extends Specification with Mockito {
       customProperties = StandardProperties(
         t = "football-match-status",
         uniqueIdentifier = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-        provider = Provider.Azure,
+        provider = Provider.Azure.value,
         notificationType = FootballMatchStatus,
         footballMatch = Some(FootballMatchStatusProperties(
           homeTeamName = "Arsenal",
