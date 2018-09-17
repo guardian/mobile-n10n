@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext
 
 class MigratingRegistrarProvider(
   azureRegistrarProvider: RegistrarProvider,
-  fcmRegistrar: FcmRegistrar,
+  fcmRegistrar: NotificationRegistrar,
   metrics: Metrics
 )(implicit executionContext: ExecutionContext) extends RegistrarProvider {
   override def registrarFor(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = deviceToken match {
@@ -32,7 +32,11 @@ class MigratingRegistrarProvider(
   private def androidMigration(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = {
     azureRegistrarProvider
       .registrarFor(platform, deviceToken, Some(Azure))
-      .map(azureRegistrar => new MigratingRegistrar("AzureToFirebaseRegistrar", fcmRegistrar, azureRegistrar))
+      .map(azureRegistrar => new MigratingRegistrar(
+        providerIdentifier = "AzureToFirebaseRegistrar",
+        fromRegistrar = azureRegistrar,
+        toRegistrar = fcmRegistrar
+      ))
   }
 
   private def iosMigration(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = {
@@ -40,7 +44,11 @@ class MigratingRegistrarProvider(
       case Some(FCM) =>
         azureRegistrarProvider
           .registrarFor(platform, deviceToken, Some(Azure))
-          .map(azureRegistrar => new MigratingRegistrar("FirebaseToAzureRegistrar", azureRegistrar, fcmRegistrar))
+          .map(azureRegistrar => new MigratingRegistrar(
+            providerIdentifier = "FirebaseToAzureRegistrar",
+            fromRegistrar = fcmRegistrar,
+            toRegistrar = azureRegistrar
+          ))
       case _ => azureRegistrarProvider.registrarFor(platform, deviceToken, Some(Azure))
     }
   }

@@ -1,5 +1,6 @@
 package registration.services
 
+import models.Provider.Azure
 import models._
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
@@ -57,7 +58,7 @@ class LegacyRegistrationConverterSpec extends Specification {
         teams = None,
         matches = None,
         topics = None,
-        provider = None,
+        provider = Some(Azure),
       )
     )
     val expectedDefaultRegistration = Registration(
@@ -65,7 +66,7 @@ class LegacyRegistrationConverterSpec extends Specification {
       platform = iOS,
       topics = Set(Topic(TopicTypes.Breaking, "uk")),
       buildTier = Some("test"),
-      provider = None
+      provider = Some(Azure)
     )
   }
 }
