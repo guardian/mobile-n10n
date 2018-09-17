@@ -27,7 +27,7 @@ case class MalformattedRegistration(description: String) extends RequestError {
   override def reason: String = s"Malformatred request: $reason"
 }
 
-final class NotificationRegistrarProvider(
+final class AzureRegistrarProvider(
   gcmRegistrar: GCMNotificationRegistrar,
   apnsRegistrar: APNSNotificationRegistrar,
   newsstandRegistrar: NewsstandNotificationRegistrar)
@@ -57,41 +57,3 @@ final class NotificationRegistrarProvider(
     uniqueAzureProviders.map(fn)
 }
 
-class MigratingRegistrarProvider(
-  standardRegistrarProvider: RegistrarProvider,
-  fcmRegistrar: FcmRegistrar,
-  metrics: Metrics
-)(implicit executionContext: ExecutionContext) extends RegistrarProvider {
-  override def registrarFor(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar] = deviceToken match {
-    case AzureToken(_) =>
-      metrics.send(MetricDataPoint(name = "RegistrationAzure", value = 1d, unit = StandardUnit.Count))
-      standardRegistrarProvider.registrarFor(platform, deviceToken)
-    case FcmToken(_) =>
-      metrics.send(MetricDataPoint(name = "RegistrationFcm", value = 1d, unit = StandardUnit.Count))
-      Right(fcmRegistrar)
-    case BothTokens(_, _) =>
-      metrics.send(MetricDataPoint(name = "RegistrationBoth", value = 1d, unit = StandardUnit.Count))
-      standardRegistrarProvider
-        .registrarFor(platform, deviceToken)
-        .map(legacyRegistrar => new MigratingRegistrar("AzureToFirebaseRegistrar", fcmRegistrar, legacyRegistrar))
-  }
-
-  private def decideWhichIosMigrationToExecute(platform: Platform, deviceToken: DeviceToken): Either[NotificationsError, NotificationRegistrar] = {
-    val migrationState: Option[Int] = Some(1)
-    migrationState match {
-      case Some(1) =>
-        standardRegistrarProvider
-          .registrarFor(platform, deviceToken)
-          .map(azureRegistrar => new MigratingRegistrar("FirebaseToAzureRegistrar", azureRegistrar, fcmRegistrar))
-      case _ => standardRegistrarProvider.registrarFor(platform, deviceToken)
-    }
-  }
-
-  // delegate to the registrar provider
-  override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
-    registrarFor(registration.platform, registration.deviceToken)
-
-  // delegate to the registrar provider
-  override def withAllRegistrars[T](fn: NotificationRegistrar => T): List[T] =
-    standardRegistrarProvider.withAllRegistrars(fn)
-}
