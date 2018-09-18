@@ -77,8 +77,8 @@ object Lambda {
         nextMarker = Option(list.getNextMarker)
         firstRequest = false
         logger.info(s"Adding ${list.getObjectSummaries.size} files to the processing list")
-        println(list.getObjectSummaries.asScala.toList.map(_.getKey).mkString("\n"))
-        val fileList = list.getObjectSummaries.asScala.toList.filter(f => f.getKey > "fastly/2018-09-18T08:00" && f.getKey < "fastly/2018-09-18T11:00")
+        //println(list.getObjectSummaries.asScala.toList.map(_.getKey).mkString("\n"))
+        val fileList = list.getObjectSummaries.asScala.toList.filter(f => f.getKey > "fastly/2018-09-15T15:00" && f.getKey < "fastly/2018-09-16T05:00")
         println(s"File list: ${fileList.size}")
         fileList
       }
@@ -133,7 +133,7 @@ object Lambda {
         .toList
         .sortBy(_._1.toInstant(ZoneOffset.UTC).toEpochMilli)
         .map(c => s"${dateFormat.format(c._1)}\t${c._2.azure}\t${c._2.firebase}")
-        .mkString("\n")
+        .mkString(s"Time\tAzure\tFirebase\tId:$id\n", "\n", "")
 
       val fos = new FileOutputStream(s"$id.csv")
       fos.write(fileContent.getBytes)

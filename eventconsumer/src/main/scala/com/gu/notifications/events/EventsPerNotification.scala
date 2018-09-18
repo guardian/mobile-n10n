@@ -50,8 +50,8 @@ case class Stuff(azure: Int, firebase: Int)
 object Stuff {
   def from(provider: Provider): Stuff = {
     provider match {
-      case Azure => Stuff(0, 1)
-      case Fcm => Stuff(1, 0)
+      case Azure => Stuff(1, 0)
+      case Fcm => Stuff(0, 1)
     }
   }
   def combine(a: Stuff, b: Stuff): Stuff = Stuff(a.azure + b.azure, a.firebase + b.firebase)
