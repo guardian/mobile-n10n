@@ -78,7 +78,7 @@ object Lambda {
         firstRequest = false
         logger.info(s"Adding ${list.getObjectSummaries.size} files to the processing list")
         println(list.getObjectSummaries.asScala.toList.map(_.getKey).mkString("\n"))
-        val fileList = list.getObjectSummaries.asScala.toList.filter(f => f.getKey > "fastly/2018-09-15T15:40" && f.getKey < "fastly/2018-09-16T06:00")
+        val fileList = list.getObjectSummaries.asScala.toList.filter(f => f.getKey > "fastly/2018-09-18T08:00" && f.getKey < "fastly/2018-09-18T11:00")
         println(s"File list: ${fileList.size}")
         fileList
       }
