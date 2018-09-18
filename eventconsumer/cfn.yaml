@@ -164,7 +164,7 @@ Resources:
       - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
       LifecycleConfiguration:
         Rules:
-          - ExpirationInDays: 7
+          - ExpirationInDays: 21
             Status: Enabled
       NotificationConfiguration:
         QueueConfigurations:
