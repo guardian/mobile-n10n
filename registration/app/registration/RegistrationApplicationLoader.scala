@@ -76,7 +76,7 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
 
   lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
-  lazy val registrarProvider: RegistrarProvider = new NotificationRegistrarProvider(gcmNotificationRegistrar, apnsNotificationRegistrar, newsstandNotificationRegistrar)
+  lazy val registrarProvider: RegistrarProvider = new AzureRegistrarProvider(gcmNotificationRegistrar, apnsNotificationRegistrar, newsstandNotificationRegistrar)
   lazy val metrics: Metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
   lazy val migratingRegistrarProvider: RegistrarProvider = new MigratingRegistrarProvider(registrarProvider, fcmNotificationRegistrar, metrics)
   lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker, metrics)

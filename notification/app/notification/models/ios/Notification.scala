@@ -37,7 +37,7 @@ case class BreakingNewsNotification(
     ),
     customProperties = LegacyProperties(Map(
       Keys.UniqueIdentifier -> notificationId.toString,
-      Keys.Provider -> Provider.Azure,
+      Keys.Provider -> Provider.Azure.value,
       Keys.MessageType -> `type`,
       Keys.NotificationType -> notificationType.value,
       Keys.Link -> legacyLink,
@@ -69,7 +69,7 @@ case class ContentNotification(
     ),
     customProperties = LegacyProperties(Map(
       Keys.UniqueIdentifier -> notificationId.toString,
-      Keys.Provider -> Provider.Azure,
+      Keys.Provider -> Provider.Azure.value,
       Keys.MessageType -> `type`,
       Keys.NotificationType -> notificationType.value,
       Keys.Link -> legacyLink,
@@ -124,7 +124,7 @@ case class ElectionNotification(
     ),
     customProperties = StandardProperties(
       uniqueIdentifier = id,
-      provider = Provider.Azure,
+      provider = Provider.Azure.value,
       t = `type`,
       notificationType = notificationType,
       election = Some(ElectionProperties(
@@ -150,7 +150,7 @@ case class LiveEventNotification(notificationId: UUID, liveEvent: LiveEventPrope
     ),
     customProperties = StandardProperties(
       uniqueIdentifier = notificationId,
-      provider = Provider.Azure,
+      provider = Provider.Azure.value,
       t = MessageTypes.LiveEventAlert,
       notificationType = LiveEventAlert,
       liveEvent = Some(liveEvent)
@@ -174,7 +174,7 @@ case class FootballMatchStatusNotification(
     ),
     customProperties = StandardProperties(
       uniqueIdentifier = notificationId,
-      provider = Provider.Azure,
+      provider = Provider.Azure.value,
       t = MessageTypes.FootballMatchStatus,
       notificationType = FootballMatchStatus,
       footballMatch = Some(matchStatus)

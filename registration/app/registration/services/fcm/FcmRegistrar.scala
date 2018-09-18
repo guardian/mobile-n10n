@@ -17,13 +17,14 @@ import scala.util.control.NonFatal
 import cats.implicits._
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{MetricDataPoint, Metrics}
+import models.Provider.FCM
 
 case class FcmProviderError(reason: String) extends ProviderError {
-  override val providerName: String = Provider.FCM
+  override val providerName: String = Provider.FCM.value
 }
 
 case object InstanceNotFound extends ProviderError {
-  override val providerName: String = Provider.FCM
+  override val providerName: String = Provider.FCM.value
   override val reason: String = "Instance not found"
 }
 
@@ -37,7 +38,7 @@ class FcmRegistrar(
 
   val logger = Logger(classOf[FcmRegistrar])
 
-  override val providerIdentifier: String = Provider.FCM
+  override val providerIdentifier: String = Provider.FCM.value
 
   case class Instance(topics: List[Topic], platform: Platform)
   object Instance {
@@ -127,7 +128,12 @@ class FcmRegistrar(
       _ <- EitherT(forEachTopic(topicsToDelete)(unsubscribeFromTopic(deviceToken)))
       topicsToAdd = registration.topics -- existingTopics
       _ <- EitherT(forEachTopic(topicsToAdd)(subscribeToTopic(deviceToken)))
-    } yield RegistrationResponse(deviceToken.fcmToken, registration.platform, registration.topics)
+    } yield RegistrationResponse(
+      deviceId = deviceToken.fcmToken,
+      platform = registration.platform,
+      topics = registration.topics,
+      provider = FCM
+    )
 
     result.value
   }
@@ -153,7 +159,7 @@ class FcmRegistrar(
 
   override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
     def instanceToStoredRegistrations(instance: Instance): List[StoredRegistration] =
-      List(StoredRegistration(deviceToken.fcmToken, instance.platform, Set(), instance.topics.toSet, Provider.FCM))
+      List(StoredRegistration(deviceToken.fcmToken, instance.platform, Set(), instance.topics.toSet, Provider.FCM.value))
 
     fetchInstance(deviceToken).map(_.map(instanceToStoredRegistrations))
   }

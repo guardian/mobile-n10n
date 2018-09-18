@@ -6,7 +6,12 @@ import providers.ProviderError
 import scala.concurrent.Future
 import models.pagination.Paginated
 
-case class RegistrationResponse(deviceId: String, platform: Platform, topics: Set[Topic])
+case class RegistrationResponse(
+  deviceId: String,
+  platform: Platform,
+  topics: Set[Topic],
+  provider: Provider
+)
 
 object RegistrationResponse {
   import play.api.libs.json._
@@ -33,7 +38,7 @@ object StoredRegistration {
       platform = registration.platform,
       tagIds = registration.topics.map(_.id),
       topics = registration.topics,
-      provider = Provider.Unknown
+      provider = Provider.Unknown.value
     )
   }
 }

@@ -14,6 +14,7 @@ import cats.syntax.either._
 import cats.instances.future._
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{MetricDataPoint, Metrics}
+import models.Provider.Azure
 import models.pagination.{Paginated, ProviderCursor}
 import registration.services.NotificationRegistrar.RegistrarResponse
 
@@ -25,7 +26,7 @@ class NotificationHubRegistrar(
 )(implicit ec: ExecutionContext)
   extends NotificationRegistrar {
 
-  override val providerIdentifier = Provider.Azure
+  override val providerIdentifier = Provider.Azure.value
   val logger = Logger(classOf[NotificationHubRegistrar])
 
 
@@ -137,7 +138,7 @@ class NotificationHubRegistrar(
           platform = response.platform,
           tagIds = tags.asSet,
           topics = topics,
-          provider = Provider.Azure
+          provider = Provider.Azure.value
         )
       }
     })
@@ -147,7 +148,8 @@ class NotificationHubRegistrar(
     RegistrationResponse(
       deviceId = registration.deviceId,
       platform = registration.platform,
-      topics = topicsRegisteredFor
+      topics = topicsRegisteredFor,
+      provider = Azure
     )
   }
 
