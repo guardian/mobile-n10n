@@ -25,7 +25,6 @@ class MigratingRegistrarProvider(
       metrics.send(MetricDataPoint(name = "RegistrationBoth", value = 1d, unit = StandardUnit.Count))
       androidMigration(platform, deviceToken, currentProvider)
     case BothTokens(_, _) if platform == iOS =>
-      metrics.send(MetricDataPoint(name = "RegistrationBoth", value = 1d, unit = StandardUnit.Count))
       iosMigration(platform, deviceToken, currentProvider)
   }
 
@@ -42,6 +41,7 @@ class MigratingRegistrarProvider(
   private def iosMigration(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = {
     currentProvider match {
       case Some(FCM) =>
+        metrics.send(MetricDataPoint(name = "IosFcmToAzure", value = 1d, unit = StandardUnit.Count))
         azureRegistrarProvider
           .registrarFor(platform, deviceToken, Some(Azure))
           .map(azureRegistrar => new MigratingRegistrar(
@@ -49,7 +49,9 @@ class MigratingRegistrarProvider(
             fromRegistrar = fcmRegistrar,
             toRegistrar = azureRegistrar
           ))
-      case _ => azureRegistrarProvider.registrarFor(platform, deviceToken, Some(Azure))
+      case _ =>
+        metrics.send(MetricDataPoint(name = "RegistrationAzure", value = 1d, unit = StandardUnit.Count))
+        azureRegistrarProvider.registrarFor(platform, deviceToken, Some(Azure))
     }
   }
 
