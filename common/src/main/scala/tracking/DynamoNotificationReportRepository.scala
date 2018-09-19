@@ -1,5 +1,6 @@
 package tracking
 
+import java.util
 import java.util.UUID
 
 import aws.AsyncDynamo
@@ -8,7 +9,7 @@ import aws.DynamoJsonConversions.{fromAttributeMap, toAttributeMap}
 import cats.implicits._
 import com.amazonaws.services.dynamodbv2.model._
 import models.{DynamoNotificationReport, NotificationType}
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, Days}
 import play.api.Logger
 import tracking.Repository.RepositoryResult
 
@@ -31,18 +32,32 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
   }
 
   override def getByTypeWithDateRange(notificationType: NotificationType, from: DateTime, to: DateTime): Future[RepositoryResult[List[DynamoNotificationReport]]] = {
-    val q = new QueryRequest(tableName)
+    if (Days.daysBetween(from, to).getDays > 31) throw new IllegalArgumentException("Date range too big, must be less than one month")
+
+    def maybeLastKey(result: QueryResult): Option[util.Map[String, AttributeValue]] = Option(result.getLastEvaluatedKey).flatMap(lastKey => if (lastKey.isEmpty) None else Some(lastKey))
+
+    def reportsFromResult(result: QueryResult): List[DynamoNotificationReport] = result.getItems.asScala.toList.flatMap { item =>
+      fromAttributeMap[DynamoNotificationReport](item.asScala.toMap).asOpt
+    }
+
+    def query(): QueryRequest = new QueryRequest(tableName)
       .withIndexName(SentTimeIndex)
       .withKeyConditions(Map(
         TypeField -> keyEquals(notificationType.value),
         SentTimeField -> keyBetween(from.toString, to.toString)
       ).asJava)
 
-    client.query(q) map { result =>
-      Right(result.getItems.asScala.toList.flatMap { item =>
-        fromAttributeMap[DynamoNotificationReport](item.asScala.toMap).asOpt
-      })
+    def queryWithKey(lastKey: util.Map[String, AttributeValue]): QueryRequest = query().withExclusiveStartKey(lastKey)
+
+    def enrichWithRest(lastKey: util.Map[String, AttributeValue], lastList: List[DynamoNotificationReport]): Future[List[DynamoNotificationReport]] = client.query(queryWithKey(lastKey)) flatMap { result =>
+      val reports = reportsFromResult(result)
+      maybeLastKey(result).map(enrichWithRest(_, reports)).getOrElse(Future.successful(reports))
     }
+
+    (client.query(query()) flatMap ((result: QueryResult) => {
+      val reports = reportsFromResult(result)
+      maybeLastKey(result).map(enrichWithRest(_, reports)).getOrElse(Future.successful(reports))
+    })).map(Right(_))
   }
 
   override def getByUuid(uuid: UUID): Future[RepositoryResult[DynamoNotificationReport]] = {
