@@ -50,7 +50,7 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
     def queryWithKey(lastKey: util.Map[String, AttributeValue]): QueryRequest = query().withExclusiveStartKey(lastKey)
 
     def enrichWithRest(lastKey: util.Map[String, AttributeValue], lastList: List[DynamoNotificationReport]): Future[List[DynamoNotificationReport]] = client.query(queryWithKey(lastKey)) flatMap { result =>
-      val reports = reportsFromResult(result)
+      val reports = lastList ++ reportsFromResult(result)
       maybeLastKey(result).map(enrichWithRest(_, reports)).getOrElse(Future.successful(reports))
     }
 
