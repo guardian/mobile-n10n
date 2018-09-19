@@ -32,7 +32,9 @@ class DynamoNotificationReportRepository(client: AsyncDynamo, tableName: String)
   }
 
   override def getByTypeWithDateRange(notificationType: NotificationType, from: DateTime, to: DateTime): Future[RepositoryResult[List[DynamoNotificationReport]]] = {
-    if (Days.daysBetween(from, to).getDays > 31) throw new IllegalArgumentException("Date range too big, must be less than one month")
+    if (Days.daysBetween(from, to).getDays > 31) {
+      return Future.successful(Left(RepositoryError("Date range too big to query")))
+    }
 
     def maybeLastKey(result: QueryResult): Option[util.Map[String, AttributeValue]] = Option(result.getLastEvaluatedKey).flatMap(lastKey => if (lastKey.isEmpty) None else Some(lastKey))
 
