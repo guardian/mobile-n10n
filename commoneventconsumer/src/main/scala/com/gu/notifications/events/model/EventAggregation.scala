@@ -6,8 +6,6 @@ import java.util.UUID
 
 import play.api.libs.json.{JsValue, Json, OFormat}
 
-import scala.collection.mutable.ListBuffer
-
 case class EventAggregation(
   platformCounts: PlatformCount,
   providerCounts: ProviderCount,
