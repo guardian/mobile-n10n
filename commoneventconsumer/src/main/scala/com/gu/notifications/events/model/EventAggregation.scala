@@ -36,10 +36,11 @@ object EventAggregation {
     EventAggregation(
       dynamoEventAggregation.platform,
       dynamoEventAggregation.provider,
-      dynamoEventAggregation.timing.map(timed => (timed(0), timed(1))).foldLeft((sentTime, Seq[(LocalDateTime, Int)]())) {
+      dynamoEventAggregation.timing.map(timed => (timed(0), timed(1))).foldLeft((sentTime, List[(LocalDateTime, Int)]())) {
         case ((lastTime, newList), (offset, count)) => {
           val nextTime = lastTime.plusSeconds(10 * offset)
-          (nextTime, newList :+ (nextTime, count))
+
+          (nextTime, (nextTime, count) :: newList)
         }
       }._2.toMap,
     )
