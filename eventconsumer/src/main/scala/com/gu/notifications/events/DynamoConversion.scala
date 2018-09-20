@@ -19,10 +19,10 @@ object DynamoConversion {
       timing = eventMap("timing").getL.asScala.toList.map(av => {
         val list = av.getL.asScala.toList
         (list(0).getN.toInt, list(1).getN.toInt)
-      }).foldLeft((sentTime, Seq[(LocalDateTime, Int)]())) {
+      }).foldLeft((sentTime, List[(LocalDateTime, Int)]())) {
         case ((lastTime, newList), (offset, count)) => {
           val nextTime = lastTime.plusSeconds(offset * 10)
-          (nextTime, newList :+ (nextTime, count))
+          (nextTime, (nextTime, count) :: newList)
         }
       }._2.toMap
 
@@ -54,10 +54,11 @@ object DynamoConversion {
       "timing" -> new AttributeValue().withL(
         eventAggregation.timing.toList
           .sortBy(_._1)
-          .foldLeft((sent, Seq[(Int, Int)]())) {
+          .foldLeft((sent, List[(Int, Int)]())) {
             case ((lastDateTime, newList), (currentDateTime, count)) =>
-              (currentDateTime, newList :+ (Duration.between(lastDateTime, currentDateTime).getSeconds.toInt / 10, count))
+              (currentDateTime, (Duration.between(lastDateTime, currentDateTime).getSeconds.toInt / 10, count) :: newList)
           }._2
+          .reverse
           .map {
             case (offset, count) => new AttributeValue().withL(new AttributeValue().withN(offset.toString), new AttributeValue().withN(count.toString))
           }.asJava)
