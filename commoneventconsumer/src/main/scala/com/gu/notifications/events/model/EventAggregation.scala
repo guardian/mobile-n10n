@@ -35,21 +35,16 @@ object EventAggregation {
 
   def from(dynamoEventAggregation: DynamoEventAggregation, originalSentTime: LocalDateTime): EventAggregation = {
     val sentTime = originalSentTime.truncatedTo(TenSecondUnit)
-    def timingConversion: Map[LocalDateTime, Int] = {
-      val timingsBuffer = ListBuffer[(LocalDateTime, Int)]()
-      dynamoEventAggregation.timing.map(timed => (timed(0), timed(1))).foldLeft(sentTime) {
-        case (lastTime, (offset, count)) => {
-          val nextTime = lastTime.plusSeconds(10 * offset)
-          timingsBuffer += ((nextTime, count))
-          nextTime
-        }
-      }
-      timingsBuffer.toMap
-    }
     EventAggregation(
       dynamoEventAggregation.platform,
       dynamoEventAggregation.provider,
-      timingConversion
+      dynamoEventAggregation.timing.map(timed => (timed(0), timed(1))).foldLeft((sentTime, List[(LocalDateTime, Int)]())) {
+        case ((lastTime, newList), (offset, count)) => {
+          val nextTime = lastTime.plusSeconds(10 * offset)
+
+          (nextTime, (nextTime, count) :: newList)
+        }
+      }._2.toMap,
     )
   }
 
