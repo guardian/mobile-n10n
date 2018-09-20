@@ -1,4 +1,4 @@
-package com.gu.notifications.events
+package com.gu.notifications.events.s3
 
 import play.api.libs.json._
 
