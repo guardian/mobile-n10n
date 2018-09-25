@@ -2,7 +2,7 @@ package registration.services
 
 import error.NotificationsError
 import metrics.DummyMetrics
-import models.Provider.{Azure, FCM}
+import models.RegistrationProvider.{Azure, FCM}
 import models.pagination.Paginated
 import models._
 import org.specs2.concurrent.ExecutionEnv
@@ -53,7 +53,11 @@ class MigratingRegistrarProviderSpec(implicit ee: ExecutionEnv) extends Specific
     val dummyAzureRegistrarProvider = new RegistrarProvider {
       override def withAllRegistrars[T](fn: NotificationRegistrar => T): List[T] = ???
       override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] = Right(dummyAzureRegistrar)
-      override def registrarFor(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = Right(dummyAzureRegistrar)
+      override def registrarFor(
+        platform: Platform,
+        deviceToken: DeviceToken,
+        currentProvider: Option[RegistrationProvider]
+      ): Either[NotificationsError, NotificationRegistrar] = Right(dummyAzureRegistrar)
     }
 
     val migratingRegistrarProvider = new MigratingRegistrarProvider(dummyAzureRegistrarProvider, dummyFirebaseRegistrar, DummyMetrics)

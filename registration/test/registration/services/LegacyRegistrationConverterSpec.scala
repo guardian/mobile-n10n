@@ -1,6 +1,6 @@
 package registration.services
 
-import models.Provider.Azure
+import models.RegistrationProvider.Azure
 import models._
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope

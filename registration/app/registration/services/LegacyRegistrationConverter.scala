@@ -5,7 +5,7 @@ import registration.models.LegacyTopic
 import models._
 import registration.models.LegacyRegistration
 import cats.implicits._
-import models.Provider.{Azure, FCM}
+import models.RegistrationProvider.{Azure, FCM}
 
 class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistration] {
 
@@ -27,7 +27,7 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
       )
     }
 
-    def guessProvider(token: DeviceToken, platform: Platform): Option[Provider] = token match {
+    def guessProvider(token: DeviceToken, platform: Platform): Option[RegistrationProvider] = token match {
       case AzureToken(_) => Some(Azure)
       case FcmToken(_) => Some(FCM)
       case BothTokens(_, _) if platform == Android => Some(Azure)

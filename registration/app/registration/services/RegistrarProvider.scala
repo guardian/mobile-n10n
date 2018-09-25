@@ -1,12 +1,16 @@
 package registration.services
 
 import error.{NotificationsError, RequestError}
-import models.{DeviceToken, Platform, Provider, Registration}
+import models._
 
 trait RegistrarProvider {
   def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar]
 
-  def registrarFor(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar]
+  def registrarFor(
+    platform: Platform,
+    deviceToken: DeviceToken,
+    currentProvider: Option[RegistrationProvider]
+  ): Either[NotificationsError, NotificationRegistrar]
 
   def withAllRegistrars[T](fn: (NotificationRegistrar => T)): List[T]
 }

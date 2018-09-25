@@ -17,7 +17,7 @@ import scala.util.control.NonFatal
 import cats.implicits._
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{MetricDataPoint, Metrics}
-import models.Provider.FCM
+import models.RegistrationProvider.FCM
 
 case class FcmProviderError(reason: String) extends ProviderError {
   override val providerName: String = Provider.FCM.value

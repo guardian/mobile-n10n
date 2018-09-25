@@ -3,7 +3,7 @@ package registration.services
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import error.NotificationsError
 import metrics.{MetricDataPoint, Metrics}
-import models.Provider.{Azure, FCM}
+import models.RegistrationProvider.{Azure, FCM}
 import models._
 import registration.services.fcm.FcmRegistrar
 
@@ -14,7 +14,11 @@ class MigratingRegistrarProvider(
   fcmRegistrar: NotificationRegistrar,
   metrics: Metrics
 )(implicit executionContext: ExecutionContext) extends RegistrarProvider {
-  override def registrarFor(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = deviceToken match {
+  override def registrarFor(
+    platform: Platform,
+    deviceToken: DeviceToken,
+    currentProvider: Option[RegistrationProvider]
+  ): Either[NotificationsError, NotificationRegistrar] = deviceToken match {
     case AzureToken(_) =>
       metrics.send(MetricDataPoint(name = "RegistrationAzure", value = 1d, unit = StandardUnit.Count))
       azureRegistrarProvider.registrarFor(platform, deviceToken, currentProvider)
@@ -28,7 +32,11 @@ class MigratingRegistrarProvider(
       iosMigration(platform, deviceToken, currentProvider)
   }
 
-  private def androidMigration(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = {
+  private def androidMigration(
+    platform: Platform,
+    deviceToken: DeviceToken,
+    currentProvider: Option[RegistrationProvider]
+  ): Either[NotificationsError, NotificationRegistrar] = {
     azureRegistrarProvider
       .registrarFor(platform, deviceToken, Some(Azure))
       .map(azureRegistrar => new MigratingRegistrar(
@@ -38,7 +46,11 @@ class MigratingRegistrarProvider(
       ))
   }
 
-  private def iosMigration(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = {
+  private def iosMigration(
+    platform: Platform,
+    deviceToken: DeviceToken,
+    currentProvider: Option[RegistrationProvider]
+  ): Either[NotificationsError, NotificationRegistrar] = {
     currentProvider match {
       case Some(FCM) =>
         metrics.send(MetricDataPoint(name = "IosFcmToAzure", value = 1d, unit = StandardUnit.Count))

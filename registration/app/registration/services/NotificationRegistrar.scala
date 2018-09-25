@@ -10,7 +10,7 @@ case class RegistrationResponse(
   deviceId: String,
   platform: Platform,
   topics: Set[Topic],
-  provider: Provider
+  provider: RegistrationProvider
 )
 
 object RegistrationResponse {
