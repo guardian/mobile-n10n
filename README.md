@@ -1,81 +1,74 @@
-# mobile-n10n
-mobile-n10n or "mobile-notification" is our next generation of push-notification services.
-This project will focus on connecting directly to cloud providers (Azure, GCM) and act as an interface to it.
+# Mobile Notifications
 
-## Modules
- * registration: Handles the registration requests received from the device, and redirect them to the correct provider. This is soon to be deprecated as we are moving towards Firebase and device will register directly with Firebase.
- * notification: Handles notification messages and redirects them to correct provider
- * report: Exposes data about past notifications
- * common: The common stuff
+* [Registration](registration/README.md) - devices registrations, mapping devices to topics
+* [Notification](notification) - send a notification for devices registered to a topic (schedule for newsstand)
+* [Report](report) - Reports on notifications. Drives an [Ophan Dashboard](https://dashboard.ophan.co.uk/notifications)
+* [Event Consumer](eventconsumer) - lambda consumes App sent metrics (fastly -> s3 -> lambda) to enrich reporting
+* [Schedule Lambda](schedulelambda) - lambda requests notifications, persisted in DynamoDB, when scheduled
 
-## Registration
+## Why?
+ 
+### mobile-n10n
 
-The Play configuration file must contain:
-```
-gu.msnotifications.endpointUri=https://servicebus-ns.servicebus.windows.net
-gu.msnotifications.hubname=nameOfNotficationHub
-gu.msnotifications.sharedKeyName=nameOfSharedKey
-gu.msnotifications.sharedKeyValue=sharedKeyActualValue
+Capabilities used or in use:
+* swap and migrate notification system
+* improved monitoring of notifications
+* improved logging for diagnostics
+* security (gatekeeper to notification system)
+* alter existing topic routing (currently done for newsstand, by sharding)
 
-notifications.auditor.content-notifications=http://content-notification-auditor.elb.amazonaws.com
-notifications.auditor.goal-alerts=http://goal-alert-auditor.elb.amazonaws.com
-```
+#### Rough Flow
+| Transport | Data | Reason |
+| ------------- |:-------------| -----|
+| App -> mobile-n10n | Token, Topics | Register app to receive notifications for given topics |
+| mobile-n10n -> Notifications System | Token, Topics | Proxy registration to appropriate notification system |
+| Notifier -> mobile-n10n| Content, Topic | Request notification is sent for topic registrations |
+| mobile-n10n -> Notifications System | Content, Topic | Proxy request to each each notification system |
+| Notifications System -> Provider| Token, Content | Request notification for each app paired to the content, by topic  |
+| Provider -> App | Content | Send Notification to each app |
+ 
+## Need to Know 
+ 
+### Notification Provider
 
-### Device registration create or udpate
+Can send a notification to an app, by the token the app can give us.
 
-Requires a deviceId, used for updating topics or device ids.
+* Apple - [APNS: Apple Push Notification Service](https://developer.apple.com/notifications/)
+* Android - [GCM: Google Cloud Messenger](https://developers.google.com/cloud-messaging/)  (deprecated)
+* Android - [FCM: Firebase Cloud Messenger](https://firebase.google.com/docs/cloud-messaging/) (replacing GCM)
 
-Returns an updated or created registration.
-'topics' array is validated against auditor agents ie. it may contain less elements than in original registration.
+#### Rough Flow
 
-```
-PUT /registrations/deviceId
-Content-Type: application/json
+| Transport | Data | Reason |  |
+|---|---|---|---|
+| App -> App Server | Token | Register app get a notification  |
+| Notifier -> App Server | Content | Request notification |
+| App Server -> Provider| Token, Content | Request notification for each app |
+| Provider -> App | Content | Send Notification to each app |
 
-{
-  "deviceId": "wnsChannelIdOrProviderSpecificDeviceIdentifier",
-  "platform": "windows-mobile",
-  "userId": "abcd",
-  "topics": [
-    {"type": "stuff", "name": "stuff"},
-    {"type": "other-stuff", "name": "stuff"}
-  ]
-}
-```
-
-returns
-
-```
-{
-  "deviceId":"deviceAA",
-  "platform":"windows-mobile",
-  "userId":"idOfUser",
-  "topics": [
-      {"type":"football-match","name":"match-in-response"}
-  ]
-}
-```
-
-Or an error code if a failure with body string being the reason
-
-### Send push notifications
+Works for global breaking news only.
+Does not support topics.
 
 
-```
-POST /push/?api-key=api-key
-Content-type: application/json
+### Notification Systems
 
-{
-    "wnsType": "wns/toast",
-    "xml": "<xml...>",
-    "topics": [
-        {"type": "stuff", "name": "stuff"}
-    ]
-}
-```
+Pair device registrations to topics. Then notifications can be sent per topic, instead of to all.
 
-Returns no relevant content - could return an error code however.
+* [Azure Notifications Hub](https://azure.microsoft.com/en-gb/services/notification-hubs/)
+* [FCM: Firebase Cloud Messenger](https://firebase.google.com/docs/cloud-messaging/)
 
-The topics are matched with AND - this can be easily changed however. Or we could restrict it all to just one topic.
+#### Rough Flow
 
-As this is an external API it does need hardening - ie input data needs to be validated.
+| Transport | Data | Reason |
+| ------------- |:-------------| -----|
+| App -> Notifications System | Token, Topics | Register app to receive notifications for given topics |
+| Notifier -> Notifications System | Content, Topic | Request notification is sent for topic registrations |
+| Notifications System -> Provider| Token, Content | Request notification for each app paired to the content, by topic  |
+| Provider -> App | Content | Send Notification to each app |
+
+By integrating Apps directly with the Notification System, you risk vendor lock-in and most control. 
+
+
+
+   
+
