@@ -1,6 +1,6 @@
 # Mobile Notifications
 
-* [Registration](registration/README.md) - devices registrations, mapping devices to topics
+* [Registration](registration) - devices registrations, mapping devices to topics
 * [Notification](notification) - send a notification for devices registered to a topic (schedule for newsstand)
 * [Report](report) - Reports on notifications. Drives an [Ophan Dashboard](https://dashboard.ophan.co.uk/notifications)
 * [Event Consumer](eventconsumer) - lambda consumes App sent metrics (fastly -> s3 -> lambda) to enrich reporting
