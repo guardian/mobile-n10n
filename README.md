@@ -7,17 +7,15 @@
 * [Schedule Lambda](schedulelambda) - lambda requests notifications, persisted in DynamoDB, when scheduled
 
 ## Why?
- 
-### mobile-n10n
 
-Capabilities used or in use:
+### Capabilities
 * swap and migrate notification system
 * improved monitoring of notifications
 * improved logging for diagnostics
 * security (gatekeeper to notification system)
 * alter existing topic routing (currently done for newsstand, by sharding)
 
-#### Rough Flow
+### Rough Flow
 | Transport | Data | Reason |
 | ------------- |:-------------| -----|
 | App -> mobile-n10n | Token, Topics | Register app to receive notifications for given topics |
