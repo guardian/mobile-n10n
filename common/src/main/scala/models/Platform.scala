@@ -5,7 +5,7 @@ import play.api.libs.json._
 sealed trait Platform
 
 case object Android extends Platform { override def toString: String = "android" }
-case object iOS extends Platform { override def toString: String = "ios" }
+case object IOS extends Platform { override def toString: String = "ios" }
 case object Newsstand extends Platform { override def toString: String = "newsstand" }
 // only here to parse older notification reports
 case object WindowsMobile extends Platform { override def toString: String = "windows-mobile" }
@@ -13,7 +13,7 @@ case object WindowsMobile extends Platform { override def toString: String = "wi
 object Platform {
   def fromString(s: String): Option[Platform] = PartialFunction.condOpt(s.toLowerCase) {
     case "android" => Android
-    case "ios" => iOS
+    case "ios" => IOS
     case "newsstand" => Newsstand
     case "windows-mobile" => WindowsMobile
   }

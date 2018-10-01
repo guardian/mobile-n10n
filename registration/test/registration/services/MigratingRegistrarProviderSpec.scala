@@ -15,17 +15,17 @@ class MigratingRegistrarProviderSpec(implicit ee: ExecutionEnv) extends Specific
 
   "Migrating registrar" should {
     "register with azure if an iOS registration has only one Azure Token" in new IosMigratingRegistrarScope {
-      migratingRegistrarProvider.registrarFor(iOS, AzureToken("a"), None) should beRight(dummyAzureRegistrar)
+      migratingRegistrarProvider.registrarFor(IOS, AzureToken("a"), None) should beRight(dummyAzureRegistrar)
     }
     "register with firebase if an iOS registration has only one Firebase Token" in new IosMigratingRegistrarScope {
-      migratingRegistrarProvider.registrarFor(iOS, FcmToken("f"), None) should beRight(dummyFirebaseRegistrar)
+      migratingRegistrarProvider.registrarFor(IOS, FcmToken("f"), None) should beRight(dummyFirebaseRegistrar)
     }
     "register with azure if an iOS registration has both tokens, the provider is Azure or unknown" in new IosMigratingRegistrarScope {
-      migratingRegistrarProvider.registrarFor(iOS, BothTokens("a", "f"), None) should beRight(dummyAzureRegistrar)
-      migratingRegistrarProvider.registrarFor(iOS, BothTokens("a", "f"), Some(Azure)) should beRight(dummyAzureRegistrar)
+      migratingRegistrarProvider.registrarFor(IOS, BothTokens("a", "f"), None) should beRight(dummyAzureRegistrar)
+      migratingRegistrarProvider.registrarFor(IOS, BothTokens("a", "f"), Some(Azure)) should beRight(dummyAzureRegistrar)
     }
     "migrate to azure if an iOS registration has both tokens, the provider is FCM" in new IosMigratingRegistrarScope {
-      val result = migratingRegistrarProvider.registrarFor(iOS, BothTokens("a", "f"), Some(FCM))
+      val result = migratingRegistrarProvider.registrarFor(IOS, BothTokens("a", "f"), Some(FCM))
       result should beRight.which(_ should haveClass[MigratingRegistrar])
       result should beRight.which(_.providerIdentifier shouldEqual "FirebaseToAzureRegistrar")
     }

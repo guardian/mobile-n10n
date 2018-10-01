@@ -4,7 +4,7 @@ import com.amazonaws.services.cloudwatch.model.StandardUnit
 import error.NotificationsError
 import metrics.{MetricDataPoint, Metrics}
 import models.RegistrationProvider.{Azure, AzureWithFirebase, FCM}
-import models.{iOS, Android, Platform, DeviceToken, RegistrationProvider, Registration}
+import models.{IOS, Android, Platform, DeviceToken, RegistrationProvider, Registration}
 import registration.services.fcm.FcmRegistrar
 
 import scala.concurrent.ExecutionContext
@@ -21,7 +21,7 @@ class MigratingRegistrarProvider(
     currentProvider: Option[RegistrationProvider]
   ): Either[NotificationsError, NotificationRegistrar] = {
     platform match {
-      case iOS => iosMigration(platform, deviceToken, currentProvider)
+      case IOS => iosMigration(platform, deviceToken, currentProvider)
       case Android => androidMigration(platform, deviceToken, currentProvider)
       case _ if deviceToken.hasAzureToken =>
         metrics.send(MetricDataPoint(name = "RegistrationAzure", value = 1d, unit = StandardUnit.Count))

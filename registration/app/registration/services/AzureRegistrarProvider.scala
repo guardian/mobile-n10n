@@ -33,7 +33,7 @@ final class AzureRegistrarProvider(
   override def registrarFor(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[RegistrationProvider]): Either[NotificationsError, NotificationRegistrar] = {
     platform match {
       case Android => Right(gcmRegistrar)
-      case `iOS` => Right(apnsRegistrar)
+      case IOS => Right(apnsRegistrar)
       case Newsstand => Right(newsstandRegistrar)
       case _ => Left(UnsupportedPlatform(platform.toString))
     }
