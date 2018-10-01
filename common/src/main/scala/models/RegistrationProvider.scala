@@ -2,7 +2,7 @@ package models
 
 import play.api.libs.json._
 
-trait RegistrationProvider {
+sealed trait RegistrationProvider {
   def value: String
 }
 
