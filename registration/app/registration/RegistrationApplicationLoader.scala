@@ -95,7 +95,8 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
     metrics = metrics,
     fcmExecutionContext = actorSystem.dispatchers.lookup("fcm-io") // FCM calls are blocking
   )
-  lazy val azureWithFcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker, metrics)
+  lazy val azureWithFcmClient = new NotificationHubClient(appConfig.azureWithFcmHub, wsClient)
+  lazy val azureWithFcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(azureWithFcmClient, subscriptionTracker, metrics)
 
   lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
   lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker, metrics)

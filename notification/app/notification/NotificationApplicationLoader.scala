@@ -56,7 +56,8 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     apnsNotificationSender,
     newsstandShardNotificationSender,
     //frontendAlerts, //disabled until frontend decides whether to fix this feature or not.
-    fcmNotificationSender
+    fcmNotificationSender,
+    azureWithFcmNotificationSender
   )
   lazy val mainController = wire[Main]
   lazy val router: Router = wire[Routes]
@@ -64,6 +65,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val prefix: String = "/"
 
   lazy val hubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
+  lazy val azureWithFcmHubClient = new NotificationHubClient(appConfig.azureWithFcmHub, wsClient)
 
   val credentialsProvider = new MobileAwsCredentialsProvider()
 
@@ -78,6 +80,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val notificationReportRepository = new DynamoNotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
 
   lazy val gcmNotificationSender: GCMSender = new GCMSender(hubClient, appConfig, topicSubscriptionsRepository)
+  lazy val azureWithFcmNotificationSender: GCMSender = new GCMSender(azureWithFcmHubClient, appConfig, topicSubscriptionsRepository)
 
   lazy val apnsNotificationSender: APNSSender = new APNSSender(hubClient, appConfig, topicSubscriptionsRepository)
   lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
