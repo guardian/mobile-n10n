@@ -18,23 +18,25 @@ class MigratingRegistrarProvider(
     case AzureToken(_) =>
       metrics.send(MetricDataPoint(name = "RegistrationAzure", value = 1d, unit = StandardUnit.Count))
       azureRegistrarProvider.registrarFor(platform, deviceToken, currentProvider)
-    case FcmToken(_) =>
+    case FcmToken(_) if platform == iOS =>
       metrics.send(MetricDataPoint(name = "RegistrationFcm", value = 1d, unit = StandardUnit.Count))
       Right(fcmRegistrar)
+    case FcmToken(_) if platform == Android =>
+      androidMigration(platform, deviceToken, currentProvider)
     case BothTokens(_, _) if platform == Android =>
-      metrics.send(MetricDataPoint(name = "RegistrationBoth", value = 1d, unit = StandardUnit.Count))
       androidMigration(platform, deviceToken, currentProvider)
     case BothTokens(_, _) if platform == iOS =>
       iosMigration(platform, deviceToken, currentProvider)
   }
 
   private def androidMigration(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = {
+    metrics.send(MetricDataPoint(name = "AndroidRegistrationFirebaseToAzure", value = 1d, unit = StandardUnit.Count))
     azureRegistrarProvider
       .registrarFor(platform, deviceToken, Some(Azure))
       .map(azureRegistrar => new MigratingRegistrar(
-        providerIdentifier = "AzureToFirebaseRegistrar",
-        fromRegistrar = azureRegistrar,
-        toRegistrar = fcmRegistrar
+        providerIdentifier = "AndroidFirebaseToAzureRegistrar",
+        fromRegistrar = fcmRegistrar,
+        toRegistrar = azureRegistrar
       ))
   }
 
@@ -45,7 +47,7 @@ class MigratingRegistrarProvider(
         azureRegistrarProvider
           .registrarFor(platform, deviceToken, Some(Azure))
           .map(azureRegistrar => new MigratingRegistrar(
-            providerIdentifier = "FirebaseToAzureRegistrar",
+            providerIdentifier = "IosFirebaseToAzureRegistrar",
             fromRegistrar = fcmRegistrar,
             toRegistrar = azureRegistrar
           ))

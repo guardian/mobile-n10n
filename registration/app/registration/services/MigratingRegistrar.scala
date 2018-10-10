@@ -23,9 +23,9 @@ class MigratingRegistrar(
 
   override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = {
     val response = for {
-      legacyResponse <- fromRegistrar.unregister(deviceToken)
-      fcmResponse <- toRegistrar.unregister(deviceToken)
-    } yield fcmResponse
+      fromResponse <- fromRegistrar.unregister(deviceToken)
+      toResponse <- toRegistrar.unregister(deviceToken)
+    } yield toResponse
 
     response
   }
@@ -34,12 +34,10 @@ class MigratingRegistrar(
     fromRegistrar.findRegistrations(topic, cursor)
 
   override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
-    val registrations = for {
-      fcmRegistrations <- EitherT(toRegistrar.findRegistrations(deviceToken))
-      legacyRegistrations <- EitherT(fromRegistrar.findRegistrations(deviceToken))
-    } yield fcmRegistrations ++ legacyRegistrations
-
-    registrations.value
+    for {
+      fromRegistrations <- EitherT(fromRegistrar.findRegistrations(deviceToken)).getOrElse(Nil)
+      toRegistrations <- EitherT(toRegistrar.findRegistrations(deviceToken)).getOrElse(Nil)
+    } yield Right(toRegistrations ++ fromRegistrations)
   }
 
   override def findRegistrations(udid: UniqueDeviceIdentifier): RegistrarResponse[Paginated[StoredRegistration]] =

@@ -29,10 +29,11 @@ class NotificationHubRegistrar(
   override val providerIdentifier = Provider.Azure.value
   val logger = Logger(classOf[NotificationHubRegistrar])
 
+  def token(deviceToken: DeviceToken): String = deviceToken.azureToken
 
   override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = {
     metrics.send(MetricDataPoint(name = "AzureWrite", value = 1d, unit = StandardUnit.Count))
-    findRegistrationResponses(deviceToken.azureToken).flatMap {
+    findRegistrationResponses(token(deviceToken)).flatMap {
       case Right(Nil) => createRegistration(registration)
       case Right(azureRegistration :: Nil) => updateRegistration(azureRegistration, registration)
       case Right(manyRegistrations) => deleteAndCreate(manyRegistrations, registration)
@@ -42,7 +43,7 @@ class NotificationHubRegistrar(
 
   override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = {
     metrics.send(MetricDataPoint(name = "AzureWrite", value = 1d, unit = StandardUnit.Count))
-    findRegistrationResponses(deviceToken.azureToken).flatMap {
+    findRegistrationResponses(token(deviceToken)).flatMap {
       case Right(Nil) => Future.successful(Right(()))
       case Right(manyRegistrations) => deleteRegistrations(manyRegistrations)
       case Left(e: ProviderError) => Future.successful(Left(e))
@@ -59,7 +60,7 @@ class NotificationHubRegistrar(
 
   override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
     metrics.send(MetricDataPoint(name = "AzureRead", value = 1d, unit = StandardUnit.Count))
-    EitherT(hubClient.registrationsByChannelUri(channelUri = deviceToken.azureToken))
+    EitherT(hubClient.registrationsByChannelUri(channelUri = token(deviceToken)))
       .semiflatMap(responsesToStoredRegistrations)
       .value
   }
