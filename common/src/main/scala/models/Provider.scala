@@ -3,7 +3,7 @@ package models
 import ai.x.play.json.Jsonx
 import play.api.libs.json._
 
-trait Provider {
+sealed trait Provider {
   def value: String
 }
 

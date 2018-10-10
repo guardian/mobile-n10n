@@ -13,6 +13,12 @@ class Configuration(conf: PlayConfig) {
     sharedAccessKey = conf.get[String]("azure.hub.sharedAccessKey")
   )
 
+  lazy val azureWithFcmHub = NotificationHubConnection(
+    endpoint = conf.get[String]("azureWithFcm.hub.endpoint"),
+    sharedAccessKeyName = conf.get[String]("azureWithFcm.hub.sharedAccessKeyName"),
+    sharedAccessKey = conf.get[String]("azureWithFcm.hub.sharedAccessKey")
+  )
+
   lazy val newsstandHub = NotificationHubConnection(
     endpoint = conf.get[String]("newsstand.azure.hub.endpoint"),
     sharedAccessKeyName = conf.get[String]("newsstand.azure.hub.sharedAccessKeyName"),

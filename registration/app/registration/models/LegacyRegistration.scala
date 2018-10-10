@@ -3,7 +3,7 @@ package registration.models
 import play.api.libs.json._
 import play.api.libs.json.JodaReads._
 import LegacyJodaFormat._
-import models.Provider
+import models.{Provider, RegistrationProvider}
 
 object LegacyJodaFormat {
   val DateTimePattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
@@ -56,7 +56,7 @@ case class LegacyPreferences(
   teams: Option[Seq[String]],
   matches: Option[Seq[LegacyMatch]],
   topics: Option[Seq[LegacyTopic]],
-  provider: Option[Provider]
+  provider: Option[RegistrationProvider]
 ) {
   def hasNewsstand: Boolean = topics.exists(_.contains(LegacyTopic.NewsstandIos))
   def withNewsstand: LegacyPreferences = {

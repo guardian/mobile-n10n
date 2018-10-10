@@ -6,5 +6,5 @@ case class Registration(
   platform: Platform,
   topics: Set[Topic],
   buildTier: Option[String],
-  provider: Option[Provider]
+  provider: Option[RegistrationProvider]
 )

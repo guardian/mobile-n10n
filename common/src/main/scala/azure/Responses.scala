@@ -6,7 +6,7 @@ import org.joda.time.DateTime
 import play.api.libs.ws.WSResponse
 import scala.util.{Failure, Success, Try}
 import scala.xml.Elem
-import models.{Android, Platform, iOS}
+import models.{Android, Platform, IOS}
 import utils.WSImplicits._
 import cats.syntax.either._
 
@@ -140,7 +140,7 @@ case class APNSRegistrationResponse(
   deviceToken: String,
   expirationTime: DateTime) extends RegistrationResponse {
   lazy val tagsAsSet = tags.toSet
-  override def platform: Platform = iOS
+  override def platform: Platform = IOS
   override def deviceId: String = deviceToken
 }
 

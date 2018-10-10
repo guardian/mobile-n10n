@@ -1,6 +1,6 @@
 package registration.services
 
-import models.Provider.Unknown
+import models.RegistrationProvider.Unknown
 import models.TopicTypes.NewsstandShard
 import models._
 import org.specs2.mutable.Specification
