@@ -139,17 +139,33 @@ class FcmRegistrar(
   }
 
   override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = {
-    ws.url(s"$instanceIdService/v1/web/iid/${deviceToken.fcmToken}")
-      .addHttpHeaders("Authorization" -> s"key=${configuration.firebaseServerKey}")
-      .delete()
-      .map { response =>
-        if (response.status >= 300) {
-          logger.error(s"Unable to unregister from FCM, received response $response")
-          Left(FcmProviderError(s"Unable to unregister from FCM, received ${response.status} return code"))
-        } else {
-          Right(())
-        }
+    def handleOperationError(results: Set[Either[ProviderError, Unit]]): Either[ProviderError, Unit] = {
+      val errors = results.collect { case Left(error) => error }
+      if (errors.isEmpty) {
+        Right(())
+      } else {
+        Left(FcmProviderError(s"Unable to update the registration, encountered errors: ${errors.mkString(", ")}"))
       }
+    }
+
+    def forEachTopic(topics: Set[Topic])(f: Topic => RegistrarResponse[Unit]): RegistrarResponse[Unit] = {
+      Future.sequence(topics.map(f)).map(handleOperationError)
+    }
+
+    def listExistingTopics: RegistrarResponse[Set[Topic]] = {
+      fetchInstance(deviceToken).map {
+        case Right(instance) => Right(instance.topics.toSet)
+        case Left(InstanceNotFound) => Right(Set())
+        case Left(error) => Left(error)
+      }
+    }
+
+    val result = for {
+      existingTopics <- EitherT(listExistingTopics)
+      _ <- EitherT(forEachTopic(existingTopics)(unsubscribeFromTopic(deviceToken)))
+    } yield ()
+
+    result.value
   }
 
   override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = {
