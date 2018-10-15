@@ -39,4 +39,38 @@ class PercentilesTest extends Specification {
     }
   }
 
+  "percentileBucket" should {
+    "return correct error if percentile value is less or equal to 0" in {
+      percentileBuckets(-1)(Map("a" -> 1)) should equalTo(Left[PercentilesException, Int](InvalidPercentile))
+    }
+    "return correct error if percentile value is greater than 100" in {
+      percentileBuckets(101)(Map("a" -> 1)) should equalTo(Left[PercentilesException, Int](InvalidPercentile))
+    }
+    "return correct error if buckets is empty" in {
+      percentileBuckets(50)(Map.empty[String, Int]) should equalTo(Left[PercentilesException, Int](EmptyValues))
+    }
+    "return lowest bucket when asking for the 0th percentile" in {
+      percentileBuckets(0)(Map("a" -> 1, "b" -> 1, "c" -> 1)) should equalTo(Right("a"))
+    }
+    "return highest bucket when asking for the 100th percentile" in {
+      percentileBuckets(100)(Map("a" -> 1, "b" -> 1, "c" -> 1, "d" -> 1)) should equalTo(Right("d"))
+    }
+    "return correct bucket" in {
+      val buckets = Map("a" -> 1, "b" -> 1, "c" -> 1, "d" -> 1, "e" -> 1, "f" -> 1, "g" -> 1, "h" -> 1, "i" -> 1, "j" -> 1)
+      percentileBuckets(10)(buckets) should equalTo(Right("a"))
+      percentileBuckets(20)(buckets) should equalTo(Right("b"))
+      percentileBuckets(30)(buckets) should equalTo(Right("c"))
+      percentileBuckets(40)(buckets) should equalTo(Right("d"))
+      percentileBuckets(50)(buckets) should equalTo(Right("e"))
+      percentileBuckets(60)(buckets) should equalTo(Right("f"))
+      percentileBuckets(70)(buckets) should equalTo(Right("g"))
+      percentileBuckets(80)(buckets) should equalTo(Right("h"))
+      percentileBuckets(90)(buckets) should equalTo(Right("i"))
+
+      val moreBuckets = Map("a" -> 1, "b" -> 1, "c" -> 1, "d" -> 1, "e" -> 1, "f" -> 5)
+      percentileBuckets(50)(moreBuckets) should equalTo(Right("e"))
+      percentileBuckets(99)(moreBuckets) should equalTo(Right("f"))
+    }
+  }
+
 }

@@ -8,6 +8,7 @@ import com.gu.notifications.events.utils.Percentiles
 import play.api.libs.json.{JsValue, Json, OFormat, Writes}
 import com.gu.notifications.events.utils.OWriteOps._
 
+// Percentiles are durations since the first received timing
 case class TimingPercentiles(
   `10th`: LocalDateTime,
   `20th`: LocalDateTime,
@@ -23,7 +24,7 @@ case class TimingPercentiles(
 )
 
 object TimingPercentiles {
-  implicit val jf = Json.format[TimingPercentiles]
+  implicit val jf = Json.writes[TimingPercentiles]
 }
 
 case class EventAggregation(
@@ -33,16 +34,11 @@ case class EventAggregation(
 ) {
 
   def timingPercentiles: Option[TimingPercentiles] = {
-    val allTimings: Seq[LocalDateTime] = timing
-      .toSeq
-      .flatMap { case (t, count) =>
-        Seq.fill(count)(t)
-      }
-      .view
+    implicit val dateOrdering: Ordering[LocalDateTime] = _ compareTo _
     Seq(10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99)
       .flatMap { p =>
         Percentiles
-          .percentile(p)(allTimings)(_ compareTo _)
+          .percentileBuckets(p)(timing)
           .toOption
       } match {
       case Seq(d10, d20, d30, d40, d50, d60, d70, d80, d90, d95, d99) =>
@@ -70,7 +66,6 @@ object TenSecondUnit extends TemporalUnit {
 }
 
 object EventAggregation {
-
 
   def from(dynamoEventAggregation: DynamoEventAggregation, originalSentTime: LocalDateTime): EventAggregation = {
     val sentTime = originalSentTime.truncatedTo(TenSecondUnit)
