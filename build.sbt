@@ -51,7 +51,8 @@ val log4j2Version: String = "2.10.0"
 lazy val commoneventconsumer = project
   .settings(Seq(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playJsonVersion
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "org.specs2" %% "specs2-core" % specsVersion % "test"
     )
   ))
 

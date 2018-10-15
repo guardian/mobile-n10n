@@ -4,13 +4,54 @@ import java.time.temporal.{ChronoUnit, Temporal, TemporalUnit}
 import java.time.{Duration, LocalDateTime}
 import java.util.UUID
 
-import play.api.libs.json.{JsValue, Json, OFormat}
+import com.gu.notifications.events.utils.Percentiles
+import play.api.libs.json.{JsValue, Json, OFormat, Writes}
+import com.gu.notifications.events.utils.OWriteOps._
+
+case class TimingPercentiles(
+  `10th`: LocalDateTime,
+  `20th`: LocalDateTime,
+  `30th`: LocalDateTime,
+  `40th`: LocalDateTime,
+  `50th`: LocalDateTime,
+  `60th`: LocalDateTime,
+  `70th`: LocalDateTime,
+  `80th`: LocalDateTime,
+  `90th`: LocalDateTime,
+  `95th`: LocalDateTime,
+  `99th`: LocalDateTime
+)
+
+object TimingPercentiles {
+  implicit val jf = Json.format[TimingPercentiles]
+}
 
 case class EventAggregation(
   platformCounts: PlatformCount,
   providerCounts: ProviderCount,
   timing: Map[LocalDateTime, Int]
-)
+) {
+
+  def timingPercentiles: Option[TimingPercentiles] = {
+    val allTimings: Seq[LocalDateTime] = timing
+      .toSeq
+      .flatMap { case (t, count) =>
+        Seq.fill(count)(t)
+      }
+      .view
+    Seq(10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99)
+      .flatMap { p =>
+        Percentiles
+          .percentile(p)(allTimings)(_ compareTo _)
+          .toOption
+      } match {
+      case Seq(d10, d20, d30, d40, d50, d60, d70, d80, d90, d95, d99) =>
+        Some(TimingPercentiles(d10, d20, d30, d40, d50, d60, d70, d80, d90, d95, d99))
+      case _ => None
+    }
+  }
+
+}
 
 // based on SECONDS so adopts same properties. Else functions copied from ChronoUnit
 object TenSecondUnit extends TemporalUnit {
@@ -79,6 +120,12 @@ object EventAggregation {
     (value: JsValue) => value.validate[Map[String, Int]].map(_.map { case (k, v) => (LocalDateTime.parse(k), v) }),
     (dateTimeMap: Map[LocalDateTime, Int]) => Json.toJsObject(dateTimeMap.map { case (k, v) => (k.toString, v) })
   )
-  implicit val jf = Json.format[EventAggregation]
+
+  implicit val jreads = Json.reads[EventAggregation]
+  implicit val jwrites: Writes[EventAggregation] =
+    Json
+      .writes[EventAggregation]
+      .addField("timingPercentiles", _.timingPercentiles)
+      .removeField("timing")
 
 }
