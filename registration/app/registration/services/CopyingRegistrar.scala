@@ -11,8 +11,8 @@ import scala.util.{Failure, Success}
 
 class CopyingRegistrar(
   val providerIdentifier: String,
-  mainRegistrar: NotificationRegistrar,
-  copyRegistrar: NotificationRegistrar
+  val mainRegistrar: NotificationRegistrar,
+  val copyRegistrar: NotificationRegistrar
 )(
   implicit ec: ExecutionContext
 ) extends NotificationRegistrar {
