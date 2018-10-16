@@ -11,7 +11,7 @@ class SqlRegistrationsRepository[F[_]: Async](xa: Transactor[F])(implicit F: Syn
 
   override def findByTopic(topic: Topic): Stream[F, Registration] =
     sql"""
-         SELECT token, platform, topic, shard, lastmodified
+         SELECT token, platform, topic, shard, lastModified
          FROM registrations
          WHERE topic = ${topic.name}
       """
@@ -21,7 +21,7 @@ class SqlRegistrationsRepository[F[_]: Async](xa: Transactor[F])(implicit F: Syn
 
   override def save(reg: Registration): F[Int] =
     sql"""
-        INSERT INTO registrations (token, platform, topic, shard, lastmodified)
+        INSERT INTO registrations (token, platform, topic, shard, lastModified)
         VALUES (
           ${reg.device.token},
           ${reg.device.platform},

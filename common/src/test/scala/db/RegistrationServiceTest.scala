@@ -25,7 +25,7 @@ class RegistrationServiceTest extends Specification with BeforeAll {
           topic TEXT,
           platform TEXT,
           shard SMALLINT,
-          lastmodified TIMESTAMP WITH TIME ZONE
+          lastModified TIMESTAMP WITH TIME ZONE
         )
         """
         .update.run
