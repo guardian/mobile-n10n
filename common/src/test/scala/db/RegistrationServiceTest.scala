@@ -35,12 +35,11 @@ class RegistrationServiceTest extends Specification with BeforeAll {
 
   override def beforeAll() = initializeDatabase()
 
-  lazy val date = new java.sql.Date(0)
-  lazy val reg1 = Registration(Device("a", Android), Topic("topic1"), Shard(1), date)
-  lazy val reg2 = Registration(Device("b", iOS), Topic("topic1"), Shard(1), date)
-  lazy val reg3 = Registration(Device("c", iOS), Topic("topic1"), Shard(1), date)
-  lazy val reg4 = Registration(Device("d", Android), Topic("topic2"), Shard(1), date)
-
+  lazy val reg1 = Registration(Device("a", Android), Topic("topic1"), Shard(1))
+  lazy val reg2 = Registration(Device("b", iOS), Topic("topic1"), Shard(1))
+  lazy val reg3 = Registration(Device("c", iOS), Topic("topic1"), Shard(1))
+  lazy val reg4 = Registration(Device("d", Android), Topic("topic2"), Shard(1))
+  lazy val reg5 = Registration(Device("e", iOS), Topic("topic3"), Shard(1))
 
   "RegistrationService" should {
     "allow adding registrations" in {

@@ -27,7 +27,7 @@ class SqlRegistrationsRepository[F[_]: Async](xa: Transactor[F])(implicit F: Syn
           ${reg.device.platform},
           ${reg.topic.name},
           ${reg.shard.id},
-          ${reg.lastModified}
+          CURRENT_TIMESTAMP
         )
       """
       .update.run.transact(xa)

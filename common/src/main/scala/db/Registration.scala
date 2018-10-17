@@ -13,7 +13,7 @@ object Registration {
     )
 }
 
-case class Registration(device: Device, topic: Topic, shard: Shard, lastModified: Date)
+case class Registration(device: Device, topic: Topic, shard: Shard, lastModified: Option[Date] = None)
 case class Device(token: String, platform: Platform)
 case class Topic(name: String)
 case class Shard(id: Short)
