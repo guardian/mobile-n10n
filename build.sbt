@@ -14,7 +14,10 @@ scalacOptions in ThisBuild ++= Seq(
   "-Xfatal-warnings",
   "-feature",
   "-language:postfixOps",
-  "-language:implicitConversions")
+  "-language:implicitConversions",
+  "-language:higherKinds",
+  "-Ypartial-unification"
+)
 
 val minJacksonVersion: String = "2.8.9"
 val minJacksonLibs = Seq(
@@ -27,6 +30,7 @@ val minJacksonLibs = Seq(
 val playJsonVersion = "2.6.9"
 val specsVersion: String = "4.0.3"
 val awsSdkVersion: String = "1.11.400"
+val doobieVersion: String = "0.5.3"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -77,8 +81,14 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
-      "ai.x" %% "play-json-extensions" % "0.10.0"
-    ),
+      "ai.x" %% "play-json-extensions" % "0.10.0",
+      "org.tpolecat" %% "doobie-core"      % doobieVersion,
+      "org.tpolecat" %% "doobie-hikari"    % doobieVersion,
+      "org.tpolecat" %% "doobie-postgres"  % doobieVersion,
+      "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
+      "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
+      "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
+),
     libraryDependencies ++= minJacksonLibs,
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
