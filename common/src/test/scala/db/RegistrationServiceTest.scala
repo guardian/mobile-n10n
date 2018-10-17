@@ -57,9 +57,17 @@ class RegistrationServiceTest extends Specification with BeforeAll {
       service.remove(reg1).unsafeRunSync() should equalTo(1)
       service.remove(reg4).unsafeRunSync() should equalTo(1)
 
-
       service.findByTopic(Topic("topic1")).compile.toList.unsafeRunSync().length should equalTo(2)
       service.findByTopic(Topic("topic2")).compile.toList.unsafeRunSync().length should equalTo(0)
+    }
+    "update when saving the same registration twice" in {
+      service.save(reg5).unsafeRunSync()
+      val newShard = Shard(2)
+      service.save(reg5.copy(shard = newShard)).unsafeRunSync()
+
+      service.findByTopic(reg5.topic)
+        .compile.toList.unsafeRunSync()
+        .head.shard should equalTo(newShard)
     }
   }
 
