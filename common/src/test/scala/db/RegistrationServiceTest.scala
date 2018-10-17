@@ -6,6 +6,7 @@ import cats.effect.IO
 import cats.implicits._
 import models.{Android, iOS}
 import org.specs2.specification.BeforeAll
+import fs2.Stream
 
 class RegistrationServiceTest extends Specification with BeforeAll {
 
@@ -36,6 +37,9 @@ class RegistrationServiceTest extends Specification with BeforeAll {
 
   override def beforeAll() = initializeDatabase()
 
+  def run[A](s: Stream[IO, A]): List[A] = s.compile.toList.unsafeRunSync()
+  def run[A](io: IO[A]) = io.unsafeRunSync()
+
   lazy val reg1 = Registration(Device("a", Android), Topic("topic1"), Shard(1))
   lazy val reg2 = Registration(Device("b", iOS), Topic("topic1"), Shard(1))
   lazy val reg3 = Registration(Device("c", iOS), Topic("topic1"), Shard(1))
@@ -44,30 +48,28 @@ class RegistrationServiceTest extends Specification with BeforeAll {
 
   "RegistrationService" should {
     "allow adding registrations" in {
-      service.save(reg1).unsafeRunSync() should equalTo(1)
-      service.save(reg2).unsafeRunSync() should equalTo(1)
-      service.save(reg3).unsafeRunSync() should equalTo(1)
-      service.save(reg4).unsafeRunSync() should equalTo(1)
+      run(service.save(reg1)) should equalTo(1)
+      run(service.save(reg2)) should equalTo(1)
+      run(service.save(reg3)) should equalTo(1)
+      run(service.save(reg4)) should equalTo(1)
     }
     "allow finding registration by topic" in {
-      service.findByTopic(Topic("topic1")).compile.toList.unsafeRunSync().length should equalTo(3)
-      service.findByTopic(Topic("topic2")).compile.toList.unsafeRunSync().length should equalTo(1)
+      run(service.findByTopic(Topic("topic1"))).length should equalTo(3)
+      run(service.findByTopic(Topic("topic2"))).length should equalTo(1)
     }
     "allow removing registration" in {
-      service.remove(reg1).unsafeRunSync() should equalTo(1)
-      service.remove(reg4).unsafeRunSync() should equalTo(1)
+      run(service.remove(reg1)) should equalTo(1)
+      run(service.remove(reg4)) should equalTo(1)
 
-      service.findByTopic(Topic("topic1")).compile.toList.unsafeRunSync().length should equalTo(2)
-      service.findByTopic(Topic("topic2")).compile.toList.unsafeRunSync().length should equalTo(0)
+      run(service.findByTopic(Topic("topic1"))).length should equalTo(2)
+      run(service.findByTopic(Topic("topic2"))).length should equalTo(0)
     }
     "update when saving the same registration twice" in {
-      service.save(reg5).unsafeRunSync()
+      run(service.save(reg5))
       val newShard = Shard(2)
-      service.save(reg5.copy(shard = newShard)).unsafeRunSync()
+      run(service.save(reg5.copy(shard = newShard)))
 
-      service.findByTopic(reg5.topic)
-        .compile.toList.unsafeRunSync()
-        .head.shard should equalTo(newShard)
+      run(service.findByTopic(reg5.topic)).head.shard should equalTo(newShard)
     }
   }
 
