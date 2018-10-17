@@ -6,7 +6,7 @@ import doobie.util.transactor.Transactor
 import fs2.Stream
 import Registration._
 
-class SqlRegistrationsRepository[F[_]: Async](xa: Transactor[F])(implicit F: Sync[F])
+class SqlRegistrationRpository[F[_]: Async](xa: Transactor[F])(implicit F: Sync[F])
   extends RegistrationRepository[F, Stream] {
 
   override def findByTopic(topic: Topic): Stream[F, Registration] =
