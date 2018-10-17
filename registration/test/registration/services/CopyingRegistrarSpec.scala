@@ -1,7 +1,7 @@
 package registration.services
 
 import models.pagination.Paginated
-import models.{DeviceToken, Registration, Topic, UniqueDeviceIdentifier}
+import models._
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -29,14 +29,14 @@ class CopyingRegistrarSpec(implicit ee: ExecutionEnv) extends Specification with
 
     "unregister devices using both the main and copy registrars" in new CopyingRegistrarScope {
       val deviceToken = mock[DeviceToken]
-      mainRegistrar.unregister(deviceToken) returns Future.successful(Right(()))
-      copyRegistrar.unregister(deviceToken) returns Future.successful(Right(()))
+      mainRegistrar.unregister(deviceToken, iOS) returns Future.successful(Right(()))
+      copyRegistrar.unregister(deviceToken, iOS) returns Future.successful(Right(()))
 
-      val response = copyingRegistrar.unregister(deviceToken)
+      val response = copyingRegistrar.unregister(deviceToken, iOS)
 
       response should beRight(()).await
-      there was one(copyRegistrar).unregister(deviceToken)
-      there was one(mainRegistrar).unregister(deviceToken)
+      there was one(copyRegistrar).unregister(deviceToken, iOS)
+      there was one(mainRegistrar).unregister(deviceToken, iOS)
     }
 
     "only search registrations by topic using the main registrar" in new CopyingRegistrarScope {
@@ -69,15 +69,15 @@ class CopyingRegistrarSpec(implicit ee: ExecutionEnv) extends Specification with
       val copyRegistration = mock[StoredRegistration]
       val expectedResponse = List(mainRegistration, copyRegistration)
 
-      copyRegistrar.findRegistrations(token) returns Future.successful(Right(List(copyRegistration)))
-      mainRegistrar.findRegistrations(token) returns Future.successful(Right(List(mainRegistration)))
+      copyRegistrar.findRegistrations(token, iOS) returns Future.successful(Right(List(copyRegistration)))
+      mainRegistrar.findRegistrations(token, iOS) returns Future.successful(Right(List(mainRegistration)))
 
 
-      val response = copyingRegistrar.findRegistrations(token)
+      val response = copyingRegistrar.findRegistrations(token, iOS)
 
       response should beRight(expectedResponse).await
-      there was one(mainRegistrar).findRegistrations(token)
-      there was one(copyRegistrar).findRegistrations(token)
+      there was one(mainRegistrar).findRegistrations(token, iOS)
+      there was one(copyRegistrar).findRegistrations(token, iOS)
     }
 
 

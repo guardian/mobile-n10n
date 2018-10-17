@@ -35,10 +35,10 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
     }
 
 
-    override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] =
+    override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] =
       Future.successful(Right(()))
 
-    override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = ???
+    override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = ???
 
     override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = ???
 
@@ -80,7 +80,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     }
 
 
-    override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] =
+    override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] =
       Future.successful(Right(()))
 
     override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
@@ -92,7 +92,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       Future.successful(Right(Paginated(selected.toList, None)))
     }
 
-    override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
+    override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = {
       val selected = registrations.filter(_.deviceToken.azureToken == deviceToken.azureToken).map(StoredRegistration.fromRegistration)
       Future.successful(Right(selected.toList))
     }

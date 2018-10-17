@@ -1,7 +1,7 @@
 package registration.services
 
 import models.pagination.Paginated
-import models.{DeviceToken, Registration, Topic, UniqueDeviceIdentifier}
+import models._
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -18,25 +18,25 @@ class MigratingRegistrarSpec(implicit ee: ExecutionEnv) extends Specification wi
       val deviceToken = mock[DeviceToken]
       val registration = mock[Registration]
       fcmRegistrar.register(deviceToken, registration) returns Future.successful(Right(fcmRegistrationResponse))
-      azureRegistrar.unregister(deviceToken) returns Future.successful(Right(()))
+      azureRegistrar.unregister(deviceToken, iOS) returns Future.successful(Right(()))
 
       val response = migratingRegistrar.register(deviceToken, registration)
 
       response should beRight(fcmRegistrationResponse).await
-      there was one(azureRegistrar).unregister(deviceToken)
+      there was one(azureRegistrar).unregister(deviceToken, iOS)
       there was one(fcmRegistrar).register(deviceToken, registration)
     }
 
     "unregister from both azure and firebase" in new MigratingRegistrarScope {
       val deviceToken = mock[DeviceToken]
-      fcmRegistrar.unregister(deviceToken) returns Future.successful(Right(()))
-      azureRegistrar.unregister(deviceToken) returns Future.successful(Right(()))
+      fcmRegistrar.unregister(deviceToken, iOS) returns Future.successful(Right(()))
+      azureRegistrar.unregister(deviceToken, iOS) returns Future.successful(Right(()))
 
-      val response = migratingRegistrar.unregister(deviceToken)
+      val response = migratingRegistrar.unregister(deviceToken, iOS)
 
       response should beRight(()).await
-      there was one(azureRegistrar).unregister(deviceToken)
-      there was one(fcmRegistrar).unregister(deviceToken)
+      there was one(azureRegistrar).unregister(deviceToken, iOS)
+      there was one(fcmRegistrar).unregister(deviceToken, iOS)
     }
 
     "only find registration by topic in azure as it's not possible in firebase" in new MigratingRegistrarScope {
@@ -69,15 +69,15 @@ class MigratingRegistrarSpec(implicit ee: ExecutionEnv) extends Specification wi
       val azureRegistration = mock[StoredRegistration]
       val expectedResponse = List(firebaseRegistration, azureRegistration)
 
-      azureRegistrar.findRegistrations(token) returns Future.successful(Right(List(azureRegistration)))
-      fcmRegistrar.findRegistrations(token) returns Future.successful(Right(List(firebaseRegistration)))
+      azureRegistrar.findRegistrations(token, iOS) returns Future.successful(Right(List(azureRegistration)))
+      fcmRegistrar.findRegistrations(token, iOS) returns Future.successful(Right(List(firebaseRegistration)))
 
 
-      val response = migratingRegistrar.findRegistrations(token)
+      val response = migratingRegistrar.findRegistrations(token, iOS)
 
       response should beRight(expectedResponse).await
-      there was one(fcmRegistrar).findRegistrations(token)
-      there was one(azureRegistrar).findRegistrations(token)
+      there was one(fcmRegistrar).findRegistrations(token, iOS)
+      there was one(azureRegistrar).findRegistrations(token, iOS)
     }
 
 

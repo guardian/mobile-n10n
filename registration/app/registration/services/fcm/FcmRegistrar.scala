@@ -138,7 +138,7 @@ class FcmRegistrar(
     result.value
   }
 
-  override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = {
+  override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] = {
     def handleOperationError(results: Set[Either[ProviderError, Unit]]): Either[ProviderError, Unit] = {
       val errors = results.collect { case Left(error) => error }
       if (errors.isEmpty) {
@@ -173,7 +173,7 @@ class FcmRegistrar(
     Future.successful(Right(Paginated.empty))
   }
 
-  override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
+  override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = {
     def instanceToStoredRegistrations(instance: Instance): List[StoredRegistration] =
       List(StoredRegistration(deviceToken.fcmToken, instance.platform, Set(), instance.topics.toSet, Provider.FCM.value))
 

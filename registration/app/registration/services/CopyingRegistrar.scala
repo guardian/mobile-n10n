@@ -1,7 +1,7 @@
 package registration.services
 import cats.data.EitherT
 import cats.implicits._
-import models.{DeviceToken, Registration, Topic, UniqueDeviceIdentifier}
+import models._
 import models.pagination.Paginated
 import play.api.Logger
 import registration.services.NotificationRegistrar.RegistrarResponse
@@ -34,17 +34,17 @@ class CopyingRegistrar(
   override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] =
     applyToMainAndCopy(_.register(deviceToken, registration))
 
-  override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] =
-    applyToMainAndCopy(_.unregister(deviceToken))
+  override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] =
+    applyToMainAndCopy(_.unregister(deviceToken, platform))
 
   override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = {
     // rarely used (only by devs) we'll know this is running on the main registrar only
     azureRegistrar.findRegistrations(topic, cursor)
   }
 
-  override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
-    val mainResponseF = azureRegistrar.findRegistrations(deviceToken)
-    val copyResponseF = databaseRegistrar.findRegistrations(deviceToken)
+  override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = {
+    val mainResponseF = azureRegistrar.findRegistrations(deviceToken, platform)
+    val copyResponseF = databaseRegistrar.findRegistrations(deviceToken, platform)
 
     for {
       mainResponse <- EitherT(mainResponseF).getOrElse(Nil)

@@ -55,18 +55,18 @@ class MigratingRegistrarProviderSpec(implicit ee: ExecutionEnv) extends Specific
   trait MigratingRegistrarScope extends Scope {
     val dummyFirebaseRegistrar = new NotificationRegistrar {
       override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = ???
-      override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = ???
+      override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = ???
       override def findRegistrations(udid: UniqueDeviceIdentifier): RegistrarResponse[Paginated[StoredRegistration]] = ???
-      override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = ???
+      override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] = ???
       override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = ???
       override val providerIdentifier: String = ""
     }
 
     val dummyAzureRegistrar = new NotificationRegistrar {
       override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = ???
-      override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = ???
+      override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = ???
       override def findRegistrations(udid: UniqueDeviceIdentifier): RegistrarResponse[Paginated[StoredRegistration]] = ???
-      override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = ???
+      override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] = ???
       override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = ???
       override val providerIdentifier: String = ""
     }

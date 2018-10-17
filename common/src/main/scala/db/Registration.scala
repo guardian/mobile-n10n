@@ -1,5 +1,7 @@
 package db
 
+import java.nio.ByteBuffer
+import java.security.MessageDigest
 import java.sql.Timestamp
 import java.time.{LocalDateTime, ZoneOffset}
 
@@ -24,3 +26,20 @@ case class Registration(device: Device, topic: Topic, shard: Shard, lastModified
 case class Device(token: String, platform: Platform)
 case class Topic(name: String)
 case class Shard(id: Short)
+
+object Shard {
+
+  // evenly distribute tokens across the range of short (16 bits, from -32768 to +32767 inclusive)
+  def fromToken(token: String): Shard = {
+    val md = MessageDigest.getInstance("SHA-1")
+    val bytes = md.digest(token.getBytes)
+    md.reset()
+
+    if (bytes.length > 2) {
+      val lastTwoBytes = bytes.slice(bytes.length - 2, bytes.length)
+      Shard(ByteBuffer.wrap(lastTwoBytes).getShort)
+    } else {
+      Shard(0)
+    }
+  }
+}

@@ -58,7 +58,7 @@ final class Main(
     )
 
     def unregisterFrom(registrar: NotificationRegistrar): EitherT[Future, NotificationsError, Unit] = EitherT(
-      registrar.unregister(selector.deviceToken): Future[Either[NotificationsError, Unit]]
+      registrar.unregister(selector.deviceToken, selector.platform): Future[Either[NotificationsError, Unit]]
     )
 
     registrarForSelector
@@ -120,7 +120,7 @@ final class Main(
   def registrationsByDeviceToken(platform: Platform, deviceToken: DeviceToken): Action[AnyContent] = Action.async {
     val result = for {
       registrar <- EitherT.fromEither[Future](registrarProvider.registrarFor(platform, deviceToken, None))
-      registrations <- EitherT(registrar.findRegistrations(deviceToken): Future[Either[NotificationsError, List[StoredRegistration]]])
+      registrations <- EitherT(registrar.findRegistrations(deviceToken, platform): Future[Either[NotificationsError, List[StoredRegistration]]])
     } yield registrations
     result.fold(processErrors, res => Ok(Json.toJson(res)))
   }

@@ -21,6 +21,18 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       .stream
       .transact(xa)
 
+
+  override def findByToken(token: String): Stream[F, Registration] = {
+    sql"""
+         SELECT token, platform, topic, shard, lastModified
+         FROM registrations
+         WHERE token = $token
+      """
+      .query[Registration]
+      .stream
+      .transact(xa)
+  }
+
   override def save(reg: Registration): F[Int] =
     // save = upsert (trying to insert first, if unique violation then update)
     insert(reg).exceptSomeSqlState {
@@ -31,6 +43,14 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         DELETE FROM registrations WHERE token = ${reg.device.token} AND topic = ${reg.topic.name}
       """
       .update.run.transact(xa)
+
+
+  override def removeByToken(token: String): F[Int] = {
+    sql"""
+      DELETE FROM registrations WHERE token = $token
+    """
+    .update.run.transact(xa)
+  }
 
   private def insert(reg: Registration): ConnectionIO[Int] =
     sql"""
