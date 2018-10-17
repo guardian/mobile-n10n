@@ -5,6 +5,8 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
 import Registration._
+import doobie.free.connection.ConnectionIO
+import doobie.postgres.sqlstate
 
 class SqlRegistrationRpository[F[_]: Async](xa: Transactor[F])(implicit F: Sync[F])
   extends RegistrationRepository[F, Stream] {
@@ -20,6 +22,17 @@ class SqlRegistrationRpository[F[_]: Async](xa: Transactor[F])(implicit F: Sync[
       .transact(xa)
 
   override def save(reg: Registration): F[Int] =
+    // save = upsert (trying to insert first, if unique violation then update)
+    insert(reg).exceptSomeSqlState {
+      case sqlstate.class23.UNIQUE_VIOLATION => update(reg)
+    }.transact(xa)
+
+  override def remove(reg: Registration): F[Int] = sql"""
+        DELETE FROM registrations WHERE token = ${reg.device.token} AND topic = ${reg.topic.name}
+      """
+      .update.run.transact(xa)
+
+  private def insert(reg: Registration): ConnectionIO[Int] =
     sql"""
         INSERT INTO registrations (token, platform, topic, shard, lastModified)
         VALUES (
@@ -30,11 +43,14 @@ class SqlRegistrationRpository[F[_]: Async](xa: Transactor[F])(implicit F: Sync[
           CURRENT_TIMESTAMP
         )
       """
-      .update.run.transact(xa)
+    .update.run
 
-  override def remove(reg: Registration): F[Int] = sql"""
-        DELETE FROM registrations WHERE token = ${reg.device.token} AND topic = ${reg.topic.name}
+  private def update(reg: Registration): ConnectionIO[Int] =
+    sql"""
+        UPDATE registrations
+        SET lastModified = CURRENT_TIMESTAMP, shard = ${reg.shard.id}
+        WHERE token = ${reg.device.token} AND topic = ${reg.topic.name}
       """
-      .update.run.transact(xa)
+      .update.run
 
 }
