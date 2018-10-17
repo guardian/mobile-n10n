@@ -21,11 +21,12 @@ class RegistrationServiceTest extends Specification with BeforeAll {
     val create =
       sql"""
         CREATE TABLE IF NOT EXISTS registrations(
-          token TEXT,
-          topic TEXT,
-          platform TEXT,
-          shard SMALLINT,
-          lastModified TIMESTAMP WITH TIME ZONE
+          token VARCHAR NOT NULL,
+          topic VARCHAR NOT NULL,
+          platform VARCHAR NOT NULL,
+          shard SMALLINT NOT NULL,
+          lastModified TIMESTAMP WITH TIME ZONE NOT NULL,
+          PRIMARY KEY (token, topic)
         )
         """
         .update.run
