@@ -7,8 +7,8 @@ import models.{DeviceToken, Platform, Provider, Registration}
 import scala.concurrent.ExecutionContext
 
 class CopyingRegistrarProvider(
-  delegateRegistrarProvider: RegistrarProvider,
-  copyRegistrar: NotificationRegistrar,
+  azureRegistrarProvider: RegistrarProvider,
+  databaseRegistrar: NotificationRegistrar,
   metrics: Metrics
 )(implicit executionContext: ExecutionContext) extends RegistrarProvider {
 
@@ -16,7 +16,7 @@ class CopyingRegistrarProvider(
     registrarFor(registration.platform, registration.deviceToken, registration.provider)
 
   override def withAllRegistrars[T](fn: NotificationRegistrar => T): List[T] =
-    delegateRegistrarProvider.withAllRegistrars(fn)
+    azureRegistrarProvider.withAllRegistrars(fn)
 
   override def registrarFor(
     platform: Platform,
@@ -27,12 +27,12 @@ class CopyingRegistrarProvider(
     def wrapWithCopyRegistrar(registrar: NotificationRegistrar): NotificationRegistrar = {
       new CopyingRegistrar(
         providerIdentifier = "CopyingRegistrar",
-        mainRegistrar = registrar,
-        copyRegistrar = copyRegistrar
+        azureRegistrar = registrar,
+        databaseRegistrar = databaseRegistrar
       )
     }
 
-    delegateRegistrarProvider
+    azureRegistrarProvider
       .registrarFor(platform, deviceToken, currentProvider)
       .map(wrapWithCopyRegistrar)
   }

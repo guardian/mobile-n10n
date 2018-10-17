@@ -8,7 +8,7 @@ import Registration._
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 
-class SqlRegistrationRpository[F[_]: Async](xa: Transactor[F])
+class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
 
   override def findByTopic(topic: Topic): Stream[F, Registration] =

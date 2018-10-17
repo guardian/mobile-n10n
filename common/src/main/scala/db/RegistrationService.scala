@@ -14,7 +14,7 @@ class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F
 object RegistrationService {
 
     def apply[F[_]: Async](xa: HikariTransactor[F]): RegistrationService[F, Stream] = {
-      val repo = new SqlRegistrationRpository[F](xa)
+      val repo = new SqlRegistrationRepository[F](xa)
       new RegistrationService[F, Stream](repo)
     }
 }

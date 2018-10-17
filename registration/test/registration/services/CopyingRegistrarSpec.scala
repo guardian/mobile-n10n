@@ -89,8 +89,8 @@ class CopyingRegistrarSpec(implicit ee: ExecutionEnv) extends Specification with
     val copyRegistrar = mock[NotificationRegistrar]
     val copyingRegistrar = new CopyingRegistrar(
       providerIdentifier = "testRegistrar",
-      mainRegistrar = mainRegistrar,
-      copyRegistrar = copyRegistrar
+      azureRegistrar = mainRegistrar,
+      databaseRegistrar = copyRegistrar
     )
   }
 

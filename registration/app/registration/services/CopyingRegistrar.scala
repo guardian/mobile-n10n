@@ -11,8 +11,8 @@ import scala.util.{Failure, Success}
 
 class CopyingRegistrar(
   val providerIdentifier: String,
-  val mainRegistrar: NotificationRegistrar,
-  val copyRegistrar: NotificationRegistrar
+  val azureRegistrar: NotificationRegistrar,
+  val databaseRegistrar: NotificationRegistrar
 )(
   implicit ec: ExecutionContext
 ) extends NotificationRegistrar {
@@ -20,12 +20,12 @@ class CopyingRegistrar(
   private val logger = Logger(classOf[CopyingRegistrar])
 
   private def applyToMainAndCopy[A](function: NotificationRegistrar => RegistrarResponse[A]): RegistrarResponse[A] = {
-    val mainResponse = function(mainRegistrar)
+    val mainResponse = function(azureRegistrar)
     // the copy is considered a side effect, if there's an error it will be dumped in the logs and swallowed
-    val copyResponse = function(copyRegistrar)
+    val copyResponse = function(databaseRegistrar)
     copyResponse.onComplete {
-      case Failure(error) => logger.error(s"Unable to duplicate registration operation to ${copyRegistrar.providerIdentifier}", error)
-      case Success(Left(error)) => logger.error(s"Unable to duplicate registration operation to ${copyRegistrar.providerIdentifier}: $error")
+      case Failure(error) => logger.error(s"Unable to duplicate registration operation to ${databaseRegistrar.providerIdentifier}", error)
+      case Success(Left(error)) => logger.error(s"Unable to duplicate registration operation to ${databaseRegistrar.providerIdentifier}: $error")
       case _ =>
     }
     mainResponse
@@ -39,12 +39,12 @@ class CopyingRegistrar(
 
   override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = {
     // rarely used (only by devs) we'll know this is running on the main registrar only
-    mainRegistrar.findRegistrations(topic, cursor)
+    azureRegistrar.findRegistrations(topic, cursor)
   }
 
   override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
-    val mainResponseF = mainRegistrar.findRegistrations(deviceToken)
-    val copyResponseF = copyRegistrar.findRegistrations(deviceToken)
+    val mainResponseF = azureRegistrar.findRegistrations(deviceToken)
+    val copyResponseF = databaseRegistrar.findRegistrations(deviceToken)
 
     for {
       mainResponse <- EitherT(mainResponseF).getOrElse(Nil)
@@ -55,6 +55,6 @@ class CopyingRegistrar(
   override def findRegistrations(udid: UniqueDeviceIdentifier): RegistrarResponse[Paginated[StoredRegistration]] = {
     // this method is here for GDPR compliance, executed on the main registrar as we don't store
     // the browser ID anymore
-    mainRegistrar.findRegistrations(udid)
+    azureRegistrar.findRegistrations(udid)
   }
 }

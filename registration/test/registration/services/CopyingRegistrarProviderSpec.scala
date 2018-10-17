@@ -24,8 +24,8 @@ class CopyingRegistrarProviderSpec(implicit ee: ExecutionEnv) extends Specificat
       result should beRight.which { wrappedRegistrar =>
         wrappedRegistrar.providerIdentifier shouldEqual "CopyingRegistrar"
         val copyingRegistrar = wrappedRegistrar.asInstanceOf[CopyingRegistrar]
-        copyingRegistrar.mainRegistrar shouldEqual mainRegistrar
-        copyingRegistrar.copyRegistrar shouldEqual copyRegistrar
+        copyingRegistrar.azureRegistrar shouldEqual mainRegistrar
+        copyingRegistrar.databaseRegistrar shouldEqual copyRegistrar
       }
     }
   }
