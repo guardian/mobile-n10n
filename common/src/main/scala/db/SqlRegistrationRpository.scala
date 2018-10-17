@@ -1,6 +1,6 @@
 package db
 
-import cats.effect.{Async, Sync}
+import cats.effect.Async
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
@@ -8,7 +8,7 @@ import Registration._
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 
-class SqlRegistrationRpository[F[_]: Async](xa: Transactor[F])(implicit F: Sync[F])
+class SqlRegistrationRpository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
 
   override def findByTopic(topic: Topic): Stream[F, Registration] =
