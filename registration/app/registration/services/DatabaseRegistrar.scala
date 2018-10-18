@@ -6,11 +6,15 @@ import models.pagination.Paginated
 import registration.services.NotificationRegistrar.RegistrarResponse
 import fs2.Stream
 import cats.implicits._
+import com.amazonaws.services.cloudwatch.model.StandardUnit
+import metrics.{MetricDataPoint, Metrics}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class DatabaseRegistrar(
-  registrationService: RegistrationService[IO, Stream]
+  registrationService: RegistrationService[IO, Stream],
+  metrics: Metrics
 )(implicit ec: ExecutionContext) extends NotificationRegistrar {
   override val providerIdentifier: String = "DatabaseRegistrar"
 
@@ -34,7 +38,8 @@ class DatabaseRegistrar(
       insertionResults <- dbRegistrations.map(registrationService.save).sequence: IO[List[Int]]
     } yield insertionResults.sum
 
-    insertedRegistrations.unsafeToFuture().map { _ =>
+    val latencyStart = System.currentTimeMillis
+    val result = insertedRegistrations.unsafeToFuture().map { _ =>
       Right(RegistrationResponse(
         deviceId = token,
         platform = registration.platform,
@@ -43,6 +48,15 @@ class DatabaseRegistrar(
       ))
     }
 
+    result.onComplete {
+      case Success(_) =>
+        metrics.send(MetricDataPoint(name = "SuccessfulRegistrationInsertion", value = 1d, unit = StandardUnit.Count))
+        metrics.send(MetricDataPoint(name = "RegistrationInsertionLatency", value = System.currentTimeMillis - latencyStart, unit = StandardUnit.Milliseconds))
+      case Failure(_) =>
+        metrics.send(MetricDataPoint(name = "FailedRegistrationInsertion", value = 1d, unit = StandardUnit.Count))
+    }
+
+    result
   }
 
   override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] = {
