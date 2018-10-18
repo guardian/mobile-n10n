@@ -289,6 +289,7 @@ lazy val eventconsumer = project
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         specs2 % Test
       ),
+      fork := true,
       assemblyJarName := s"${name.value}.jar",
       assemblyMergeStrategy in assembly := {
         case "META-INF/MANIFEST.MF" => MergeStrategy.discard
