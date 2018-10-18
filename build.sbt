@@ -60,9 +60,17 @@ lazy val commoneventconsumer = project
     )
   ))
 
+lazy val commontest = project
+  .settings(Seq(
+    libraryDependencies ++= Seq(
+      specs2,
+      playCore
+    )
+  ))
+
 
 lazy val common = project
-  .dependsOn(commoneventconsumer)
+  .dependsOn(commoneventconsumer, commontest)
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
@@ -116,7 +124,7 @@ lazy val commonscheduledynamodb = project
   ))
 
 lazy val registration = project
-  .dependsOn(common % "test->test;compile->compile")
+  .dependsOn(common)
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
@@ -197,7 +205,7 @@ lazy val schedulelambda = project
   }
 
 lazy val report = project
-  .dependsOn(common % "test->test;compile->compile")
+  .dependsOn(common, commontest)
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
