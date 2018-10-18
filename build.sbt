@@ -14,7 +14,10 @@ scalacOptions in ThisBuild ++= Seq(
   "-Xfatal-warnings",
   "-feature",
   "-language:postfixOps",
-  "-language:implicitConversions")
+  "-language:implicitConversions",
+  "-language:higherKinds",
+  "-Ypartial-unification"
+)
 
 val minJacksonVersion: String = "2.8.9"
 val minJacksonLibs = Seq(
@@ -27,6 +30,7 @@ val minJacksonLibs = Seq(
 val playJsonVersion = "2.6.9"
 val specsVersion: String = "4.0.3"
 val awsSdkVersion: String = "1.11.400"
+val doobieVersion: String = "0.5.3"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -56,9 +60,17 @@ lazy val commoneventconsumer = project
     )
   ))
 
+lazy val commontest = project
+  .settings(Seq(
+    libraryDependencies ++= Seq(
+      specs2,
+      playCore
+    )
+  ))
+
 
 lazy val common = project
-  .dependsOn(commoneventconsumer)
+  .dependsOn(commoneventconsumer, commontest)
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
@@ -77,8 +89,14 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
-      "ai.x" %% "play-json-extensions" % "0.10.0"
-    ),
+      "ai.x" %% "play-json-extensions" % "0.10.0",
+      "org.tpolecat" %% "doobie-core"      % doobieVersion,
+      "org.tpolecat" %% "doobie-hikari"    % doobieVersion,
+      "org.tpolecat" %% "doobie-postgres"  % doobieVersion,
+      "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
+      "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
+      "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
+),
     libraryDependencies ++= minJacksonLibs,
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
@@ -106,7 +124,7 @@ lazy val commonscheduledynamodb = project
   ))
 
 lazy val registration = project
-  .dependsOn(common % "test->test;compile->compile")
+  .dependsOn(common)
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
@@ -159,6 +177,7 @@ lazy val schedulelambda = project
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
+        "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
         "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
         "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
         "org.specs2" %% "specs2-core" % specsVersion % "test",
@@ -187,7 +206,7 @@ lazy val schedulelambda = project
   }
 
 lazy val report = project
-  .dependsOn(common % "test->test;compile->compile")
+  .dependsOn(common, commontest)
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
@@ -266,9 +285,11 @@ lazy val eventconsumer = project
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+        "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         specs2 % Test
       ),
+      fork := true,
       assemblyJarName := s"${name.value}.jar",
       assemblyMergeStrategy in assembly := {
         case "META-INF/MANIFEST.MF" => MergeStrategy.discard

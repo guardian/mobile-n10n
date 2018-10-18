@@ -1,0 +1,84 @@
+package registration.services
+import cats.effect.IO
+import db.RegistrationService
+import models._
+import models.pagination.Paginated
+import registration.services.NotificationRegistrar.RegistrarResponse
+import fs2.Stream
+import cats.implicits._
+
+import scala.concurrent.{ExecutionContext, Future}
+
+class DatabaseRegistrar(
+  registrationService: RegistrationService[IO, Stream]
+)(implicit ec: ExecutionContext) extends NotificationRegistrar {
+  override val providerIdentifier: String = "DatabaseRegistrar"
+
+  private def extractToken(deviceToken: DeviceToken, platform: Platform): String = platform match {
+    case Android => deviceToken.fcmToken
+    case _ => deviceToken.azureToken
+  }
+
+  override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = {
+    val token = extractToken(deviceToken, registration.platform)
+
+    def toDBRegistration(topic: Topic) = db.Registration(
+      device = db.Device(token, registration.platform),
+      topic = db.Topic(topic.toString),
+      shard = db.Shard.fromToken(token)
+    )
+
+    val insertedRegistrations = for {
+      _ <- registrationService.removeAllByToken(token)
+      dbRegistrations = registration.topics.toList.map(toDBRegistration)
+      insertionResults <- dbRegistrations.map(registrationService.save).sequence: IO[List[Int]]
+    } yield insertionResults.sum
+
+    insertedRegistrations.unsafeToFuture().map { _ =>
+      Right(RegistrationResponse(
+        deviceId = token,
+        platform = registration.platform,
+        topics = registration.topics,
+        provider = Provider.Guardian
+      ))
+    }
+
+  }
+
+  override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] = {
+    registrationService.removeAllByToken(extractToken(deviceToken, platform)).unsafeToFuture.map(_ => Right(()))
+  }
+
+  override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = {
+    Future.successful(Right(Paginated.empty))
+  }
+
+  override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = {
+    def dbRegistrationToStoredRegistration(dbRegistrations: List[db.Registration]): List[StoredRegistration] = {
+      if (dbRegistrations.isEmpty) Nil else {
+        val first = dbRegistrations.head
+        val topics = dbRegistrations
+          .map(_.topic.name)
+          .map(Topic.fromString)
+          .flatMap(_.toOption)
+          .toSet
+        List(StoredRegistration(
+          deviceId = first.device.token,
+          platform = first.device.platform,
+          tagIds = Set.empty,
+          topics = topics,
+          provider = Provider.Guardian.value
+        ))
+      }
+    }
+    registrationService
+      .findByToken(extractToken(deviceToken, platform))
+      .compile.toList.unsafeToFuture
+      .map(dbRegistrationToStoredRegistration)
+      .map(Right.apply)
+  }
+
+  override def findRegistrations(udid: UniqueDeviceIdentifier): RegistrarResponse[Paginated[StoredRegistration]] = {
+    Future.successful(Right(Paginated.empty))
+  }
+}

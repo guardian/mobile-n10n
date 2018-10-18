@@ -48,9 +48,9 @@ trait NotificationRegistrar {
   import NotificationRegistrar.RegistrarResponse
   val providerIdentifier: String
   def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse]
-  def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit]
+  def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit]
   def findRegistrations(topic: Topic, cursor: Option[String] = None): RegistrarResponse[Paginated[StoredRegistration]]
-  def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]]
+  def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]]
   def findRegistrations(udid: UniqueDeviceIdentifier): RegistrarResponse[Paginated[StoredRegistration]]
 }
 

@@ -41,7 +41,7 @@ class NotificationHubRegistrar(
     }
   }
 
-  override def unregister(deviceToken: DeviceToken): RegistrarResponse[Unit] = {
+  override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] = {
     metrics.send(MetricDataPoint(name = "AzureWrite", value = 1d, unit = StandardUnit.Count))
     findRegistrationResponses(token(deviceToken)).flatMap {
       case Right(Nil) => Future.successful(Right(()))
@@ -58,7 +58,7 @@ class NotificationHubRegistrar(
   }
 
 
-  override def findRegistrations(deviceToken: DeviceToken): RegistrarResponse[List[StoredRegistration]] = {
+  override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = {
     metrics.send(MetricDataPoint(name = "AzureRead", value = 1d, unit = StandardUnit.Count))
     EitherT(hubClient.registrationsByChannelUri(channelUri = token(deviceToken)))
       .semiflatMap(responsesToStoredRegistrations)
