@@ -17,6 +17,7 @@ class MigratingRegistrarSpec(implicit ee: ExecutionEnv) extends Specification wi
       val fcmRegistrationResponse = mock[RegistrationResponse]
       val deviceToken = mock[DeviceToken]
       val registration = mock[Registration]
+      registration.platform returns iOS
       fcmRegistrar.register(deviceToken, registration) returns Future.successful(Right(fcmRegistrationResponse))
       azureRegistrar.unregister(deviceToken, iOS) returns Future.successful(Right(()))
 
