@@ -22,6 +22,7 @@ import report.services.{Configuration, NotificationReportEnricher}
 import tracking.InMemoryNotificationReportRepository
 import cats.implicits._
 import com.softwaremill.macwire._
+import report.models.ExtendedNotificationReport
 
 import scala.concurrent.Future
 
@@ -76,7 +77,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         reports = List(
           SenderReport("Firebase", DateTime.now.withZone(UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
         ),
-        version = Some(UUID.randomUUID()),
+        version = None,
         events = None
       )
     }
@@ -115,7 +116,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
       val report = reportsInRange.head
 
-      val enrichedReport = ExtendedNotificationReport.fromNotificationReport(report)
+      val enrichedReport = ExtendedNotificationReport.full(report)
 
       val details = NotificationDetails(
         state = NotificationStates.Completed,

@@ -12,6 +12,7 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import cats.implicits._
+import report.models.{ExtendedNotificationReport, ExtendedSenderReport}
 
 import scala.concurrent.Future
 
@@ -84,7 +85,7 @@ class NotificationReportEnricherSpec(implicit ev: ExecutionEnv) extends Specific
     )
 
     val expected = {
-      val enriched = ExtendedNotificationReport.fromNotificationReport(report)
+      val enriched = ExtendedNotificationReport.full(report)
       enriched.copy(reports = senderReportsWithDetails.map { case (_, senderReport, details) =>
         ExtendedSenderReport.fromSenderReport(senderReport).copy(debug = Some(details))
       })
