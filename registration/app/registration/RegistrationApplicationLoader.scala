@@ -50,10 +50,10 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
   override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
 
   lazy val appConfig = new Configuration(configuration)
+  lazy val metrics: Metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
 
   val credentialsProvider = new MobileAwsCredentialsProvider()
 
-  lazy val mainController = new Main(migratingRegistrarProvider, topicValidator, legacyRegistrationConverter, legacyNewsstandRegistrationConverter, appConfig, controllerComponents)
   lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
     val underlying = new DynamoTopicSubscriptionsRepository(AsyncDynamo(EU_WEST_1, credentialsProvider), appConfig.dynamoTopicsTableName)
     val batching = new BatchingTopicSubscriptionsRepository(underlying)
@@ -61,7 +61,17 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
     batching
   }
 
-  lazy val firebaseMessaging = {
+  lazy val subscriptionTracker: SubscriptionTracker = wire[SubscriptionTracker]
+
+  lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
+  lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker, metrics)
+  lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker, metrics)
+
+  lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
+  lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker, metrics)
+  lazy val legacyNewsstandRegistrationConverterConfig:NewsstandShardConfig = NewsstandShardConfig(appConfig.newsstandShards)
+
+  lazy val firebaseMessaging: FirebaseMessaging = {
     val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
       .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(appConfig.firebaseServiceAccountKey.getBytes)))
       .setDatabaseUrl(appConfig.firebaseDatabaseUrl)
@@ -72,15 +82,6 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
     FirebaseMessaging.getInstance(fApp)
   }
 
-  lazy val subscriptionTracker: SubscriptionTracker = wire[SubscriptionTracker]
-
-  lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
-
-  lazy val registrarProvider: RegistrarProvider = new AzureRegistrarProvider(gcmNotificationRegistrar, apnsNotificationRegistrar, newsstandNotificationRegistrar)
-  lazy val metrics: Metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
-  lazy val migratingRegistrarProvider: RegistrarProvider = new MigratingRegistrarProvider(registrarProvider, fcmNotificationRegistrar, metrics)
-  lazy val gcmNotificationRegistrar: GCMNotificationRegistrar = new GCMNotificationRegistrar(defaultHubClient, subscriptionTracker, metrics)
-  lazy val apnsNotificationRegistrar: APNSNotificationRegistrar = new APNSNotificationRegistrar(defaultHubClient, subscriptionTracker, metrics)
   lazy val fcmNotificationRegistrar: FcmRegistrar = new FcmRegistrar(
     firebaseMessaging = firebaseMessaging,
     ws = wsClient,
@@ -89,9 +90,10 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
     fcmExecutionContext = actorSystem.dispatchers.lookup("fcm-io") // FCM calls are blocking
   )
 
-  lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
-  lazy val newsstandNotificationRegistrar: NewsstandNotificationRegistrar = new NewsstandNotificationRegistrar(newsstandHubClient, subscriptionTracker, metrics)
-  lazy val legacyNewsstandRegistrationConverterConfig:NewsstandShardConfig = NewsstandShardConfig(appConfig.newsstandShards)
+
+  lazy val registrarProvider: RegistrarProvider = new AzureRegistrarProvider(gcmNotificationRegistrar, apnsNotificationRegistrar, newsstandNotificationRegistrar)
+  lazy val migratingRegistrarProvider: RegistrarProvider = new MigratingRegistrarProvider(registrarProvider, fcmNotificationRegistrar, metrics)
+
   lazy val auditorGroup: AuditorGroup = {
     AuditorGroup(Set(
       FootballMatchAuditor(new WSPaClient(appConfig.auditorConfiguration.paApiConfig, wsClient)),
@@ -99,9 +101,12 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
       TimeExpiringAuditor(Set(Topic(ElectionResults, "us-presidential-2016")), DateTime.parse("2016-11-30T00:00:00Z"))
     ))
   }
+
   lazy val topicValidator: TopicValidator = wire[AuditorTopicValidator]
   lazy val legacyRegistrationConverter = wire[LegacyRegistrationConverter]
   lazy val legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter = wire[LegacyNewsstandRegistrationConverter]
+
+  lazy val mainController = new Main(migratingRegistrarProvider, topicValidator, legacyRegistrationConverter, legacyNewsstandRegistrationConverter, appConfig, controllerComponents)
 
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
