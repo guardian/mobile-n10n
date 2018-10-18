@@ -177,6 +177,7 @@ lazy val schedulelambda = project
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
+        "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
         "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
         "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
         "org.specs2" %% "specs2-core" % specsVersion % "test",
@@ -284,6 +285,7 @@ lazy val eventconsumer = project
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+        "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         specs2 % Test
       ),
