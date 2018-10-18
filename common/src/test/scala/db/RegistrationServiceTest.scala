@@ -45,6 +45,7 @@ class RegistrationServiceTest extends Specification with BeforeAll {
   lazy val reg3 = Registration(Device("c", iOS), Topic("topic1"), Shard(1))
   lazy val reg4 = Registration(Device("d", Android), Topic("topic2"), Shard(1))
   lazy val reg5 = Registration(Device("e", iOS), Topic("topic3"), Shard(1))
+  lazy val reg6 = Registration(Device("e", iOS), Topic("topic4"), Shard(1))
 
   "RegistrationService" should {
     "allow adding registrations" in {
@@ -52,17 +53,26 @@ class RegistrationServiceTest extends Specification with BeforeAll {
       run(service.save(reg2)) should equalTo(1)
       run(service.save(reg3)) should equalTo(1)
       run(service.save(reg4)) should equalTo(1)
+      run(service.save(reg5)) should equalTo(1)
+      run(service.save(reg6)) should equalTo(1)
     }
-    "allow finding registration by topic" in {
+    "allow finding registrations by topic" in {
       run(service.findByTopic(Topic("topic1"))).length should equalTo(3)
       run(service.findByTopic(Topic("topic2"))).length should equalTo(1)
     }
-    "allow removing registration" in {
+    "allow finding registrations by token" in {
+      run(service.findByToken("e")).length should equalTo(2)
+      run(service.findByToken("unknown")).length should equalTo(0)
+    }
+    "allow removing registrations" in {
       run(service.remove(reg1)) should equalTo(1)
       run(service.remove(reg4)) should equalTo(1)
-
       run(service.findByTopic(Topic("topic1"))).length should equalTo(2)
       run(service.findByTopic(Topic("topic2"))).length should equalTo(0)
+    }
+    "allow removing registrations by token" in {
+      run(service.removeAllByToken("e")) should equalTo(2)
+      run(service.findByToken("e")).length should equalTo(0)
     }
     "update when saving the same registration twice" in {
       run(service.save(reg5))
