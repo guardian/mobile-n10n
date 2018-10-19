@@ -1,7 +1,12 @@
 package registration.controllers
 
 import application.WithPlayApp
+import doobie.implicits._
+import cats.effect.IO
+import cats.implicits._
 import com.gu.DevIdentity
+import db.{DatabaseConfig, JdbcConfig, RegistrationService}
+import doobie.util.transactor.Transactor
 import error.NotificationsError
 import models.Provider.Unknown
 import models.TopicTypes.{Breaking, FootballMatch}
@@ -111,13 +116,32 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
   }
 
   override def configureComponents(context: Context): BuiltInComponents = {
-    new RegistrationApplicationComponents(DevIdentity("notifications"), context)  {
+    new RegistrationApplicationComponents(DevIdentity("notifications"), context) {
       override lazy val topicValidator = fakeTopicValidator
       override lazy val registrarProvider: RegistrarProvider = fakeRegistrarProvider
       override lazy val migratingRegistrarProvider: RegistrarProvider = fakeRegistrarProvider
       override lazy val appConfig = new Configuration(PlayConfig.empty) {
         override lazy val defaultTimeout = 1.seconds
         override lazy val newsstandShards: Int = 10
+      }
+      override lazy val registrationDbService: RegistrationService[IO, fs2.Stream] = {
+        val jdbcConfig = JdbcConfig("org.h2.Driver", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "", "")
+        val transactor: Transactor[IO] = DatabaseConfig.simpleTransactor(jdbcConfig)
+
+        val drop = sql"""DROP TABLE IF EXISTS registrations""".update.run
+
+        val create = sql"""
+        CREATE TABLE IF NOT EXISTS registrations(
+          token VARCHAR NOT NULL,
+          topic VARCHAR NOT NULL,
+          platform VARCHAR NOT NULL,
+          shard SMALLINT NOT NULL,
+          lastModified TIMESTAMP WITH TIME ZONE NOT NULL,
+          PRIMARY KEY (token, topic)
+        )""".update.run
+
+        (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync
+        RegistrationService(transactor)
       }
     }
   }

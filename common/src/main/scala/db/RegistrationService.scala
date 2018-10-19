@@ -1,8 +1,13 @@
 package db
 
-import cats.effect.Async
-import doobie.hikari.HikariTransactor
+import cats.effect.internals.IOContextShift
+import cats.effect.{Async, ContextShift, IO}
+import doobie.util.transactor.Transactor
 import fs2.Stream
+import play.api.Configuration
+import play.api.inject.ApplicationLifecycle
+
+import scala.concurrent.ExecutionContext
 
 class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F, S]) {
   def findByToken(token: String): S[F, Registration] = repository.findByToken(token)
@@ -15,8 +20,23 @@ class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F
 
 object RegistrationService {
 
-    def apply[F[_]: Async](xa: HikariTransactor[F]): RegistrationService[F, Stream] = {
-      val repo = new SqlRegistrationRepository[F](xa)
-      new RegistrationService[F, Stream](repo)
-    }
+  def apply[F[_]: Async](xa: Transactor[F]): RegistrationService[F, Stream] = {
+    val repo = new SqlRegistrationRepository[F](xa)
+    new RegistrationService[F, Stream](repo)
+  }
+
+  def fromConfig(config: Configuration, applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext): RegistrationService[IO, Stream] = {
+
+    implicit val contextShift: ContextShift[IO] = IOContextShift(ec)
+
+    val url = config.get[String]("registration.db.url")
+    val user = config.get[String]("registration.db.user")
+    val password = config.get[String]("registration.db.password")
+    val threads = config.get[String]("registration.db.threads")
+
+    val jdbcConfig = JdbcConfig("org.postgresql.Driver", s"jdbc:postgresql://$url", user, password)
+    val transactor = DatabaseConfig.transactor[IO](jdbcConfig, applicationLifecycle)
+
+    apply(transactor)
+  }
 }

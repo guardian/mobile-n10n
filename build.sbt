@@ -30,7 +30,8 @@ val minJacksonLibs = Seq(
 val playJsonVersion = "2.6.9"
 val specsVersion: String = "4.0.3"
 val awsSdkVersion: String = "1.11.400"
-val doobieVersion: String = "0.5.3"
+val doobieVersion: String = "0.6.0"
+val catsVersion: String = "1.4.0"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -70,7 +71,7 @@ lazy val commontest = project
 
 
 lazy val common = project
-  .dependsOn(commoneventconsumer, commontest)
+  .dependsOn(commoneventconsumer)
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
@@ -79,7 +80,7 @@ lazy val common = project
       // be careful upgrading the following, recent azure-servicebus version rely on an alpha of slf4j, breaking play logging...
       "com.microsoft.azure" % "azure-servicebus" % "0.9.8",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
-      "org.typelevel" %% "cats-core" % "1.0.1",
+      "org.typelevel" %% "cats-core" % catsVersion,
       "joda-time" % "joda-time" % "2.9.9",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
@@ -96,7 +97,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
-),
+    ),
     libraryDependencies ++= minJacksonLibs,
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
@@ -124,7 +125,7 @@ lazy val commonscheduledynamodb = project
   ))
 
 lazy val registration = project
-  .dependsOn(common)
+  .dependsOn(common, commontest % "test->test")
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
@@ -134,6 +135,9 @@ lazy val registration = project
       "binders.pathbinders._",
       "models._",
       "models.pagination._"
+    ),
+    libraryDependencies ++= Seq(
+      "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
@@ -206,7 +210,7 @@ lazy val schedulelambda = project
   }
 
 lazy val report = project
-  .dependsOn(common, commontest)
+  .dependsOn(common, commontest % "test->test")
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
