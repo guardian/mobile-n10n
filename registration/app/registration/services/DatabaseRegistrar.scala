@@ -39,14 +39,14 @@ class DatabaseRegistrar(
     } yield insertionResults.sum
 
     val latencyStart = System.currentTimeMillis
-    val result = insertedRegistrations.unsafeToFuture().map { _ =>
+    val result = insertedRegistrations.map { _ =>
       Right(RegistrationResponse(
         deviceId = token,
         platform = registration.platform,
         topics = registration.topics,
         provider = Provider.Guardian
       ))
-    }
+    }.unsafeToFuture()
 
     result.onComplete {
       case Success(_) =>
