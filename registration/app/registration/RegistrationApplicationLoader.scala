@@ -27,6 +27,7 @@ import tracking.{BatchingTopicSubscriptionsRepository, DynamoTopicSubscriptionsR
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
 import _root_.models.NewsstandShardConfig
+import cats.effect.IO
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
@@ -106,7 +107,16 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
   lazy val legacyRegistrationConverter = wire[LegacyRegistrationConverter]
   lazy val legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter = wire[LegacyNewsstandRegistrationConverter]
 
-  lazy val mainController = new Main(migratingRegistrarProvider, topicValidator, legacyRegistrationConverter, legacyNewsstandRegistrationConverter, appConfig, controllerComponents)
+  lazy val registrationDbService: db.RegistrationService[IO, fs2.Stream] = db.RegistrationService.fromConfig(configuration, applicationLifecycle)
+  lazy val databaseRegistrar: NotificationRegistrar = new DatabaseRegistrar(registrationDbService, metrics)
+
+  lazy val copyingRegistrarProvider: RegistrarProvider = new CopyingRegistrarProvider(
+    azureRegistrarProvider = migratingRegistrarProvider,
+    databaseRegistrar = databaseRegistrar,
+    metrics = metrics
+  )
+
+  lazy val mainController = new Main(copyingRegistrarProvider, topicValidator, legacyRegistrationConverter, legacyNewsstandRegistrationConverter, appConfig, controllerComponents)
 
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"

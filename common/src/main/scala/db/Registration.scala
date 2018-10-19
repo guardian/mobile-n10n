@@ -3,23 +3,19 @@ package db
 import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.sql.Timestamp
-import java.time.{LocalDateTime, ZoneOffset}
+import java.time.LocalDateTime
 
-import doobie.util.meta.Meta
+import doobie.util.Meta
 import models.Platform
 
 object Registration {
   implicit val PlatformMeta: Meta[Platform] =
-    Meta[String].xmap(
+    Meta[String].timap(
       s => Platform.fromString(s).getOrElse(throw doobie.util.invariant.InvalidEnum[Platform](s)),
-      _.toString
-    )
+    )(_.toString)
 
   implicit val DateTimeMeta: Meta[LocalDateTime] =
-    Meta[Timestamp].xmap(
-      ts => ts.toLocalDateTime,
-      dt => Timestamp.valueOf(dt)
-    )
+    Meta[Timestamp].timap(ts => ts.toLocalDateTime)(dt => Timestamp.valueOf(dt))
 }
 
 case class Registration(device: Device, topic: Topic, shard: Shard, lastModified: Option[LocalDateTime] = None)

@@ -30,7 +30,8 @@ val minJacksonLibs = Seq(
 val playJsonVersion = "2.6.9"
 val specsVersion: String = "4.0.3"
 val awsSdkVersion: String = "1.11.400"
-val doobieVersion: String = "0.5.3"
+val doobieVersion: String = "0.6.0"
+val catsVersion: String = "1.4.0"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -79,7 +80,7 @@ lazy val common = project
       // be careful upgrading the following, recent azure-servicebus version rely on an alpha of slf4j, breaking play logging...
       "com.microsoft.azure" % "azure-servicebus" % "0.9.8",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
-      "org.typelevel" %% "cats-core" % "1.0.1",
+      "org.typelevel" %% "cats-core" % catsVersion,
       "joda-time" % "joda-time" % "2.9.9",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,

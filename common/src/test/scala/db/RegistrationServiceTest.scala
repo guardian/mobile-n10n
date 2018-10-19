@@ -4,14 +4,16 @@ import org.specs2.mutable.Specification
 import doobie.implicits._
 import cats.effect.IO
 import cats.implicits._
+import doobie.util.transactor.Transactor
 import models.{Android, iOS}
 import org.specs2.specification.BeforeAll
 import fs2.Stream
+import org.specs2.concurrent.ExecutionEnv
 
-class RegistrationServiceTest extends Specification with BeforeAll {
+class RegistrationServiceTest(implicit ee: ExecutionEnv) extends Specification with BeforeAll {
 
   val jdbcConfig = JdbcConfig("org.h2.Driver", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "", "")
-  val transactor = DatabaseConfig.transactor[IO](jdbcConfig).unsafeRunSync()
+  val transactor: Transactor[IO] = DatabaseConfig.simpleTransactor(jdbcConfig)
   val service: RegistrationService[IO, fs2.Stream] = RegistrationService(transactor)
 
   def initializeDatabase() = {
