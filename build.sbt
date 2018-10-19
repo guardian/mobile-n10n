@@ -71,7 +71,7 @@ lazy val commontest = project
 
 
 lazy val common = project
-  .dependsOn(commoneventconsumer, commontest)
+  .dependsOn(commoneventconsumer)
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
@@ -97,7 +97,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
-),
+    ),
     libraryDependencies ++= minJacksonLibs,
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
@@ -125,7 +125,7 @@ lazy val commonscheduledynamodb = project
   ))
 
 lazy val registration = project
-  .dependsOn(common)
+  .dependsOn(common, commontest % "test->test")
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
@@ -135,6 +135,9 @@ lazy val registration = project
       "binders.pathbinders._",
       "models._",
       "models.pagination._"
+    ),
+    libraryDependencies ++= Seq(
+      "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
@@ -207,7 +210,7 @@ lazy val schedulelambda = project
   }
 
 lazy val report = project
-  .dependsOn(common, commontest)
+  .dependsOn(common, commontest % "test->test")
   .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
