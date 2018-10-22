@@ -14,11 +14,12 @@ import models.PlatformCount
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
 
-  override def findByTopic(topic: Topic): Stream[F, Registration] =
+  override def findByTopicAndPlatform(topic: Topic, platform: String): Stream[F, Registration] =
     sql"""
          SELECT token, platform, topic, shard, lastModified
          FROM registrations
          WHERE topic = ${topic.name}
+         AND platform = $platform
       """
       .query[Registration]
       .stream

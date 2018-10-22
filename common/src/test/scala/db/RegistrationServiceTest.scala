@@ -59,19 +59,19 @@ class RegistrationServiceTest(implicit ee: ExecutionEnv) extends Specification w
       run(service.save(reg5)) should equalTo(1)
       run(service.save(reg6)) should equalTo(1)
     }
-    "allow finding registrations by topic" in {
-      run(service.findByTopic(Topic("topic1"))).length should equalTo(3)
-      run(service.findByTopic(Topic("topic2"))).length should equalTo(1)
+    "allow finding registrations by topic and platform" in {
+      run(service.findByTopicAndPlatform(Topic("topic1"), iOS)).length should equalTo(2)
+      run(service.findByTopicAndPlatform(Topic("topic2"), Android)).length should equalTo(1)
     }
     "allow finding registrations by token" in {
       run(service.findByToken("e")).length should equalTo(2)
       run(service.findByToken("unknown")).length should equalTo(0)
     }
     "allow removing registrations" in {
-      run(service.remove(reg1)) should equalTo(1)
+      run(service.remove(reg2)) should equalTo(1)
       run(service.remove(reg4)) should equalTo(1)
-      run(service.findByTopic(Topic("topic1"))).length should equalTo(2)
-      run(service.findByTopic(Topic("topic2"))).length should equalTo(0)
+      run(service.findByTopicAndPlatform(Topic("topic1"), iOS)).length should equalTo(1)
+      run(service.findByTopicAndPlatform(Topic("topic2"), Android)).length should equalTo(0)
     }
     "allow removing registrations by token" in {
       run(service.removeAllByToken("e")) should equalTo(2)
@@ -82,7 +82,7 @@ class RegistrationServiceTest(implicit ee: ExecutionEnv) extends Specification w
       val newShard = Shard(2)
       run(service.save(reg5.copy(shard = newShard)))
 
-      run(service.findByTopic(reg5.topic)).head.shard should equalTo(newShard)
+      run(service.findByTopicAndPlatform(reg5.topic, reg5.device.platform)).head.shard should equalTo(newShard)
     }
     "return 0 if no registration has that topic" in {
       run(service.countPerPlatformForTopics(NonEmptyList.one(Topic("idontexist")))) shouldEqual PlatformCount(0,0,0,0)
