@@ -29,7 +29,7 @@ val minJacksonLibs = Seq(
 
 val playJsonVersion = "2.6.9"
 val specsVersion: String = "4.0.3"
-val awsSdkVersion: String = "1.11.400"
+val awsSdkVersion: String = "1.11.433"
 val doobieVersion: String = "0.6.0"
 val catsVersion: String = "1.4.0"
 
@@ -155,6 +155,9 @@ lazy val notification = project
       "binders.querystringbinders._",
       "binders.pathbinders._",
       "models._"
+    ),
+    libraryDependencies ++= Seq(
+      "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     packageName in Debian := name.value,
