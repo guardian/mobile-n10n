@@ -46,9 +46,10 @@ class RegistrationServiceTest(implicit ee: ExecutionEnv) extends Specification w
   lazy val reg1 = Registration(Device("a", Android), Topic("topic1"), Shard(1))
   lazy val reg2 = Registration(Device("b", iOS), Topic("topic1"), Shard(1))
   lazy val reg3 = Registration(Device("c", iOS), Topic("topic1"), Shard(1))
-  lazy val reg4 = Registration(Device("d", Android), Topic("topic2"), Shard(1))
-  lazy val reg5 = Registration(Device("e", iOS), Topic("topic3"), Shard(1))
-  lazy val reg6 = Registration(Device("e", iOS), Topic("topic4"), Shard(1))
+  lazy val reg4 = Registration(Device("d", iOS), Topic("topic1"), Shard(2))
+  lazy val reg5 = Registration(Device("e", Android), Topic("topic2"), Shard(1))
+  lazy val reg6 = Registration(Device("f", iOS), Topic("topic3"), Shard(1))
+  lazy val reg7 = Registration(Device("f", Android), Topic("topic4"), Shard(1))
 
   "RegistrationService" should {
     "allow adding registrations" in {
@@ -58,31 +59,35 @@ class RegistrationServiceTest(implicit ee: ExecutionEnv) extends Specification w
       run(service.save(reg4)) should equalTo(1)
       run(service.save(reg5)) should equalTo(1)
       run(service.save(reg6)) should equalTo(1)
+      run(service.save(reg7)) should equalTo(1)
     }
-    "allow finding registrations by topic and platform" in {
-      run(service.findByTopicAndPlatform(Topic("topic1"), iOS)).length should equalTo(2)
-      run(service.findByTopicAndPlatform(Topic("topic2"), Android)).length should equalTo(1)
+    "allow finding registrations by topic, platform and shard" in {
+      run(service.find(Topic("topic1"), iOS)).length should equalTo(3)
+      run(service.find(Topic("topic1"), iOS, Shard(1))).length should equalTo(2)
+      run(service.find(Topic("topic2"), Android, Shard(1))).length should equalTo(1)
     }
     "allow finding registrations by token" in {
-      run(service.findByToken("e")).length should equalTo(2)
+      run(service.findByToken("f")).length should equalTo(2)
       run(service.findByToken("unknown")).length should equalTo(0)
     }
     "allow removing registrations" in {
       run(service.remove(reg2)) should equalTo(1)
-      run(service.remove(reg4)) should equalTo(1)
-      run(service.findByTopicAndPlatform(Topic("topic1"), iOS)).length should equalTo(1)
-      run(service.findByTopicAndPlatform(Topic("topic2"), Android)).length should equalTo(0)
+      run(service.remove(reg5)) should equalTo(1)
+      run(service.find(Topic("topic1"), iOS)).length should equalTo(2)
+      run(service.find(Topic("topic2"), Android)).length should equalTo(0)
     }
     "allow removing registrations by token" in {
-      run(service.removeAllByToken("e")) should equalTo(2)
-      run(service.findByToken("e")).length should equalTo(0)
+      run(service.removeAllByToken("f")) should equalTo(2)
+      run(service.findByToken("f")).length should equalTo(0)
     }
     "update when saving the same registration twice" in {
+      val oldShard = reg5.shard
       run(service.save(reg5))
-      val newShard = Shard(2)
+      val newShard = Shard(99)
       run(service.save(reg5.copy(shard = newShard)))
 
-      run(service.findByTopicAndPlatform(reg5.topic, reg5.device.platform)).head.shard should equalTo(newShard)
+      run(service.find(reg5.topic, reg5.device.platform, oldShard)).length should equalTo(0)
+      run(service.find(reg5.topic, reg5.device.platform, newShard)).head.shard should equalTo(newShard)
     }
     "return 0 if no registration has that topic" in {
       run(service.countPerPlatformForTopics(NonEmptyList.one(Topic("idontexist")))) shouldEqual PlatformCount(0,0,0,0)

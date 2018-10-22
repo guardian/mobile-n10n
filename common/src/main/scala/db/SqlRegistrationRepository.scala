@@ -14,17 +14,20 @@ import models.PlatformCount
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
 
-  override def findByTopicAndPlatform(topic: Topic, platform: String): Stream[F, Registration] =
-    sql"""
+  override def find(topic: String, platform: String, shards: Seq[Short]): Stream[F, Registration] = {
+    val shardsFragment = if(shards.length > 0) fr"AND shard IN (${shards.mkString(",")})" else fr""
+    (sql"""
          SELECT token, platform, topic, shard, lastModified
          FROM registrations
-         WHERE topic = ${topic.name}
+         WHERE topic = $topic
          AND platform = $platform
       """
+      ++ shardsFragment
+      )
       .query[Registration]
       .stream
       .transact(xa)
-
+  }
 
   override def findByToken(token: String): Stream[F, Registration] = {
     sql"""
