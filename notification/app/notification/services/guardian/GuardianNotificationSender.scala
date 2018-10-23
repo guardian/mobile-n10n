@@ -26,17 +26,18 @@ class GuardianNotificationSender(
   sqsArn: String,
 )(implicit ec: ExecutionContext) extends NotificationSender {
 
-  val BATCH_SIZE: Int = 10000
+  val WORKER_BATCH_SIZE: Int = 10000
+  val SQS_BATCH_SIZE: Int = 200 // max 256kb per sqs call, 1 notification ~< 1kb
 
   private val logger: Logger = Logger.apply(classOf[GuardianNotificationSender])
 
   override def sendNotification(push: Push): Future[SenderResult] = for {
       topicStats <- registrationCounter.count(push.notification.topic)
       registrationCount = topicStats.counts.getOrElse(platform, 10)
-      batch = prepareBatch(platform, push.notification, registrationCount)
-      batchResult <- sendBatch(batch)
+      workerBatches = prepareBatch(platform, push.notification, registrationCount)
+      sqsBatchResults <- sendBatch(workerBatches)
   } yield {
-    val failed = Option(batchResult.getFailed).map(_.asScala.toList).getOrElse(Nil)
+    val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
     if (failed.isEmpty) {
       Right(SenderReport(
         Guardian.value,
@@ -59,14 +60,17 @@ class GuardianNotificationSender(
     }
   }
 
-  def sendBatch(batch: List[SendMessageBatchRequestEntry]): Future[SendMessageBatchResult] = {
-    val request: SendMessageBatchRequest = new SendMessageBatchRequest(sqsArn, batch.asJava)
-    wrapAsyncMethod(sqsClient.sendMessageBatchAsync, request)
+  def sendBatch(workerBatches: List[SendMessageBatchRequestEntry]): Future[List[SendMessageBatchResult]] = {
+    val sqsBatches = workerBatches.grouped(SQS_BATCH_SIZE).toList
+    Future.traverse(sqsBatches) { sqsBatch =>
+      val request: SendMessageBatchRequest = new SendMessageBatchRequest(sqsArn, sqsBatch.asJava)
+      wrapAsyncMethod(sqsClient.sendMessageBatchAsync, request)
+    }
   }
 
   def shard(registrationCount: Int): List[ShardRange] = {
     val shardSpace = -Short.MinValue.toInt + Short.MaxValue.toInt
-    val shardCount = Math.ceil(Math.max(1, registrationCount) / BATCH_SIZE.toDouble)
+    val shardCount = Math.ceil(Math.max(1, registrationCount) / WORKER_BATCH_SIZE.toDouble)
     val step = Math.ceil(shardSpace / shardCount).toInt
 
     (Short.MinValue until Short.MaxValue by step).toList.map { i =>

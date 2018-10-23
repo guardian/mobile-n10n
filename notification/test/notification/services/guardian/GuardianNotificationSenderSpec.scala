@@ -24,7 +24,7 @@ import org.apache.commons.lang3.concurrent.ConcurrentUtils
 class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "GuardianNotificationSender" should {
     "prepare shards with inclusive bounds" in new GuardianNotificationSenderScope {
-      val bs = notificationSender.BATCH_SIZE
+      val bs = notificationSender.WORKER_BATCH_SIZE
       notificationSender.shard(0) shouldEqual List(ShardRange(Short.MinValue, Short.MaxValue))
       notificationSender.shard(1) shouldEqual List(ShardRange(Short.MinValue, Short.MaxValue))
       notificationSender.shard(2) shouldEqual List(ShardRange(Short.MinValue, Short.MaxValue))
@@ -57,6 +57,19 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
         senderReport.senderName shouldEqual "Guardian"
         senderReport.sendersId should beNone
         senderReport.platformStatistics should beSome(PlatformStatistics(iOS, 1))
+      }
+    }
+
+    "put many batches messages on the queue for popular topics" in new GuardianNotificationSenderScope(registrationCount = 3000000) {
+      val futureResult = notificationSender.sendNotification(Push(notification, Set()))
+      val result = Await.result(futureResult, 10.seconds)
+
+      there was two(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
+
+      result should beRight.which { senderReport =>
+        senderReport.senderName shouldEqual "Guardian"
+        senderReport.sendersId should beNone
+        senderReport.platformStatistics should beSome(PlatformStatistics(iOS, 3000000))
       }
     }
 
