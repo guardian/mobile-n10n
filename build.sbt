@@ -313,5 +313,25 @@ lazy val eventconsumer = project
     )
   })
 
+lazy val apnsworker = project
+  .dependsOn(common)
+  .settings(standardSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "com.turo" % "pushy" % "0.13.5"
+    )
+  )
+
 lazy val root = (project in file(".")).
-  aggregate(registration, notification, report, common, commonscheduledynamodb, schedulelambda, apiClient, eventconsumer)
+  aggregate(
+    registration,
+    notification,
+    report,
+    common,
+    commonscheduledynamodb,
+    schedulelambda,
+    apiClient,
+    eventconsumer,
+    apnsworker
+  )
