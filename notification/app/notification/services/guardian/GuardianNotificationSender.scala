@@ -13,6 +13,7 @@ import play.api.libs.json.Json
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 case class GuardianFailedToQueueShard(
   senderName: String,
@@ -32,8 +33,7 @@ class GuardianNotificationSender(
   private val logger: Logger = Logger.apply(classOf[GuardianNotificationSender])
 
   override def sendNotification(push: Push): Future[SenderResult] = for {
-      topicStats <- registrationCounter.count(push.notification.topic)
-      registrationCount = topicStats.counts.getOrElse(platform, 10)
+      registrationCount <- countRegistration(platform, push.notification.topic)
       workerBatches = prepareBatch(platform, push.notification, registrationCount)
       sqsBatchResults <- sendBatch(workerBatches)
   } yield {
@@ -57,6 +57,18 @@ class GuardianNotificationSender(
         senderName = s"Guardian $platform",
         reason = s"Unable to queue notification. Please check the logs for notification ${push.notification.id}")
       )
+    }
+  }
+
+  private def countRegistration(platform: Platform, topics: List[Topic]): Future[Int] = {
+    // in case of an exception when calling registrationCounter, we want to continue anyway
+    registrationCounter.count(topics).map(t => t.counts(platform)).recover {
+      case NonFatal(e) if topics.exists(_.`type` == TopicTypes.Breaking) && platform != Newsstand =>
+        logger.error("Unable to count registration for a list of topics during a breaking news", e)
+        1500000 // fallback on 1.5M: the worse case
+      case NonFatal(e) =>
+        logger.error("Unable to count registration for a list of topics", e)
+        1
     }
   }
 

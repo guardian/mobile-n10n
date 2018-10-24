@@ -73,6 +73,50 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       }
     }
 
+    "put many batches messages on the queue, even if the topic counter fails" in new GuardianNotificationSenderScope(registrationCount = 2000000) {
+
+      override val notificationSender = new GuardianNotificationSender(
+        sqsClient = sqsClient,
+        registrationCounter = new TopicRegistrationCounter {
+          override def count(topics: List[Topic]): Future[TopicStats] = Future.failed(new RuntimeException("exception"))
+        },
+        platform = iOS,
+        sqsArn = ""
+      )
+
+      val futureResult = notificationSender.sendNotification(Push(notification, Set()))
+      val result = Await.result(futureResult, 10.seconds)
+
+      there was atLeast(1)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
+
+      result should beRight.which { senderReport =>
+        senderReport.senderName shouldEqual "Guardian"
+        senderReport.sendersId should beNone
+      }
+    }
+
+    "put many batches messages on the queue, even if the topic counter misses a key" in new GuardianNotificationSenderScope(registrationCount = 2000000) {
+
+      override val notificationSender = new GuardianNotificationSender(
+        sqsClient = sqsClient,
+        registrationCounter = new TopicRegistrationCounter {
+          override def count(topics: List[Topic]): Future[TopicStats] = Future.successful(TopicStats(Map.empty))
+        },
+        platform = iOS,
+        sqsArn = ""
+      )
+
+      val futureResult = notificationSender.sendNotification(Push(notification, Set()))
+      val result = Await.result(futureResult, 10.seconds)
+
+      there was atLeast(1)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
+
+      result should beRight.which { senderReport =>
+        senderReport.senderName shouldEqual "Guardian"
+        senderReport.sendersId should beNone
+      }
+    }
+
     "return an error if one of the batches couldn't be pushed to the queue" in new GuardianNotificationSenderScope(
       sendMessageBatchResult = new SendMessageBatchResult().withFailed(
         new BatchResultErrorEntry().withCode("123").withId("456").withMessage("error")
