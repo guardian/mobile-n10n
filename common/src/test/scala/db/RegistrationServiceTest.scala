@@ -43,51 +43,61 @@ class RegistrationServiceTest(implicit ee: ExecutionEnv) extends Specification w
   def run[A](s: Stream[IO, A]): List[A] = s.compile.toList.unsafeRunSync()
   def run[A](io: IO[A]) = io.unsafeRunSync()
 
-  lazy val reg1 = Registration(Device("a", Android), Topic("topic1"), Shard(1))
-  lazy val reg2 = Registration(Device("b", iOS), Topic("topic1"), Shard(1))
-  lazy val reg3 = Registration(Device("c", iOS), Topic("topic1"), Shard(1))
-  lazy val reg4 = Registration(Device("d", iOS), Topic("topic1"), Shard(2))
-  lazy val reg5 = Registration(Device("e", Android), Topic("topic2"), Shard(1))
-  lazy val reg6 = Registration(Device("f", iOS), Topic("topic3"), Shard(1))
-  lazy val reg7 = Registration(Device("f", Android), Topic("topic4"), Shard(1))
+  val registrations = Seq(
+    Registration(Device("a", Android), Topic("topic1"), Shard(1)),
+    Registration(Device("b", iOS), Topic("topic1"), Shard(1)),
+    Registration(Device("c", iOS), Topic("topic1"), Shard(1)),
+    Registration(Device("d", iOS), Topic("topic1"), Shard(2)),
+    Registration(Device("e", Android), Topic("topic2"), Shard(1)),
+    Registration(Device("f", iOS), Topic("topic3"), Shard(1)),
+    Registration(Device("f", Android), Topic("topic4"), Shard(1))
+  )
+
+  def shardOrdering: Ordering[Registration] = _.shard.id compare _.shard.id
+  val allShards = ShardRange(registrations.min(shardOrdering).shard, registrations.max(shardOrdering).shard)
+  val shardRange1 = ShardRange(Shard(1), Shard(1))
+  val shardRange2 = ShardRange(Shard(2), Shard(2))
 
   "RegistrationService" should {
     "allow adding registrations" in {
-      run(service.save(reg1)) should equalTo(1)
-      run(service.save(reg2)) should equalTo(1)
-      run(service.save(reg3)) should equalTo(1)
-      run(service.save(reg4)) should equalTo(1)
-      run(service.save(reg5)) should equalTo(1)
-      run(service.save(reg6)) should equalTo(1)
-      run(service.save(reg7)) should equalTo(1)
+      registrations.map { reg =>
+        run(service.save(reg)) should equalTo(1)
+      }
     }
     "allow finding registrations by topic, platform and shard" in {
-      run(service.find(Topic("topic1"), iOS)).length should equalTo(3)
-      run(service.find(Topic("topic1"), iOS, Shard(1))).length should equalTo(2)
-      run(service.find(Topic("topic2"), Android, Shard(1))).length should equalTo(1)
+      run(service.find(Topic("topic1"), iOS, allShards)).length should equalTo(3)
+      run(service.find(Topic("topic1"), iOS, shardRange1)).length should equalTo(2)
+      run(service.find(Topic("topic2"), Android, shardRange1)).length should equalTo(1)
+      run(service.find(Topic("topic2"), Android, shardRange2)).length should equalTo(0)
     }
     "allow finding registrations by token" in {
       run(service.findByToken("f")).length should equalTo(2)
       run(service.findByToken("unknown")).length should equalTo(0)
     }
     "allow removing registrations" in {
-      run(service.remove(reg2)) should equalTo(1)
-      run(service.remove(reg5)) should equalTo(1)
-      run(service.find(Topic("topic1"), iOS)).length should equalTo(2)
-      run(service.find(Topic("topic2"), Android)).length should equalTo(0)
+
+      val regB = registrations.filter(_.device.token == "b").head
+      val regE = registrations.filter(_.device.token == "e").head
+      run(service.remove(regB)) should equalTo(1)
+      run(service.remove(regE)) should equalTo(1)
+      run(service.find(Topic("topic1"), iOS, allShards)).length should equalTo(2)
+      run(service.find(Topic("topic2"), Android, allShards)).length should equalTo(0)
     }
     "allow removing registrations by token" in {
       run(service.removeAllByToken("f")) should equalTo(2)
       run(service.findByToken("f")).length should equalTo(0)
     }
     "update when saving the same registration twice" in {
-      val oldShard = reg5.shard
-      run(service.save(reg5))
+      val reg = registrations.filter(_.device.token == "a").head
+      val oldShard = reg.shard
+      run(service.save(reg))
       val newShard = Shard(99)
-      run(service.save(reg5.copy(shard = newShard)))
+      run(service.save(reg.copy(shard = newShard)))
 
-      run(service.find(reg5.topic, reg5.device.platform, oldShard)).length should equalTo(0)
-      run(service.find(reg5.topic, reg5.device.platform, newShard)).head.shard should equalTo(newShard)
+      def singleShardRange(shard: Shard) = ShardRange(shard, shard)
+
+      run(service.find(reg.topic, reg.device.platform, singleShardRange(oldShard))).length should equalTo(0)
+      run(service.find(reg.topic, reg.device.platform, singleShardRange(newShard))).head.shard should equalTo(newShard)
     }
     "return 0 if no registration has that topic" in {
       run(service.countPerPlatformForTopics(NonEmptyList.one(Topic("idontexist")))) shouldEqual PlatformCount(0,0,0,0)

@@ -39,3 +39,7 @@ object Shard {
     }
   }
 }
+
+case class ShardRange(minIncluded: Shard, maxIncluded: Shard) {
+  def range: Range = Range.inclusive(minIncluded.id, maxIncluded.id)
+}

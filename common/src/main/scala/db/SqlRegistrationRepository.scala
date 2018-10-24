@@ -5,7 +5,6 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
 import Registration._
-import cats.data.NonEmptyList
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 import doobie.Fragments
@@ -14,16 +13,14 @@ import models.PlatformCount
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
 
-  override def find(topic: String, platform: String, shards: Seq[Short]): Stream[F, Registration] = {
-    val shardsFragment = if(shards.length > 0) fr"AND shard IN (${shards.mkString(",")})" else fr""
-    (sql"""
+  override def find(topic: String, platform: String, shardRange: Range): Stream[F, Registration] = {
+    sql"""
          SELECT token, platform, topic, shard, lastModified
          FROM registrations
          WHERE topic = $topic
          AND platform = $platform
-      """
-      ++ shardsFragment
-      )
+         AND shard >= ${shardRange.min} AND shard <= ${shardRange.max}
+    """
       .query[Registration]
       .stream
       .transact(xa)

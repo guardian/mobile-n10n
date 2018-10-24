@@ -3,7 +3,7 @@ package apnsworker
 import cats.effect._
 import cats.syntax.functor._
 import com.turo.pushy.apns.{ApnsClient => PushyApnsClient}
-import db.{RegistrationService, Shard, Topic}
+import db.{RegistrationService, ShardRange, Topic}
 import _root_.models.{Notification, iOS}
 import fs2.Stream
 import models.ApnsConfig
@@ -16,7 +16,7 @@ class Apns[F[_]](registrationService: RegistrationService[F, Stream], config: Ap
   private val apnsClient: F[PushyApnsClient] =
     ApnsClient(config).fold(e => F.raiseError(e), c => F.delay(c))
 
-  def send(notification: Notification, shards: Seq[Shard]): Stream[F, Either[Throwable, String]] = {
+  def send(notification: Notification, shardRange: ShardRange): Stream[F, Either[Throwable, String]] = {
 
     def sendAsync(token: String)(client: PushyApnsClient): F[String] =
       Async[F].async[String] { (cb: Either[Throwable, String] => Unit) =>
@@ -25,7 +25,7 @@ class Apns[F[_]](registrationService: RegistrationService[F, Stream], config: Ap
 
     def tokens: Stream[F, String] = notification
         .topic
-        .map(topic => registrationService.find(Topic(topic.name), iOS, shards:_*))
+        .map(topic => registrationService.find(Topic(topic.name), iOS, shardRange))
         .reduce(_ merge _)
         .map(_.device.token)
 
