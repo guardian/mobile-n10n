@@ -1,6 +1,4 @@
-package notification.services.guardian
-
-import models.Notification
+package models
 
 case class ShardRange(start: Short, end: Short)
 
