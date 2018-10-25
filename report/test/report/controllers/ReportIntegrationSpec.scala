@@ -5,6 +5,8 @@ import java.util.UUID
 
 import application.WithPlayApp
 import azure.{NotificationDetails, NotificationStates}
+import cats.data.NonEmptyList
+import cats.effect.IO
 import models.Link.Internal
 import models.Importance.Major
 import models.NotificationType.BreakingNews
@@ -22,6 +24,7 @@ import report.services.{Configuration, NotificationReportEnricher}
 import tracking.InMemoryNotificationReportRepository
 import cats.implicits._
 import com.softwaremill.macwire._
+import db.{RegistrationRepository, RegistrationService}
 
 import scala.concurrent.Future
 
@@ -144,6 +147,17 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         override lazy val reportEnricher = notificationReportEnricherMock
         override lazy val notificationReportRepository = reportRepositoryMock
         override lazy val appConfig = appConfigMock
+        override lazy val registrationDbService: RegistrationService[IO, fs2.Stream] = new RegistrationService(
+          new RegistrationRepository[IO, fs2.Stream] {
+            override def findByTopic(topic: db.Topic): fs2.Stream[IO, db.Registration] = ???
+            override def findByToken(token: String): fs2.Stream[IO, db.Registration] = ???
+            override def save(sub: db.Registration): IO[Port] = ???
+            override def remove(sub: db.Registration): IO[Port] = ???
+            override def removeByToken(token: String): IO[Port] = ???
+            override def countPerPlatformForTopic(topic: db.Topic): IO[PlatformCount] = ???
+            override def countPerPlatformForTopics(topics: NonEmptyList[db.Topic]): IO[PlatformCount] = ???
+          }
+        )
       }
     }
 
