@@ -11,7 +11,7 @@ import org.specs2.specification.BeforeAll
 import fs2.Stream
 import org.specs2.concurrent.ExecutionEnv
 
-class RegistrationServiceTest(implicit ee: ExecutionEnv) extends Specification with BeforeAll {
+class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification with BeforeAll {
 
   val jdbcConfig = JdbcConfig("org.h2.Driver", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "", "")
   val transactor: Transactor[IO] = DatabaseConfig.simpleTransactor(jdbcConfig)
@@ -58,30 +58,37 @@ class RegistrationServiceTest(implicit ee: ExecutionEnv) extends Specification w
   val shardRange1 = ShardRange(Shard(1), Shard(1))
   val shardRange2 = ShardRange(Shard(2), Shard(2))
 
+  val topicsAll: NonEmptyList[Topic] =
+    NonEmptyList.of(registrations.head.topic, registrations.tail.map(_.topic):_*)
+  val topics1 = NonEmptyList.one(Topic("topic1"))
+  val topics2 = NonEmptyList.one(Topic("topic2"))
+
   "RegistrationService" should {
     "allow adding registrations" in {
       registrations.map { reg =>
         run(service.save(reg)) should equalTo(1)
       }
     }
-    "allow finding registrations by topic, platform and shard" in {
-      run(service.find(Topic("topic1"), iOS, allShards)).length should equalTo(3)
-      run(service.find(Topic("topic1"), iOS, shardRange1)).length should equalTo(2)
-      run(service.find(Topic("topic2"), Android, shardRange1)).length should equalTo(1)
-      run(service.find(Topic("topic2"), Android, shardRange2)).length should equalTo(0)
+    "allow finding registrations by topics, platform and shard" in {
+      run(service.findTokens(topicsAll, None, None)).length should equalTo(6)
+      run(service.findTokens(topics1, None, None)).length should equalTo(4)
+      run(service.findTokens(topics1, Some(iOS), None)).length should equalTo(3)
+      run(service.findTokens(topics1, Some(iOS), Some(allShards))).length should equalTo(3)
+      run(service.findTokens(topics1, Some(iOS), Some(shardRange1))).length should equalTo(2)
+      run(service.findTokens(topics2, Some(Android), Some(shardRange1))).length should equalTo(1)
+      run(service.findTokens(topics2, Some(Android), Some(shardRange2))).length should equalTo(0)
     }
     "allow finding registrations by token" in {
       run(service.findByToken("f")).length should equalTo(2)
       run(service.findByToken("unknown")).length should equalTo(0)
     }
     "allow removing registrations" in {
-
       val regB = registrations.filter(_.device.token == "b").head
       val regE = registrations.filter(_.device.token == "e").head
       run(service.remove(regB)) should equalTo(1)
       run(service.remove(regE)) should equalTo(1)
-      run(service.find(Topic("topic1"), iOS, allShards)).length should equalTo(2)
-      run(service.find(Topic("topic2"), Android, allShards)).length should equalTo(0)
+      run(service.findByToken(regB.device.token)).length should equalTo(0)
+      run(service.findByToken(regE.device.token)).length should equalTo(0)
     }
     "allow removing registrations by token" in {
       run(service.removeAllByToken("f")) should equalTo(2)
@@ -89,15 +96,9 @@ class RegistrationServiceTest(implicit ee: ExecutionEnv) extends Specification w
     }
     "update when saving the same registration twice" in {
       val reg = registrations.filter(_.device.token == "a").head
-      val oldShard = reg.shard
-      run(service.save(reg))
-      val newShard = Shard(99)
-      run(service.save(reg.copy(shard = newShard)))
-
-      def singleShardRange(shard: Shard) = ShardRange(shard, shard)
-
-      run(service.find(reg.topic, reg.device.platform, singleShardRange(oldShard))).length should equalTo(0)
-      run(service.find(reg.topic, reg.device.platform, singleShardRange(newShard))).head.shard should equalTo(newShard)
+      val newShardId: Short = 99
+      run(service.save(reg.copy(shard = Shard(newShardId))))
+      run(service.findByToken(reg.device.token)).head.shard.id should equalTo(newShardId)
     }
     "return 0 if no registration has that topic" in {
       run(service.countPerPlatformForTopics(NonEmptyList.one(Topic("idontexist")))) shouldEqual PlatformCount(0,0,0,0)

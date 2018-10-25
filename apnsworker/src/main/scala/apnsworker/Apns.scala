@@ -2,10 +2,12 @@ package apnsworker
 
 import cats.effect._
 import cats.syntax.functor._
+import cats.syntax.list._
 import com.turo.pushy.apns.{ApnsClient => PushyApnsClient}
 import db.{RegistrationService, ShardRange, Topic}
 import _root_.models.{Notification, iOS}
 import apnsworker.payload.ApnsPayload
+import cats.data.NonEmptyList
 import fs2.Stream
 import models.ApnsConfig
 
@@ -24,12 +26,17 @@ class Apns[F[_]](registrationService: RegistrationService[F, Stream], config: Ap
         ApnsClient.sendNotification(notification.id, token, payload)(cb)(client, config)
       }
 
-    def tokens: Stream[F, String] = notification
-        .topic
-        .map(topic => registrationService.find(Topic(topic.name), iOS, shardRange))
-        .reduce(_ merge _)
-        .map(_.device.token)
-    //TODO: de-duplicate
+    val topicsF: F[NonEmptyList[Topic]] = notification
+      .topic
+      .map(t => Topic(t.name))
+      .toNel
+      .map(nel => F.delay(nel))
+      .getOrElse(F.raiseError(new RuntimeException(s"Error: No topic for notification $notification")))
+
+    val tokens: Stream[F, String] = for {
+        topics <- Stream.eval(topicsF)
+        res <- registrationService.findTokens(topics, Some(iOS), Some(shardRange))
+    } yield res
 
     val payloadF = ApnsPayload(notification)
       .fold[F[ApnsPayload]](F.raiseError(new RuntimeException(s"Error: Cannot generate payload for notification $notification")))(p => F.delay(p))

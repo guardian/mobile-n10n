@@ -14,7 +14,8 @@ import scala.concurrent.ExecutionContext
 
 class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F, S]) {
   def findByToken(token: String): S[F, Registration] = repository.findByToken(token)
-  def find(topic: Topic, platform: Platform, shardRange: ShardRange): S[F, Registration] = repository.find(topic.name, platform.toString, shardRange.range)
+  def findTokens(topics: NonEmptyList[Topic], platform: Option[Platform], shardRange: Option[ShardRange]): S[F, String] =
+    repository.findTokens(topics.map(_.name), platform.map(_.toString), shardRange.map(_.range))
   def save(sub: Registration): F[Int] = repository.save(sub)
   def remove(sub: Registration): F[Int] = repository.remove(sub)
   def removeAllByToken(token: String): F[Int] = repository.removeByToken(token)

@@ -1,10 +1,12 @@
 package db
 
 import cats.effect.Async
+import cats.implicits._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
 import Registration._
+import cats.data.NonEmptyList
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 import doobie.Fragments
@@ -13,15 +15,21 @@ import models.PlatformCount
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
 
-  override def find(topic: String, platform: String, shardRange: Range): Stream[F, Registration] = {
-    sql"""
-         SELECT token, platform, topic, shard, lastModified
-         FROM registrations
-         WHERE topic = $topic
-         AND platform = $platform
-         AND shard >= ${shardRange.min} AND shard <= ${shardRange.max}
+  override def findTokens(
+    topics: NonEmptyList[String],
+    platform: Option[String],
+    shardRange: Option[Range]
+  ): Stream[F, String] = {
+    (sql"""
+        SELECT token
+        FROM registrations
     """
-      .query[Registration]
+      ++ fr"WHERE topic IN (" ++ topics.toList.map(t => fr"$t").intercalate(fr",") ++ fr")"
+      ++ platform.map(p => fr"AND platform = $p").getOrElse(fr"")
+      ++ shardRange.map(s => fr"AND shard >= ${s.min} AND shard <= ${s.max}").getOrElse(fr"")
+      ++ fr"GROUP BY token"
+      )
+      .query[String]
       .stream
       .transact(xa)
   }
