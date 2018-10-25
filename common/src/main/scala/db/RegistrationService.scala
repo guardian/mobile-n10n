@@ -11,7 +11,7 @@ import play.api.inject.ApplicationLifecycle
 
 import scala.concurrent.ExecutionContext
 
-class RegistrationService[F[_]: Async, S[_[_], _]](repository: RegistrationRepository[F, S]) {
+class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F, S]) {
   def findByToken(token: String): S[F, Registration] = repository.findByToken(token)
   def findByTopic(topic: Topic): S[F, Registration] = repository.findByTopic(topic)
   def save(sub: Registration): F[Int] = repository.save(sub)
