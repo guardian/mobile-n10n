@@ -70,15 +70,20 @@ object ApnsClient {
             onComplete(Left(feedbackFailure))
           }
         } else {
-          val msg = s"Error: APNS request failed (Notification $notificationId, Token: $token). Cause: ${responseF.cause()}"
-          onComplete(Left(new RuntimeException()))
+          val errorMsg = s"Error: APNS request failed (Notification $notificationId, Token: $token). Cause: ${responseF.cause()}"
+          onComplete(Left(new RuntimeException(errorMsg)))
         }
       }
     }
 
-    client
-      .sendNotification(pushNotification)
-      .addListener(responseHandler)
+    if(config.dryRun) {
+      val msg = s"Dry RUN !!!! Notification has not be sent (Notification $notificationId, Token: $token)}"
+      onComplete(Left(new RuntimeException(msg)))
+    } else {
+      client
+        .sendNotification(pushNotification)
+        .addListener(responseHandler)
+    }
   }
 
 }

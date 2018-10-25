@@ -5,5 +5,6 @@ case class ApnsConfig(
   bundleId: String,
   keyId: String,
   certificate: String,
-  sendingToProdServer: Boolean = false
+  sendingToProdServer: Boolean = false,
+  dryRun: Boolean = true
 )
