@@ -43,10 +43,10 @@ class GuardianNotificationSender(
         Guardian.value,
         DateTime.now,
         None,
-        Some(PlatformStatistics(
+        registrationCount.map { count => PlatformStatistics(
           platform,
-          registrationCount
-        ))
+          count
+        )}
       ))
     } else {
       failed.foreach { failure =>
@@ -60,15 +60,12 @@ class GuardianNotificationSender(
     }
   }
 
-  private def countRegistration(platform: Platform, topics: List[Topic]): Future[Int] = {
+  private def countRegistration(platform: Platform, topics: List[Topic]): Future[Option[Int]] = {
     // in case of an exception when calling registrationCounter, we want to continue anyway
-    registrationCounter.count(topics).map(t => t.counts(platform)).recover {
-      case NonFatal(e) if topics.exists(_.`type` == TopicTypes.Breaking) && platform != Newsstand =>
-        logger.error("Unable to count registration for a list of topics during a breaking news", e)
-        1500000 // fallback on 1.5M: the worse case
+    registrationCounter.count(topics).map(t => t.counts.get(platform)).recover {
       case NonFatal(e) =>
         logger.error("Unable to count registration for a list of topics", e)
-        1
+        None
     }
   }
 
@@ -93,9 +90,18 @@ class GuardianNotificationSender(
     }
   }
 
-  def prepareBatch(platform: Platform, notification: Notification, registrationCount: Int): List[SendMessageBatchRequestEntry] = {
+  def prepareBatch(platform: Platform, notification: Notification, registrationCount: Option[Int]): List[SendMessageBatchRequestEntry] = {
+    val countWithDefault: Int = registrationCount match {
+      case Some(count) => count
+      case None if notification.topic.exists(_.`type` == TopicTypes.Breaking) && platform != Newsstand =>
+        logger.error("Unable to count registration for a list of topics during a breaking news, falling back on 1.5M")
+        1500000 // fallback on 1.5M: the worse case
+      case None =>
+        logger.error("Unable to count registration for a list of topics, falling back on 1")
+        1
+    }
     val notificationJson = Json.stringify(Notification.jf.writes(notification))
-    shard(registrationCount).map { shard =>
+    shard(countWithDefault).map { shard =>
       ShardedNotification(notification, shard)
       val messageId = s"${notification.id}-$platform-[${shard.start},${shard.end}]"
       new SendMessageBatchRequestEntry(messageId, notificationJson)
