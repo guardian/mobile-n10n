@@ -4,12 +4,12 @@ import cats.effect._
 import cats.syntax.functor._
 import cats.syntax.list._
 import com.turo.pushy.apns.{ApnsClient => PushyApnsClient}
-import db.{RegistrationService, ShardRange, Topic}
-import _root_.models.{Notification, iOS}
+import db.{RegistrationService, Topic}
+import _root_.models.{Notification, iOS, ShardRange}
 import apnsworker.payload.ApnsPayload
 import cats.data.NonEmptyList
 import fs2.Stream
-import models.ApnsConfig
+import models.{ApnsConfig}
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 

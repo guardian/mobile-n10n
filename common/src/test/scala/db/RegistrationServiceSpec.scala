@@ -6,7 +6,7 @@ import doobie.implicits._
 import cats.effect.IO
 import cats.implicits._
 import doobie.util.transactor.Transactor
-import models.{Android, PlatformCount, iOS}
+import models.{Android, PlatformCount, ShardRange, iOS}
 import org.specs2.specification.BeforeAll
 import fs2.Stream
 import org.specs2.concurrent.ExecutionEnv
@@ -54,9 +54,9 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
   )
 
   def shardOrdering: Ordering[Registration] = _.shard.id compare _.shard.id
-  val allShards = ShardRange(registrations.min(shardOrdering).shard, registrations.max(shardOrdering).shard)
-  val shardRange1 = ShardRange(Shard(1), Shard(1))
-  val shardRange2 = ShardRange(Shard(2), Shard(2))
+  val allShards = ShardRange(registrations.min(shardOrdering).shard.id, registrations.max(shardOrdering).shard.id)
+  val shardRange1 = ShardRange(1, 1)
+  val shardRange2 = ShardRange(2, 2)
 
   val topicsAll: NonEmptyList[Topic] =
     NonEmptyList.of(registrations.head.topic, registrations.tail.map(_.topic):_*)
