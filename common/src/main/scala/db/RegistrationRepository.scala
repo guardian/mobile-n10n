@@ -1,6 +1,7 @@
 package db
 
 import cats.data.NonEmptyList
+import models.PlatformCount
 
 trait RegistrationRepository[F[_], S[_[_], _]] {
   def findByTopic(topic: Topic): S[F, Registration]

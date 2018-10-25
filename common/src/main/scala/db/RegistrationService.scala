@@ -5,6 +5,7 @@ import cats.effect.internals.IOContextShift
 import cats.effect.{Async, ContextShift, IO}
 import doobie.util.transactor.Transactor
 import fs2.Stream
+import models.PlatformCount
 import play.api.Configuration
 import play.api.inject.ApplicationLifecycle
 

@@ -2,8 +2,8 @@ package report.controllers
 
 import cats.data.NonEmptyList
 import cats.effect.IO
-import db.{PlatformCount, RegistrationService}
-import models.{Topic, TopicTypes}
+import db.RegistrationService
+import models.{PlatformCount, Topic, TopicTypes}
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import play.api.libs.json.{JsDefined, JsNumber}

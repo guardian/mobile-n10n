@@ -9,6 +9,7 @@ import cats.data.NonEmptyList
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 import doobie.Fragments
+import models.PlatformCount
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
