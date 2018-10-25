@@ -3,14 +3,15 @@ package apnsworker
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 
-import _root_.models.{Notification}
 import java.sql.Timestamp
+import java.util.UUID
 
 import apnsworker.models.{ApnsConfig, ApnsFeedbackFailure}
+import apnsworker.payload.ApnsPayload
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
-import com.turo.pushy.apns.util.{ApnsPayloadBuilder, SimpleApnsPushNotification, TokenUtil}
-import com.turo.pushy.apns.{ApnsClientBuilder, PushNotificationResponse, ApnsClient => PushyApnsClient}
+import com.turo.pushy.apns.util.{SimpleApnsPushNotification, TokenUtil}
+import com.turo.pushy.apns.{ApnsClientBuilder, DeliveryPriority, PushNotificationResponse, ApnsClient => PushyApnsClient}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -36,38 +37,19 @@ object ApnsClient {
     )
   }
 
-  def sendNotification(token: String, notification: Notification)
+  def sendNotification(notificationId: UUID, token: String, payload: ApnsPayload)
     (onComplete: Either[Throwable, String] => Unit)
     (client: PushyApnsClient, config: ApnsConfig)
     (implicit executionContext: ExecutionContext): Unit = {
 
-    val payloadBuilder = new ApnsPayloadBuilder()
-    payloadBuilder.setAlertTitle(notification.title)
-    payloadBuilder.setAlertBody(notification.message)
-
-    //      payloadBuilder.setActionButtonLabel()
-    //      payloadBuilder.setAlertSubtitle()
-    //      payloadBuilder.setBadgeNumber()
-    //      payloadBuilder.setCategoryName()
-    //      payloadBuilder.setContentAvailable()
-    //      payloadBuilder.setLaunchImageFileName()
-    //      payloadBuilder.setLocalizedActionButtonKey()
-    //      payloadBuilder.setLocalizedAlertMessage()
-    //      payloadBuilder.setLocalizedAlertSubtitle()
-    //      payloadBuilder.setLocalizedAlertTitle()
-    //      payloadBuilder.setMutableContent()
-    //      payloadBuilder.setPreferStringRepresentationForAlerts()
-    //      payloadBuilder.setShowActionButton()
-    //      payloadBuilder.setSound()
-    //      payloadBuilder.setThreadId()
-    //      payloadBuilder.setUrlArguments()
-    //      payloadBuilder.addCustomProperty()
-
-    val payload = payloadBuilder.buildWithDefaultMaximumLength()
+    val collapseId = notificationId.toString
     val pushNotification = new SimpleApnsPushNotification(
       TokenUtil.sanitizeTokenString(token),
       config.bundleId,
-      payload
+      payload.value,
+      null, // No invalidation time
+      DeliveryPriority.IMMEDIATE,
+      collapseId
     )
 
     type Feedback = PushNotificationFuture[SimpleApnsPushNotification, PushNotificationResponse[SimpleApnsPushNotification]]
@@ -88,7 +70,7 @@ object ApnsClient {
             onComplete(Left(feedbackFailure))
           }
         } else {
-          val msg = s"Error: APNS request failed. Cause: ${responseF.cause()}. Notification: ${notification.id}, device :${token}. "
+          val msg = s"Error: APNS request failed (Notification $notificationId, Token: $token). Cause: ${responseF.cause()}"
           onComplete(Left(new RuntimeException()))
         }
       }
