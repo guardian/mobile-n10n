@@ -30,6 +30,9 @@ class ApnsPayloadSpec extends Specification with Matchers {
     "generate correct payload for Match status notification" in new MatchStatusNotificationScope {
       checkPayload()
     }
+    "generate correct payload for Newsstand notification" in new NewsstandNotificationScope {
+      checkPayload()
+    }
   }
 
   trait NotificationScope extends Scope {
@@ -252,4 +255,16 @@ class ApnsPayloadSpec extends Specification with Matchers {
     )
   }
 
+  trait NewsstandNotificationScope extends NotificationScope {
+    val notification = models.NewsstandShardNotification(UUID.randomUUID(), 3)
+
+    val expected = Some(
+      """
+        |{
+        |   "aps":{
+        |      "content-available":1
+        |   }
+        |}""".stripMargin
+    )
+  }
 }

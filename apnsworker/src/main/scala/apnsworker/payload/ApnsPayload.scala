@@ -17,26 +17,26 @@ object ApnsPayload {
       case n: BreakingNewsNotification => Some(breakingNewsPayload(n))
       case n: ContentNotification => Some(contentPayload(n))
       case n: FootballMatchStatusNotification => Some(footballMatchStatusPayload(n))
-      case n: NewsstandShardNotification => None //TODO
+      case n: NewsstandShardNotification => Some(newsstandPayload(n))
       case _ => None
     }
     payload.map(p => new ApnsPayload(p))
   }
 
   private case class PushyPayload(
-    alertTitle: Option[String],
-    alertBody: String,
-    categoryName: String,
-    contentAvailable: Boolean,
-    mutableContent: Boolean,
-    sound: Option[String],
-    customProperties: Seq[CustomProperty]
+    alertTitle: Option[String] = None,
+    alertBody: Option[String] = None,
+    categoryName: Option[String] = None,
+    contentAvailable: Boolean = false,
+    mutableContent: Boolean = false,
+    sound: Option[String] = None,
+    customProperties: Seq[CustomProperty] = Seq()
   ) {
     def payload: String = {
       val payloadBuilder = new ApnsPayloadBuilder()
       alertTitle.foreach(payloadBuilder.setAlertTitle)
-      payloadBuilder.setAlertBody(alertBody)
-      payloadBuilder.setCategoryName(categoryName)
+      alertBody.foreach(payloadBuilder.setAlertBody)
+      categoryName.foreach(payloadBuilder.setCategoryName)
       payloadBuilder.setContentAvailable(contentAvailable)
       payloadBuilder.setMutableContent(mutableContent)
       sound.foreach(payloadBuilder.setSound)
@@ -58,11 +58,11 @@ object ApnsPayload {
     val imageUrl = n.thumbnailUrl.orElse(n.imageUrl)
     PushyPayload(
       alertTitle = None,
-      alertBody = n.message,
-      categoryName = n.link match {
+      alertBody = Some(n.message),
+      categoryName = Option(n.link match {
         case _: Link.External => ""
         case _: Link.Internal => "ITEM_CATEGORY"
-      },
+      }),
       contentAvailable = true,
       mutableContent = imageUrl.isDefined,
       sound = Some("default"),
@@ -85,8 +85,8 @@ object ApnsPayload {
     val notificationType: NotificationType = BreakingNews
     PushyPayload(
       alertTitle = None,
-      alertBody = n.message,
-      categoryName = "ITEM_CATEGORY",
+      alertBody = Some(n.message),
+      categoryName = Some("ITEM_CATEGORY"),
       contentAvailable = true,
       mutableContent = false,
       sound = Some("default"),
@@ -103,11 +103,11 @@ object ApnsPayload {
     ).payload
   }
 
-  private def footballMatchStatusPayload(n: FootballMatchStatusNotification): String = {
+  private def footballMatchStatusPayload(n: FootballMatchStatusNotification): String =
     PushyPayload(
       alertTitle = Some(n.title),
-      alertBody = n.message,
-      categoryName = "football-match",
+      alertBody = Some(n.message),
+      categoryName = Some("football-match"),
       contentAvailable = false,
       mutableContent = true,
       sound = if(n.importance == Importance.Major) Some("default") else None,
@@ -139,7 +139,9 @@ object ApnsPayload {
         )
       )
     ).payload
-  }
+
+  private def newsstandPayload(notification: NewsstandShardNotification): String =
+    PushyPayload(contentAvailable = true).payload
 
   private def toPlatformLink(link: Link) = link match {
     case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
