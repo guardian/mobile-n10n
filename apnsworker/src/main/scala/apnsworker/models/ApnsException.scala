@@ -11,6 +11,14 @@ sealed trait ApnsException extends RuntimeException {
 
 object ApnsException {
 
+  case class ApnsGenericFailure(
+    notificationId: UUID,
+    token: String,
+    underlying: Throwable
+  ) extends ApnsException {
+    override def getMessage: String = s"Sending notification '$notificationId' to device '$token' failed. Exception: $underlying."
+  }
+
   case class ApnsFailedDelivery(
     notificationId: UUID,
     token: String,
