@@ -68,7 +68,6 @@ object ApnsPayload {
       sound = Some("default"),
       customProperties = Seq(
         CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
-        CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
         CustomProperty(Keys.Provider -> Provider.Guardian.value),
         CustomProperty(Keys.MessageType -> MessageTypes.NewsAlert),
         CustomProperty(Keys.NotificationType -> BreakingNews.value),
