@@ -78,29 +78,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       override val notificationSender = new GuardianNotificationSender(
         sqsClient = sqsClient,
         registrationCounter = new TopicRegistrationCounter {
-          override def count(topics: List[Topic]): Future[TopicStats] = Future.failed(new RuntimeException("exception"))
-        },
-        platform = iOS,
-        sqsArn = ""
-      )
-
-      val futureResult = notificationSender.sendNotification(Push(notification, Set()))
-      val result = Await.result(futureResult, 10.seconds)
-
-      there was atLeast(1)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
-
-      result should beRight.which { senderReport =>
-        senderReport.senderName shouldEqual "Guardian"
-        senderReport.sendersId should beNone
-      }
-    }
-
-    "put many batches messages on the queue, even if the topic counter misses a key" in new GuardianNotificationSenderScope(registrationCount = 2000000) {
-
-      override val notificationSender = new GuardianNotificationSender(
-        sqsClient = sqsClient,
-        registrationCounter = new TopicRegistrationCounter {
-          override def count(topics: List[Topic]): Future[TopicStats] = Future.successful(TopicStats(Map.empty))
+          override def count(topics: List[Topic]): Future[PlatformCount] = Future.failed(new RuntimeException("exception"))
         },
         platform = iOS,
         sqsArn = ""
@@ -151,11 +129,12 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       topic = List(Topic(`type` = Breaking, name = "uk"))
     )
 
-    def topicStats(registrationCount: Int): TopicStats = TopicStats(Map(
-      iOS -> registrationCount,
-      Android -> registrationCount,
-      Newsstand -> registrationCount
-    ))
+    def topicStats(registrationCount: Int): PlatformCount = PlatformCount(
+      total = registrationCount * 2,
+      ios = registrationCount,
+      android = registrationCount,
+      newsstand = 0
+    )
 
     val sqsClient = {
       val s = mock[AmazonSQSAsync]
@@ -174,7 +153,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
     val notificationSender = new GuardianNotificationSender(
       sqsClient = sqsClient,
       registrationCounter = new TopicRegistrationCounter {
-        override def count(topics: List[Topic]): Future[TopicStats] = Future.successful(topicStats(registrationCount))
+        override def count(topics: List[Topic]): Future[PlatformCount] = Future.successful(topicStats(registrationCount))
       },
       platform = iOS,
       sqsArn = ""
