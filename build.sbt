@@ -1,6 +1,8 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 import play.sbt.PlayImport.specs2
-import sbtassembly.AssemblyPlugin.autoImport.assemblyMergeStrategy
+import sbt.Keys.libraryDependencies
+import sbt.dsl.enablePlugins
+import sbtassembly.AssemblyPlugin.autoImport.{assemblyJarName, assemblyMergeStrategy}
 import sbtassembly.MergeStrategy
 
 val projectVersion = "1.0-latest"
@@ -322,6 +324,27 @@ lazy val apnsworker = project
     )
   )
 
+lazy val notificationworkerlambda = project
+  .dependsOn(apnsworker)
+  .enablePlugins(RiffRaffArtifact)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+      "org.slf4j" % "slf4j-simple" % "1.7.25"
+    ),
+
+    assemblyJarName := s"${name.value}.jar",
+    assemblyMergeStrategy in assembly := {
+      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+      case _ => MergeStrategy.first
+    },
+    riffRaffPackageType := assembly.value,
+    riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
+    riffRaffUploadManifestBucket := Option("riffraff-builds"),
+    riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
+    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", s"${name.value}-cfn/cfn.yaml")
+  )
+
 lazy val root = (project in file(".")).
   aggregate(
     registration,
@@ -332,5 +355,6 @@ lazy val root = (project in file(".")).
     schedulelambda,
     apiClient,
     eventconsumer,
-    apnsworker
+    apnsworker,
+    notificationworkerlambda
   )

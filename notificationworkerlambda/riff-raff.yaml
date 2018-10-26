@@ -1,0 +1,20 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+
+deployments:
+  notificationworkerlambda:
+    type: aws-lambda
+    app: ios-notification-worker
+    parameters:
+      bucket: mobile-notifications-dist
+      functionNames: [ios-notification-worker-]
+      fileName: notificationworkerlambda.jar
+      prefixStack: false
+    dependencies: [notificationworkerlambda-cfn]
+  notificationworkerlambda-cfn:
+    type: cloud-formation
+    app: ios-notification-worker
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: notificationworkerlambda
+      templatePath: cfn.yaml
