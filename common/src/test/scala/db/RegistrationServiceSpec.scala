@@ -7,11 +7,11 @@ import cats.effect.IO
 import cats.implicits._
 import doobie.util.transactor.Transactor
 import models.{Android, PlatformCount, ShardRange, iOS}
-import org.specs2.specification.BeforeAll
+import org.specs2.specification.BeforeEach
 import fs2.Stream
 import org.specs2.concurrent.ExecutionEnv
 
-class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification with BeforeAll {
+class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification with BeforeEach {
 
   val jdbcConfig = JdbcConfig("org.h2.Driver", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "", "")
   val transactor: Transactor[IO] = DatabaseConfig.simpleTransactor(jdbcConfig)
@@ -38,7 +38,10 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
     (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync
   }
 
-  override def beforeAll() = initializeDatabase()
+  override def before() = {
+    initializeDatabase()
+    registrations.map(service.save).foreach(io => run(io))
+  }
 
   def run[A](s: Stream[IO, A]): List[A] = s.compile.toList.unsafeRunSync()
   def run[A](io: IO[A]) = io.unsafeRunSync()
@@ -64,10 +67,9 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
   val topics2 = NonEmptyList.one(Topic("topic2"))
 
   "RegistrationService" should {
-    "allow adding registrations" in {
-      registrations.map { reg =>
-        run(service.save(reg)) should equalTo(1)
-      }
+    "allow adding registration" in {
+      val reg = Registration(Device("something", Android), Topic("someTopic"), Shard(1))
+      run(service.save(reg)) should equalTo(1)
     }
     "allow finding registrations by topics, platform and shard" in {
       run(service.findTokens(topicsAll, None, None)).length should equalTo(6)
@@ -108,7 +110,7 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
       run(service.countPerPlatformForTopics(NonEmptyList.one(Topic("topic3")))) shouldEqual PlatformCount(1,1,0,0)
     }
     "count per platform and per topic with two or more topics" in {
-      run(service.countPerPlatformForTopics(NonEmptyList(Topic("topic3"), List(Topic("topic4"))))) shouldEqual PlatformCount(1,1,0,0)
+      run(service.countPerPlatformForTopics(NonEmptyList(Topic("topic3"), List(Topic("topic4"))))) shouldEqual PlatformCount(2,1,1,0)
     }
   }
 
