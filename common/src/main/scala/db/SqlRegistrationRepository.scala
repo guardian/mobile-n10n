@@ -24,9 +24,12 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         SELECT token
         FROM registrations
     """
-      ++ fr"WHERE topic IN (" ++ topics.toList.map(t => fr"$t").intercalate(fr",") ++ fr")"
-      ++ platform.map(p => fr"AND platform = $p").getOrElse(fr"")
-      ++ shardRange.map(s => fr"AND shard >= ${s.min} AND shard <= ${s.max}").getOrElse(fr"")
+      ++
+      Fragments.whereAndOpt(
+        Some(Fragments.in(fr"topic", topics)),
+        platform.map(p => fr"platform = $p"),
+        shardRange.map(s => Fragments.and(fr"shard >= ${s.min}", fr"shard <= ${s.max}"))
+      )
       ++ fr"GROUP BY token"
       )
       .query[String]
