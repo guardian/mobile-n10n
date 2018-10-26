@@ -21,7 +21,7 @@ class RegistrationCount(
       case Nil => Future.successful(BadRequest("Couldn't find any valid topic"))
       case firstTopic :: moreTopics =>
         val nonEmptyTopics = NonEmptyList(firstTopic, moreTopics)
-        registrationService.countPerPlatformForTopics(nonEmptyTopics.map(topic => db.Topic(topic.name)))
+        registrationService.countPerPlatformForTopics(nonEmptyTopics.map(topic => db.Topic(topic.toString)))
           .map(result => Ok(Json.toJson(result)))
           .unsafeToFuture()
     }
