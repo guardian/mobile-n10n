@@ -7,7 +7,13 @@ case class PlatformCount(
   ios: Int,
   android: Int,
   newsstand: Int
-)
+) {
+  def get(platform: Platform): Int = platform match {
+    case Android => android
+    case Newsstand => newsstand
+    case _ => ios
+  }
+}
 
 object PlatformCount {
   implicit val platformCountJF: Format[PlatformCount] = Json.format[PlatformCount]
