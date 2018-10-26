@@ -15,7 +15,7 @@ class ReportTopicRegistrationCounter(
 
   override def count(topics: List[Topic]): Future[PlatformCount] = {
     lruCache(topics.toSet) {
-      val topicParameters = topics.map(t => "t" -> t.toString)
+      val topicParameters = topics.map(topic => "topics" -> topic.toString)
       ws.url(registrationCounterUrl)
         .withQueryStringParameters(topicParameters: _*)
         .get

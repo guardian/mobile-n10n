@@ -2,14 +2,14 @@ package models
 
 import org.apache.commons.codec.digest.DigestUtils.md5Hex
 import play.api.libs.json._
-
 import cats.implicits._
 
 
 case class Topic(`type`: TopicType, name: String) {
-  override def toString: String = s"${`type`}/$name"
+  override def toString: String = fullName
   def toFirebaseString: String = toString.replaceAll("/", "%")
   lazy val id: String = md5Hex(toString)
+  def fullName: String = s"${`type`}/$name"
 }
 
 object Topic {
