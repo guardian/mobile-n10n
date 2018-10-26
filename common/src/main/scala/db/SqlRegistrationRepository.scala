@@ -101,21 +101,4 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       .unique
       .transact(xa)
   }
-
-  override def countPerPlatformForTopic(topic: Topic): F[PlatformCount] = {
-    sql"""
-      SELECT
-        count(1) as total,
-        coalesce(sum(case platform when 'ios' then 1 else 0 end), 0) as ios,
-        coalesce(sum(case platform when 'android' then 1 else 0 end), 0) as android,
-        coalesce(sum(case platform when 'newsstand' then 1 else 0 end), 0) as newsstand
-      FROM
-        registrations
-      WHERE
-        topic = $topic
-      """
-      .query[PlatformCount]
-      .unique
-      .transact(xa)
-  }
 }
