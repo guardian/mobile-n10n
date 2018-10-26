@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import models.PlatformCount
 
 trait RegistrationRepository[F[_], S[_[_], _]] {
-  def findByTopic(topic: Topic): S[F, Registration]
+  def findTokens(topics: NonEmptyList[String], platform: Option[String], shardRange: Option[Range]): S[F, String]
   def findByToken(token: String): S[F, Registration]
   def save(sub: Registration): F[Int]
   def remove(sub: Registration): F[Int]

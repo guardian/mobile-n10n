@@ -5,7 +5,7 @@ import cats.effect.internals.IOContextShift
 import cats.effect.{Async, ContextShift, IO}
 import doobie.util.transactor.Transactor
 import fs2.Stream
-import models.PlatformCount
+import models.{Platform, ShardRange, PlatformCount}
 import play.api.Configuration
 import play.api.inject.ApplicationLifecycle
 
@@ -13,7 +13,8 @@ import scala.concurrent.ExecutionContext
 
 class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F, S]) {
   def findByToken(token: String): S[F, Registration] = repository.findByToken(token)
-  def findByTopic(topic: Topic): S[F, Registration] = repository.findByTopic(topic)
+  def findTokens(topics: NonEmptyList[Topic], platform: Option[Platform], shardRange: Option[ShardRange]): S[F, String] =
+    repository.findTokens(topics.map(_.name), platform.map(_.toString), shardRange.map(_.range))
   def save(sub: Registration): F[Int] = repository.save(sub)
   def remove(sub: Registration): F[Int] = repository.remove(sub)
   def removeAllByToken(token: String): F[Int] = repository.removeByToken(token)
