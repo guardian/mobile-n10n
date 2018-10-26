@@ -1,9 +1,11 @@
 package db
 
+import cats.data.NonEmptyList
 import cats.effect.internals.IOContextShift
 import cats.effect.{Async, ContextShift, IO}
 import doobie.util.transactor.Transactor
 import fs2.Stream
+import models.PlatformCount
 import play.api.Configuration
 import play.api.inject.ApplicationLifecycle
 
@@ -15,6 +17,7 @@ class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F
   def save(sub: Registration): F[Int] = repository.save(sub)
   def remove(sub: Registration): F[Int] = repository.remove(sub)
   def removeAllByToken(token: String): F[Int] = repository.removeByToken(token)
+  def countPerPlatformForTopics(topics: NonEmptyList[Topic]): F[PlatformCount] = repository.countPerPlatformForTopics(topics)
 }
 
 
@@ -32,9 +35,9 @@ object RegistrationService {
     val url = config.get[String]("registration.db.url")
     val user = config.get[String]("registration.db.user")
     val password = config.get[String]("registration.db.password")
-    val threads = config.get[String]("registration.db.threads")
+    val threads = config.get[Int]("registration.db.threads")
 
-    val jdbcConfig = JdbcConfig("org.postgresql.Driver", s"jdbc:postgresql://$url", user, password)
+    val jdbcConfig = JdbcConfig("org.postgresql.Driver", s"jdbc:postgresql://$url", user, password, threads)
     val transactor = DatabaseConfig.transactor[IO](jdbcConfig, applicationLifecycle)
 
     apply(transactor)

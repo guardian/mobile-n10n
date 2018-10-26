@@ -4,6 +4,7 @@ import _root_.controllers.AssetsComponents
 import akka.actor.ActorSystem
 import aws.AsyncDynamo
 import azure.NotificationHubClient
+import cats.effect.IO
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.gu.AppIdentity
 import play.api.routing.Router
@@ -15,7 +16,7 @@ import play.api.mvc.EssentialFilter
 import play.filters.HttpFiltersComponents
 import play.filters.hosts.AllowedHostsFilter
 import report.authentication.ReportAuthAction
-import report.controllers.Report
+import report.controllers.{RegistrationCount, Report}
 import report.services.{Configuration, NotificationReportEnricher}
 import tracking.{DynamoNotificationReportRepository, SentNotificationReportRepository}
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
@@ -45,6 +46,10 @@ class ReportApplicationComponents(context: Context) extends BuiltInComponentsFro
     new DynamoNotificationReportRepository(AsyncDynamo(regions = EU_WEST_1, credentialsProvider), appConfig.dynamoReportsTableName)
 
   lazy val defaultHubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
+
+  lazy val registrationDbService: db.RegistrationService[IO, fs2.Stream] = db.RegistrationService.fromConfig(configuration, applicationLifecycle)
+
+  lazy val registrationCount: RegistrationCount = wire[RegistrationCount]
 
   lazy val reportEnricher = wire[NotificationReportEnricher]
   override lazy val router: Router = wire[Routes]

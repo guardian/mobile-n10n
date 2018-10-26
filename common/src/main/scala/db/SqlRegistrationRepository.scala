@@ -5,8 +5,11 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
 import Registration._
+import cats.data.NonEmptyList
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
+import doobie.Fragments
+import models.PlatformCount
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
@@ -73,4 +76,29 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       """
       .update.run
 
+  def countPerPlatformForTopics(topics: NonEmptyList[Topic]): F[PlatformCount] = {
+    val q = fr"""
+      SELECT
+        count(1) as total,
+        coalesce(sum(case platform when 'ios' then 1 else 0 end), 0) as ios,
+        coalesce(sum(case platform when 'android' then 1 else 0 end), 0) as android,
+        coalesce(sum(case platform when 'newsstand' then 1 else 0 end), 0) as newsstand
+      FROM
+        (
+          SELECT DISTINCT
+            token,
+            platform
+          FROM
+            registrations
+          WHERE
+      """ ++
+        Fragments.in(fr"topic", topics) ++
+    fr"""
+        ) as distinct_registrations
+    """
+
+    q.query[PlatformCount]
+      .unique
+      .transact(xa)
+  }
 }
