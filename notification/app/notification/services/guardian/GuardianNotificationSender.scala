@@ -62,7 +62,7 @@ class GuardianNotificationSender(
 
   private def countRegistration(platform: Platform, topics: List[Topic]): Future[Option[Int]] = {
     // in case of an exception when calling registrationCounter, we want to continue anyway
-    registrationCounter.count(topics).map(t => Some(t.get(platform))).recover {
+    registrationCounter.count(topics).map(platformCount => Some(platformCount.get(platform))).recover {
       case NonFatal(e) =>
         logger.error("Unable to count registration for a list of topics", e)
         None
