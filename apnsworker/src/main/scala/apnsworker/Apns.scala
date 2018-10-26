@@ -7,7 +7,7 @@ import com.turo.pushy.apns.{ApnsClient => PushyApnsClient}
 import db.{RegistrationService, Topic}
 import _root_.models.{Notification, ShardRange, iOS}
 import apnsworker.ApnsClient.{ApnsResponse, Token}
-import apnsworker.payload.ApnsPayload
+import apnsworker.models.payload.ApnsPayload
 import cats.data.NonEmptyList
 import fs2.Stream
 import models.ApnsConfig

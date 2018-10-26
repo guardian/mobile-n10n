@@ -6,8 +6,8 @@ import java.sql.Timestamp
 import java.util.UUID
 
 import apnsworker.models.ApnsException.{ApnsDryRun, ApnsFailedDelivery, ApnsFailedRequest, ApnsInvalidToken}
+import apnsworker.models.payload.ApnsPayload
 import apnsworker.models.{ApnsConfig, ApnsException}
-import apnsworker.payload.ApnsPayload
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
 import com.turo.pushy.apns.util.{SimpleApnsPushNotification, TokenUtil}

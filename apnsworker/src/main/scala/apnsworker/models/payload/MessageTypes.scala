@@ -1,4 +1,4 @@
-package apnsworker.payload
+package apnsworker.models.payload
 
 object MessageTypes {
   final val NewsAlert = "m"

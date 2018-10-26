@@ -1,4 +1,4 @@
-package apnsworker.payload
+package apnsworker.models.payload
 
 case class PlatformUri(uri: String, `type`: PlatformUriType)
 

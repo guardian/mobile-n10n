@@ -1,4 +1,4 @@
-package apnsworker.payload
+package apnsworker.models.payload
 
 import java.net.URI
 import java.util.UUID

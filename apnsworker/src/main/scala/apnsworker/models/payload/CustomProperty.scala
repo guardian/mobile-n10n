@@ -1,4 +1,4 @@
-package apnsworker.payload
+package apnsworker.models.payload
 
 sealed trait CustomProperty { def key: String }
 case class CustomPropertyString(key: String, value: String) extends CustomProperty

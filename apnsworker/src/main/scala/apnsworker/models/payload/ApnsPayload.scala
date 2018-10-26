@@ -1,11 +1,11 @@
-package apnsworker.payload
+package apnsworker.models.payload
 
 import java.net.URI
 
 import _root_.models.NotificationType._
 import _root_.models._
-import apnsworker.payload.CustomProperty.Keys
-import apnsworker.payload.PlatformUriTypes.{External, Item}
+import apnsworker.models.payload.CustomProperty.Keys
+import apnsworker.models.payload.PlatformUriTypes.{External, Item}
 import com.turo.pushy.apns.util.ApnsPayloadBuilder
 
 class ApnsPayload private (val value: String)
