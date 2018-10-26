@@ -15,6 +15,7 @@ import fs2.{Pipe, Stream}
 import models.{ApnsConfig, ApnsException}
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.util.control.NonFatal
 
 class Apns[F[_]](registrationService: RegistrationService[F, Stream], config: ApnsConfig)
   (implicit executionContext: ExecutionContext, contextShift: Concurrent[F], F: Async[F]) {
@@ -48,7 +49,7 @@ class Apns[F[_]](registrationService: RegistrationService[F, Stream], config: Ap
           _.leftMap {
             _ match {
               case ae: ApnsException => ae
-              case e: Throwable => ApnsGenericFailure(notification.id, token, e)
+              case NonFatal(e) => ApnsGenericFailure(notification.id, token, e)
             }
           }
         }
