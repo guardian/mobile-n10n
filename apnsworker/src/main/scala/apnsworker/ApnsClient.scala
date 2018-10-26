@@ -2,11 +2,11 @@ package apnsworker
 
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
-
 import java.sql.Timestamp
 import java.util.UUID
 
-import apnsworker.models.{ApnsConfig, ApnsFeedbackFailure}
+import apnsworker.models.ApnsException.{ApnsDryRun, ApnsFailedDelivery, ApnsFailedRequest, ApnsInvalidToken}
+import apnsworker.models.{ApnsConfig, ApnsException}
 import apnsworker.payload.ApnsPayload
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
@@ -17,6 +17,9 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 object ApnsClient {
+
+  type Token = String
+  type ApnsResponse = Either[ApnsException, Token]
 
   def apply(config: ApnsConfig): Try[PushyApnsClient] = {
     val apnsServer =
@@ -38,7 +41,7 @@ object ApnsClient {
   }
 
   def sendNotification(notificationId: UUID, token: String, payload: ApnsPayload)
-    (onComplete: Either[Throwable, String] => Unit)
+    (onComplete: ApnsResponse => Unit)
     (client: PushyApnsClient, config: ApnsConfig)
     (implicit executionContext: ExecutionContext): Unit = {
 
@@ -55,30 +58,33 @@ object ApnsClient {
     type Feedback = PushNotificationFuture[SimpleApnsPushNotification, PushNotificationResponse[SimpleApnsPushNotification]]
 
     def responseHandler = new PushNotificationResponseListener[SimpleApnsPushNotification]() {
-      override def operationComplete(responseF: Feedback) {
-        if (responseF.isSuccess) {
-          val response = responseF.getNow
+      override def operationComplete(feedback: Feedback) {
+        if (feedback.isSuccess) {
+          val response = feedback.getNow
           if (response.isAccepted) {
             onComplete(Right(token))
           } else {
-            val feedbackFailure = ApnsFeedbackFailure(
-              token,
-              response.getApnsId,
-              response.getRejectionReason,
-              Option(response.getTokenInvalidationTimestamp).map(d => new Timestamp(d.getTime()).toLocalDateTime())
-            )
-            onComplete(Left(feedbackFailure))
+            val error =
+              Option(response.getTokenInvalidationTimestamp)
+                .map { d =>
+                  ApnsInvalidToken(
+                    notificationId,
+                    token,
+                    response.getRejectionReason,
+                    new Timestamp(d.getTime()).toLocalDateTime()
+                  )
+                }
+                .getOrElse(ApnsFailedDelivery(notificationId, token, response.getRejectionReason))
+            onComplete(Left(error))
           }
         } else {
-          val errorMsg = s"Error: APNS request failed (Notification $notificationId, Token: $token). Cause: ${responseF.cause()}"
-          onComplete(Left(new RuntimeException(errorMsg)))
+          onComplete(Left(ApnsFailedRequest(notificationId, token, feedback.cause())))
         }
       }
     }
 
     if(config.dryRun) {
-      val msg = s"Dry RUN !!!! Notification has not be sent (Notification $notificationId, Token: $token)}"
-      onComplete(Left(new RuntimeException(msg)))
+      onComplete(Left(ApnsDryRun(notificationId, token)))
     } else {
       client
         .sendNotification(pushNotification)

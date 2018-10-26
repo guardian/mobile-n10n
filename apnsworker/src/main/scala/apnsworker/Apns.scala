@@ -5,11 +5,12 @@ import cats.syntax.functor._
 import cats.syntax.list._
 import com.turo.pushy.apns.{ApnsClient => PushyApnsClient}
 import db.{RegistrationService, Topic}
-import _root_.models.{Notification, iOS, ShardRange}
+import _root_.models.{Notification, ShardRange, iOS}
+import apnsworker.ApnsClient.{ApnsResponse, Token}
 import apnsworker.payload.ApnsPayload
 import cats.data.NonEmptyList
 import fs2.Stream
-import models.{ApnsConfig}
+import models.ApnsConfig
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 
@@ -19,10 +20,10 @@ class Apns[F[_]](registrationService: RegistrationService[F, Stream], config: Ap
   private val apnsClientF: F[PushyApnsClient] =
     ApnsClient(config).fold(e => F.raiseError(e), c => F.delay(c))
 
-  def send(notification: Notification, shardRange: ShardRange): Stream[F, Either[Throwable, String]] = {
+  def send(notification: Notification, shardRange: ShardRange): Stream[F, Either[Throwable, Token]] = {
 
     def sendAsync(token: String, payload: ApnsPayload)(client: PushyApnsClient): F[String] =
-      Async[F].async[String] { (cb: Either[Throwable, String] => Unit) =>
+      Async[F].async[String] { (cb: ApnsResponse => Unit) =>
         ApnsClient.sendNotification(notification.id, token, payload)(cb)(client, config)
       }
 
