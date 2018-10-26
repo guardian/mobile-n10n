@@ -318,7 +318,6 @@ lazy val apnsworker = project
   .settings(standardSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.turo" % "pushy" % "0.13.5"
     )
   )
