@@ -60,12 +60,13 @@ class Fcm[F[_]](registrationService: RegistrationService[F, Stream], config: Fcm
     val payloadF = FcmPayload(notification, config.debug)
       .fold[F[FcmPayload]](F.raiseError(FcmInvalidPayload(notification.id)))(p => F.delay(p))
 
+    val maxConcurrency = 500
     for {
       fcmClient <- Stream.eval(fcmClientF)
       payload <- Stream.eval(payloadF)
       res <- tokens
         .map(token => sending(token, payload, fcmClient))
-        .parJoinUnbounded
+        .parJoin(maxConcurrency)
     } yield res
   }
 
