@@ -324,6 +324,15 @@ lazy val apnsworker = project
     )
   )
 
+lazy val fcmworker = project
+  .dependsOn(common)
+  .settings(standardSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.google.firebase" % "firebase-admin" % "6.3.0"
+    )
+  )
+
 lazy val notificationworkerlambda = project
   .dependsOn(apnsworker)
   .enablePlugins(RiffRaffArtifact)
@@ -358,5 +367,6 @@ lazy val root = (project in file(".")).
     apiClient,
     eventconsumer,
     apnsworker,
+    fcmworker
     notificationworkerlambda
   )
