@@ -4,7 +4,6 @@ import cats.effect._
 import cats.syntax.functor._
 import cats.syntax.list._
 import cats.syntax.either._
-import com.turo.pushy.apns.{ApnsClient => PushyApnsClient}
 import db.{RegistrationService, Topic}
 import _root_.models.{Notification, ShardRange, iOS}
 import apnsworker.ApnsClient.{ApnsResponse, Token}
@@ -14,20 +13,19 @@ import cats.data.NonEmptyList
 import fs2.{Pipe, Stream}
 import models.{ApnsConfig, ApnsException}
 
-import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
 class Apns[F[_]](registrationService: RegistrationService[F, Stream], config: ApnsConfig)
   (implicit executionContext: ExecutionContext, contextShift: Concurrent[F], F: Async[F]) {
 
-  private val apnsClientF: F[PushyApnsClient] =
-    ApnsClient(config).fold(e => F.raiseError(e), c => F.delay(c))
+  private val apnsClientF: F[ApnsClient] = ApnsClient(config).fold(e => F.raiseError(e), c => F.delay(c))
 
   def send(notification: Notification, shardRange: ShardRange): Stream[F, ApnsResponse] = {
 
-    def sendAsync(token: Token, payload: ApnsPayload)(client: PushyApnsClient): F[Token] =
+    def sendAsync(token: Token, payload: ApnsPayload)(client: ApnsClient): F[Token] =
       Async[F].async[Token] { (cb: ApnsResponse => Unit) =>
-        ApnsClient.sendNotification(notification.id, token, payload)(cb)(client, config)
+        client.sendNotification(notification.id, token, payload)(cb)
       }
 
     val topicsF: F[NonEmptyList[Topic]] = notification
@@ -42,7 +40,7 @@ class Apns[F[_]](registrationService: RegistrationService[F, Stream], config: Ap
         res <- registrationService.findTokens(topics, Some(iOS), Some(shardRange))
     } yield res
 
-    def sending(token: Token, payload: ApnsPayload, apnsClient: PushyApnsClient): Stream[F, ApnsResponse] = {
+    def sending(token: Token, payload: ApnsPayload, apnsClient: ApnsClient): Stream[F, ApnsResponse] = {
 
       def toApnsResponse(token: Token): Pipe[F, Token, ApnsResponse] =
         _.attempt.map {
@@ -71,6 +69,6 @@ class Apns[F[_]](registrationService: RegistrationService[F, Stream], config: Ap
     } yield res
   }
 
-  def close(): F[Future[Unit]] =
-    apnsClientF.map(client => Future(blocking(client.close().get())))
+  def close(): F[Unit] =
+    apnsClientF.map(_.close())
 }
