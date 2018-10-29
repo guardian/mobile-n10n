@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.UUID
 
+import apnsworker.ApnsClient.ApnsResponse
 import apnsworker.models.ApnsException.{ApnsDryRun, ApnsFailedDelivery, ApnsFailedRequest, ApnsInvalidToken}
 import apnsworker.models.payload.ApnsPayload
 import apnsworker.models.{ApnsConfig, ApnsException}
@@ -16,33 +17,11 @@ import com.turo.pushy.apns.{ApnsClientBuilder, DeliveryPriority, PushNotificatio
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-object ApnsClient {
-
-  type Token = String
-  type ApnsResponse = Either[ApnsException, Token]
-
-  def apply(config: ApnsConfig): Try[PushyApnsClient] = {
-    val apnsServer =
-      if (config.sendingToProdServer) ApnsClientBuilder.PRODUCTION_APNS_HOST
-      else ApnsClientBuilder.DEVELOPMENT_APNS_HOST
-
-    val signingKey = ApnsSigningKey.loadFromInputStream(
-      new ByteArrayInputStream(config.certificate.getBytes(StandardCharsets.UTF_8)),
-      config.teamId,
-      config.keyId
-    )
-
-    Try(
-      new ApnsClientBuilder()
-        .setApnsServer(apnsServer)
-        .setSigningKey(signingKey)
-        .build()
-    )
-  }
+class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig) {
+  def close(): Unit = underlying.close().get
 
   def sendNotification(notificationId: UUID, token: String, payload: ApnsPayload)
     (onComplete: ApnsResponse => Unit)
-    (client: PushyApnsClient, config: ApnsConfig)
     (implicit executionContext: ExecutionContext): Unit = {
 
     val collapseId = notificationId.toString
@@ -86,10 +65,35 @@ object ApnsClient {
     if(config.dryRun) {
       onComplete(Left(ApnsDryRun(notificationId, token)))
     } else {
-      client
+      underlying
         .sendNotification(pushNotification)
         .addListener(responseHandler)
     }
+  }
+}
+
+object ApnsClient {
+
+  type Token = String
+  type ApnsResponse = Either[ApnsException, Token]
+
+  def apply(config: ApnsConfig): Try[ApnsClient] = {
+    val apnsServer =
+      if (config.sendingToProdServer) ApnsClientBuilder.PRODUCTION_APNS_HOST
+      else ApnsClientBuilder.DEVELOPMENT_APNS_HOST
+
+    val signingKey = ApnsSigningKey.loadFromInputStream(
+      new ByteArrayInputStream(config.certificate.getBytes(StandardCharsets.UTF_8)),
+      config.teamId,
+      config.keyId
+    )
+
+    Try(
+      new ApnsClientBuilder()
+        .setApnsServer(apnsServer)
+        .setSigningKey(signingKey)
+        .build()
+    ).map(pushyClient => new ApnsClient(pushyClient, config))
   }
 
 }
