@@ -34,6 +34,7 @@ val specsVersion: String = "4.0.3"
 val awsSdkVersion: String = "1.11.433"
 val doobieVersion: String = "0.6.0"
 val catsVersion: String = "1.4.0"
+val simpleConfigurationVersion: String = "1.5.0"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -88,7 +89,7 @@ lazy val common = project
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.gu" %% "pa-client" % "6.1.0",
-      "com.gu" %% "simple-configuration-ssm" % "1.5.0",
+      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
@@ -170,7 +171,6 @@ lazy val schedulelambda = project
   .dependsOn(commonscheduledynamodb)
   .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
   .settings {
-    val simpleConfigurationVersion: String = "1.5.0"
 
     val byteBuddyVersion = "1.8.8"
     List(resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
@@ -330,7 +330,8 @@ lazy val notificationworkerlambda = project
   .settings(
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-      "org.slf4j" % "slf4j-simple" % "1.7.25"
+      "org.slf4j" % "slf4j-simple" % "1.7.25",
+      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion
     ),
 
     assemblyJarName := s"${name.value}.jar",
