@@ -27,7 +27,7 @@ object Env {
   )
 }
 
-object IOSWorker extends RequestStreamHandler with Logging {
+class IOSWorker extends RequestStreamHandler with Logging {
 
   val env = Env()
   implicit val ec = ExecutionContext.Implicits.global
