@@ -24,7 +24,7 @@ object Env {
   )
 }
 
-object Lambda extends RequestStreamHandler {
+object IOSWorker extends RequestStreamHandler {
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   val apns: Apns[IO] = ???
