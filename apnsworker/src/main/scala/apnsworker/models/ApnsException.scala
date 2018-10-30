@@ -6,7 +6,7 @@ import java.util.UUID
 
 sealed trait ApnsException extends RuntimeException {
   def notificationId: UUID
-  def prefix: String = "APNS: "
+  def prefix: String = "APNS - "
 }
 
 object ApnsException {
