@@ -89,6 +89,13 @@ Resources:
             - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
             Resource: "*"
+      - PolicyName: Conf
+        PolicyDocument:
+          Statement:
+          - Action: ssm:GetParametersByPath
+            Effect: Allow
+            Resource:
+              !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
 
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
