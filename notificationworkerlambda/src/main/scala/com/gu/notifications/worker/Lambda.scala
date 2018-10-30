@@ -1,18 +1,16 @@
 package com.gu.notifications.worker
 
-import com.amazonaws.services.lambda.runtime.Context
-import org.slf4j.{Logger, LoggerFactory}
+import java.io.{InputStream, OutputStream}
 
-/**
-  * This is compatible with aws' lambda JSON to POJO conversion.
-  * You can test your lambda by sending it the following payload:
-  * {"name": "Bob"}
-  */
-class LambdaInput() {
-  var name: String = _
-  def getName(): String = name
-  def setName(theName: String): Unit = name = theName
-}
+import apnsworker.Apns
+import apnsworker.ApnsClient.ApnsResponse
+import cats.effect.{IO, Resource}
+import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
+import com.amazonaws.util.IOUtils
+import fs2.Pipe
+import models.ShardedNotification
+import org.slf4j.{Logger, LoggerFactory}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 
 case class Env(app: String, stack: String, stage: String) {
   override def toString: String = s"App: $app, Stack: $stack, Stage: $stage\n"
@@ -26,27 +24,38 @@ object Env {
   )
 }
 
-object Lambda {
-
+object Lambda extends RequestStreamHandler {
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  /*
-   * This is your lambda entry point
-   */
-  def handler(lambdaInput: LambdaInput, context: Context): Unit = {
-    val env = Env()
-    logger.info(s"Starting $env")
-    logger.info(process(lambdaInput.name, env))
-  }
+  val apns: Apns[IO] = ???
+  def report: Pipe[IO, Either[Throwable, String], Unit] = ???
 
-  /*
-   * I recommend to put your logic outside of the handler
-   */
-  def process(name: String, env: Env): String = s"Hello $name! (from ${env.app} in ${env.stack})\n"
+  override def handleRequest(inputStream: InputStream, output: OutputStream, context: Context): Unit = {
+
+    def parseShardedNotification(input: String): IO[ShardedNotification] = {
+      Json.parse(input).validate[ShardedNotification] match {
+        case JsSuccess(shard, _) => IO.pure(shard)
+        case JsError(errors) => IO.raiseError(new RuntimeException(s"Unable to parse message $errors"))
+      }
+    }
+
+    val notification = for {
+      input <- Resource.fromAutoCloseable(IO(inputStream)).use(stream => IO(IOUtils.toString(stream)))
+      shardedNotification <- parseShardedNotification(input)
+    } yield shardedNotification
+
+    val prog: fs2.Stream[IO, ApnsResponse] = for {
+      n <- fs2.Stream.eval(notification)
+      res <- apns.send(n.notification, n.range)
+    } yield res
+
+
+    prog
+      .through(report)
+      .compile
+      .drain
+      .unsafeRunSync()
+
+  }
 }
 
-object TestIt {
-  def main(args: Array[String]): Unit = {
-    println(Lambda.process(args.headOption.getOrElse("Alex"), Env()))
-  }
-}
