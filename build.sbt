@@ -342,7 +342,8 @@ lazy val notificationworkerlambda = project
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
-    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", s"${name.value}-cfn/cfn.yaml")
+    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", s"ios-notification-worker-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", s"android-notification-worker-cfn/cfn.yaml")
   )
 
 lazy val root = (project in file(".")).

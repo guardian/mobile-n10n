@@ -7,14 +7,21 @@ deployments:
     app: ios-notification-worker
     parameters:
       bucket: mobile-notifications-dist
-      functionNames: [ios-notification-worker-]
+      functionNames: [ios-notification-worker-, android-notification-worker-]
       fileName: notificationworkerlambda.jar
       prefixStack: false
-    dependencies: [notificationworkerlambda-cfn]
-  notificationworkerlambda-cfn:
+    dependencies: [ios-notification-worker-cfn, android-notification-worker-cfn]
+  ios-notification-worker-cfn:
     type: cloud-formation
     app: ios-notification-worker
     parameters:
       prependStackToCloudFormationStackName: false
-      cloudFormationStackName: notificationworkerlambda
+      cloudFormationStackName: ios-notification-worker-cfn
+      templatePath: cfn.yaml
+  android-notification-worker-cfn:
+    type: cloud-formation
+    app: android-notification-worker
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: android-notification-worker-cfn
       templatePath: cfn.yaml
