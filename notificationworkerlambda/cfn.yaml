@@ -106,6 +106,10 @@ Resources:
           FromPort: 5432
           IpProtocol: tcp
           ToPort: 5432
+        - CidrIp: 0.0.0.0/0
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
       VpcId: !Ref VpcId
 
   WorkerLambda:
