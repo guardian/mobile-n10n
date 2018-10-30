@@ -24,7 +24,7 @@ class GuardianNotificationSender(
   sqsClient: AmazonSQSAsync,
   registrationCounter: TopicRegistrationCounter,
   platform: Platform,
-  sqsArn: String,
+  sqsUrl: String,
 )(implicit ec: ExecutionContext) extends NotificationSender {
 
   val WORKER_BATCH_SIZE: Int = 10000
@@ -72,7 +72,7 @@ class GuardianNotificationSender(
   def sendBatch(workerBatches: List[SendMessageBatchRequestEntry]): Future[List[SendMessageBatchResult]] = {
     val sqsBatches = workerBatches.grouped(SQS_BATCH_SIZE).toList
     Future.traverse(sqsBatches) { sqsBatch =>
-      val request: SendMessageBatchRequest = new SendMessageBatchRequest(sqsArn, sqsBatch.asJava)
+      val request: SendMessageBatchRequest = new SendMessageBatchRequest(sqsUrl, sqsBatch.asJava)
       wrapAsyncMethod(sqsClient.sendMessageBatchAsync, request)
     }
   }
@@ -105,7 +105,7 @@ class GuardianNotificationSender(
       ShardedNotification(notification, shard)
       val shardedNotification = ShardedNotification(notification, shard)
       val payloadJson = Json.stringify(Json.toJson(shardedNotification))
-      val messageId = s"${notification.id}-$platform-[${shard.start},${shard.end}]"
+      val messageId = s"${notification.id}-$platform-${shard.start}-${shard.end}"
       new SendMessageBatchRequestEntry(messageId, payloadJson)
     }
   }

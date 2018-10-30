@@ -11,16 +11,19 @@ import azure.NotificationHubClient
 import com.softwaremill.macwire._
 import controllers.Main
 import _root_.models.NewsstandShardConfig
+import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
 import com.gu.AppIdentity
 import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
+import _root_.models.{Android, Newsstand, iOS}
 import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
 import notification.services.azure._
 import notification.services.fcm.{APNSConfigConverter, AndroidConfigConverter, FCMNotificationSender}
+import notification.services.guardian.{GuardianNotificationSender, ReportTopicRegistrationCounter, TopicRegistrationCounter}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
@@ -105,12 +108,50 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     new FrontendAlerts(frontendConfig, wsClient)
   }
 
+  lazy val topicRegistrationCounter: TopicRegistrationCounter = new ReportTopicRegistrationCounter(
+    wsClient,
+    configuration.get[String]("report.url"),
+    configuration.get[String]("report.apiKey")
+  )
+
+  lazy val sqsClient: AmazonSQSAsync = AmazonSQSAsyncClientBuilder.standard()
+    .withCredentials(credentialsProvider)
+    .withRegion(EU_WEST_1)
+    .build()
+
+  lazy val guardianIosNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
+    sqsClient = sqsClient,
+    registrationCounter = topicRegistrationCounter,
+    platform = iOS,
+    sqsUrl = configuration.get[String]("notifications.queues.ios")
+  )
+
+  lazy val guardianAndroidNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
+    sqsClient = sqsClient,
+    registrationCounter = topicRegistrationCounter,
+    platform = Android,
+    sqsUrl = configuration.get[String]("notifications.queues.android")
+  )
+
+  lazy val guardianNewsstandNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
+    sqsClient = sqsClient,
+    registrationCounter = topicRegistrationCounter,
+    platform = Newsstand,
+    sqsUrl = configuration.get[String]("notifications.queues.ios")
+  )
+
+  def withFilter(notificationSender: NotificationSender, invertCondition: Boolean): NotificationSender =
+    new FilteredNotificationSender(notificationSender, topicRegistrationCounter, invertCondition)
+
   lazy val notificationSenders = List(
-    gcmNotificationSender,
-    apnsNotificationSender,
-    newsstandShardNotificationSender,
+    withFilter(guardianIosNotificationSender, invertCondition = false),
+    withFilter(guardianAndroidNotificationSender, invertCondition = false),
+    withFilter(guardianNewsstandNotificationSender, invertCondition = false),
+    withFilter(gcmNotificationSender, invertCondition = true),
+    withFilter(apnsNotificationSender, invertCondition = true),
+    withFilter(newsstandShardNotificationSender, invertCondition = true),
     //frontendAlerts, //disabled until frontend decides whether to fix this feature or not.
-    fcmNotificationSender
+    withFilter(fcmNotificationSender, invertCondition = true)
   )
 
   lazy val mainController = wire[Main]

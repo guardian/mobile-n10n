@@ -8,7 +8,8 @@ import scala.concurrent.duration.DurationLong
 
 class ReportTopicRegistrationCounter(
   ws: WSClient,
-  registrationCounterUrl: String
+  reportUrl: String,
+  apiKey: String
 )(implicit ec: ExecutionContext) extends TopicRegistrationCounter {
 
   val lruCache: LruCache[PlatformCount] = new LruCache[PlatformCount](200, 1000, 3.days)
@@ -16,8 +17,9 @@ class ReportTopicRegistrationCounter(
   override def count(topics: List[Topic]): Future[PlatformCount] = {
     lruCache(topics.toSet) {
       val topicParameters = topics.map(topic => "topics" -> topic.toString)
-      ws.url(registrationCounterUrl)
-        .withQueryStringParameters(topicParameters: _*)
+      val allParams = topicParameters ++ List("api-key" -> apiKey)
+      ws.url(s"$reportUrl/registration-count")
+        .withQueryStringParameters(allParams: _*)
         .get
         .map(response => response.json.as[PlatformCount])
     }
