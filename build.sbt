@@ -334,7 +334,7 @@ lazy val fcmworker = project
   )
 
 lazy val notificationworkerlambda = project
-  .dependsOn(apnsworker)
+  .dependsOn(apnsworker, fcmworker)
   .enablePlugins(RiffRaffArtifact)
   .settings(
     libraryDependencies ++= Seq(
@@ -367,6 +367,6 @@ lazy val root = (project in file(".")).
     apiClient,
     eventconsumer,
     apnsworker,
-    fcmworker
+    fcmworker,
     notificationworkerlambda
   )
