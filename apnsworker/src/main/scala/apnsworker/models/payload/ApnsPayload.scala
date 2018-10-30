@@ -129,7 +129,8 @@ object ApnsPayload {
             CustomProperty(Keys.MatchStatus -> n.matchStatus),
             CustomProperty(Keys.MatchId -> n.matchId),
             CustomProperty(Keys.MapiUrl -> n.matchInfoUri.toString),
-            CustomProperty(Keys.MatchInfoUri -> n.matchInfoUri.toString)
+            CustomProperty(Keys.MatchInfoUri -> n.matchInfoUri.toString),
+            CustomProperty(Keys.Uri -> "")
           ) ++
             n.articleUri.map(u => CustomProperty(Keys.ArticleUri -> u.toString)).toSeq ++
             n.competitionName.map(c => CustomProperty(Keys.CompetitionName -> c)).toSeq ++
