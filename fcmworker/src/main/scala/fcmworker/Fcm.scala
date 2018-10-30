@@ -14,6 +14,7 @@ import fcmworker.models.{FcmConfig, FcmException}
 import fs2.{Pipe, Stream}
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.util.control.NonFatal
 
 class Fcm[F[_]](registrationService: RegistrationService[F, Stream], config: FcmConfig)
   (implicit executionContext: ExecutionContextExecutor, concurrent: Concurrent[F], F: Async[F]) {
@@ -47,7 +48,7 @@ class Fcm[F[_]](registrationService: RegistrationService[F, Stream], config: Fcm
           _.leftMap {
             _ match {
               case fe: FcmException => fe
-              case e: Throwable => FcmGenericFailure(notification.id, token, e)
+              case NonFatal(e) => FcmGenericFailure(notification.id, token, e)
             }
           }
         }
