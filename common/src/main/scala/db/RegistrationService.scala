@@ -38,7 +38,7 @@ object RegistrationService {
     val password = config.get[String]("registration.db.password")
     val threads = config.get[Int]("registration.db.threads")
 
-    val jdbcConfig = JdbcConfig("org.postgresql.Driver", s"jdbc:postgresql://$url", user, password, threads)
+    val jdbcConfig = JdbcConfig("org.postgresql.Driver", url, user, password, threads)
     val transactor = DatabaseConfig.transactor[IO](jdbcConfig, applicationLifecycle)
 
     apply(transactor)
