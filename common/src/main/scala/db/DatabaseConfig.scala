@@ -29,10 +29,7 @@ object DatabaseConfig {
       config.password
     )
   }
-
-  def transactor[F[_] : Async](config: JdbcConfig, applicationLifecycle: ApplicationLifecycle)(implicit cs: ContextShift[F]): Transactor[F] = {
-    // manually creating the transactor to avoid having it wrapped in a Resource. Resources don't play well with
-    // Play's way of handling lifecycle
+  private def transactorAndDataSource[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): (Transactor[F], HikariDataSource) = {
     val connectEC = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.fixedThreadPool))
     val transactEC = ExecutionContext.fromExecutor(Executors.newCachedThreadPool)
     val dataSource = new HikariDataSource()
@@ -40,9 +37,20 @@ object DatabaseConfig {
     dataSource.setUsername(config.user)
     dataSource.setPassword(config.password)
 
-    applicationLifecycle.addStopHook(() => Future.successful(dataSource.close()))
+    (Transactor.fromDataSource.apply(dataSource, connectEC, transactEC), dataSource)
+  }
 
-    Transactor.fromDataSource.apply(dataSource, connectEC, transactEC)
+  def transactor[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): Transactor[F] = {
+    val (transactor, _) = transactorAndDataSource(config)
+    transactor
+  }
+
+  def transactor[F[_] : Async](config: JdbcConfig, applicationLifecycle: ApplicationLifecycle)(implicit cs: ContextShift[F]): Transactor[F] = {
+    // manually creating the transactor to avoid having it wrapped in a Resource. Resources don't play well with
+    // Play's way of handling lifecycle
+    val (transactor, dataSource) = transactorAndDataSource(config)
+    applicationLifecycle.addStopHook(() => Future.successful(dataSource.close()))
+    transactor
   }
 }
 

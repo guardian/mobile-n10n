@@ -4,13 +4,16 @@ import java.io.{InputStream, OutputStream}
 
 import apnsworker.Apns
 import apnsworker.ApnsClient.ApnsResponse
-import cats.effect.{IO, Resource}
+import cats.effect.{ContextShift, IO}
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
-import com.amazonaws.util.IOUtils
-import fs2.Pipe
-import models.ShardedNotification
+import models.SendingResults
+import _root_.models.iOS
+import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser}
+import db.{DatabaseConfig, RegistrationService}
+import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
-import play.api.libs.json.{JsError, JsSuccess, Json}
+
+import scala.concurrent.ExecutionContext
 
 case class Env(app: String, stack: String, stage: String) {
   override def toString: String = s"App: $app, Stack: $stack, Stage: $stage\n"
@@ -24,38 +27,46 @@ object Env {
   )
 }
 
-object IOSWorker extends RequestStreamHandler {
+object IOSWorker extends RequestStreamHandler with Logging {
+
+  val env = Env()
+  implicit val ec = ExecutionContext.Implicits.global
+  implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  val config: ApnsWorkerConfiguration = Configuration.fetchApns()
+  val transactor = DatabaseConfig.transactor[IO](config.jdbcConfig)
+  val registrationService = RegistrationService(transactor)
+  val apns = new Apns(registrationService, config.apnsConfig)
 
-  val apns: Apns[IO] = ???
-  def report: Pipe[IO, Either[Throwable, String], Unit] = ???
-
-  override def handleRequest(inputStream: InputStream, output: OutputStream, context: Context): Unit = {
-
-    def parseShardedNotification(input: String): IO[ShardedNotification] = {
-      Json.parse(input).validate[ShardedNotification] match {
-        case JsSuccess(shard, _) => IO.pure(shard)
-        case JsError(errors) => IO.raiseError(new RuntimeException(s"Unable to parse message $errors"))
+  def report(prefix: String): Pipe[IO, ApnsResponse, ApnsResponse] =
+    _.evalMap { resp =>
+      IO.delay {
+        resp match {
+          case Left(e) => logger.error(s"$prefix $e") //TODO: send invalid token to queue
+          case Right(_) => () // doing nothing when success
+        }
+        resp
       }
     }
 
-    val notification = for {
-      input <- Resource.fromAutoCloseable(IO(inputStream)).use(stream => IO(IOUtils.toString(stream)))
-      shardedNotification <- parseShardedNotification(input)
-    } yield shardedNotification
+  override def handleRequest(inputStream: InputStream, output: OutputStream, context: Context): Unit = {
 
-    val prog: fs2.Stream[IO, ApnsResponse] = for {
-      n <- fs2.Stream.eval(notification)
-      res <- apns.send(n.notification, n.range)
-    } yield res
+    val notification = NotificationParser.fromInputStream(inputStream)
 
+    val prog: Stream[IO, ApnsResponse] = for {
+      n <- Stream.eval(notification)
+      _ = logger.info(s"Sending notification ${n.notification.id}...")
+      resp <- apns.send(n.notification, n.range)
+    } yield resp
 
     prog
-      .through(report)
+      .through(report("APNS failure: "))
+      .fold(SendingResults.empty){ case (acc, resp) => SendingResults.inc(acc, resp) }
+      .through(logInfo(prefix = s"Results "))
+      .through(Cloudwatch.sendMetrics(env.stage, iOS))
       .compile
       .drain
       .unsafeRunSync()
-
   }
 }
 
