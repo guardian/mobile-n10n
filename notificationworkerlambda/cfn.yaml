@@ -35,6 +35,7 @@ Parameters:
   FullyQualifiedHandler:
     Description: The full name of the handler, including path, class name and method
     Type: String
+
 Resources:
   Sqs:
     Type: AWS::SQS::Queue
@@ -134,3 +135,8 @@ Resources:
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
       FunctionName: !Sub ${App}-${Stage}
+
+Outputs:
+  SQSArn:
+    Description: The arn of the sqs queue
+    Value: !GetAtt Sqs.Arn
