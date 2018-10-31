@@ -1,13 +1,11 @@
 package com.gu.notifications.worker
 
-import java.io.{InputStream, OutputStream}
+import cats.effect.IO
+import com.gu.notifications.worker.delivery.FcmDeliverySuccess
+import com.gu.notifications.worker.delivery.fcm.{Fcm, FcmClient}
 
-import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
-import org.slf4j.{Logger, LoggerFactory}
-
-object AndroidWorker extends RequestStreamHandler  {
-  val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
-    logger.info("yo!")
-  }
+class AndroidWorker extends WorkerRequestStreamHandler[FcmDeliverySuccess] {
+  val config: FcmWorkerConfiguration = Configuration.fetchFirebase()
+  val deliveryServiceIO: IO[Fcm[IO]] = FcmClient(config.fcmConfig).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(registrationService, c)))
 }
+

@@ -315,32 +315,17 @@ lazy val eventconsumer = project
     )
   })
 
-lazy val apnsworker = project
-  .dependsOn(common)
-  .settings(standardSettings: _*)
-  .settings(
-    libraryDependencies ++= Seq(
-      "com.turo" % "pushy" % "0.13.5"
-    )
-  )
-
-lazy val fcmworker = project
-  .dependsOn(common)
-  .settings(standardSettings: _*)
-  .settings(
-    libraryDependencies ++= Seq(
-      "com.google.firebase" % "firebase-admin" % "6.3.0"
-    )
-  )
-
 lazy val notificationworkerlambda = project
-  .dependsOn(apnsworker, fcmworker)
+  .dependsOn(common)
   .enablePlugins(RiffRaffArtifact)
   .settings(
     libraryDependencies ++= Seq(
+      "com.turo" % "pushy" % "0.13.5",
+      "com.google.firebase" % "firebase-admin" % "6.3.0",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
       "org.slf4j" % "slf4j-simple" % "1.7.25",
-      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion
+      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+      specs2 % Test
     ),
 
     assemblyJarName := s"${name.value}.jar",
@@ -366,7 +351,5 @@ lazy val root = (project in file(".")).
     schedulelambda,
     apiClient,
     eventconsumer,
-    apnsworker,
-    fcmworker,
     notificationworkerlambda
   )

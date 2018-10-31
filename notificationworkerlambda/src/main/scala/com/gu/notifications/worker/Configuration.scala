@@ -1,14 +1,17 @@
 package com.gu.notifications.worker
 
-import apnsworker.models.ApnsConfig
+import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
 import com.gu.{AppIdentity, AwsIdentity}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.typesafe.config.Config
 import db.JdbcConfig
-import fcmworker.models.FcmConfig
+import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 
-case class ApnsWorkerConfiguration(jdbcConfig: JdbcConfig, apnsConfig: ApnsConfig)
-case class FcmWorkerConfiguration(jdbcConfig: JdbcConfig, fcmConfig: FcmConfig)
+sealed trait WorkerConfiguration {
+  def jdbcConfig: JdbcConfig
+}
+case class ApnsWorkerConfiguration(jdbcConfig: JdbcConfig, apnsConfig: ApnsConfig) extends WorkerConfiguration
+case class FcmWorkerConfiguration(jdbcConfig: JdbcConfig, fcmConfig: FcmConfig) extends WorkerConfiguration
 
 object Configuration {
 
