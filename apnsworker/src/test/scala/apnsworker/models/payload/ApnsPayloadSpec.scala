@@ -237,6 +237,7 @@ class ApnsPayloadSpec extends Specification with Matchers {
         |      "articleUri":"https://mobile.guardianapis.com/items/some-liveblog",
         |      "awayTeamName":"Burnley",
         |      "awayTeamScore":"1",
+        |      "uri":"",
         |      "currentMinute":"",
         |      "matchInfoUri":"https://mobile.guardianapis.com/sport/football/match-info/3955232",
         |      "homeTeamId":"1006",
