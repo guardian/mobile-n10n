@@ -1,17 +1,17 @@
 package com.gu.notifications.worker
 
-import java.io.{InputStream, OutputStream}
-
 import cats.effect.{ContextShift, IO}
-import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.delivery._
-import com.gu.notifications.worker.models.SendingResults
+import models.SendingResults
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
 import db.{DatabaseConfig, RegistrationService}
 import org.slf4j.{Logger, LoggerFactory}
 import fs2.Stream
-import _root_.models.iOS
+import _root_.models.{iOS, ShardedNotification}
 
+import collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 case class Env(app: String, stack: String, stage: String) {
@@ -26,10 +26,10 @@ object Env {
   )
 }
 
-trait WorkerRequestStreamHandler[S <: DeliverySuccess] extends RequestStreamHandler with Logging {
+trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent, Unit] with Logging {
 
   def config: WorkerConfiguration
-  def deliveryServiceIO: IO[DeliveryService[IO, _, S, _]]
+  def deliveryService: IO[DeliveryService[IO, _, S, _]]
 
   def env = Env()
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
@@ -38,12 +38,15 @@ trait WorkerRequestStreamHandler[S <: DeliverySuccess] extends RequestStreamHand
   def transactor = DatabaseConfig.transactor[IO](config.jdbcConfig)
   def registrationService = RegistrationService(transactor)
 
-  override def handleRequest(inputStream: InputStream, output: OutputStream, context: Context): Unit = {
+  override def handleRequest(event: SQSEvent, context: Context): Unit = {
 
-    val notification = NotificationParser.fromInputStream(inputStream)
+    def notification: IO[ShardedNotification] = for {
+      json <- event.getRecords.asScala.headOption.map(r => IO(r.getBody)).getOrElse(IO.raiseError(new RuntimeException("SQSEvent has no element")))
+      n <- NotificationParser.parseShardedNotification(json)
+    } yield n
 
     val prog: Stream[IO, Either[DeliveryException, S]] = for {
-      deliveryService <- Stream.eval(deliveryServiceIO)
+      deliveryService <- Stream.eval(deliveryService)
       n <- Stream.eval(notification)
       _ = logger.info(s"Sending notification ${n.notification.id}...")
       resp <- deliveryService.send(n.notification, n.range)

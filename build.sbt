@@ -323,6 +323,7 @@ lazy val notificationworkerlambda = project
       "com.turo" % "pushy" % "0.13.5",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+      "com.amazonaws" % "aws-lambda-java-events" % "2.2.2",
       "org.slf4j" % "slf4j-simple" % "1.7.25",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       specs2 % Test
