@@ -28,7 +28,7 @@ class DeliveryService[F[_], P <: DeliveryPayload, S <: DeliverySuccess, C <: Del
 
     val topicsF: F[NonEmptyList[Topic]] = notification
       .topic
-      .map(t => Topic(t.name))
+      .map(t => Topic(t.fullName))
       .toNel
       .map(nel => F.delay(nel))
       .getOrElse(F.raiseError(InvalidTopics(notification.id)))
