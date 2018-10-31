@@ -35,7 +35,7 @@ trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  def transactor = DatabaseConfig.transactor[IO](config.jdbcConfig)
+  val transactor = DatabaseConfig.transactor[IO](config.jdbcConfig)
   def registrationService = RegistrationService(transactor)
 
   override def handleRequest(event: SQSEvent, context: Context): Unit = {
