@@ -5,6 +5,7 @@ import java.io.InputStream
 import cats.effect.{IO, Resource}
 import com.amazonaws.util.IOUtils
 import models.ShardedNotification
+import org.slf4j.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
 object NotificationParser {
@@ -16,8 +17,9 @@ object NotificationParser {
     }
   }
 
-  def fromInputStream(inputStream: InputStream): IO[ShardedNotification] = for {
+  def fromInputStream(inputStream: InputStream)(implicit logger: Logger): IO[ShardedNotification] = for {
     input <- Resource.fromAutoCloseable(IO(inputStream)).use(is => IO(IOUtils.toString(is)))
+    _ = logger.info(input)
     shardedNotification <- parseShardedNotification(input)
   } yield shardedNotification
 
