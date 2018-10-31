@@ -127,7 +127,7 @@ Resources:
           App: !Ref App
       Description: Consumes queue events and sends notifications
       Handler: !Ref FullyQualifiedHandler
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
