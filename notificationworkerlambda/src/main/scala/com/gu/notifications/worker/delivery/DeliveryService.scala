@@ -9,7 +9,7 @@ import cats.syntax.either._
 import cats.syntax.list._
 import com.gu.notifications.worker.delivery.DeliveryException.{GenericFailure, InvalidPayload, InvalidTopics}
 import db.{RegistrationService, Topic}
-import fs2.{Pipe, Stream}
+import fs2.Stream
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
@@ -18,7 +18,7 @@ import scala.util.control.NonFatal
 
 class DeliveryService[F[_], P <: DeliveryPayload, S <: DeliverySuccess, C <: DeliveryClient[P, S]]
   (registrationService: RegistrationService[F, Stream], client: C, maxConcurrency: Int = Int.MaxValue)
-  (implicit ece: ExecutionContextExecutor, contextShift: Concurrent[F], F: Async[F]) {
+  (implicit ece: ExecutionContextExecutor, contextShift: Concurrent[F], F: Async[F], T: Timer[F]) {
 
   def send(
     notification: Notification,

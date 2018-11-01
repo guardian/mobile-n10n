@@ -1,6 +1,6 @@
 package com.gu.notifications.worker
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.delivery._
@@ -9,7 +9,7 @@ import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParse
 import db.{DatabaseConfig, RegistrationService}
 import org.slf4j.{Logger, LoggerFactory}
 import fs2.Stream
-import _root_.models.{iOS, ShardedNotification}
+import _root_.models.{ShardedNotification, iOS}
 
 import collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
@@ -34,6 +34,7 @@ trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent
   def env = Env()
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
+  implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
   def transactor = DatabaseConfig.transactor[IO](config.jdbcConfig)
   def registrationService = RegistrationService(transactor)
