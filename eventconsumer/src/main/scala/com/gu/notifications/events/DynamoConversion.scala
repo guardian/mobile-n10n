@@ -14,27 +14,34 @@ object DynamoConversion {
     val eventMap = eventAggregationAv.getM.asScala
     val providerMap = eventMap("provider").getM.asScala
     EventAggregation(
-      platformCounts = platformFromAttributeValue(eventMap("platform")),
-      providerCounts = ProviderCount(providerMap("total").getN.toInt, platformFromAttributeValue(providerMap("azure")), platformFromAttributeValue(providerMap("firebase"))),
+      platformCounts = platformFromAttributeValue(eventMap.get("platform")),
+      providerCounts = ProviderCount(
+        total = providerMap("total").getN.toInt,
+        azure = platformFromAttributeValue(providerMap.get("azure")),
+        firebase = platformFromAttributeValue(providerMap.get("firebase")),
+        guardian = platformFromAttributeValue(providerMap.get("guardian"))
+      ),
       timing = eventMap("timing").getL.asScala.toList.map(av => {
         val list = av.getL.asScala.toList
-        (list(0).getN.toInt, list(1).getN.toInt)
+        (list.head.getN.toInt, list(1).getN.toInt)
       }).foldLeft((sentTime, List[(LocalDateTime, Int)]())) {
-        case ((lastTime, newList), (offset, count)) => {
+        case ((lastTime, newList), (offset, count)) =>
           val nextTime = lastTime.plusSeconds(offset * 10)
           (nextTime, (nextTime, count) :: newList)
-        }
       }._2.toMap
 
     )
   }
 
-  private def platformFromAttributeValue(platformAv: AttributeValue): PlatformCount = {
-    val platformMap = platformAv.getM.asScala
-    PlatformCount(
-      total = platformMap("total").getN.toInt,
-      ios = platformMap("ios").getN.toInt,
-      android = platformMap("android").getN.toInt)
+  private def platformFromAttributeValue(platformAv: Option[AttributeValue]): PlatformCount = platformAv match {
+    case None => PlatformCount.empty
+    case Some(platformCount) =>
+      val platformMap = platformCount.getM.asScala
+      PlatformCount(
+        total = platformMap("total").getN.toInt,
+        ios = platformMap("ios").getN.toInt,
+        android = platformMap("android").getN.toInt
+      )
   }
 
   def toAttributeValue(eventAggregation: EventAggregation, sent: LocalDateTime): AttributeValue = {
@@ -49,7 +56,8 @@ object DynamoConversion {
       "provider" -> new AttributeValue().withM(Map(
         "total" -> new AttributeValue().withN(provider.total.toString),
         "azure" -> toAttributeValue(provider.azure),
-        "firebase" -> toAttributeValue(provider.firebase)
+        "firebase" -> toAttributeValue(provider.firebase),
+        "guardian" -> toAttributeValue(provider.guardian)
       ).asJava),
       "timing" -> new AttributeValue().withL(
         eventAggregation.timing.toList
