@@ -96,6 +96,12 @@ Resources:
             Effect: Allow
             Resource:
               !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
+      - PolicyName: Cloudwatch
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action: cloudwatch:PutMetricData
+            Resource: "*"
 
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
