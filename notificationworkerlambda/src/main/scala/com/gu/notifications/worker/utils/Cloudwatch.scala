@@ -2,10 +2,11 @@ package com.gu.notifications.worker.utils
 
 import cats.effect.IO
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClientBuilder
-import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
+import com.amazonaws.services.cloudwatch.model._
 import com.gu.notifications.worker.models.SendingResults
 import fs2.Pipe
 import models.Platform
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 
@@ -32,7 +33,9 @@ object Cloudwatch {
         val req = new PutMetricDataRequest()
           .withNamespace(s"Notifications/$stage/workers")
           .withMetricData(metrics.asJava)
-        cloudwatchClient.putMetricDataAsync(req)
+        val res: PutMetricDataResult = cloudwatchClient.putMetricDataAsync(req).get()
+        val logger: Logger = LoggerFactory.getLogger(this.getClass)
+        logger.info(res.toString)
         ()
       }
     }
