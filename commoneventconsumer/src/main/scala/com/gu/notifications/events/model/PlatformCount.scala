@@ -10,6 +10,9 @@ case class PlatformCount(
 
 
 object PlatformCount {
+
+  val empty: PlatformCount = PlatformCount(0, 0, 0)
+
   def from(platform: Platform): PlatformCount = platform match {
     case Ios => PlatformCount(1, 1, 0)
     case Android => PlatformCount(1, 0, 1)
