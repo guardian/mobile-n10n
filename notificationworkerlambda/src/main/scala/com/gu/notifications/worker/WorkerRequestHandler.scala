@@ -40,15 +40,17 @@ trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent
 
   override def handleRequest(event: SQSEvent, context: Context): Unit = {
 
-    def notification: IO[ShardedNotification] = for {
-      json <- event.getRecords.asScala.headOption.map(r => IO(r.getBody)).getOrElse(IO.raiseError(new RuntimeException("SQSEvent has no element")))
-      n <- NotificationParser.parseShardedNotification(json)
-    } yield n
+    def sharedNotification: Stream[IO, ShardedNotification] = Stream.eval(
+      for {
+        json <- event.getRecords.asScala.headOption.map(r => IO(r.getBody)).getOrElse(IO.raiseError(new RuntimeException("SQSEvent has no element")))
+        n <- NotificationParser.parseShardedNotification(json)
+      } yield n
+    )
 
     val prog: Stream[IO, Either[DeliveryException, S]] = for {
       deliveryService <- Stream.eval(deliveryService)
-      n <- Stream.eval(notification)
-      _ = logger.info(s"Sending notification ${n.notification.id}...")
+      n <- sharedNotification
+      _ = logger.info(s"Sending notification ${n.notification.id} (shard range: ${n.range})...")
       resp <- deliveryService.send(n.notification, n.range)
     } yield resp
 
