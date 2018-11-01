@@ -8,7 +8,7 @@ import java.util.UUID
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{DryRun, FailedDelivery, FailedRequest, InvalidToken}
 import models.ApnsConfig
-import _root_.models.Notification
+import _root_.models.{Notification, iOS, Platform}
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayload
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
@@ -20,6 +20,8 @@ import scala.util.Try
 
 class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig)
   extends DeliveryClient[ApnsPayload, ApnsDeliverySuccess] {
+
+  val platform: Platform = iOS
 
   def close(): Unit = underlying.close().get
 

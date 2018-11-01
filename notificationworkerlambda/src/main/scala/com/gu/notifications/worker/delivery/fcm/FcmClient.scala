@@ -12,7 +12,7 @@ import com.gu.notifications.worker.delivery.DeliveryException.{DryRun, FailedReq
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayload
 import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
 import models.FcmConfig
-import _root_.models.Notification
+import _root_.models.{Notification, Android, Platform}
 
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 import scala.util.control.NonFatal
@@ -20,6 +20,8 @@ import scala.util.{Failure, Success, Try}
 
 class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
   extends DeliveryClient[FcmPayload, FcmDeliverySuccess] {
+
+  val platform: Platform = Android
 
   private val invalidTokenErrorCodes = Seq(
     "messaging/invalid-registration-token",

@@ -1,6 +1,6 @@
 package com.gu.notifications.worker.delivery
 
-import _root_.models.{Notification, ShardRange, iOS}
+import _root_.models.{Notification, ShardRange}
 import cats.data.NonEmptyList
 import cats.effect._
 import cats.syntax.either._
@@ -35,7 +35,7 @@ class DeliveryService[F[_], P <: DeliveryPayload, S <: DeliverySuccess, C <: Del
 
     def tokens: Stream[F, String] = for {
       topics <- Stream.eval(topicsF)
-      res <- registrationService.findTokens(topics, Some(iOS), Some(shardRange))
+      res <- registrationService.findTokens(topics, Some(client.platform), Some(shardRange))
     } yield res
 
     def sending(token: String, payload: P, client: C): Stream[F, Either[DeliveryException, S]] = {
