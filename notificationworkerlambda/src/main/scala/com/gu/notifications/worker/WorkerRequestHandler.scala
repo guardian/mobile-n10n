@@ -47,18 +47,18 @@ trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent
       } yield n
     )
 
-    val prog: Stream[IO, Either[DeliveryException, S]] = for {
+    val prog: Stream[IO, SendingResults] = for {
       deliveryService <- Stream.eval(deliveryService)
       n <- sharedNotification
-      _ = logger.info(s"Sending notification ${n.notification.id} (shard range: ${n.range})...")
+      _ = logger.info(s"Sending notification $n...")
       resp <- deliveryService.send(n.notification, n.range)
+        .through(Reporting.report(s"APNS failure (notification $n): "))
+        .fold(SendingResults.empty){ case (acc, resp) => SendingResults.inc(acc, resp) }
+        .through(Cloudwatch.sendMetrics(env.stage, iOS))
+        .through(logInfo(prefix = s"Results (notification $n): "))
     } yield resp
 
     prog
-      .through(Reporting.report("APNS failure: "))
-      .fold(SendingResults.empty){ case (acc, resp) => SendingResults.inc(acc, resp) }
-      .through(logInfo(prefix = s"Results "))
-      .through(Cloudwatch.sendMetrics(env.stage, iOS))
       .compile
       .drain
       .unsafeRunSync()
