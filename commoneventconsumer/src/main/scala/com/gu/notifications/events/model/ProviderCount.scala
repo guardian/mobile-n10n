@@ -1,6 +1,6 @@
 package com.gu.notifications.events.model
 
-import play.api.libs.json.Json
+import play.api.libs.json._
 
 
 case class ProviderCount(
@@ -28,5 +28,22 @@ object ProviderCount {
     firebase = PlatformCount.combine(countsA.firebase, countsB.firebase),
     guardian = PlatformCount.combine(countsA.guardian, countsB.guardian)
   )
-  implicit val jf = Json.format[ProviderCount]
+  implicit val providerCountJF: Format[ProviderCount] = new Format[ProviderCount] {
+    val defaultWrites = Json.writes[ProviderCount]
+    override def writes(providerCount: ProviderCount): JsValue = defaultWrites.writes(providerCount)
+    override def reads(json: JsValue): JsResult[ProviderCount] = json match {
+      case JsObject(attributes) => for {
+        total <- attributes("total").validate[Int]
+        azure <- attributes.get("azure").map(_.validate[PlatformCount]).getOrElse(JsSuccess(PlatformCount.empty))
+        firebase <- attributes.get("firebase").map(_.validate[PlatformCount]).getOrElse(JsSuccess(PlatformCount.empty))
+        guardian <- attributes.get("guardian").map(_.validate[PlatformCount]).getOrElse(JsSuccess(PlatformCount.empty))
+      } yield ProviderCount(
+        total = total,
+        azure = azure,
+        firebase = firebase,
+        guardian = guardian
+      )
+      case _ => JsError("Was expecting a JsObject in order to parse a ProviderCount")
+    }
+  }
 }
