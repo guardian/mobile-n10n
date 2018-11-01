@@ -28,7 +28,7 @@ object Env {
 
 trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent, Unit] with Logging {
 
-  val config: WorkerConfiguration
+  def config: WorkerConfiguration
   def deliveryService: IO[DeliveryService[IO, _, S, _]]
 
   def env = Env()
