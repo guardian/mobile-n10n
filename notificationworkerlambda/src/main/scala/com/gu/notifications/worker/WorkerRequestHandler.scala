@@ -28,7 +28,6 @@ object Env {
 
 trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent, Unit] with Logging {
 
-  def config: WorkerConfiguration
   def deliveryService: IO[DeliveryService[IO, _, S, _]]
 
   def env = Env()
@@ -36,8 +35,6 @@ trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  def transactor = DatabaseConfig.transactor[IO](config.jdbcConfig)
-  def registrationService = RegistrationService(transactor)
 
   override def handleRequest(event: SQSEvent, context: Context): Unit = {
 
