@@ -48,10 +48,10 @@ trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent
     val prog: Stream[IO, Unit] = for {
       deliveryService <- Stream.eval(deliveryService)
       n <- sharedNotification
-      _ = logger.info(s"Sending notification $n...")
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
+      _ = logger.info(s"Sending notification $notificationLog...")
       resp <- deliveryService.send(n.notification, n.range)
-        .through(Reporting.report(s"APNS failure $notificationLog: "))
+        .through(Reporting.report(s"APNS failure: "))
         .fold(SendingResults.empty){ case (acc, resp) => SendingResults.inc(acc, resp) }
         .through(logInfo(prefix = s"Results $notificationLog: "))
         .through(Cloudwatch.sendMetrics(env.stage, iOS))
