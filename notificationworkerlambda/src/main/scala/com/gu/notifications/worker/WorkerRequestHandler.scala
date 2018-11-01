@@ -47,7 +47,7 @@ trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent
       } yield n
     )
 
-    val prog: Stream[IO, SendingResults] = for {
+    val prog: Stream[IO, Unit] = for {
       deliveryService <- Stream.eval(deliveryService)
       n <- sharedNotification
       _ = logger.info(s"Sending notification $n...")
