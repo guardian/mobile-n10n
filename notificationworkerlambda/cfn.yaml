@@ -48,7 +48,7 @@ Resources:
       MessageRetentionPeriod: 3600 # 1 hour
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt Dlq.Arn
-        maxReceiveCount: !Ref 1 # ie: no retry
+        maxReceiveCount: 1 # ie: no retry
 
   ExecutionRole:
     Type: AWS::IAM::Role
