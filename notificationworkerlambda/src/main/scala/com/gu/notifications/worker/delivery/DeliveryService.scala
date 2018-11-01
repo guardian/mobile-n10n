@@ -1,5 +1,7 @@
 package com.gu.notifications.worker.delivery
 
+import java.util.concurrent.TimeUnit
+
 import _root_.models.{Notification, ShardRange}
 import cats.data.NonEmptyList
 import cats.effect._
@@ -9,7 +11,9 @@ import com.gu.notifications.worker.delivery.DeliveryException.{GenericFailure, I
 import db.{RegistrationService, Topic}
 import fs2.{Pipe, Stream}
 
-import scala.concurrent.{ExecutionContextExecutor}
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.duration.FiniteDuration
+import scala.util.Random
 import scala.util.control.NonFatal
 
 class DeliveryService[F[_], P <: DeliveryPayload, S <: DeliverySuccess, C <: DeliveryClient[P, S]]
@@ -40,19 +44,27 @@ class DeliveryService[F[_], P <: DeliveryPayload, S <: DeliverySuccess, C <: Del
 
     def sending(token: String, payload: P, client: C): Stream[F, Either[DeliveryException, S]] = {
 
-      def toDeliveryResponse(token: String): Pipe[F, S, Either[DeliveryException, S]] =
-        _.attempt.map {
+      val delayInMs = {
+        val rangeInMs = Range(1000, 3000)
+        rangeInMs.min + new Random().nextInt(rangeInMs.max - rangeInMs.min)
+      }
+      Stream
+        .retry(
+          sendAsync(token, payload)(client),
+          delay = FiniteDuration(delayInMs, TimeUnit.MILLISECONDS),
+          nextDelay = _.mul(2),
+          maxAttempts = 3
+        )
+        .attempt
+        .map {
           _.leftMap {
             _ match {
               case de: DeliveryException => de
               case NonFatal(e) => GenericFailure(notification.id, token, e)
             }
           }
-        }
 
-      Stream
-        .eval(sendAsync(token, payload)(client))
-        .through(toDeliveryResponse(token))
+        }
     }
 
     val payloadF: F[P] = client.payloadBuilder(notification)

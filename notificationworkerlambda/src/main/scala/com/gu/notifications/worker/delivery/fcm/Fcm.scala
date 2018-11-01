@@ -9,5 +9,5 @@ import scala.concurrent.ExecutionContextExecutor
 
 class Fcm[F[_]](registrationService: RegistrationService[F, Stream], client: FcmClient)
   (implicit ece: ExecutionContextExecutor, contextShift: Concurrent[F], F: Async[F])
-  extends DeliveryService[F, FcmPayload, FcmDeliverySuccess, FcmClient](registrationService, client, maxConcurrency = 500)
+  extends DeliveryService[F, FcmPayload, FcmDeliverySuccess, FcmClient](registrationService, client, maxConcurrency = 100)
 
