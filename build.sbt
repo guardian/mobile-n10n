@@ -342,6 +342,15 @@ lazy val notificationworkerlambda = project
     riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", s"android-notification-worker-cfn/cfn.yaml")
   )
 
+lazy val fcmworker = project
+  .dependsOn(common)
+  .settings(standardSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.google.firebase" % "firebase-admin" % "6.3.0"
+    )
+  )
+
 lazy val root = (project in file(".")).
   aggregate(
     registration,
