@@ -19,7 +19,10 @@ import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
-  extends DeliveryClient[FcmPayload, FcmDeliverySuccess] {
+  extends DeliveryClient {
+
+  type Success = FcmDeliverySuccess
+  type Payload = FcmPayload
 
   val platform: Platform = Android
 
@@ -32,8 +35,8 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayload(n, config.debug)
 
-  def sendNotification(notificationId: UUID, token: String, payload: FcmPayload)
-    (onComplete: Either[Throwable, FcmDeliverySuccess] => Unit)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload)
+    (onComplete: Either[Throwable, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {
 
     val message = Message

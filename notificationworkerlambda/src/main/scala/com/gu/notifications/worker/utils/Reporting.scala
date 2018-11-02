@@ -1,13 +1,13 @@
 package com.gu.notifications.worker.utils
 
 import cats.effect.IO
-import com.gu.notifications.worker.delivery.{DeliveryException, DeliverySuccess}
+import com.gu.notifications.worker.delivery.{DeliveryClient, DeliveryException, DeliverySuccess}
 import fs2.Pipe
 import org.slf4j.Logger
 
 object Reporting {
 
-  def report(prefix: String)(implicit logger: Logger): Pipe[IO, Either[DeliveryException, DeliverySuccess], Either[DeliveryException, DeliverySuccess]] =
+  def report[C <: DeliveryClient](prefix: String)(implicit logger: Logger): Pipe[IO, Either[DeliveryException, C#Success], Either[DeliveryException, C#Success]] =
     _.evalMap { resp =>
       IO.delay {
         resp match {

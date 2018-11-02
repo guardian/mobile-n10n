@@ -18,8 +18,10 @@ import com.turo.pushy.apns.{ApnsClientBuilder, DeliveryPriority, PushNotificatio
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Try
 
-class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig)
-  extends DeliveryClient[ApnsPayload, ApnsDeliverySuccess] {
+class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig) extends DeliveryClient {
+
+  type Success = ApnsDeliverySuccess
+  type Payload = ApnsPayload
 
   val platform: Platform = iOS
 
@@ -27,8 +29,8 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   def payloadBuilder: Notification => Option[ApnsPayload] = ApnsPayload.apply _
 
-  def sendNotification(notificationId: UUID, token: String, payload: ApnsPayload)
-    (onComplete: Either[Throwable, ApnsDeliverySuccess] => Unit)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload)
+    (onComplete: Either[Throwable, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit = {
 
     val collapseId = notificationId.toString

@@ -26,9 +26,9 @@ object Env {
   )
 }
 
-trait WorkerRequestHandler[S <: DeliverySuccess] extends RequestHandler[SQSEvent, Unit] with Logging {
+trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent, Unit] with Logging {
 
-  def deliveryService: IO[DeliveryService[IO, _, S, _]]
+  def deliveryService: IO[DeliveryService[IO, C]]
 
   def env = Env()
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
