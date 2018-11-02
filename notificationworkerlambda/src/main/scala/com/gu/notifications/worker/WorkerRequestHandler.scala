@@ -51,7 +51,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Sending notification $notificationLog...")
       resp <- deliveryService.send(n.notification, n.range)
-        .through(Reporting.report(s"APNS failure: "))
+        .through(Reporting.report(s"Sending failure: "))
         .fold(SendingResults.empty){ case (acc, resp) => SendingResults.inc(acc, resp) }
         .through(logInfo(prefix = s"Results $notificationLog: "))
         .through(Cloudwatch.sendMetrics(env.stage, iOS))
