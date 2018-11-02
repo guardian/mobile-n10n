@@ -74,6 +74,7 @@ object FcmClient {
     Try {
       val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
           .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(config.serviceAccountKey.getBytes)))
+          .setConnectTimeout(10000) // 10 seconds
           .build
       FirebaseApp.initializeApp(firebaseOptions)
     }

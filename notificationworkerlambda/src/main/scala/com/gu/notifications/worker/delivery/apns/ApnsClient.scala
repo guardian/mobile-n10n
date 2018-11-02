@@ -4,11 +4,12 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{DryRun, FailedDelivery, FailedRequest, InvalidToken}
 import models.ApnsConfig
-import _root_.models.{Notification, iOS, Platform}
+import _root_.models.{Notification, Platform, iOS}
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayload
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
@@ -98,6 +99,7 @@ object ApnsClient {
       new ApnsClientBuilder()
         .setApnsServer(apnsServer)
         .setSigningKey(signingKey)
+        .setConnectionTimeout(10, TimeUnit.SECONDS)
         .build()
     ).map(pushyClient => new ApnsClient(pushyClient, config))
   }
