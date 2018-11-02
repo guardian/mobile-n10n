@@ -75,13 +75,6 @@ Resources:
             - logs:PutLogEvents
             Resource:
             - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${App}-${Stage}:*"
-
-      - PolicyName: Dynamo
-        PolicyDocument:
-          Statement:
-            Effect: Allow
-            Action: dynamodb:*
-            Resource: !Sub "arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-reports-${Stage}"
       - PolicyName: SQS
         PolicyDocument:
           Statement:
