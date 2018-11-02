@@ -37,10 +37,18 @@ Parameters:
     Type: String
 
 Resources:
+
+  Dlq:
+    Type: AWS::SQS::Queue
+
   Sqs:
     Type: AWS::SQS::Queue
     Properties:
       VisibilityTimeout: 300
+      MessageRetentionPeriod: 3600 # 1 hour
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt Dlq.Arn
+        maxReceiveCount: 1 # ie: no retry
 
   ExecutionRole:
     Type: AWS::IAM::Role
