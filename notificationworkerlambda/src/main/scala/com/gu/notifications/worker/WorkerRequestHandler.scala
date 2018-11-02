@@ -6,10 +6,9 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.delivery._
 import models.SendingResults
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
-import db.{DatabaseConfig, RegistrationService}
 import org.slf4j.{Logger, LoggerFactory}
 import fs2.Stream
-import _root_.models.{ShardedNotification, iOS}
+import _root_.models.{Platform, ShardedNotification}
 
 import collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
@@ -28,6 +27,7 @@ object Env {
 
 trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent, Unit] with Logging {
 
+  def platform: Platform
   def deliveryService: IO[DeliveryService[IO, C]]
 
   def env = Env()
@@ -54,7 +54,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
         .through(Reporting.report(s"Sending failure: "))
         .fold(SendingResults.empty){ case (acc, resp) => SendingResults.inc(acc, resp) }
         .through(logInfo(prefix = s"Results $notificationLog: "))
-        .through(Cloudwatch.sendMetrics(env.stage, iOS))
+        .through(Cloudwatch.sendMetrics(env.stage, platform))
     } yield resp
 
     prog

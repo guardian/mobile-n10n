@@ -1,7 +1,7 @@
 package com.gu.notifications.worker.utils
 
 import cats.effect.IO
-import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClientBuilder
+import com.amazonaws.services.cloudwatch.AmazonCloudWatchClientBuilder
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
 import com.gu.notifications.worker.models.SendingResults
 import fs2.Pipe
@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
 
 object Cloudwatch {
 
-  lazy val cloudwatchClient = AmazonCloudWatchAsyncClientBuilder.defaultClient()
+  lazy val cloudwatchClient = AmazonCloudWatchClientBuilder.defaultClient()
 
   private def countDatum(name: String, value: Int, dimension: Dimension) =
     new MetricDatum()
@@ -32,7 +32,7 @@ object Cloudwatch {
         val req = new PutMetricDataRequest()
           .withNamespace(s"Notifications/$stage/workers")
           .withMetricData(metrics.asJava)
-        cloudwatchClient.putMetricDataAsync(req)
+        cloudwatchClient.putMetricData(req)
         ()
       }
     }
