@@ -20,7 +20,7 @@ class FilteredNotificationSender(
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     def shouldSend(count: PlatformCount, topics: List[Topic]): Boolean = {
-      count.total <= 10 && topics.forall(t => ALLOWED_TOPICS.contains(t.`type`))
+      count.total <= 100 && topics.forall(t => ALLOWED_TOPICS.contains(t.`type`))
     }
 
     def sendOrFilter(count: PlatformCount, topics: List[Topic]): Future[SenderResult] = {
