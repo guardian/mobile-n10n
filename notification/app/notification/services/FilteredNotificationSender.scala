@@ -16,11 +16,12 @@ class FilteredNotificationSender(
 
   private val logger: Logger = Logger.apply(classOf[FilteredNotificationSender])
 
-  val ALLOWED_TOPICS: Set[TopicType] = Set(TopicTypes.Content, TopicTypes.TagContributor, TopicTypes.TagSeries)
+  val allowedTopicTypes: Set[TopicType] = Set(TopicTypes.Content, TopicTypes.TagContributor, TopicTypes.TagSeries)
+  val maxRegistrationCount: Int = 100
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     def shouldSend(count: PlatformCount, topics: List[Topic]): Boolean = {
-      count.total <= 100 && topics.forall(t => ALLOWED_TOPICS.contains(t.`type`))
+      count.total < maxRegistrationCount && topics.forall(t => allowedTopicTypes.contains(t.`type`))
     }
 
     def sendOrFilter(count: PlatformCount, topics: List[Topic]): Future[SenderResult] = {
@@ -40,7 +41,7 @@ class FilteredNotificationSender(
         PlatformCount(1500000, 750000, 750000, 0)
       case NonFatal(e) =>
         logger.error(s"Unable to count registration for topics ${push.notification.topic}, falling back to default value", e)
-        PlatformCount(1, 1, 1, 0)
+        PlatformCount(maxRegistrationCount, 1, 1, 0)
     }
 
     for {
