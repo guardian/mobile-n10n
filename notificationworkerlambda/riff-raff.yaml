@@ -4,7 +4,7 @@ regions: [eu-west-1]
 deployments:
   notificationworkerlambda:
     type: aws-lambda
-    app: ios-notification-worker
+    app: notificationworkerlambda
     parameters:
       bucket: mobile-notifications-dist
       functionNames: [ios-notification-worker-, android-notification-worker-]
