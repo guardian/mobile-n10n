@@ -11,16 +11,19 @@ import azure.NotificationHubClient
 import com.softwaremill.macwire._
 import controllers.Main
 import _root_.models.NewsstandShardConfig
+import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.firebase.messaging.{AndroidConfig, FirebaseMessaging}
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
 import com.gu.AppIdentity
-import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, ScheduleTableConfig}
+import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
+import _root_.models.{Android, Newsstand, iOS}
 import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services._
 import notification.services.azure._
-import notification.services.fcm.{APNSConfigConverter, AndroidConfigConverter, FCMConfigConverter, FCMNotificationSender}
+import notification.services.fcm.{APNSConfigConverter, AndroidConfigConverter, FCMNotificationSender}
+import notification.services.guardian.{GuardianNotificationSender, ReportTopicRegistrationCounter, TopicRegistrationCounter}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
@@ -43,6 +46,8 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   with HttpFiltersComponents
   with AssetsComponents {
 
+  lazy val prefix: String = "/"
+
   override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
 
   implicit lazy val implicitActorSystem: ActorSystem = actorSystem
@@ -51,29 +56,18 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
 
   lazy val authAction = wire[NotificationAuthAction]
 
-  lazy val notificationSenders = List(
-    gcmNotificationSender,
-    apnsNotificationSender,
-    newsstandShardNotificationSender,
-    //frontendAlerts, //disabled until frontend decides whether to fix this feature or not.
-    fcmNotificationSender
-  )
-  lazy val mainController = wire[Main]
-  lazy val router: Router = wire[Routes]
-
-  lazy val prefix: String = "/"
-
-  lazy val hubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
-
   val credentialsProvider = new MobileAwsCredentialsProvider()
 
   val asyncDynamo: AsyncDynamo = AsyncDynamo(EU_WEST_1, credentialsProvider)
+
   lazy val topicSubscriptionsRepository: TopicSubscriptionsRepository = {
     val underlying = new DynamoTopicSubscriptionsRepository(asyncDynamo, appConfig.dynamoTopicsTableName)
     val batching = new BatchingTopicSubscriptionsRepository(underlying)
     batching.scheduleFlush(appConfig.dynamoTopicsFlushInterval)
     batching
   }
+
+  lazy val hubClient = new NotificationHubClient(appConfig.defaultHub, wsClient)
 
   lazy val notificationReportRepository = new DynamoNotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
 
@@ -89,7 +83,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   }
   lazy val newsstandShardNotificationSender: NewsstandShardSender = new NewsstandShardSender(newsstandHubClient,appConfig, topicSubscriptionsRepository)
 
-  lazy val firebaseMessaging = {
+  lazy val firebaseMessaging: FirebaseMessaging = {
     val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
       .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(appConfig.firebaseServiceAccountKey.getBytes)))
       .setDatabaseUrl(appConfig.firebaseDatabaseUrl)
@@ -113,6 +107,55 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     val frontendConfig = FrontendAlertsConfig(new URI(appConfig.frontendNewsAlertEndpoint), appConfig.frontendNewsAlertApiKey)
     new FrontendAlerts(frontendConfig, wsClient)
   }
+
+  lazy val topicRegistrationCounter: TopicRegistrationCounter = new ReportTopicRegistrationCounter(
+    wsClient,
+    configuration.get[String]("report.url"),
+    configuration.get[String]("report.apiKey")
+  )
+
+  lazy val sqsClient: AmazonSQSAsync = AmazonSQSAsyncClientBuilder.standard()
+    .withCredentials(credentialsProvider)
+    .withRegion(EU_WEST_1)
+    .build()
+
+  lazy val guardianIosNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
+    sqsClient = sqsClient,
+    registrationCounter = topicRegistrationCounter,
+    platform = iOS,
+    sqsUrl = configuration.get[String]("notifications.queues.ios")
+  )
+
+  lazy val guardianAndroidNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
+    sqsClient = sqsClient,
+    registrationCounter = topicRegistrationCounter,
+    platform = Android,
+    sqsUrl = configuration.get[String]("notifications.queues.android")
+  )
+
+  lazy val guardianNewsstandNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
+    sqsClient = sqsClient,
+    registrationCounter = topicRegistrationCounter,
+    platform = Newsstand,
+    sqsUrl = configuration.get[String]("notifications.queues.ios")
+  )
+
+  def withFilter(notificationSender: NotificationSender, invertCondition: Boolean): NotificationSender =
+    new FilteredNotificationSender(notificationSender, topicRegistrationCounter, invertCondition)
+
+  lazy val notificationSenders = List(
+    withFilter(guardianIosNotificationSender, invertCondition = false),
+    withFilter(guardianAndroidNotificationSender, invertCondition = false),
+    withFilter(guardianNewsstandNotificationSender, invertCondition = false),
+    gcmNotificationSender,
+    apnsNotificationSender,
+    newsstandShardNotificationSender,
+    //frontendAlerts, //disabled until frontend decides whether to fix this feature or not.
+    fcmNotificationSender
+  )
+
+  lazy val mainController = wire[Main]
+  lazy val router: Router = wire[Routes]
 
 }
 
