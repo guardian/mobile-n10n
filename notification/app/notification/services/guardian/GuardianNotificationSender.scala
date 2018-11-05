@@ -100,11 +100,13 @@ class GuardianNotificationSender(
         logger.error("Unable to count registration for a list of topics, falling back on 1")
         1
     }
-    val notificationJson = Json.stringify(Notification.jf.writes(notification))
+
     shard(countWithDefault).map { shard =>
       ShardedNotification(notification, shard)
+      val shardedNotification = ShardedNotification(notification, shard)
+      val payloadJson = Json.stringify(Json.toJson(shardedNotification))
       val messageId = s"${notification.id}-$platform-[${shard.start},${shard.end}]"
-      new SendMessageBatchRequestEntry(messageId, notificationJson)
+      new SendMessageBatchRequestEntry(messageId, payloadJson)
     }
   }
 }
