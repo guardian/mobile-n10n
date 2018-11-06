@@ -12,6 +12,7 @@ sealed trait WorkerConfiguration {
 }
 case class ApnsWorkerConfiguration(jdbcConfig: JdbcConfig, apnsConfig: ApnsConfig) extends WorkerConfiguration
 case class FcmWorkerConfiguration(jdbcConfig: JdbcConfig, fcmConfig: FcmConfig) extends WorkerConfiguration
+case class CleanerConfiguration(jdbcConfig: JdbcConfig) extends WorkerConfiguration
 
 object Configuration {
 
@@ -54,6 +55,13 @@ object Configuration {
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
       )
+    )
+  }
+
+  def fetchCleaner(): CleanerConfiguration = {
+    val config = fetchConfiguration()
+    CleanerConfiguration(
+      jdbcConfig(config.getConfig("cleaner"))
     )
   }
 

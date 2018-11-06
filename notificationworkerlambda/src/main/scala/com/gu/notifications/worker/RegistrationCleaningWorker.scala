@@ -19,7 +19,7 @@ class RegistrationCleaningWorker extends RequestHandler[SQSEvent, Unit] {
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
-  val config: FcmWorkerConfiguration = Configuration.fetchFirebase()
+  val config: CleanerConfiguration = Configuration.fetchCleaner()
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
   val registrationService = RegistrationService(transactor)
 
