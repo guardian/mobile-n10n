@@ -16,8 +16,13 @@ class FilteredNotificationSender(
 
   private val logger: Logger = Logger.apply(classOf[FilteredNotificationSender])
 
-  val allowedTopicTypes: Set[TopicType] = Set(TopicTypes.Content, TopicTypes.TagContributor, TopicTypes.TagSeries)
-  val maxRegistrationCount: Int = 50000
+  val allowedTopicTypes: Set[TopicType] = Set(
+    TopicTypes.Content,
+    TopicTypes.TagContributor,
+    TopicTypes.TagSeries,
+    TopicTypes.TagBlog
+  )
+  val maxRegistrationCount: Int = 1500000
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     def shouldSend(count: PlatformCount, topics: List[Topic]): Boolean = {
