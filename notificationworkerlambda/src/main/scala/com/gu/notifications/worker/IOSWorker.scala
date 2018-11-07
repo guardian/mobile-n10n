@@ -9,6 +9,7 @@ import _root_.models.iOS
 class IOSWorker extends WorkerRequestHandler[ApnsClient] {
   val platform = iOS
   val config: ApnsWorkerConfiguration = Configuration.fetchApns()
+  val sqsUrl: String = config.sqsUrl
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
   val registrationService = RegistrationService(transactor)
 

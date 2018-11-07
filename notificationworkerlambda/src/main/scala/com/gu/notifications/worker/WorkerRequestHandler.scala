@@ -4,7 +4,7 @@ import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.delivery._
-import models.SendingResults
+import models.{InvalidTokens, SendingResults}
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
 import org.slf4j.{Logger, LoggerFactory}
 import fs2.Stream
@@ -28,7 +28,9 @@ object Env {
 trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent, Unit] with Logging {
 
   def platform: Platform
+  def sqsUrl: String
   def deliveryService: IO[DeliveryService[IO, C]]
+  val reporting: Reporting = new Reporting(sqsUrl)
 
   def env = Env()
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
@@ -50,11 +52,14 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       n <- sharedNotification
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Sending notification $notificationLog...")
-      resp <- deliveryService.send(n.notification, n.range)
-        .through(Reporting.report(s"Sending failure: "))
-        .fold(SendingResults.empty){ case (acc, resp) => SendingResults.inc(acc, resp) }
+      sendingStream = deliveryService.send(n.notification, n.range)
+      resp <- sendingStream.fold(SendingResults.empty){ case (acc, resp) => SendingResults.inc(acc, resp) }
         .through(logInfo(prefix = s"Results $notificationLog: "))
         .through(Cloudwatch.sendMetrics(env.stage, platform))
+      _ <- sendingStream
+        .through(reporting.log(s"Sending failure: "))
+        .fold(InvalidTokens.empty){ case (acc, resp) => InvalidTokens.inc(acc, resp) }
+        .through(reporting.report)
     } yield resp
 
     prog

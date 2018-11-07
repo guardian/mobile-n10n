@@ -9,6 +9,7 @@ import _root_.models.Android
 class AndroidWorker extends WorkerRequestHandler[FcmClient] {
   val platform = Android
   val config: FcmWorkerConfiguration = Configuration.fetchFirebase()
+  val sqsUrl: String = config.sqsUrl
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
   val registrationService = RegistrationService(transactor)
 

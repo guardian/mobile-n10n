@@ -17,18 +17,18 @@ deployments:
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: ios-notification-worker-cfn
-      templatePath: cfn.yaml
+      templatePath: platform-worker-cfn.yaml
   android-notification-worker-cfn:
     type: cloud-formation
     app: android-notification-worker
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: android-notification-worker-cfn
-      templatePath: cfn.yaml
+      templatePath: platform-worker-cfn.yaml
   registration-cleaning-worker-cfn:
     type: cloud-formation
     app: registration-cleaning-worker
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: registration-cleaning-worker-cfn
-      templatePath: cfn.yaml
+      templatePath: registration-cleaning-worker-cfn.yaml
