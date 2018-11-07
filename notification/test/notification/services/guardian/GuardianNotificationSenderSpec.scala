@@ -64,7 +64,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       val futureResult = notificationSender.sendNotification(Push(notification, Set()))
       val result = Await.result(futureResult, 10.seconds)
 
-      there was two(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
+      there was exactly(30)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
 
       result should beRight.which { senderReport =>
         senderReport.senderName shouldEqual "Guardian"
