@@ -10,8 +10,8 @@
       <maxHistory>30</maxHistory>
     </rollingPolicy>
 
-    <encoder>
-      <pattern>%date [%level] [%logger] [%thread] - %message%n%xException</pattern>
+    <encoder class="com.gu.mobile.logback.MobileLogstashEncoder">
+      <defaultAppName>notifications</defaultAppName>
     </encoder>
   </appender>
 
