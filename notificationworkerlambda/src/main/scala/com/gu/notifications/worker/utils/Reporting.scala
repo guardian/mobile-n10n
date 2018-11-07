@@ -1,6 +1,7 @@
 package com.gu.notifications.worker.utils
 
 import cats.effect.IO
+import com.gu.notifications.worker.delivery.DeliveryException.DryRun
 import com.gu.notifications.worker.delivery.{DeliveryClient, DeliveryException, DeliverySuccess}
 import fs2.Pipe
 import org.slf4j.Logger
@@ -11,6 +12,7 @@ object Reporting {
     _.evalMap { resp =>
       IO.delay {
         resp match {
+          case Left(DryRun(_, _)) => () // no need to trace each individual token in the logs
           case Left(e) => logger.error(s"$prefix $e") //TODO: send invalid token to queue
           case Right(_) => () // doing nothing when success
         }

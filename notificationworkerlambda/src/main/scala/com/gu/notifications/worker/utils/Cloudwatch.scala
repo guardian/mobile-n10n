@@ -27,7 +27,8 @@ object Cloudwatch {
         val metrics: Seq[MetricDatum] = Seq(
           countDatum("success", results.successCount, dimension),
           countDatum("failure", results.failureCount, dimension),
-          countDatum("total", results.successCount + results.failureCount, dimension)
+          countDatum("dryrun", results.dryRunCount, dimension),
+          countDatum("total", results.total, dimension)
         )
         val req = new PutMetricDataRequest()
           .withNamespace(s"Notifications/$stage/workers")
