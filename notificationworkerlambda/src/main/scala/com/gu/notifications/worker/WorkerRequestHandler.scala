@@ -4,12 +4,13 @@ import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.delivery._
-import models.{InvalidTokens, SendingResults}
+import models.SendingResults
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
 import org.slf4j.{Logger, LoggerFactory}
-import fs2.Stream
+import fs2.{Sink, Stream}
 import _root_.models.{Platform, ShardedNotification}
 import com.gu.notifications.worker.cleaning.CleaningClient
+import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 
 import collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
@@ -48,17 +49,28 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       } yield n
     )
 
+    def reportSuccesses[C <: DeliveryClient](notification: ShardedNotification): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
+      val notificationLog = s"(notification: ${notification.notification.id} ${notification.range})"
+      input.fold(SendingResults.empty){ case (acc, resp) => SendingResults.aggregate(acc, resp) }
+        .evalTap(logInfo(prefix = s"Results $notificationLog: "))
+        .to(Cloudwatch.sendMetrics(env.stage, platform))
+    }
+
+    def cleanupFailures[C <: DeliveryClient]: Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
+      input
+        .collect { case Left(InvalidToken(_, token, _, _)) => token }
+        .chunkN(1000)
+        .to(cleaningClient.sendInvalidTokensToCleaning)
+    }
+
     val prog: Stream[IO, Unit] = for {
       deliveryService <- Stream.eval(deliveryService)
       n <- sharedNotification
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Sending notification $notificationLog...")
       resp <- deliveryService.send(n.notification, n.range)
-        .through(Reporting.log(s"Sending failure: "))
-        .fold(SendingResults.empty){ case (acc, resp) => SendingResults.aggregate(acc, resp) }
-        .through(cleaningClient.sendInvalidTokensToCleaning)
-        .through(logInfo(prefix = s"Results $notificationLog: "))
-        .through(Cloudwatch.sendMetrics(env.stage, platform))
+        .evalTap(Reporting.log(s"Sending failure: "))
+        .broadcastTo(reportSuccesses(n), cleanupFailures)
     } yield resp
 
     prog

@@ -5,8 +5,7 @@ import com.gu.notifications.worker.delivery.DeliveryException.{DryRun, InvalidTo
 case class SendingResults(
   successCount: Int,
   failureCount: Int,
-  dryRunCount: Int,
-  invalidTokens: InvalidTokens
+  dryRunCount: Int
 ) {
   def total: Int = successCount + failureCount + dryRunCount
   override def toString: String =
@@ -14,14 +13,11 @@ case class SendingResults(
 }
 
 object SendingResults {
-  def empty = new SendingResults(0, 0, 0, InvalidTokens.empty)
+  def empty = new SendingResults(0, 0, 0)
 
   def aggregate(previous: SendingResults, res: Either[_, _]) = res match {
     case Right(_) => previous.copy(successCount = previous.successCount + 1)
     case Left(DryRun(_, _)) => previous.copy(dryRunCount = previous.dryRunCount + 1)
-    case Left(InvalidToken(_, token, _, _)) =>
-      val invalidTokens = previous.invalidTokens.copy(tokens = token :: previous.invalidTokens.tokens)
-      previous.copy(failureCount = previous.failureCount + 1, invalidTokens = invalidTokens)
     case Left(_) => previous.copy(failureCount = previous.failureCount + 1)
   }
 }
