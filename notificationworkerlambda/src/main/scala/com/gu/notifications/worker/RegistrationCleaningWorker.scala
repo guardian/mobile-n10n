@@ -9,6 +9,7 @@ import db.{DatabaseConfig, RegistrationService}
 import doobie.util.transactor.Transactor
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json
+import fs2.Stream
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
@@ -46,11 +47,8 @@ class RegistrationCleaningWorker extends RequestHandler[SQSEvent, Unit] {
         }
     }
 
-    def traverseAndDelete(remainingTokens: List[String], total: CleaningResult): IO[CleaningResult] = remainingTokens match {
-      case token :: moreTokens => deleteAndSwallowError(token).flatMap { deletionResult =>
-        traverseAndDelete(moreTokens, total.combined(deletionResult))
-      }
-      case Nil => IO.pure(total)
+    def printResult(result: CleaningResult): IO[Unit] = IO {
+      logger.info(s"Deleted ${result.deletedRows} rows, deleted ${result.deletedRegistrations} registration and failed ${result.failures} time(s)")
     }
 
     val tokens = input
@@ -58,10 +56,16 @@ class RegistrationCleaningWorker extends RequestHandler[SQSEvent, Unit] {
       .map(_.getBody)
       .map(Json.parse)
       .flatMap(_.validate[InvalidTokens].asOpt)
-      .foldLeft(List.empty[String]){ case (agg, value) => agg ++ value.tokens }
+      .flatMap(_.tokens)
+      .toList
 
-    val processReport = traverseAndDelete(tokens, CleaningResult(0, 0, 0)).unsafeRunSync()
-
-    logger.info(s"Deleted ${processReport.deletedRows} rows, deleted ${processReport.deletedRegistrations} registration and failed ${processReport.failures} time(s)")
+    Stream
+      .emits(tokens).covary[IO]
+      .evalMap(deleteAndSwallowError)
+      .reduce(_ combined _)
+      .evalTap(printResult)
+      .compile
+      .drain
+      .unsafeRunSync()
   }
 }
