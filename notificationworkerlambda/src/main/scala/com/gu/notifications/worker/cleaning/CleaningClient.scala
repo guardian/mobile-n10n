@@ -16,7 +16,7 @@ class CleaningClient(sqsUrl: String) {
   val sqsClient: AmazonSQS = AmazonSQSClient
     .builder()
     .withCredentials(credentialsProvider)
-    .withRegion(Regions.getCurrentRegion.getName)
+    .withRegion("eu-west-1")
     .build
 
 
