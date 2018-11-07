@@ -28,35 +28,46 @@ class GuardianNotificationSender(
 )(implicit ec: ExecutionContext) extends NotificationSender {
 
   val WORKER_BATCH_SIZE: Int = 10000
-  val SQS_BATCH_SIZE: Int = 200 // max 256kb per sqs call, 1 notification ~< 1kb
+  val SQS_BATCH_SIZE: Int = 10
 
   private val logger: Logger = Logger.apply(classOf[GuardianNotificationSender])
 
-  override def sendNotification(push: Push): Future[SenderResult] = for {
+  override def sendNotification(push: Push): Future[SenderResult] = {
+    val result = for {
       registrationCount <- countRegistration(platform, push.notification.topic)
       workerBatches = prepareBatch(platform, push.notification, registrationCount)
       sqsBatchResults <- sendBatch(workerBatches)
-  } yield {
-    val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
-    if (failed.isEmpty) {
-      Right(SenderReport(
-        Guardian.value,
-        DateTime.now,
-        None,
-        registrationCount.map { count => PlatformStatistics(
-          platform,
-          count
-        )}
-      ))
-    } else {
-      failed.foreach { failure =>
-        logger.error(s"Unable to queue notification ${push.notification.id} for platform $platform: " +
-          s"${failure.getId} - ${failure.getCode} - ${failure.getMessage}")
+    } yield {
+      val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
+      if (failed.isEmpty) {
+        Right(SenderReport(
+          Guardian.value,
+          DateTime.now,
+          None,
+          registrationCount.map { count => PlatformStatistics(
+            platform,
+            count
+          )}
+        ))
+      } else {
+        failed.foreach { failure =>
+          logger.error(s"Unable to queue notification ${push.notification.id} for platform $platform: " +
+            s"${failure.getId} - ${failure.getCode} - ${failure.getMessage}")
+        }
+        Left(GuardianFailedToQueueShard(
+          senderName = s"Guardian $platform",
+          reason = s"Unable to queue notification. Please check the logs for notification ${push.notification.id}")
+        )
       }
-      Left(GuardianFailedToQueueShard(
-        senderName = s"Guardian $platform",
-        reason = s"Unable to queue notification. Please check the logs for notification ${push.notification.id}")
-      )
+    }
+
+    result.recover {
+      case NonFatal(e) =>
+        logger.error(e.getMessage, e)
+        Left(GuardianFailedToQueueShard(
+          senderName = s"Guardian $platform",
+          reason = s"Unable to send notification, got an exception ${e.getMessage}"
+        ))
     }
   }
 
