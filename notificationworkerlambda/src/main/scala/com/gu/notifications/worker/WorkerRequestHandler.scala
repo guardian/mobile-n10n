@@ -9,6 +9,7 @@ import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParse
 import org.slf4j.{Logger, LoggerFactory}
 import fs2.Stream
 import _root_.models.{Platform, ShardedNotification}
+import com.gu.notifications.worker.cleaning.CleaningClient
 
 import collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
@@ -30,7 +31,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
   def platform: Platform
   def sqsUrl: String
   def deliveryService: IO[DeliveryService[IO, C]]
-  val reporting: Reporting = new Reporting(sqsUrl)
+  val cleaningClient: CleaningClient = new CleaningClient(sqsUrl)
 
   def env = Env()
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
@@ -52,14 +53,12 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       n <- sharedNotification
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Sending notification $notificationLog...")
-      sendingStream = deliveryService.send(n.notification, n.range)
-      resp <- sendingStream.fold(SendingResults.empty){ case (acc, resp) => SendingResults.inc(acc, resp) }
+      resp <- deliveryService.send(n.notification, n.range)
+        .through(Reporting.log(s"Sending failure: "))
+        .fold(SendingResults.empty){ case (acc, resp) => SendingResults.aggregate(acc, resp) }
+        .through(cleaningClient.sendInvalidTokensToCleaning)
         .through(logInfo(prefix = s"Results $notificationLog: "))
         .through(Cloudwatch.sendMetrics(env.stage, platform))
-      _ <- sendingStream
-        .through(reporting.log(s"Sending failure: "))
-        .fold(InvalidTokens.empty){ case (acc, resp) => InvalidTokens.inc(acc, resp) }
-        .through(reporting.report)
     } yield resp
 
     prog
