@@ -1,6 +1,7 @@
 package com.gu.notifications.worker.cleaning
 
 import cats.effect.IO
+import com.amazonaws.regions.Regions
 import com.amazonaws.services.sqs.{AmazonSQS, AmazonSQSClient}
 import com.gu.notifications.worker.delivery.DeliveryClient
 import com.gu.notifications.worker.models.{InvalidTokens, SendingResults}
@@ -15,7 +16,7 @@ class CleaningClient(sqsUrl: String) {
   val sqsClient: AmazonSQS = AmazonSQSClient
     .builder()
     .withCredentials(credentialsProvider)
-    .withRegion("eu-west-1")
+    .withRegion(Regions.getCurrentRegion.getName)
     .build
 
 
