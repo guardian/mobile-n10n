@@ -28,7 +28,7 @@ class GuardianNotificationSender(
 )(implicit ec: ExecutionContext) extends NotificationSender {
 
   val WORKER_BATCH_SIZE: Int = 10000
-  val SQS_BATCH_SIZE: Int = 200 // max 256kb per sqs call, 1 notification ~< 1kb
+  val SQS_BATCH_SIZE: Int = 10
 
   private val logger: Logger = Logger.apply(classOf[GuardianNotificationSender])
 
