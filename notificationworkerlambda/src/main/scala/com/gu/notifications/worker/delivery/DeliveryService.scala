@@ -54,24 +54,28 @@ class DeliveryService[F[_], C <: DeliveryClient](
 
     def sending(client: C)(token: String, payload: client.Payload): Stream[F, Either[DeliveryException, C#Success]] = {
 
-      val delayInMs = {
-        val rangeInMs = Range(1000, 3000)
-        rangeInMs.min + new Random().nextInt(rangeInMs.max - rangeInMs.min)
+      def nextDelay(current: FiniteDuration): FiniteDuration = {
+        if (current.length == 0) {
+          val rangeInMs = Range(1000, 3000)
+          val durationMs = rangeInMs.min + Random.nextInt(rangeInMs.length)
+          FiniteDuration(durationMs, TimeUnit.MILLISECONDS)
+        } else {
+          current.mul(2)
+        }
       }
+
       Stream
         .retry(
           sendAsync(client)(token, payload),
-          delay = FiniteDuration(delayInMs, TimeUnit.MILLISECONDS),
-          nextDelay = _.mul(2),
+          delay = FiniteDuration(0, TimeUnit.MILLISECONDS),
+          nextDelay = nextDelay,
           maxAttempts = 3
         )
         .attempt
         .map {
           _.leftMap {
-            _ match {
-              case de: DeliveryException => de
-              case NonFatal(e) => GenericFailure(notification.id, token, e)
-            }
+            case de: DeliveryException => de
+            case NonFatal(e) => GenericFailure(notification.id, token, e)
           }
 
         }
