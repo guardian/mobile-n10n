@@ -4,7 +4,7 @@ import java.util.concurrent.Executors
 
 import cats.effect.internals.IOContextShift
 import cats.effect.{Async, ContextShift, IO}
-import com.zaxxer.hikari.HikariDataSource
+import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import doobie.Transactor
 import play.api.inject.ApplicationLifecycle
 
@@ -32,10 +32,12 @@ object DatabaseConfig {
   private def transactorAndDataSource[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): (Transactor[F], HikariDataSource) = {
     val connectEC = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.fixedThreadPool))
     val transactEC = ExecutionContext.fromExecutor(Executors.newCachedThreadPool)
-    val dataSource = new HikariDataSource()
-    dataSource.setJdbcUrl(config.url)
-    dataSource.setUsername(config.user)
-    dataSource.setPassword(config.password)
+    val ikariConfig = new HikariConfig()
+    ikariConfig.setMaximumPoolSize(config.fixedThreadPool)
+    ikariConfig.setJdbcUrl(config.url)
+    ikariConfig.setUsername(config.user)
+    ikariConfig.setPassword(config.password)
+    val dataSource = new HikariDataSource(ikariConfig)
 
     (Transactor.fromDataSource.apply(dataSource, connectEC, transactEC), dataSource)
   }
