@@ -25,7 +25,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
   "GuardianNotificationSender" should {
     "prepare shards with inclusive bounds" in new GuardianNotificationSenderScope {
       val bs = notificationSender.WORKER_BATCH_SIZE
-      notificationSender.shard(0) shouldEqual List(ShardRange(Short.MinValue, Short.MaxValue))
+      notificationSender.shard(0) shouldEqual Nil
       notificationSender.shard(1) shouldEqual List(ShardRange(Short.MinValue, Short.MaxValue))
       notificationSender.shard(2) shouldEqual List(ShardRange(Short.MinValue, Short.MaxValue))
       notificationSender.shard(bs - 1) shouldEqual List(ShardRange(Short.MinValue, Short.MaxValue))
