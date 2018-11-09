@@ -15,7 +15,7 @@ case class JdbcConfig(
   url: String,
   user: String,
   password: String,
-  fixedThreadPool: Int = 20
+  maxConnectionPoolSize: Int = 10
 )
 
 object DatabaseConfig {
@@ -30,10 +30,10 @@ object DatabaseConfig {
     )
   }
   private def transactorAndDataSource[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): (Transactor[F], HikariDataSource) = {
-    val connectEC = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.fixedThreadPool))
+    val connectEC = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10))
     val transactEC = ExecutionContext.fromExecutor(Executors.newCachedThreadPool)
     val hikariConfig = new HikariConfig()
-    hikariConfig.setMaximumPoolSize(config.fixedThreadPool)
+    hikariConfig.setMaximumPoolSize(config.maxConnectionPoolSize)
     hikariConfig.setJdbcUrl(config.url)
     hikariConfig.setUsername(config.user)
     hikariConfig.setPassword(config.password)

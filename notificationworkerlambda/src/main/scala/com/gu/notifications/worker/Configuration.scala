@@ -28,7 +28,7 @@ object Configuration {
     url = config.getString("registration.db.url"),
     user = config.getString("registration.db.user"),
     password = config.getString("registration.db.password"),
-    fixedThreadPool = config.getInt("registration.db.threads")
+    maxConnectionPoolSize = config.getInt("registration.db.maxConnectionPoolSize")
   )
 
   def fetchApns(): ApnsWorkerConfiguration = {
