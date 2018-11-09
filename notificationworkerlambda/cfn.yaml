@@ -19,10 +19,6 @@ Parameters:
     Description: Bucket where RiffRaff uploads artifacts on deploy
     Type: String
     Default: mobile-notifications-dist
-  Concurrency:
-    Description: How many lambda can run in parallel
-    Type: String
-    Default: 3
   VpcId:
     Description: ID of the Notification VPC
     Type: AWS::EC2::VPC::Id
@@ -48,7 +44,7 @@ Resources:
       MessageRetentionPeriod: 3600 # 1 hour
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt Dlq.Arn
-        maxReceiveCount: 1 # ie: no retry
+        maxReceiveCount: 5
 
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -134,7 +130,7 @@ Resources:
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
-      ReservedConcurrentExecutions: !Ref Concurrency
+      ReservedConcurrentExecutions: 100
       VpcConfig:
         SecurityGroupIds:
           - !GetAtt LambdaSecurityGroup.GroupId
