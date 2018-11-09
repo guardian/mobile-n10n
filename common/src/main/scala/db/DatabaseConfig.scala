@@ -32,12 +32,12 @@ object DatabaseConfig {
   private def transactorAndDataSource[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): (Transactor[F], HikariDataSource) = {
     val connectEC = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.fixedThreadPool))
     val transactEC = ExecutionContext.fromExecutor(Executors.newCachedThreadPool)
-    val ikariConfig = new HikariConfig()
-    ikariConfig.setMaximumPoolSize(config.fixedThreadPool)
-    ikariConfig.setJdbcUrl(config.url)
-    ikariConfig.setUsername(config.user)
-    ikariConfig.setPassword(config.password)
-    val dataSource = new HikariDataSource(ikariConfig)
+    val hikariConfig = new HikariConfig()
+    hikariConfig.setMaximumPoolSize(config.fixedThreadPool)
+    hikariConfig.setJdbcUrl(config.url)
+    hikariConfig.setUsername(config.user)
+    hikariConfig.setPassword(config.password)
+    val dataSource = new HikariDataSource(hikariConfig)
 
     (Transactor.fromDataSource.apply(dataSource, connectEC, transactEC), dataSource)
   }
