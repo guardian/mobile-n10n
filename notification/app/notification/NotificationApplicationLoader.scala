@@ -144,9 +144,6 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     new FilteredNotificationSender(notificationSender, topicRegistrationCounter, invertCondition)
 
   lazy val notificationSenders = List(
-    guardianIosNotificationSender,
-    guardianAndroidNotificationSender,
-    guardianNewsstandNotificationSender,
     gcmNotificationSender,
     apnsNotificationSender,
     newsstandShardNotificationSender,
