@@ -22,7 +22,7 @@ class FilteredNotificationSender(
     TopicTypes.TagSeries,
     TopicTypes.TagBlog
   )
-  val maxRegistrationCount: Int = 100
+  val maxRegistrationCount: Int = 1000
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     def shouldSend(count: PlatformCount, topics: List[Topic]): Boolean = {
