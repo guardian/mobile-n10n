@@ -30,9 +30,8 @@ object Env {
 trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent, Unit] with Logging {
 
   def platform: Platform
-  def sqsUrl: String
   def deliveryService: IO[DeliveryService[IO, C]]
-  val cleaningClient: CleaningClient = new CleaningClient(sqsUrl)
+  val cleaningClient: CleaningClient
 
   def env = Env()
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
