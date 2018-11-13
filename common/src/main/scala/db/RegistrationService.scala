@@ -36,7 +36,7 @@ object RegistrationService {
     val url = config.get[String]("registration.db.url")
     val user = config.get[String]("registration.db.user")
     val password = config.get[String]("registration.db.password")
-    val threads = config.get[Int]("registration.db.threads")
+    val threads = config.get[Int]("registration.db.maxConnectionPoolSize")
 
     val jdbcConfig = JdbcConfig("org.postgresql.Driver", url, user, password, threads)
     val transactor = DatabaseConfig.transactor[IO](jdbcConfig, applicationLifecycle)
