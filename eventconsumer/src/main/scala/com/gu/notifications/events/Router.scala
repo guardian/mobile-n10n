@@ -18,7 +18,7 @@ class Router(eventConsumer: S3EventProcessor, reportUpdater: DynamoReportUpdater
   def sqsEventRoute(inputString: String): Unit = {
     val s3Events: Seq[S3Event] = SqsEventReader.readSqsEventString(inputString)
     val s3EventAggregateProviders = s3Events.map(s3Event => () => s3EventRoute(s3Event))
-    val eventualTriedNotificationCounts = inSeries(s3EventAggregateProviders)
+    val eventualTriedNotificationCounts = callProvidersInSeries(s3EventAggregateProviders)
     val triedNotificationCounts = Await.result(eventualTriedNotificationCounts, Duration(4, TimeUnit.MINUTES))
     val s3ResultCounts: S3ResultCounts = AggregationCounts.aggregate(triedNotificationCounts)
     logger.info(S3ResultCounts.jf.writes(s3ResultCounts).toString())
@@ -29,11 +29,13 @@ class Router(eventConsumer: S3EventProcessor, reportUpdater: DynamoReportUpdater
 
   def s3EventRoute(s3EventJson: S3Event): Future[AggregationCounts] = {
     val eventsPerNotification = eventConsumer.s3EventsToEventsPerNotification(s3EventJson)
-    val attemptsToUpdateEachReport = reportUpdater.update(eventsPerNotification.aggregations.map { case (k, v) => NotificationReportEvent(k.toString, v) }.toList)
+    val attemptsToUpdateEachReport = reportUpdater.update(eventsPerNotification.aggregations.map {
+      case (id, eventAggregatino) => NotificationReportEvent(id.toString, eventAggregatino)
+    }.toList)
     AggregationCounts.aggregateResultCounts(attemptsToUpdateEachReport)
   }
 
-  private def inSeries[T](providers: Seq[() => Future[T]]): Future[Seq[Try[T]]] = {
+  private def callProvidersInSeries[T](providers: Seq[() => Future[T]]): Future[Seq[Try[T]]] = {
     providers.foldLeft(Future(Seq.empty[Try[T]])) {
       case (eventualAttemptsSoFar, provider) => eventualAttemptsSoFar.flatMap(attemptsSoFar => provider().transformWith(attempt => Future.successful(attemptsSoFar :+ attempt)))
     }
