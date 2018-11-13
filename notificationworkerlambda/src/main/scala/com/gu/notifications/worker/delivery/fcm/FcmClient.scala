@@ -61,9 +61,10 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
             case Success(messageId) =>
               onComplete(Right(FcmDeliverySuccess(token, messageId)))
             case Failure(e: FirebaseMessagingException) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
+              logger.error(s"Got a recognised firebase message exception, with code ${e.getErrorCode}", e)
               onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
             case Failure(e: FirebaseMessagingException) =>
-              logger.error(s"Got a firebase message exception, with code ${e.getErrorCode}", e)
+              logger.error(s"Got an unknown firebase message exception, with code ${e.getErrorCode}", e)
               onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
             case Failure(NonFatal(t)) =>
               onComplete(Left(FailedRequest(notificationId, token, t)))
