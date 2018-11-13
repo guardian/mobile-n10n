@@ -30,7 +30,7 @@ class Router(eventConsumer: S3EventProcessor, reportUpdater: DynamoReportUpdater
   def s3EventRoute(s3EventJson: S3Event): Future[AggregationCounts] = {
     val eventsPerNotification = eventConsumer.s3EventsToEventsPerNotification(s3EventJson)
     val attemptsToUpdateEachReport = reportUpdater.update(eventsPerNotification.aggregations.map {
-      case (id, eventAggregatino) => NotificationReportEvent(id.toString, eventAggregatino)
+      case (id, eventAggregation) => NotificationReportEvent(id.toString, eventAggregation)
     }.toList)
     AggregationCounts.aggregateResultCounts(attemptsToUpdateEachReport)
   }
