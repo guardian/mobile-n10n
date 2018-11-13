@@ -58,7 +58,11 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
 
     def cleanupFailures[C <: DeliveryClient]: Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
       input
-        .collect { case Left(InvalidToken(_, token, _, _)) => token }
+        .collect {
+          case Left(InvalidToken(_, token, _, _)) =>
+            logger.debug(s"Invalid token $token")
+            token
+        }
         .chunkN(1000)
         .to(cleaningClient.sendInvalidTokensToCleaning)
     }

@@ -12,7 +12,9 @@ import com.gu.notifications.worker.delivery.DeliveryException.{DryRun, FailedReq
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayload
 import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
 import models.FcmConfig
-import _root_.models.{Notification, Android, Platform}
+import _root_.models.{Android, Notification, Platform}
+import com.gu.notifications.worker.utils.UnwrappingExecutionException
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 import scala.util.control.NonFatal
@@ -21,14 +23,16 @@ import scala.util.{Failure, Success, Try}
 class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
   extends DeliveryClient {
 
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   type Success = FcmDeliverySuccess
   type Payload = FcmPayload
 
   val platform: Platform = Android
 
   private val invalidTokenErrorCodes = Seq(
-    "messaging/invalid-registration-token",
-    "messaging/registration-token-not-registered"
+    "invalid-registration-token",
+    "registration-token-not-registered"
   )
 
   def close(): Unit = firebaseApp.delete()
@@ -54,14 +58,12 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
         .sendAsync(message)
         .asScala
         .onComplete {
-          _ match {
-            case Success(messageId) =>
-              onComplete(Right(FcmDeliverySuccess(token, messageId)))
-            case Failure(e: FirebaseMessagingException) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
-              onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
-            case Failure(NonFatal(t)) =>
-              onComplete(Left(FailedRequest(notificationId, token, t)))
-          }
+          case Success(messageId) =>
+            onComplete(Right(FcmDeliverySuccess(token, messageId)))
+          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
+            onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
+          case Failure(NonFatal(t)) =>
+            onComplete(Left(FailedRequest(notificationId, token, t)))
         }
     }
   }

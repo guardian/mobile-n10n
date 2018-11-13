@@ -336,6 +336,7 @@ lazy val notificationworkerlambda = project
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
       case _ => MergeStrategy.first
     },
+    fork := true,
     riffRaffPackageType := assembly.value,
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),

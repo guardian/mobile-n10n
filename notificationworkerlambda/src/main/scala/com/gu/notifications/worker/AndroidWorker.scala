@@ -12,6 +12,7 @@ class AndroidWorker extends WorkerRequestHandler[FcmClient] {
   val sqsUrl: String = config.sqsUrl
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
   val registrationService = RegistrationService(transactor)
+  val cleaningClient: CleaningClient = new CleaningClient(sqsUrl)
 
   override val deliveryService: IO[Fcm[IO]] =
     FcmClient(config.fcmConfig).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(registrationService, c)))
