@@ -12,7 +12,8 @@ import com.gu.notifications.worker.delivery.DeliveryException.{DryRun, FailedReq
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayload
 import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
 import models.FcmConfig
-import _root_.models.{Notification, Android, Platform}
+import _root_.models.{Android, Notification, Platform}
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 import scala.util.control.NonFatal
@@ -20,6 +21,8 @@ import scala.util.{Failure, Success, Try}
 
 class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
   extends DeliveryClient {
+
+  private val logger = LoggerFactory.getLogger(classOf[FcmClient])
 
   type Success = FcmDeliverySuccess
   type Payload = FcmPayload
@@ -58,6 +61,9 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
             case Success(messageId) =>
               onComplete(Right(FcmDeliverySuccess(token, messageId)))
             case Failure(e: FirebaseMessagingException) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
+              onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
+            case Failure(e: FirebaseMessagingException) =>
+              logger.error(s"Got a firebase message exception, with code ${e.getErrorCode}", e)
               onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
             case Failure(NonFatal(t)) =>
               onComplete(Left(FailedRequest(notificationId, token, t)))
