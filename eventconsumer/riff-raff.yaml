@@ -7,7 +7,6 @@ deployments:
     parameters:
       bucket: mobile-notifications-dist
       functionNames:
-      - eventconsumer-
       - eventconsumer-sqs-
       fileName: eventconsumer.jar
       prefixStack: false
