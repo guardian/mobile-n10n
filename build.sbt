@@ -100,7 +100,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
-      "com.gu" %% "mobile-logstash-encoder" % "1.0.0"
+      "com.gu" %% "mobile-logstash-encoder" % "1.0.1"
     ),
     libraryDependencies ++= minJacksonLibs,
     fork := true,
