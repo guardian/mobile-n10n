@@ -18,7 +18,7 @@ object Cloudwatch {
   lazy val cloudwatchClient: AmazonCloudWatch = AmazonCloudWatchClientBuilder
     .standard()
     .withCredentials(credentialsProvider)
-    .withRegion("eu-west-1")
+    .withRegion(Regions.EU_WEST_1)
     .build
 
   private def countDatum(name: String, value: Int, dimension: Dimension) =
