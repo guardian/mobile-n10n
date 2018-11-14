@@ -10,10 +10,9 @@ import com.gu.notifications.worker.cleaning.CleaningClient
 class IOSWorker extends WorkerRequestHandler[ApnsClient] {
   val platform = iOS
   val config: ApnsWorkerConfiguration = Configuration.fetchApns()
-  val sqsUrl: String = config.sqsUrl
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
   val registrationService = RegistrationService(transactor)
-  val cleaningClient = new CleaningClient(sqsUrl)
+  val cleaningClient = new CleaningClient(config.sqsUrl)
 
   override val deliveryService: IO[Apns[IO]] =
     ApnsClient(config.apnsConfig).fold(e => IO.raiseError(e), c => IO.delay(new Apns(registrationService, c)))

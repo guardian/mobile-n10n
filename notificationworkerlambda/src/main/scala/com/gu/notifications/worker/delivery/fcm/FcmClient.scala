@@ -14,7 +14,6 @@ import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess,
 import models.FcmConfig
 import _root_.models.{Android, Notification, Platform}
 import com.gu.notifications.worker.utils.UnwrappingExecutionException
-import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 import scala.util.control.NonFatal
@@ -22,8 +21,6 @@ import scala.util.{Failure, Success, Try}
 
 class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
   extends DeliveryClient {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
 
   type Success = FcmDeliverySuccess
   type Payload = FcmPayload
