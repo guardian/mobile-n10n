@@ -80,10 +80,9 @@ object ApnsPayload {
 
   private def contentPayload(n: ContentNotification): String = {
     val link = toPlatformLink(n.link)
-    val notificationType: NotificationType = BreakingNews
     PushyPayload(
       alertTitle = None,
-      alertBody = Some(n.message),
+      alertBody = Some(n.title),
       categoryName = Some("ITEM_CATEGORY"),
       contentAvailable = true,
       mutableContent = false,
