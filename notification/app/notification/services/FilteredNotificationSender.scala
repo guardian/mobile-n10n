@@ -22,13 +22,11 @@ class FilteredNotificationSender(
     TopicTypes.TagSeries,
     TopicTypes.TagBlog
   )
-  val maxRegistrationCount: Int = 300000
+  val maxRegistrationCount: Int = 10000
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     def shouldSend(count: PlatformCount, topics: List[Topic]): Boolean = {
-      count.total < maxRegistrationCount &&
-        topics.forall(t => allowedTopicTypes.contains(t.`type`)) &&
-        push.avoidGuardianProvider.forall(_ == false)
+      count.total < maxRegistrationCount && topics.forall(t => allowedTopicTypes.contains(t.`type`))
     }
 
     def sendOrFilter(count: PlatformCount, topics: List[Topic]): Future[SenderResult] = {
