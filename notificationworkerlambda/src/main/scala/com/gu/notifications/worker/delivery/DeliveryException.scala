@@ -40,10 +40,6 @@ object DeliveryException {
     override def getMessage = s"Request failed (Notification: $notificationId, Token: $token). Cause: ${cause.getMessage}"
   }
 
-  case class DryRun(notificationId: UUID, token: String) extends DeliveryException {
-    override def getMessage = s"DRY RUN !!!! Notification has not be sent (Notification: $notificationId, Token: $token)}"
-  }
-
   case class InvalidPayload(notificationId: UUID) extends DeliveryException {
     override def getMessage = s"Cannot generate payload (Notification: $notificationId)"
   }

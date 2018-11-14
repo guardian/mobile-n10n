@@ -7,7 +7,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 import com.gu.notifications.worker.delivery._
-import com.gu.notifications.worker.delivery.DeliveryException.{DryRun, FailedDelivery, FailedRequest, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
 import models.ApnsConfig
 import _root_.models.{Notification, Platform, iOS}
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayload
@@ -73,7 +73,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     }
 
     if(config.dryRun) {
-      onComplete(Left(DryRun(notificationId, token)))
+      onComplete(Right(ApnsDeliverySuccess(token, dryRun = true)))
     } else {
       underlying
         .sendNotification(pushNotification)

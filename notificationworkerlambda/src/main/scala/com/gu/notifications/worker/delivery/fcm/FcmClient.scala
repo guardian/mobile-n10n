@@ -8,7 +8,7 @@ import com.google.api.core.ApiFuture
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, Message}
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
-import com.gu.notifications.worker.delivery.DeliveryException.{DryRun, FailedRequest, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken}
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayload
 import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
 import models.FcmConfig
@@ -48,7 +48,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 
 
     if(config.dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
-      onComplete(Left(DryRun(notificationId, token)))
+      onComplete(Right(FcmDeliverySuccess(token, "dryrun", dryRun = true)))
     } else {
       import FirebaseHelpers._
       firebaseMessaging
