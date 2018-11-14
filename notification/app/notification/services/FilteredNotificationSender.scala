@@ -26,7 +26,9 @@ class FilteredNotificationSender(
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     def shouldSend(count: PlatformCount, topics: List[Topic]): Boolean = {
-      count.total < maxRegistrationCount && topics.forall(t => allowedTopicTypes.contains(t.`type`))
+      count.total < maxRegistrationCount &&
+        topics.forall(t => allowedTopicTypes.contains(t.`type`)) &&
+        (push.forcedProvider.isEmpty || push.forcedProvider.contains("guardian"))
     }
 
     def sendOrFilter(count: PlatformCount, topics: List[Topic]): Future[SenderResult] = {

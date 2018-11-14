@@ -52,6 +52,8 @@ final class Main(
   def pushTopic(topic: Topic): Action[Notification] = pushTopics
 
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
+    val forcedProvider = request.headers.get("x-force-provider")
+
     val topics = request.body.topic
     val MaxTopics = 3
     topics.size match {
@@ -59,7 +61,7 @@ final class Main(
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{request.isPermittedTopic} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(request.isPermittedTopic)}."))
-      case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), topics.toSet))
+      case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), topics.toSet, forcedProvider))
     }
   }
 
