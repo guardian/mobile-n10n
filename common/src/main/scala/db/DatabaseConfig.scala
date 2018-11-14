@@ -33,6 +33,7 @@ object DatabaseConfig {
     val connectEC = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10))
     val transactEC = ExecutionContext.fromExecutor(Executors.newCachedThreadPool)
     val hikariConfig = new HikariConfig()
+    hikariConfig.setDriverClassName("org.postgresql.Driver")
     hikariConfig.setMaximumPoolSize(config.maxConnectionPoolSize)
     hikariConfig.setJdbcUrl(config.url)
     hikariConfig.setUsername(config.user)
