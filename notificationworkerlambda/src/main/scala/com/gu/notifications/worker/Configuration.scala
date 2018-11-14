@@ -9,10 +9,20 @@ import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 
 sealed trait WorkerConfiguration {
   def jdbcConfig: JdbcConfig
+  def sqsUrl: String
 }
-case class ApnsWorkerConfiguration(jdbcConfig: JdbcConfig, apnsConfig: ApnsConfig) extends WorkerConfiguration
-case class FcmWorkerConfiguration(jdbcConfig: JdbcConfig, fcmConfig: FcmConfig) extends WorkerConfiguration
-case class CleanerConfiguration(jdbcConfig: JdbcConfig) extends WorkerConfiguration
+case class ApnsWorkerConfiguration(
+  jdbcConfig: JdbcConfig,
+  sqsUrl: String,
+  apnsConfig: ApnsConfig
+) extends WorkerConfiguration
+case class FcmWorkerConfiguration(
+  jdbcConfig: JdbcConfig,
+  sqsUrl: String,
+  fcmConfig: FcmConfig
+) extends WorkerConfiguration
+
+case class CleanerConfiguration(jdbcConfig: JdbcConfig)
 
 object Configuration {
 
@@ -35,6 +45,7 @@ object Configuration {
     val config = fetchConfiguration()
     ApnsWorkerConfiguration(
       jdbcConfig(config),
+      config.getString("cleaner.sqsUrl"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
@@ -50,6 +61,7 @@ object Configuration {
     val config = fetchConfiguration()
     FcmWorkerConfiguration(
       jdbcConfig(config),
+      config.getString("cleaner.sqsUrl"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),
