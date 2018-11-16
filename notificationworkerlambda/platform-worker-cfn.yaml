@@ -38,6 +38,12 @@ Parameters:
   CleanerQueueArn:
     Type: String
     Description: The ARN of the cleaner SQS queue
+  AMI:
+    Type: String
+    Description: The AMI used by the workers
+  InstanceType:
+    Type: String
+    Description: The ec2 instance type to use
 
 Resources:
 
@@ -112,6 +118,14 @@ Resources:
             Effect: Allow
             Action: cloudwatch:PutMetricData
             Resource: "*"
+      - PolicyName: KinesisLogs
+        PolicyDocument:
+          - Effect: Allow
+            Action:
+            - kinesis:PutRecord
+            - kinesis:PutRecords
+            - kinesis:DescribeStream
+            Resource: !Sub arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/mobile-log-aggregation-${Stage}
 
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -160,6 +174,57 @@ Resources:
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
       FunctionName: !Sub ${App}-${Stage}
+
+  AutoscalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: !GetAZs
+      HealthCheckGracePeriod: 300
+      HealthCheckType: EC2
+      LaunchConfigurationName: !Ref LaunchConfig
+      MaxSize: !Ref ASGMaxSize
+      MinSize: !Ref ASGMinSize
+      NotificationConfiguration:
+        NotificationTypes:
+        - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
+        - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
+        TopicARN: !Ref AutoscalingNotifications
+      Tags:
+      - Key: Stage
+        PropagateAtLaunch: true
+        Value: !Ref Stage
+      - Key: Stack
+        PropagateAtLaunch: true
+        Value: !Ref Stack
+      - Key: App
+        PropagateAtLaunch: true
+        Value: !Ref App
+      VPCZoneIdentifier: !Ref VpcSubnets
+
+  DistributionInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles: [!Ref ExecutionRole]
+
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      AssociatePublicIpAddress: false
+      IamInstanceProfile: !Ref DistributionInstanceProfile
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      SecurityGroups:
+      - !Ref LambdaSecurityGroup
+      UserData:
+        "Fn::Base64":
+          !Sub |
+            #!/bin/bash -ev
+            aws --region ${AWS::Region} s3 cp s3://${DeployBucket}/${Stack}/${Stage}/${App}/${App}_1.0-latest_all.deb /tmp
+            dpkg -i /tmp/${App}_1.0-latest_all.deb
+            /opt/cloudwatch-logs/configure-logs application ${Stack} ${Stage} ${App} /var/log/${App}/${App}.log
+            /opt/cloudwatch-logs/configure-logs auth ${Stack} ${Stage} ${App} /var/log/auth.log '%b %d %H:%M:%S'
+            /opt/aws-kinesis-agent/configure-aws-kinesis-agent ${AWS::Region} mobile-log-aggregation-${Stage} /var/log/${App}/${App}.log
 
 Outputs:
   SQSArn:
