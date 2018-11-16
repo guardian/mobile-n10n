@@ -44,6 +44,15 @@ Parameters:
   InstanceType:
     Type: String
     Description: The ec2 instance type to use
+  ASGMinSize:
+    Type: String
+    Description: The minimum size of the autoscaling group
+  ASGMaxSize:
+    Type: String
+    Description: The maximum size of the autoscaling group
+  AutoscalingNotifications:
+    Type: String
+    Description: The ARN of the SNS topic to send ASG errors to
 
 Resources:
 
@@ -120,7 +129,8 @@ Resources:
             Resource: "*"
       - PolicyName: KinesisLogs
         PolicyDocument:
-          - Effect: Allow
+          Statement:
+            Effect: Allow
             Action:
             - kinesis:PutRecord
             - kinesis:PutRecords

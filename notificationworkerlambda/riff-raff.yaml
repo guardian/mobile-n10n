@@ -32,3 +32,9 @@ deployments:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: registration-cleaning-worker-cfn
       templatePath: registration-cleaning-worker-cfn.yaml
+  notificationworkerlambda-ec2:
+    type: autoscaling
+    app: android-notification-worker
+    parameters:
+      bucket: mobile-notifications-dist
+    dependencies: [android-notification-worker-cfn]

@@ -318,7 +318,7 @@ lazy val eventconsumer = project
 
 lazy val notificationworkerlambda = project
   .dependsOn(common)
-  .enablePlugins(RiffRaffArtifact)
+  .enablePlugins(SystemdPlugin, JDebPackaging, RiffRaffArtifact)
   .settings(
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.5",
@@ -341,9 +341,10 @@ lazy val notificationworkerlambda = project
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
-    riffRaffArtifactResources += (baseDirectory.value / "platform-worker-cfn.yaml", s"ios-notification-worker-cfn/platform-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "platform-worker-cfn.yaml", s"android-notification-worker-cfn/platform-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml")
+    riffRaffArtifactResources += (baseDirectory.value / "platform-worker-cfn.yaml", "ios-notification-worker-cfn/platform-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "platform-worker-cfn.yaml", "android-notification-worker-cfn/platform-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", "registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
+    riffRaffArtifactResources += ((packageBin in Debian).value, s"notificationworkerlambda-ec2/${(packageBin in Debian).value.getName}")
   )
 
 lazy val root = (project in file(".")).
