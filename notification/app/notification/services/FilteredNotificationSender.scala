@@ -21,12 +21,13 @@ class FilteredNotificationSender(
     TopicTypes.TagContributor,
     TopicTypes.TagSeries,
     TopicTypes.TagBlog,
+    TopicTypes.Breaking,
     TopicTypes.FootballTeam,
     TopicTypes.FootballMatch,
     TopicTypes.Newsstand,
     TopicTypes.NewsstandShard
   )
-  val maxRegistrationCount: Int = 100000
+  val maxRegistrationCount: Int = 1500000
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     def shouldSend(count: PlatformCount, topics: List[Topic]): Boolean = {
