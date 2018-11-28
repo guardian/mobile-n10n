@@ -59,6 +59,8 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
             onComplete(Right(FcmDeliverySuccess(token, messageId)))
           case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
             onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
+          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
+            onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode))))
           case Failure(NonFatal(t)) =>
             onComplete(Left(FailedRequest(notificationId, token, t)))
         }
