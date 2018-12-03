@@ -1,7 +1,9 @@
 # Mobile Notifications
 
+* [Api-client](api-client) - a scala SDK to push notifications to our service
 * [Registration](registration) - devices registrations, mapping devices to topics
 * [Notification](notification) - send a notification for devices registered to a topic (schedule for newsstand)
+* [Notification Worker Lambda] (notificationworkerlambda) - A set of workers that will spin up and process each individual notification by featching tokens in the database and sending them to APNs or FCM.
 * [Report](report) - Reports on notifications. Drives an [Ophan Dashboard](https://dashboard.ophan.co.uk/notifications)
 * [Event Consumer](eventconsumer) - lambda consumes App sent metrics (fastly -> s3 -> lambda) to enrich reporting
 * [Schedule Lambda](schedulelambda) - lambda requests notifications, persisted in DynamoDB, when scheduled
