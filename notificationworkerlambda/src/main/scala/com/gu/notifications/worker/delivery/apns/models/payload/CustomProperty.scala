@@ -1,14 +1,20 @@
 package com.gu.notifications.worker.delivery.apns.models.payload
 
-sealed trait CustomProperty { def key: String }
+sealed trait CustomProperty {
+  def key: String
+  def value: Any
+}
 case class CustomPropertyString(key: String, value: String) extends CustomProperty
-case class CustomPropertySeq(key: String, value: Seq[CustomPropertyString]) extends CustomProperty
+case class CustomPropertyInt(key: String, value: Int) extends CustomProperty
+case class CustomPropertySeq[A](key: String, value: Seq[CustomProperty]) extends CustomProperty
 
 object CustomProperty {
 
   def apply(tuple: (String, String)): CustomPropertyString =
     CustomPropertyString(tuple._1, tuple._2)
-  def apply(tuple: (String, Seq[CustomPropertyString])): CustomPropertySeq =
+  def apply(tuple: (String, Int)): CustomPropertyInt =
+    CustomPropertyInt(tuple._1, tuple._2)
+  def apply[A](tuple: (String, Seq[CustomProperty])): CustomPropertySeq[A] =
     CustomPropertySeq(tuple._1, tuple._2)
 
   object Keys {
