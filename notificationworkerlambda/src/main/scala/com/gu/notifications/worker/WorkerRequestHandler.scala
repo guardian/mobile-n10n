@@ -1,6 +1,5 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Topic, TopicTypes, Newsstand}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -67,20 +66,12 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
         .to(cleaningClient.sendInvalidTokensToCleaning)
     }
 
-    def platformFromTopics(topics: List[Topic]): Platform = {
-      if (topics.exists(_.`type` == TopicTypes.NewsstandShard)) {
-        Newsstand
-      } else {
-        platform
-      }
-    }
-
     val prog: Stream[IO, Unit] = for {
       deliveryService <- Stream.eval(deliveryService)
       n <- sharedNotification
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Sending notification $notificationLog...")
-      resp <- deliveryService.send(n.notification, n.range, platformFromTopics(n.notification.topic))
+      resp <- deliveryService.send(n.notification, n.range)
         .evalTap(Reporting.log(s"Sending failure: "))
         .broadcastTo(reportSuccesses(n), cleanupFailures)
     } yield resp

@@ -42,7 +42,6 @@ object ApnsPayload {
       customProperties.foreach { p =>
         val (key, value) = p match {
           case CustomPropertyString(k, v) => (k, v)
-          case CustomPropertyInt(k, v) => (k, v)
           case CustomPropertySeq(k, v) =>
             import collection.JavaConverters._
             (k, v.map(p => (p.key, p.value)).toMap.asJava) // .asJava because Gson which is used by Pushy to encode custom properties doesn't seem to like Scala collections
@@ -108,7 +107,7 @@ object ApnsPayload {
       categoryName = Some("football-match"),
       contentAvailable = false,
       mutableContent = true,
-      sound = if (n.importance == Importance.Major) Some("default") else None,
+      sound = if(n.importance == Importance.Major) Some("default") else None,
       customProperties = Seq(
         CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
         CustomProperty(Keys.Provider -> Provider.Guardian.value),
@@ -118,11 +117,11 @@ object ApnsPayload {
           Seq(
             CustomProperty(Keys.HomeTeamName -> n.homeTeamName),
             CustomProperty(Keys.HomeTeamId -> n.homeTeamId),
-            CustomProperty(Keys.HomeTeamScore -> n.homeTeamScore),
+            CustomProperty(Keys.HomeTeamScore -> n.homeTeamScore.toString),
             CustomProperty(Keys.HomeTeamText -> n.homeTeamMessage),
             CustomProperty(Keys.AwayTeamName -> n.awayTeamName),
             CustomProperty(Keys.AwayTeamId -> n.awayTeamId),
-            CustomProperty(Keys.AwayTeamScore -> n.awayTeamScore),
+            CustomProperty(Keys.AwayTeamScore -> n.awayTeamScore.toString),
             CustomProperty(Keys.AwayTeamText -> n.awayTeamMessage),
             CustomProperty(Keys.CurrentMinute -> ""),
             CustomProperty(Keys.MatchStatus -> n.matchStatus),
