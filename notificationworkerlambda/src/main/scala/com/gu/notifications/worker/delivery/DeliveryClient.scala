@@ -11,7 +11,6 @@ trait DeliveryClient {
   type Success <: DeliverySuccess
   type Payload <: DeliveryPayload
 
-  def platform: Platform
   def close(): Unit
   def sendNotification(notificationId: UUID, token: String, payload: Payload)
     (onComplete: Either[Throwable, Success] => Unit)
