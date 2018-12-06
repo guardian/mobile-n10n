@@ -26,6 +26,11 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   val platform: Platform = iOS
 
+  private val invalidTokenErrorCodes = Seq(
+    "BadDeviceToken",
+    "Unregistered"
+  )
+
   def close(): Unit = underlying.close().get
 
   def payloadBuilder: Notification => Option[ApnsPayload] = ApnsPayload.apply _
@@ -53,17 +58,14 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
           if (response.isAccepted) {
             onComplete(Right(ApnsDeliverySuccess(token)))
           } else {
-            val error =
-              Option(response.getTokenInvalidationTimestamp)
-                .map { d =>
-                  InvalidToken(
-                    notificationId,
-                    token,
-                    response.getRejectionReason,
-                    Some(new Timestamp(d.getTime()).toLocalDateTime())
-                  )
-                }
-                .getOrElse(FailedDelivery(notificationId, token, response.getRejectionReason))
+            val invalidationTimestamp = Option(response.getTokenInvalidationTimestamp)
+              .map(d => new Timestamp(d.getTime).toLocalDateTime)
+
+            val error = if (invalidationTimestamp.isDefined || invalidTokenErrorCodes.contains(response.getRejectionReason)) {
+              InvalidToken(notificationId, token, response.getRejectionReason, invalidationTimestamp)
+            } else {
+              FailedDelivery(notificationId, token, response.getRejectionReason)
+            }
             onComplete(Left(error))
           }
         } else {
