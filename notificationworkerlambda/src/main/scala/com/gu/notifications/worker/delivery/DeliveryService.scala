@@ -37,7 +37,8 @@ class DeliveryService[F[_], C <: DeliveryClient](
         client.sendNotification(
           notification.id,
           token,
-          payload
+          payload,
+          platform
         )(cb)
       }
 

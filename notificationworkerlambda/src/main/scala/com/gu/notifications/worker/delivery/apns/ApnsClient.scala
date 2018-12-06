@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
 import models.ApnsConfig
-import _root_.models.{Notification, Platform, iOS}
+import _root_.models.{Notification, Platform, iOS, Newsstand}
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayload
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
@@ -35,14 +35,19 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   def payloadBuilder: Notification => Option[ApnsPayload] = ApnsPayload.apply _
 
-  def sendNotification(notificationId: UUID, token: String, payload: Payload)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit = {
+
+    val bundleId = platform match {
+      case Newsstand => config.newsstandBundleId
+      case _ => config.bundleId
+    }
 
     val collapseId = notificationId.toString
     val pushNotification = new SimpleApnsPushNotification(
       TokenUtil.sanitizeTokenString(token),
-      config.bundleId,
+      bundleId,
       payload.jsonString,
       null, // No invalidation time
       DeliveryPriority.IMMEDIATE,

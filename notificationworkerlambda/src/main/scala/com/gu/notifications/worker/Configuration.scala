@@ -49,6 +49,7 @@ object Configuration {
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
+        newsstandBundleId = config.getString("apns.newsstandBundleId"),
         keyId = config.getString("apns.keyId"),
         certificate = config.getString("apns.certificate"),
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),

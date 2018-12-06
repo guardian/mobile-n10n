@@ -36,7 +36,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayload(n, config.debug)
 
-  def sendNotification(notificationId: UUID, token: String, payload: Payload)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {
 
