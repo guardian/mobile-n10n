@@ -38,6 +38,9 @@ Parameters:
     Type: String
     Description: The ARN of the SNS topic to send all the cloudwatch alarms to
 
+Conditions:
+  IsProdStage: !Equals [!Ref Stage, PROD]
+
 Resources:
 
   Dlq:
@@ -191,6 +194,25 @@ Resources:
       Period: 60
       Statistic: Sum
       Threshold: 0
+      TreatMissingData: notBreaching
+
+  TooFewInvocationsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      ActionsEnabled: !If [IsProdStage, true, false]
+      AlarmDescription: !Sub Triggers if the ${App} lambda is not frequently invoked in ${Stage}
+      ComparisonOperator: LessThanOrEqualToThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${App}-${Stage}
+      EvaluationPeriods: 1
+      MetricName: Invocations
+      Namespace: AWS/Lambda
+      Period: 7200
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: breaching
 
 Outputs:
   SQSArn:
