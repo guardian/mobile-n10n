@@ -199,6 +199,7 @@ Resources:
   TooFewInvocationsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmActions: [!Ref AlarmTopic]
       ActionsEnabled: !If [IsProdStage, true, false]
       AlarmDescription: !Sub Triggers if the ${App} lambda is not frequently invoked in ${Stage}
       ComparisonOperator: LessThanOrEqualToThreshold
