@@ -36,7 +36,7 @@ class Router(eventConsumer: S3EventProcessor, reportUpdater: DynamoReportUpdater
   }
 
   private def callProvidersInSeries[T](providers: Seq[() => Future[T]]): Future[Seq[Try[T]]] = {
-    providers.foldLeft(Future(Seq.empty[Try[T]])) {
+    providers.foldLeft(Future.successful(Seq.empty[Try[T]])) {
       case (eventualAttemptsSoFar, provider) => eventualAttemptsSoFar.flatMap(attemptsSoFar => provider().transformWith(attempt => Future.successful(attemptsSoFar :+ attempt)))
     }
   }
