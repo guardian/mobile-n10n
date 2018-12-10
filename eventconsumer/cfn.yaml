@@ -142,7 +142,7 @@ Resources:
       LifecycleConfiguration:
         Rules:
           - ExpirationInDays: 21
-            Status: Enabled
+            Status: Disabled
       NotificationConfiguration:
         QueueConfigurations:
         - Event: s3:ObjectCreated:*

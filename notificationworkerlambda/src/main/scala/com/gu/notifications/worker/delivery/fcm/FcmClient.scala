@@ -8,11 +8,12 @@ import com.google.api.core.ApiFuture
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, Message}
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
-import com.gu.notifications.worker.delivery.DeliveryException.{DryRun, FailedRequest, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken}
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayload
 import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
 import models.FcmConfig
-import _root_.models.{Notification, Android, Platform}
+import _root_.models.{Android, Notification, Platform}
+import com.gu.notifications.worker.utils.UnwrappingExecutionException
 
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 import scala.util.control.NonFatal
@@ -27,15 +28,15 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
   val platform: Platform = Android
 
   private val invalidTokenErrorCodes = Seq(
-    "messaging/invalid-registration-token",
-    "messaging/registration-token-not-registered"
+    "invalid-registration-token",
+    "registration-token-not-registered"
   )
 
   def close(): Unit = firebaseApp.delete()
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayload(n, config.debug)
 
-  def sendNotification(notificationId: UUID, token: String, payload: Payload)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {
 
@@ -47,21 +48,21 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 
 
     if(config.dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
-      onComplete(Left(DryRun(notificationId, token)))
+      onComplete(Right(FcmDeliverySuccess(token, "dryrun", dryRun = true)))
     } else {
       import FirebaseHelpers._
       firebaseMessaging
         .sendAsync(message)
         .asScala
         .onComplete {
-          _ match {
-            case Success(messageId) =>
-              onComplete(Right(FcmDeliverySuccess(token, messageId)))
-            case Failure(e: FirebaseMessagingException) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
-              onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
-            case Failure(NonFatal(t)) =>
-              onComplete(Left(FailedRequest(notificationId, token, t)))
-          }
+          case Success(messageId) =>
+            onComplete(Right(FcmDeliverySuccess(token, messageId)))
+          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
+            onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
+          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
+            onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode))))
+          case Failure(NonFatal(t)) =>
+            onComplete(Left(FailedRequest(notificationId, token, t)))
         }
     }
   }

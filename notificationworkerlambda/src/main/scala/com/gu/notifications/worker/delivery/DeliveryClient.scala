@@ -11,9 +11,8 @@ trait DeliveryClient {
   type Success <: DeliverySuccess
   type Payload <: DeliveryPayload
 
-  def platform: Platform
   def close(): Unit
-  def sendNotification(notificationId: UUID, token: String, payload: Payload)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit
   def payloadBuilder: Notification => Option[Payload]

@@ -100,7 +100,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
-      "com.gu" %% "mobile-logstash-encoder" % "1.0.1"
+      "com.gu" %% "mobile-logstash-encoder" % "1.0.2"
     ),
     libraryDependencies ++= minJacksonLibs,
     fork := true,
@@ -325,6 +325,7 @@ lazy val notificationworkerlambda = project
       "com.google.firebase" % "firebase-admin" % "6.3.0",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.2",
+      "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "org.slf4j" % "slf4j-simple" % "1.7.25",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       specs2 % Test
@@ -335,22 +336,14 @@ lazy val notificationworkerlambda = project
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
       case _ => MergeStrategy.first
     },
+    fork := true,
     riffRaffPackageType := assembly.value,
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
-    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", s"ios-notification-worker-cfn/cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", s"android-notification-worker-cfn/cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", s"registration-cleaning-worker-cfn/cfn.yaml")
-  )
-
-lazy val fcmworker = project
-  .dependsOn(common)
-  .settings(standardSettings: _*)
-  .settings(
-    libraryDependencies ++= Seq(
-      "com.google.firebase" % "firebase-admin" % "6.3.0"
-    )
+    riffRaffArtifactResources += (baseDirectory.value / "platform-worker-cfn.yaml", s"ios-notification-worker-cfn/platform-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "platform-worker-cfn.yaml", s"android-notification-worker-cfn/platform-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml")
   )
 
 lazy val root = (project in file(".")).

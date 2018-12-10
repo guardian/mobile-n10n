@@ -14,7 +14,7 @@ import play.api.libs.json._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 trait S3EventProcessor {
   def s3EventsToEventsPerNotification(s3Event: S3Event)(implicit executionContext: ExecutionContext): EventsPerNotification
@@ -49,13 +49,18 @@ class S3EventProcessorImpl extends S3EventProcessor {
       }
     }
 
-    def toRawEvent(string: String): Option[RawEvent] = Json.parse(string).validate[RawEvent].asOpt
-
+    def toRawEvent(string: String): Option[RawEvent] = Try {
+      Json.parse(string).validate[RawEvent].get
+    } match {
+      case Success(value) => Some(value)
+      case Failure(t) => logger.warn(s"Could not convert event into RawEvent: $string",t)
+        None
+    }
 
     def toEvent(rawEvent: RawEvent): Option[EventsPerNotification] = {
       val parsed = URLEncodedUtils.parse(rawEvent.queryString.dropWhile(_ == '?'), Charset.forName("UTF-8"))
       val queryParams = parsed.iterator.asScala.map(kv => kv.getName -> kv.getValue).toMap
-      for {
+      val maybeEventsPerNotification = for {
         notificationIdString <- queryParams.get("notificationId")
         platformString <- queryParams.get("platform")
         providerString <- queryParams.get("provider").orElse(Some("android"))
@@ -63,10 +68,19 @@ class S3EventProcessorImpl extends S3EventProcessor {
         platform <- Platform.fromString(platformString)
         provider <- Provider.fromString(providerString)
       } yield EventsPerNotification.from(notificationId, rawEvent.dateTime, platform, provider)
+      if(maybeEventsPerNotification.isEmpty) {
+        logger.warn(s"Could not read $rawEvent")
+      }
+      maybeEventsPerNotification
     }
 
-    forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent).reduce(EventsPerNotification.combine)
-
+    val eventsPerNotificationPerS3File = forAllLineOfAllFiles.flatMap(toRawEvent).flatMap(toEvent)
+    if(eventsPerNotificationPerS3File.isEmpty) {
+      EventsPerNotification(Map.empty)
+    }
+    else {
+      eventsPerNotificationPerS3File.reduce(EventsPerNotification.combine)
+    }
   }
 
 

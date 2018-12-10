@@ -2,7 +2,7 @@ package com.gu.notifications.worker.delivery
 
 import java.util.concurrent.TimeUnit
 
-import _root_.models.{Notification, ShardRange}
+import _root_.models.{Notification, ShardRange, Platform}
 import cats.data.NonEmptyList
 import cats.effect._
 import cats.syntax.either._
@@ -28,7 +28,8 @@ class DeliveryService[F[_], C <: DeliveryClient](
 
   def send(
     notification: Notification,
-    shardRange: ShardRange
+    shardRange: ShardRange,
+    platform: Platform
   ): Stream[F, Either[DeliveryException, C#Success]] = {
 
     def sendAsync(client: C)(token: String, payload: client.Payload): F[C#Success] =
@@ -36,7 +37,8 @@ class DeliveryService[F[_], C <: DeliveryClient](
         client.sendNotification(
           notification.id,
           token,
-          payload
+          payload,
+          platform
         )(cb)
       }
 
@@ -49,26 +51,20 @@ class DeliveryService[F[_], C <: DeliveryClient](
 
     def tokens: Stream[F, String] = for {
       topics <- Stream.eval(topicsF)
-      res <- registrationService.findTokens(topics, Some(client.platform), Some(shardRange))
+      res <- registrationService.findTokens(topics, Some(platform), Some(shardRange))
     } yield res
 
     def sending(client: C)(token: String, payload: client.Payload): Stream[F, Either[DeliveryException, C#Success]] = {
 
-      def nextDelay(current: FiniteDuration): FiniteDuration = {
-        if (current.length == 0) {
-          val rangeInMs = Range(1000, 3000)
-          val durationMs = rangeInMs.min + Random.nextInt(rangeInMs.length)
-          FiniteDuration(durationMs, TimeUnit.MILLISECONDS)
-        } else {
-          current.mul(2)
-        }
+      val delayInMs = {
+        val rangeInMs = Range(1000, 3000)
+        rangeInMs.min + Random.nextInt(rangeInMs.length)
       }
-
       Stream
         .retry(
           sendAsync(client)(token, payload),
-          delay = FiniteDuration(0, TimeUnit.MILLISECONDS),
-          nextDelay = nextDelay,
+          delay = FiniteDuration(delayInMs, TimeUnit.MILLISECONDS),
+          nextDelay = _.mul(2),
           maxAttempts = 3
         )
         .attempt

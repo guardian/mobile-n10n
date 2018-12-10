@@ -36,12 +36,8 @@ object DeliveryException {
         tokenInvalidationTimestamp.map(ts => s", Token invalidation timestamp: $ts")
   }
 
-  case class FailedRequest(notificationId: UUID, token: String, cause: Throwable) extends DeliveryException {
-    override def getMessage = s"Request failed (Notification: $notificationId, Token: $token). Cause: ${cause.getMessage}"
-  }
-
-  case class DryRun(notificationId: UUID, token: String) extends DeliveryException {
-    override def getMessage = s"DRY RUN !!!! Notification has not be sent (Notification: $notificationId, Token: $token)}"
+  case class FailedRequest(notificationId: UUID, token: String, cause: Throwable, errorCode: Option[String] = None) extends DeliveryException {
+    override def getMessage = s"Request failed (Notification: $notificationId, Token: $token). Cause: ${cause.getMessage}. ErrorCode: $errorCode}."
   }
 
   case class InvalidPayload(notificationId: UUID) extends DeliveryException {
