@@ -38,6 +38,9 @@ Parameters:
     Type: String
     Description: The ARN of the SNS topic to send all the cloudwatch alarms to
 
+Conditions:
+  IsProdStage: !Equals [!Ref Stage, PROD]
+
 Resources:
 
   Dlq:
@@ -196,6 +199,7 @@ Resources:
   TooFewInvocationsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      ActionsEnabled: !If [IsProdStage, true, false]
       AlarmDescription: !Sub Triggers if the ${App} lambda is not frequently invoked in ${Stage}
       ComparisonOperator: LessThanOrEqualToThreshold
       Dimensions:
