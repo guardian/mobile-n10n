@@ -23,7 +23,9 @@ class FilteredNotificationSender(
     TopicTypes.TagBlog,
     TopicTypes.Breaking,
     TopicTypes.FootballTeam,
-    TopicTypes.FootballMatch
+    TopicTypes.FootballMatch,
+    TopicTypes.Newsstand,
+    TopicTypes.NewsstandShard
   )
   val maxRegistrationCount: Int = 1500000
 

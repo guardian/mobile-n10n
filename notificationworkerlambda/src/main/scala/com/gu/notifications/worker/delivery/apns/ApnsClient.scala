@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
 import models.ApnsConfig
-import _root_.models.{Notification, Platform, iOS}
+import _root_.models.{Notification, Platform, iOS, Newsstand}
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayload
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
@@ -26,18 +26,28 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   val platform: Platform = iOS
 
+  private val invalidTokenErrorCodes = Seq(
+    "BadDeviceToken",
+    "Unregistered"
+  )
+
   def close(): Unit = underlying.close().get
 
   def payloadBuilder: Notification => Option[ApnsPayload] = ApnsPayload.apply _
 
-  def sendNotification(notificationId: UUID, token: String, payload: Payload)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit = {
+
+    val bundleId = platform match {
+      case Newsstand => config.newsstandBundleId
+      case _ => config.bundleId
+    }
 
     val collapseId = notificationId.toString
     val pushNotification = new SimpleApnsPushNotification(
       TokenUtil.sanitizeTokenString(token),
-      config.bundleId,
+      bundleId,
       payload.jsonString,
       null, // No invalidation time
       DeliveryPriority.IMMEDIATE,
@@ -53,17 +63,14 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
           if (response.isAccepted) {
             onComplete(Right(ApnsDeliverySuccess(token)))
           } else {
-            val error =
-              Option(response.getTokenInvalidationTimestamp)
-                .map { d =>
-                  InvalidToken(
-                    notificationId,
-                    token,
-                    response.getRejectionReason,
-                    Some(new Timestamp(d.getTime()).toLocalDateTime())
-                  )
-                }
-                .getOrElse(FailedDelivery(notificationId, token, response.getRejectionReason))
+            val invalidationTimestamp = Option(response.getTokenInvalidationTimestamp)
+              .map(d => new Timestamp(d.getTime).toLocalDateTime)
+
+            val error = if (invalidationTimestamp.isDefined || invalidTokenErrorCodes.contains(response.getRejectionReason)) {
+              InvalidToken(notificationId, token, response.getRejectionReason, invalidationTimestamp)
+            } else {
+              FailedDelivery(notificationId, token, response.getRejectionReason)
+            }
             onComplete(Left(error))
           }
         } else {
