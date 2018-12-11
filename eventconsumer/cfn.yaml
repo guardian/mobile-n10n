@@ -154,7 +154,7 @@ Resources:
     - Sqs
     - SqsLambda
     Properties:
-      BatchSize: 1
+      BatchSize: 10
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
       FunctionName: !Sub ${App}-sqs-${Stage}
