@@ -1,11 +1,12 @@
-package com.gu.notifications.events
+package com.gu.notifications.events.s3
 
 import java.net.URLDecoder
 import java.nio.charset.{Charset, StandardCharsets}
 import java.util.UUID
 
 import com.amazonaws.util.IOUtils
-import com.gu.notifications.events.model.{Platform, Provider}
+import com.gu.notifications.events.aws.AwsClient
+import com.gu.notifications.events.model.{EventsPerNotification, Platform, Provider, RawEvent}
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.logging.log4j
 import org.apache.logging.log4j.LogManager
@@ -16,13 +17,13 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 trait S3EventProcessor {
-  def process(s3Event: S3Event)(implicit executionContext: ExecutionContext): EventsPerNotification
+  def s3EventsToEventsPerNotification(s3Event: S3Event)(implicit executionContext: ExecutionContext): EventsPerNotification
 }
 
 class S3EventProcessorImpl extends S3EventProcessor {
   val logger: log4j.Logger = LogManager.getLogger(classOf[S3EventProcessor])
 
-  def process(s3Event: S3Event)(implicit executionContext: ExecutionContext): EventsPerNotification = {
+  def s3EventsToEventsPerNotification(s3Event: S3Event)(implicit executionContext: ExecutionContext): EventsPerNotification = {
     def forAllLineOfAllFiles: Seq[String] = {
       val keys = s3Event.Records.seq.flatMap(record => {
         for {

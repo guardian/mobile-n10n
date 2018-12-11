@@ -1,10 +1,11 @@
-package com.gu.notifications.events
+package com.gu.notifications.events.dynamo
 
 import java.time.{LocalDateTime, ZonedDateTime}
 import java.util.UUID
 
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.dynamodbv2.model._
+import com.gu.notifications.events.aws.AwsClient
 import com.gu.notifications.events.model.{EventAggregation, NotificationReportEvent, TenSecondUnit}
 import org.apache.logging.log4j.LogManager
 
@@ -16,11 +17,11 @@ case class ReadVersionedEvents(version: Option[String], events: Option[EventAggr
 
 case class UpdateVersionedEvents(lastVersion: Option[String], nextVersion: String, events: NotificationReportEvent)
 
-class ReportUpdater(stage: String) {
+class DynamoReportUpdater(stage: String) {
   private val newVersionKey = ":newversion"
   private val newEventsKey = ":newevents"
   private val oldVersionKey = ":oldversion"
-  private val logger = LogManager.getLogger(classOf[ReportUpdater])
+  private val logger = LogManager.getLogger(classOf[DynamoReportUpdater])
   private val tableName: String = s"mobile-notifications-reports-$stage"
 
   def update(eventAggregations: List[NotificationReportEvent])(implicit executionContext: ExecutionContext): List[Future[Unit]] = {

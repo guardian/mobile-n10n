@@ -1,4 +1,4 @@
-package com.gu.notifications.events
+package com.gu.notifications.events.dynamo
 
 import java.time.{Duration, LocalDateTime}
 

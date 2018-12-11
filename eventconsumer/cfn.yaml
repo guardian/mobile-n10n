@@ -107,28 +107,6 @@ Resources:
             Action: sqs:*
             Resource: !GetAtt Sqs.Arn
 
-  Lambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub ${App}-${Stage}
-      Code:
-        S3Bucket:
-          Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
-      Environment:
-        Variables:
-          Stage: !Ref Stage
-          Stack: !Ref Stack
-          App: !Ref App
-          EventBucket: !Sub
-          - aws-mobile-event-logs-${BucketStage}
-          - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
-      Description: Consumes events produced when an app receives a notification
-      Handler: com.gu.notifications.events.Lambda::handleRequest
-      MemorySize: 384
-      Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
-      Timeout: 300
 
   SqsLambda:
     Type: AWS::Lambda::Function
@@ -154,7 +132,6 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     DependsOn:
-    - LambdaPermissionS3Bucket
     - Sqs
     - SqsPolicy
     Properties:
@@ -170,17 +147,6 @@ Resources:
         QueueConfigurations:
         - Event: s3:ObjectCreated:*
           Queue: !GetAtt Sqs.Arn
-  LambdaPermissionS3Bucket:
-    DependsOn:
-    - Lambda
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt Lambda.Arn
-      Action: lambda:InvokeFunction
-      Principal: s3.amazonaws.com
-      SourceArn: !Sub
-      - arn:aws:s3:::aws-mobile-event-logs-${BucketStage}
-      - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
 
   SqsEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping

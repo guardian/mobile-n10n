@@ -1,8 +1,7 @@
-package com.gu.notifications.events
+package com.gu.notifications.events.model
 
 import java.time.LocalDateTime
 
-import com.gu.notifications.events.model.TenSecondUnit
 import play.api.libs.json._
 
 case class RawEvent(

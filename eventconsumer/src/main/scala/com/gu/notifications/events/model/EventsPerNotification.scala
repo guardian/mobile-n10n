@@ -1,9 +1,7 @@
-package com.gu.notifications.events
+package com.gu.notifications.events.model
 
 import java.time.LocalDateTime
 import java.util.UUID
-
-import com.gu.notifications.events.model.{EventAggregation, Platform, Provider, TenSecondUnit}
 
 case class EventsPerNotification(aggregations: Map[UUID, EventAggregation])
 

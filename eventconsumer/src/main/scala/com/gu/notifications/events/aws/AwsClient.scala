@@ -1,4 +1,4 @@
-package com.gu.notifications.events
+package com.gu.notifications.events.aws
 
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
