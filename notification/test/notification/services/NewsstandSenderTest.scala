@@ -31,17 +31,6 @@ class NewsstandSenderTest extends Specification with Mockito with ExecutionEnvir
           },
           Clock.fixed(instant, ZoneOffset.UTC)
         )
-        val rawPush = APNSRawPush(
-          body = Body(
-            aps = APS(
-              alert = None,
-              `content-available` = Some(1),
-              sound = None
-            ),
-            customProperties = LegacyProperties(Map.empty)
-          ),
-          tags = Some(Tags.fromTopics(Set(Topic(Newsstand, "newsstand"))))
-        )
 
         sender.sendNotification(randomId) must be_==(()).await
 
