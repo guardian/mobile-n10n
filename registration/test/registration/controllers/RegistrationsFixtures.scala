@@ -20,7 +20,6 @@ import registration.RegistrationApplicationComponents
 import registration.services.NotificationRegistrar.RegistrarResponse
 import registration.services.topic.{TopicValidator, TopicValidatorError}
 import registration.services._
-import registration.services.fcm.FcmRegistrar
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -105,21 +104,10 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
   }
 
-  lazy val fakeRegistrarProvider = new RegistrarProvider {
-
-    override def registrarFor(platform: Platform, deviceToken: DeviceToken, currentProvider: Option[Provider]): Either[NotificationsError, NotificationRegistrar] = Right(fakeNotificationRegistrar)
-
-    override def registrarFor(registration: Registration): Either[NotificationsError, NotificationRegistrar] =
-      registrarFor(registration.platform, registration.deviceToken, registration.provider)
-
-    override def withAllRegistrars[T](fn: (NotificationRegistrar) => T): List[T] = List(fn(fakeNotificationRegistrar))
-  }
 
   override def configureComponents(context: Context): BuiltInComponents = {
     new RegistrationApplicationComponents(DevIdentity("notifications"), context) {
       override lazy val topicValidator = fakeTopicValidator
-      override lazy val registrarProvider: RegistrarProvider = fakeRegistrarProvider
-      override lazy val migratingRegistrarProvider: RegistrarProvider = fakeRegistrarProvider
       override lazy val appConfig = new Configuration(PlayConfig.empty) {
         override lazy val defaultTimeout = 1.seconds
         override lazy val newsstandShards: Int = 10

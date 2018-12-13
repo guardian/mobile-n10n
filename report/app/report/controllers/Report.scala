@@ -7,7 +7,7 @@ import models._
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 import play.api.mvc._
-import report.services.{Configuration, NotificationReportEnricher}
+import report.services.Configuration
 import tracking.SentNotificationReportRepository
 
 import scala.concurrent.ExecutionContext
@@ -19,7 +19,6 @@ final class Report(
   configuration: Configuration,
   controllerComponents: ControllerComponents,
   reportRepository: SentNotificationReportRepository,
-  reportEnricher: NotificationReportEnricher,
   authAction: AuthAction )
   (implicit executionContext: ExecutionContext)
   extends AbstractController(controllerComponents)  {
@@ -43,7 +42,7 @@ final class Report(
   }
 
   def notification(id: UUID): Action[AnyContent] = authAction.async {
-    EitherT(reportRepository.getByUuid(id)).semiflatMap(reportEnricher.enrich).fold(
+    EitherT(reportRepository.getByUuid(id)).map(ExtendedNotificationReport.fromNotificationReport).fold(
       error => InternalServerError(error.message),
       result => Ok(Json.toJson(result))
     )

@@ -1,6 +1,6 @@
 package registration.services
 
-import error.NotificationsError
+import error.{MalformattedRegistration, NotificationsError, UnsupportedPlatform}
 import registration.models.LegacyTopic
 import models._
 import registration.models.LegacyRegistration

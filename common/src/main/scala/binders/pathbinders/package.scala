@@ -1,6 +1,5 @@
 package binders
 
-import azure.NotificationHubRegistrationId
 import models._
 import play.api.mvc.{Codec, PathBindable}
 import scala.language.implicitConversions
@@ -20,12 +19,6 @@ package object pathbinders {
     parse = NotificationType.fromRep.get(_).map(Right(_)).getOrElse(Left("")),
     serialize = NotificationType.toRep,
     typeName = "NotificationType"
-  )
-
-  implicit def pathbindableNotificationHubRegistrationId: PathBindable[NotificationHubRegistrationId] = new Parsing[NotificationHubRegistrationId](
-    parse = NotificationHubRegistrationId.fromString(_),
-    serialize = _.toString,
-    typeName = "registration id"
   )
 
   implicit def pathbindableTopic: play.api.mvc.PathBindable[Topic] = new Parsing[Topic](

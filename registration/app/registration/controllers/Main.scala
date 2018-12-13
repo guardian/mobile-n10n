@@ -4,15 +4,12 @@ import akka.actor.ActorSystem
 import akka.pattern.after
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import azure.HubFailure.{HubInvalidConnectionString, HubParseFailed, HubServiceError}
 import binders.querystringbinders.{RegistrationsByDeviceToken, RegistrationsByTopicParams, RegistrationsByUdidParams, RegistrationsSelector}
 import cats.data.EitherT
-import cats.implicits._
 import error.{NotificationsError, RequestError}
 import models._
 import play.api.Logger
 import play.api.libs.json.{Format, Json, Writes}
-import play.api.mvc.BodyParsers.parse.{json => BodyJson}
 import play.api.mvc._
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
 import registration.services._
@@ -147,15 +144,6 @@ final class Main(
     result.fold(processErrors, res => Ok(Json.toJson(res)))
 
   private def processErrors(error: NotificationsError): Result = error match {
-    case HubServiceError(reason, code) =>
-      logger.error(s"Service error code $code: $reason")
-      Status(code.toInt)(s"Upstream service failed with code $code.")
-    case HubParseFailed(body, reason) =>
-      logger.error(s"Failed to parse body due to: $reason; body = $body")
-      InternalServerError(reason)
-    case HubInvalidConnectionString(reason) =>
-      logger.error(s"Failed due to invalid connection string: $reason")
-      InternalServerError(reason)
     case requestError: RequestError =>
       logger.warn(s"Bad request: ${requestError.reason}")
       BadRequest(requestError.reason)

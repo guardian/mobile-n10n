@@ -1,4 +1,4 @@
-package notification.services.azure
+package notification.services
 
 import java.time.{Clock, Duration, Instant}
 import java.util.UUID
@@ -17,7 +17,7 @@ class NewsstandSender(
   val sevenDaysInSeconds = Duration.ofDays(7).getSeconds
   def sendNotification(id: UUID): Future[Unit] = {
     val nowSeconds = Instant.now(clock).getEpochSecond
-    val result = Future.sequence {
+    Future.sequence {
       Range(0, legacyNewsstandRegistrationConverterConfig.shards.toInt).map(registeredShard => {
         val offset = registeredShard + 1
         val shardUuid = new UUID(id.getMostSignificantBits, id.getLeastSignificantBits + offset)
@@ -28,6 +28,6 @@ class NewsstandSender(
           nowSeconds + (60L * offset) + sevenDaysInSeconds
         ), None).future
       })
-    }
+    }.map(_ => ())
   }
 }
