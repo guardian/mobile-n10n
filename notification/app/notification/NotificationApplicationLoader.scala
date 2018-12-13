@@ -77,7 +77,6 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   lazy val newsstandHubClient = new NotificationHubClient(appConfig.newsstandHub, wsClient)
   lazy val newsstandNotificationSender: NewsstandSender = {
     new NewsstandSender(
-      newsstandHubClient,
       NewsstandShardConfig(appConfig.newsstandShards),
       new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client))
   }

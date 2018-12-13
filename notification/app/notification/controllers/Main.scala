@@ -17,6 +17,7 @@ import tracking.SentNotificationReportRepository
 
 import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 final class Main(
   configuration: Configuration,
@@ -38,11 +39,11 @@ final class Main(
 
   def pushNewsstand: Action[AnyContent] = authAction.async {
     val id = UUID.randomUUID()
-    newsstandSender.sendNotification(id) map {
-      case Right(_) =>
-        logger.info("Newsstand notification sent")
-        Created(toJson(PushResult(id)))
-      case Left(error) =>
+    newsstandSender.sendNotification(id) map { _ =>
+      logger.info("Newsstand notification sent")
+      Created(toJson(PushResult(id)))
+    } recover {
+      case NonFatal(error) =>
         logger.error(s"Newsstand notification failed: $error")
         InternalServerError(s"Newsstand notification failed: $error")
     }
