@@ -47,7 +47,6 @@ val standardSettings = Seq[Setting[_]](
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
   riffRaffUploadManifestBucket := Option("riffraff-builds"),
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-async" % "0.9.7",
     "com.github.nscala-time" %% "nscala-time" % "2.18.0",
     "com.softwaremill.macwire" %% "macros" % "2.3.0" % "provided",
     specs2 % Test,
