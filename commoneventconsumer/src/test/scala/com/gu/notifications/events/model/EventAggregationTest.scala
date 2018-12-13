@@ -6,8 +6,7 @@ import java.time.LocalDateTime
 class EventAggregationTest extends Specification {
 
   val mockPlatformCount = PlatformCount(10, 10, 10)
-  val mockProviderCount = ProviderCount(10, mockPlatformCount, mockPlatformCount)
-  def mockEventAggregation(timing: Map[LocalDateTime, Int]) = EventAggregation(mockPlatformCount, mockProviderCount, timing)
+  def mockEventAggregation(timing: Map[LocalDateTime, Int]) = EventAggregation(mockPlatformCount, timing)
 
   "timingPercentiles" should {
     "return None if no timing" in {

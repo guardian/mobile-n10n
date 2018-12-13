@@ -6,7 +6,7 @@ import java.util.UUID
 
 import com.amazonaws.util.IOUtils
 import com.gu.notifications.events.aws.AwsClient
-import com.gu.notifications.events.model.{EventsPerNotification, Platform, Provider, RawEvent}
+import com.gu.notifications.events.model.{EventsPerNotification, Platform, RawEvent}
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.logging.log4j
 import org.apache.logging.log4j.LogManager
@@ -63,11 +63,9 @@ class S3EventProcessorImpl extends S3EventProcessor {
       val maybeEventsPerNotification = for {
         notificationIdString <- queryParams.get("notificationId")
         platformString <- queryParams.get("platform")
-        providerString <- queryParams.get("provider").orElse(Some("android"))
         notificationId <- Try(UUID.fromString(notificationIdString)).toOption
         platform <- Platform.fromString(platformString)
-        provider <- Provider.fromString(providerString)
-      } yield EventsPerNotification.from(notificationId, rawEvent.dateTime, platform, provider)
+      } yield EventsPerNotification.from(notificationId, rawEvent.dateTime, platform)
       if(maybeEventsPerNotification.isEmpty) {
         logger.warn(s"Could not read $rawEvent")
       }
