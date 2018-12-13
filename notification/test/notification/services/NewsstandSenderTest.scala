@@ -1,13 +1,10 @@
-package notification.services.azure
+package notification.services
 
 import java.time.{Clock, Instant, ZoneOffset}
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 
-import azure.apns.{APS, Body, LegacyProperties}
-import azure.{APNSRawPush, NotificationHubClient, Tags}
 import com.gu.notificationschedule.dynamo.NotificationsScheduleEntry
-import models.TopicTypes.Newsstand
 import models.{NewsstandShardConfig, NewsstandShardNotification, Notification, Topic}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
@@ -15,7 +12,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.mutable.ExecutionEnvironment
 import play.api.libs.json.Json
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.Promise
 import scala.util.Try
 
 class NewsstandSenderTest extends Specification with Mockito with ExecutionEnvironment {
@@ -80,11 +77,11 @@ class NewsstandSenderTest extends Specification with Mockito with ExecutionEnvir
             sevenDaysFromNowSeconds + 180
           ))
 
-         notificationsScheduleEntries.map(_.notification).map(jsonString => Notification.jf.reads(Json.parse(jsonString)).get) must be equalTo Set(
-           NewsstandShardNotification(firstUuid, 0),
-           NewsstandShardNotification(secondUuid, 1),
-           NewsstandShardNotification(thirdUuid, 2)
-         )
+        notificationsScheduleEntries.map(_.notification).map(jsonString => Notification.jf.reads(Json.parse(jsonString)).get) must be equalTo Set(
+          NewsstandShardNotification(firstUuid, 0),
+          NewsstandShardNotification(secondUuid, 1),
+          NewsstandShardNotification(thirdUuid, 2)
+        )
       }
     }
   }

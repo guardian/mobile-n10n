@@ -47,7 +47,6 @@ val standardSettings = Seq[Setting[_]](
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
   riffRaffUploadManifestBucket := Option("riffraff-builds"),
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
     "org.scala-lang.modules" %% "scala-async" % "0.9.7",
     "com.github.nscala-time" %% "nscala-time" % "2.18.0",
     "com.softwaremill.macwire" %% "macros" % "2.3.0" % "provided",
@@ -80,9 +79,6 @@ lazy val common = project
   .settings(
     libraryDependencies ++= Seq(
       ws,
-      // be careful upgrading the following, recent azure-servicebus version rely on an alpha of slf4j, breaking play logging...
-      "com.microsoft.azure" % "azure-servicebus" % "0.9.8",
-      "com.google.firebase" % "firebase-admin" % "6.3.0",
       "org.typelevel" %% "cats-core" % catsVersion,
       "joda-time" % "joda-time" % "2.9.9",
       "com.typesafe.play" %% "play-json" % playJsonVersion,

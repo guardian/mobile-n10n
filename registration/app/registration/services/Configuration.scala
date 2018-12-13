@@ -1,23 +1,11 @@
 package registration.services
 
 import auditor.{AuditorGroupConfig, ApiConfig}
-import _root_.azure.NotificationHubConnection
 import play.api.{Configuration => PlayConfig}
 
 import scala.concurrent.duration._
 
 class Configuration(conf: PlayConfig) {
-  lazy val defaultHub = NotificationHubConnection(
-    endpoint = conf.get[String]("azure.hub.endpoint"),
-    sharedAccessKeyName = conf.get[String]("azure.hub.sharedAccessKeyName"),
-    sharedAccessKey = conf.get[String]("azure.hub.sharedAccessKey")
-  )
-
-  lazy val newsstandHub = NotificationHubConnection(
-    endpoint = conf.get[String]("newsstand.azure.hub.endpoint"),
-    sharedAccessKeyName = conf.get[String]("newsstand.azure.hub.sharedAccessKeyName"),
-    sharedAccessKey = conf.get[String]("newsstand.azure.hub.sharedAccessKey")
-  )
 
   lazy val auditorConfiguration = AuditorGroupConfig(
     contentApiConfig = ApiConfig(

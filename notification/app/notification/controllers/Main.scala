@@ -6,8 +6,7 @@ import authentication.AuthAction
 import models._
 import notification.models.{Push, PushResult}
 import notification.services
-import notification.services.azure.NewsstandSender
-import notification.services.{Configuration, NotificationSender}
+import notification.services.{Configuration, NewsstandSender, NotificationSender}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Logger
 import play.api.libs.json.Json.toJson

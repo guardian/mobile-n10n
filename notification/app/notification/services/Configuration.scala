@@ -1,20 +1,10 @@
 package notification.services
 
-import _root_.azure.NotificationHubConnection
 import play.api.{Configuration => PlayConfig}
 
 import scala.concurrent.duration._
 
 class Configuration(conf: PlayConfig) {
-  lazy val defaultHub = NotificationHubConnection(
-    endpoint = conf.get[String]("azure.hub.endpoint"),
-    sharedAccessKeyName = conf.get[String]("azure.hub.sharedAccessKeyName"),
-    sharedAccessKey = conf.get[String]("azure.hub.sharedAccessKey")
-  )
-
-  lazy val enterpriseHub: NotificationHubConnection = getConfigurableHubConnection("enterprise")
-
-  lazy val newsstandHub: NotificationHubConnection = getConfigurableHubConnection("newsstand.azure")
 
   lazy val hubSharedAccessKeyName: String = conf.get[String]("azure.hub.sharedAccessKeyName")
   lazy val hubSharedAccessKey: String = conf.get[String]("azure.hub.sharedAccessKey")
@@ -37,13 +27,4 @@ class Configuration(conf: PlayConfig) {
 
   lazy val firebaseServiceAccountKey: String = conf.get[String]("notifications.firebase.serviceAccountKey")
   lazy val firebaseDatabaseUrl: String = conf.get[String]("notifications.firebase.databaseUrl")
-
-  private def getConfigurableHubConnection(hubConfigurationName: String): NotificationHubConnection = {
-    val hub = for {
-      endpoint <- conf.getOptional[String](s"$hubConfigurationName.hub.endpoint")
-      sharedAccessKeyName <- conf.getOptional[String](s"$hubConfigurationName.hub.sharedAccessKeyName")
-      sharedAccessKey <- conf.getOptional[String](s"$hubConfigurationName.hub.sharedAccessKey")
-    } yield NotificationHubConnection(endpoint = endpoint, sharedAccessKeyName = sharedAccessKeyName, sharedAccessKey = sharedAccessKey)
-    hub getOrElse defaultHub
-  }
 }

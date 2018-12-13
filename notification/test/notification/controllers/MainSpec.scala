@@ -7,7 +7,7 @@ import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
 import notification.models.{Push, PushResult}
 import notification.services.frontend.FrontendAlerts
-import notification.services._
+import notification.services.{NewsstandSender, _}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
@@ -17,7 +17,6 @@ import tracking.InMemoryNotificationReportRepository
 
 import scala.concurrent.Future
 import notification.authentication.NotificationAuthAction
-import notification.services.azure.NewsstandSender
 import play.api.test.Helpers.stubControllerComponents
 import cats.instances.future._
 import cats.syntax.either._
