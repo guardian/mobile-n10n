@@ -116,7 +116,7 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
     metrics = metrics
   )
 
-  lazy val mainController = new Main(copyingRegistrarProvider, topicValidator, legacyRegistrationConverter, legacyNewsstandRegistrationConverter, appConfig, controllerComponents)
+  lazy val mainController = new Main(databaseRegistrar, topicValidator, legacyRegistrationConverter, legacyNewsstandRegistrationConverter, appConfig, controllerComponents)
 
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"

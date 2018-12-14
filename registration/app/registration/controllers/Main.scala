@@ -27,7 +27,7 @@ import providers.ProviderError
 import scala.util.{Success, Try}
 
 final class Main(
-  registrarProvider: RegistrarProvider,
+  registrar: NotificationRegistrar,
   topicValidator: TopicValidator,
   legacyRegistrationConverter: LegacyRegistrationConverter,
   legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter,
@@ -52,18 +52,10 @@ final class Main(
   }
 
   def unregister(selector: RegistrationsByDeviceToken): Action[AnyContent] = actionWithTimeout {
-
-    def registrarForSelector = EitherT.fromEither[Future](
-      registrarProvider.registrarFor(selector.platform, selector.deviceToken, None)
-    )
-
-    def unregisterFrom(registrar: NotificationRegistrar): EitherT[Future, NotificationsError, Unit] = EitherT(
-      registrar.unregister(selector.deviceToken, selector.platform): Future[Either[NotificationsError, Unit]]
-    )
-
-    registrarForSelector
-      .flatMap(unregisterFrom)
-      .fold(processErrors, _ => NoContent)
+    registrar.unregister(selector.deviceToken, selector.platform).map {
+      case Right(_) => NoContent
+      case Left(error) => processErrors(error)
+    }
   }
 
   def newsstandRegister: Action[LegacyNewsstandRegistration] =
@@ -95,7 +87,7 @@ final class Main(
   def registrationsByTopic(topic: Topic, cursors: Option[CursorSet]): Action[AnyContent] = Action.async {
     val isFirstPage = cursors.isEmpty
 
-    val registrarResults = registrarProvider.withAllRegistrars { registrar =>
+    val registrarResults = {
       val cursorForProvider = cursors.flatMap(_.providerCursor(registrar.providerIdentifier))
 
       if (isFirstPage || cursorForProvider.isDefined)
@@ -103,15 +95,10 @@ final class Main(
       else
         Future.successful(None)
     }
-    Future.sequence(registrarResults).map { pageAttempts =>
-      val pages = pageAttempts.flatten
 
-      val results = pages.flatMap(_.results)
-
-      val cursor =
-        Some(pages.flatMap(_.cursor))
-          .filter(_.nonEmpty)
-          .map(CursorSet.apply)
+    registrarResults.map { pageAttempts =>
+      val results = pageAttempts.map(_.results).getOrElse(Nil)
+      val cursor = pageAttempts.flatMap(_.cursor).map(c => CursorSet.apply(List(c)))
 
       Ok(Json.toJson(Paginated(results, cursor)))
     }
@@ -119,24 +106,15 @@ final class Main(
 
   def registrationsByDeviceToken(platform: Platform, deviceToken: DeviceToken): Action[AnyContent] = Action.async {
     val result = for {
-      registrar <- EitherT.fromEither[Future](registrarProvider.registrarFor(platform, deviceToken, None))
       registrations <- EitherT(registrar.findRegistrations(deviceToken, platform): Future[Either[NotificationsError, List[StoredRegistration]]])
     } yield registrations
     result.fold(processErrors, res => Ok(Json.toJson(res)))
   }
 
   def registrationsByUdid(udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
-    Future.sequence {
-      registrarProvider.withAllRegistrars { registrar =>
-        registrar.findRegistrations(udid)
-      }
-    } map { responses =>
-      val allResults = for {
-        response <- responses
-        successfulResponse <- response.toList
-        result <- successfulResponse.results
-      } yield result
-      Ok(Json.toJson(allResults))
+    registrar.findRegistrations(udid).map {
+      case Right(Paginated(responses, _)) => Ok(Json.toJson(responses))
+      case Left(error) => processErrors(error)
     }
   }
 
@@ -162,12 +140,7 @@ final class Main(
       case Success(Left(v)) => logger.error(s"Failed to register $registration with ${v.providerName}: ${v.reason}")
     }
 
-    registrarProvider.registrarFor(registration) match {
-      case Right(registrar) =>
-        validate(registration.topics).flatMap(registerWith(registrar, _).andThen(logErrors))
-      case Left(error) =>
-        Future.successful(Left(error))
-    }
+    validate(registration.topics).flatMap(registerWith(registrar, _).andThen(logErrors))
   }
 
   private def processResponse[T](result: Either[NotificationsError, T])(implicit writer: Writes[T]) : Result =

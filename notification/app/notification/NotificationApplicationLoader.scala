@@ -144,14 +144,9 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
     new FilteredNotificationSender(notificationSender, topicRegistrationCounter, invertCondition)
 
   lazy val notificationSenders = List(
-    withFilter(guardianIosNotificationSender, invertCondition = false),
-    withFilter(guardianAndroidNotificationSender, invertCondition = false),
-    withFilter(guardianNewsstandNotificationSender, invertCondition = false),
-    withFilter(gcmNotificationSender, invertCondition = true),
-    withFilter(apnsNotificationSender, invertCondition = true),
-    withFilter(newsstandShardNotificationSender, invertCondition = true),
-    //frontendAlerts, //disabled until frontend decides whether to fix this feature or not.
-    withFilter(fcmNotificationSender, invertCondition = true)
+    guardianIosNotificationSender,
+    guardianAndroidNotificationSender,
+    guardianNewsstandNotificationSender,
   )
 
   lazy val mainController = wire[Main]

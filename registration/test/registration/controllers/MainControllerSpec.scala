@@ -56,7 +56,7 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       contentAsString(result) must /("results") /#(0) /("platform" -> "ios")
       contentAsString(result) must /("results") /#(0) /("deviceId" -> "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4")
       contentAsString(result) must (/("results") andHave size(1))
-    }
+    }.pendingUntilFixed("Endpoint to be dropped")
 
     "return 204 when unregistering" in new RegistrationsContext {
       val Some(register) = route(app, FakeRequest(DELETE, "/registrations?platform=ios&azureToken=4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4"))
