@@ -3,7 +3,7 @@ package com.gu.notifications.events.dynamo
 import java.time.{Duration, LocalDateTime}
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import com.gu.notifications.events.model.{EventAggregation, PlatformCount, ProviderCount}
+import com.gu.notifications.events.model.{EventAggregation, PlatformCount}
 
 import scala.collection.JavaConverters._
 
@@ -12,15 +12,8 @@ object DynamoConversion {
 
   def fromAttributeValue(eventAggregationAv: AttributeValue, notificationid: String, sentTime: LocalDateTime): EventAggregation = {
     val eventMap = eventAggregationAv.getM.asScala
-    val providerMap = eventMap("provider").getM.asScala
     EventAggregation(
       platformCounts = platformFromAttributeValue(eventMap.get("platform")),
-      providerCounts = ProviderCount(
-        total = providerMap("total").getN.toInt,
-        azure = platformFromAttributeValue(providerMap.get("azure")),
-        firebase = platformFromAttributeValue(providerMap.get("firebase")),
-        guardian = platformFromAttributeValue(providerMap.get("guardian"))
-      ),
       timing = eventMap("timing").getL.asScala.toList.map(av => {
         val list = av.getL.asScala.toList
         (list.head.getN.toInt, list(1).getN.toInt)
@@ -46,18 +39,11 @@ object DynamoConversion {
 
   def toAttributeValue(eventAggregation: EventAggregation, sent: LocalDateTime): AttributeValue = {
     val platform = eventAggregation.platformCounts
-    val provider = eventAggregation.providerCounts
     new AttributeValue().withM(Map(
       "platform" -> new AttributeValue().withM(Map(
         "total" -> new AttributeValue().withN(platform.total.toString),
         "ios" -> new AttributeValue().withN(platform.ios.toString),
         "android" -> new AttributeValue().withN(platform.android.toString)
-      ).asJava),
-      "provider" -> new AttributeValue().withM(Map(
-        "total" -> new AttributeValue().withN(provider.total.toString),
-        "azure" -> toAttributeValue(provider.azure),
-        "firebase" -> toAttributeValue(provider.firebase),
-        "guardian" -> toAttributeValue(provider.guardian)
       ).asJava),
       "timing" -> new AttributeValue().withL(
         eventAggregation.timing.toList
@@ -72,11 +58,4 @@ object DynamoConversion {
           }.asJava)
     ).asJava)
   }
-
-  def toAttributeValue(platform: PlatformCount): AttributeValue = new AttributeValue().withM(Map(
-    "total" -> new AttributeValue().withN(platform.total.toString),
-    "ios" -> new AttributeValue().withN(platform.ios.toString),
-    "android" -> new AttributeValue().withN(platform.android.toString)
-  ).asJava)
-
 }

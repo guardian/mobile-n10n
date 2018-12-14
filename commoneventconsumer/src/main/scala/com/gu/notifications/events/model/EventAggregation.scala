@@ -29,7 +29,6 @@ object TimingPercentiles {
 
 case class EventAggregation(
   platformCounts: PlatformCount,
-  providerCounts: ProviderCount,
   timing: Map[LocalDateTime, Int]
 ) {
 
@@ -71,7 +70,6 @@ object EventAggregation {
     val sentTime = originalSentTime.truncatedTo(TenSecondUnit)
     EventAggregation(
       dynamoEventAggregation.platform,
-      dynamoEventAggregation.provider,
       dynamoEventAggregation.timing.map(timed => (timed(0), timed(1))).foldLeft((sentTime, List[(LocalDateTime, Int)]())) {
         case ((lastTime, newList), (offset, count)) => {
           val nextTime = lastTime.plusSeconds(10 * offset)
@@ -86,11 +84,9 @@ object EventAggregation {
     notificationId: UUID,
     dateTime: LocalDateTime,
     platform: Platform,
-    provider: Provider
   ): EventAggregation = {
     EventAggregation(
       platformCounts = PlatformCount.from(platform),
-      providerCounts = ProviderCount.from(provider, platform),
       timing = Map(dateTime -> 1)
     )
   }
@@ -107,7 +103,6 @@ object EventAggregation {
 
   def combine(aggA: EventAggregation, aggB: EventAggregation): EventAggregation = EventAggregation(
     platformCounts = PlatformCount.combine(aggA.platformCounts, aggB.platformCounts),
-    providerCounts = ProviderCount.combine(aggA.providerCounts, aggB.providerCounts),
     timing = combineTimings(aggA.timing, aggB.timing)
   )
 

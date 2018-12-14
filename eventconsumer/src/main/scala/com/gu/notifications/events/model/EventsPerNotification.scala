@@ -10,15 +10,13 @@ object EventsPerNotification {
   def from(
     notificationId: UUID,
     dateTime: LocalDateTime,
-    platform: Platform,
-    provider: Provider
+    platform: Platform
   ): EventsPerNotification = {
     EventsPerNotification(
       Map(notificationId -> EventAggregation.from(
         notificationId = notificationId,
         dateTime = dateTime.truncatedTo(TenSecondUnit),
-        platform = platform,
-        provider = provider
+        platform = platform
       ))
     )
   }
