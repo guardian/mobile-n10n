@@ -22,13 +22,10 @@ class NewsstandSenderTest extends Specification with Mockito with ExecutionEnvir
   def is(implicit ee: ExecutionEnv) = {
     "Newsstand sender" should {
       "Send a simple newsstand notification" in {
-        val hubClient = mock[NotificationHubClient]
-        val sampleHubResult = Right(Some("sample hub result"))
         val randomId = UUID.randomUUID
         val instant = Instant.now()
         val queue= new ConcurrentLinkedQueue[NotificationsScheduleEntry]()
         val sender = new NewsstandSender(
-          hubClient,
           NewsstandShardConfig(3),
           (notificationsScheduleEntry: NotificationsScheduleEntry, maybeEpochSentS: Option[Long]) => {
             Try {
@@ -49,9 +46,7 @@ class NewsstandSenderTest extends Specification with Mockito with ExecutionEnvir
           tags = Some(Tags.fromTopics(Set(Topic(Newsstand, "newsstand"))))
         )
 
-        hubClient.sendNotification(rawPush) returns Future(sampleHubResult)
-
-        sender.sendNotification(randomId) must be_==(sampleHubResult).await
+        sender.sendNotification(randomId) must be_==(()).await
 
         var current: NotificationsScheduleEntry= queue.poll()
 
@@ -90,7 +85,6 @@ class NewsstandSenderTest extends Specification with Mockito with ExecutionEnvir
            NewsstandShardNotification(secondUuid, 1),
            NewsstandShardNotification(thirdUuid, 2)
          )
-        there was one(hubClient).sendNotification(rawPush)
       }
     }
   }
