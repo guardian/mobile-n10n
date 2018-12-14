@@ -1,7 +1,5 @@
 package com.gu.notifications.events.model
 
-import play.api.libs.json.Json
-
 sealed trait Platform
 
 case object Ios extends Platform

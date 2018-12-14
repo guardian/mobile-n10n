@@ -1,8 +1,5 @@
 package models
 
-import java.time.Instant.ofEpochMilli
-import java.time.LocalDateTime.ofInstant
-import java.time.ZoneOffset.UTC
 import java.util.UUID
 
 import JsonUtils._
@@ -21,13 +18,14 @@ case class DynamoNotificationReport(
   events: Option[DynamoEventAggregation]
 )
 
-case class NotificationReport (id: UUID,
+case class NotificationReport(id: UUID,
   `type`: NotificationType,
   notification: Notification,
   sentTime: DateTime,
   reports: List[SenderReport],
   version: Option[UUID],
-  events: Option[EventAggregation]) {
+  events: Option[EventAggregation]
+) {
   def this(dynamoNotificationReport: DynamoNotificationReport) = this(
     id = dynamoNotificationReport.id,
     `type` = dynamoNotificationReport.`type`,
@@ -35,7 +33,7 @@ case class NotificationReport (id: UUID,
     sentTime = dynamoNotificationReport.sentTime,
     reports = dynamoNotificationReport.reports,
     version = dynamoNotificationReport.version,
-    events = dynamoNotificationReport.events.map(dea => EventAggregation.from(dea, ofInstant(ofEpochMilli(dynamoNotificationReport.sentTime.toInstant.getMillis), UTC)))
+    events = dynamoNotificationReport.events.map(dea => EventAggregation.from(dea))
   )
 }
 

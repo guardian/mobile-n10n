@@ -1,6 +1,5 @@
 package com.gu.notifications.events.model
 
-import java.time.LocalDateTime
 import java.util.UUID
 
 case class EventsPerNotification(aggregations: Map[UUID, EventAggregation])
@@ -9,13 +8,10 @@ object EventsPerNotification {
 
   def from(
     notificationId: UUID,
-    dateTime: LocalDateTime,
     platform: Platform
   ): EventsPerNotification = {
     EventsPerNotification(
       Map(notificationId -> EventAggregation.from(
-        notificationId = notificationId,
-        dateTime = dateTime.truncatedTo(TenSecondUnit),
         platform = platform
       ))
     )

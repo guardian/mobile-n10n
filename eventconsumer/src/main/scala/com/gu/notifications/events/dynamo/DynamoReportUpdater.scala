@@ -1,19 +1,18 @@
 package com.gu.notifications.events.dynamo
 
-import java.time.{LocalDateTime, ZonedDateTime}
 import java.util.UUID
 
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.dynamodbv2.model._
 import com.gu.notifications.events.aws.AwsClient
-import com.gu.notifications.events.model.{EventAggregation, NotificationReportEvent, TenSecondUnit}
+import com.gu.notifications.events.model.{EventAggregation, NotificationReportEvent}
 import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 
-case class ReadVersionedEvents(version: Option[String], events: Option[EventAggregation], sentTime: LocalDateTime)
+case class ReadVersionedEvents(version: Option[String], events: Option[EventAggregation])
 
 case class UpdateVersionedEvents(lastVersion: Option[String], nextVersion: String, events: NotificationReportEvent)
 
@@ -46,14 +45,14 @@ class DynamoReportUpdater(stage: String) {
   private def updateFromPreviousEvents(aggregation: NotificationReportEvent, previousEvents: ReadVersionedEvents) = {
     val nextEvents = previousEvents.events.map(previous => aggregation.copy(eventAggregation = EventAggregation.combine(previous, aggregation.eventAggregation))).getOrElse(aggregation)
     val updatedEvents = UpdateVersionedEvents(previousEvents.version, nextVersion, nextEvents)
-    update(updatedEvents, previousEvents.sentTime.truncatedTo(TenSecondUnit))
+    update(updatedEvents)
   }
 
   def nextVersion = UUID.randomUUID().toString
 
-  private def update(versionedEvents: UpdateVersionedEvents, sentTime: LocalDateTime): Future[Unit] = {
+  private def update(versionedEvents: UpdateVersionedEvents): Future[Unit] = {
     val attributeValuesForUpdate = Map(
-      newEventsKey -> DynamoConversion.toAttributeValue(versionedEvents.events.eventAggregation, sentTime),
+      newEventsKey -> DynamoConversion.toAttributeValue(versionedEvents.events.eventAggregation),
       newVersionKey -> new AttributeValue().withS(versionedEvents.nextVersion)
     )
     val updateItemRequestWithoutCondition = new UpdateItemRequest()
@@ -89,16 +88,14 @@ class DynamoReportUpdater(stage: String) {
 
       override def onSuccess(request: GetItemRequest, result: GetItemResult): Unit = Try {
         Option(result.getItem).map { item =>
-          val sentTime = ZonedDateTime.parse(item.get("sentTime").getS).toLocalDateTime
           ReadVersionedEvents(
             version = if (item.containsKey("version")) Some(item.get("version").getS) else None,
             events = if (item.containsKey("events")) {
-              Some(DynamoConversion.fromAttributeValue(item.get("events"), notificationId, sentTime.truncatedTo(TenSecondUnit)))
+              Some(DynamoConversion.fromAttributeValue(item.get("events")))
             }
             else {
               None
-            },
-            sentTime = sentTime)
+            })
         }
       } match {
         case Failure(exception) => promise.failure(new Exception(request.toString, exception))
