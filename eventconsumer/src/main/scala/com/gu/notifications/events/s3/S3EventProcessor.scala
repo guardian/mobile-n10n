@@ -65,7 +65,7 @@ class S3EventProcessorImpl extends S3EventProcessor {
         platformString <- queryParams.get("platform")
         notificationId <- Try(UUID.fromString(notificationIdString)).toOption
         platform <- Platform.fromString(platformString)
-      } yield EventsPerNotification.from(notificationId, rawEvent.dateTime, platform)
+      } yield EventsPerNotification.from(notificationId, platform)
       if(maybeEventsPerNotification.isEmpty) {
         logger.warn(s"Could not read $rawEvent")
       }
