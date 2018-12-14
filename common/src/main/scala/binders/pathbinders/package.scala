@@ -2,7 +2,6 @@ package binders
 
 import models._
 import play.api.mvc.{Codec, PathBindable}
-import scala.language.implicitConversions
 
 package object pathbinders {
 

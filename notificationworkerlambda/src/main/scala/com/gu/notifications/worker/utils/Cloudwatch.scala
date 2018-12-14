@@ -5,7 +5,7 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
 import com.gu.notifications.worker.models.SendingResults
-import fs2.{Pipe, Sink}
+import fs2.Sink
 import models.Platform
 import utils.MobileAwsCredentialsProvider
 

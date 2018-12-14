@@ -4,8 +4,8 @@ import cats.effect.IO
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.sqs.{AmazonSQS, AmazonSQSClient}
 import com.gu.notifications.worker.delivery.DeliveryClient
-import com.gu.notifications.worker.models.{InvalidTokens, SendingResults}
-import fs2.{Chunk, Pipe, Sink}
+import com.gu.notifications.worker.models.InvalidTokens
+import fs2.{Chunk, Sink}
 import org.slf4j.Logger
 import play.api.libs.json.Json
 import utils.MobileAwsCredentialsProvider

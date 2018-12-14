@@ -5,7 +5,6 @@ import models.pagination.CursorSet
 import org.joda.time.DateTime
 import play.api.mvc.QueryStringBindable
 
-import scala.language.implicitConversions
 import PartialFunction.condOpt
 
 package object querystringbinders {

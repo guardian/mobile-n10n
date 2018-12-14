@@ -85,7 +85,6 @@ case class NewsstandShardNotification(
 
 }
 object NewsstandShardNotification {
-  import JsonUtils._
   implicit val jf = Json.format[NewsstandShardNotification]
 }
 

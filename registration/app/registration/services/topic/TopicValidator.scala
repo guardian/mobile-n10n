@@ -6,7 +6,6 @@ import models.Topic
 import registration.services.Configuration
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.implicits._
 
 trait TopicValidator {
   def removeInvalid(topics: Set[Topic]): Future[Either[TopicValidatorError, Set[Topic]]]

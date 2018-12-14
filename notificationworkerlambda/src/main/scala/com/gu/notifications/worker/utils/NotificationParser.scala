@@ -2,7 +2,6 @@ package com.gu.notifications.worker.utils
 
 import cats.effect.IO
 import models.ShardedNotification
-import org.slf4j.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
 object NotificationParser {
