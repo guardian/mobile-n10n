@@ -57,7 +57,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     type Feedback = PushNotificationFuture[SimpleApnsPushNotification, PushNotificationResponse[SimpleApnsPushNotification]]
 
     def responseHandler = new PushNotificationResponseListener[SimpleApnsPushNotification]() {
-      override def operationComplete(feedback: Feedback) {
+      override def operationComplete(feedback: Feedback): Unit = {
         if (feedback.isSuccess) {
           val response = feedback.getNow
           if (response.isAccepted) {
