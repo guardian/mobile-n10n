@@ -110,6 +110,7 @@ Resources:
             - glue:GetTable
             - glue:GetPartition
             - glue:GetPartitions
+            - glue:GetDatabase
             Resource: "*"
       - PolicyName: s3
         PolicyDocument:

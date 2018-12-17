@@ -34,7 +34,6 @@ case class Query(database: String, queryString: String, outputLocation: String)
 class AthenaLambda {
 
   import ExecutionContext.Implicits.global
-
   private val envDependencies = new EnvDependencies
   private val logger: Logger = LogManager.getLogger(classOf[AthenaLambda])
   private val dynamoReportUpdater = new DynamoReportUpdater(envDependencies.stage)
