@@ -72,7 +72,7 @@ class DynamoReportUpdater(stage: String) {
     val updateItemRequest = new UpdateItemRequest()
       .withTableName(tableName)
       .withKey(Map("id" -> new AttributeValue().withS(notificationReportEvent.id)).asJava)
-      .withUpdateExpression(s"SET events = $newEventsKey, version = $newVersionKey").withExpressionAttributeValues(Map(
+      .withUpdateExpression(s"SET athena = $newEventsKey, version = $newVersionKey").withExpressionAttributeValues(Map(
       newEventsKey -> DynamoConversion.toAttributeValue(notificationReportEvent.eventAggregation),
       newVersionKey -> new AttributeValue().withS(nextVersion())
     ).asJava)
