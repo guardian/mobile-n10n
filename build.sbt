@@ -292,11 +292,15 @@ lazy val eventconsumer = project
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
-        specs2 % Test
+        "software.amazon.awssdk" % "athena" % "2.1.4",
+        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
+          specs2 % Test
       ),
       fork := true,
       assemblyJarName := s"${name.value}.jar",
       assemblyMergeStrategy in assembly := {
+        case "mime.types" => new MergeMimeTypesStrategy
+        case "META-INF/io.netty.versions.properties" => MergeStrategy.concat
         case "META-INF/MANIFEST.MF" => MergeStrategy.discard
         case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
         case resource => (assemblyMergeStrategy in assembly).value(resource)
@@ -307,7 +311,8 @@ lazy val eventconsumer = project
       riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
       riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
-      riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
+      riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value,
+      mainClass := Some("com.gu.notifications.events.LocalRun")
     )
   })
 
