@@ -112,10 +112,10 @@ class AthenaLambda {
 
   def handleRequest(): Unit = {
     val startOfReportingWindow = ZonedDateTime.now().minus(AthenaLambda.reportingWindow)
-    val loadParitionsQuery = Query(envDependencies.athenaTable,
+    val loadParitionsQuery = Query(envDependencies.athenaDatabase,
       s"MSCK REPAIR TABLE raw_events_${envDependencies.stage.toLowerCase()}",envDependencies.athenaOutputLocation
     )
-    val fetchEventsQuery = Query(envDependencies.athenaTable,
+    val fetchEventsQuery = Query(envDependencies.athenaDatabase,
       s"""SELECT notificationid,
          platform,
          count(*) as count

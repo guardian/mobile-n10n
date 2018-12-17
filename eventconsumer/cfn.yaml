@@ -23,8 +23,8 @@ Parameters:
   BucketNamePrefix:
     Description: Bucket name prefix to use
     Type: String
-  AthenaTable:
-    Description: Athena table to query
+  AthenaDatabase:
+    Description: Athena Database to query
     Type: String
 Mappings:
   StageVariables:
@@ -177,7 +177,7 @@ Resources:
           AthenaOutputLocation: !Sub
             - s3://${BucketNamePrefix}-${BucketStage}/athena
             - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
-          AthenaTable: !Ref AthenaTable
+          AthenaDatabase: !Ref AthenaDatabase
       Description: Queries Athena to update Notification reports in Dynamodb
       Handler: com.gu.notifications.events.AthenaLambda::handleRequest
       MemorySize: 384
