@@ -11,7 +11,7 @@ object Reporting {
     IO.delay {
       resp match {
         case Left(e: InvalidToken) => logger.warn(s"$prefix $e")
-        case Left(e) => logger.error(prefix, e)
+        case Left(e) => logger.error(s"$prefix $e", e.getCause)
         case Right(_) => () // doing nothing when success
       }
     }
