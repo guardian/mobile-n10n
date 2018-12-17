@@ -113,7 +113,10 @@ class AthenaLambda {
 
   def handleRequest(): Unit = {
     val startOfReportingWindow = ZonedDateTime.now().minus(AthenaLambda.reportingWindow)
-    val query = Query(envDependencies.athenaTable,
+    val loadParitionsQuery = Query(envDependencies.athenaTable,
+      s"MSCK REPAIR TABLE raw_events_${envDependencies.stage.toLowerCase()}",envDependencies.athenaOutputLocation
+    )
+    val fetchEventsQuery = Query(envDependencies.athenaTable,
       s"""SELECT notificationid,
          platform,
          count(*) as count
@@ -121,7 +124,7 @@ class AthenaLambda {
 WHERE partition_date = '${startOfReportingWindow.getYear}-${startOfReportingWindow.getMonthValue}-${startOfReportingWindow.getDayOfMonth}'
         AND partition_hour >= ${startOfReportingWindow.getHour}
 GROUP BY  notificationid, platform, provider""".stripMargin, envDependencies.athenaOutputLocation)
-    new AthenaLambda().route(query, startOfReportingWindow).join()
+    startQuery(loadParitionsQuery).thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
   }
 
 }
