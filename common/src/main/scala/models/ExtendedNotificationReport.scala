@@ -2,7 +2,6 @@ package models
 
 import java.util.UUID
 
-import azure.NotificationDetails
 import com.gu.notifications.events.model.EventAggregation
 import org.joda.time.DateTime
 import play.api.libs.json.Json
@@ -25,8 +24,7 @@ object ExtendedSenderReport {
     senderName = s.senderName,
     sentTime = s.sentTime,
     sendersId = s.sendersId,
-    platformStatistics = s.platformStatistics,
-    debug = None
+    platformStatistics = s.platformStatistics
   )
 }
 
@@ -48,6 +46,5 @@ case class ExtendedSenderReport(
   senderName: String,
   sentTime: DateTime,
   sendersId: Option[String] = None,
-  platformStatistics: Option[PlatformStatistics] = None,
-  debug: Option[NotificationDetails]
+  platformStatistics: Option[PlatformStatistics] = None
 )

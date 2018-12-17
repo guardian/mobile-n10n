@@ -4,7 +4,6 @@ import java.net.URI
 import java.util.UUID
 
 import application.WithPlayApp
-import azure.{NotificationDetails, NotificationStates}
 import cats.data.NonEmptyList
 import cats.effect.IO
 import models.Link.Internal
@@ -17,13 +16,11 @@ import org.joda.time.DateTime
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import play.api.ApplicationLoader.Context
-import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
+import play.api.BuiltInComponents
 import play.api.test._
 import report.ReportApplicationComponents
-import report.services.{Configuration, NotificationReportEnricher}
+import report.services.Configuration
 import tracking.InMemoryNotificationReportRepository
-import cats.implicits._
-import com.softwaremill.macwire._
 import db.{RegistrationRepository, RegistrationService}
 
 import scala.concurrent.Future
@@ -54,7 +51,6 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
-      contentAsJson(result).as[ExtendedNotificationReport].reports.head.debug must beSome
     }
   }
 
@@ -93,7 +89,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
     )
 
     val recentReports = List(
-      notificationReport(DateTime.now.minusDays(7).plusSeconds(10).toString, "5"),
+      notificationReport(DateTime.now.minusDays(7).plusMinutes(3).toString, "5"),
       notificationReport(DateTime.now.minusDays(5).toString, "6"),
       notificationReport(DateTime.now.minusSeconds(1).toString, "7")
     )
@@ -113,38 +109,8 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
       configuration
     }
 
-    val notificationReportEnricherMock = {
-      val notificationReportEnricher = mock[NotificationReportEnricher]
-
-      val report = reportsInRange.head
-
-      val enrichedReport = ExtendedNotificationReport.fromNotificationReport(report)
-
-      val details = NotificationDetails(
-        state = NotificationStates.Completed,
-        enqueueTime = report.sentTime.plusSeconds(5),
-        startTime = Some(report.sentTime.plusSeconds(10)),
-        endTime = Some(report.sentTime.plusSeconds(20)),
-        notificationBody = "test",
-        targetPlatforms = List.empty,
-        wnsOutcomeCounts = None,
-        apnsOutcomeCounts = None,
-        gcmOutcomeCounts = None,
-        tags = "test,tags,list",
-        pnsErrorDetailsUri = None
-      )
-
-      val enrichedReportWithDebug = enrichedReport.copy(
-        reports = enrichedReport.reports.map(report => report.copy(debug = Some(details)))
-      )
-
-      notificationReportEnricher.enrich(reportsInRange.head) returns Future.successful(enrichedReportWithDebug)
-      notificationReportEnricher
-    }
-
     override def configureComponents(context: Context): BuiltInComponents = {
       new ReportApplicationComponents(context) {
-        override lazy val reportEnricher = notificationReportEnricherMock
         override lazy val notificationReportRepository = reportRepositoryMock
         override lazy val appConfig = appConfigMock
         override lazy val registrationDbService: RegistrationService[IO, fs2.Stream] = new RegistrationService(

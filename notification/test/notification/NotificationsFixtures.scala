@@ -9,9 +9,8 @@ import _root_.models.TopicTypes.Breaking
 import _root_.models._
 import _root_.models.TopicTypes.ElectionResults
 import _root_.models.elections
-import error.NotificationsError
 import notification.models.Push
-import notification.services.azure.NotificationHubSenderError
+import notification.services.guardian.GuardianFailedToQueueShard
 import org.joda.time.DateTime
 import play.api.test.FakeRequest
 
@@ -85,9 +84,7 @@ trait NotificationsFixtures {
     destination = notification.topic.toSet
   )
 
-  val providerError = new NotificationHubSenderError(new NotificationsError {
-    override def reason: String = "test"
-  })
+  val providerError =  GuardianFailedToQueueShard("test", "test")
 
   val apiKey = "test"
   val electionsApiKey = "elections-test"
