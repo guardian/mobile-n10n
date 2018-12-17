@@ -122,7 +122,7 @@ class AthenaLambda {
         FROM notification_received_code
 WHERE partition_date = '${startOfReportingWindow.getYear}-${startOfReportingWindow.getMonthValue}-${startOfReportingWindow.getDayOfMonth}'
         AND partition_hour >= ${startOfReportingWindow.getHour}
-GROUP BY  notificationid, platform, provider""".stripMargin, envDependencies.athenaOutputLocation)
+GROUP BY  notificationid, platform""".stripMargin, envDependencies.athenaOutputLocation)
     startQuery(loadParitionsQuery).thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
   }
 
