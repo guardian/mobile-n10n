@@ -35,7 +35,7 @@ class S3EventProcessorImpl extends S3EventProcessor {
           decodedKey = URLDecoder.decode(key, StandardCharsets.UTF_8.name())
         } yield (bucket, decodedKey)
       })
-      keys.flatMap { case (bucketName, key) => {
+      keys.flatMap { case (bucketName, key) => Try{
         val s3Object = AwsClient.s3Client.getObject(bucketName, key)
         val is = s3Object.getObjectContent
         val content = try {
@@ -45,6 +45,12 @@ class S3EventProcessorImpl extends S3EventProcessor {
           is.close()
         }
         content.lines
+      } match {
+        case Success(value) => value
+        case Failure(t) =>{
+          logger.warn(s"Unable to read from bucket $bucketName with key $key", t)
+          Iterator.empty
+        }
       }
       }
     }
