@@ -10,7 +10,7 @@ import org.apache.logging.log4j.{LogManager, Logger}
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain, DefaultCredentialsProvider, ProfileCredentialsProvider}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.athena.AthenaAsyncClient
-import software.amazon.awssdk.services.athena.model.{GetQueryExecutionRequest, GetQueryExecutionResponse, GetQueryResultsRequest, GetQueryResultsResponse, QueryExecutionContext, QueryExecutionState, ResultConfiguration, StartQueryExecutionRequest, StartQueryExecutionResponse}
+import software.amazon.awssdk.services.athena.model.{GetQueryExecutionRequest, GetQueryExecutionResponse, GetQueryResultsRequest, GetQueryResultsResponse, QueryExecutionContext, QueryExecutionState, ResultConfiguration, Row, StartQueryExecutionRequest, StartQueryExecutionResponse}
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters
@@ -85,7 +85,9 @@ class AthenaLambda {
     athenaAsyncClient.getQueryResultsPaginator(GetQueryResultsRequest.builder()
       .queryExecutionId(id)
       .build()).subscribe((getQueryResultsResponse: GetQueryResultsResponse) => {
-      queue.add(getQueryResultsResponse.resultSet.rows().asScala.toList.tail.map { row =>
+      val rows: List[Row] = getQueryResultsResponse.resultSet.rows().asScala.toList
+      logger.info(s"Headers: ${rows.head.data().asScala.toList.map(_.varCharValue())}")
+      queue.add(rows.tail.map { row =>
         val cells: List[String] = row.data().asScala.toList.map(_.varCharValue())
         (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))
       })
