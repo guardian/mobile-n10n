@@ -1,7 +1,7 @@
 package notification.services
 import models._
 import notification.models.Push
-import notification.services.guardian.{GuardianNotificationSender, TopicRegistrationCounter}
+import notification.services.guardian.TopicRegistrationCounter
 import org.joda.time.DateTime
 import play.api.Logger
 

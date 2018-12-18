@@ -12,7 +12,6 @@ import play.api.libs.ws.WSClient
 import play.mvc.Http.Status.CREATED
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.implicits._
 
 case class FrontendAlertsConfig(endpoint: URI, apiKey: String)
 

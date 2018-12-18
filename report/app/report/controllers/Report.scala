@@ -13,7 +13,6 @@ import tracking.SentNotificationReportRepository
 import scala.concurrent.ExecutionContext
 import cats.data.EitherT
 import cats.implicits._
-import play.mvc.Security.AuthenticatedAction
 
 final class Report(
   configuration: Configuration,

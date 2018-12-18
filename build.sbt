@@ -11,7 +11,7 @@ val projectVersion = "1.0-latest"
 organization := "com.gu"
 scalaVersion in ThisBuild := "2.12.6"
 
-scalacOptions in ThisBuild ++= Seq(
+val compilerOptions = Seq(
   "-deprecation",
   "-Xfatal-warnings",
   "-feature",
@@ -20,6 +20,8 @@ scalacOptions in ThisBuild ++= Seq(
   "-language:higherKinds",
   "-Ypartial-unification"
 )
+
+scalacOptions in ThisBuild ++= compilerOptions
 
 val minJacksonVersion: String = "2.8.9"
 val minJacksonLibs = Seq(
@@ -169,7 +171,8 @@ lazy val schedulelambda = project
   .settings {
 
     val byteBuddyVersion = "1.8.8"
-    List(resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
+    List(
+      resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
       assemblyJarName := s"${name.value}.jar",
       assemblyMergeStrategy in assembly := {
         case "META-INF/MANIFEST.MF" => MergeStrategy.discard
@@ -198,14 +201,7 @@ lazy val schedulelambda = project
       riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
       name := "schedule",
       organization := "com.gu",
-      scalacOptions ++= Seq(
-        "-deprecation",
-        "-encoding", "UTF-8",
-        "-target:jvm-1.8",
-        "-Ywarn-dead-code",
-        "-Xfatal-warnings",
-        "-Ypartial-unification"
-      ),
+      scalacOptions ++= compilerOptions,
       riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
     )
   }
@@ -295,6 +291,7 @@ lazy val eventconsumer = project
         specs2 % Test
       ),
       fork := true,
+      scalacOptions := compilerOptions,
       assemblyJarName := s"${name.value}.jar",
       assemblyMergeStrategy in assembly := {
         case "META-INF/MANIFEST.MF" => MergeStrategy.discard
@@ -332,6 +329,7 @@ lazy val notificationworkerlambda = project
       case _ => MergeStrategy.first
     },
     fork := true,
+    scalacOptions := compilerOptions,
     riffRaffPackageType := assembly.value,
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),

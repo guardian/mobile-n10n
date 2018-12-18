@@ -1,6 +1,5 @@
 package models
 
-import JsonUtils._
 
 case class PlatformStatistics(platform: Platform, recipientsCount: Int)
 
