@@ -27,7 +27,7 @@ class Router(eventConsumer: S3EventProcessor, reportUpdater: DynamoReportUpdater
     val triedNotificationCounts = Await.result(eventualTriedNotificationCounts, Duration(4, TimeUnit.MINUTES))
     val s3ResultCounts: S3ResultCounts = AggregationCounts.aggregate(triedNotificationCounts)
     logger.info(S3ResultCounts.jf.writes(s3ResultCounts).toString())
-    if (s3ResultCounts.failure > 0 || s3EventFailures.nonEmpty) {
+    if (s3ResultCounts.failure > 0) {
       throw new Exception("Error happened")
     }
   }
