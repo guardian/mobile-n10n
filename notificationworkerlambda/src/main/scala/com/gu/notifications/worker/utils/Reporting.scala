@@ -12,7 +12,7 @@ object Reporting {
       resp match {
         case Left(e: InvalidToken) => logger.warn(s"$prefix $e")
         case Left(e: FailedRequest) => logger.warn(s"$prefix $e", e.cause)
-        case Left(e) => logger.error(prefix ,e)
+        case Left(e) => logger.error(prefix, e)
         case Right(_) => () // doing nothing when success
       }
     }
