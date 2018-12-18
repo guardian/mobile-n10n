@@ -292,7 +292,7 @@ lazy val eventconsumer = project
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
         "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
-        "software.amazon.awssdk" % "athena" % "2.1.4",
+        "software.amazon.awssdk" % "athena" % "2.2.0",
         "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
           specs2 % Test
       ),

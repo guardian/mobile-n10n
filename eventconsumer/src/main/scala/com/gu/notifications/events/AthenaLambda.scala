@@ -87,15 +87,10 @@ class AthenaLambda {
       .build()).subscribe((getQueryResultsResponse: GetQueryResultsResponse) => {
       queue.add(getQueryResultsResponse.resultSet.rows().asScala.toList.tail.map { row =>
         val cells: List[String] = row.data().asScala.toList.map(_.varCharValue())
-        val count = cells(2).toInt
-        (cells.head, cells(1) match {
-          case "android" => PlatformCount(count, 0, count)
-          case "ios" => PlatformCount(count, count, 0)
-          case _ => PlatformCount(0, 0, 0)
-        })
+        (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))
       })
     }).thenApplyAsync((_: Void) =>
-      queue.asScala.flatten.toList.groupBy(_._1).mapValues(_.map(_._2).reduce(PlatformCount.combine))
+      queue.asScala.flatten.toList.groupBy(_._1).mapValues(_.map(_._2).head)
     )
   }
 
@@ -117,12 +112,13 @@ class AthenaLambda {
     )
     val fetchEventsQuery = Query(envDependencies.athenaDatabase,
       s"""SELECT notificationid,
-         platform,
-         count(*) as count
-        FROM notification_received_code
+         count(*) AS total,
+         count_if(platform = 'ios') AS ios,
+         count_if(platform = 'android') AS android
+FROM notification_received_code
 WHERE partition_date = '${startOfReportingWindow.getYear}-${startOfReportingWindow.getMonthValue}-${startOfReportingWindow.getDayOfMonth}'
-        AND partition_hour >= ${startOfReportingWindow.getHour}
-GROUP BY  notificationid, platform""".stripMargin, envDependencies.athenaOutputLocation)
+         AND partition_hour >= ${startOfReportingWindow.getHour}
+GROUP BY  notificationid""".stripMargin, envDependencies.athenaOutputLocation)
     startQuery(loadParitionsQuery).thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
   }
 
