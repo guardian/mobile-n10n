@@ -10,18 +10,13 @@ import org.apache.logging.log4j.{LogManager, Logger}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 class Router(eventConsumer: S3EventProcessor, reportUpdater: DynamoReportUpdater)(implicit executionContext: ExecutionContext) {
   private val logger: Logger = LogManager.getLogger(classOf[Router])
 
   def sqsEventRoute(inputString: String): Unit = {
-    val (s3Events, s3EventFailures) = SqsEventReader.readSqsEventString(inputString).foldLeft((List.empty[S3Event], List.empty[Throwable])) {
-      case ((lastSuccesses, lastFailures), attempt) => attempt match {
-        case Success(value) => (value :: lastSuccesses, lastFailures)
-        case Failure(exception) => (lastSuccesses, exception :: lastFailures)
-      }
-    }
+    val s3Events = SqsEventReader.readSqsEventString(inputString).flatMap(_.toOption)
     val s3EventAggregateProviders = s3Events.map(s3Event => () => s3EventRoute(s3Event))
     val eventualTriedNotificationCounts = callProvidersInSeries(s3EventAggregateProviders)
     val triedNotificationCounts = Await.result(eventualTriedNotificationCounts, Duration(4, TimeUnit.MINUTES))
