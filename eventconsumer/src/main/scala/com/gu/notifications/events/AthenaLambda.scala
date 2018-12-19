@@ -41,7 +41,7 @@ class AthenaLambda {
 
   def route(query: Query, startOfReportingWindow: ZonedDateTime): CompletableFuture[Void] = {
     startQuery(query)
-      .thenComposeAsync(fetchQueryResponse)
+      .thenComposeAsync(fetchQueryResponse(_, rows => rows.map(cells => (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))).groupBy(_._1).mapValues(_.map(_._2).head)))
       .thenComposeAsync(updateDynamoIfRecent(_, startOfReportingWindow))
       .thenAcceptAsync((aggregationCounts: AggregationCounts) => {
         logger.info(s"Aggregation counts $aggregationCounts")
@@ -80,19 +80,16 @@ class AthenaLambda {
     FutureConverters.toJava(aggregatedCounts)
   }
 
-  private def fetchQueryResponse(id: String)(implicit executionContext: ExecutionContext): CompletableFuture[Map[String, PlatformCount]] = {
-    val queue = new ConcurrentLinkedQueue[List[(String, PlatformCount)]]()
+  private def fetchQueryResponse[T](id: String, transform: List[List[String]] => T): CompletableFuture[T] = {
+    val queue = new ConcurrentLinkedQueue[List[List[String]]]()
     athenaAsyncClient.getQueryResultsPaginator(GetQueryResultsRequest.builder()
       .queryExecutionId(id)
       .build()).subscribe((getQueryResultsResponse: GetQueryResultsResponse) => {
       val rows: List[Row] = getQueryResultsResponse.resultSet.rows().asScala.toList
       logger.info(s"Headers: ${rows.head.data().asScala.toList.map(_.varCharValue())}")
-      queue.add(rows.tail.map { row =>
-        val cells: List[String] = row.data().asScala.toList.map(_.varCharValue())
-        (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))
-      })
+      queue.add(rows.tail.map { row => row.data().asScala.toList.map(_.varCharValue()) })
     }).thenApplyAsync((_: Void) =>
-      queue.asScala.flatten.toList.groupBy(_._1).mapValues(_.map(_._2).head)
+      transform(queue.asScala.flatten.toList)
     )
   }
 
@@ -121,7 +118,7 @@ FROM notification_received_${envDependencies.stage.toLowerCase()}
 WHERE partition_date = '${startOfReportingWindow.getYear}-${startOfReportingWindow.getMonthValue}-${startOfReportingWindow.getDayOfMonth}'
          AND partition_hour >= ${startOfReportingWindow.getHour}
 GROUP BY  notificationid""".stripMargin, envDependencies.athenaOutputLocation)
-    startQuery(loadParitionsQuery).thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
+    startQuery(loadParitionsQuery).thenComposeAsync(fetchQueryResponse(_, logger.info(_))).thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
   }
 
 }
