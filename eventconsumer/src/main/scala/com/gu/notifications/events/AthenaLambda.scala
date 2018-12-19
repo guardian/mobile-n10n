@@ -117,7 +117,7 @@ class AthenaLambda {
          count(*) AS total,
          count_if(platform = 'ios') AS ios,
          count_if(platform = 'android') AS android
-FROM notification_received_code
+FROM notification_received_${envDependencies.stage.toLowerCase()}
 WHERE partition_date = '${startOfReportingWindow.getYear}-${startOfReportingWindow.getMonthValue}-${startOfReportingWindow.getDayOfMonth}'
          AND partition_hour >= ${startOfReportingWindow.getHour}
 GROUP BY  notificationid""".stripMargin, envDependencies.athenaOutputLocation)
