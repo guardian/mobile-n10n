@@ -17,4 +17,5 @@ class EnvDependencies {
   val athenaOutputLocation: String = getNeededKey("AthenaOutputLocation")
   val athenaDatabase: String = getNeededKey("AthenaDatabase")
   val stage = env.getOrDefault("Stage", "CODE")
+  val ingestLocation: String = getNeededKey("IngestLocation")
 }

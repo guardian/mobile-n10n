@@ -1,6 +1,6 @@
 package com.gu.notifications.events
 
-import java.time.{Duration, ZonedDateTime}
+import java.time.{Duration, ZoneOffset, ZonedDateTime}
 import java.util.concurrent.{CompletableFuture, CompletionStage, ConcurrentLinkedQueue}
 
 import com.gu.notifications.events.AthenaLambda.athenaAsyncClient
@@ -12,6 +12,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.athena.AthenaAsyncClient
 import software.amazon.awssdk.services.athena.model.{GetQueryExecutionRequest, GetQueryExecutionResponse, GetQueryResultsRequest, GetQueryResultsResponse, QueryExecutionContext, QueryExecutionState, ResultConfiguration, Row, StartQueryExecutionRequest, StartQueryExecutionResponse}
 
+import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters
 import scala.concurrent.ExecutionContext
@@ -105,20 +106,39 @@ class AthenaLambda {
       .build())
 
   def handleRequest(): Unit = {
-    val startOfReportingWindow = ZonedDateTime.now().minus(AthenaLambda.reportingWindow)
-    val loadParitionsQuery = Query(envDependencies.athenaDatabase,
-      s"MSCK REPAIR TABLE raw_events_${envDependencies.stage.toLowerCase()}",envDependencies.athenaOutputLocation
-    )
+    val now = ZonedDateTime.now(ZoneOffset.UTC)
+    val startOfReportingWindow: ZonedDateTime = now.minus(AthenaLambda.reportingWindow)
+    @tailrec
+    def addPartitionFrom(fromTime: ZonedDateTime, started: List[CompletableFuture[String]] = List()):List[CompletableFuture[String]] = {
+      if(fromTime.isAfter(now)) {
+        started
+      }
+      else {
+        val hour = fromTime.getHour
+        val date = toQueryDate(fromTime)
+        val list = startQuery(Query(
+          envDependencies.athenaDatabase,
+          s"""ALTER TABLE raw_events_${envDependencies.stage}
+ADD IF NOT EXISTS PARTITION (date='$date', hour=$hour)
+LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMargin, envDependencies.athenaOutputLocation)) :: started
+        addPartitionFrom(fromTime.plusHours(1), list)
+      }
+    }
+
+    val addPartitions = addPartitionFrom(startOfReportingWindow).reduce((a,b) => a.thenComposeAsync(_ => b))
     val fetchEventsQuery = Query(envDependencies.athenaDatabase,
       s"""SELECT notificationid,
          count(*) AS total,
          count_if(platform = 'ios') AS ios,
          count_if(platform = 'android') AS android
 FROM notification_received_${envDependencies.stage.toLowerCase()}
-WHERE partition_date = '${startOfReportingWindow.getYear}-${startOfReportingWindow.getMonthValue}-${startOfReportingWindow.getDayOfMonth}'
+WHERE partition_date = '${toQueryDate(startOfReportingWindow)}'
          AND partition_hour >= ${startOfReportingWindow.getHour}
 GROUP BY  notificationid""".stripMargin, envDependencies.athenaOutputLocation)
-    startQuery(loadParitionsQuery).thenComposeAsync(fetchQueryResponse(_, logger.info(_))).thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
+    addPartitions.thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
   }
 
+  private def toQueryDate(startOfReportingWindow: ZonedDateTime) = {
+    s"""${startOfReportingWindow.getYear}-${startOfReportingWindow.getMonthValue}-${startOfReportingWindow.getDayOfMonth}"""
+  }
 }
