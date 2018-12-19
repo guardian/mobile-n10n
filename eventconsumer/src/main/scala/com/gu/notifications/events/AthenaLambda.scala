@@ -138,7 +138,7 @@ GROUP BY  notificationid""".stripMargin, envDependencies.athenaOutputLocation)
     addPartitions.thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
   }
 
-  private def toQueryDate(startOfReportingWindow: ZonedDateTime) = {
-    s"""${startOfReportingWindow.getYear}-${startOfReportingWindow.getMonthValue}-${startOfReportingWindow.getDayOfMonth}"""
+  private def toQueryDate(zonedDateTime: ZonedDateTime) = {
+    s"""${zonedDateTime.getYear}-${zonedDateTime.getMonthValue}-${zonedDateTime.getDayOfMonth}"""
   }
 }
