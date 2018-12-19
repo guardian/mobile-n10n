@@ -111,6 +111,7 @@ Resources:
             - glue:GetPartition
             - glue:GetPartitions
             - glue:GetDatabase
+            - glue:BatchCreatePartition
             Resource: "*"
       - PolicyName: s3
         PolicyDocument:
