@@ -61,7 +61,7 @@ class AthenaLambda {
 
 
   private def waitUntilQueryCompletes(id: String): CompletableFuture[Void] = {
-    Thread.sleep(10000)
+    Thread.sleep(1000)
     athenaAsyncClient.getQueryExecution(GetQueryExecutionRequest.builder()
       .queryExecutionId(id)
       .build()).thenComposeAsync((response: GetQueryExecutionResponse) => {
