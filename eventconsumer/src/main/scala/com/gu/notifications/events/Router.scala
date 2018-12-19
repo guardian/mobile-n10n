@@ -10,24 +10,19 @@ import org.apache.logging.log4j.{LogManager, Logger}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 class Router(eventConsumer: S3EventProcessor, reportUpdater: DynamoReportUpdater)(implicit executionContext: ExecutionContext) {
   private val logger: Logger = LogManager.getLogger(classOf[Router])
 
   def sqsEventRoute(inputString: String): Unit = {
-    val (s3Events, s3EventFailures) = SqsEventReader.readSqsEventString(inputString).foldLeft((List.empty[S3Event], List.empty[Throwable])) {
-      case ((lastSuccesses, lastFailures), attempt) => attempt match {
-        case Success(value) => (value :: lastSuccesses, lastFailures)
-        case Failure(exception) => (lastSuccesses, exception :: lastFailures)
-      }
-    }
+    val s3Events: Seq[S3Event] = SqsEventReader.readSqsEventString(inputString)
     val s3EventAggregateProviders = s3Events.map(s3Event => () => s3EventRoute(s3Event))
     val eventualTriedNotificationCounts = callProvidersInSeries(s3EventAggregateProviders)
     val triedNotificationCounts = Await.result(eventualTriedNotificationCounts, Duration(4, TimeUnit.MINUTES))
     val s3ResultCounts: S3ResultCounts = AggregationCounts.aggregate(triedNotificationCounts)
     logger.info(S3ResultCounts.jf.writes(s3ResultCounts).toString())
-    if (s3ResultCounts.failure > 0 || s3EventFailures.nonEmpty) {
+    if (s3ResultCounts.failure > 0) {
       throw new Exception("Error happened")
     }
   }
