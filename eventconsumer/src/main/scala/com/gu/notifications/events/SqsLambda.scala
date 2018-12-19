@@ -12,11 +12,6 @@ import play.api.libs.json._
 
 import scala.concurrent.ExecutionContext
 
-
-object SqsLambda extends App {
-  new SqsLambda().handleRequest(System.in, System.out, null)
-}
-
 case class Record(body: String)
 
 object Record {
@@ -33,7 +28,7 @@ object SqsEvent {
 class SqsLambda(stage: String) extends RequestStreamHandler {
   private val logger: Logger = LogManager.getLogger(classOf[SqsLambda])
   private val reportUpdater = new DynamoReportUpdater(stage)
-  implicit private val executionContext: ExecutionContext = ExecutionContext.fromExecutor(new ForkJoinPool(25))
+  implicit private val executionContext: ExecutionContext = ExecutionContext.fromExecutor(new ForkJoinPool(5))
   private val s3EventProcessor = new S3EventProcessorImpl
   private val router = new Router(s3EventProcessor, reportUpdater)
 

@@ -20,6 +20,12 @@ Parameters:
     Description: Bucket where RiffRaff uploads artifacts on deploy
     Type: String
     Default: mobile-notifications-dist
+  BucketNamePrefix:
+    Description: Bucket name prefix to use
+    Type: String
+  AthenaDatabase:
+    Description: Athena Database to query
+    Type: String
 Mappings:
   StageVariables:
     CODE:
@@ -79,7 +85,33 @@ Resources:
             Resource:
             - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-${Stage}:*"
             - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-sqs-${Stage}:*"
-
+            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/eventconsumer-athena-${Stage}:*"
+      - PolicyName: Athena
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action:
+            - athena:StartQueryExecution
+            - athena:GetQueryResultsStream
+            - athena:GetNamespace
+            - athena:GetQueryResults
+            - athena:GetQueryExecutions
+            - athena:GetNamedQuery
+            - athena:GetCatalogs
+            - athena:GetNamespaces
+            - athena:GetWorkGroup
+            - athena:GetExecutionEngine
+            - athena:GetQueryExecution
+            - athena:GetExecutionEngines
+            - athena:GetTables
+            - athena:GetTable
+            - athena:BatchGetNamedQuery
+            - athena:BatchGetQueryExecution
+            - glue:GetTable
+            - glue:GetPartition
+            - glue:GetPartitions
+            - glue:GetDatabase
+            Resource: "*"
       - PolicyName: s3
         PolicyDocument:
           Statement:
@@ -129,6 +161,30 @@ Resources:
       Timeout: 300
       ReservedConcurrentExecutions: 1
 
+  AthenaLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${App}-athena-${Stage}
+      Code:
+        S3Bucket:
+          Ref: DeployBucket
+        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+          Stack: !Ref Stack
+          App: !Ref App
+          AthenaOutputLocation: !Sub
+            - s3://${BucketNamePrefix}-${BucketStage}/athena
+            - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
+          AthenaDatabase: !Ref AthenaDatabase
+      Description: Queries Athena to update Notification reports in Dynamodb
+      Handler: com.gu.notifications.events.AthenaLambda::handleRequest
+      MemorySize: 384
+      Role: !GetAtt ExecutionRole.Arn
+      Runtime: java8
+      Timeout: 300
+
   S3Bucket:
     Type: AWS::S3::Bucket
     DependsOn:
@@ -137,7 +193,7 @@ Resources:
     Properties:
       AccessControl: Private
       BucketName: !Sub
-      - aws-mobile-event-logs-${BucketStage}
+      - ${BucketNamePrefix}-${BucketStage}
       - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
       LifecycleConfiguration:
         Rules:
@@ -147,6 +203,11 @@ Resources:
         QueueConfigurations:
         - Event: s3:ObjectCreated:*
           Queue: !GetAtt Sqs.Arn
+          Filter:
+            S3Key:
+              Rules:
+                - Name: prefix
+                  Value: fastly/
 
   SqsEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
