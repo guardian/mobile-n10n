@@ -7,13 +7,6 @@ import scala.collection.JavaConverters._
 
 object DynamoConversion {
 
-  def fromAttributeValue(eventAggregationAv: AttributeValue): EventAggregation = {
-    val eventMap = eventAggregationAv.getM.asScala
-    EventAggregation(
-      platformCounts = platformFromAttributeValue(eventMap.get("platform"))
-    )
-  }
-
   private def platformFromAttributeValue(platformAv: Option[AttributeValue]): PlatformCount = platformAv match {
     case None => PlatformCount.empty
     case Some(platformCount) =>

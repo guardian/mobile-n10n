@@ -282,7 +282,6 @@ lazy val eventconsumer = project
       description := "Consumes events produced when an app receives a notification",
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-        "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
