@@ -4,22 +4,26 @@ import java.net.URI
 
 import _root_.models.NotificationType._
 import _root_.models._
-import com.gu.notifications.worker.delivery.ApnsPayload
+import com.gu.notifications.worker.delivery.{ApnsPayload => Payload}
+import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import com.gu.notifications.worker.delivery.apns.models.payload.CustomProperty.Keys
 import com.gu.notifications.worker.delivery.apns.models.payload.PlatformUriTypes.{External, Item}
 import com.turo.pushy.apns.util.ApnsPayloadBuilder
 
+case class PayLoadAndTimeToLive(payLoad: String, timeToLive: Option[Long] = None)
+
+
 object ApnsPayload {
 
-  def apply(notification: Notification): Option[ApnsPayload] = {
-    val payload: Option[String] = notification match {
+  def apply(notification: Notification): Option[Payload] = {
+    val payload: Option[PayLoadAndTimeToLive] = notification match {
       case n: BreakingNewsNotification => Some(breakingNewsPayload(n))
       case n: ContentNotification => Some(contentPayload(n))
       case n: FootballMatchStatusNotification => Some(footballMatchStatusPayload(n))
       case n: NewsstandShardNotification => Some(newsstandPayload(n))
       case _ => None
     }
-    payload.map(p => new ApnsPayload(p))
+    payload.map(p => new Payload(p.payLoad, p.timeToLive))
   }
 
   private case class PushyPayload(
@@ -53,10 +57,10 @@ object ApnsPayload {
     }
   }
 
-  private def breakingNewsPayload(n: BreakingNewsNotification): String = {
+  private def breakingNewsPayload(n: BreakingNewsNotification): PayLoadAndTimeToLive = {
     val link = toPlatformLink(n.link)
     val imageUrl = n.thumbnailUrl.orElse(n.imageUrl)
-    PushyPayload(
+    val payload = PushyPayload(
       alertTitle = None,
       alertBody = Some(n.message),
       categoryName = Option(n.link match {
@@ -77,11 +81,12 @@ object ApnsPayload {
         CustomProperty(Keys.UriType -> link.`type`.toString)
       ) ++ imageUrl.map(u => CustomProperty(Keys.ImageUrl -> u.toString)).toSeq
     ).payload
+    PayLoadAndTimeToLive(payload, Some(BreakingNewsTtl))
   }
 
-  private def contentPayload(n: ContentNotification): String = {
+  private def contentPayload(n: ContentNotification): PayLoadAndTimeToLive = {
     val link = toPlatformLink(n.link)
-    PushyPayload(
+    val payLoad = PushyPayload(
       alertTitle = None,
       alertBody = Some(n.title),
       categoryName = Some("ITEM_CATEGORY"),
@@ -99,16 +104,17 @@ object ApnsPayload {
         CustomProperty(Keys.UriType -> link.`type`.toString)
       )
     ).payload
+    PayLoadAndTimeToLive(payLoad)
   }
 
-  private def footballMatchStatusPayload(n: FootballMatchStatusNotification): String =
-    PushyPayload(
+  private def footballMatchStatusPayload(n: FootballMatchStatusNotification): PayLoadAndTimeToLive = {
+    val payLoad = PushyPayload(
       alertTitle = Some(n.title),
       alertBody = Some(n.message),
       categoryName = Some("football-match"),
       contentAvailable = false,
       mutableContent = true,
-      sound = if(n.importance == Importance.Major) Some("default") else None,
+      sound = if (n.importance == Importance.Major) Some("default") else None,
       customProperties = Seq(
         CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
         CustomProperty(Keys.Provider -> Provider.Guardian.value),
@@ -138,9 +144,11 @@ object ApnsPayload {
         )
       )
     ).payload
+    PayLoadAndTimeToLive(payLoad, Some(FootballMatchStatusTtl))
+  }
 
-  private def newsstandPayload(notification: NewsstandShardNotification): String =
-    PushyPayload(contentAvailable = true).payload
+  private def newsstandPayload(notification: NewsstandShardNotification): PayLoadAndTimeToLive =
+    PayLoadAndTimeToLive(PushyPayload(contentAvailable = true).payload)
 
   private def toPlatformLink(link: Link) = link match {
     case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
