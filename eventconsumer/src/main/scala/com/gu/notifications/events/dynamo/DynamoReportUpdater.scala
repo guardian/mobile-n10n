@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 
 case class ReadVersionedEvents(version: Option[String], events: Option[EventAggregation])
 
-case class SentTimeAndVersion(sentTime: ZonedDateTime, lastVersion: String, )
+case class SentTimeAndVersion(sentTime: ZonedDateTime, lastVersion: String)
 
 class DynamoReportUpdater(stage: String) {
   private val newVersionKey = ":newversion"
