@@ -179,7 +179,7 @@ Resources:
             - s3://${BucketNamePrefix}-${BucketStage}/fastly
             - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
           AthenaOutputLocation: !Sub
-            - s3://${BucketNamePrefix}-${BucketStage}/athena/${BucketStage}
+            - s3://${BucketNamePrefix}-${BucketStage}/athena
             - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
           AthenaDatabase: !Ref AthenaDatabase
       Description: Queries Athena to update Notification reports in Dynamodb
