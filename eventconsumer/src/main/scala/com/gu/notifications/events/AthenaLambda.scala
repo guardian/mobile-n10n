@@ -37,7 +37,8 @@ class AthenaLambda {
   import ExecutionContext.Implicits.global
   private val envDependencies = new EnvDependencies
   private val logger: Logger = LogManager.getLogger(classOf[AthenaLambda])
-  private val dynamoReportUpdater = new DynamoReportUpdater(envDependencies.stage)
+  private val stage: String = envDependencies.stage
+  private val dynamoReportUpdater = new DynamoReportUpdater(stage)
 
 
   def route(query: Query, startOfReportingWindow: ZonedDateTime): CompletableFuture[Void] = {
@@ -108,6 +109,9 @@ class AthenaLambda {
   def handleRequest(): Unit = {
     val now = ZonedDateTime.now(ZoneOffset.UTC)
     val startOfReportingWindow: ZonedDateTime = now.minus(AthenaLambda.reportingWindow)
+    val athenaOutputLocation = s"${envDependencies.athenaOutputLocation}/${now.toLocalDate.toString}/${now.getHour}"
+    val athenaDatabase = envDependencies.athenaDatabase
+
     @tailrec
     def addPartitionFrom(fromTime: ZonedDateTime, started: List[CompletableFuture[String]] = List()):List[CompletableFuture[String]] = {
       if(fromTime.isAfter(now)) {
@@ -117,24 +121,24 @@ class AthenaLambda {
         val hour = fromTime.getHour
         val date = toQueryDate(fromTime)
         val list = startQuery(Query(
-          envDependencies.athenaDatabase,
-          s"""ALTER TABLE raw_events_${envDependencies.stage}
+          athenaDatabase,
+          s"""ALTER TABLE raw_events_$stage
 ADD IF NOT EXISTS PARTITION (date='$date', hour=$hour)
-LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMargin, envDependencies.athenaOutputLocation)) :: started
+LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMargin, athenaOutputLocation)) :: started
         addPartitionFrom(fromTime.plusHours(1), list)
       }
     }
 
     val addPartitions = addPartitionFrom(startOfReportingWindow).reduce((a,b) => a.thenComposeAsync(_ => b))
-    val fetchEventsQuery = Query(envDependencies.athenaDatabase,
+    val fetchEventsQuery = Query(athenaDatabase,
       s"""SELECT notificationid,
          count(*) AS total,
          count_if(platform = 'ios') AS ios,
          count_if(platform = 'android') AS android
-FROM notification_received_${envDependencies.stage.toLowerCase()}
+FROM notification_received_${stage.toLowerCase()}
 WHERE partition_date = '${toQueryDate(startOfReportingWindow)}'
          AND partition_hour >= ${startOfReportingWindow.getHour}
-GROUP BY  notificationid""".stripMargin, envDependencies.athenaOutputLocation)
+GROUP BY  notificationid""".stripMargin, athenaOutputLocation)
     addPartitions.thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
   }
 

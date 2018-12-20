@@ -223,3 +223,18 @@ Resources:
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
       FunctionName: !Sub ${App}-sqs-${Stage}
+
+  AthenaLambdaScheduleEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: "cron(5,35 * * * ? *)"
+      Targets:
+        - Id: AthenaLambdaScheduleEventRuleTarget
+          Arn: !GetAtt AthenaLambda.Arn
+  AthenaLambdaScheduleEventPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AthenaLambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt AthenaLambdaScheduleEventRule.Arn
