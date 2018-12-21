@@ -113,7 +113,7 @@ object ApnsPayload {
       categoryName = Some("football-match"),
       contentAvailable = false,
       mutableContent = true,
-      sound = if (n.importance == Importance.Major) Some("default") else None,
+      sound = if(n.importance == Importance.Major) Some("default") else None,
       customProperties = Seq(
         CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
         CustomProperty(Keys.Provider -> Provider.Guardian.value),
