@@ -12,7 +12,6 @@ import com.turo.pushy.apns.util.ApnsPayloadBuilder
 
 case class PayLoadAndTimeToLive(payLoad: String, timeToLive: Option[Long] = None)
 
-
 object ApnsPayload {
 
   def apply(notification: Notification): Option[Payload] = {

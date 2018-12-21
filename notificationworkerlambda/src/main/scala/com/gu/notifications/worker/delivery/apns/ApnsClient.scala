@@ -50,7 +50,9 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
       TokenUtil.sanitizeTokenString(token),
       bundleId,
       payload.jsonString,
-      payload.ttl.map(invalidationTime(_)).getOrElse(null), //Default to no invalidation time but an hour for breaking news and 10 mins for football
+      //Default to no invalidation time but an hour for breaking news and 10 mins for football
+      //See https://stackoverflow.com/questions/12317037/apns-notifications-ttl
+      payload.ttl.map(invalidationTime(_).toDate).getOrElse(null),
       DeliveryPriority.IMMEDIATE,
       collapseId
     )
@@ -89,7 +91,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     }
   }
 
-  private def invalidationTime(timeToLive: Long) : Date = DateTime.now().plus(timeToLive).toDate
+  private def invalidationTime(timeToLive: Long) : DateTime = DateTime.now().plus(timeToLive)
 }
 
 object ApnsClient {
