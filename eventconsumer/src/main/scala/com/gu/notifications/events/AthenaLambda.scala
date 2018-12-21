@@ -118,7 +118,8 @@ class AthenaLambda {
         started
       }
       else {
-        val hour = fromTime.getHour
+        val integerHour = fromTime.getHour
+        val hour = if (integerHour < 10) s"0$integerHour" else integerHour.toString
         val date = toQueryDate(fromTime)
         val list = startQuery(Query(
           athenaDatabase,
