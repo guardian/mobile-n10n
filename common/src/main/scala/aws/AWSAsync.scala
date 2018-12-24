@@ -6,9 +6,9 @@ import java.util.concurrent.{Future => JFuture}
 import scala.concurrent.{Future, Promise}
 
 object AWSAsync {
-  private def promiseToAsyncHandler[Request <: AmazonWebServiceRequest, Result](p: Promise[Result]) =
+  private def promiseToAsyncHandler[Request <: AmazonWebServiceRequest, Result](p: Promise[Result], request: AmazonWebServiceRequest) =
     new AsyncHandler[Request, Result] {
-      override def onError(exception: Exception): Unit = { p.failure(exception); () }
+      override def onError(exception: Exception): Unit = {p.failure(new RuntimeException(s"Dynamo request failed $request", exception)); ()}
       override def onSuccess(request: Request, result: Result): Unit = { p.success(result); () }
     }
 
@@ -18,7 +18,7 @@ object AWSAsync {
     request: Request
   ): Future[Result] = {
     val p = Promise[Result]
-    f(request, promiseToAsyncHandler(p))
+    f(request, promiseToAsyncHandler(p, request))
     p.future
   }
 }
