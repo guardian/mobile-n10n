@@ -66,7 +66,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
 
     val reportsInInterval = allReports.filter(report => interval.contains(report.sentTime))
 
-    def createNotificationReport(id: UUID, sentTime: String, version: Option[UUID]): DynamoNotificationReport = DynamoNotificationReport(
+    def createNotificationReport(id: UUID, sentTime: String, version: Option[UUID]): DynamoNotificationReport = DynamoNotificationReport.create(
       id = id,
       `type` = BreakingNews,
       sentTime = DateTime.parse(sentTime).withZone(DateTimeZone.UTC),
