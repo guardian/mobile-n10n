@@ -55,7 +55,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
       val dynamoNotificationReports: List[DynamoNotificationReport] = contentAsJson(result).as[List[DynamoNotificationReport]]
-      dynamoNotificationReports.flatMap(_.ttl) must not beEmpty
+      dynamoNotificationReports.flatMap(_.ttl) must not be empty
       dynamoNotificationReports mustEqual recentContentReports
     }
 
