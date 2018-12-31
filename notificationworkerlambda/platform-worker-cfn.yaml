@@ -172,7 +172,7 @@ Resources:
       Dimensions:
       - Name: FunctionName
         Value: !Sub ${App}-${Stage}
-      EvaluationPeriods: 1
+      EvaluationPeriods: 6
       MetricName: Throttles
       Namespace: AWS/Lambda
       Period: 60
@@ -188,7 +188,7 @@ Resources:
       Dimensions:
       - Name: FunctionName
         Value: !Sub ${App}-${Stage}
-      EvaluationPeriods: 1
+      EvaluationPeriods: 6
       MetricName: Errors
       Namespace: AWS/Lambda
       Period: 60
@@ -206,7 +206,7 @@ Resources:
       Dimensions:
         - Name: FunctionName
           Value: !Sub ${App}-${Stage}
-      EvaluationPeriods: 1
+      EvaluationPeriods: 6
       MetricName: Invocations
       Namespace: AWS/Lambda
       Period: 7200
