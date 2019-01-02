@@ -11,6 +11,7 @@ import models.{GITContent, Notification, Topic}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
+import com.gu.notifications.worker.delivery.utils.TimeToLive
 
 class FcmPayloadSpec extends Specification with Matchers {
 
@@ -48,8 +49,8 @@ class FcmPayloadSpec extends Specification with Matchers {
 
     val expected = Some(
       FirebaseAndroidNotification(
-        UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
-        Map(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
           Keys.NotificationType -> "news",
           Keys.Type -> "custom",
           Keys.Title -> "Test notification",
@@ -63,8 +64,8 @@ class FcmPayloadSpec extends Specification with Matchers {
           Keys.Edition -> "uk",
           Keys.ImageUrl -> "https://invalid.url/img.png",
           Keys.ThumbnailUrl -> "https://invalid.url/img.png"
-        )
-      )
+        ),
+        ttl = TimeToLive.BreakingNewsTtl      )
     )
   }
 
@@ -95,7 +96,8 @@ class FcmPayloadSpec extends Specification with Matchers {
           Keys.UriType -> "item",
           Keys.Uri -> "x-gu:///items/some/capi/id",
           Keys.ThumbnailUrl -> "https://invalid.url/img.png"
-        )
+        ),
+        ttl = TimeToLive.DefaulTtl
       )
     )
   }
@@ -148,7 +150,8 @@ class FcmPayloadSpec extends Specification with Matchers {
           "articleUri" -> "https://some.other.invalid.url/detail",
           "competitionName" -> "World cup 3012",
           "venue" -> "Venue"
-        )
+        ),
+        ttl = TimeToLive.FootballMatchStatusTtl
       )
     )
 

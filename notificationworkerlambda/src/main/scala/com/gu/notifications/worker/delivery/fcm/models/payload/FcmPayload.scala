@@ -8,6 +8,7 @@ import collection.JavaConverters._
 import com.google.firebase.messaging.AndroidConfig
 import com.gu.notifications.worker.delivery.FcmPayload
 import com.gu.notifications.worker.delivery.fcm.models.payload.Editions.Edition
+import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import models._
 
 object FcmPayload {
@@ -15,7 +16,7 @@ object FcmPayload {
   def apply(notification: Notification, debug: Boolean): Option[FcmPayload] =
     FirebaseAndroidNotification(notification, debug).map(n => new FcmPayload(n.androidConfig))
 
-   private[payload] case class FirebaseAndroidNotification(notificationId: UUID, data: Map[String, String]) {
+   private[payload] case class FirebaseAndroidNotification(notificationId: UUID, data: Map[String, String], ttl: Long = DefaulTtl) {
     def androidConfig: AndroidConfig =
       AndroidConfig.builder()
         .putAllData(
@@ -25,7 +26,7 @@ object FcmPayload {
             .asJava
         )
         .setPriority(AndroidConfig.Priority.HIGH)
-        .setTtl(86400000L) // 24 hours
+        .setTtl(ttl)
         .build()
   }
 
@@ -60,7 +61,7 @@ object FcmPayload {
 
     FirebaseAndroidNotification(
       notificationId = breakingNews.id,
-      Map(
+      data = Map(
         Keys.NotificationType -> breakingNews.`type`.value,
         Keys.Type -> MessageTypes.Custom,
         Keys.Title -> breakingNews.title,
@@ -75,7 +76,8 @@ object FcmPayload {
         ++ edition.map(Keys.Edition -> _.toString).toMap
         ++ keyword.map(Keys.Keyword -> _.toString).toMap
         ++ breakingNews.imageUrl.map(Keys.ImageUrl -> _.toString).toMap
-        ++ breakingNews.thumbnailUrl.map(Keys.ThumbnailUrl -> _.toString).toMap
+        ++ breakingNews.thumbnailUrl.map(Keys.ThumbnailUrl -> _.toString).toMap,
+      ttl = BreakingNewsTtl
     )
   }
 
@@ -101,7 +103,7 @@ object FcmPayload {
   private def footballMatchStatusAndroidNotification(matchStatusAlert: FootballMatchStatusNotification): FirebaseAndroidNotification =
     FirebaseAndroidNotification(
       notificationId = matchStatusAlert.id,
-      Map(
+      data = Map(
         Keys.Type -> MessageTypes.FootballMatchAlert,
         Keys.HomeTeamName -> matchStatusAlert.homeTeamName,
         Keys.HomeTeamId -> matchStatusAlert.homeTeamId,
@@ -118,7 +120,8 @@ object FcmPayload {
         Keys.MatchInfoUri -> matchStatusAlert.matchInfoUri.toString
       ) ++ matchStatusAlert.articleUri.map(Keys.ArticleUri -> _.toString).toMap
         ++ matchStatusAlert.competitionName.map(Keys.CompetitionName -> _).toMap
-        ++ matchStatusAlert.venue.map(Keys.Venue -> _).toMap
+        ++ matchStatusAlert.venue.map(Keys.Venue -> _).toMap,
+      ttl = FootballMatchStatusTtl
     )
 
   private case class PlatformUri(uri: String, `type`: String)
