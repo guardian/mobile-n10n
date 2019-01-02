@@ -111,6 +111,7 @@ Resources:
             - glue:GetPartition
             - glue:GetPartitions
             - glue:GetDatabase
+            - glue:BatchCreatePartition
             Resource: "*"
       - PolicyName: s3
         PolicyDocument:
@@ -174,6 +175,9 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
+          IngestLocation: !Sub
+            - s3://${BucketNamePrefix}-${BucketStage}/fastly
+            - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
           AthenaOutputLocation: !Sub
             - s3://${BucketNamePrefix}-${BucketStage}/athena
             - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
@@ -183,7 +187,7 @@ Resources:
       MemorySize: 384
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
-      Timeout: 300
+      Timeout: 120
 
   S3Bucket:
     Type: AWS::S3::Bucket
@@ -219,3 +223,18 @@ Resources:
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
       FunctionName: !Sub ${App}-sqs-${Stage}
+
+  AthenaLambdaScheduleEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: "cron(5,35 * * * ? *)"
+      Targets:
+        - Id: AthenaLambdaScheduleEventRuleTarget
+          Arn: !GetAtt AthenaLambda.Arn
+  AthenaLambdaScheduleEventPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AthenaLambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt AthenaLambdaScheduleEventRule.Arn

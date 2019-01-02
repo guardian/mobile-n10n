@@ -1,6 +1,6 @@
 package com.gu.notifications.events
 
-import java.time.{Duration, ZonedDateTime}
+import java.time.{Duration, ZoneOffset, ZonedDateTime}
 import java.util.concurrent.{CompletableFuture, CompletionStage, ConcurrentLinkedQueue}
 
 import com.gu.notifications.events.AthenaLambda.athenaAsyncClient
@@ -12,6 +12,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.athena.AthenaAsyncClient
 import software.amazon.awssdk.services.athena.model.{GetQueryExecutionRequest, GetQueryExecutionResponse, GetQueryResultsRequest, GetQueryResultsResponse, QueryExecutionContext, QueryExecutionState, ResultConfiguration, Row, StartQueryExecutionRequest, StartQueryExecutionResponse}
 
+import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.compat.java8.FutureConverters
 import scala.concurrent.ExecutionContext
@@ -36,12 +37,13 @@ class AthenaLambda {
   import ExecutionContext.Implicits.global
   private val envDependencies = new EnvDependencies
   private val logger: Logger = LogManager.getLogger(classOf[AthenaLambda])
-  private val dynamoReportUpdater = new DynamoReportUpdater(envDependencies.stage)
+  private val stage: String = envDependencies.stage
+  private val dynamoReportUpdater = new DynamoReportUpdater(stage)
 
 
   def route(query: Query, startOfReportingWindow: ZonedDateTime): CompletableFuture[Void] = {
     startQuery(query)
-      .thenComposeAsync(fetchQueryResponse)
+      .thenComposeAsync(fetchQueryResponse(_, rows => rows.map(cells => (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))).groupBy(_._1).mapValues(_.map(_._2).head)))
       .thenComposeAsync(updateDynamoIfRecent(_, startOfReportingWindow))
       .thenAcceptAsync((aggregationCounts: AggregationCounts) => {
         logger.info(s"Aggregation counts $aggregationCounts")
@@ -80,19 +82,16 @@ class AthenaLambda {
     FutureConverters.toJava(aggregatedCounts)
   }
 
-  private def fetchQueryResponse(id: String)(implicit executionContext: ExecutionContext): CompletableFuture[Map[String, PlatformCount]] = {
-    val queue = new ConcurrentLinkedQueue[List[(String, PlatformCount)]]()
+  private def fetchQueryResponse[T](id: String, transform: List[List[String]] => T): CompletableFuture[T] = {
+    val queue = new ConcurrentLinkedQueue[List[List[String]]]()
     athenaAsyncClient.getQueryResultsPaginator(GetQueryResultsRequest.builder()
       .queryExecutionId(id)
       .build()).subscribe((getQueryResultsResponse: GetQueryResultsResponse) => {
       val rows: List[Row] = getQueryResultsResponse.resultSet.rows().asScala.toList
       logger.info(s"Headers: ${rows.head.data().asScala.toList.map(_.varCharValue())}")
-      queue.add(rows.tail.map { row =>
-        val cells: List[String] = row.data().asScala.toList.map(_.varCharValue())
-        (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))
-      })
+      queue.add(rows.tail.map { row => row.data().asScala.toList.map(_.varCharValue()) })
     }).thenApplyAsync((_: Void) =>
-      queue.asScala.flatten.toList.groupBy(_._1).mapValues(_.map(_._2).head)
+      transform(queue.asScala.flatten.toList)
     )
   }
 
@@ -108,20 +107,43 @@ class AthenaLambda {
       .build())
 
   def handleRequest(): Unit = {
-    val startOfReportingWindow = ZonedDateTime.now().minus(AthenaLambda.reportingWindow)
-    val loadParitionsQuery = Query(envDependencies.athenaDatabase,
-      s"MSCK REPAIR TABLE raw_events_${envDependencies.stage.toLowerCase()}",envDependencies.athenaOutputLocation
-    )
-    val fetchEventsQuery = Query(envDependencies.athenaDatabase,
+    val now = ZonedDateTime.now(ZoneOffset.UTC)
+    val startOfReportingWindow: ZonedDateTime = now.minus(AthenaLambda.reportingWindow)
+    val athenaOutputLocation = s"${envDependencies.athenaOutputLocation}/${now.toLocalDate.toString}/${now.getHour}"
+    val athenaDatabase = envDependencies.athenaDatabase
+
+    @tailrec
+    def addPartitionFrom(fromTime: ZonedDateTime, started: List[CompletableFuture[String]] = List()):List[CompletableFuture[String]] = {
+      if(fromTime.isAfter(now)) {
+        started
+      }
+      else {
+        val integerHour = fromTime.getHour
+        val hour = if (integerHour < 10) s"0$integerHour" else integerHour.toString
+        val date = toQueryDate(fromTime)
+        val list = startQuery(Query(
+          athenaDatabase,
+          s"""ALTER TABLE raw_events_$stage
+ADD IF NOT EXISTS PARTITION (date='$date', hour=$hour)
+LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMargin, athenaOutputLocation)) :: started
+        addPartitionFrom(fromTime.plusHours(1), list)
+      }
+    }
+
+    val addPartitions = addPartitionFrom(startOfReportingWindow).reduce((a,b) => a.thenComposeAsync(_ => b))
+    val fetchEventsQuery = Query(athenaDatabase,
       s"""SELECT notificationid,
          count(*) AS total,
          count_if(platform = 'ios') AS ios,
          count_if(platform = 'android') AS android
-FROM notification_received_${envDependencies.stage.toLowerCase()}
-WHERE partition_date = '${startOfReportingWindow.getYear}-${startOfReportingWindow.getMonthValue}-${startOfReportingWindow.getDayOfMonth}'
+FROM notification_received_${stage.toLowerCase()}
+WHERE partition_date = '${toQueryDate(startOfReportingWindow)}'
          AND partition_hour >= ${startOfReportingWindow.getHour}
-GROUP BY  notificationid""".stripMargin, envDependencies.athenaOutputLocation)
-    startQuery(loadParitionsQuery).thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
+GROUP BY  notificationid""".stripMargin, athenaOutputLocation)
+    addPartitions.thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
   }
 
+  private def toQueryDate(zonedDateTime: ZonedDateTime) = {
+    s"""${zonedDateTime.getYear}-${zonedDateTime.getMonthValue}-${zonedDateTime.getDayOfMonth}"""
+  }
 }
