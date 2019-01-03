@@ -66,7 +66,9 @@ class AthenaLambda {
     athenaAsyncClient.getQueryExecution(GetQueryExecutionRequest.builder()
       .queryExecutionId(id)
       .build()).thenComposeAsync((response: GetQueryExecutionResponse) => {
-      response.queryExecution().status().state() match {
+      val state = response.queryExecution().status().state()
+      logger.info(state.toString)
+      state match {
         case QueryExecutionState.QUEUED => waitUntilQueryCompletes(id)
         case QueryExecutionState.RUNNING => waitUntilQueryCompletes(id)
         case _ => CompletableFuture.completedFuture(null)
