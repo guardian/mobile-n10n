@@ -53,15 +53,20 @@ final class Main(
 
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
     val avoidGuardianProvider = request.headers.get("x-avoid-guardian-provider").map(_.toBoolean)
-
-    val topics = request.body.topic
+    val notification = request.body
+    val topics = notification.topic
     val MaxTopics = 3
-    topics.size match {
+    (topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{request.isPermittedTopic} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(request.isPermittedTopic)}."))
-      case _ => pushWithDuplicateProtection(Push(request.body.withTopics(topics), topics.toSet, avoidGuardianProvider))
+      case _ => pushWithDuplicateProtection(Push(notification.withTopics(topics), topics.toSet, avoidGuardianProvider))
+    }) recoverWith {
+      case NonFatal(exception) => {
+        logger.warn(s"Pushing notification failed: $notification", exception)
+        Future.successful(InternalServerError)
+      }
     }
   }
 
