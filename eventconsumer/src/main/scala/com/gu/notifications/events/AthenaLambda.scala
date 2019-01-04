@@ -122,13 +122,13 @@ class AthenaLambda {
       }
       else {
         val integerHour = fromTime.getHour
-        val hourWithTens = intWithTens(integerHour)
+        val hour = if (integerHour < 10) s"0$integerHour" else integerHour.toString
         val date = toQueryDate(fromTime)
         val list = startQuery(Query(
           athenaDatabase,
           s"""ALTER TABLE raw_events_$stage
-ADD IF NOT EXISTS PARTITION (date='$date', hour=$hourWithTens)
-LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hourWithTens/'""".stripMargin, athenaOutputLocation)) :: started
+ADD IF NOT EXISTS PARTITION (date='$date', hour=$hour)
+LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMargin, athenaOutputLocation)) :: started
         addPartitionFrom(fromTime.plusHours(1), list)
       }
     }
@@ -144,10 +144,6 @@ WHERE partition_date = '${toQueryDate(startOfReportingWindow)}'
          AND partition_hour >= ${startOfReportingWindow.getHour}
 GROUP BY  notificationid""".stripMargin, athenaOutputLocation)
     addPartitions.thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
-  }
-
-  private def intWithTens(integerHour: Int) = {
-    if (integerHour < 10) s"0$integerHour" else integerHour.toString
   }
 
   private def toQueryDate(zonedDateTime: ZonedDateTime) = {
