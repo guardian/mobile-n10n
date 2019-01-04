@@ -121,13 +121,13 @@ class AthenaLambda {
       }
       else {
         val integerHour = fromTime.getHour
-        val hour = if (integerHour < 10) s"0$integerHour" else integerHour.toString
+        val hourWithTens = intWithTens(integerHour)
         val date = toQueryDate(fromTime)
         val list = startQuery(Query(
           athenaDatabase,
           s"""ALTER TABLE raw_events_$stage
-ADD IF NOT EXISTS PARTITION (date='$date', hour=$hour)
-LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMargin, athenaOutputLocation)) :: started
+ADD IF NOT EXISTS PARTITION (date='$date', hour=$hourWithTens)
+LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hourWithTens/'""".stripMargin, athenaOutputLocation)) :: started
         addPartitionFrom(fromTime.plusHours(1), list)
       }
     }
@@ -145,7 +145,13 @@ GROUP BY  notificationid""".stripMargin, athenaOutputLocation)
     addPartitions.thenComposeAsync(_ => route(fetchEventsQuery, startOfReportingWindow)).join()
   }
 
+  private def intWithTens(integerHour: Int) = {
+    if (integerHour < 10) s"0$integerHour" else integerHour.toString
+  }
+
   private def toQueryDate(zonedDateTime: ZonedDateTime) = {
-    s"""${zonedDateTime.getYear}-${zonedDateTime.getMonthValue}-${zonedDateTime.getDayOfMonth}"""
+    val monthWithTens = intWithTens(zonedDateTime.getMonthValue)
+    val dayOfMonthWithTens = intWithTens(zonedDateTime.getDayOfMonth)
+    s"""${zonedDateTime.getYear}-$monthWithTens-$dayOfMonthWithTens"""
   }
 }
