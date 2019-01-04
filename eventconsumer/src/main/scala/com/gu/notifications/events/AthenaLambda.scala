@@ -1,5 +1,6 @@
 package com.gu.notifications.events
 
+import java.time.format.DateTimeFormatter
 import java.time.{Duration, ZoneOffset, ZonedDateTime}
 import java.util.concurrent.{CompletableFuture, CompletionStage, ConcurrentLinkedQueue}
 
@@ -146,6 +147,6 @@ GROUP BY  notificationid""".stripMargin, athenaOutputLocation)
   }
 
   private def toQueryDate(zonedDateTime: ZonedDateTime) = {
-    s"""${zonedDateTime.getYear}-${zonedDateTime.getMonthValue}-${zonedDateTime.getDayOfMonth}"""
+    zonedDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE)
   }
 }
