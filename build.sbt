@@ -325,6 +325,7 @@ lazy val notificationworkerlambda = project
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "org.slf4j" % "slf4j-simple" % "1.7.25",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+      "com.squareup.okhttp3" % "okhttp" % "3.12.1",
       specs2 % Test
     ),
 

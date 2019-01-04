@@ -13,6 +13,7 @@ import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayload
 import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
 import models.FcmConfig
 import _root_.models.{Android, Notification, Platform}
+import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
 import com.gu.notifications.worker.utils.UnwrappingExecutionException
 
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
@@ -76,6 +77,7 @@ object FcmClient {
       val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
           .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(config.serviceAccountKey.getBytes)))
           .setConnectTimeout(10000) // 10 seconds
+        .setHttpTransport(new OkGoogleHttpTransport)
           .build
       FirebaseApp.initializeApp(firebaseOptions)
     }
