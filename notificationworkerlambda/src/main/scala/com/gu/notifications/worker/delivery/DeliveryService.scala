@@ -16,7 +16,15 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.Random
 import scala.util.control.NonFatal
 
-class DeliveryService[F[_], C <: DeliveryClient](
+trait DeliveryService[F[_], C <: DeliveryClient] {
+  def send(
+    notification: Notification,
+    shardRange: ShardRange,
+    platform: Platform
+  ): Stream[F, Either[DeliveryException, C#Success]]
+}
+
+class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
   registrationService: RegistrationService[F, Stream],
   client: C,
   maxConcurrency: Int = Int.MaxValue
@@ -24,7 +32,7 @@ class DeliveryService[F[_], C <: DeliveryClient](
   contextShift: Concurrent[F],
   F: Async[F],
   T: Timer[F]
-) {
+) extends DeliveryService[F, C] {
 
   def send(
     notification: Notification,
