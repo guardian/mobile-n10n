@@ -11,7 +11,11 @@ import utils.MobileAwsCredentialsProvider
 
 import scala.collection.JavaConverters._
 
-object Cloudwatch {
+trait Cloudwatch {
+  def sendMetrics(stage: String, platform: Platform): Sink[IO, SendingResults]
+}
+
+class CloudwatchImpl extends Cloudwatch {
 
   val credentialsProvider = new MobileAwsCredentialsProvider
 

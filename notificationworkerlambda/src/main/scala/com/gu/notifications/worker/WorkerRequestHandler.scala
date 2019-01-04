@@ -33,6 +33,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
   def platform: Platform
   def deliveryService: IO[DeliveryService[IO, C]]
   val cleaningClient: CleaningClient
+  val cloudwatch: Cloudwatch
 
   def env = Env()
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
@@ -57,7 +58,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       val notificationLog = s"(notification: ${notification.notification.id} ${notification.range})"
       input.fold(SendingResults.empty){ case (acc, resp) => SendingResults.aggregate(acc, resp) }
         .evalTap(logInfo(prefix = s"Results $notificationLog: "))
-        .to(Cloudwatch.sendMetrics(env.stage, platform))
+        .to(cloudwatch.sendMetrics(env.stage, platform))
     }
 
     def cleanupFailures[C <: DeliveryClient]: Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
