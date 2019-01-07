@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream
 import java.util.concurrent.ConcurrentLinkedQueue
 
 import com.google.api.client.http.{LowLevelHttpRequest, LowLevelHttpResponse}
-import okhttp3.{MediaType, OkHttpClient, Request, RequestBody, Response}
+import okhttp3.{Headers, MediaType, OkHttpClient, Request, RequestBody, Response}
 import okio.BufferedSink
 
 import scala.annotation.tailrec
@@ -14,10 +14,12 @@ import scala.collection.mutable.ArrayBuffer
 class OkGoogleHttpRequest(okHttpClient: OkHttpClient, url: String, method: String) extends LowLevelHttpRequest {
   //No idea whether FCM now or in the future will call addHeaders concurrently
   private val headers = new ConcurrentLinkedQueue[(String, String)]()
+
   override def addHeader(name: String, value: String): Unit = headers.offer((name, value))
+
   override def execute(): LowLevelHttpResponse = {
     val response: Response = executeRequest()
-    val (maybeContentType: Option[String], maybeBytes: Option[Long], maybeContent: Option[ByteArrayInputStream]) = readBody(response)
+    val (maybeContentType: Option[String], maybeContentLength: Option[Long], maybeContent: Option[ByteArrayInputStream]) = readBody(response)
     val headerList: scala.List[(String, String)] = readHeaders(response)
     val maybeContentEncoding = Option(response.header("content-encoding"))
     val httpProtocolInUpperCase = response.protocol().toString.toUpperCase
@@ -26,7 +28,7 @@ class OkGoogleHttpRequest(okHttpClient: OkHttpClient, url: String, method: Strin
     new OkGoogleHttpResponse(
       maybeContent,
       maybeContentEncoding,
-      maybeBytes,
+      maybeContentLength,
       maybeContentType,
       httpProtocolInUpperCase,
       statusCode,
@@ -36,43 +38,51 @@ class OkGoogleHttpRequest(okHttpClient: OkHttpClient, url: String, method: Strin
   }
 
   private def readHeaders(response: Response): List[(String, String)] = {
-    val buffer = ArrayBuffer[(String, String)]()
-    val okHeaders = response.headers()
-    val count = okHeaders.size()
-    for (index <- 0 until count) {
-      buffer += ((okHeaders.name(index), okHeaders.value(index)))
+    val headerTuples = ArrayBuffer[(String, String)]()
+    val okHeaders: Headers = response.headers()
+    val headerCount = okHeaders.size()
+    for (headerIndex <- 0 until headerCount) {
+      headerTuples += ((okHeaders.name(headerIndex), okHeaders.value(headerIndex)))
     }
-    buffer.toList
+    headerTuples.toList
   }
 
   private def readBody(response: Response): (Option[String], Option[Long], Option[ByteArrayInputStream]) = {
     val maybeBody = Option(response.body())
-    val maybeContentType = maybeBody.flatMap(body => Option(body.contentType())).map(_.toString)
-    val maybeBytes = maybeBody.flatMap(body => Option(body.bytes()))
-    val maybeContent = maybeBytes.map(new ByteArrayInputStream(_))
-    maybeBody.foreach(_.close())
-    (maybeContentType, maybeBytes.map(_.length.toLong), maybeContent)
+    try {
+      val maybeContentType: Option[String] = maybeBody.flatMap(body => Option(body.contentType())).map(_.toString)
+      val maybeBytes: Option[Array[Byte]] = maybeBody.flatMap(body => Option(body.bytes()))
+      val maybeContent: Option[ByteArrayInputStream] = maybeBytes.map(new ByteArrayInputStream(_))
+      (maybeContentType, maybeBytes.map(_.length.toLong), maybeContent)
+    }
+    finally {
+      maybeBody.foreach(_.close())
+    }
   }
 
-  private def executeRequest(): Response = {
-    val requestBuilder: Request.Builder = new Request.Builder().url(url)
-    addHeadersToRequest(requestBuilder)
-    okHttpClient.newCall(requestBuilder
-      .method(method, Option(getStreamingContent).map(content => {
-        new RequestBody {
-          override def contentType(): MediaType = MediaType.parse(getContentType)
-          override def writeTo(sink: BufferedSink): Unit = {
-            content.writeTo(sink.outputStream())
-          }
+  private def executeRequest(): Response = okHttpClient.newCall(addHeadersToRequest(new Request.Builder())
+    .url(url)
+    .method(method, Option(getStreamingContent).map(content => {
+      new RequestBody {
+        override def contentType(): MediaType = MediaType.parse(getContentType)
+
+        override def writeTo(sink: BufferedSink): Unit = {
+          content.writeTo(sink.outputStream())
         }
-      }).orNull)
-      .build()).execute()
-  }
+      }
+    }).orNull)
+    .build())
+    .execute()
 
-  private def addHeadersToRequest(requestBuilder: Request.Builder) = {
+
+  private def addHeadersToRequest(requestBuilder: Request.Builder): Request.Builder = {
+
+
+
     Option(this.getContentLength).filter(_ >= 0).foreach(contentLength => addHeader("Content-Length", contentLength.toString))
     Option(this.getContentEncoding).foreach(contentEncoding => addHeader("Content-Encoding", contentEncoding))
     Option(this.getContentType).foreach(contentType => addHeader("Content-Type", contentType))
+
     @tailrec
     def pollThroughHeaders(): Unit =
       Option(headers.poll()) match {
@@ -82,7 +92,9 @@ class OkGoogleHttpRequest(okHttpClient: OkHttpClient, url: String, method: Strin
         }
         case _ => ()
       }
+
     pollThroughHeaders()
+    requestBuilder
   }
 }
 
