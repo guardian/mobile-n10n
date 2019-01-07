@@ -10,6 +10,7 @@ import _root_.models._
 import _root_.models.Link._
 import _root_.models.Importance._
 import _root_.models.TopicTypes._
+import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.utils.Cloudwatch
 import fs2.{Chunk, Sink, Stream}
@@ -27,6 +28,36 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
       cleaningCallsCount shouldEqual 1
+      sendingResults shouldEqual Some(SendingResults(1, 0, 0))
+      tokensToCleanCount shouldEqual 0
+    }
+    "Clean invalid tokens" in new WRHSScope {
+      override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
+        Stream(
+          Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
+        )
+
+      processShardedNotification(Stream(shardedNotification))
+
+      deliveryCallsCount shouldEqual 1
+      cloudwatchCallsCount shouldEqual 1
+      cleaningCallsCount shouldEqual 1
+      sendingResults shouldEqual Some(SendingResults(0, 1, 0))
+      tokensToCleanCount shouldEqual 1
+    }
+    "Count dry runs" in new WRHSScope {
+      override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
+        Stream(
+          Right(ApnsDeliverySuccess("token", dryRun = true))
+        )
+
+      processShardedNotification(Stream(shardedNotification))
+
+      deliveryCallsCount shouldEqual 1
+      cloudwatchCallsCount shouldEqual 1
+      cleaningCallsCount shouldEqual 1
+      sendingResults shouldEqual Some(SendingResults(0, 0, 1))
+      tokensToCleanCount shouldEqual 0
     }
   }
 
@@ -51,7 +82,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       range = ShardRange(0, 1)
     )
 
-    def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token", false)))
+    def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token")))
 
     override def platform: Platform = iOS
 
@@ -64,18 +95,26 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
     })
 
     var cleaningCallsCount = 0
+    var tokensToCleanCount = 0
     override val cleaningClient: CleaningClient = new CleaningClient {
       override def sendInvalidTokensToCleaning(implicit logger: Logger): Sink[IO, Chunk[String]] = { stream =>
         cleaningCallsCount += 1
-        stream.map(_ => ())
+        stream.map { chunk =>
+          tokensToCleanCount += chunk.size
+          ()
+        }
       }
     }
 
     var cloudwatchCallsCount = 0
+    var sendingResults: Option[SendingResults] = None
     override val cloudwatch: Cloudwatch = new Cloudwatch {
       override def sendMetrics(stage: String, platform: Platform): Sink[IO, SendingResults] = { stream =>
         cloudwatchCallsCount += 1
-        stream.map(_ => ())
+        stream.map { results =>
+          sendingResults = Some(results)
+          ()
+        }
       }
     }
   }
