@@ -2,7 +2,7 @@ package com.gu.notifications.events
 
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, ZoneOffset, ZonedDateTime}
-import java.util.concurrent.{ConcurrentLinkedQueue, Executors, TimeUnit}
+import java.util.concurrent.{Executors, TimeUnit}
 
 import com.gu.notifications.events.AthenaLambda.athenaAsyncClient
 import com.gu.notifications.events.dynamo.DynamoReportUpdater
@@ -11,10 +11,9 @@ import org.apache.logging.log4j.{LogManager, Logger}
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain, DefaultCredentialsProvider, ProfileCredentialsProvider}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.athena.AthenaAsyncClient
-import software.amazon.awssdk.services.athena.model.{GetQueryExecutionRequest, GetQueryExecutionResponse, GetQueryResultsResponse, QueryExecutionContext, QueryExecutionState, ResultConfiguration, Row, StartQueryExecutionRequest, StartQueryExecutionResponse}
+import software.amazon.awssdk.services.athena.model.{GetQueryExecutionRequest, GetQueryExecutionResponse, QueryExecutionContext, QueryExecutionState, ResultConfiguration, StartQueryExecutionRequest, StartQueryExecutionResponse}
 
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
 import scala.concurrent.{Await, ExecutionContext, Future, Promise, duration}
 
 object AthenaLambda {
@@ -46,7 +45,7 @@ class AthenaLambda {
 
   def route(query: Query, startOfReportingWindow: ZonedDateTime): Future[Unit] = {
     startQuery(query)
-      .flatMap(fetchQueryResponse(_, rows => rows.map(cells => (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))).groupBy(_._1).mapValues(_.map(_._2).head)))
+      .flatMap(athenaAsyncClient.fetchQueryResponse(_, rows => rows.map(cells => (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))).groupBy(_._1).mapValues(_.map(_._2).head)))
       .flatMap(updateDynamoIfRecent(_, startOfReportingWindow))
       .map((aggregationCounts: AggregationCounts) => {
         logger.info(s"Aggregation counts $aggregationCounts")
@@ -89,14 +88,6 @@ class AthenaLambda {
     AggregationCounts.aggregateResultCounts(resultCounts)
   }
 
-  private def fetchQueryResponse[T](id: String, transform: List[List[String]] => T): Future[T] = {
-    val queue = new ConcurrentLinkedQueue[List[List[String]]]()
-    athenaAsyncClient.subscribeToPagination(id, (getQueryResultsResponse: GetQueryResultsResponse) => {
-      val rows: List[Row] = getQueryResultsResponse.resultSet.rows().asScala.toList
-      logger.info(s"Headers: ${rows.head.data().asScala.toList.map(_.varCharValue())}")
-      queue.add(rows.tail.map { row => row.data().asScala.toList.map(_.varCharValue()) })
-    }).map(_ => transform(queue.asScala.flatten.toList))
-  }
 
   private def executeQuery(query: Query): Future[StartQueryExecutionResponse] =
     athenaAsyncClient.startQueryExecution(StartQueryExecutionRequest.builder()
