@@ -14,7 +14,7 @@ class NewsstandSender(
   notificationSchedulePersistence: NotificationSchedulePersistenceAsync,
   clock: Clock = Clock.systemUTC()
 )(implicit executionContext: ExecutionContext) {
-  val sevenDaysInSeconds = Duration.ofDays(7).getSeconds
+  val oneDayInSeconds = Duration.ofDays(1).getSeconds
   def sendNotification(id: UUID): Future[Unit] = {
     val nowSeconds = Instant.now(clock).getEpochSecond
     Future.sequence {
@@ -25,7 +25,7 @@ class NewsstandSender(
           shardUuid.toString,
           Json.prettyPrint(NewsstandShardNotification.jf.writes(NewsstandShardNotification(shardUuid, registeredShard))),
           nowSeconds + (60L * offset),
-          nowSeconds + (60L * offset) + sevenDaysInSeconds
+          nowSeconds + (60L * offset) + oneDayInSeconds
         ), None).future
       })
     }.map(_ => ())
