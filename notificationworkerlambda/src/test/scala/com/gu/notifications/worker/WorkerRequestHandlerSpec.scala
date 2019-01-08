@@ -23,7 +23,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
     "Send one notification" in new WRHSScope {
-      processShardedNotification(Stream(shardedNotification))
+      workerRequestHandler.processShardedNotification(Stream(shardedNotification))
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -37,7 +37,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
         )
 
-      processShardedNotification(Stream(shardedNotification))
+      workerRequestHandler.processShardedNotification(Stream(shardedNotification))
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -51,7 +51,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Right(ApnsDeliverySuccess("token", dryRun = true))
         )
 
-      processShardedNotification(Stream(shardedNotification))
+      workerRequestHandler.processShardedNotification(Stream(shardedNotification))
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -62,7 +62,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
   }
 
 
-  trait WRHSScope extends Scope with WorkerRequestHandler[ApnsClient] {
+  trait WRHSScope extends Scope  {
 
     val notification = BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
@@ -84,36 +84,39 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
     def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token")))
 
-    override def platform: Platform = iOS
-
     var deliveryCallsCount = 0
-    override def deliveryService: IO[DeliveryService[IO, ApnsClient]] = IO.pure(new DeliveryService[IO, ApnsClient] {
-      override def send(notification: Notification, shardRange: ShardRange, platform: Platform): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
-        deliveryCallsCount += 1
-        deliveries
-      }
-    })
-
     var cleaningCallsCount = 0
     var tokensToCleanCount = 0
-    override val cleaningClient: CleaningClient = new CleaningClient {
-      override def sendInvalidTokensToCleaning(implicit logger: Logger): Sink[IO, Chunk[String]] = { stream =>
-        cleaningCallsCount += 1
-        stream.map { chunk =>
-          tokensToCleanCount += chunk.size
-          ()
-        }
-      }
-    }
-
     var cloudwatchCallsCount = 0
     var sendingResults: Option[SendingResults] = None
-    override val cloudwatch: Cloudwatch = new Cloudwatch {
-      override def sendMetrics(stage: String, platform: Platform): Sink[IO, SendingResults] = { stream =>
-        cloudwatchCallsCount += 1
-        stream.map { results =>
-          sendingResults = Some(results)
-          ()
+
+    val workerRequestHandler = new WorkerRequestHandler[ApnsClient] {
+      override def platform: Platform = iOS
+
+      override def deliveryService: IO[DeliveryService[IO, ApnsClient]] = IO.pure(new DeliveryService[IO, ApnsClient] {
+        override def send(notification: Notification, shardRange: ShardRange, platform: Platform): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
+          deliveryCallsCount += 1
+          deliveries
+        }
+      })
+
+      override val cleaningClient: CleaningClient = new CleaningClient {
+        override def sendInvalidTokensToCleaning(implicit logger: Logger): Sink[IO, Chunk[String]] = { stream =>
+          cleaningCallsCount += 1
+          stream.map { chunk =>
+            tokensToCleanCount += chunk.size
+            ()
+          }
+        }
+      }
+
+      override val cloudwatch: Cloudwatch = new Cloudwatch {
+        override def sendMetrics(stage: String, platform: Platform): Sink[IO, SendingResults] = { stream =>
+          cloudwatchCallsCount += 1
+          stream.map { results =>
+            sendingResults = Some(results)
+            ()
+          }
         }
       }
     }
