@@ -172,10 +172,10 @@ Resources:
       Dimensions:
       - Name: FunctionName
         Value: !Sub ${App}-${Stage}
-      EvaluationPeriods: 6
+      EvaluationPeriods: 1
       MetricName: Throttles
       Namespace: AWS/Lambda
-      Period: 60
+      Period: 360
       Statistic: Sum
       Threshold: 0
 
@@ -188,10 +188,10 @@ Resources:
       Dimensions:
       - Name: FunctionName
         Value: !Sub ${App}-${Stage}
-      EvaluationPeriods: 6
+      EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
-      Period: 60
+      Period: 360
       Statistic: Sum
       Threshold: 0
       TreatMissingData: notBreaching
@@ -206,7 +206,7 @@ Resources:
       Dimensions:
         - Name: FunctionName
           Value: !Sub ${App}-${Stage}
-      EvaluationPeriods: 6
+      EvaluationPeriods: 1
       MetricName: Invocations
       Namespace: AWS/Lambda
       Period: 7200
