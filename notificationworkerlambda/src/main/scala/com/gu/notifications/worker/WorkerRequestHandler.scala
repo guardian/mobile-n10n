@@ -1,6 +1,6 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Topic, TopicTypes, Newsstand}
+import _root_.models.{Newsstand, Topic, TopicTypes}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -33,6 +33,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
   def platform: Platform
   def deliveryService: IO[DeliveryService[IO, C]]
   val cleaningClient: CleaningClient
+  val cloudwatch: Cloudwatch
 
   def env = Env()
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
@@ -41,8 +42,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def handleRequest(event: SQSEvent, context: Context): Unit = {
-
-    def sharedNotification: Stream[IO, ShardedNotification] = Stream.eval(
+    def shardedNotification: Stream[IO, ShardedNotification] = Stream.eval(
       for {
         json <- event.getRecords.asScala.headOption.map(r => IO(r.getBody)).getOrElse(IO.raiseError(new RuntimeException("SQSEvent has no element")))
         n <- NotificationParser.parseShardedNotification(json)
@@ -53,7 +53,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       val notificationLog = s"(notification: ${notification.notification.id} ${notification.range})"
       input.fold(SendingResults.empty){ case (acc, resp) => SendingResults.aggregate(acc, resp) }
         .evalTap(logInfo(prefix = s"Results $notificationLog: "))
-        .to(Cloudwatch.sendMetrics(env.stage, platform))
+        .to(cloudwatch.sendMetrics(env.stage, platform))
     }
 
     def cleanupFailures[C <: DeliveryClient]: Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
@@ -76,8 +76,8 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
     }
 
     val prog: Stream[IO, Unit] = for {
+      n <- shardedNotification
       deliveryService <- Stream.eval(deliveryService)
-      n <- sharedNotification
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Sending notification $notificationLog...")
       resp <- deliveryService.send(n.notification, n.range, platformFromTopics(n.notification.topic))
