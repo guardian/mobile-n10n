@@ -10,6 +10,8 @@ import _root_.models._
 import _root_.models.Link._
 import _root_.models.Importance._
 import _root_.models.TopicTypes._
+import com.amazonaws.services.lambda.runtime.events.SQSEvent
+import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.utils.Cloudwatch
@@ -18,12 +20,15 @@ import org.slf4j.Logger
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
+import play.api.libs.json.Json
+
+import scala.collection.JavaConverters._
 
 class WorkerRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
     "Send one notification" in new WRHSScope {
-      workerRequestHandler.processShardedNotification(Stream(shardedNotification))
+      workerRequestHandler.handleRequest(sqsEvent, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -31,13 +36,14 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       sendingResults shouldEqual Some(SendingResults(1, 0, 0))
       tokensToCleanCount shouldEqual 0
     }
+
     "Clean invalid tokens" in new WRHSScope {
       override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
         Stream(
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
         )
 
-      workerRequestHandler.processShardedNotification(Stream(shardedNotification))
+      workerRequestHandler.handleRequest(sqsEvent, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -45,13 +51,14 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       sendingResults shouldEqual Some(SendingResults(0, 1, 0))
       tokensToCleanCount shouldEqual 1
     }
+
     "Count dry runs" in new WRHSScope {
       override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
         Stream(
           Right(ApnsDeliverySuccess("token", dryRun = true))
         )
 
-      workerRequestHandler.processShardedNotification(Stream(shardedNotification))
+      workerRequestHandler.handleRequest(sqsEvent, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -76,11 +83,19 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
-
     val shardedNotification = ShardedNotification(
       notification = notification,
       range = ShardRange(0, 1)
     )
+
+    val sqsEvent: SQSEvent = {
+      val event = new SQSEvent()
+      val sqsMessage = new SQSMessage()
+      sqsMessage.setBody(Json.stringify(Json.toJson(shardedNotification)))
+      event.setRecords(List(sqsMessage).asJava)
+      event
+    }
+
 
     def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token")))
 

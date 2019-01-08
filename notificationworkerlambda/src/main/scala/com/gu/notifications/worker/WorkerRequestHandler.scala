@@ -49,11 +49,6 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       } yield n
     )
 
-    processShardedNotification(shardedNotification)
-  }
-
-  def processShardedNotification(shardedNotification: Stream[IO, ShardedNotification]): Unit = {
-
     def reportSuccesses[C <: DeliveryClient](notification: ShardedNotification): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
       val notificationLog = s"(notification: ${notification.notification.id} ${notification.range})"
       input.fold(SendingResults.empty){ case (acc, resp) => SendingResults.aggregate(acc, resp) }
