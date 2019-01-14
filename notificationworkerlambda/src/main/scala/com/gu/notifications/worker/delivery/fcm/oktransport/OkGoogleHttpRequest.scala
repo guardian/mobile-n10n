@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream
 import java.util.concurrent.ConcurrentLinkedQueue
 
 import com.google.api.client.http.{LowLevelHttpRequest, LowLevelHttpResponse}
-import okhttp3.{Headers, MediaType, OkHttpClient, Request, RequestBody, Response}
+import okhttp3.{Headers, MediaType, OkHttpClient, Request, RequestBody, Response, ResponseBody}
 import okio.BufferedSink
 
 import scala.annotation.tailrec
@@ -12,14 +12,21 @@ import scala.collection.mutable.ArrayBuffer
 
 
 class OkGoogleHttpRequest(okHttpClient: OkHttpClient, url: String, method: String) extends LowLevelHttpRequest {
-  //No idea whether FCM now or in the future will call addHeaders concurrently
+  //No idea whether FCM now or in the future will call addHeaders concurrently.
   private val headers = new ConcurrentLinkedQueue[(String, String)]()
 
   override def addHeader(name: String, value: String): Unit = headers.offer((name, value))
 
   override def execute(): LowLevelHttpResponse = {
     val response: Response = executeRequest()
-    val (maybeContentType: Option[String], maybeContentLength: Option[Long], maybeContent: Option[ByteArrayInputStream]) = readBody(response)
+
+    val (maybeContentType: Option[String], maybeBodyBytes: Option[Array[Byte]]) = callOnceWithResponseBody(response)(responseBody =>
+      (Option(responseBody.contentType()).map(_.toString), Option(responseBody.bytes()))
+    ).getOrElse(None, None)
+
+    val maybeContent: Option[ByteArrayInputStream] = maybeBodyBytes.map(new ByteArrayInputStream(_))
+    val maybeContentLength: Option[Long] = maybeBodyBytes.map(_.length.toLong)
+
     val headerList: scala.List[(String, String)] = readHeaders(response)
     val maybeContentEncoding = Option(response.header("content-encoding"))
     val httpProtocolInUpperCase = response.protocol().toString.toUpperCase
@@ -47,16 +54,13 @@ class OkGoogleHttpRequest(okHttpClient: OkHttpClient, url: String, method: Strin
     headerTuples.toList
   }
 
-  private def readBody(response: Response): (Option[String], Option[Long], Option[ByteArrayInputStream]) = {
-    val maybeBody = Option(response.body())
+  private def callOnceWithResponseBody[A](response: Response)(f: ResponseBody => A): Option[A] = {
+    val body = Option(response.body())
     try {
-      val maybeContentType: Option[String] = maybeBody.flatMap(body => Option(body.contentType())).map(_.toString)
-      val maybeBytes: Option[Array[Byte]] = maybeBody.flatMap(body => Option(body.bytes()))
-      val maybeContent: Option[ByteArrayInputStream] = maybeBytes.map(new ByteArrayInputStream(_))
-      (maybeContentType, maybeBytes.map(_.length.toLong), maybeContent)
+      body.map(f)
     }
     finally {
-      maybeBody.foreach(_.close())
+      body.foreach(_.close())
     }
   }
 
@@ -76,9 +80,6 @@ class OkGoogleHttpRequest(okHttpClient: OkHttpClient, url: String, method: Strin
 
 
   private def addHeadersToRequest(requestBuilder: Request.Builder): Request.Builder = {
-
-
-
     Option(this.getContentLength).filter(_ >= 0).foreach(contentLength => addHeader("Content-Length", contentLength.toString))
     Option(this.getContentEncoding).foreach(contentEncoding => addHeader("Content-Encoding", contentEncoding))
     Option(this.getContentType).foreach(contentType => addHeader("Content-Type", contentType))
