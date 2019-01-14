@@ -4,8 +4,8 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 import com.amazonaws.handlers.AsyncHandler
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.amazonaws.services.dynamodbv2.model._
-import com.gu.notifications.events.aws.AwsClient
 import com.gu.notifications.events.model.{EventAggregation, NotificationReportEvent}
 import org.apache.logging.log4j.LogManager
 
@@ -24,7 +24,7 @@ class DynamoReportUpdater(stage: String) {
   private val logger = LogManager.getLogger(classOf[DynamoReportUpdater])
   private val tableName: String = s"mobile-notifications-reports-$stage"
 
-  def update(eventAggregations: List[NotificationReportEvent])(implicit executionContext: ExecutionContext): List[Future[Unit]] = {
+  def update(eventAggregations: List[NotificationReportEvent])(implicit executionContext: ExecutionContext, dynamoDbClient: AmazonDynamoDBAsync): List[Future[Unit]] = {
     eventAggregations.map(aggregation => {
 
       def updateAttempt() = {
@@ -43,7 +43,7 @@ class DynamoReportUpdater(stage: String) {
     })
   }
 
-  def updateSetEventsReceivedAfter(eventAggregations: List[NotificationReportEvent], startOfReportingWindow: ZonedDateTime)(implicit executionContext: ExecutionContext): List[Future[Unit]] = {
+  def updateSetEventsReceivedAfter(eventAggregations: List[NotificationReportEvent], startOfReportingWindow: ZonedDateTime)(implicit executionContext: ExecutionContext, dynamoDbClient: AmazonDynamoDBAsync): List[Future[Unit]] = {
     eventAggregations.map(aggregation => {
       def updateAttempt() = readSentTime(aggregation.id.toString).flatMap(_.map(sentTime => {
         if (sentTime.isAfter(startOfReportingWindow)) {
@@ -68,7 +68,7 @@ class DynamoReportUpdater(stage: String) {
     })
   }
 
-  private def updateSetEvent(notificationReportEvent: NotificationReportEvent): Future[Unit] = {
+  private def updateSetEvent(notificationReportEvent: NotificationReportEvent)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Unit] = {
     val updateItemRequest = new UpdateItemRequest()
       .withTableName(tableName)
       .withKey(Map("id" -> new AttributeValue().withS(notificationReportEvent.id)).asJava)
@@ -82,11 +82,11 @@ class DynamoReportUpdater(stage: String) {
 
       override def onSuccess(request: UpdateItemRequest, result: UpdateItemResult): Unit = promise.success(())
     }
-    AwsClient.dynamoDbClient.updateItemAsync(updateItemRequest, handler)
+    dynamoDbClient.updateItemAsync(updateItemRequest, handler)
     promise.future
   }
 
-  private def updateFromPreviousEvents(aggregation: NotificationReportEvent, previousEvents: ReadVersionedEvents): Future[Unit] = {
+  private def updateFromPreviousEvents(aggregation: NotificationReportEvent, previousEvents: ReadVersionedEvents)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Unit] = {
     val nextEvents = previousEvents.events.map(previous => aggregation.copy(eventAggregation = EventAggregation.combine(previous, aggregation.eventAggregation))).getOrElse(aggregation)
     val updatedEvents = UpdateVersionedEvents(previousEvents.version, nextVersion(), nextEvents)
     update(updatedEvents)
@@ -94,7 +94,7 @@ class DynamoReportUpdater(stage: String) {
 
   private def nextVersion() = UUID.randomUUID().toString
 
-  private def update(versionedEvents: UpdateVersionedEvents): Future[Unit] = {
+  private def update(versionedEvents: UpdateVersionedEvents)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Unit] = {
     val attributeValuesForUpdate = Map(
       newEventsKey -> DynamoConversion.toAttributeValue(versionedEvents.events.eventAggregation),
       newVersionKey -> new AttributeValue().withS(versionedEvents.nextVersion)
@@ -117,11 +117,11 @@ class DynamoReportUpdater(stage: String) {
 
       override def onSuccess(request: UpdateItemRequest, result: UpdateItemResult): Unit = promise.success(())
     }
-    AwsClient.dynamoDbClient.updateItemAsync(updateItemRequest, handler)
+    dynamoDbClient.updateItemAsync(updateItemRequest, handler)
     promise.future
   }
 
-  private def readSentTime(notificationId: String): Future[Option[ZonedDateTime]] = {
+  private def readSentTime(notificationId: String)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Option[ZonedDateTime]] = {
     val getItemRequest = new GetItemRequest()
       .withTableName(tableName)
       .withKey(Map("id" -> new AttributeValue("id").withS(notificationId)).asJava)
@@ -138,11 +138,11 @@ class DynamoReportUpdater(stage: String) {
         case Failure(exception) => promise.failure(new Exception(request.toString, exception))
       }
     }
-    AwsClient.dynamoDbClient.getItemAsync(getItemRequest, handler)
+    dynamoDbClient.getItemAsync(getItemRequest, handler)
     promise.future
   }
 
-  private def read(notificationId: String): Future[Option[ReadVersionedEvents]] = {
+  private def read(notificationId: String)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Option[ReadVersionedEvents]] = {
     val promise = Promise[Option[ReadVersionedEvents]]
     val getItemRequest = new GetItemRequest()
       .withTableName(tableName)
@@ -167,7 +167,7 @@ class DynamoReportUpdater(stage: String) {
         case Success(value) => promise.success(value)
       }
     }
-    AwsClient.dynamoDbClient.getItemAsync(getItemRequest, handler)
+    dynamoDbClient.getItemAsync(getItemRequest, handler)
     promise.future
   }
 }

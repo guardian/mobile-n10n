@@ -1,170 +1,56 @@
 package com.gu.notifications.events
 
-import java.time.format.DateTimeFormatter
-import java.time.{Duration, ZoneOffset, ZonedDateTime}
-import java.util.concurrent.{Executors, TimeUnit}
+import java.util.concurrent.{Executors, ScheduledExecutorService}
 
-import com.amazonaws.AmazonWebServiceRequest
-import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.athena.model.{GetQueryExecutionRequest, GetQueryExecutionResult, GetQueryResultsRequest, GetQueryResultsResult, QueryExecutionContext, QueryExecutionState, ResultConfiguration, StartQueryExecutionRequest, StartQueryExecutionResult}
 import com.amazonaws.services.athena.{AmazonAthenaAsync, AmazonAthenaAsyncClient}
-import com.gu.notifications.events.AthenaLambda.athenaAsyncClient
-import com.gu.notifications.events.aws.AwsClient
-import com.gu.notifications.events.dynamo.DynamoReportUpdater
-import com.gu.notifications.events.model.{AggregationCounts, EventAggregation, NotificationReportEvent, PlatformCount}
-import org.apache.logging.log4j.{LogManager, Logger}
-
-import scala.annotation.tailrec
-import scala.collection.JavaConverters._
-import scala.concurrent.{Await, ExecutionContext, Future, Promise, duration}
-
-object AthenaLambda {
-  val reportingWindow = Duration.ofHours(3)
-  private val athenaAsyncClient: AmazonAthenaAsync = {
-    val builder = AmazonAthenaAsyncClient.asyncBuilder()
-    builder.setRegion(Regions.EU_WEST_1.getName)
-    builder.setCredentials(AwsClient.credentials)
-    builder.build()
-  }
-}
-
-case class Query(database: String, queryString: String, outputLocation: String)
+import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
+import com.gu.notifications.events.aws.AwsClient.credentials
 
 
 class AthenaLambda {
-  val scheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-
-  import ExecutionContext.Implicits.global
-
-  private val envDependencies = new EnvDependencies
-  private val logger: Logger = LogManager.getLogger(classOf[AthenaLambda])
-  private val stage: String = envDependencies.stage
-  private val dynamoReportUpdater = new DynamoReportUpdater(stage)
-
-  private def asyncHandle[REQ <: AmazonWebServiceRequest, RES](asyncHandlerConsumer: AsyncHandler[REQ, RES] => Any): Future[RES] = {
-    val promise = Promise[RES]
-    asyncHandlerConsumer(new AsyncHandler[REQ, RES] {
-      override def onError(exception: Exception): Unit = promise.failure(exception)
-
-      override def onSuccess(request: REQ, result: RES): Unit = promise.success(result)
-    })
-    promise.future
-  }
-
-  def fetchQueryResponse[T](id: String, transform: List[List[String]] => T): Future[T] = {
-    def readAndProcessNext(getQueryResultsResult: GetQueryResultsResult, last: List[List[String]] = Nil): Future[List[List[String]]] = {
-      val next = last ++ getQueryResultsResult.getResultSet.getRows.asScala.toList.map(row => row.getData.asScala.map(_.getVarCharValue).toList)
-      Option(getQueryResultsResult.getNextToken) match {
-        case Some(token) => asyncHandle[GetQueryResultsRequest, GetQueryResultsResult](asyncHandler =>
-          athenaAsyncClient.getQueryResultsAsync(new GetQueryResultsRequest().withQueryExecutionId(id).withNextToken(token), asyncHandler)).flatMap(readAndProcessNext(_, next))
-        case None => Future.successful(next)
-      }
-    }
-
-    asyncHandle[GetQueryResultsRequest, GetQueryResultsResult](asyncHandler => athenaAsyncClient.getQueryResultsAsync(new GetQueryResultsRequest().withQueryExecutionId(id), asyncHandler))
-      .flatMap(readAndProcessNext(_)).map {
-      case _ :: tail => tail
-      case _ => Nil
-    }.map(transform(_))
-  }
-
-  def route(query: Query, startOfReportingWindow: ZonedDateTime): Future[Unit] = {
-    startQuery(query)
-      .flatMap(fetchQueryResponse(_, rows => rows.map(cells => (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))).groupBy(_._1).mapValues(_.map(_._2).head)))
-      .flatMap(updateDynamoIfRecent(_, startOfReportingWindow))
-      .map((aggregationCounts: AggregationCounts) => {
-        logger.info(s"Aggregation counts $aggregationCounts")
-        if (aggregationCounts.failure > 0) {
-          throw new RuntimeException("Failures")
-        }
-      })
-  }
-
-
-  def startQuery(query: Query): Future[String] = {
-    val startQueryAndGetId: Future[String] = executeQuery(query).map((startQueryExecutionResponse: StartQueryExecutionResult) => startQueryExecutionResponse.getQueryExecutionId())
-    startQueryAndGetId.flatMap((executionId: String) =>
-      waitUntilQueryCompletes(executionId).map(_ => executionId)
-    )
-  }
-
-
-  val queuedString = QueryExecutionState.QUEUED.toString
-  val runningString = QueryExecutionState.RUNNING.toString
-
-  private def waitUntilQueryCompletes(id: String): Future[Unit] = {
-    val promiseInASecond = Promise[Unit]
-    val runnable: Runnable = () => promiseInASecond.success(())
-    scheduledExecutorService.schedule(runnable, 1, TimeUnit.SECONDS)
-    promiseInASecond.future.flatMap { _ =>
-      asyncHandle[GetQueryExecutionRequest, GetQueryExecutionResult](asyncHandler =>
-        athenaAsyncClient.getQueryExecutionAsync(new GetQueryExecutionRequest().withQueryExecutionId(id), asyncHandler))
-    }
-      .map((response: GetQueryExecutionResult) => {
-        val state = response.getQueryExecution.getStatus.getState
-        logger.info(s"Query $id state: $state")
-        state match {
-          case `queuedString` => waitUntilQueryCompletes(id)
-          case `runningString` => waitUntilQueryCompletes(id)
-          case _ => Future.successful(())
-        }
-      }).flatten
-  }
-
-
-  private def updateDynamoIfRecent(notificationIdCounts: Map[String, PlatformCount], startOfReportingWindow: ZonedDateTime): Future[AggregationCounts] = {
-    val notificationReportEvents = notificationIdCounts.toList.map { case (id, count) => NotificationReportEvent(id, EventAggregation(count)) }
-    val resultCounts = dynamoReportUpdater.updateSetEventsReceivedAfter(notificationReportEvents, startOfReportingWindow)
-    AggregationCounts.aggregateResultCounts(resultCounts)
-  }
-
-  private def executeQuery(query: Query): Future[StartQueryExecutionResult] = asyncHandle[StartQueryExecutionRequest, StartQueryExecutionResult](asyncHandler =>
-    athenaAsyncClient.startQueryExecutionAsync(new StartQueryExecutionRequest()
-      .withQueryString(query.queryString)
-      .withQueryExecutionContext(new QueryExecutionContext().withDatabase(query.database))
-      .withResultConfiguration(new ResultConfiguration().withOutputLocation(query.outputLocation)), asyncHandler))
-
+  val athenaMetrics = new AthenaMetrics()
 
   def handleRequest(): Unit = {
-    val now = ZonedDateTime.now(ZoneOffset.UTC)
-    val startOfReportingWindow: ZonedDateTime = now.minus(AthenaLambda.reportingWindow)
-    val athenaOutputLocation = s"${envDependencies.athenaOutputLocation}/${now.toLocalDate.toString}/${now.getHour}"
-    val athenaDatabase = envDependencies.athenaDatabase
-
-    @tailrec
-    def addPartitionFrom(fromTime: ZonedDateTime, started: List[Future[String]] = List()): List[Future[String]] = {
-      if (fromTime.isAfter(now)) {
-        started
-      }
-      else {
-        val integerHour = fromTime.getHour
-        val hour = if (integerHour < 10) s"0$integerHour" else integerHour.toString
-        val date = toQueryDate(fromTime)
-        val list = startQuery(Query(
-          athenaDatabase,
-          s"""ALTER TABLE raw_events_$stage
-ADD IF NOT EXISTS PARTITION (date='$date', hour=$hour)
-LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMargin, athenaOutputLocation)) :: started
-        addPartitionFrom(fromTime.plusHours(1), list)
-      }
-    }
-
-    val addPartitions = addPartitionFrom(startOfReportingWindow).reduce((a, b) => a.flatMap(_ => b))
-    val fetchEventsQuery = Query(athenaDatabase,
-      s"""SELECT notificationid,
-         count(*) AS total,
-         count_if(platform = 'ios') AS ios,
-         count_if(platform = 'android') AS android
-FROM notification_received_${stage.toLowerCase()}
-WHERE partition_date = '${toQueryDate(startOfReportingWindow)}'
-         AND partition_hour >= ${startOfReportingWindow.getHour}
-GROUP BY  notificationid""".stripMargin, athenaOutputLocation)
-    Await.result(
-      addPartitions.flatMap(_ => route(fetchEventsQuery, startOfReportingWindow)), duration.Duration(4, TimeUnit.MINUTES))
+    withScheduledExecutorService(implicit scheduledExecutorService =>
+      withAthena(implicit athenaAsync =>
+        withDynamoDb(implicit dynamoDbAsync =>
+          athenaMetrics.handleRequest())))
   }
 
-  private def toQueryDate(zonedDateTime: ZonedDateTime) = {
-    zonedDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE)
+  def withScheduledExecutorService(function: ScheduledExecutorService => Any): Unit = {
+    val scheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+    try {
+      function(scheduledExecutorService)
+    }
+    finally {
+      scheduledExecutorService.shutdown()
+    }
+  }
+
+  def withAthena(function: AmazonAthenaAsync => Any): Unit = {
+    val amazonAthenaAsync = AmazonAthenaAsyncClient.asyncBuilder()
+      .withCredentials(credentials)
+      .withRegion(Regions.EU_WEST_1)
+      .build()
+    try {
+      function(amazonAthenaAsync)
+    }
+    finally {
+      amazonAthenaAsync.shutdown()
+    }
+  }
+
+  def withDynamoDb(function: AmazonDynamoDBAsync => Any): Unit = {
+    val dynamoDBAsync = AmazonDynamoDBAsyncClientBuilder.standard()
+      .withCredentials(credentials)
+      .withRegion(Regions.EU_WEST_1)
+      .build()
+    try {
+      function(dynamoDBAsync)
+    }
+    finally {
+      dynamoDBAsync.shutdown()
+    }
   }
 }
