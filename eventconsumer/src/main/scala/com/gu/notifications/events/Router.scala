@@ -2,6 +2,7 @@ package com.gu.notifications.events
 
 import java.util.concurrent.TimeUnit
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.gu.notifications.events.dynamo.DynamoReportUpdater
 import com.gu.notifications.events.model.{AggregationCounts, NotificationReportEvent, S3ResultCounts}
 import com.gu.notifications.events.s3.{S3Event, S3EventProcessor}
@@ -12,7 +13,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Try
 
-class Router(eventConsumer: S3EventProcessor, reportUpdater: DynamoReportUpdater)(implicit executionContext: ExecutionContext) {
+class Router(eventConsumer: S3EventProcessor, reportUpdater: DynamoReportUpdater)(implicit executionContext: ExecutionContext, dynamoDBAsync: AmazonDynamoDBAsync) {
   private val logger: Logger = LogManager.getLogger(classOf[Router])
 
   def sqsEventRoute(inputString: String): Unit = {
