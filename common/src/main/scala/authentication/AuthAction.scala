@@ -18,11 +18,13 @@ abstract class AuthAction(controllerComponents: ControllerComponents) extends Ac
   override def executionContext: ExecutionContext = controllerComponents.executionContext
 
   override def invokeBlock[A](request: Request[A], block: RequestWithAuthentication[A] => Future[Result]): Future[Result] = {
-    request.getQueryString("api-key") match {
+    getApiKey(request) match {
       case Some(apiKey) if validApiKey(apiKey) => block(RequestWithAuthentication(isPermittedTopic(apiKey), request))
       case _ => Future.successful(Unauthorized("A valid api key is required"))
     }
   }
+
+  private def getApiKey[A](request: Request[A]) = request.headers.get("Authorization").orElse(request.getQueryString("api-key"))
 
 }
 
