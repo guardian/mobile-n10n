@@ -62,6 +62,11 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       val Some(register) = route(app, FakeRequest(DELETE, "/registrations?platform=ios&azureToken=4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4"))
       status(register) must equalTo(NO_CONTENT)
     }
+
+    "returns 400 for a android registration without a fcmToken" in new RegistrationsContext {
+      val Some(register) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyAndroidRegistrationJson)))
+      status(register) must equalTo(BAD_REQUEST)
+    }
   }
 
   trait RegistrationsContext extends RegistrationsBase with withMockedWSClient {

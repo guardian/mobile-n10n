@@ -11,11 +11,14 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
 
   def toRegistration(legacyRegistration: LegacyRegistration): Either[NotificationsError, Registration] = {
 
-    def deviceTokenFromRegistration: Either[NotificationsError, DeviceToken] = {
-      (legacyRegistration.device.pushToken, legacyRegistration.device.firebaseToken) match {
-        case (Some(azureToken), Some(fcmToken)) => Right(BothTokens(azureToken, fcmToken))
-        case (Some(azureToken), None) => Right(AzureToken(azureToken))
-        case (None, Some(fcmToken)) => Right(FcmToken(fcmToken))
+    def deviceTokenFromRegistration(platform: Platform): Either[NotificationsError, DeviceToken] = {
+      (platform, legacyRegistration.device.pushToken, legacyRegistration.device.firebaseToken) match {
+        //This first case is to handle lange numbers of android devices not using the latest version of the app
+        //See: https://theguardian.atlassian.net/browse/MSS-609
+        case (Android, _, None) => Left(MalformattedRegistration("Android device without firebase registration token"))
+        case (_, Some(azureToken), Some(fcmToken)) => Right(BothTokens(azureToken, fcmToken))
+        case (_, Some(azureToken), None) => Right(AzureToken(azureToken))
+        case (_, None, Some(fcmToken)) => Right(FcmToken(fcmToken))
         case _ => Left(MalformattedRegistration("no fcm token nor azure token"))
       }
     }
@@ -35,8 +38,8 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
     }
 
     for {
-      deviceToken <- deviceTokenFromRegistration
       platform <- platformFromRegistration
+      deviceToken <- deviceTokenFromRegistration(platform)
     } yield Registration(
       deviceToken = deviceToken,
       platform = platform,
