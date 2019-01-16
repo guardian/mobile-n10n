@@ -45,17 +45,16 @@ class DynamoReportUpdater(stage: String) {
 
   def updateSetEventsReceivedAfter(eventAggregations: List[NotificationReportEvent], startOfReportingWindow: ZonedDateTime)(implicit executionContext: ExecutionContext, dynamoDbClient: AmazonDynamoDBAsync): List[Future[Unit]] = {
     eventAggregations.map(aggregation => {
-      def updateAttempt() = readSentTime(aggregation.id.toString).flatMap(_.map(sentTime => {
-        if (sentTime.isAfter(startOfReportingWindow)) {
-          updateSetEvent(aggregation)
-        }
-        else {
-          logger.info(s"skipping ${aggregation.id}")
-          Future.successful(())
-        }
-      }).getOrElse(Future.successful(())))
-
-
+      def updateAttempt(): Future[Unit] = {
+        val aggregationId = aggregation.id.toString
+        for {
+          maybeSentTime <- readSentTime(aggregationId)
+          maybeUpdated <- maybeSentTime match {
+            case Some(sentTime) if sentTime.isAfter(startOfReportingWindow) => updateSetEvent(aggregation)
+            case _ => Future.successful(())
+          }
+        } yield maybeUpdated
+      }
       def retryUpdate(retriesLeft: Int): Future[Unit] = updateAttempt().transformWith {
         case Success(value) => Future.successful(value)
         case Failure(t) => if (retriesLeft == 0) Future.failed[Unit](t) else {
