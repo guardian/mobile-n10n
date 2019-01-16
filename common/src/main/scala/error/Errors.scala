@@ -5,5 +5,5 @@ case class UnsupportedPlatform(platform: String) extends RequestError {
 }
 
 case class MalformattedRegistration(description: String) extends RequestError {
-  override def reason: String = s"Malformatred request: $reason"
+  override def reason: String = s"Malformatred request: $description"
 }
