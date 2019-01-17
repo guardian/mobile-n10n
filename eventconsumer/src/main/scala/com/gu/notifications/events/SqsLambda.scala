@@ -5,6 +5,7 @@ import java.util.concurrent.ForkJoinPool
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.amazonaws.util.IOUtils
+import com.gu.notifications.events.aws.AwsClient
 import com.gu.notifications.events.dynamo.DynamoReportUpdater
 import com.gu.notifications.events.s3.S3EventProcessorImpl
 import org.apache.logging.log4j.{LogManager, Logger}
@@ -29,6 +30,7 @@ class SqsLambda(stage: String) extends RequestStreamHandler {
   private val logger: Logger = LogManager.getLogger(classOf[SqsLambda])
   private val reportUpdater = new DynamoReportUpdater(stage)
   implicit private val executionContext: ExecutionContext = ExecutionContext.fromExecutor(new ForkJoinPool(5))
+  implicit private val dynamoDbClient = AwsClient.dynamoDbClient
   private val s3EventProcessor = new S3EventProcessorImpl
   private val router = new Router(s3EventProcessor, reportUpdater)
 

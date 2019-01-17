@@ -13,7 +13,6 @@ object LocalRun extends App {
     args(0) match {
       case "athena" => {
         new AthenaLambda().handleRequest()
-        AwsClient.dynamoDbClient.shutdown()
       }
       case "sqs" => {
         val is = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8))
