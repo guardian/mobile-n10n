@@ -25,7 +25,7 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
     debug = true
   )
 
-  val expectedPostUrl = s"$host/push/topic?api-key=$apiKey"
+  val expectedPostUrl = s"$host/push/topic"
   val expectedPostBody = Json.stringify(Json.toJson(payload))
 
   override def getTestApiClient(httpProvider: HttpProvider) = new NextGenApiClient(
@@ -46,18 +46,21 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
       val payLoadMultipleTopics = payload.copy(topic = List(Topic(Breaking, "n1"), Topic(Breaking, "n2")))
 
       val fakeHttpProvider = mock[HttpProvider]
-      fakeHttpProvider.post(anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(HttpOk(201, """{"id":"someId"}"""))
+      fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(HttpOk(201, """{"id":"someId"}"""))
 
       val testApiClient = getTestApiClient(fakeHttpProvider)
       testApiClient.send(payLoadMultipleTopics)
 
       val bodyCapture = new ArgumentCapture[Array[Byte]]
+      val apiKeyCapture = new ArgumentCapture[String]
       val urlCapture = new ArgumentCapture[String]
       val contentTypeCapture = new ArgumentCapture[ContentType]
 
-      there was two(fakeHttpProvider).post(urlCapture, contentTypeCapture, bodyCapture)
+      there was two(fakeHttpProvider).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
       urlCapture.value mustEqual expectedPostUrl
       contentTypeCapture.value mustEqual ContentType("application/json", "UTF-8")
+      apiKeyCapture.value mustEqual apiKey
+
       val ids = bodyCapture.values
         .asScala.toList
         .map(Json.parse)
@@ -80,7 +83,7 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
     "return HttpProviderError if http provider throws exception" in {
       val throwable = new RuntimeException("something went wrong!!")
       val fakeHttpProvider = mock[HttpProvider]
-      fakeHttpProvider.post(anyString, any[ContentType], any[Array[Byte]]) returns Future.failed(throwable)
+      fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.failed(throwable)
       val client = getTestApiClient(fakeHttpProvider)
       client.send(payload) must beEqualTo(Left(HttpProviderError(throwable))).await
     }
