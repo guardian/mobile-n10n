@@ -10,8 +10,14 @@ import com.gu.notifications.events.aws.AwsClient.credentials
 
 class AthenaLambda {
   val athenaMetrics = new AthenaMetrics()
+  lazy val scheduledExecutorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+  lazy val amazonAthenaAsync: AmazonAthenaAsync = createAmazonAthenaAsync()
+  lazy val amazonDynamoDBAsync: AmazonDynamoDBAsync = createAmazonDynamoDBAsync()
 
   def handleRequest(): Unit = {
+    athenaMetrics.handleRequest()(amazonAthenaAsync, scheduledExecutorService, amazonDynamoDBAsync)
+  }
+  def handleRequestLocally(): Unit = {
     withScheduledExecutorService(implicit scheduledExecutorService =>
       withAthena(implicit athenaAsync =>
         withDynamoDb(implicit dynamoDbAsync =>
@@ -29,10 +35,7 @@ class AthenaLambda {
   }
 
   def withAthena(function: AmazonAthenaAsync => Any): Unit = {
-    val amazonAthenaAsync = AmazonAthenaAsyncClient.asyncBuilder()
-      .withCredentials(credentials)
-      .withRegion(Regions.EU_WEST_1)
-      .build()
+    val amazonAthenaAsync = createAmazonAthenaAsync()
     try {
       function(amazonAthenaAsync)
     }
@@ -41,16 +44,27 @@ class AthenaLambda {
     }
   }
 
-  def withDynamoDb(function: AmazonDynamoDBAsync => Any): Unit = {
-    val dynamoDBAsync = AmazonDynamoDBAsyncClientBuilder.standard()
+  private def createAmazonAthenaAsync(): AmazonAthenaAsync = {
+    AmazonAthenaAsyncClient.asyncBuilder()
       .withCredentials(credentials)
       .withRegion(Regions.EU_WEST_1)
       .build()
+  }
+
+  def withDynamoDb(function: AmazonDynamoDBAsync => Any): Unit = {
+    val dynamoDBAsync = createAmazonDynamoDBAsync()
     try {
       function(dynamoDBAsync)
     }
     finally {
       dynamoDBAsync.shutdown()
     }
+  }
+
+  private def createAmazonDynamoDBAsync(): AmazonDynamoDBAsync = {
+    AmazonDynamoDBAsyncClientBuilder.standard()
+      .withCredentials(credentials)
+      .withRegion(Regions.EU_WEST_1)
+      .build()
   }
 }
