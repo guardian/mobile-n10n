@@ -24,7 +24,6 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
     topic = List(Topic(Breaking, "n1")),
     debug = true
   )
-  //  val expectedPostUrl = s"$host/push/topic?api-key=$apiKey"
 
   val expectedPostUrl = s"$host/push/topic"
   val expectedPostBody = Json.stringify(Json.toJson(payload))
