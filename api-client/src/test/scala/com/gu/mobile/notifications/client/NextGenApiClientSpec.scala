@@ -24,8 +24,9 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
     topic = List(Topic(Breaking, "n1")),
     debug = true
   )
+  //  val expectedPostUrl = s"$host/push/topic?api-key=$apiKey"
 
-  val expectedPostUrl = s"$host/push/topic?api-key=$apiKey"
+  val expectedPostUrl = s"$host/push/topic"
   val expectedPostBody = Json.stringify(Json.toJson(payload))
 
   override def getTestApiClient(httpProvider: HttpProvider) = new NextGenApiClient(
@@ -59,6 +60,8 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
       there was two(fakeHttpProvider).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
       urlCapture.value mustEqual expectedPostUrl
       contentTypeCapture.value mustEqual ContentType("application/json", "UTF-8")
+      apiKeyCapture.value mustEqual apiKey
+
       val ids = bodyCapture.values
         .asScala.toList
         .map(Json.parse)

@@ -20,7 +20,7 @@ protected class NextGenApiClient(
   val clientId: String = "nextGen"
 ) extends SimpleHttpApiClient {
 
-  private val url = s"$host/push/topic?api-key=$apiKey"
+  private val url = s"$host/push/topic"
 
   override def send(notificationPayload: NotificationPayload)(implicit ec: ExecutionContext): Future[Either[ApiClientError, Unit]] = {
 
