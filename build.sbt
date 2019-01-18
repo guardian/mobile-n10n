@@ -229,7 +229,6 @@ lazy val apiClient = {
   import ReleaseStateTransformations._
   Project("api-client", file("api-client")).settings(Seq(
     name := "mobile-notifications-client",
-    organization := "com.gu",
     scalaVersion := "2.11.12",
     crossScalaVersions := Seq("2.11.12", "2.12.6"),
     releaseCrossBuild := true,
