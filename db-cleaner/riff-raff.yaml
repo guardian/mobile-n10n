@@ -1,0 +1,10 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+deployments:
+  db-cleaner:
+    type: aws-lambda
+    parameters:
+      bucket: mobile-notifications-dist
+      functionNames: [mobile-notifications-db-cleaner-]
+      fileName: lambda.zip
+      prefixStack: false
