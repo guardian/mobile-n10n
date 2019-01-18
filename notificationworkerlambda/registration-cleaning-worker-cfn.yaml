@@ -45,6 +45,14 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt Dlq.Arn
         maxReceiveCount: 5
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
+
 
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -136,6 +144,14 @@ Resources:
           - !GetAtt LambdaSecurityGroup.GroupId
           - !Ref VPCSecurityGroup
         SubnetIds: !Ref VpcSubnets
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
+
 
   SqsEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
