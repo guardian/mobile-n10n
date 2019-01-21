@@ -271,7 +271,7 @@ lazy val apiClient = {
       ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
       pushChanges
     )
-  ))
+  )).enablePlugins(ReleasePlugin)
 }
 
 lazy val eventconsumer = project
