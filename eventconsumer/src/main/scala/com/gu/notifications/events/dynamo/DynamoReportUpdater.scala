@@ -70,7 +70,7 @@ class DynamoReportUpdater(stage: String) {
 
   private def nextVersion() = UUID.randomUUID().toString
 
-  private def readSentTime(notificationId: String): Future[Option[SentTimeAndVersion]] = {
+  private def readSentTime(notificationId: String)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Option[SentTimeAndVersion]] = {
     val getItemRequest = new GetItemRequest()
       .withTableName(tableName)
       .withKey(Map("id" -> new AttributeValue("id").withS(notificationId)).asJava)
