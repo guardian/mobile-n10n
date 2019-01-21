@@ -268,7 +268,7 @@ lazy val apiClient = {
       commitReleaseVersion,
       tagRelease,
       //ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
-      releaseStepCommandAndRemaining("+publishsSigned"),
+      releaseStepCommandAndRemaining("+publishSigned"),
       setNextVersion,
       commitNextVersion,
       ReleaseStep(action = Command.process("sonatypeRelease", _), enableCrossBuild = true),
