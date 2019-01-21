@@ -230,6 +230,7 @@ lazy val apiClient = {
   Project("api-client", file("api-client")).settings(Seq(
     name := "mobile-notifications-client",
     scalaVersion := "2.11.12",
+    sonatypeRepository := "http://localhost:127.0.0.1",
     crossScalaVersions := Seq("2.11.12", "2.12.6"),
     releaseCrossBuild := true,
     resolvers ++= Seq(
