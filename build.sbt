@@ -233,7 +233,6 @@ lazy val apiClient = {
     crossScalaVersions := Seq("2.11.12", "2.12.6"),
     releaseCrossBuild := true,
     publishTo := sonatypePublishTo.value,
-    publishMavenStyle := true, 
     resolvers ++= Seq(
       "Guardian GitHub Releases" at "http://guardian.github.io/maven/repo-releases",
       "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
