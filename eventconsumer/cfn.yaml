@@ -106,7 +106,6 @@ Resources:
             Effect: Allow
             Action: dynamodb:*
             Resource: !Sub "arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-reports-${Stage}"
-
   AthenaLambda:
     Type: AWS::Lambda::Function
     Properties:

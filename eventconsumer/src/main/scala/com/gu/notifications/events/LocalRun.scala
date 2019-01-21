@@ -1,7 +1,5 @@
 package com.gu.notifications.events
 
-import com.gu.notifications.events.aws.AwsClient
-
 object LocalRun extends App {
   if (args.size < 1) {
     System.out.println("No argument")

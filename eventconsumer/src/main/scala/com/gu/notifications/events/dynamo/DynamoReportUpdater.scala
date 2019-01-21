@@ -27,12 +27,13 @@ class DynamoReportUpdater(stage: String) {
   def updateSetEventsReceivedAfter(eventAggregations: List[NotificationReportEvent], startOfReportingWindow: ZonedDateTime)(implicit executionContext: ExecutionContext, dynamoDbClient: AmazonDynamoDBAsync): List[Future[Unit]] = {
     eventAggregations.map(aggregation => {
       def updateAttempt(): Future[Unit] = {
-        readSentTime(aggregation.id.toString).flatMap{
+        readSentTime(aggregation.id.toString).flatMap {
           case Some(sentTimeAndVersion) if sentTimeAndVersion.sentTime.isAfter(startOfReportingWindow) => updateSetEvent(sentTimeAndVersion.lastVersion, aggregation)
           case Some(_) => Future.successful(())
           case None => Future.failed(new NullPointerException(s"Missing ${aggregation.id}"))
         }
       }
+
       def retryUpdate(retriesLeft: Int): Future[Unit] = updateAttempt().transformWith {
         case Success(value) => Future.successful(value)
         case Failure(t) => if (retriesLeft == 0) Future.failed[Unit](t) else {
@@ -40,6 +41,7 @@ class DynamoReportUpdater(stage: String) {
           retryUpdate(retriesLeft - 1)
         }
       }
+
       retryUpdate(5)
     })
   }
@@ -74,6 +76,7 @@ class DynamoReportUpdater(stage: String) {
     val promise = Promise[Option[SentTimeAndVersion]]
     val handler = new AsyncHandler[GetItemRequest, GetItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(getItemRequest.toString, exception))
+
       override def onSuccess(request: GetItemRequest, result: GetItemResult): Unit = Try {
         Option(result.getItem).flatMap { item =>
           for {
