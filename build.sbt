@@ -237,6 +237,7 @@ lazy val apiClient = {
       "Guardian GitHub Releases" at "http://guardian.github.io/maven/repo-releases",
       "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
     ),
+    sonatypeProfileName := "com.gu",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
