@@ -270,7 +270,7 @@ lazy val apiClient = {
       releaseStepCommandAndRemaining("+publishSigned"),
       setNextVersion,
       commitNextVersion,
-      ReleaseStep(action = Command.process("sonatypeRelease", _), enableCrossBuild = true),
+      ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
       pushChanges
     )
   )).enablePlugins(ReleasePlugin)
