@@ -243,7 +243,7 @@ lazy val apiClient = {
     ),
     organization := "com.gu",
     bintrayOrganization := Some("guardian"),
-    bintrayRepository := "platforms",
+    bintrayRepository := "mobile",
     description := "Scala client for the Guardian Push Notifications API",
     scmInfo := Some(ScmInfo(
       url("https://github.com/guardian/mobile-n10n"),
@@ -258,6 +258,7 @@ lazy val apiClient = {
           </developer>
         </developers>
     },
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseVersionFile := file("api-client/version.sbt"),
     licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     releaseProcess := Seq[ReleaseStep](
