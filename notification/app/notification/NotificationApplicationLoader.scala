@@ -23,6 +23,7 @@ import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
 import play.api.ApplicationLoader.Context
 import play.api.mvc.EssentialFilter
 import play.filters.HttpFiltersComponents
+import play.filters.gzip.GzipFilter
 import play.filters.hosts.AllowedHostsFilter
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
@@ -39,7 +40,8 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
 
   lazy val prefix: String = "/"
 
-  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
+  val gzipFilter = new GzipFilter()
+  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] } :+ gzipFilter
 
   implicit lazy val implicitActorSystem: ActorSystem = actorSystem
 

@@ -13,6 +13,7 @@ import com.softwaremill.macwire._
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import play.filters.HttpFiltersComponents
+import play.filters.gzip.GzipFilter
 import play.filters.hosts.AllowedHostsFilter
 import report.authentication.ReportAuthAction
 import report.controllers.{RegistrationCount, Report}
@@ -32,7 +33,8 @@ class ReportApplicationComponents(context: Context) extends BuiltInComponentsFro
 
   implicit val as: ActorSystem = actorSystem
 
-  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
+  val gzipFilter = new GzipFilter()
+  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] } :+ gzipFilter
 
   lazy val appConfig = new Configuration(configuration)
   lazy val authAction = wire[ReportAuthAction]

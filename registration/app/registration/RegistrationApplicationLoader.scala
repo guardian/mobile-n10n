@@ -22,6 +22,7 @@ import router.Routes
 import cats.effect.IO
 import com.gu.AppIdentity
 import metrics.{CloudWatchMetrics, Metrics}
+import play.filters.gzip.GzipFilter
 
 class RegistrationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new RegistrationApplicationComponents(identity, context)
@@ -34,7 +35,8 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
 
   implicit val implicitActorSystem: ActorSystem = actorSystem
 
-  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] }
+  val gzipFilter = new GzipFilter()
+  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] } :+ gzipFilter
 
   lazy val appConfig = new Configuration(configuration)
   lazy val metrics: Metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
