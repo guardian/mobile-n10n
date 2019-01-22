@@ -81,7 +81,7 @@ class DynamoReportUpdater(stage: String) {
         Option(result.getItem).flatMap { item =>
           for {
             sentTime <- if (item.containsKey("sentTime")) Some(item.get("sentTime").getS) else None
-            version <- if (item.containsKey("version")) Some(item.get("sentTime").getS) else None
+            version <- if (item.containsKey("version")) Some(item.get("version").getS) else None
             zonedSentTime <- Try(ZonedDateTime.parse(sentTime)).toOption
           } yield SentTimeAndVersion(zonedSentTime, version)
         }
