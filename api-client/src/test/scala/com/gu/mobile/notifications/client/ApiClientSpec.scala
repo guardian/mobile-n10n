@@ -19,17 +19,18 @@ trait ApiClientSpec[C <: ApiClient] extends Specification with Mockito {
 
   def apiTest(serverResponse: HttpResponse)(test: C => Unit): Result = {
     val fakeHttpProvider = mock[HttpProvider]
-    fakeHttpProvider.post(anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(serverResponse)
+    fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(serverResponse)
 
     val testApiClient = getTestApiClient(fakeHttpProvider)
    
     test(testApiClient)
 
     val bodyCapture = new ArgumentCapture[Array[Byte]]
+    val apiKeyCapture = new ArgumentCapture[String]
     val urlCapture = new ArgumentCapture[String]
     val contentTypeCapture = new ArgumentCapture[ContentType]
 
-    there was one(fakeHttpProvider).post(urlCapture, contentTypeCapture, bodyCapture)
+    there was one(fakeHttpProvider).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
     urlCapture.value mustEqual expectedPostUrl
     contentTypeCapture.value mustEqual ContentType("application/json", "UTF-8")
     Json.parse(bodyCapture.value) mustEqual Json.parse(expectedPostBody)

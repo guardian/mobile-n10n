@@ -37,6 +37,13 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       VisibilityTimeout: 300
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
   SqsPolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
@@ -161,6 +168,14 @@ Resources:
       Runtime: java8
       Timeout: 300
       ReservedConcurrentExecutions: 1
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
+
 
   AthenaLambda:
     Type: AWS::Lambda::Function
@@ -188,6 +203,13 @@ Resources:
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 120
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
 
   S3Bucket:
     Type: AWS::S3::Bucket

@@ -9,6 +9,8 @@ case class RequestWithAuthentication[A](isPermittedTopic: Topic => Boolean, requ
 
 abstract class AuthAction(controllerComponents: ControllerComponents) extends ActionBuilder[RequestWithAuthentication, AnyContent] with Results {
 
+  val BearerAuthHeaderRegexp = """^Bearer (.*)$""".r
+
   def validApiKey(key: String) : Boolean
 
   def isPermittedTopic(apiKey: String) : Topic => Boolean
@@ -18,11 +20,17 @@ abstract class AuthAction(controllerComponents: ControllerComponents) extends Ac
   override def executionContext: ExecutionContext = controllerComponents.executionContext
 
   override def invokeBlock[A](request: Request[A], block: RequestWithAuthentication[A] => Future[Result]): Future[Result] = {
-    request.getQueryString("api-key") match {
+    getApiKey(request) match {
       case Some(apiKey) if validApiKey(apiKey) => block(RequestWithAuthentication(isPermittedTopic(apiKey), request))
       case _ => Future.successful(Unauthorized("A valid api key is required"))
     }
   }
 
+  private def getApiKey[A](request: Request[A]) =
+    request.headers.get("Authorization")
+        .collect {
+          case BearerAuthHeaderRegexp(apiKey) => apiKey
+        }
+        .orElse(request.getQueryString("api-key"))
 }
 

@@ -45,6 +45,7 @@ protected trait SimpleHttpApiClient extends ApiClient {
   protected def postJson(destUrl: String, json: String) = {
     httpProvider.post(
       url = destUrl,
+      apiKey = apiKey,
       contentType = ContentType("application/json", "UTF-8"),
       body = json.getBytes("UTF-8")
     )

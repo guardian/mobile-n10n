@@ -12,7 +12,7 @@ object LocalRun extends App {
   else {
     args(0) match {
       case "athena" => {
-        new AthenaLambda().handleRequest()
+        new AthenaLambda().handleRequestLocally()
       }
       case "sqs" => {
         val is = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8))

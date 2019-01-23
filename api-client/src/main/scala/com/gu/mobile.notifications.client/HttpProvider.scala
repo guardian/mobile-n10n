@@ -13,7 +13,7 @@ case class HttpError(status: Int, body: String) extends HttpResponse
 case class ContentType(mediaType: String, charset: String)
 
 trait HttpProvider {
-  def post(url: String, contentType: ContentType, body: Array[Byte]): Future[HttpResponse]
+  def post(url: String, apiKey: String, contentType: ContentType, body: Array[Byte]): Future[HttpResponse]
 
   def get(url: String): Future[HttpResponse]
 }
