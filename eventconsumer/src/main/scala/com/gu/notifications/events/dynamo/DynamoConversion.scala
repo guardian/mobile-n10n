@@ -1,29 +1,11 @@
 package com.gu.notifications.events.dynamo
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
-import com.gu.notifications.events.model.{EventAggregation, PlatformCount}
+import com.gu.notifications.events.model.EventAggregation
 
 import scala.collection.JavaConverters._
 
 object DynamoConversion {
-
-  def fromAttributeValue(eventAggregationAv: AttributeValue): EventAggregation = {
-    val eventMap = eventAggregationAv.getM.asScala
-    EventAggregation(
-      platformCounts = platformFromAttributeValue(eventMap.get("platform"))
-    )
-  }
-
-  private def platformFromAttributeValue(platformAv: Option[AttributeValue]): PlatformCount = platformAv match {
-    case None => PlatformCount.empty
-    case Some(platformCount) =>
-      val platformMap = platformCount.getM.asScala
-      PlatformCount(
-        total = platformMap("total").getN.toInt,
-        ios = platformMap("ios").getN.toInt,
-        android = platformMap("android").getN.toInt
-      )
-  }
 
   def toAttributeValue(eventAggregation: EventAggregation): AttributeValue = {
     val platform = eventAggregation.platformCounts

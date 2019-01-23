@@ -2,14 +2,18 @@ package com.gu.notifications.events
 
 import java.util.concurrent.{Executors, ScheduledExecutorService}
 
+import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.athena.{AmazonAthenaAsync, AmazonAthenaAsyncClient}
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
-import com.gu.notifications.events.aws.AwsClient.credentials
 
 
 class AthenaLambda {
   val athenaMetrics = new AthenaMetrics()
+  lazy val credentials: AWSCredentialsProviderChain = new AWSCredentialsProviderChain(
+    new ProfileCredentialsProvider("mobile"),
+    DefaultAWSCredentialsProviderChain.getInstance)
   lazy val scheduledExecutorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
   lazy val amazonAthenaAsync: AmazonAthenaAsync = createAmazonAthenaAsync()
   lazy val amazonDynamoDBAsync: AmazonDynamoDBAsync = createAmazonDynamoDBAsync()
