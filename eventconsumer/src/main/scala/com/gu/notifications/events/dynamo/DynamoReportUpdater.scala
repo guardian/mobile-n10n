@@ -30,7 +30,7 @@ class DynamoReportUpdater(stage: String) {
         readSentTime(aggregation.id.toString).flatMap {
           case Some(sentTimeAndVersion) if sentTimeAndVersion.sentTime.isAfter(startOfReportingWindow) => updateSetEvent(sentTimeAndVersion.lastVersion, aggregation)
           case Some(_) => Future.successful(())
-          case None => Future.failed(new NullPointerException(s"Missing ${aggregation.id}"))
+          case None => Future.successful(())
         }
       }
 
