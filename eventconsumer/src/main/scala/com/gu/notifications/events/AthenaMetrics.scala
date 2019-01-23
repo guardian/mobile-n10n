@@ -156,6 +156,7 @@ LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMarg
 FROM notification_received_${stage.toLowerCase()}
 WHERE partition_date = '${toQueryDate(startOfReportingWindow)}'
          AND partition_hour >= ${startOfReportingWindow.getHour}
+         AND provider != 'comment'
 GROUP BY  notificationid""".stripMargin, athenaOutputLocation)
     Await.result(addS3PartitionsToAthenaIndex(now, startOfReportingWindow, athenaDatabase, athenaOutputLocation).flatMap(_ => routeFromQueryToUpdateDynamoDb(fetchEventsQuery, startOfReportingWindow)), duration.Duration(4, TimeUnit.MINUTES))
   }
