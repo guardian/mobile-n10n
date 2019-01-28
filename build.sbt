@@ -241,6 +241,9 @@ lazy val apiClient = {
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test"
     ),
+    organization := "com.gu",
+    bintrayOrganization := Some("guardian"),
+    bintrayRepository := "platforms",
     description := "Scala client for the Guardian Push Notifications API",
     scmInfo := Some(ScmInfo(
       url("https://github.com/guardian/mobile-n10n"),
@@ -255,6 +258,7 @@ lazy val apiClient = {
           </developer>
         </developers>
     },
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseVersionFile := file("api-client/version.sbt"),
     licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     releaseProcess := Seq[ReleaseStep](
@@ -265,10 +269,10 @@ lazy val apiClient = {
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
-      ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
+      publishArtifacts,
+      releaseStepTask(bintrayRelease),
       setNextVersion,
       commitNextVersion,
-      ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
       pushChanges
     )
   ))
