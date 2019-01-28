@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 
 case class ReadVersionedEvents(version: Option[String], events: Option[EventAggregation])
 
-case class UpdateVersionedEvents(lastVersion: Option[String], nextVersion: String, events: NotificationReportEvent)
+case class SentTimeAndVersion(sentTime: ZonedDateTime, lastVersion: String)
 
 class DynamoReportUpdater(stage: String) {
   private val newVersionKey = ":newversion"
@@ -24,37 +24,16 @@ class DynamoReportUpdater(stage: String) {
   private val logger = LogManager.getLogger(classOf[DynamoReportUpdater])
   private val tableName: String = s"mobile-notifications-reports-$stage"
 
-  def update(eventAggregations: List[NotificationReportEvent])(implicit executionContext: ExecutionContext, dynamoDbClient: AmazonDynamoDBAsync): List[Future[Unit]] = {
-    eventAggregations.map(aggregation => {
-
-      def updateAttempt() = {
-        read(aggregation.id.toString).flatMap(_.map(updateFromPreviousEvents(aggregation, _)).getOrElse(Future.successful(())))
-      }
-
-      def retryUpdate(retriesLeft: Int): Future[Unit] = updateAttempt().transformWith {
-        case Success(value) => Future.successful(value)
-        case Failure(t) => if (retriesLeft == 0) Future.failed[Unit](t) else {
-          logger.warn(s"Retry failed for $aggregation", t)
-          retryUpdate(retriesLeft - 1)
-        }
-      }
-
-      retryUpdate(20)
-    })
-  }
-
   def updateSetEventsReceivedAfter(eventAggregations: List[NotificationReportEvent], startOfReportingWindow: ZonedDateTime)(implicit executionContext: ExecutionContext, dynamoDbClient: AmazonDynamoDBAsync): List[Future[Unit]] = {
     eventAggregations.map(aggregation => {
       def updateAttempt(): Future[Unit] = {
-        val aggregationId = aggregation.id.toString
-        for {
-          maybeSentTime <- readSentTime(aggregationId)
-          maybeUpdated <- maybeSentTime match {
-            case Some(sentTime) if sentTime.isAfter(startOfReportingWindow) => updateSetEvent(aggregation)
-            case _ => Future.successful(())
-          }
-        } yield maybeUpdated
+        readSentTime(aggregation.id.toString).flatMap {
+          case Some(sentTimeAndVersion) if sentTimeAndVersion.sentTime.isAfter(startOfReportingWindow) => updateSetEvent(sentTimeAndVersion.lastVersion, aggregation)
+          case Some(_) => Future.successful(())
+          case None => Future.successful(())
+        }
       }
+
       def retryUpdate(retriesLeft: Int): Future[Unit] = updateAttempt().transformWith {
         case Success(value) => Future.successful(value)
         case Failure(t) => if (retriesLeft == 0) Future.failed[Unit](t) else {
@@ -63,18 +42,21 @@ class DynamoReportUpdater(stage: String) {
         }
       }
 
-      retryUpdate(20)
+      retryUpdate(5)
     })
   }
 
-  private def updateSetEvent(notificationReportEvent: NotificationReportEvent)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Unit] = {
+  private def updateSetEvent(lastVersion: String, notificationReportEvent: NotificationReportEvent)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Unit] = {
     val updateItemRequest = new UpdateItemRequest()
       .withTableName(tableName)
       .withKey(Map("id" -> new AttributeValue().withS(notificationReportEvent.id)).asJava)
-      .withUpdateExpression(s"SET athena = $newEventsKey, version = $newVersionKey").withExpressionAttributeValues(Map(
-      newEventsKey -> DynamoConversion.toAttributeValue(notificationReportEvent.eventAggregation),
-      newVersionKey -> new AttributeValue().withS(nextVersion())
-    ).asJava)
+      .withUpdateExpression(s"SET events = $newEventsKey, version = $newVersionKey")
+      .withConditionExpression(s"version = $oldVersionKey")
+      .withExpressionAttributeValues(Map(
+        newEventsKey -> DynamoConversion.toAttributeValue(notificationReportEvent.eventAggregation),
+        newVersionKey -> new AttributeValue().withS(nextVersion()),
+        oldVersionKey -> new AttributeValue().withS(lastVersion)
+      ).asJava)
     val promise = Promise[Unit]
     val handler = new AsyncHandler[UpdateItemRequest, UpdateItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(updateItemRequest.toString, exception))
@@ -83,90 +65,33 @@ class DynamoReportUpdater(stage: String) {
     }
     dynamoDbClient.updateItemAsync(updateItemRequest, handler)
     promise.future
-  }
-
-  private def updateFromPreviousEvents(aggregation: NotificationReportEvent, previousEvents: ReadVersionedEvents)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Unit] = {
-    val nextEvents = previousEvents.events.map(previous => aggregation.copy(eventAggregation = EventAggregation.combine(previous, aggregation.eventAggregation))).getOrElse(aggregation)
-    val updatedEvents = UpdateVersionedEvents(previousEvents.version, nextVersion(), nextEvents)
-    update(updatedEvents)
   }
 
   private def nextVersion() = UUID.randomUUID().toString
 
-  private def update(versionedEvents: UpdateVersionedEvents)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Unit] = {
-    val attributeValuesForUpdate = Map(
-      newEventsKey -> DynamoConversion.toAttributeValue(versionedEvents.events.eventAggregation),
-      newVersionKey -> new AttributeValue().withS(versionedEvents.nextVersion)
-    )
-    val updateItemRequestWithoutCondition = new UpdateItemRequest()
-      .withTableName(tableName)
-      .withKey(Map("id" -> new AttributeValue().withS(versionedEvents.events.id)).asJava)
-      .withUpdateExpression(s"SET events = $newEventsKey, version = $newVersionKey")
-    val updateItemRequest = versionedEvents
-      .lastVersion
-      .map(version => updateItemRequestWithoutCondition
-        .withConditionExpression(s"version = $oldVersionKey")
-        .withExpressionAttributeValues((attributeValuesForUpdate ++ Map(oldVersionKey -> new AttributeValue().withS(version))).asJava)
-      )
-      .getOrElse(updateItemRequestWithoutCondition.withExpressionAttributeValues(attributeValuesForUpdate.asJava))
-
-    val promise = Promise[Unit]
-    val handler = new AsyncHandler[UpdateItemRequest, UpdateItemResult] {
-      override def onError(exception: Exception): Unit = promise.failure(new Exception(updateItemRequest.toString, exception))
-
-      override def onSuccess(request: UpdateItemRequest, result: UpdateItemResult): Unit = promise.success(())
-    }
-    dynamoDbClient.updateItemAsync(updateItemRequest, handler)
-    promise.future
-  }
-
-  private def readSentTime(notificationId: String)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Option[ZonedDateTime]] = {
+  private def readSentTime(notificationId: String)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Option[SentTimeAndVersion]] = {
     val getItemRequest = new GetItemRequest()
       .withTableName(tableName)
       .withKey(Map("id" -> new AttributeValue("id").withS(notificationId)).asJava)
-    val promise = Promise[Option[ZonedDateTime]]
+    val promise = Promise[Option[SentTimeAndVersion]]
     val handler = new AsyncHandler[GetItemRequest, GetItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(getItemRequest.toString, exception))
 
       override def onSuccess(request: GetItemRequest, result: GetItemResult): Unit = Try {
         Option(result.getItem).flatMap { item =>
-          if (item.containsKey("sentTime")) Some(item.get("sentTime").getS) else None
-        }.flatMap(sentTime => Try(ZonedDateTime.parse(sentTime)).toOption)
-      } match {
-        case Success(value) => promise.success(value)
-        case Failure(exception) => promise.failure(new Exception(request.toString, exception))
-      }
-    }
-    dynamoDbClient.getItemAsync(getItemRequest, handler)
-    promise.future
-  }
-
-  private def read(notificationId: String)(implicit dynamoDbClient: AmazonDynamoDBAsync): Future[Option[ReadVersionedEvents]] = {
-    val promise = Promise[Option[ReadVersionedEvents]]
-    val getItemRequest = new GetItemRequest()
-      .withTableName(tableName)
-      .withConsistentRead(true)
-      .withKey(Map("id" -> new AttributeValue("id").withS(notificationId)).asJava)
-    val handler = new AsyncHandler[GetItemRequest, GetItemResult] {
-      override def onError(exception: Exception): Unit = promise.failure(new Exception(getItemRequest.toString, exception))
-
-      override def onSuccess(request: GetItemRequest, result: GetItemResult): Unit = Try {
-        Option(result.getItem).map { item =>
-          ReadVersionedEvents(
-            version = if (item.containsKey("version")) Some(item.get("version").getS) else None,
-            events = if (item.containsKey("events")) {
-              Some(DynamoConversion.fromAttributeValue(item.get("events")))
-            }
-            else {
-              None
-            })
+          for {
+            sentTime <- if (item.containsKey("sentTime")) Some(item.get("sentTime").getS) else None
+            version <- if (item.containsKey("version")) Some(item.get("version").getS) else None
+            zonedSentTime <- Try(ZonedDateTime.parse(sentTime)).toOption
+          } yield SentTimeAndVersion(zonedSentTime, version)
         }
       } match {
-        case Failure(exception) => promise.failure(new Exception(request.toString, exception))
         case Success(value) => promise.success(value)
+        case Failure(exception) => promise.failure(new Exception(request.toString, exception))
       }
     }
     dynamoDbClient.getItemAsync(getItemRequest, handler)
     promise.future
   }
+
 }

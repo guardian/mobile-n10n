@@ -33,42 +33,8 @@ Mappings:
     PROD:
       BucketStage: prod
 Resources:
-  Sqs:
-    Type: AWS::SQS::Queue
-    Properties:
-      VisibilityTimeout: 300
-      Tags:
-        - Key: Stage
-          Value: !Ref Stage
-        - Key: Stack
-          Value: !Ref Stack
-        - Key: App
-          Value: !Ref App
-  SqsPolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-      - Ref: Sqs
-      PolicyDocument:
-        Version: "2012-10-17"
-        Id: !Sub "Sqs${Stage}Policy"
-        Statement:
-        - Resource: !GetAtt Sqs.Arn
-          Effect: "Allow"
-          Sid: "Allow-User-SendMessage"
-          Action:
-          - "sqs:*"
-          Condition:
-            ArnLike:
-              aws:SourceArn:
-              - !Sub
-                - arn:aws:s3:::aws-mobile-event-logs-${BucketStage}
-                - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
-          Principal:
-            AWS: "*"
   ExecutionRole:
     Type: AWS::IAM::Role
-    DependsOn: Sqs
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -140,43 +106,6 @@ Resources:
             Effect: Allow
             Action: dynamodb:*
             Resource: !Sub "arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-reports-${Stage}"
-      - PolicyName: SQS
-        PolicyDocument:
-          Statement:
-            Effect: Allow
-            Action: sqs:*
-            Resource: !GetAtt Sqs.Arn
-
-
-  SqsLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub ${App}-sqs-${Stage}
-      Code:
-        S3Bucket:
-          Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
-      Environment:
-        Variables:
-          Stage: !Ref Stage
-          Stack: !Ref Stack
-          App: !Ref App
-      Description: Consumes queue events
-      Handler: com.gu.notifications.events.SqsLambda::handleRequest
-      MemorySize: 384
-      Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
-      Timeout: 300
-      ReservedConcurrentExecutions: 1
-      Tags:
-        - Key: Stage
-          Value: !Ref Stage
-        - Key: Stack
-          Value: !Ref Stack
-        - Key: App
-          Value: !Ref App
-
-
   AthenaLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -213,9 +142,6 @@ Resources:
 
   S3Bucket:
     Type: AWS::S3::Bucket
-    DependsOn:
-    - Sqs
-    - SqsPolicy
     Properties:
       AccessControl: Private
       BucketName: !Sub
@@ -225,26 +151,6 @@ Resources:
         Rules:
           - ExpirationInDays: 21
             Status: Enabled
-      NotificationConfiguration:
-        QueueConfigurations:
-        - Event: s3:ObjectCreated:*
-          Queue: !GetAtt Sqs.Arn
-          Filter:
-            S3Key:
-              Rules:
-                - Name: prefix
-                  Value: fastly/
-
-  SqsEventSourceMapping:
-    Type: AWS::Lambda::EventSourceMapping
-    DependsOn:
-    - Sqs
-    - SqsLambda
-    Properties:
-      BatchSize: 10
-      Enabled: True
-      EventSourceArn: !GetAtt Sqs.Arn
-      FunctionName: !Sub ${App}-sqs-${Stage}
 
   AthenaLambdaScheduleEventRule:
     Type: AWS::Events::Rule
