@@ -26,11 +26,10 @@ abstract class AuthAction(controllerComponents: ControllerComponents) extends Ac
     }
   }
 
-  private def getApiKey[A](request: Request[A]) =
+  private def getApiKey[A](request: Request[A]) = 
     request.headers.get("Authorization")
-        .collect {
-          case BearerAuthHeaderRegexp(apiKey) => apiKey
-        }
-        .orElse(request.getQueryString("api-key"))
+      .collect {
+        case BearerAuthHeaderRegexp(apiKey) => apiKey
+      }
 }
 
