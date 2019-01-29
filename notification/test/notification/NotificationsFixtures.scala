@@ -88,7 +88,6 @@ trait NotificationsFixtures {
 
   val apiKey = "test"
   val electionsApiKey = "elections-test"
-  //val authenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$apiKey")
   val authenticatedRequest = FakeRequest(method = "POST", path = "").withHeaders("Authorization" -> s"Bearer $apiKey")
   val electionsAuthenticatedRequest = FakeRequest(method = "POST", path = "").withHeaders( "Authorization" -> s"Bearer $electionsApiKey")
   val invalidAuthenticatedRequest = FakeRequest(method = "POST", path = "").withHeaders( "Authorization" -> s"Bearer wrong-key")
