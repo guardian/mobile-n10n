@@ -30,7 +30,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
   "Report service" should {
 
     "Return last 7 days notification reports if no date supplied" in new ReportTestScope {
-      val result = route(app, FakeRequest(GET, s"/notifications?type=news").withHeaders("Authorization" -> s"Bearer $apiKey")).get
+      val result = route(app, FakeRequest(GET, s"/notifications?type=news&api-key=$apiKey")).get
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
@@ -41,7 +41,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
     }
 
     "Return a list of notification reports filtered by date" in new ReportTestScope {
-      val result = route(app, FakeRequest(GET, s"/notifications?type=news&from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z").withHeaders("Authorization" -> s"Bearer $apiKey")).get
+      val result = route(app, FakeRequest(GET, s"/notifications?type=news&from=2015-01-01T00:00:00Z&until=2015-01-02T00:00:00Z&api-key=$apiKey")).get
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
@@ -50,7 +50,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
 
     "Return content notification reports" in new ReportTestScope {
-      val result = route(app, FakeRequest(GET, s"/notifications?type=content").withHeaders("Authorization" -> s"Bearer $apiKey")).get
+      val result = route(app, FakeRequest(GET, s"/notifications?type=content&api-key=$apiKey")).get
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
@@ -61,7 +61,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
     "Return an individual notification report complete with platform specific data" in new ReportTestScope {
       val id = reportsInRange.head.id
-      val result = route(app, FakeRequest(GET, s"/notifications/$id").withHeaders("Authorization" -> s"Bearer $apiKey")).get
+      val result = route(app, FakeRequest(GET, s"/notifications/$id?api-key=$apiKey")).get
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
