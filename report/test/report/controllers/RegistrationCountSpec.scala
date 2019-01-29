@@ -16,13 +16,13 @@ class RegistrationCountSpec extends PlaySpecification with Mockito {
   "RegistrationCount controller" should {
     "return a 400 if there's not topic passed as parameters" in new RegistrationCountScope {
       registrationService.countPerPlatformForTopics(any[NonEmptyList[db.Topic]]) returns IO.pure(PlatformCount(0,0,0,0))
-      val result = registrationCount.forTopics(Nil).apply(FakeRequest(GET, "/registration-count").withHeaders("Authorization" -> "Bearer test"))
+      val result = registrationCount.forTopics(Nil).apply(FakeRequest(GET, "/registration-count?api-key=test"))
       status(result) shouldEqual 400
       there was no(registrationService).countPerPlatformForTopics(any[NonEmptyList[db.Topic]])
     }
     "return 200 if there's a topic passed" in new RegistrationCountScope {
       registrationService.countPerPlatformForTopics(any[NonEmptyList[db.Topic]]) returns IO.pure(PlatformCount(1,1,0,0))
-      val request = FakeRequest(GET, "/registration-count?topic=breaking/uk").withHeaders("Authorization" -> "Bearer test")
+      val request = FakeRequest(GET, "/registration-count?api-key=test&topic=breaking/uk")
       val result = registrationCount.forTopics(List(Topic(TopicTypes.Breaking, "uk"))).apply(request)
       status(result) shouldEqual 200
       val json = contentAsJson(result)
