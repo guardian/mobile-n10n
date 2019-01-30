@@ -76,7 +76,7 @@ object FcmClient {
   def randomlySetOkHttpTransport(builder: FirebaseOptions.Builder): FirebaseOptions.Builder = {
     val logger = LoggerFactory.getLogger(classOf[FcmClient])
     val randomNumber = Random.nextInt(100)
-    val percentageOkHttpClient = 50
+    val percentageOkHttpClient = 75
     if(randomNumber < percentageOkHttpClient) {
       logger.info("FCM using okhttp client")
       builder.setHttpTransport(new OkGoogleHttpTransport)
