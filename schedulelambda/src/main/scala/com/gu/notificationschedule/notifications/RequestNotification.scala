@@ -21,8 +21,9 @@ class RequestNotificationImpl(
                                cloudWatchMetrics: CloudWatchMetrics
                              ) extends RequestNotification {
   private val logger: Logger = LogManager.getLogger(classOf[RequestNotificationImpl])
-  private val url = new URIBuilder(config.pushTopicsUrl).addParameter("api-key", config.apiKey).build().toURL
+  private val url = new URIBuilder(config.pushTopicsUrl).build().toURL
   private val jsonMediaType = MediaType.parse("application/json; charset=utf-8")
+  private val authHeaderValue = s"Bearer ${config.apiKey}"
 
   def apply(nowEpoch: Long, notificationsScheduleEntry: NotificationsScheduleEntry): Try[Unit] = {
     cloudWatchMetrics.timeTry("notification-request", () =>
@@ -60,6 +61,7 @@ class RequestNotificationImpl(
   private def tryRequestNotification(notificationsScheduleEntry: NotificationsScheduleEntry): Try[Option[Response]] = Try {
     Option(okHttpClient.newCall(new Request.Builder()
       .url(url)
+      .header("Authorization", authHeaderValue)
       .post(RequestBody.create(
         jsonMediaType,
         notificationsScheduleEntry.notification
