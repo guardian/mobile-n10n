@@ -39,7 +39,8 @@ class RequestNotificationImplSpec extends Specification with Mockito {
       okHttpClient.newCall(any[Request]()) answers {
         (_: Any) match {
           case (request: Request) => {
-            request.url() must beEqualTo(HttpUrl.parse("http://push.topic.invalid/?api-key=secretkey"))
+            request.url() must beEqualTo(HttpUrl.parse("http://push.topic.invalid"))
+            request.header("Authorization") must beEqualTo(s"Bearer secretkey")
             request.method().toLowerCase must beEqualTo("post")
             val buffer = new Buffer()
             request.body().writeTo(buffer)
