@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         info!("Using local context");
         let a = guardian_lambda::LocalContext {};
         let e = guardian_lambda::LambdaInput {};
-        match cleaner::logic(e, a) {
+        match cleaner::lambda(e, a) {
             Ok(result) => info!("Success"),
             Err(e) => error!("{}", e),
         };
@@ -36,5 +36,5 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn handler(e: guardian_lambda::LambdaInput, c: lambda::Context) -> Result<guardian_lambda::LambdaOutput, HandlerError> {
     let a = guardian_lambda::AWSContext { c };
-    cleaner::logic(e, a)
+    cleaner::lambda(e, a)
 }

@@ -47,6 +47,15 @@ Resources:
               Action:
                 - lambda:InvokeFunction
               Resource: "*"
+        - PolicyName: Conf
+          PolicyDocument:
+            Statement:
+              Action:
+                - ssm:GetParametersByPath
+                - ssm:GetParameter
+              Effect: Allow
+              Resource:
+                !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
