@@ -88,9 +88,9 @@ trait NotificationsFixtures {
 
   val apiKey = "test"
   val electionsApiKey = "elections-test"
-  val authenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$apiKey")
-  val electionsAuthenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=$electionsApiKey")
-  val invalidAuthenticatedRequest = FakeRequest(method = "POST", path = s"?api-key=wrong-key")
+  val authenticatedRequest = FakeRequest(method = "POST", path = "").withHeaders("Authorization" -> s"Bearer $apiKey")
+  val electionsAuthenticatedRequest = FakeRequest(method = "POST", path = "").withHeaders( "Authorization" -> s"Bearer $electionsApiKey")
+  val invalidAuthenticatedRequest = FakeRequest(method = "POST", path = "").withHeaders( "Authorization" -> s"Bearer wrong-key")
   val validTopics = List(Topic(Breaking, "uk"), Topic(Breaking, "us"))
   val validElectionTopics = List(Topic(ElectionResults, "uk"), Topic(ElectionResults, "us"))
   val validNewsstandNotificationsTopic = List(Topic(TopicTypes.NewsstandShard, "newsstand-shard-1"))
