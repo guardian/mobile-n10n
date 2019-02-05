@@ -47,13 +47,13 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
   def run[A](io: IO[A]) = io.unsafeRunSync()
 
   val registrations = Seq(
-    Registration(Device("a", Android), Topic("topic1"), Shard(1)),
-    Registration(Device("b", iOS), Topic("topic1"), Shard(1)),
-    Registration(Device("c", iOS), Topic("topic1"), Shard(1)),
-    Registration(Device("d", iOS), Topic("topic1"), Shard(2)),
-    Registration(Device("e", Android), Topic("topic2"), Shard(1)),
-    Registration(Device("f", iOS), Topic("topic3"), Shard(1)),
-    Registration(Device("f", Android), Topic("topic4"), Shard(1))
+    Registration(Device("a", Android), Topic("topic1"), Shard(1), None, None),
+    Registration(Device("b", iOS), Topic("topic1"), Shard(1), None, None),
+    Registration(Device("c", iOS), Topic("topic1"), Shard(1), None, None),
+    Registration(Device("d", iOS), Topic("topic1"), Shard(2), None, None),
+    Registration(Device("e", Android), Topic("topic2"), Shard(1), None, None),
+    Registration(Device("f", iOS), Topic("topic3"), Shard(1), None, None),
+    Registration(Device("f", Android), Topic("topic4"), Shard(1), None, None)
   )
 
   def shardOrdering: Ordering[Registration] = _.shard.id compare _.shard.id
@@ -68,7 +68,7 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
 
   "RegistrationService" should {
     "allow adding registration" in {
-      val reg = Registration(Device("something", Android), Topic("someTopic"), Shard(1))
+      val reg = Registration(Device("something", Android), Topic("someTopic"), Shard(1), None, None)
       run(service.save(reg)) should equalTo(1)
     }
     "allow finding registrations by topics, platform and shard" in {

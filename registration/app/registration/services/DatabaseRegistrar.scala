@@ -29,7 +29,9 @@ class DatabaseRegistrar(
     def toDBRegistration(topic: Topic) = db.Registration(
       device = db.Device(token, registration.platform),
       topic = db.Topic(topic.toString),
-      shard = db.Shard.fromToken(token)
+      shard = db.Shard.fromToken(token),
+      oldLastModified = None,
+      lastModifiedEpochMs = None
     )
 
     val insertedRegistrations = for {

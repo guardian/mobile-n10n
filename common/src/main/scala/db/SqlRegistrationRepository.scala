@@ -69,13 +69,14 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
 
   private def insert(reg: Registration): ConnectionIO[Int] =
     sql"""
-        INSERT INTO registrations (token, platform, topic, shard, lastModified)
+        INSERT INTO registrations (token, platform, topic, shard, lastmodifiedepochmillis)
         VALUES (
           ${reg.device.token},
           ${reg.device.platform},
           ${reg.topic.name},
           ${reg.shard.id},
-          CURRENT_TIMESTAMP
+          CURRENT_TIMESTAMP,
+          cast(extract(epoch from current_timestamp at time zone 'utc') * 1000 as bigint)
         )
       """
     .update.run
@@ -83,7 +84,10 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   private def update(reg: Registration): ConnectionIO[Int] =
     sql"""
         UPDATE registrations
-        SET lastModified = CURRENT_TIMESTAMP, shard = ${reg.shard.id}
+        SET
+          lastModified = CURRENT_TIMESTAMP,
+          lastmodifiedepochmillis = cast(extract(epoch from current_timestamp at time zone 'utc') * 1000 as bigint),
+          shard = ${reg.shard.id}
         WHERE token = ${reg.device.token} AND topic = ${reg.topic.name}
       """
       .update.run

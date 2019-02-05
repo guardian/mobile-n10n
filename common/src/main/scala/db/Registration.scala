@@ -18,7 +18,13 @@ object Registration {
     Meta[Timestamp].timap(ts => ts.toLocalDateTime)(dt => Timestamp.valueOf(dt))
 }
 
-case class Registration(device: Device, topic: Topic, shard: Shard, lastModified: Option[LocalDateTime] = None)
+case class Registration(
+  device: Device,
+  topic: Topic,
+  shard: Shard,
+  oldLastModified: Option[LocalDateTime],
+  lastModifiedEpochMs: Option[Long]
+)
 case class Device(token: String, platform: Platform)
 case class Topic(name: String)
 case class Shard(id: Short)
