@@ -39,7 +39,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
 
   override def findByToken(token: String): Stream[F, Registration] = {
     sql"""
-         SELECT token, platform, topic, shard, lastModified
+         SELECT token, platform, topic, shard, lastModified, lastmodifiedepochmillis
          FROM registrations
          WHERE token = $token
       """
@@ -69,14 +69,14 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
 
   private def insert(reg: Registration): ConnectionIO[Int] =
     sql"""
-        INSERT INTO registrations (token, platform, topic, shard, lastmodifiedepochmillis)
+        INSERT INTO registrations (token, platform, topic, shard, lastmodified, lastmodifiedepochmillis)
         VALUES (
           ${reg.device.token},
           ${reg.device.platform},
           ${reg.topic.name},
           ${reg.shard.id},
           CURRENT_TIMESTAMP,
-          cast(extract(epoch from current_timestamp at time zone 'utc') * 1000 as bigint)
+          cast(extract(epoch from current_timestamp)as bigint) * 1000
         )
       """
     .update.run
@@ -86,7 +86,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         UPDATE registrations
         SET
           lastModified = CURRENT_TIMESTAMP,
-          lastmodifiedepochmillis = cast(extract(epoch from current_timestamp at time zone 'utc') * 1000 as bigint),
+          lastmodifiedepochmillis = cast(extract(epoch from current_timestamp)as bigint) * 1000,
           shard = ${reg.shard.id}
         WHERE token = ${reg.device.token} AND topic = ${reg.topic.name}
       """
