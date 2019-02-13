@@ -46,8 +46,6 @@ val standardSettings = Seq[Setting[_]](
     "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
   ),
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
-  riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
-
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
   riffRaffUploadManifestBucket := Option("riffraff-builds"),
   libraryDependencies ++= Seq(
@@ -143,6 +141,7 @@ lazy val registration = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
@@ -163,6 +162,7 @@ lazy val notification = project
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
@@ -223,6 +223,7 @@ lazy val report = project
       "models._"
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
