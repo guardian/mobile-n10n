@@ -8,7 +8,7 @@ deployments:
       amiTags:
         Recipe: xenial-mobile
         AmigoStage: PROD
-        templatePath: cfn.yaml
+      templatePath: cfn.yaml
   registration:
     type: autoscaling
     parameters:
