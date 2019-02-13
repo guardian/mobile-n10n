@@ -1,0 +1,308 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Registration for mobile notifications
+Mappings:
+  Constants:
+    App: 
+      Value: registration
+    Stack:
+      Value: mobile-notifications
+  StageVariables:
+    CODE: 
+      CPUAlarmPeriodLower: 300
+      CPUAlarmPeriodUpper: 1200
+      CPUAlarmThresholdLower: 20
+      CPUAlarmThresholdUpper: 50
+      NotificationAlarmPeriod: 1200
+    PROD: 
+      CPUAlarmPeriodLower: 300
+      CPUAlarmPeriodUpper: 60
+      CPUAlarmThresholdLower: 20
+      CPUAlarmThresholdUpper: 50 
+      NotificationAlarmPeriod: 1200
+Outputs:
+  LoadBalancerUrl:
+    Value:
+      !GetAtt LoadBalancerToPrivateASG.DNSName
+Parameters:
+  AMI: 
+    Type: AWS::EC2::Image::Id
+    Description: AMI used by the instances
+  Stage:
+    Type: String
+    AllowedValues:
+    - CODE
+    - PROD
+    Description: Environment name
+  VPCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The default security group of the VPC
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: The VPC
+  PublicSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: The public subnets of the VPC for the loadbalancer
+  PrivateSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: The private subnets of the VPC for the autoscaling group
+  InstanceType:
+    Type: String
+    Description: The instance type
+  CertArn:
+    Type: String
+    Description: ACM Certificate for app use
+  ASGMinSize:
+    Type: Number
+    Description: Minimum size of the autoscaling group
+  ASGMaxSize:
+    Type: Number
+    Description: Maximum size of the autoscaling group
+  DistBucket:
+    Type: String
+    Description: The name of the s3 bucket containing the server artifact
+  HostedZone:
+    Type: String
+    Description:  The HostedZone, should contain the trailing dot zone.example.com.
+  DomainName:
+    Type: String
+    Description: The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.
+Resources:
+  DistributionInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref DistributionRole
+  DistributionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: ec2.amazonaws.com
+      Path: /
+      ManagedPolicyArns: [ !Sub 'arn:aws:iam::${AWS::AccountId}:policy/ssm-scala-v1' ]
+      Policies:
+      - PolicyName: root
+        PolicyDocument:
+          Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Resource: !Sub arn:aws:s3:::${DistBucket}/*
+          - Action: ec2:DescribeTags
+            Effect: Allow
+            Resource: '*'
+          - Action:
+            - cloudwatch:*
+            - logs:*
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - autoscaling:DescribeAutoScalingInstances
+              - autoscaling:DescribeAutoScalingGroups
+            Resource: '*'
+            Effect: Allow
+          - Effect: Allow
+            Action:
+            - kinesis:PutRecord
+            - kinesis:PutRecords
+            - kinesis:DescribeStream
+            Resource: !Sub arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/mobile-log-aggregation-${Stage}
+      - PolicyName: dynamo
+        PolicyDocument:
+          Statement:
+          - Action: dynamodb:*
+            Effect: Allow
+            Resource:
+            - !Sub arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-topics-${Stage}
+            - !Sub arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-topics-${Stage}/index/*
+      - PolicyName: conf
+        PolicyDocument:
+          Statement:
+          - Action: ssm:GetParametersByPath
+            Effect: Allow
+            Resource:
+              !Sub
+                - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/${Stack}
+                - Stack: !FindInMap [Constants, Stack, Value]
+
+  DnsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref HostedZone
+      Name: !Ref DomainName
+      ResourceRecords:
+      - !GetAtt LoadBalancerToPrivateASG.DNSName
+      TTL: 60
+      Type: CNAME
+  GuardianAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SSH and management server access from Guardian network
+      SecurityGroupIngress:
+      - SourceSecurityGroupId: !Ref VPCSecurityGroup
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+      VpcId: !Ref VpcId
+  HighCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - !Ref ScaleUpPolicy
+      AlarmDescription:
+        !Sub
+          - Scale-Up if CPU is greater than ${CPUAlarmThresholdUpper} % over last ${CPUAlarmPeriodUpper} seconds
+          - CPUAlarmThresholdUpper: !FindInMap [ StageVariables, !Ref Stage, CPUAlarmThresholdUpper ]
+            CPUAlarmPeriodUpper: !FindInMap [ StageVariables, !Ref Stage, CPUAlarmThresholdUpper ]
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value: !Ref PrivateRegistrationAutoscalingGroup
+      EvaluationPeriods: 1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Period:
+        !FindInMap [ StageVariables, !Ref Stage, CPUAlarmPeriodUpper ]
+      Statistic: Average
+      Threshold:
+        !FindInMap [ StageVariables, !Ref Stage, CPUAlarmThresholdUpper ]
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Open up HTTP access to load balancer
+      SecurityGroupEgress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+      - CidrIp: 0.0.0.0/0
+        FromPort: 443
+        IpProtocol: tcp
+        ToPort: 443
+      SecurityGroupIngress:
+      - FromPort: 9000
+        IpProtocol: tcp
+        SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+        ToPort: 9000
+      VpcId: !Ref VpcId
+  LoadBalancerToPrivateASG:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      CrossZone: true
+      HealthCheck:
+        HealthyThreshold: 2
+        Interval: 30
+        Target: HTTP:9000/healthcheck
+        Timeout: 10
+        UnhealthyThreshold: 10
+      Listeners:
+      - InstancePort: 9000
+        LoadBalancerPort: 443
+        Protocol: HTTPS
+        SSLCertificateId: !Sub ${CertArn}
+      SecurityGroups:
+      - !Ref LoadBalancerSecurityGroup
+      Subnets: !Ref PublicSubnets
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Open up HTTP access to load balancer
+      SecurityGroupEgress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 9000
+        IpProtocol: tcp
+        ToPort: 9000
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 443
+        IpProtocol: tcp
+        ToPort: 443
+      VpcId: !Ref VpcId
+  LowCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+      - !Ref ScaleDownPolicy
+      AlarmDescription: !Sub
+        - Scale-Down if CPU is less than ${CPUAlarmThresholdLower} % over last ${CPUAlarmPeriodLower} seconds
+        - CPUAlarmThresholdLower: !FindInMap [ StageVariables, !Ref Stage, CPUAlarmThresholdLower ]
+          CPUAlarmPeriodLower: !FindInMap [ StageVariables, !Ref Stage, CPUAlarmPeriodLower ]
+      ComparisonOperator: LessThanOrEqualToThreshold
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value: !Ref PrivateRegistrationAutoscalingGroup
+      EvaluationPeriods: 1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Period:
+        !FindInMap [ StageVariables, !Ref Stage, CPUAlarmPeriodLower ]
+      Statistic: Average
+      Threshold:
+        !FindInMap [ StageVariables, !Ref Stage, CPUAlarmThresholdLower ]
+  PrivateRegistrationAutoscalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: !GetAZs
+      HealthCheckGracePeriod: 400
+      HealthCheckType: ELB
+      LaunchConfigurationName: !Ref RegistrationLaunchConfig
+      LoadBalancerNames:
+      - !Ref LoadBalancerToPrivateASG
+      MaxSize: !Ref ASGMaxSize
+      MinSize: !Ref ASGMinSize
+      NotificationConfiguration:
+        NotificationTypes:
+         - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
+         - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
+        TopicARN: !Sub arn:aws:sns:eu-west-1:${AWS::AccountId}:AutoscalingNotifications${Stage}
+      Tags:
+      - Key: Stage
+        PropagateAtLaunch: true
+        Value: !Ref Stage
+      - Key: Stack
+        PropagateAtLaunch: true
+        Value:
+          !FindInMap [Constants, Stack, Value]
+      - Key: App
+        PropagateAtLaunch: true
+        Value:
+          !FindInMap [Constants, App, Value]
+      VPCZoneIdentifier: !Ref PrivateSubnets
+  RegistrationLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      AssociatePublicIpAddress: True
+      IamInstanceProfile: !Ref DistributionInstanceProfile
+      ImageId: !Ref AMI
+      InstanceType: !Sub ${InstanceType}
+      SecurityGroups:
+      - !Ref InstanceSecurityGroup
+      - !Ref GuardianAccessSecurityGroup
+      - !Ref VPCSecurityGroup
+      UserData:
+        Fn::Base64:
+         !Sub
+          - |
+            #!/bin/bash -ev
+            aws --region ${AWS::Region} s3 cp s3://${DistBucket}/${Stack}/${Stage}/${App}/${App}_1.0-latest_all.deb /tmp
+            dpkg -i /tmp/${App}_1.0-latest_all.deb
+            /opt/aws-kinesis-agent/configure-aws-kinesis-agent ${AWS::Region} mobile-log-aggregation-${Stage} /var/log/${App}/application.log
+          - Stack: !FindInMap [Constants, Stack, Value]
+            App: !FindInMap [Constants, App, Value]
+  ScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName: !Ref PrivateRegistrationAutoscalingGroup
+      Cooldown: 3600
+      ScalingAdjustment: -1
+  ScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: PercentChangeInCapacity
+      AutoScalingGroupName: !Ref PrivateRegistrationAutoscalingGroup
+      Cooldown: 300
+      ScalingAdjustment: 100

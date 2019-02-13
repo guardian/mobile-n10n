@@ -1,16 +1,17 @@
 stacks: [mobile-notifications]
 regions: [eu-west-1]
 deployments:
-  report-ami:
-    type: ami-cloudformation-parameter
+  report-cfn:
+    type: cloud-formation
     app: report
     parameters:
       amiTags:
         Recipe: xenial-mobile
         AmigoStage: PROD
+      templatePath: cfn.yaml
   report:
     type: autoscaling
     parameters:
       bucket: mobile-notifications-dist
-    dependencies: [report-ami]
+    dependencies: [report-cfn]
 

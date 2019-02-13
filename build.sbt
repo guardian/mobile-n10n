@@ -46,6 +46,8 @@ val standardSettings = Seq[Setting[_]](
     "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
   ),
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
+  riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
   riffRaffUploadManifestBucket := Option("riffraff-builds"),
   libraryDependencies ++= Seq(
@@ -199,6 +201,8 @@ lazy val schedulelambda = project
       riffRaffUploadManifestBucket := Option("riffraff-builds"),
       riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
       riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
+      riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+
       name := "schedule",
       organization := "com.gu",
       scalacOptions ++= compilerOptions,
