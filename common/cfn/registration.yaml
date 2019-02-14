@@ -110,14 +110,6 @@ Resources:
             - kinesis:PutRecords
             - kinesis:DescribeStream
             Resource: !Sub arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/mobile-log-aggregation-${Stage}
-      - PolicyName: dynamo
-        PolicyDocument:
-          Statement:
-          - Action: dynamodb:*
-            Effect: Allow
-            Resource:
-            - !Sub arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-topics-${Stage}
-            - !Sub arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-topics-${Stage}/index/*
       - PolicyName: conf
         PolicyDocument:
           Statement:
