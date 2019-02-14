@@ -19,8 +19,6 @@ class Configuration(conf: PlayConfig) {
   )
   lazy val newsstandShards: Int = conf.get[Int]("newsstand.shards")
   lazy val maxTopics: Int = conf.get[Int]("notifications.max_topics")
-  lazy val dynamoTopicsTableName: String = conf.get[String]("db.dynamo.topics.table-name")
-  lazy val dynamoTopicsFlushInterval: FiniteDuration = conf.getOptional[FiniteDuration]("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
 
   lazy val defaultTimeout: FiniteDuration = conf.getOptional[FiniteDuration]("routes.defaultTimeout").getOrElse(30.seconds)
 
