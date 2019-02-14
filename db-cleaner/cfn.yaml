@@ -55,7 +55,7 @@ Resources:
                 - ssm:GetParameter
               Effect: Allow
               Resource:
-                !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
+                !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers/*
   Lambda:
     Type: AWS::Lambda::Function
     Properties:

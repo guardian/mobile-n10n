@@ -2,16 +2,25 @@ use super::guardian_lambda as gl;
 
 extern crate rusoto_core;
 extern crate rusoto_ssm;
+extern crate rusoto_credential;
 
 use rusoto_core::Region;
+use rusoto_core::request::HttpClient;
 use rusoto_core::DefaultCredentialsProvider;
 use rusoto_ssm::SsmClient;
 use rusoto_ssm::GetParameterRequest;
 use crate::cleaner::rusoto_ssm::Ssm;
+use rusoto_credential::ChainProvider;
+use rusoto_credential::ProfileProvider;
 
 pub fn lambda<A: gl::AbstractLambdaContext>(e: gl::LambdaInput, context: A) -> Result<gl::LambdaOutput, super::HandlerError> {
-    let credentials = DefaultCredentialsProvider::new().unwrap();
-    let ssm_client = SsmClient::new(Region::EuWest1);
+    let mut profileProvider: ProfileProvider = ProfileProvider::new().unwrap(); profileProvider.set_profile("mobile");
+    let credentials = ChainProvider::with_profile_provider(profileProvider);
+    let ssm_client = SsmClient::new_with(
+        HttpClient::new().expect("failed to create request dispatcher"),
+        credentials,
+        Region::EuWest1
+    );
 
     let req = GetParameterRequest {
         name: "/notifications/CODE/workers/cleaner.registration.db.url".to_string(),
