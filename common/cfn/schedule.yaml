@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Push Notifications Schedule for YAML
+Parameters:
+  Stack:
+    Description: Stack name
+    Type: String
+  App:
+    Description: Application name
+    Type: String
+  Stage:
+    Description: Stage name
+    Type: String
+    AllowedValues:
+      - CODE
+      - PROD
+  DeployBucket:
+    Description: Bucket where RiffRaff uploads artifacts on deploy
+    Type: String
+Resources:
+  MobileNotificationsScheduleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: logs
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+                - cloudwatch:putMetricData
+              Resource: "*"
+        - PolicyName: config
+          PolicyDocument:
+            Statement:
+              Action:
+                - ssm:GetParametersByPath
+              Effect: Allow
+              Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/${Stack}
+        - PolicyName: dynamo
+          PolicyDocument:
+            Statement:
+                Effect: Allow
+                Action:
+                    - "dynamodb:GetItem"
+                    - "dynamodb:PutItem"
+                    - "dynamodb:UpdateItem"
+                    - "dynamodb:Query"
+                    - "dynamodb:Scan"
+                Resource:
+                 - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${App}-${Stage}-${Stack}
+                 - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${App}-${Stage}-${Stack}/index/due_epoch_s_and_sent
+  MobileNotificationsScheduleFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref DeployBucket
+        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
+      Description: Process push notifications scheduled by now
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+          Stack: !Ref Stack
+          App: !Ref App
+      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      Handler: com.gu.notificationschedule.ProcessNotificationScheduleLambda::apply
+
+      MemorySize: 384
+      ReservedConcurrentExecutions: 1
+      Role: !GetAtt MobileNotificationsScheduleRole.Arn
+      Runtime: java8
+      Timeout: 300
+  MobileNotificationsScheduleEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: rate(1 minute)
+      Targets:
+        - Id: MobileNotificationsScheduleEventRuleTarget
+          Arn: !GetAtt MobileNotificationsScheduleFunction.Arn
+  MobileNotificationsScheduleEventPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt MobileNotificationsScheduleFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt MobileNotificationsScheduleEventRule.Arn
+
+
+

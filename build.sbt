@@ -141,6 +141,7 @@ lazy val registration = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
@@ -161,6 +162,7 @@ lazy val notification = project
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
@@ -199,6 +201,8 @@ lazy val schedulelambda = project
       riffRaffUploadManifestBucket := Option("riffraff-builds"),
       riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
       riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
+      riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+
       name := "schedule",
       organization := "com.gu",
       scalacOptions ++= compilerOptions,
@@ -219,6 +223,7 @@ lazy val report = project
       "models._"
     ),
     riffRaffPackageType := (packageBin in Debian).value,
+    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )

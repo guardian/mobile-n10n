@@ -8,3 +8,12 @@ deployments:
       functionNames: [mobile-notifications-schedule-]
       fileName: schedule.jar
       prefixStack: false
+    dependencies: [schedule-cfn]
+
+  schedule-cfn:
+    type: cloud-formation
+    app: schedule
+    parameters:
+      prependStackToCloudFormationStackName: true
+      cloudFormationStackName: schedule
+      templatePath: cfn.yaml
