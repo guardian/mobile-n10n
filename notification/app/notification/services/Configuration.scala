@@ -16,8 +16,6 @@ class Configuration(conf: PlayConfig) {
   lazy val frontendNewsAlertApiKey: String = conf.get[String]("notifications.frontendNewsAlert.apiKey")
   lazy val dynamoReportsTableName: String = conf.get[String]("db.dynamo.reports.table-name")
   lazy val dynamoScheduleTableName: String = conf.get[String]("db.dynamo.schedule.table-name")
-  lazy val dynamoTopicsTableName: String = conf.get[String]("db.dynamo.topics.table-name")
-  lazy val dynamoTopicsFlushInterval: FiniteDuration = conf.getOptional[FiniteDuration]("db.dynamo.topics.flush-interval").getOrElse(60.seconds)
   lazy val frontendBaseUrl: String = conf.get[String]("frontend.baseUrl")
 
   lazy val disableElectionNotificationsAndroid: Boolean = conf.getOptional[Boolean]("notifications.elections.android.disabled").getOrElse(false)
