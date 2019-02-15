@@ -12,8 +12,10 @@ Mappings:
       CPUAlarmPeriodUpper: 1200
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
+      DailyNewsstandPushCount: 0
       LogGroupName: mobile-notifications-notification-CODE
       MetricNamespace: CODE/notifications
+      NewsstandNotificationMetricName: SuccessfulNewstandSend
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
     PROD:
@@ -21,8 +23,10 @@ Mappings:
       CPUAlarmPeriodUpper: 60
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
+      DailyNewsstandPushCount: 1
       LogGroupName: mobile-notifications-notification-PROD
       MetricNamespace: PROD/notifications
+      NewsstandNotificationMetricName: SuccessfulNewstandSend
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
 
@@ -416,5 +420,26 @@ Resources:
       Statistic: Sum
       Threshold: 0
       TreatMissingData: notBreaching
+
+  NewsstandSentAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      AlarmDescription: !Sub
+          - triggers if less that ${DailyNewsstandPushCount} sent for ${Stage} in the last 24 hours.
+          - DailyNewsstandPushCount: !FindInMap [ StageVariables, !Ref Stage, DailyNewsstandPushCount ]
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 1
+      Namespace:
+        !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
+      MetricName:
+        !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ]
+      Period: 86400
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+
+
+      
 
 
