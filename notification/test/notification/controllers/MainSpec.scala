@@ -20,6 +20,7 @@ import notification.authentication.NotificationAuthAction
 import play.api.test.Helpers.stubControllerComponents
 import cats.instances.future._
 import cats.syntax.either._
+import metrics.CloudWatchMetrics
 import org.joda.time.DateTime
 
 
@@ -187,12 +188,14 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     val controllerComponents = stubControllerComponents()
     val reportRepository = new InMemoryNotificationReportRepository
     val authAction = new NotificationAuthAction(conf, controllerComponents)
+    val metrics = mock[CloudWatchMetrics]
 
     val main = new Main(
       configuration = conf,
       senders = List(windowsNotificationSender, frontendAlerts),
       newsstandSender = newsstandNotificationSender,
-    notificationReportRepository = reportRepository,
+      metrics = metrics,
+      notificationReportRepository = reportRepository,
       controllerComponents = controllerComponents,
       authAction = authAction
     )
