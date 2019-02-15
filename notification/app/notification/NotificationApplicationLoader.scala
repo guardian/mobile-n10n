@@ -13,6 +13,7 @@ import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 import com.gu.AppIdentity
 import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
 import _root_.models.{Android, Newsstand, iOS}
+import metrics.CloudWatchMetrics
 import notification.authentication.NotificationAuthAction
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services.{NewsstandSender, _}
@@ -30,10 +31,10 @@ import router.Routes
 import tracking.DynamoNotificationReportRepository
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
-  def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new NotificationApplicationComponents(context)
+  def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new NotificationApplicationComponents(identity, context)
 }
 
-class NotificationApplicationComponents(context: Context) extends BuiltInComponentsFromContext(context)
+class NotificationApplicationComponents(identity: AppIdentity, context: Context) extends BuiltInComponentsFromContext(context)
   with AhcWSComponents
   with HttpFiltersComponents
   with AssetsComponents {
@@ -46,6 +47,7 @@ class NotificationApplicationComponents(context: Context) extends BuiltInCompone
   implicit lazy val implicitActorSystem: ActorSystem = actorSystem
 
   lazy val appConfig = new Configuration(configuration)
+  lazy val metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
 
   lazy val authAction = wire[NotificationAuthAction]
 

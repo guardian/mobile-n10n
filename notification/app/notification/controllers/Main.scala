@@ -3,6 +3,8 @@ package notification.controllers
 import java.util.UUID
 
 import authentication.AuthAction
+import com.amazonaws.services.cloudwatch.model.StandardUnit
+import metrics.{CloudWatchMetrics, MetricDataPoint}
 import models._
 import notification.models.{Push, PushResult}
 import notification.services
@@ -23,6 +25,7 @@ final class Main(
   senders: List[NotificationSender],
   newsstandSender: NewsstandSender,
   notificationReportRepository: SentNotificationReportRepository,
+  metrics: CloudWatchMetrics,
   controllerComponents: ControllerComponents,
   authAction: AuthAction
 )(implicit executionContext: ExecutionContext)
@@ -38,12 +41,14 @@ final class Main(
 
   def pushNewsstand: Action[AnyContent] = authAction.async {
     val id = UUID.randomUUID()
+    metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 1, unit = StandardUnit.Count))
     newsstandSender.sendNotification(id) map { _ =>
       logger.info("Newsstand notification sent")
       Created(toJson(PushResult(id)))
     } recover {
       case NonFatal(error) =>
         logger.error(s"Newsstand notification failed: $error")
+      //  metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 1, unit = StandardUnit.Count))
         InternalServerError(s"Newsstand notification failed: $error")
     }
   }
