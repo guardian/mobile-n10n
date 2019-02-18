@@ -426,7 +426,7 @@ Resources:
     Properties:
       AlarmActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub
-          - triggers if less that ${DailyNewsstandPushCount} sent for ${Stage} in the last 24 hours.
+          - triggers if less that ${DailyNewsstandPushCount} daily edition notification was sent for ${Stage} in the last 24 hours..
           - DailyNewsstandPushCount: !FindInMap [ StageVariables, !Ref Stage, DailyNewsstandPushCount ]
       ComparisonOperator: LessThanThreshold
       EvaluationPeriods: 1
@@ -434,7 +434,7 @@ Resources:
         !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
       MetricName:
         !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ]
-      Period: 86400
+      Period: 100800 #28 hours
       Statistic: Sum
       Threshold: 1
       TreatMissingData: notBreaching
