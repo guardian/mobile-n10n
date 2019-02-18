@@ -16,6 +16,7 @@ Mappings:
       LogGroupName: mobile-notifications-notification-CODE
       MetricNamespace: CODE/notifications
       NewsstandNotificationMetricName: SuccessfulNewstandSend
+      NewsstandNotificationAlarmThreshold: 28 #Change to 0 after testing on CODE
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
     PROD:
@@ -25,8 +26,9 @@ Mappings:
       CPUAlarmThresholdUpper: 50
       DailyNewsstandPushCount: 1
       LogGroupName: mobile-notifications-notification-PROD
-      MetricNamespace: PROD/notifications
+      NewstandAlarmMetricNamespace: PROD/notifications
       NewsstandNotificationMetricName: SuccessfulNewstandSend
+      NewsstandNotificationAlarmThreshold: 28 
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
 
@@ -429,14 +431,14 @@ Resources:
           - triggers if less that ${DailyNewsstandPushCount} daily edition notification was sent for ${Stage} in the last 24 hours..
           - DailyNewsstandPushCount: !FindInMap [ StageVariables, !Ref Stage, DailyNewsstandPushCount ]
       ComparisonOperator: LessThanThreshold
-      EvaluationPeriods: 1
+      EvaluationPeriods: 28
       Namespace:
         !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
       MetricName:
-        !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ]
-      Period: 100800 #28 hours
+        !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ] 
+      Period: 3600
       Statistic: Sum
-      Threshold: 1
+      Threshold: !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationAlarmThreshold ]
       TreatMissingData: notBreaching
 
 
