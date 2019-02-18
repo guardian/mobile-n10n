@@ -14,7 +14,7 @@ Mappings:
       CPUAlarmThresholdUpper: 50
       DailyNewsstandPushCount: 0
       LogGroupName: mobile-notifications-notification-CODE
-      MetricNamespace: CODE/notifications
+      NewstandMetricNamespace: CODE/notifications
       NewsstandNotificationMetricName: SuccessfulNewstandSend
       NewsstandNotificationAlarmThreshold: 0
       NotificationAlarmPeriod: 1200
@@ -433,7 +433,7 @@ Resources:
       ComparisonOperator: LessThanThreshold
       EvaluationPeriods: 1
       Namespace:
-        !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
+        !FindInMap [ StageVariables, !Ref Stage, NewstandMetricNamespace ]
       MetricName:
         !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ] 
       Period: 86400
