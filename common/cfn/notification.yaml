@@ -433,7 +433,7 @@ Resources:
       ComparisonOperator: LessThanThreshold
       EvaluationPeriods: 1
       Namespace:
-        !FindInMap [ StageVariables, !Ref Stage, NewstandMetricNamespace ]
+        !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
       MetricName:
         !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ] 
       Period: 86400
