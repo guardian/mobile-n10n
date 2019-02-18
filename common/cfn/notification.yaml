@@ -431,12 +431,12 @@ Resources:
           - triggers if less that ${DailyNewsstandPushCount} daily edition notification was sent for ${Stage} in the last 24 hours..
           - DailyNewsstandPushCount: !FindInMap [ StageVariables, !Ref Stage, DailyNewsstandPushCount ]
       ComparisonOperator: LessThanThreshold
-      EvaluationPeriods: 28
+      EvaluationPeriods: 1
       Namespace:
         !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
       MetricName:
         !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ] 
-      Period: 3600
+      Period: 86400
       Statistic: Sum
       Threshold: !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationAlarmThreshold ]
       TreatMissingData: notBreaching
