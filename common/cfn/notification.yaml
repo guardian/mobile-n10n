@@ -14,7 +14,7 @@ Mappings:
       CPUAlarmThresholdUpper: 50
       DailyNewsstandPushCount: 0
       LogGroupName: mobile-notifications-notification-CODE
-      NewstandMetricNamespace: CODE/notifications
+      MetricNamespace: CODE/notifications
       NewsstandNotificationMetricName: SuccessfulNewstandSend
       NewsstandNotificationAlarmThreshold: 0
       NotificationAlarmPeriod: 1200
