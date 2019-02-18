@@ -16,7 +16,7 @@ Mappings:
       LogGroupName: mobile-notifications-notification-CODE
       MetricNamespace: CODE/notifications
       NewsstandNotificationMetricName: SuccessfulNewstandSend
-      NewsstandNotificationAlarmThreshold: 28 #Change to 0 after testing on CODE
+      NewsstandNotificationAlarmThreshold: 0
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
     PROD:
@@ -28,7 +28,7 @@ Mappings:
       LogGroupName: mobile-notifications-notification-PROD
       NewstandAlarmMetricNamespace: PROD/notifications
       NewsstandNotificationMetricName: SuccessfulNewstandSend
-      NewsstandNotificationAlarmThreshold: 28 
+      NewsstandNotificationAlarmThreshold: 1
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
 
