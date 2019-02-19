@@ -15,11 +15,10 @@ import models.FcmConfig
 import _root_.models.{Android, Notification, Platform}
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
 import com.gu.notifications.worker.utils.UnwrappingExecutionException
-import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 import scala.util.control.NonFatal
-import scala.util.{Failure, Random, Success, Try}
+import scala.util.{Failure, Success, Try}
 
 class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
   extends DeliveryClient {
@@ -72,27 +71,13 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 }
 
 object FcmClient {
-
-  def randomlySetOkHttpTransport(builder: FirebaseOptions.Builder): FirebaseOptions.Builder = {
-    val logger = LoggerFactory.getLogger(classOf[FcmClient])
-    val randomNumber = Random.nextInt(100)
-    val percentageOkHttpClient = 75
-    if(randomNumber < percentageOkHttpClient) {
-      logger.info("FCM using okhttp client")
-      builder.setHttpTransport(new OkGoogleHttpTransport)
-    }
-    else {
-      logger.info("FCM using default client")
-      builder
-    }
-
-  }
   def apply(config: FcmConfig): Try[FcmClient] = {
     Try {
-      val firebaseOptions: FirebaseOptions = randomlySetOkHttpTransport( new FirebaseOptions.Builder()
+      val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
           .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(config.serviceAccountKey.getBytes)))
+          .setHttpTransport(new OkGoogleHttpTransport)
           .setConnectTimeout(10000) // 10 seconds
-      ).build
+          .build
       FirebaseApp.initializeApp(firebaseOptions)
     }.map(app => new FcmClient(FirebaseMessaging.getInstance(app), app, config))
   }
