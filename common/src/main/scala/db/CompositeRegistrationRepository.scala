@@ -1,16 +1,25 @@
 package db
 
 import cats.data.NonEmptyList
+import cats.effect.internals.IOContextShift
+
+import scala.concurrent.ExecutionContext
+//import cats._, cats.data._, cats.syntax.all._, cats.effect.IO
 import cats.effect.{Async, IO}
 import cats.implicits._
 import fs2.Stream
 import models.PlatformCount
+import cats.effect.ContextShift
+
 
 
 class CompositeRegistrationRepository(
   master: RegistrationRepository[IO, Stream],
   replica: RegistrationRepository[IO, Stream]
-) extends RegistrationRepository[IO, Stream] {
+)(implicit ec: ExecutionContext) extends RegistrationRepository[IO, Stream] {
+
+  implicit val cs: ContextShift[IO] = IOContextShift(ec)
+
   override def findTokens(topics: NonEmptyList[String], platform: Option[String], shardRange: Option[Range]): Stream[IO, String] = {
     master.findTokens(topics, platform, shardRange)
   }

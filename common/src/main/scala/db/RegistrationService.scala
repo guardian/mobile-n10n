@@ -29,7 +29,7 @@ object RegistrationService {
     new RegistrationService[F, Stream](repo)
   }
 
-  def createWithReplica(masterTransactor: Transactor[IO], replicaTransactor: Transactor[IO]): RegistrationService[IO, Stream] = {
+  def createWithReplica(masterTransactor: Transactor[IO], replicaTransactor: Transactor[IO])(implicit executionContext: ExecutionContext): RegistrationService[IO, Stream] = {
     val masterRepo = new SqlRegistrationRepository[IO](masterTransactor)
     val replicaRepo = new SqlRegistrationRepository[IO](replicaTransactor)
     val compositeRepo = new CompositeRegistrationRepository(masterRepo, replicaRepo)
