@@ -148,16 +148,25 @@ LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMarg
     val athenaOutputLocation = s"${envDependencies.athenaOutputLocation}/${now.toLocalDate.toString}/${now.getHour}"
     val athenaDatabase = envDependencies.athenaDatabase
 
-    val fetchEventsQuery = Query(athenaDatabase,
-      s"""SELECT notificationid,
-         count(*) AS total,
-         count_if(platform = 'ios') AS ios,
-         count_if(platform = 'android') AS android
-FROM notification_received_${stage.toLowerCase()}
-WHERE partition_date = '${toQueryDate(startOfReportingWindow)}'
-         AND partition_hour >= ${startOfReportingWindow.getHour}
-         AND provider != 'comment'
-GROUP BY  notificationid""".stripMargin, athenaOutputLocation)
+    val request = s"""
+      |SELECT
+      |	notificationid,
+      |	count(*) AS total,
+      |	count_if(platform = 'ios') AS ios,
+      |	count_if(platform = 'android') AS android
+      |FROM
+      |	notification_received_${stage.toLowerCase()}
+      |WHERE
+      |	(('${toQueryDate(startOfReportingWindow)}' != '${toQueryDate(now)}'
+      |		AND partition_date = '${toQueryDate(now)}'
+      |	) OR (
+      |		partition_date = '${toQueryDate(startOfReportingWindow)}'
+      |		AND partition_hour >= ${startOfReportingWindow.getHour}
+      |	)) AND (provider != 'comment' OR provider IS NULL)
+      |GROUP BY
+      |	notificationid""".stripMargin
+
+    val fetchEventsQuery = Query(athenaDatabase, request, athenaOutputLocation)
     Await.result(addS3PartitionsToAthenaIndex(now, startOfReportingWindow, athenaDatabase, athenaOutputLocation).flatMap(_ => routeFromQueryToUpdateDynamoDb(fetchEventsQuery, startOfReportingWindow)), duration.Duration(4, TimeUnit.MINUTES))
   }
 
