@@ -127,7 +127,11 @@ class AthenaMetrics {
       }
     }
 
-    addPartitionFrom(reportingWindow.start).reduce((a, b) => a.flatMap(_ => b))
+    if (reportingWindow.reIndex) {
+      addPartitionFrom(reportingWindow.start).reduce((a, b) => a.flatMap(_ => b))
+    } else {
+      Future.successful("")
+    }
   }
 
   private def routeFromQueryToUpdateDynamoDb(query: Query, startOfReportingWindow: ZonedDateTime)(implicit athenaAsync: AmazonAthenaAsync, dynamoDBAsync: AmazonDynamoDBAsync, scheduledExecutorService: ScheduledExecutorService): Future[Unit] = {
@@ -168,7 +172,11 @@ class AthenaMetrics {
       |	notificationid""".stripMargin
 
     val fetchEventsQuery = Query(athenaDatabase, request, athenaOutputLocation)
-    Await.result(addS3PartitionsToAthenaIndex(reportingWindow, athenaDatabase, athenaOutputLocation).flatMap(_ => routeFromQueryToUpdateDynamoDb(fetchEventsQuery, reportingWindow.start)), duration.Duration(4, TimeUnit.MINUTES))
+
+    val result = addS3PartitionsToAthenaIndex(reportingWindow, athenaDatabase, athenaOutputLocation)
+      .flatMap(_ => routeFromQueryToUpdateDynamoDb(fetchEventsQuery, reportingWindow.start))
+
+    Await.result(result, duration.Duration(4, TimeUnit.MINUTES))
   }
 
 }

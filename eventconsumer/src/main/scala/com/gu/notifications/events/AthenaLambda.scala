@@ -15,14 +15,16 @@ import scala.beans.BeanProperty
 class LambdaParameters{
   @BeanProperty var start: String = null
   @BeanProperty var end: String = null
+  @BeanProperty var reindex: Boolean = false
 }
 
-case class ReportingWindow(start: ZonedDateTime, end: ZonedDateTime)
+case class ReportingWindow(start: ZonedDateTime, end: ZonedDateTime, reIndex: Boolean)
 
 object ReportingWindow {
   def default = ReportingWindow(
     start = ZonedDateTime.now().minus(AthenaMetrics.reportingWindow),
-    end = ZonedDateTime.now()
+    end = ZonedDateTime.now(),
+    reIndex = true
   )
 }
 
@@ -40,7 +42,8 @@ class AthenaLambda {
       p <- Option(lambdaParams)
       start <- Option(p.start).map(ZonedDateTime.parse)
       end <- Option(p.end).map(ZonedDateTime.parse)
-    } yield ReportingWindow(start, end)
+      reIndex <- Option(p.reindex)
+    } yield ReportingWindow(start, end, reIndex)
 
     val reportingWindow = reportingWindowParam.getOrElse(ReportingWindow.default)
 
