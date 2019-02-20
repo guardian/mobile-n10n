@@ -142,9 +142,12 @@ class AthenaMetrics {
       })
   }
 
-  def handleRequest(reportingWindow: ReportingWindow)(implicit athenaAsyncClient: AmazonAthenaAsync, scheduledExecutorService: ScheduledExecutorService, dynamoDBAsyncClient: AmazonDynamoDBAsync): Unit = {
+  def handleRequest(reportingWindow: ReportingWindow)
+    (implicit athenaAsyncClient: AmazonAthenaAsync, scheduledExecutorService: ScheduledExecutorService, dynamoDBAsyncClient: AmazonDynamoDBAsync): Unit = {
     val athenaOutputLocation = s"${envDependencies.athenaOutputLocation}/${reportingWindow.end.toLocalDate.toString}/${reportingWindow.end.getHour}"
     val athenaDatabase = envDependencies.athenaDatabase
+
+    logger.info(s"Processing the reporting window $reportingWindow")
 
     val request = s"""
       |SELECT
