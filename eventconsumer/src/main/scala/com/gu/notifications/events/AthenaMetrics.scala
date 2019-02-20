@@ -155,21 +155,23 @@ class AthenaMetrics {
 
     val request = s"""
       |SELECT
-      |	notificationid,
-      |	count(*) AS total,
-      |	count_if(platform = 'ios') AS ios,
-      |	count_if(platform = 'android') AS android
+      | 	notificationid,
+      | 	count(*) AS total,
+      | 	count_if(platform = 'ios') AS ios,
+      | 	count_if(platform = 'android') AS android
       |FROM
-      |	notification_received_${stage.toLowerCase()}
+      |	 notification_received_${stage.toLowerCase()}
       |WHERE
-      |	(('${toQueryDate(reportingWindow.start)}' != '${toQueryDate(reportingWindow.end)}'
-      |		AND partition_date = '${toQueryDate(reportingWindow.end)}'
-      |	) OR (
-      |		partition_date = '${toQueryDate(reportingWindow.start)}'
-      |		AND partition_hour >= ${reportingWindow.start.getHour}
-      |	)) AND (provider != 'comment' OR provider IS NULL)
+      | 	(('${toQueryDate(reportingWindow.start)}' != '${toQueryDate(reportingWindow.end)}'
+      | 		AND partition_date = '${toQueryDate(reportingWindow.end)}'
+      | 	) OR (
+      | 		partition_date = '${toQueryDate(reportingWindow.start)}'
+      | 		AND partition_hour >= ${reportingWindow.start.getHour}
+      | 	)) AND (provider != 'comment' OR provider IS NULL)
+      |  AND notificationid != 'unknown'
+      |  AND notificationid IS NOT NULL
       |GROUP BY
-      |	notificationid""".stripMargin
+      |	 notificationid""".stripMargin
 
     val fetchEventsQuery = Query(athenaDatabase, request, athenaOutputLocation)
 
