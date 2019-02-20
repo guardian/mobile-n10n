@@ -48,7 +48,7 @@ final class Main(
     } recover {
       case NonFatal(error) =>
         logger.error(s"Newsstand notification failed: $error")
-        metrics.send(MetricDataPoint(name = "FailureNewstandSend", value = 1, unit = StandardUnit.Count))
+        metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 0, unit = StandardUnit.Count))
         InternalServerError(s"Newsstand notification failed: $error")
     }
   }
