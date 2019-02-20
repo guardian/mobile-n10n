@@ -9,5 +9,5 @@ import scala.concurrent.ExecutionContextExecutor
 
 class Apns[F[_]](registrationService: RegistrationService[F, Stream], client: ApnsClient)
   (implicit ece: ExecutionContextExecutor, contextShift: Concurrent[F], F: Async[F], T: Timer[F])
-  extends DeliveryServiceImpl[F, ApnsClient](registrationService, client)
+  extends DeliveryServiceImpl[F, ApnsClient](client)
 

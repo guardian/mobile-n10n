@@ -14,6 +14,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.models.SendingResults
+import com.gu.notifications.worker.tokens.{ChunkedTokens, TokenService}
 import com.gu.notifications.worker.utils.Cloudwatch
 import fs2.{Chunk, Sink, Stream}
 import org.slf4j.Logger
@@ -99,6 +100,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
 
     def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token")))
+    def tokenStream: Stream[IO, ChunkedTokens] = Stream(ChunkedTokens(notification,List(""), iOS))
 
     var deliveryCallsCount = 0
     var cleaningCallsCount = 0
@@ -108,9 +110,10 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
     val workerRequestHandler = new WorkerRequestHandler[ApnsClient] {
       override def platform: Platform = iOS
+      override val maxConcurrency = 100
 
       override def deliveryService: IO[DeliveryService[IO, ApnsClient]] = IO.pure(new DeliveryService[IO, ApnsClient] {
-        override def send(notification: Notification, shardRange: ShardRange, platform: Platform): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
+        override def send(notification: Notification, token: String, platform: Platform): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
           deliveryCallsCount += 1
           deliveries
         }
@@ -135,6 +138,10 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           }
         }
       }
+
+      override def tokenService: IO[TokenService[IO]] = IO.pure(new TokenService[IO] {
+        override def batchTokens(notification: Notification, shardRange: ShardRange, platform: Platform): Stream[IO, ChunkedTokens] = tokenStream
+      })
     }
   }
 

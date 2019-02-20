@@ -6,6 +6,7 @@ import db.{DatabaseConfig, RegistrationService}
 import doobie.util.transactor.Transactor
 import _root_.models.iOS
 import com.gu.notifications.worker.cleaning.CleaningClientImpl
+import com.gu.notifications.worker.tokens.{TokenService, TokenServiceImpl}
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl}
 
 class IOSWorker extends WorkerRequestHandler[ApnsClient] {
@@ -18,5 +19,8 @@ class IOSWorker extends WorkerRequestHandler[ApnsClient] {
 
   override val deliveryService: IO[Apns[IO]] =
     ApnsClient(config.apnsConfig).fold(e => IO.raiseError(e), c => IO.delay(new Apns(registrationService, c)))
+
+  override val tokenService: IO[TokenService[IO]] = IO.delay(new TokenServiceImpl[IO](registrationService))
+  override val maxConcurrency = 100
 }
 

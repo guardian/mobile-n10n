@@ -6,6 +6,7 @@ import db.{DatabaseConfig, RegistrationService}
 import doobie.util.transactor.Transactor
 import _root_.models.Android
 import com.gu.notifications.worker.cleaning.CleaningClientImpl
+import com.gu.notifications.worker.tokens.{TokenService, TokenServiceImpl}
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl}
 
 class AndroidWorker extends WorkerRequestHandler[FcmClient] {
@@ -18,5 +19,8 @@ class AndroidWorker extends WorkerRequestHandler[FcmClient] {
 
   override val deliveryService: IO[Fcm[IO]] =
     FcmClient(config.fcmConfig).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(registrationService, c)))
+
+  override val tokenService: IO[TokenService[IO]] = IO.delay(new TokenServiceImpl[IO](registrationService))
+  override val maxConcurrency = 100
 }
 

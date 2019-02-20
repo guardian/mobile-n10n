@@ -8,10 +8,11 @@ import com.gu.notifications.worker.delivery._
 import models.SendingResults
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
 import org.slf4j.{Logger, LoggerFactory}
-import fs2.{Sink, Stream}
+import fs2.{Chunk, Sink, Stream}
 import _root_.models.{Platform, ShardedNotification}
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
+import com.gu.notifications.worker.tokens.TokenService
 
 import collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
@@ -32,8 +33,10 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
 
   def platform: Platform
   def deliveryService: IO[DeliveryService[IO, C]]
+  def tokenService: IO[TokenService[IO]]
   val cleaningClient: CleaningClient
   val cloudwatch: Cloudwatch
+  def maxConcurrency: Int
 
   def env = Env()
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
@@ -78,9 +81,14 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
     val prog: Stream[IO, Unit] = for {
       n <- shardedNotification
       deliveryService <- Stream.eval(deliveryService)
+      tokenService <- Stream.eval(tokenService)
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Sending notification $notificationLog...")
-      resp <- deliveryService.send(n.notification, n.range, n.platform.getOrElse(platformFromTopics(n.notification.topic)))
+      chunkedTokens <- tokenService.batchTokens(n.notification, n.range, n.platform.getOrElse(platformFromTopics(n.notification.topic)))
+      chunkedTokensUnchunked = Stream.evalUnChunk(IO.pure(Chunk.seq(chunkedTokens.toNotificationToSends)))
+      resp <- chunkedTokensUnchunked
+        .map(token => deliveryService.send(token.notification, token.token, token.platform))
+        .parJoin(maxConcurrency)
         .evalTap(Reporting.log(s"Sending failure: "))
         .broadcastTo(reportSuccesses(n), cleanupFailures)
     } yield resp

@@ -2,13 +2,10 @@ package com.gu.notifications.worker.delivery
 
 import java.util.concurrent.TimeUnit
 
-import _root_.models.{Notification, ShardRange, Platform}
-import cats.data.NonEmptyList
+import _root_.models.{Notification, Platform}
 import cats.effect._
 import cats.syntax.either._
-import cats.syntax.list._
-import com.gu.notifications.worker.delivery.DeliveryException.{GenericFailure, InvalidPayload, InvalidTopics}
-import db.{RegistrationService, Topic}
+import com.gu.notifications.worker.delivery.DeliveryException.{GenericFailure, InvalidPayload}
 import fs2.Stream
 
 import scala.concurrent.ExecutionContextExecutor
@@ -19,15 +16,13 @@ import scala.util.control.NonFatal
 trait DeliveryService[F[_], C <: DeliveryClient] {
   def send(
     notification: Notification,
-    shardRange: ShardRange,
+    token: String,
     platform: Platform
   ): Stream[F, Either[DeliveryException, C#Success]]
 }
 
 class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
-  registrationService: RegistrationService[F, Stream],
-  client: C,
-  maxConcurrency: Int = Int.MaxValue
+  client: C
 )(implicit ece: ExecutionContextExecutor,
   contextShift: Concurrent[F],
   F: Async[F],
@@ -36,7 +31,7 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
 
   def send(
     notification: Notification,
-    shardRange: ShardRange,
+    token: String,
     platform: Platform
   ): Stream[F, Either[DeliveryException, C#Success]] = {
 
@@ -49,18 +44,6 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           platform
         )(cb)
       }
-
-    val topicsF: F[NonEmptyList[Topic]] = notification
-      .topic
-      .map(t => Topic(t.fullName))
-      .toNel
-      .map(nel => F.delay(nel))
-      .getOrElse(F.raiseError(InvalidTopics(notification.id)))
-
-    def tokens: Stream[F, String] = for {
-      topics <- Stream.eval(topicsF)
-      res <- registrationService.findTokens(topics, Some(platform), Some(shardRange))
-    } yield res
 
     def sending(client: C)(token: String, payload: client.Payload): Stream[F, Either[DeliveryException, C#Success]] = {
 
@@ -92,11 +75,8 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
 
     for {
       payload <- Stream.eval(payloadF)
-      res <- tokens
-        .map(token => sending(client)(token, payload))
-        .parJoin(maxConcurrency)
+      res <- sending(client)(token, payload)
     } yield res
   }
 
-  def close(): F[Unit] = F.delay(client.close())
 }
