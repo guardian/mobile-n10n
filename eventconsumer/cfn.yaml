@@ -155,7 +155,7 @@ Resources:
   AthenaLambdaScheduleEventRule:
     Type: AWS::Events::Rule
     Properties:
-      ScheduleExpression: "cron(5,35 * * * ? *)"
+      ScheduleExpression: "cron(2/5 0 ? * * *)"
       Targets:
         - Id: AthenaLambdaScheduleEventRuleTarget
           Arn: !GetAtt AthenaLambda.Arn
