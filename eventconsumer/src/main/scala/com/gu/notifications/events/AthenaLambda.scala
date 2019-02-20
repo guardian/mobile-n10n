@@ -1,5 +1,6 @@
 package com.gu.notifications.events
 
+import java.time.ZonedDateTime
 import java.util.concurrent.{Executors, ScheduledExecutorService}
 
 import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
@@ -8,6 +9,22 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.athena.{AmazonAthenaAsync, AmazonAthenaAsyncClient}
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 
+import scala.beans.BeanProperty
+
+// Using Java style here to interoperate with JVM Lambda runtime
+class LambdaParameters{
+  @BeanProperty var start: String = null
+  @BeanProperty var end: String = null
+}
+
+case class ReportingWindow(start: ZonedDateTime, end: ZonedDateTime)
+
+object ReportingWindow {
+  def default = ReportingWindow(
+    start = ZonedDateTime.now().minus(AthenaMetrics.reportingWindow),
+    end = ZonedDateTime.now()
+  )
+}
 
 class AthenaLambda {
   val athenaMetrics = new AthenaMetrics()
@@ -18,14 +35,22 @@ class AthenaLambda {
   lazy val amazonAthenaAsync: AmazonAthenaAsync = createAmazonAthenaAsync()
   lazy val amazonDynamoDBAsync: AmazonDynamoDBAsync = createAmazonDynamoDBAsync()
 
-  def handleRequest(): Unit = {
-    athenaMetrics.handleRequest()(amazonAthenaAsync, scheduledExecutorService, amazonDynamoDBAsync)
+  def handleRequest(lambdaParams: LambdaParameters): Unit = {
+    val reportingWindowParam = for {
+      p <- Option(lambdaParams)
+      start <- Option(p.start).map(ZonedDateTime.parse)
+      end <- Option(p.end).map(ZonedDateTime.parse)
+    } yield ReportingWindow(start, end)
+
+    val reportingWindow = reportingWindowParam.getOrElse(ReportingWindow.default)
+
+    athenaMetrics.handleRequest(reportingWindow)(amazonAthenaAsync, scheduledExecutorService, amazonDynamoDBAsync)
   }
   def handleRequestLocally(): Unit = {
     withScheduledExecutorService(implicit scheduledExecutorService =>
       withAthena(implicit athenaAsync =>
         withDynamoDb(implicit dynamoDbAsync =>
-          athenaMetrics.handleRequest())))
+          athenaMetrics.handleRequest(ReportingWindow.default))))
   }
 
   def withScheduledExecutorService(function: ScheduledExecutorService => Any): Unit = {

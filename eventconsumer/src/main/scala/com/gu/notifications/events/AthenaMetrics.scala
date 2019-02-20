@@ -1,7 +1,7 @@
 package com.gu.notifications.events
 
 import java.time.format.DateTimeFormatter
-import java.time.{Duration, ZoneOffset, ZonedDateTime}
+import java.time.{Duration, ZonedDateTime}
 import java.util.concurrent.{ScheduledExecutorService, TimeUnit}
 
 import com.amazonaws.AmazonWebServiceRequest
@@ -103,31 +103,31 @@ class AthenaMetrics {
   }
 
   private def addS3PartitionsToAthenaIndex(
-    now: ZonedDateTime,
-    startOfReportingWindow: ZonedDateTime,
+    reportingWindow: ReportingWindow,
     athenaDatabase: String,
     athenaOutputLocation: String
   )(implicit amazonAthenaAsync: AmazonAthenaAsync, scheduledExecutorService: ScheduledExecutorService
   ): Future[String] = {
     @tailrec
     def addPartitionFrom(fromTime: ZonedDateTime, started: List[Future[String]] = List()): List[Future[String]] = {
-      if (fromTime.isAfter(now)) {
+      if (fromTime.isAfter(reportingWindow.end)) {
         started
       }
       else {
         val integerHour = fromTime.getHour
         val hour = if (integerHour < 10) s"0$integerHour" else integerHour.toString
         val date = toQueryDate(fromTime)
-        val list = startQuery(Query(
-          athenaDatabase,
-          s"""ALTER TABLE raw_events_$stage
-ADD IF NOT EXISTS PARTITION (date='$date', hour=$hour)
-LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMargin, athenaOutputLocation)) :: started
+        val request = s"""
+             |ALTER TABLE raw_events_$stage
+             |ADD IF NOT EXISTS PARTITION (date='$date', hour=$hour)
+             |LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'
+           """.stripMargin
+        val list = startQuery(Query(athenaDatabase, request, athenaOutputLocation)) :: started
         addPartitionFrom(fromTime.plusHours(1), list)
       }
     }
 
-    addPartitionFrom(startOfReportingWindow).reduce((a, b) => a.flatMap(_ => b))
+    addPartitionFrom(reportingWindow.start).reduce((a, b) => a.flatMap(_ => b))
   }
 
   private def routeFromQueryToUpdateDynamoDb(query: Query, startOfReportingWindow: ZonedDateTime)(implicit athenaAsync: AmazonAthenaAsync, dynamoDBAsync: AmazonDynamoDBAsync, scheduledExecutorService: ScheduledExecutorService): Future[Unit] = {
@@ -142,23 +142,33 @@ LOCATION '${envDependencies.ingestLocation}/date=$date/hour=$hour/'""".stripMarg
       })
   }
 
-  def handleRequest()(implicit athenaAsyncClient: AmazonAthenaAsync, scheduledExecutorService: ScheduledExecutorService, dynamoDBAsyncClient: AmazonDynamoDBAsync): Unit = {
-    val now = ZonedDateTime.now(ZoneOffset.UTC)
-    val startOfReportingWindow: ZonedDateTime = now.minus(AthenaMetrics.reportingWindow)
-    val athenaOutputLocation = s"${envDependencies.athenaOutputLocation}/${now.toLocalDate.toString}/${now.getHour}"
+  def handleRequest(reportingWindow: ReportingWindow)
+    (implicit athenaAsyncClient: AmazonAthenaAsync, scheduledExecutorService: ScheduledExecutorService, dynamoDBAsyncClient: AmazonDynamoDBAsync): Unit = {
+    val athenaOutputLocation = s"${envDependencies.athenaOutputLocation}/${reportingWindow.end.toLocalDate.toString}/${reportingWindow.end.getHour}"
     val athenaDatabase = envDependencies.athenaDatabase
 
-    val fetchEventsQuery = Query(athenaDatabase,
-      s"""SELECT notificationid,
-         count(*) AS total,
-         count_if(platform = 'ios') AS ios,
-         count_if(platform = 'android') AS android
-FROM notification_received_${stage.toLowerCase()}
-WHERE partition_date = '${toQueryDate(startOfReportingWindow)}'
-         AND partition_hour >= ${startOfReportingWindow.getHour}
-         AND provider != 'comment'
-GROUP BY  notificationid""".stripMargin, athenaOutputLocation)
-    Await.result(addS3PartitionsToAthenaIndex(now, startOfReportingWindow, athenaDatabase, athenaOutputLocation).flatMap(_ => routeFromQueryToUpdateDynamoDb(fetchEventsQuery, startOfReportingWindow)), duration.Duration(4, TimeUnit.MINUTES))
+    logger.info(s"Processing the reporting window $reportingWindow")
+
+    val request = s"""
+      |SELECT
+      |	notificationid,
+      |	count(*) AS total,
+      |	count_if(platform = 'ios') AS ios,
+      |	count_if(platform = 'android') AS android
+      |FROM
+      |	notification_received_${stage.toLowerCase()}
+      |WHERE
+      |	(('${toQueryDate(reportingWindow.start)}' != '${toQueryDate(reportingWindow.end)}'
+      |		AND partition_date = '${toQueryDate(reportingWindow.end)}'
+      |	) OR (
+      |		partition_date = '${toQueryDate(reportingWindow.start)}'
+      |		AND partition_hour >= ${reportingWindow.start.getHour}
+      |	)) AND (provider != 'comment' OR provider IS NULL)
+      |GROUP BY
+      |	notificationid""".stripMargin
+
+    val fetchEventsQuery = Query(athenaDatabase, request, athenaOutputLocation)
+    Await.result(addS3PartitionsToAthenaIndex(reportingWindow, athenaDatabase, athenaOutputLocation).flatMap(_ => routeFromQueryToUpdateDynamoDb(fetchEventsQuery, reportingWindow.start)), duration.Duration(4, TimeUnit.MINUTES))
   }
 
 }
