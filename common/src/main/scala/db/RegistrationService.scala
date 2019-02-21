@@ -29,18 +29,29 @@ object RegistrationService {
     new RegistrationService[F, Stream](repo)
   }
 
+  def createWithReplica(masterTransactor: Transactor[IO], replicaTransactor: Transactor[IO])(implicit executionContext: ExecutionContext): RegistrationService[IO, Stream] = {
+    val masterRepo = new SqlRegistrationRepository[IO](masterTransactor)
+    val replicaRepo = new SqlRegistrationRepository[IO](replicaTransactor)
+    val compositeRepo = new CompositeRegistrationRepository(masterRepo, replicaRepo)
+    new RegistrationService[IO, Stream](compositeRepo)
+  }
+
   def fromConfig(config: Configuration, applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext): RegistrationService[IO, Stream] = {
 
     implicit val contextShift: ContextShift[IO] = IOContextShift(ec)
 
-    val url = config.get[String]("registration.db.url")
+    val masterUrl = config.get[String]("registration.db.url")
+    val replicaUrl = config.get[String]("registration.db.replicaUrl")
     val user = config.get[String]("registration.db.user")
     val password = config.get[String]("registration.db.password")
     val threads = config.get[Int]("registration.db.maxConnectionPoolSize")
 
-    val jdbcConfig = JdbcConfig("org.postgresql.Driver", url, user, password, threads)
-    val transactor = DatabaseConfig.transactor[IO](jdbcConfig, applicationLifecycle)
+    val masterJdbcConfig = JdbcConfig("org.postgresql.Driver", masterUrl, user, password, threads)
+    val masterTransactor = DatabaseConfig.transactor[IO](masterJdbcConfig, applicationLifecycle)
 
-    apply(transactor)
+    val replicaJdbcConfig = JdbcConfig("org.postgresql.Driver", replicaUrl, user, password, threads)
+    val replicaTransactor = DatabaseConfig.transactor[IO](replicaJdbcConfig, applicationLifecycle)
+
+    createWithReplica(masterTransactor, replicaTransactor)
   }
 }
