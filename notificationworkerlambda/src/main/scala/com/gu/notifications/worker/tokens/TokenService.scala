@@ -7,11 +7,18 @@ import cats.syntax.list._
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidTopics
 import db.{RegistrationService, Topic}
 import fs2.Stream
+import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.ExecutionContextExecutor
-case class NotificationToSend(notification: Notification, token: String, platform: Platform)
+
+case class IndividualNotification(notification: Notification, token: String, platform: Platform)
+
 case class ChunkedTokens(notification: Notification, tokens: List[String], platform: Platform) {
-  def toNotificationToSends: List[NotificationToSend] = tokens.map(NotificationToSend(notification, _, platform))
+  def toNotificationToSends: List[IndividualNotification] = tokens.map(IndividualNotification(notification, _, platform))
+}
+
+object ChunkedTokens {
+  implicit val chunkTokensJf: Format[ChunkedTokens] = Json.format[ChunkedTokens]
 }
 
 trait TokenService[F[_]] {

@@ -12,7 +12,7 @@ import fs2.{Chunk, Sink, Stream}
 import _root_.models.{Platform, ShardedNotification}
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
-import com.gu.notifications.worker.tokens.TokenService
+import com.gu.notifications.worker.tokens.{ChunkedTokens, TokenService}
 
 import collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
@@ -45,15 +45,19 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def handleRequest(event: SQSEvent, context: Context): Unit = {
-    def shardedNotification: Stream[IO, ShardedNotification] = Stream.eval(
+    def eitherShardOrChunks: Stream[IO, Either[ShardedNotification, ChunkedTokens]] = Stream.eval(
       for {
         json <- event.getRecords.asScala.headOption.map(r => IO(r.getBody)).getOrElse(IO.raiseError(new RuntimeException("SQSEvent has no element")))
-        n <- NotificationParser.parseShardedNotification(json)
+        n <- NotificationParser.parseEventNotification(json)
       } yield n
     )
 
-    def reportSuccesses[C <: DeliveryClient](notification: ShardedNotification): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
-      val notificationLog = s"(notification: ${notification.notification.id} ${notification.range})"
+    def reportSuccesses[C <: DeliveryClient](eitherShardOrChunks: Either[ShardedNotification, ChunkedTokens]): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
+      val (notificationId, range) = eitherShardOrChunks match {
+        case Left(shardedNotification) => (shardedNotification.notification.id, shardedNotification.range.toString)
+        case Right(chunkedTokens) => (chunkedTokens.notification.id, chunkedTokens.tokens.size.toString)
+      }
+      val notificationLog = s"(notification: ${notificationId} ${range})"
       input.fold(SendingResults.empty){ case (acc, resp) => SendingResults.aggregate(acc, resp) }
         .evalTap(logInfo(prefix = s"Results $notificationLog: "))
         .to(cloudwatch.sendMetrics(env.stage, platform))
@@ -79,18 +83,23 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
     }
 
     val prog: Stream[IO, Unit] = for {
-      n <- shardedNotification
+      eitherNC <- eitherShardOrChunks
       deliveryService <- Stream.eval(deliveryService)
       tokenService <- Stream.eval(tokenService)
-      notificationLog = s"(notification: ${n.notification.id} ${n.range})"
-      _ = logger.info(s"Sending notification $notificationLog...")
-      chunkedTokens <- tokenService.batchTokens(n.notification, n.range, n.platform.getOrElse(platformFromTopics(n.notification.topic)))
-      chunkedTokensUnchunked = Stream.evalUnChunk(IO.pure(Chunk.seq(chunkedTokens.toNotificationToSends)))
-      resp <- chunkedTokensUnchunked
+      chunkedTokens <- eitherNC match {
+        case Left(n) => {
+          val notificationLog = s"(notification: ${n.notification.id} ${n.range})"
+          logger.info(s"Sending notification $notificationLog...")
+          tokenService.batchTokens(n.notification, n.range, n.platform.getOrElse(platformFromTopics(n.notification.topic)))
+        }
+        case Right(chunkedTokens) => Stream.eval(IO.pure(chunkedTokens))
+      }
+      individualNotifications = Stream.evalUnChunk(IO.pure(Chunk.seq(chunkedTokens.toNotificationToSends)))
+      resp <- individualNotifications
         .map(token => deliveryService.send(token.notification, token.token, token.platform))
         .parJoin(maxConcurrency)
         .evalTap(Reporting.log(s"Sending failure: "))
-        .broadcastTo(reportSuccesses(n), cleanupFailures)
+        .broadcastTo(reportSuccesses(eitherNC), cleanupFailures)
     } yield resp
 
     prog
