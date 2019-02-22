@@ -19,6 +19,19 @@ use std::env;
 use self::rusoto_ssm::GetParametersByPathRequest;
 use postgres::{Connection, TlsMode};
 
+struct ConnectionParameters {
+    jdbc_url: String,
+    user: String,
+    password: String,
+}
+
+fn get_credentials() -> Result<ChainProvider, String> {
+    ProfileProvider::new().map(| mut profile_provider| {
+        profile_provider.set_profile("mobile");
+        ChainProvider::with_profile_provider(profile_provider)
+    }).map_err(|e| e.message)
+}
+
 fn env_var(key: String, default: String) -> String {
     env::var(key).unwrap_or(default)
 }
@@ -26,8 +39,6 @@ fn env_var(key: String, default: String) -> String {
 fn fetch_config(credentials: ChainProvider) -> Result<HashMap<String, String>, String> {
     let mut config = HashMap::new();
 
-    let app = env_var("App".to_string(), "db-cleaner".to_string());
-    let stack = env_var("Stack".to_string(), "mobile".to_string());
     let stage = env_var("Stage".to_string(), "DEV".to_string());
 
     let ssm_client = SsmClient::new_with(
@@ -69,15 +80,30 @@ fn fetch_config(credentials: ChainProvider) -> Result<HashMap<String, String>, S
         },
     }
 
+    if config.is_empty() {
+        error!("No configuration loaded");
+        return Err("Unable to fetch configuration".to_string())
+    }
+
     Ok(config)
 }
 
-pub fn create_connection_url(jdbc_url: &str, user: &str, password: &str, local: bool) -> Result<String, String> {
-    let url = jdbc_url.replace("jdbc:", "");
+fn config_to_connection_parameter(config: HashMap<String, String>) -> Result<ConnectionParameters, String> {
+    config.get("cleaner.registration.db.url").and_then(|jdbc_url| {
+        Some(ConnectionParameters {
+            jdbc_url: jdbc_url.to_owned(),
+            user: config.get("cleaner.registration.db.user")?.to_owned(),
+            password: config.get("cleaner.registration.db.password")?.to_owned(),
+        })
+    }).ok_or("Unable to read the url, user or password from the configuration".to_string())
+}
+
+fn create_connection_url(connection_parameters: ConnectionParameters, local: bool) -> Result<String, String> {
+    let url = connection_parameters.jdbc_url.replace("jdbc:", "");
     match Url::parse(&url) {
         Ok(mut url) => {
-            url.set_username(user);
-            url.set_password(Some(password));
+            url.set_username(&connection_parameters.user);
+            url.set_password(Some(&connection_parameters.password));
             url.set_query(None);
 
             if local { url.set_host(Some("localhost")); };
@@ -90,36 +116,18 @@ pub fn create_connection_url(jdbc_url: &str, user: &str, password: &str, local: 
 }
 
 pub fn lambda<A: gl::AbstractLambdaContext>(e: gl::LambdaInput, context: A) -> Result<gl::LambdaOutput, super::HandlerError> {
-    let mut profileProvider: ProfileProvider = ProfileProvider::new().unwrap(); profileProvider.set_profile("mobile");
-    let credentials = ChainProvider::with_profile_provider(profileProvider);
-    let config = match fetch_config(credentials) {
-        Ok(config) => {
-            info!("Config loaded from SSM: {:?}", config);
-            config
-        },
-        Err(e) => {
-            error!("{}", e);
-            return context.new_error(&e)
+    let result = get_credentials()
+        .and_then(fetch_config)
+        .and_then(config_to_connection_parameter)
+        .and_then(|params| create_connection_url(params, context.is_local()))
+        .and_then(|connection_url| Connection::connect(connection_url, TlsMode::None).map_err(|e| e.to_string()))
+        .and_then(|connection| connection.execute("SELECT 1;", &[]).map_err(|e| e.to_string()));
+
+    match result {
+        Ok(row_count) => {
+            info!("Deleted {} rows", row_count);
+            Ok(gl::LambdaOutput {})
         }
-    };
-
-    let jdbc_url = config.get("cleaner.registration.db.url").unwrap();
-    let user = config.get("cleaner.registration.db.user").unwrap();
-    let password = config.get("cleaner.registration.db.password").unwrap();
-
-    let connection_url = match create_connection_url(jdbc_url, user, password, context.is_local()) {
-        Ok(url) => url,
-        Err(e) => {
-            error!("{}", e);
-            return context.new_error(&e)
-        }
-    };
-
-    let conn = Connection::connect(connection_url, TlsMode::None).unwrap();
-
-    let affected_rows = conn.execute("SELECT 1;", &[]).unwrap();
-
-    info!("Deleted {} rows", affected_rows);
-
-    Ok(gl::LambdaOutput {})
+        Err(error_string) => context.new_error(&error_string)
+    }
 }

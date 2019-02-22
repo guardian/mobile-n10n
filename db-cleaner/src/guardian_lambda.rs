@@ -28,6 +28,7 @@ impl AbstractLambdaContext for LocalContext {
         "abc".to_string()
     }
     fn new_error(&self, msg: &str) -> Result<LambdaOutput, HandlerError> {
+        error!("{}", msg);
         Ok(LambdaOutput{})
     }
 
