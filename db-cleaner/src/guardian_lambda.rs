@@ -3,6 +3,7 @@ use lambda::error::HandlerError;
 pub trait AbstractLambdaContext {
     fn request_id(&self) -> String;
     fn new_error(&self, msg: &str) -> Result<LambdaOutput, HandlerError>;
+    fn is_local(&self) -> bool;
 }
 
 pub struct AWSContext {
@@ -16,6 +17,8 @@ impl AbstractLambdaContext for AWSContext {
     fn new_error(&self, msg: &str) -> Result<LambdaOutput, HandlerError> {
         Err(self.c.new_error(msg))
     }
+
+    fn is_local(&self) -> bool { false }
 }
 
 pub struct LocalContext {}
@@ -27,6 +30,8 @@ impl AbstractLambdaContext for LocalContext {
     fn new_error(&self, msg: &str) -> Result<LambdaOutput, HandlerError> {
         Ok(LambdaOutput{})
     }
+
+    fn is_local(&self) -> bool { true }
 }
 
 #[derive(Deserialize, Clone)]
