@@ -59,33 +59,30 @@ fn fetch_config(credentials: ChainProvider) -> Result<HashMap<String, String>, S
 
     };
 
-    match ssm_client.get_parameters_by_path(req).sync() {
-        Ok(result) => {
-            match result.parameters {
-                Some(parameters) => {
-                    for parameter in parameters {
-                        if parameter.name.is_some() && parameter.value.is_some() {
-                            let prefixLength = path.len() + 1; // +1 for the extra slash
-                            let name = parameter.name.unwrap()[prefixLength..].to_string();
-                            config.insert(name, parameter.value.unwrap());
-                        }
-                    }
-                },
-                None => error!("No parameter found"),
-            };
-        }
-        Err(error) => {
+    ssm_client.get_parameters_by_path(req).sync()
+        .map_err(|error| {
             error!("Error while fetching parameter: {}", error);
-            return Err("Unable to fetch configuration".to_string())
-        },
-    }
-
-    if config.is_empty() {
-        error!("No configuration loaded");
-        return Err("Unable to fetch configuration".to_string())
-    }
-
-    Ok(config)
+            "Unable to fetch configuration".to_string()
+        })
+        .and_then(|result| {
+            result.parameters.ok_or("No Parameter Found".to_string())
+        })
+        .map(|parameters| {
+            for parameter in parameters {
+                if parameter.name.is_some() && parameter.value.is_some() {
+                    let prefixLength = path.len() + 1; // +1 for the extra slash
+                    let name = parameter.name.unwrap()[prefixLength..].to_string();
+                    config.insert(name, parameter.value.unwrap());
+                }
+            }
+            config
+        })
+        .and_then(|config| {
+            if config.is_empty() {
+                error!("No configuration loaded");
+                Err("Unable to fetch configuration".to_string())
+            } else { Ok(config) }
+        })
 }
 
 fn config_to_connection_parameter(config: HashMap<String, String>) -> Result<ConnectionParameters, String> {
