@@ -13,8 +13,7 @@ Mappings:
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
       DailyNewsstandPushCount: 0
-      LogGroupName: mobile-notifications-notification-CODE
-      MetricNamespace: CODE/notifications
+      MetricNamespace: Notifications/CODE/notifications
       NewsstandNotificationMetricName: SuccessfulNewstandSend
       NewsstandNotificationAlarmThreshold: 0
       NotificationAlarmPeriod: 1200
@@ -25,8 +24,7 @@ Mappings:
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
       DailyNewsstandPushCount: 1
-      LogGroupName: mobile-notifications-notification-PROD
-      MetricNamespace: PROD/notifications
+      MetricNamespace: Notifications/PROD/notifications
       NewsstandNotificationMetricName: SuccessfulNewstandSend
       NewsstandNotificationAlarmThreshold: 1
       NotificationAlarmPeriod: 1200
@@ -105,52 +103,6 @@ Resources:
         IpProtocol: tcp
         ToPort: 22
       VpcId: !Ref VpcId
-  FailedNotificationsAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmDescription: Raise alarm if notification could not be sent
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 1
-      MetricName: failed_notifications
-      Namespace:
-        !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
-      Period: 300
-      Statistic: SampleCount
-      Threshold: 1
-  FailedNotificationsMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      FilterPattern: ERROR Notification could not be sent
-      LogGroupName:
-        !FindInMap [ StageVariables, !Ref Stage, LogGroupName ]
-      MetricTransformations:
-      - MetricName: failed_notifications
-        MetricNamespace:
-          !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
-        MetricValue: 1
-  FailedNotificationsReportingAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmDescription: Raise alarm if there were problems in reporting about push
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 1
-      MetricName: failed_notifications_reporting
-      Namespace:
-        !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
-      Period: 300
-      Statistic: SampleCount
-      Threshold: 1
-  FailedReportingMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      FilterPattern: ERROR report
-      LogGroupName:
-        !FindInMap [ StageVariables, !Ref Stage, LogGroupName ]
-      MetricTransformations:
-      - MetricName: failed_notification_reporting
-        MetricNamespace:
-          !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
-        MetricValue: 1
   HighCPUAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -432,8 +384,9 @@ Resources:
           - DailyNewsstandPushCount: !FindInMap [ StageVariables, !Ref Stage, DailyNewsstandPushCount ]
       ComparisonOperator: LessThanThreshold
       EvaluationPeriods: 1
-      Namespace:
-        !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
+      Namespace: !Sub
+        - Notifications/$Suffix
+        - Suffix: !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
       MetricName:
         !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ] 
       Period: 86400
