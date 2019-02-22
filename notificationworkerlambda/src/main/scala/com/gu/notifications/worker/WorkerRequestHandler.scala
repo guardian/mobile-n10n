@@ -80,7 +80,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       deliveryService <- Stream.eval(deliveryService)
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Sending notification $notificationLog...")
-      resp <- deliveryService.send(n.notification, n.range, platformFromTopics(n.notification.topic))
+      resp <- deliveryService.send(n.notification, n.range, n.platform.getOrElse(platformFromTopics(n.notification.topic)))
         .evalTap(Reporting.log(s"Sending failure: "))
         .broadcastTo(reportSuccesses(n), cleanupFailures)
     } yield resp

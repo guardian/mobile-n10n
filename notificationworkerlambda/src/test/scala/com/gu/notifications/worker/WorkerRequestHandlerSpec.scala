@@ -85,7 +85,8 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
     )
     val shardedNotification = ShardedNotification(
       notification = notification,
-      range = ShardRange(0, 1)
+      range = ShardRange(0, 1),
+      platform = Some(Android)
     )
 
     val sqsEvent: SQSEvent = {
