@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
 rm -rf target/
+rm -rf lambda/
 mkdir -p target/lambda/release
 mkdir -p target/package/db-cleaner
 mkdir -p target/package/cfn
+mkdir -p lambda/release/ # for the docker image to write the file
 cp riff-raff.yaml target/package/riff-raff.yaml
 cp cfn.yaml target/package/cfn/cfn.yaml
 
@@ -21,8 +23,7 @@ cat > target/build.json << EOF
 }
 EOF
 
-echo running docker run --rm -v ${PWD}:/code softprops/lambda-rust:latest
-docker run --rm -v ${PWD}:/code softprops/lambda-rust:latest
+docker run --rm -v ${PWD}:/code softprops/lambda-rust:0.2.0-rust-1.31.1
 
 cd target
 cp lambda/release/bootstrap package/db-cleaner/bootstrap
