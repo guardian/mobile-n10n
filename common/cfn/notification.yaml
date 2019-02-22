@@ -13,7 +13,7 @@ Mappings:
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
       DailyNewsstandPushCount: 0
-      MetricNamespace: Notifications/CODE/notifications
+      MetricNamespace: Notifications/CODE/notification
       NewsstandNotificationMetricName: SuccessfulNewstandSend
       NewsstandNotificationAlarmThreshold: 0
       NotificationAlarmPeriod: 1200
@@ -24,7 +24,7 @@ Mappings:
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
       DailyNewsstandPushCount: 1
-      MetricNamespace: Notifications/PROD/notifications
+      MetricNamespace: Notifications/PROD/notification
       NewsstandNotificationMetricName: SuccessfulNewstandSend
       NewsstandNotificationAlarmThreshold: 1
       NotificationAlarmPeriod: 1200
@@ -384,9 +384,7 @@ Resources:
           - DailyNewsstandPushCount: !FindInMap [ StageVariables, !Ref Stage, DailyNewsstandPushCount ]
       ComparisonOperator: LessThanThreshold
       EvaluationPeriods: 1
-      Namespace: !Sub
-        - Notifications/$Suffix
-        - Suffix: !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
+      Namespace: !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
       MetricName:
         !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ] 
       Period: 86400
