@@ -18,6 +18,12 @@ Parameters:
   DeployBucket:
     Description: Bucket where RiffRaff uploads artifacts on deploy
     Type: String
+  VpcSubnets:
+    Description: Subnets to use in the VPC
+    Type: List<AWS::EC2::Subnet::Id>
+  VPCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The default security group of the VPC
 Resources:
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -52,10 +58,18 @@ Resources:
             Statement:
               Action:
                 - ssm:GetParametersByPath
-                - ssm:GetParameter
               Effect: Allow
               Resource:
-                !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers/*
+                !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
+        - PolicyName: VPC
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - ec2:DescribeNetworkInterfaces
+                - ec2:DeleteNetworkInterface
+              Resource: "*"
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -75,6 +89,10 @@ Resources:
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 60
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref VPCSecurityGroup
+        SubnetIds: !Ref VpcSubnets
 
   DailyEvent:
     Type: AWS::Events::Rule
