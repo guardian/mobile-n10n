@@ -98,11 +98,13 @@ fn create_connection_url(connection_parameters: ConnectionParameters, local: boo
     let url = connection_parameters.jdbc_url.replace("jdbc:", "");
     match Url::parse(&url) {
         Ok(mut url) => {
-            url.set_username(&connection_parameters.user);
-            url.set_password(Some(&connection_parameters.password));
+            url.set_username(&connection_parameters.user).map_err(|_| "Unable to set the user name of the database URL")?;
+            url.set_password(Some(&connection_parameters.password)).map_err(|_| "Unable to set the password of the database URL")?;
             url.set_query(None);
 
-            if local { url.set_host(Some("localhost")); };
+            if local {
+                url.set_host(Some("localhost")).map_err(|e| e.to_string())?;
+            };
 
             Ok(url.as_str().to_string())
         }
@@ -169,6 +171,7 @@ mod test_create_connection_url {
     }
 }
 
+#[cfg(test)]
 mod test_config_to_connection_parameter {
     use super::*;
 

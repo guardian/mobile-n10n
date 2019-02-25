@@ -24,7 +24,7 @@ pub struct LambdaOutput {
 
 fn main() -> Result<(), Box<dyn Error>> {
 
-    simple_logger::init_with_level(log::Level::Info);
+    simple_logger::init_with_level(log::Level::Info)?;
 
     if env::var("AWS_REGION").is_err() {
         info!("Using local context");
