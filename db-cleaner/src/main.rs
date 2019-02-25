@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handler(e: guardian_lambda::LambdaInput, c: lambda::Context) -> Result<guardian_lambda::LambdaOutput, HandlerError> {
-    let a = guardian_lambda::AWSContext { c };
-    cleaner::lambda(e, a)
+fn handler(_e: guardian_lambda::LambdaInput, c: lambda::Context) -> Result<guardian_lambda::LambdaOutput, HandlerError> {
+    let aws_context = guardian_lambda::AWSContext { c };
+    cleaner::lambda(e, aws_context)
 }

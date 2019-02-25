@@ -70,8 +70,8 @@ fn fetch_config(credentials: ChainProvider) -> Result<HashMap<String, String>, S
         .map(|parameters| {
             for parameter in parameters {
                 if parameter.name.is_some() && parameter.value.is_some() {
-                    let prefixLength = path.len() + 1; // +1 for the extra slash
-                    let name = parameter.name.unwrap()[prefixLength..].to_string();
+                    let prefix_length = path.len() + 1; // +1 for the extra slash
+                    let name = parameter.name.unwrap()[prefix_length..].to_string();
                     config.insert(name, parameter.value.unwrap());
                 }
             }
