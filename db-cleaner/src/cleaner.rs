@@ -1,5 +1,3 @@
-use super::guardian_lambda as gl;
-
 extern crate rusoto_core;
 extern crate rusoto_ssm;
 extern crate rusoto_credential;
@@ -112,21 +110,13 @@ fn create_connection_url(connection_parameters: ConnectionParameters, local: boo
 
 }
 
-pub fn lambda<A: gl::AbstractLambdaContext>(e: gl::LambdaInput, context: A) -> Result<gl::LambdaOutput, super::HandlerError> {
-    let result = get_credentials()
+pub fn delete_outdated_rows(local_context: bool) -> Result<u64, String> {
+    get_credentials()
         .and_then(fetch_config)
         .and_then(config_to_connection_parameter)
-        .and_then(|params| create_connection_url(params, context.is_local()))
+        .and_then(|params| create_connection_url(params, local_context))
         .and_then(|connection_url| Connection::connect(connection_url, TlsMode::None).map_err(|e| e.to_string()))
-        .and_then(|connection| connection.execute("SELECT 1;", &[]).map_err(|e| e.to_string()));
-
-    match result {
-        Ok(row_count) => {
-            info!("Deleted {} rows", row_count);
-            Ok(gl::LambdaOutput {})
-        }
-        Err(error_string) => context.new_error(&error_string)
-    }
+        .and_then(|connection| connection.execute("SELECT 1;", &[]).map_err(|e| e.to_string()))
 }
 
 #[cfg(test)]

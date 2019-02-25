@@ -9,10 +9,18 @@ extern crate simple_logger;
 use std::error::Error;
 use std::env;
 
-mod guardian_lambda;
 mod cleaner;
 
 use lambda::error::HandlerError;
+
+#[derive(Deserialize, Clone)]
+pub struct LambdaInput {
+}
+
+#[derive(Serialize, Clone)]
+pub struct LambdaOutput {
+}
+
 
 fn main() -> Result<(), Box<dyn Error>> {
 
@@ -20,10 +28,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if env::var("AWS_REGION").is_err() {
         info!("Using local context");
-        let a = guardian_lambda::LocalContext {};
-        let e = guardian_lambda::LambdaInput {};
-        match cleaner::lambda(e, a) {
-            Ok(result) => info!("Success"),
+        match cleaner::delete_outdated_rows(true) {
+            Ok(row_count) => info!("Deleted {} rows", row_count),
             Err(e) => error!("{}", e),
         };
         return Ok(());
@@ -34,7 +40,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handler(_e: guardian_lambda::LambdaInput, c: lambda::Context) -> Result<guardian_lambda::LambdaOutput, HandlerError> {
-    let aws_context = guardian_lambda::AWSContext { c };
-    cleaner::lambda(e, aws_context)
+fn handler(_e: LambdaInput, context: lambda::Context) -> Result<LambdaOutput, HandlerError> {
+    match cleaner::delete_outdated_rows(false) {
+        Ok(row_count) => {
+            info!("Deleted {} rows", row_count);
+            Ok(LambdaOutput {})
+        }
+        Err(error_string) => Err(context.new_error(&error_string))
+    }
 }
