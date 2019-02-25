@@ -64,8 +64,11 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
             case de: DeliveryException => de
             case NonFatal(e) => GenericFailure(notification.id, token, e)
           }
-
         }
+        .map( x => {
+          println(x)
+          x
+        })
     }
 
     val payloadF: F[client.Payload] = client

@@ -29,7 +29,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
     "Send one notification" in new WRHSScope {
-      workerRequestHandler.handleRequest(sqsEvent, null)
+      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -44,7 +44,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
         )
 
-      workerRequestHandler.handleRequest(sqsEvent, null)
+      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -59,12 +59,21 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Right(ApnsDeliverySuccess("token", dryRun = true))
         )
 
-      workerRequestHandler.handleRequest(sqsEvent, null)
+      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
       cleaningCallsCount shouldEqual 1
       sendingResults shouldEqual Some(SendingResults(0, 0, 1))
+      tokensToCleanCount shouldEqual 0
+    }
+
+    "Count chunked tokens" in new WRHSScope {
+      workerRequestHandler.handleRequest(chunkedTokensNotification, null)
+      deliveryCallsCount shouldEqual 1
+      cloudwatchCallsCount shouldEqual 1
+      cleaningCallsCount shouldEqual 1
+      sendingResults shouldEqual Some(SendingResults(1, 0, 0))
       tokensToCleanCount shouldEqual 0
     }
   }
@@ -89,11 +98,25 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       range = ShardRange(0, 1),
       platform = Some(Android)
     )
+    val chunkedTokens = ChunkedTokens(
+      notification = notification,
+      range =  ShardRange(0,1),
+      platform = Android,
+      tokens = List("token")
+    )
 
-    val sqsEvent: SQSEvent = {
+    val sqsEventShardNotification: SQSEvent = {
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
       sqsMessage.setBody(Json.stringify(Json.toJson(shardedNotification)))
+      event.setRecords(List(sqsMessage).asJava)
+      event
+    }
+
+    val chunkedTokensNotification: SQSEvent = {
+      val event = new SQSEvent()
+      val sqsMessage = new SQSMessage()
+      sqsMessage.setBody(Json.stringify(Json.toJson(chunkedTokens)))
       event.setRecords(List(sqsMessage).asJava)
       event
     }
