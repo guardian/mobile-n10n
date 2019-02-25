@@ -58,7 +58,7 @@ object Configuration {
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
         dryRun = config.getBoolean("dryrun")
       ),
-      config.getString("delivery.sqsUrl")
+      config.getString("delivery.apnsSqsUrl")
     )
   }
 
@@ -72,7 +72,7 @@ object Configuration {
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
       ),
-      config.getString("delivery.sqsUrl")
+      config.getString("delivery.firebaseSqsUrl")
     )
   }
 
