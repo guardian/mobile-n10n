@@ -1,20 +1,21 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Newsstand, Topic, TopicTypes}
+import java.util.UUID
+
+import _root_.models.{Newsstand, Platform, ShardRange, ShardedNotification, Topic, TopicTypes}
 import cats.effect.{ContextShift, IO, Timer}
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
-import com.gu.notifications.worker.delivery._
-import models.SendingResults
-import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
-import org.slf4j.{Logger, LoggerFactory}
-import fs2.{Chunk, Sink, Stream}
-import _root_.models.{Platform, ShardedNotification}
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
-import com.gu.notifications.worker.tokens.{ChunkedTokens, TokenService}
+import com.gu.notifications.worker.delivery._
+import models.SendingResults
+import com.gu.notifications.worker.tokens.{ChunkedTokens, IndividualNotification, SqsDeliveryService, TokenService}
+import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
+import fs2.{Sink, Stream}
+import org.slf4j.{Logger, LoggerFactory}
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 case class Env(app: String, stack: String, stage: String) {
@@ -34,11 +35,13 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
   def platform: Platform
   def deliveryService: IO[DeliveryService[IO, C]]
   def tokenService: IO[TokenService[IO]]
+  def sqsDeliveryService: IO[SqsDeliveryService[IO]]
   val cleaningClient: CleaningClient
   val cloudwatch: Cloudwatch
-  def maxConcurrency: Int
+  val maxConcurrency: Int
 
   def env = Env()
+
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   implicit val timer: Timer[IO] = IO.timer(ec)
@@ -52,13 +55,9 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       } yield n
     )
 
-    def reportSuccesses[C <: DeliveryClient](eitherShardOrChunks: Either[ShardedNotification, ChunkedTokens]): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
-      val (notificationId, range) = eitherShardOrChunks match {
-        case Left(shardedNotification) => (shardedNotification.notification.id, shardedNotification.range.toString)
-        case Right(chunkedTokens) => (chunkedTokens.notification.id, chunkedTokens.tokens.size.toString)
-      }
+    def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
       val notificationLog = s"(notification: ${notificationId} ${range})"
-      input.fold(SendingResults.empty){ case (acc, resp) => SendingResults.aggregate(acc, resp) }
+      input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
         .evalTap(logInfo(prefix = s"Results $notificationLog: "))
         .to(cloudwatch.sendMetrics(env.stage, platform))
     }
@@ -82,26 +81,51 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends RequestHandler[SQSEvent,
       }
     }
 
-    val prog: Stream[IO, Unit] = for {
-      eitherNC <- eitherShardOrChunks
-      deliveryService <- Stream.eval(deliveryService)
+    def deliverIndividualNotificationStream(individualNotificationStream: Stream[IO, IndividualNotification]): Stream[IO, Either[DeliveryException, C#Success]] = {
+      for {
+        deliveryService <- Stream.eval(deliveryService)
+        resp <- individualNotificationStream.map(individualNotification => deliveryService.send(individualNotification.notification, individualNotification.token, individualNotification.platform))
+          .parJoin(maxConcurrency)
+          .evalTap(Reporting.log(s"Sending failure: "))
+
+      } yield resp
+
+    }
+
+    def deliverShardedNotification(n: ShardedNotification): Stream[IO, Unit] = for {
       tokenService <- Stream.eval(tokenService)
-      chunkedTokens <- eitherNC match {
-        case Left(n) => {
-          val notificationLog = s"(notification: ${n.notification.id} ${n.range})"
-          logger.info(s"Sending notification $notificationLog...")
-          tokenService.batchTokens(n.notification, n.range, n.platform.getOrElse(platformFromTopics(n.notification.topic)))
-        }
-        case Right(chunkedTokens) => Stream.eval(IO.pure(chunkedTokens))
-      }
-      individualNotifications = Stream.evalUnChunk(IO.pure(Chunk.seq(chunkedTokens.toNotificationToSends)))
-      resp <- individualNotifications
-        .map(token => deliveryService.send(token.notification, token.token, token.platform))
-        .parJoin(maxConcurrency)
-        .evalTap(Reporting.log(s"Sending failure: "))
-        .broadcastTo(reportSuccesses(eitherNC), cleanupFailures)
+      notificationLog = s"(notification: ${n.notification.id} ${n.range})"
+      _ = logger.info(s"Sending notification $notificationLog...")
+      platform = n.platform.getOrElse(platformFromTopics(n.notification.topic))
+      resp <- deliverIndividualNotificationStream(tokenService.tokens(n.notification, n.range, platform).map(IndividualNotification(n.notification, _, platform)))
+        .broadcastTo(reportSuccesses(n.notification.id, n.range), cleanupFailures)
     } yield resp
 
+    def queueShardedNotification(n: ShardedNotification): Stream[IO, Either[Throwable, Unit]] = {
+      for {
+        sqsDeliveryService <- Stream.eval(sqsDeliveryService)
+        tokenService <- Stream.eval(tokenService)
+        notificationLog = s"(notification: ${n.notification.id} ${n.range})"
+        _ = logger.info(s"Queuing notification $notificationLog...")
+        resp <- tokenService.tokens(n.notification, n.range, platform).chunkN(10000)
+          .map(tokens => sqsDeliveryService.sending(ChunkedTokens(n.notification, tokens.toList, platform, n.range)))
+          .parJoin(maxConcurrency)
+      } yield resp
+    }
+
+    def deliverChunkedTokens(chunkedTokens: ChunkedTokens): Stream[IO, Unit] = {
+      deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
+        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range), cleanupFailures)
+
+    }
+
+    val prog: Stream[IO, Unit] = for {
+      eitherNC <- eitherShardOrChunks
+      resp <- eitherNC match {
+        case Right(chunkedTokens) => deliverChunkedTokens(chunkedTokens)
+        case Left(shardedNotification) => deliverShardedNotification(shardedNotification)
+      }
+    } yield resp
     prog
       .compile
       .drain

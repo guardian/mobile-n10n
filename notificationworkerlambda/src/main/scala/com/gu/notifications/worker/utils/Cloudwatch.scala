@@ -7,8 +7,6 @@ import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetri
 import com.gu.notifications.worker.models.SendingResults
 import fs2.Sink
 import models.Platform
-import utils.MobileAwsCredentialsProvider
-
 import scala.collection.JavaConverters._
 
 trait Cloudwatch {
@@ -17,11 +15,9 @@ trait Cloudwatch {
 
 class CloudwatchImpl extends Cloudwatch {
 
-  val credentialsProvider = new MobileAwsCredentialsProvider
-
   lazy val cloudwatchClient: AmazonCloudWatch = AmazonCloudWatchClientBuilder
     .standard()
-    .withCredentials(credentialsProvider)
+    .withCredentials(Aws.credentialsProvider)
     .withRegion(Regions.EU_WEST_1)
     .build
 

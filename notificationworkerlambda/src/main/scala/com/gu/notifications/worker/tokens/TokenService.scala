@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContextExecutor
 
 case class IndividualNotification(notification: Notification, token: String, platform: Platform)
 
-case class ChunkedTokens(notification: Notification, tokens: List[String], platform: Platform) {
+case class ChunkedTokens(notification: Notification, tokens: List[String], platform: Platform, range: ShardRange) {
   def toNotificationToSends: List[IndividualNotification] = tokens.map(IndividualNotification(notification, _, platform))
 }
 
@@ -22,28 +22,24 @@ object ChunkedTokens {
 }
 
 trait TokenService[F[_]] {
-
-  def batchTokens(
+  def tokens(
     notification: Notification,
     shardRange: ShardRange,
     platform: Platform
-  ): Stream[F, ChunkedTokens]
-
+  ): Stream[F, String]
 }
-
 class TokenServiceImpl[F[_]](
   registrationService: RegistrationService[F, Stream]
 )(implicit ece: ExecutionContextExecutor,
   contextShift: Concurrent[F],
   F: Async[F],
   T: Timer[F]
-) extends TokenService[F] {
-  def tokens(
+) extends TokenService[F]{
+  override def tokens(
     notification: Notification,
     shardRange: ShardRange,
     platform: Platform
   ): Stream[F, String] = {
-
     val topicsF: F[NonEmptyList[Topic]] = notification
       .topic
       .map(t => Topic(t.fullName))
@@ -55,13 +51,5 @@ class TokenServiceImpl[F[_]](
       topics <- Stream.eval(topicsF)
       res <- registrationService.findTokens(topics, Some(platform), Some(shardRange))
     } yield res
-  }
-
-  def batchTokens(
-    notification: Notification,
-    shardRange: ShardRange,
-    platform: Platform
-  ): Stream[F, ChunkedTokens] = {
-    tokens(notification, shardRange, platform).chunkN(2).map(_.toList).map(ChunkedTokens(notification, _, platform))
   }
 }
