@@ -19,7 +19,9 @@ object NotificationParser {
     IO {
       val json: JsValue = Json.parse(input)
       json.validate[Event] match {
-        case JsSuccess(value, _) => value.range.map(_ => Left(parseShardedNotification(json))).getOrElse(value.tokens.map(_ => Right(parseChunkedTokens(json))).getOrElse(throw new RuntimeException(s"Unable to parse message: not chunks or shard")))
+        case JsSuccess(value, _) => {
+          value.tokens.map(_ => Right(parseChunkedTokens(json))).getOrElse(value.range.map(_ => Left(parseShardedNotification(json))).getOrElse(throw new RuntimeException(s"Unable to parse message: not chunks or shard")))
+        }
         case JsError(errors) => throw new RuntimeException(s"Unable to parse message $errors")
       }
     }

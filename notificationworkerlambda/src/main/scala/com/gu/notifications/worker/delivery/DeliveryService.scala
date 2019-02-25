@@ -7,6 +7,7 @@ import cats.effect._
 import cats.syntax.either._
 import com.gu.notifications.worker.delivery.DeliveryException.{GenericFailure, InvalidPayload}
 import fs2.Stream
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
@@ -65,10 +66,6 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
             case NonFatal(e) => GenericFailure(notification.id, token, e)
           }
         }
-        .map( x => {
-          println(x)
-          x
-        })
     }
 
     val payloadF: F[client.Payload] = client
