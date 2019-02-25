@@ -10,7 +10,6 @@ use url::Url;
 use rusoto_core::Region;
 use rusoto_core::request::HttpClient;
 use rusoto_ssm::SsmClient;
-use rusoto_ssm::GetParameterRequest;
 use crate::cleaner::rusoto_ssm::Ssm;
 use rusoto_credential::ChainProvider;
 use rusoto_credential::ProfileProvider;
@@ -19,6 +18,7 @@ use std::env;
 use self::rusoto_ssm::GetParametersByPathRequest;
 use postgres::{Connection, TlsMode};
 
+#[derive(PartialEq, Debug)]
 struct ConnectionParameters {
     jdbc_url: String,
     user: String,
@@ -126,5 +126,63 @@ pub fn lambda<A: gl::AbstractLambdaContext>(e: gl::LambdaInput, context: A) -> R
             Ok(gl::LambdaOutput {})
         }
         Err(error_string) => context.new_error(&error_string)
+    }
+}
+
+#[cfg(test)]
+mod test_create_connection_url {
+    use super::*;
+
+    #[test]
+    fn test_create_connection_url() {
+        let params = ConnectionParameters {
+            jdbc_url: "jdbc:postgres://somedomain.com/somedatabase?paramThatShouldDisapear".to_string(),
+            user: "user".to_string(),
+            password: "password".to_string(),
+        };
+        let computed_url = create_connection_url(params, false);
+        assert_eq!(computed_url, Ok("postgres://user:password@somedomain.com/somedatabase".to_string()));
+    }
+
+    #[test]
+    fn test_create_connection_url_local() {
+        let params = ConnectionParameters {
+            jdbc_url: "jdbc:postgres://somedomain.com/somedatabase?paramThatShouldDisapear".to_string(),
+            user: "user".to_string(),
+            password: "password".to_string(),
+        };
+        let computed_url = create_connection_url(params, true);
+        assert_eq!(computed_url, Ok("postgres://user:password@localhost/somedatabase".to_string()));
+    }
+
+    #[test]
+    fn test_create_connection_url_invalid_url() {
+        let params = ConnectionParameters {
+            jdbc_url: "jdbc:postgres://somedomain\\.com/somedatabase?paramThatShouldDisapear".to_string(),
+            user: "user".to_string(),
+            password: "password".to_string(),
+        };
+        let computed_url = create_connection_url(params, true);
+        assert_eq!(computed_url.is_err(), true);
+    }
+}
+
+mod test_config_to_connection_parameter {
+    use super::*;
+
+    #[test]
+    fn test_config_to_connection_parameter() {
+        let mut config = HashMap::new();
+        config.insert("cleaner.registration.db.url".to_owned(), "someUrl".to_owned());
+        config.insert("cleaner.registration.db.user".to_owned(), "user".to_owned());
+        config.insert("cleaner.registration.db.password".to_owned(), "password".to_owned());
+
+        let params = config_to_connection_parameter(config);
+        let expected = ConnectionParameters {
+            jdbc_url: "someUrl".to_string(),
+            user: "user".to_string(),
+            password: "password".to_string(),
+        };
+        assert_eq!(params, Ok(expected));
     }
 }
