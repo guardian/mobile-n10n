@@ -111,12 +111,14 @@ fn create_connection_url(connection_parameters: ConnectionParameters, local: boo
 }
 
 pub fn delete_outdated_rows(local_context: bool) -> Result<u64, String> {
+    let request = "delete from registrations.registrations where lastmodified <= now() - interval '120 days';";
+
     get_credentials()
         .and_then(fetch_config)
         .and_then(config_to_connection_parameter)
         .and_then(|params| create_connection_url(params, local_context))
         .and_then(|connection_url| Connection::connect(connection_url, TlsMode::None).map_err(|e| e.to_string()))
-        .and_then(|connection| connection.execute("SELECT 1;", &[]).map_err(|e| e.to_string()))
+        .and_then(|connection| connection.execute(request, &[]).map_err(|e| e.to_string()))
 }
 
 #[cfg(test)]
