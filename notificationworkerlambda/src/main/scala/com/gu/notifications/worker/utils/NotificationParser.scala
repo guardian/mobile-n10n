@@ -1,6 +1,5 @@
 package com.gu.notifications.worker.utils
 
-import cats.effect.IO
 import com.gu.notifications.worker.tokens.ChunkedTokens
 import models.{ShardRange, ShardedNotification}
 import play.api.libs.json.{Format, JsError, JsSuccess, JsValue, Json}
@@ -15,16 +14,15 @@ object Event {
 }
 
 object NotificationParser {
-  def parseEventNotification(input: String): IO[Either[ShardedNotification, ChunkedTokens]] = {
-    IO {
-      val json: JsValue = Json.parse(input)
-      json.validate[Event] match {
-        case JsSuccess(value, _) => {
-          value.tokens.map(_ => Right(parseChunkedTokens(json))).getOrElse(value.range.map(_ => Left(parseShardedNotification(json))).getOrElse(throw new RuntimeException(s"Unable to parse message: not chunks or shard")))
-        }
-        case JsError(errors) => throw new RuntimeException(s"Unable to parse message $errors")
+  def parseEventNotification(input: String): Either[ShardedNotification, ChunkedTokens] = {
+    val json: JsValue = Json.parse(input)
+    json.validate[Event] match {
+      case JsSuccess(value, _) => {
+        value.tokens.map(_ => Right(parseChunkedTokens(json))).getOrElse(value.range.map(_ => Left(parseShardedNotification(json))).getOrElse(throw new RuntimeException(s"Unable to parse message: not chunks or shard")))
       }
+      case JsError(errors) => throw new RuntimeException(s"Unable to parse message $errors")
     }
+
   }
 
   private def parseChunkedTokens(json: JsValue): ChunkedTokens = {
