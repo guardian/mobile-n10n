@@ -36,7 +36,43 @@ fn env_var(key: String, default: String) -> String {
 }
 
 fn fetch_config(credentials: ChainProvider) -> Result<HashMap<String, String>, String> {
-    let mut config = HashMap::new();
+
+    fn recursive_fetch(
+        ssm_client: SsmClient,
+        path: String,
+        mut current_config: HashMap<String, String>,
+        next_token: Option<String>
+    ) -> Result<HashMap<String, String>, String> {
+        let req = GetParametersByPathRequest {
+            max_results: None,
+            next_token: next_token,
+            parameter_filters: None,
+            path: path.to_string(),
+            recursive: Some(true),
+            with_decryption: Some(true),
+
+        };
+
+        ssm_client.get_parameters_by_path(req).sync()
+            .map_err(|error| {
+                error!("Error while fetching parameter: {}", error);
+                "Unable to fetch configuration".to_string()
+            })
+            .and_then(|result| {
+                for parameter in result.parameters.unwrap_or(Vec::new()) {
+                    if parameter.name.is_some() && parameter.value.is_some() {
+                        let prefix_length = path.len() + 1; // +1 for the extra slash
+                        let name = parameter.name.unwrap()[prefix_length..].to_string();
+                        current_config.insert(name, parameter.value.unwrap());
+                    }
+                }
+
+                match result.next_token {
+                    Some(next_token) => recursive_fetch(ssm_client, path, current_config, Some(next_token)),
+                    None => Ok(current_config)
+                }
+            })
+    };
 
     let stage = env_var("Stage".to_string(), "DEV".to_string());
 
@@ -48,39 +84,14 @@ fn fetch_config(credentials: ChainProvider) -> Result<HashMap<String, String>, S
 
     let path: String = "/notifications/".to_owned() + &stage + "/workers";
 
-    let req = GetParametersByPathRequest {
-        max_results: None,
-        next_token: None,
-        parameter_filters: None,
-        path: path.to_string(),
-        recursive: Some(true),
-        with_decryption: Some(true),
+    let config = HashMap::new();
 
-    };
-
-    ssm_client.get_parameters_by_path(req).sync()
-        .map_err(|error| {
-            error!("Error while fetching parameter: {}", error);
-            "Unable to fetch configuration".to_string()
-        })
-        .and_then(|result| {
-            result.parameters.ok_or("No Parameter Found".to_string())
-        })
-        .map(|parameters| {
-            for parameter in parameters {
-                if parameter.name.is_some() && parameter.value.is_some() {
-                    let prefix_length = path.len() + 1; // +1 for the extra slash
-                    let name = parameter.name.unwrap()[prefix_length..].to_string();
-                    config.insert(name, parameter.value.unwrap());
-                }
-            }
-            config
-        })
-        .and_then(|config| {
-            if config.is_empty() {
+    recursive_fetch(ssm_client, path, config, None)
+        .and_then(|current_config| {
+            if current_config.is_empty() {
                 error!("No configuration loaded");
                 Err("Unable to fetch configuration".to_string())
-            } else { Ok(config) }
+            } else { Ok(current_config) }
         })
 }
 
