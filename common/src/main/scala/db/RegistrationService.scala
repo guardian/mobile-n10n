@@ -41,7 +41,7 @@ object RegistrationService {
     implicit val contextShift: ContextShift[IO] = IOContextShift(ec)
 
     val masterUrl = config.get[String]("registration.db.url")
-    val replicaUrl = config.get[String]("registration.db.replicaUrl")
+    //val replicaUrl = config.get[String]("registration.db.replicaUrl")
     val user = config.get[String]("registration.db.user")
     val password = config.get[String]("registration.db.password")
     val threads = config.get[Int]("registration.db.maxConnectionPoolSize")
@@ -49,9 +49,10 @@ object RegistrationService {
     val masterJdbcConfig = JdbcConfig("org.postgresql.Driver", masterUrl, user, password, threads)
     val masterTransactor = DatabaseConfig.transactor[IO](masterJdbcConfig, applicationLifecycle)
 
-    val replicaJdbcConfig = JdbcConfig("org.postgresql.Driver", replicaUrl, user, password, threads)
-    val replicaTransactor = DatabaseConfig.transactor[IO](replicaJdbcConfig, applicationLifecycle)
+    //val replicaJdbcConfig = JdbcConfig("org.postgresql.Driver", replicaUrl, user, password, threads)
+    //val replicaTransactor = DatabaseConfig.transactor[IO](replicaJdbcConfig, applicationLifecycle)
 
-    createWithReplica(masterTransactor, replicaTransactor)
+    //createWithReplica(masterTransactor, replicaTransactor)
+    apply(masterTransactor)
   }
 }
