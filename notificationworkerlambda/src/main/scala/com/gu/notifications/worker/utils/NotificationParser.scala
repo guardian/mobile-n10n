@@ -25,6 +25,16 @@ object NotificationParser {
 
   }
 
+  def parseChunkedTokenEvent(input: String): ChunkedTokens = {
+    val json: JsValue = Json.parse(input)
+    parseChunkedTokens(json)
+  }
+
+  def parseShardNotificationEvent(input: String): ShardedNotification = {
+    val json: JsValue = Json.parse(input)
+    parseShardedNotification(json)
+  }
+
   private def parseChunkedTokens(json: JsValue): ChunkedTokens = {
     json.validate[ChunkedTokens] match {
       case JsSuccess(chunkedTokens, _) => chunkedTokens

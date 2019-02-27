@@ -29,7 +29,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
     "Send one notification" in new WRHSScope {
-      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
+      workerRequestHandler.handleEither(sqsEventShardNotification, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -44,7 +44,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
         )
 
-      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
+      workerRequestHandler.handleEither(sqsEventShardNotification, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -59,7 +59,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Right(ApnsDeliverySuccess("token", dryRun = true))
         )
 
-      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
+      workerRequestHandler.handleEither(sqsEventShardNotification, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -69,7 +69,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
     }
 
     "Count chunked tokens" in new WRHSScope {
-      workerRequestHandler.handleRequest(chunkedTokensNotification, null)
+      workerRequestHandler.handleEither(chunkedTokensNotification, null)
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
       cleaningCallsCount shouldEqual 1
