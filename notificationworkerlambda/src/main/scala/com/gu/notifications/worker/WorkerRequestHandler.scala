@@ -162,7 +162,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
       .unsafeRunSync()
   }
 
-  def handleRequest(event: SQSEvent, context: Context): Unit = {
+  def handleShardedNotification(event: SQSEvent, context: Context): Unit = {
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
       .map(NotificationParser.parseShardNotificationEvent)
@@ -172,9 +172,9 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
       .compile
       .drain
       .unsafeRunSync()
-
-
   }
+
+  def handleRequest(event: SQSEvent, context: Context): Unit = handleShardedNotification(event, context)
   def handleEither(event: SQSEvent, context: Context): Unit = {
     val eitherShardNotificationsOrChunkedTokensStream: Stream[IO, Either[ShardedNotification, ChunkedTokens]] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
