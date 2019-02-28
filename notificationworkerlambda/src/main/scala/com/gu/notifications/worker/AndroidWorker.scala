@@ -16,12 +16,14 @@ class AndroidWorker extends WorkerRequestHandler[FcmClient] {
   val registrationService = RegistrationService(transactor)
   val cleaningClient = new CleaningClientImpl(config.sqsUrl)
   val cloudwatch: Cloudwatch = new CloudwatchImpl
+  val tokenServiceImpl = new TokenServiceImpl[IO](registrationService)
+  val sqsDeliveryServiceImpl = new SqsDeliveryServiceImpl[IO](config.deliverySqsUrl)
 
   override val deliveryService: IO[Fcm[IO]] =
     FcmClient(config.fcmConfig).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(registrationService, c)))
 
-  override val tokenService: IO[TokenService[IO]] = IO.delay(new TokenServiceImpl[IO](registrationService))
+  override val tokenService: IO[TokenService[IO]] = IO.pure(tokenServiceImpl)
   override val maxConcurrency = 100
-  override val sqsDeliveryService: IO[SqsDeliveryService[IO]] = IO.delay(new SqsDeliveryServiceImpl[IO](config.deliverySqsUrl))
+  override val sqsDeliveryService: IO[SqsDeliveryService[IO]] = IO.pure(sqsDeliveryServiceImpl)
 }
 
