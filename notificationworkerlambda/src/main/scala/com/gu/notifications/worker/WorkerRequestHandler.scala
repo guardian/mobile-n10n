@@ -18,17 +18,6 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-case class Env(app: String, stack: String, stage: String) {
-  override def toString: String = s"App: $app, Stack: $stack, Stage: $stage\n"
-}
-
-object Env {
-  def apply(): Env = Env(
-    Option(System.getenv("App")).getOrElse("DEV"),
-    Option(System.getenv("Stack")).getOrElse("DEV"),
-    Option(System.getenv("Stage")).getOrElse("DEV")
-  )
-}
 
 trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
 
@@ -50,9 +39,6 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-
-
 
   def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
     val notificationLog = s"(notification: ${notificationId} ${range})"
@@ -142,26 +128,6 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
     queueShardedNotification(shardNotifications)
   }
 
-  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, ChunkedTokens]) = {
-    for {
-      chunkedTokens <- chunkedTokenStream
-      individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
-      resp <- deliverIndividualNotificationStream(individualNotifications)
-        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range), cleanupFailures)
-    } yield resp
-  }
-
-  def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
-    val chunkedTokenStream: Stream[IO, ChunkedTokens] = Stream.emits(event.getRecords.asScala)
-      .map(r => r.getBody)
-      .map(NotificationParser.parseChunkedTokenEvent)
-
-    deliverChunkedTokens(chunkedTokenStream)
-      .compile
-      .drain
-      .unsafeRunSync()
-  }
-
   def handleShardedNotification(event: SQSEvent, context: Context): Unit = {
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
@@ -175,28 +141,5 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
   }
 
   def handleRequest(event: SQSEvent, context: Context): Unit = handleShardedNotification(event, context)
-  def handleEither(event: SQSEvent, context: Context): Unit = {
-    val eitherShardNotificationsOrChunkedTokensStream: Stream[IO, Either[ShardedNotification, ChunkedTokens]] = Stream.emits(event.getRecords.asScala)
-      .map(r => r.getBody)
-      .map(NotificationParser.parseEventNotification)
 
-    val pipeEitherNCShardNotifications: Pipe[IO, Either[ShardedNotification, ChunkedTokens], Unit] = eitherNC => {
-      eitherNC.collect {
-        case Left(shardedNotification) => shardedNotification
-      }.broadcastThrough(pipeShardNotificationToDeliveries, pipeSharedNotificationsToQueue)
-    }
-
-    val pipeEitherNCChunkedTokenToDeliveries: Pipe[IO, Either[ShardedNotification, ChunkedTokens], Unit] = eitherNC => {
-      deliverChunkedTokens(
-        eitherNC.collect {
-          case (Right(chunkedTokens)) => chunkedTokens
-        })
-    }
-
-    eitherShardNotificationsOrChunkedTokensStream
-      .broadcastThrough(pipeEitherNCShardNotifications, pipeEitherNCChunkedTokenToDeliveries)
-      .compile
-      .drain
-      .unsafeRunSync()
-  }
 }
