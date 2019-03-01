@@ -141,10 +141,6 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           }
         }
       }
-
-      override def sqsDeliveryService: IO[SqsDeliveryService[IO]] = IO.pure(new SqsDeliveryService[IO] {
-        override def sending(chunkedTokens: List[ChunkedTokens]): Stream[IO, Either[Throwable, Unit]] = sqsDeliveries
-      })
     }
   }
 
