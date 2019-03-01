@@ -31,8 +31,8 @@ Parameters:
   FullyQualifiedHandler:
     Description: The full name of the handler, including path, class name and method
     Type: String
-  TokenFullyQualifiedHandler:
-    Description: The full name of the handler for tokens, including path, class name and method
+  SenderFullyQualifiedHandler:
+    Description: The full name of the handler for sending notifications, including path, class name and method
     Type: String
   CleanerQueueArn:
     Type: String
@@ -73,7 +73,7 @@ Resources:
         - Key: App
           Value: !Ref App
 
-  TokenSqs:
+  SenderSqs:
     Type: AWS::SQS::Queue
     Properties:
       VisibilityTimeout: 300
@@ -93,7 +93,7 @@ Resources:
     Type: AWS::IAM::Role
     DependsOn:
     - Sqs
-    - TokenSqs
+    - SenderSqs
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -123,7 +123,7 @@ Resources:
             Action: sqs:*
             Resource:
             - !GetAtt Sqs.Arn
-            - !GetAtt TokenSqs.Arn
+            - !GetAtt SenderSqs.Arn
       - PolicyName: SQSOutput
         PolicyDocument:
           Statement:
@@ -177,7 +177,7 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
-      Description: Consumes queue events and sends notifications
+      Description: Consumes shard events and may send notifications or queue them for sending
       Handler: !Ref FullyQualifiedHandler
       MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
@@ -197,10 +197,10 @@ Resources:
         - Key: App
           Value: !Ref App
 
-  TokenLambda:
+  SenderLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${App}-${Stage}-token
+      FunctionName: !Sub ${App}-${Stage}-sender
       Code:
         S3Bucket:
           Ref: DeployBucket
@@ -210,8 +210,8 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
-      Description: Consumes token events and sends notifications
-      Handler: !Ref TokenFullyQualifiedHandler
+      Description: Sends notifications
+      Handler: !Ref SenderFullyQualifiedHandler
       MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
@@ -237,16 +237,16 @@ Resources:
       EventSourceArn: !GetAtt Sqs.Arn
       FunctionName: !Sub ${App}-${Stage}
 
-  TokenSqsEventSourceMapping:
+  SenderSqsEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     DependsOn:
-      - TokenSqs
-      - TokenLambda
+      - SenderSqs
+      - SenderLambda
     Properties:
       BatchSize: 1
       Enabled: True
-      EventSourceArn: !GetAtt TokenSqs.Arn
-      FunctionName: !Sub ${App}-${Stage}-token
+      EventSourceArn: !GetAtt SenderSqs.Arn
+      FunctionName: !Sub ${App}-${Stage}-sender
 
   ThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -264,15 +264,15 @@ Resources:
       Statistic: Sum
       Threshold: 0
 
-  TokenThrottleAlarm:
+  SenderThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
-      AlarmDescription: !Sub Triggers if the ${App} token lambda is throttled in ${Stage}
+      AlarmDescription: !Sub Triggers if the ${App} sender lambda is throttled in ${Stage}
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${App}-${Stage}-token
+          Value: !Sub ${App}-${Stage}-sender
       EvaluationPeriods: 1
       MetricName: Throttles
       Namespace: AWS/Lambda
@@ -297,15 +297,15 @@ Resources:
       Threshold: 0
       TreatMissingData: notBreaching
 
-  TokenErrorAlarm:
+  SenderErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
-      AlarmDescription: !Sub Triggers if the ${App} token lambda errors in ${Stage}
+      AlarmDescription: !Sub Triggers if the ${App} sender lambda errors in ${Stage}
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${App}-${Stage}-token
+          Value: !Sub ${App}-${Stage}-sender
       EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
@@ -332,12 +332,12 @@ Resources:
       Threshold: 0
       TreatMissingData: breaching
 
-  TokenTooFewInvocationsAlarm:
+  SenderTooFewInvocationsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
       ActionsEnabled: !If [IsProdStage, true, false]
-      AlarmDescription: !Sub Triggers if the ${App} tokenlambda is not frequently invoked in ${Stage}
+      AlarmDescription: !Sub Triggers if the ${App} senderlambda is not frequently invoked in ${Stage}
       ComparisonOperator: LessThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
