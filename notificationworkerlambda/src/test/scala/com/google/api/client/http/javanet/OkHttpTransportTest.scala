@@ -120,15 +120,15 @@ class OkHttpTransportTest extends Specification with Matchers {
       val (okResponse: LowLevelHttpResponse, netResponse: LowLevelHttpResponse) = fetch("https://www.theguardian.com")
 
       HttpResponseMatcher(okResponse) must beEqualTo(HttpResponseMatcher(netResponse))
-    }
+    }.pendingUntilFixed
     "match on 200" in new Client {
       val (okResponse: LowLevelHttpResponse, netResponse: LowLevelHttpResponse) = fetch("https://www.theguardian.com/_not_found")
       HttpResponseMatcher(okResponse) must beEqualTo(HttpResponseMatcher(netResponse))
-    }
+    }.pendingUntilFixed
     "post" in new Client {
       val (okResponse: LowLevelHttpResponse, netResponse: LowLevelHttpResponse) = post("https://www.theguardian.com", "{}")
       HttpResponseMatcher(okResponse) must beEqualTo(HttpResponseMatcher(netResponse))
-    }
+    }.pendingUntilFixed
   }
 
 
