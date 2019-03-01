@@ -57,6 +57,16 @@ Resources:
         - Key: App
           Value: !Ref App
 
+  SenderDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
   Sqs:
     Type: AWS::SQS::Queue
     Properties:
@@ -79,7 +89,7 @@ Resources:
       VisibilityTimeout: 300
       MessageRetentionPeriod: 3600 # 1 hour
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt Dlq.Arn
+        deadLetterTargetArn: !GetAtt SenderDlq.Arn
         maxReceiveCount: 5
       Tags:
         - Key: Stage
@@ -116,6 +126,7 @@ Resources:
             - logs:PutLogEvents
             Resource:
             - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${App}-${Stage}:*"
+            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${App}-sender-${Stage}:*"
       - PolicyName: SQSInput
         PolicyDocument:
           Statement:
@@ -200,7 +211,7 @@ Resources:
   SenderLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${App}-${Stage}-sender
+      FunctionName: !Sub ${App}-sender-${Stage}
       Code:
         S3Bucket:
           Ref: DeployBucket
@@ -246,7 +257,7 @@ Resources:
       BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt SenderSqs.Arn
-      FunctionName: !Sub ${App}-${Stage}-sender
+      FunctionName: !Sub ${App}-sender-${Stage}
 
   ThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -272,7 +283,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${App}-${Stage}-sender
+          Value: !Sub ${App}-sender-${Stage}
       EvaluationPeriods: 1
       MetricName: Throttles
       Namespace: AWS/Lambda
@@ -305,7 +316,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${App}-${Stage}-sender
+          Value: !Sub ${App}-sender-${Stage}
       EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
@@ -341,7 +352,7 @@ Resources:
       ComparisonOperator: LessThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${App}-${Stage}
+          Value: !Sub ${App}-sender-${Stage}
       EvaluationPeriods: 1
       MetricName: Invocations
       Namespace: AWS/Lambda

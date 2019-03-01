@@ -25,8 +25,6 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def deliveryService: IO[DeliveryService[IO, C]]
 
-  def sqsDeliveryService: IO[SqsDeliveryService[IO]]
-
   val cleaningClient: CleaningClient
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int

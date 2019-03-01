@@ -7,7 +7,7 @@ deployments:
     app: notificationworkerlambda
     parameters:
       bucket: mobile-notifications-dist
-      functionNames: [ios-notification-worker-, android-notification-worker-, registration-cleaning-worker-]
+      functionNames: [ios-notification-worker-, ios-notification-worker-sender-, android-notification-worker-sender-, android-notification-worker-, registration-cleaning-worker-]
       fileName: notificationworkerlambda.jar
       prefixStack: false
     dependencies: [ios-notification-worker-cfn, android-notification-worker-cfn, registration-cleaning-worker-cfn]
