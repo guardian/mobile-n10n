@@ -4,21 +4,20 @@ import cats.effect.IO
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.sqs.{AmazonSQS, AmazonSQSClient}
 import com.gu.notifications.worker.models.InvalidTokens
+import com.gu.notifications.worker.utils.Aws
 import fs2.{Chunk, Sink}
 import org.slf4j.Logger
 import play.api.libs.json.Json
-import utils.MobileAwsCredentialsProvider
 
 trait CleaningClient {
   def sendInvalidTokensToCleaning(implicit logger: Logger): Sink[IO, Chunk[String]]
 }
 
 class CleaningClientImpl(sqsUrl: String) extends CleaningClient {
-  val credentialsProvider = new MobileAwsCredentialsProvider
 
   val sqsClient: AmazonSQS = AmazonSQSClient
     .builder()
-    .withCredentials(credentialsProvider)
+    .withCredentials(Aws.credentialsProvider)
     .withRegion(Regions.EU_WEST_1)
     .build
 

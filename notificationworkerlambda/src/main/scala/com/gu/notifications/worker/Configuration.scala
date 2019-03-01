@@ -10,16 +10,19 @@ import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 sealed trait WorkerConfiguration {
   def jdbcConfig: JdbcConfig
   def sqsUrl: String
+  def deliverySqsUrl: String
 }
 case class ApnsWorkerConfiguration(
   jdbcConfig: JdbcConfig,
   sqsUrl: String,
-  apnsConfig: ApnsConfig
+  apnsConfig: ApnsConfig,
+  deliverySqsUrl: String
 ) extends WorkerConfiguration
 case class FcmWorkerConfiguration(
   jdbcConfig: JdbcConfig,
   sqsUrl: String,
-  fcmConfig: FcmConfig
+  fcmConfig: FcmConfig,
+  deliverySqsUrl: String
 ) extends WorkerConfiguration
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
@@ -54,7 +57,8 @@ object Configuration {
         certificate = config.getString("apns.certificate"),
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
         dryRun = config.getBoolean("dryrun")
-      )
+      ),
+      config.getString("delivery.apnsSqsUrl")
     )
   }
 
@@ -67,7 +71,8 @@ object Configuration {
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
-      )
+      ),
+      config.getString("delivery.firebaseSqsUrl")
     )
   }
 
