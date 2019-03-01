@@ -2,19 +2,19 @@ package com.gu.notifications.worker
 
 import java.util.UUID
 
-import cats.effect.IO
-import com.gu.notifications.worker.cleaning.CleaningClient
-import com.gu.notifications.worker.delivery.{ApnsDeliverySuccess, DeliveryException, DeliveryService}
-import com.gu.notifications.worker.delivery.apns.ApnsClient
-import _root_.models._
-import _root_.models.Link._
 import _root_.models.Importance._
+import _root_.models.Link._
 import _root_.models.TopicTypes._
+import _root_.models._
+import cats.effect.IO
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
+import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
+import com.gu.notifications.worker.delivery.apns.ApnsClient
+import com.gu.notifications.worker.delivery.{ApnsDeliverySuccess, DeliveryException, DeliveryService}
 import com.gu.notifications.worker.models.SendingResults
-import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, TokenService}
+import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService}
 import com.gu.notifications.worker.utils.Cloudwatch
 import fs2.{Chunk, Sink, Stream}
 import org.slf4j.Logger
@@ -25,11 +25,11 @@ import play.api.libs.json.Json
 
 import scala.collection.JavaConverters._
 
-class WorkerRequestHandlerSpec extends Specification with Matchers {
+class SenderRequestHandlerSpec extends Specification with Matchers {
 
-  "the WorkerRequestHandler" should {
+  "the SenderRequestHandler" should {
     "Send one notification" in new WRHSScope {
-      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
+      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -44,7 +44,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
         )
 
-      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
+      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -59,7 +59,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Right(ApnsDeliverySuccess("token", dryRun = true))
         )
 
-      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
+      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -70,12 +70,12 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
   }
 
 
-  trait WRHSScope extends Scope  {
+  trait WRHSScope extends Scope {
 
     val notification = BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       `type` = NotificationType.BreakingNews,
-      title  = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+      title = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
       message = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
@@ -84,23 +84,24 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
-    val shardedNotification = ShardedNotification(
+    val chunkedTokens = ChunkedTokens(
       notification = notification,
       range = ShardRange(0, 1),
-      platform = Some(Android)
+      platform = Android,
+      tokens = List("token")
     )
 
-    val sqsEventShardNotification: SQSEvent = {
+    val chunkedTokensNotification: SQSEvent = {
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
-      sqsMessage.setBody(Json.stringify(Json.toJson(shardedNotification)))
+      sqsMessage.setBody(Json.stringify(Json.toJson(chunkedTokens)))
       event.setRecords(List(sqsMessage).asJava)
       event
     }
 
 
     def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token")))
-    def tokenStream: Stream[IO, String] = Stream("")
+
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 
     var deliveryCallsCount = 0
@@ -109,8 +110,9 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
     var cloudwatchCallsCount = 0
     var sendingResults: Option[SendingResults] = None
 
-    val workerRequestHandler = new WorkerRequestHandler[ApnsClient] {
+    val workerRequestHandler = new SenderRequestHandler[ApnsClient] {
       override def platform: Platform = iOS
+
       override val maxConcurrency = 100
 
       override def deliveryService: IO[DeliveryService[IO, ApnsClient]] = IO.pure(new DeliveryService[IO, ApnsClient] {
@@ -139,10 +141,6 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           }
         }
       }
-
-      override def tokenService: IO[TokenService[IO]] = IO.pure(new TokenService[IO] {
-        override def tokens(notification: Notification, shardRange: ShardRange, platform: Platform): Stream[IO, String] = tokenStream
-      })
 
       override def sqsDeliveryService: IO[SqsDeliveryService[IO]] = IO.pure(new SqsDeliveryService[IO] {
         override def sending(chunkedTokens: List[ChunkedTokens]): Stream[IO, Either[Throwable, Unit]] = sqsDeliveries

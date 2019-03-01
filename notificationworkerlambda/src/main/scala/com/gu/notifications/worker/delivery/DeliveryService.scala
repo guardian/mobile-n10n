@@ -7,7 +7,6 @@ import cats.effect._
 import cats.syntax.either._
 import com.gu.notifications.worker.delivery.DeliveryException.{GenericFailure, InvalidPayload}
 import fs2.Stream
-import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
