@@ -28,7 +28,7 @@ import scala.collection.JavaConverters._
 class WorkerRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
-    "Send one content notification" in new WRHSScope {
+    "Send one notification" in new WRHSScope {
       workerRequestHandler.handleRequest(sqsEventShardNotification(breakingNewsNotification), null)
 
       deliveryCallsCount shouldEqual 1
@@ -41,7 +41,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
     }
     "Queue one content notification" in new WRHSScope {
-      workerRequestHandler.handleRequest(sqsEventShardNotification(contentNNotification), null)
+      workerRequestHandler.handleRequest(sqsEventShardNotification(contentNotification), null)
 
       deliveryCallsCount shouldEqual 0
       cloudwatchCallsCount shouldEqual 0
@@ -103,7 +103,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
-    val contentNNotification = BreakingNewsNotification(
+    val contentNotification = BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd8"),
       `type` = NotificationType.Content,
       title  = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
