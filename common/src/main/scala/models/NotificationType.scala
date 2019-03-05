@@ -10,7 +10,6 @@ object NotificationType {
   case object BreakingNews extends NotificationType
   case object Content extends NotificationType
   case object GoalAlert extends NotificationType
-  case object ElectionsAlert extends NotificationType
   case object LiveEventAlert extends NotificationType
   case object FootballMatchStatus extends NotificationType
   case object NewsstandShard extends NotificationType
@@ -19,7 +18,6 @@ object NotificationType {
     "news" -> BreakingNews,
     "content" -> Content,
     "goal" -> GoalAlert,
-    "election" -> ElectionsAlert,
     "live-notification" -> LiveEventAlert,
     "football-match-status" -> FootballMatchStatus,
     "newsstand-shard" -> NewsstandShard

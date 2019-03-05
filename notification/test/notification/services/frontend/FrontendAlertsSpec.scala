@@ -18,7 +18,8 @@ import play.api.test._
 class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "Frontend alerts notified about notification" should {
     "skip breaking news notification without capi id (i.e. with non-internal Link)" in new FrontendAlertsScope {
-      val push = electionTargetedBreakingNewsPush().copy(
+
+      val push = contentTargetedBreakingNewsPush().copy(
         notification = breakingNewsNotification(validTopics).asInstanceOf[BreakingNewsNotification].copy(link = External("url"))
       )
 
@@ -36,7 +37,7 @@ class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with M
       } { implicit port =>
         WsTestClient.withClient { client =>
           val alerts = new FrontendAlerts(config, client)
-          alerts.sendNotification(electionTargetedBreakingNewsPush()) must beRight.await
+          alerts.sendNotification(contentTargetedBreakingNewsPush()) must beRight.await
         }
       }
     }

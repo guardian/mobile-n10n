@@ -34,7 +34,6 @@ class RegistrationCountSpec extends PlaySpecification with Mockito {
   trait RegistrationCountScope extends Scope {
     val playConfig = PlayConfig(
       "notifications.api.secretKeys" -> List("test"),
-      "notifications.api.electionRestrictedKeys" -> Nil,
       "notifications.api.reportsOnlyKeys" -> Nil
     )
     val configuration = new Configuration(playConfig)
