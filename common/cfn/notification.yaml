@@ -83,6 +83,9 @@ Parameters:
   DistBucket:
     Type: String
     Description: The name of the s3 bucket containing the server artifact
+  S3LoggingBucket:
+    Type: String
+    Description: The name of the s3 bucket containing the access logs
 Resources:
   DnsRecord:
     Type: AWS::Route53::RecordSet
@@ -162,6 +165,12 @@ Resources:
       SecurityGroups:
       - !Ref LoadBalancerSecurityGroup
       Subnets: !Ref PublicSubnets
+      AccessLoggingPolicy:
+        S3BucketName: !Ref S3LoggingBucket
+        S3BucketPrefix: !Sub elb/${DomainName}
+        Enabled: true
+        EmitInterval: 60
+
   LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
