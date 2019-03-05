@@ -28,15 +28,30 @@ import scala.collection.JavaConverters._
 class WorkerRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
-    "Send one notification" in new WRHSScope {
-      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
+    "Send one content notification" in new WRHSScope {
+      workerRequestHandler.handleRequest(sqsEventShardNotification(breakingNewsNotification), null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
       cleaningCallsCount shouldEqual 1
       sendingResults shouldEqual Some(SendingResults(1, 0, 0))
       tokensToCleanCount shouldEqual 0
+      tokenStreamCount shouldEqual 1
+      sqsDeliveriesCount shouldEqual 0
+
     }
+    "Queue one content notification" in new WRHSScope {
+      workerRequestHandler.handleRequest(sqsEventShardNotification(contentNNotification), null)
+
+      deliveryCallsCount shouldEqual 0
+      cloudwatchCallsCount shouldEqual 0
+      cleaningCallsCount shouldEqual 0
+      sendingResults shouldEqual None
+      tokensToCleanCount shouldEqual 0
+      tokenStreamCount shouldEqual 1
+      sqsDeliveriesCount shouldEqual 1
+    }
+
 
     "Clean invalid tokens" in new WRHSScope {
       override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
@@ -44,13 +59,15 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
         )
 
-      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
+      workerRequestHandler.handleRequest(sqsEventShardNotification(breakingNewsNotification), null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
       cleaningCallsCount shouldEqual 1
       sendingResults shouldEqual Some(SendingResults(0, 1, 0))
       tokensToCleanCount shouldEqual 1
+      tokenStreamCount shouldEqual 1
+      sqsDeliveriesCount shouldEqual 0
     }
 
     "Count dry runs" in new WRHSScope {
@@ -59,20 +76,22 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
           Right(ApnsDeliverySuccess("token", dryRun = true))
         )
 
-      workerRequestHandler.handleRequest(sqsEventShardNotification, null)
+      workerRequestHandler.handleRequest(sqsEventShardNotification(breakingNewsNotification), null)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
       cleaningCallsCount shouldEqual 1
       sendingResults shouldEqual Some(SendingResults(0, 0, 1))
       tokensToCleanCount shouldEqual 0
+      tokenStreamCount shouldEqual 1
+      sqsDeliveriesCount shouldEqual 0
     }
   }
 
 
   trait WRHSScope extends Scope  {
 
-    val notification = BreakingNewsNotification(
+    val breakingNewsNotification = BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       `type` = NotificationType.BreakingNews,
       title  = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
@@ -84,13 +103,25 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
     )
-    val shardedNotification = ShardedNotification(
-      notification = notification,
-      range = ShardRange(0, 1),
-      platform = Some(Android)
+    val contentNNotification = BreakingNewsNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd8"),
+      `type` = NotificationType.Content,
+      title  = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+      message = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+      thumbnailUrl = None,
+      sender = "matt.wells@guardian.co.uk",
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      imageUrl = None,
+      importance = Major,
+      topic = List(Topic(Content, "some-content"))
     )
 
-    val sqsEventShardNotification: SQSEvent = {
+    def sqsEventShardNotification(notification: Notification): SQSEvent = {
+      val shardedNotification = ShardedNotification(
+        notification = notification,
+        range = ShardRange(0, 1),
+        platform = Some(Android)
+      )
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
       sqsMessage.setBody(Json.stringify(Json.toJson(shardedNotification)))
@@ -100,13 +131,15 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
 
     def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token")))
-    def tokenStream: Stream[IO, String] = Stream("")
+    def tokenStream: Stream[IO, String] = Stream("token1")
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 
     var deliveryCallsCount = 0
     var cleaningCallsCount = 0
     var tokensToCleanCount = 0
     var cloudwatchCallsCount = 0
+    var tokenStreamCount = 0
+    var sqsDeliveriesCount = 0
     var sendingResults: Option[SendingResults] = None
 
     val workerRequestHandler = new WorkerRequestHandler[ApnsClient] {
@@ -141,11 +174,17 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       }
 
       override def tokenService: IO[TokenService[IO]] = IO.pure(new TokenService[IO] {
-        override def tokens(notification: Notification, shardRange: ShardRange, platform: Platform): Stream[IO, String] = tokenStream
+        override def tokens(notification: Notification, shardRange: ShardRange, platform: Platform): Stream[IO, String] = {
+          tokenStreamCount += 1
+          tokenStream
+        }
       })
 
       override def sqsDeliveryService: IO[SqsDeliveryService[IO]] = IO.pure(new SqsDeliveryService[IO] {
-        override def sending(chunkedTokens: List[ChunkedTokens]): Stream[IO, Either[Throwable, Unit]] = sqsDeliveries
+        override def sending(chunkedTokens: List[ChunkedTokens]): Stream[IO, Either[Throwable, Unit]] = {
+          sqsDeliveriesCount += 1
+          sqsDeliveries
+        }
       })
     }
   }
