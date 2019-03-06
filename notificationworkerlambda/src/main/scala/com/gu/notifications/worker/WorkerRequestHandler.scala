@@ -108,7 +108,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
       .to(sinkLogErrorResults)
   } yield resp
 
-  def shouldDeliverToSqs(shardedNotification: ShardedNotification): Boolean = false
+  def shouldDeliverToSqs(shardedNotification: ShardedNotification): Boolean = shardedNotification.notification.`type` == _root_.models.NotificationType.Content
 
 
   val pipeShardNotificationToDeliveries: Pipe[IO, ShardedNotification, Unit] = allShards => {
