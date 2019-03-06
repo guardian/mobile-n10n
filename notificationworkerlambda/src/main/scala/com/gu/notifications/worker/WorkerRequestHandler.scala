@@ -58,14 +58,6 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
       .to(cleaningClient.sendInvalidTokensToCleaning)
   }
 
-  def platformFromTopics(topics: List[Topic]): Platform = {
-    if (topics.exists(_.`type` == TopicTypes.NewsstandShard)) {
-      Newsstand
-    } else {
-      platform
-    }
-  }
-
   def deliverIndividualNotificationStream(individualNotificationStream: Stream[IO, IndividualNotification]): Stream[IO, Either[DeliveryException, C#Success]] = for {
     deliveryService <- Stream.eval(deliveryService)
     resp <- individualNotificationStream.map(individualNotification => deliveryService.send(individualNotification.notification, individualNotification.token, individualNotification.platform))
@@ -77,7 +69,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
     tokenService <- Stream.eval(tokenService)
     notificationLog = s"(notification: ${shardNotifications.notification.id} ${shardNotifications.range})"
     _ = logger.info(s"Sending notification $notificationLog...")
-    platform = shardNotifications.platform.getOrElse(platformFromTopics(shardNotifications.notification.topic))
+    platform = shardNotifications.platform
     tokenStream = tokenService.tokens(shardNotifications.notification, shardNotifications.range, platform)
     individualNotificationStream = tokenStream.map(IndividualNotification(shardNotifications.notification, _, platform))
     resultStream = deliverIndividualNotificationStream(individualNotificationStream)

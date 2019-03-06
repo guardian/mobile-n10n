@@ -18,6 +18,13 @@ case class ApnsWorkerConfiguration(
   apnsConfig: ApnsConfig,
   deliverySqsUrl: String
 ) extends WorkerConfiguration
+
+case class HarvesterConfiguration(
+  jdbcConfig: JdbcConfig,
+  apnsSqsUrl: String,
+  firebaseSqsUrl: String
+)
+
 case class FcmWorkerConfiguration(
   jdbcConfig: JdbcConfig,
   sqsUrl: String,
@@ -65,6 +72,14 @@ object Configuration {
         dryRun = config.getBoolean("dryrun")
       ),
       config.getString("delivery.apnsSqsUrl")
+    )
+  }
+  def fetchHarvester(): HarvesterConfiguration = {
+    val config = fetchConfiguration()
+    HarvesterConfiguration(
+      jdbcConfig(config),
+      config.getString("delivery.apnsSqsUrl"),
+      config.getString("delivery.firebaseSqsUrl")
     )
   }
 

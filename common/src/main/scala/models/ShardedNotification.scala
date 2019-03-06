@@ -13,7 +13,7 @@ object ShardRange {
 case class ShardedNotification(
   notification: Notification,
   range: ShardRange,
-  platform: Option[Platform]
+  platform: Platform
 )
 
 object ShardedNotification {
