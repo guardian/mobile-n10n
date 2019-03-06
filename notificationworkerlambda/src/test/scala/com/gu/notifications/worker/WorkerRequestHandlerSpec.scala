@@ -181,7 +181,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       })
 
       override def sqsDeliveryService: IO[SqsDeliveryService[IO]] = IO.pure(new SqsDeliveryService[IO] {
-        override def sending(chunkedTokens: List[ChunkedTokens]): Stream[IO, Either[Throwable, Unit]] = {
+        override def sending(chunkedTokens: ChunkedTokens): Stream[IO, Either[Throwable, Unit]] = {
           sqsDeliveriesCount += 1
           sqsDeliveries
         }

@@ -102,8 +102,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
       _ = logger.info(s"Queuing notification $notificationLog...")
       tokens <- tokenService.tokens(n.notification, n.range, platform).chunkN(1000)
     } yield ChunkedTokens(n.notification, tokens.toList, platform, n.range)
-    resp <- chunkedTokens.chunkN(10)
-      .map(_.toList)
+    resp <- chunkedTokens
       .map(sqsDeliveryService.sending)
       .parJoin(maxConcurrency)
       .to(sinkLogErrorResults)
