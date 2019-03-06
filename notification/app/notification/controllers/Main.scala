@@ -40,7 +40,7 @@ final class Main(
   }
 
   def pushNewsstand: Action[AnyContent] = authAction.async { request =>
-    if(request.isPermittedTopic(TopicTypes.Newsstand)){
+    if(request.isPermittedTopic(Topic(TopicTypes.Newsstand, "newsstand"))){
       val id = UUID.randomUUID()
       newsstandSender.sendNotification(id) map { _ =>
         logger.info("Newsstand notification sent")
