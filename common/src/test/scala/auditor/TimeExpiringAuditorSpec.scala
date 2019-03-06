@@ -1,7 +1,7 @@
 package auditor
 
 import models.Topic
-import models.TopicTypes.{ElectionResults, TagKeyword, TagSeries}
+import models.TopicTypes.{TagKeyword, TagSeries}
 import org.joda.time.DateTime
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mutable.Specification
@@ -29,13 +29,11 @@ class TimeExpiringAuditorSpec(implicit ee: ExecutionEnv) extends Specification {
 
   trait TimeExpiringScope extends Scope {
     val referenceTopics = Set(
-      Topic(ElectionResults, "test-topic-1"),
       Topic(TagSeries, "test-series-1"),
       Topic(TagKeyword, "test-series-1")
     )
 
     val otherTopics = Set(
-      Topic(ElectionResults, "test-topic-2"),
       Topic(TagSeries, "test-series-2"),
       Topic(TagKeyword, "test-series-2")
     )

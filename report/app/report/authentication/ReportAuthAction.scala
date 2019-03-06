@@ -7,7 +7,7 @@ import report.services.Configuration
 
 class ReportAuthAction(configuration: Configuration, controllerComponents: ControllerComponents) extends AuthAction(controllerComponents) {
 
-  val allApiKeys = configuration.apiKeys ++ configuration.electionRestrictedApiKeys ++ configuration.reportsOnlyApiKeys
+  val allApiKeys = configuration.apiKeys ++ configuration.reportsOnlyApiKeys
 
   override def validApiKey(apiKey: String): Boolean = allApiKeys.contains(apiKey)
 

@@ -7,7 +7,6 @@ import play.api.libs.json._
 import java.net.URI
 
 import ai.x.play.json.Jsonx
-import models.elections.ElectionResults
 
 sealed trait Notification {
   def id: UUID
@@ -27,7 +26,6 @@ object Notification {
       case n: BreakingNewsNotification => BreakingNewsNotification.jf.writes(n)
       case n: ContentNotification => ContentNotification.jf.writes(n)
       case n: GoalAlertNotification => GoalAlertNotification.jf.writes(n)
-      case n: ElectionNotification => ElectionNotification.jf.writes(n)
       case n: LiveEventNotification => LiveEventNotification.jf.writes(n)
       case n: FootballMatchStatusNotification => FootballMatchStatusNotification.jf.writes(n)
       case n: NewsstandShardNotification => NewsstandShardNotification.jf.writes(n)
@@ -37,7 +35,6 @@ object Notification {
         case BreakingNews => BreakingNewsNotification.jf.reads(json)
         case Content => ContentNotification.jf.reads(json)
         case GoalAlert => GoalAlertNotification.jf.reads(json)
-        case ElectionsAlert => ElectionNotification.jf.reads(json)
         case LiveEventAlert => LiveEventNotification.jf.reads(json)
         case FootballMatchStatus => FootballMatchStatusNotification.jf.reads(json)
         case NewsstandShard => NewsstandShardNotification.jf.reads(json)
@@ -175,27 +172,6 @@ object GoalAlertNotification {
   implicit val jf = Json.format[GoalAlertNotification]
 }
 
-case class ElectionNotification(
-  id: UUID,
-  `type`: NotificationType = ElectionsAlert,
-  sender: String,
-  title: String,
-  message: String,
-  expandedMessage: Option[String],
-  shortMessage: Option[String],
-  importance: Importance,
-  link: Link,
-  resultsLink: Link,
-  results: ElectionResults,
-  topic: List[Topic]
-) extends Notification {
-  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
-}
-
-object ElectionNotification {
-  import JsonUtils._
-  implicit val jf = Json.format[ElectionNotification]
-}
 
 case class LiveEventNotification(
   id: UUID,

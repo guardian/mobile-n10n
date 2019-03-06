@@ -39,19 +39,6 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       status(response) must equalTo(UNAUTHORIZED)
     }
-    "refuse a notification with an election-only key" in new MainScope {
-      val request = electionsAuthenticatedRequest.withBody(breakingNewsNotification(validTopics))
-      val response = main.pushTopics()(request)
-
-      status(response) must equalTo(UNAUTHORIZED)
-    }
-    "successfully send a notification to multiple election topics with an election key" in new MainScope {
-      val request = electionsAuthenticatedRequest.withBody(breakingNewsNotification(validElectionTopics))
-      val response = main.pushTopics()(request)
-
-      status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(validElectionTopics.toSet))
-    }
     "refuse a notification that is sent twice" in new MainScope {
       val request = requestWithValidTopics
       val firstResponse = main.pushTopics()(request)
@@ -181,7 +168,6 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     val conf: Configuration = {
       val m = mock[Configuration]
       m.apiKeys returns List(apiKey)
-      m.electionRestrictedApiKeys returns List(electionsApiKey)
       m
     }
 

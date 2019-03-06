@@ -9,7 +9,6 @@ import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
 import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
 import _root_.models.{Topic, NewsstandShardConfig}
-import _root_.models.TopicTypes.ElectionResults
 import org.joda.time.DateTime
 import controllers.Main
 import play.api.mvc.EssentialFilter
@@ -46,8 +45,7 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
   lazy val auditorGroup: AuditorGroup = {
     AuditorGroup(Set(
       FootballMatchAuditor(new WSPaClient(appConfig.auditorConfiguration.paApiConfig, wsClient)),
-      LiveblogAuditor(wsClient, appConfig.auditorConfiguration.contentApiConfig),
-      TimeExpiringAuditor(Set(Topic(ElectionResults, "us-presidential-2016")), DateTime.parse("2016-11-30T00:00:00Z"))
+      LiveblogAuditor(wsClient, appConfig.auditorConfiguration.contentApiConfig)
     ))
   }
 
