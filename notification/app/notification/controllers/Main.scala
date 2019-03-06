@@ -5,7 +5,7 @@ import java.util.UUID
 import authentication.AuthAction
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
-import models._
+import models.{TopicTypes, _}
 import notification.models.{Push, PushResult}
 import notification.services
 import notification.services.{Configuration, NewsstandSender, NotificationSender}
@@ -39,17 +39,22 @@ final class Main(
     Ok("Good")
   }
 
-  def pushNewsstand: Action[AnyContent] = authAction.async {
-    val id = UUID.randomUUID()
-    newsstandSender.sendNotification(id) map { _ =>
-      logger.info("Newsstand notification sent")
-      metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 1, unit = StandardUnit.Count))
-      Created(toJson(PushResult(id)))
-    } recover {
-      case NonFatal(error) =>
-        logger.error(s"Newsstand notification failed: $error")
-        metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 0, unit = StandardUnit.Count))
-        InternalServerError(s"Newsstand notification failed: $error")
+  def pushNewsstand: Action[AnyContent] = authAction.async { request =>
+    if(request.isPermittedTopic(TopicTypes.Newsstand)){
+      val id = UUID.randomUUID()
+      newsstandSender.sendNotification(id) map { _ =>
+        logger.info("Newsstand notification sent")
+        metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 1, unit = StandardUnit.Count))
+        Created(toJson(PushResult(id)))
+      } recover {
+        case NonFatal(error) =>
+          logger.error(s"Newsstand notification failed: $error")
+          metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 0, unit = StandardUnit.Count))
+          InternalServerError(s"Newsstand notification failed: $error")
+      }
+    }
+    else {
+      Future.successful(Unauthorized(s"This API key is not valid for ${TopicTypes.Newsstand}."))
     }
   }
 
