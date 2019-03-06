@@ -1,7 +1,7 @@
 package report.authentication
 
 import authentication.AuthAction
-import models.Topic
+import models.TopicType
 import play.api.mvc.ControllerComponents
 import report.services.Configuration
 
@@ -11,6 +11,6 @@ class ReportAuthAction(configuration: Configuration, controllerComponents: Contr
 
   override def validApiKey(apiKey: String): Boolean = allApiKeys.contains(apiKey)
 
-  override def isPermittedTopic(apiKey: String): Topic => Boolean =
+  override def isPermittedTopicType(apiKey: String): TopicType => Boolean =
     _ => false
 }

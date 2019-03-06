@@ -40,7 +40,7 @@ final class Main(
   }
 
   def pushNewsstand: Action[AnyContent] = authAction.async { request =>
-    if(request.isPermittedTopic(Topic(TopicTypes.Newsstand, "newsstand"))){
+    if(request.isPermittedTopicType(TopicTypes.Newsstand)){
       val id = UUID.randomUUID()
       newsstandSender.sendNotification(id) map { _ =>
         logger.info("Newsstand notification sent")
@@ -69,8 +69,8 @@ final class Main(
     (topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
-      case _ if !topics.forall{request.isPermittedTopic} =>
-        Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(request.isPermittedTopic)}."))
+      case _ if !topics.forall{topic => request.isPermittedTopicType(topic.`type`)} =>
+        Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
       case _ => pushWithDuplicateProtection(Push(notification.withTopics(topics), topics.toSet, avoidGuardianProvider))
     }) recoverWith {
       case NonFatal(exception) => {
