@@ -1,11 +1,11 @@
 package authentication
 
-import models.Topic
+import models.TopicType
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class RequestWithAuthentication[A](isPermittedTopic: Topic => Boolean, request: Request[A]) extends WrappedRequest[A](request)
+case class RequestWithAuthentication[A](isPermittedTopicType: TopicType => Boolean, request: Request[A]) extends WrappedRequest[A](request)
 
 abstract class AuthAction(controllerComponents: ControllerComponents) extends ActionBuilder[RequestWithAuthentication, AnyContent] with Results {
 
@@ -13,7 +13,7 @@ abstract class AuthAction(controllerComponents: ControllerComponents) extends Ac
 
   def validApiKey(key: String) : Boolean
 
-  def isPermittedTopic(apiKey: String) : Topic => Boolean
+  def isPermittedTopicType(apiKey: String) : TopicType => Boolean
 
   override def parser: BodyParser[AnyContent] = controllerComponents.parsers.defaultBodyParser
 
@@ -21,7 +21,7 @@ abstract class AuthAction(controllerComponents: ControllerComponents) extends Ac
 
   override def invokeBlock[A](request: Request[A], block: RequestWithAuthentication[A] => Future[Result]): Future[Result] = {
     getApiKey(request) match {
-      case Some(apiKey) if validApiKey(apiKey) => block(RequestWithAuthentication(isPermittedTopic(apiKey), request))
+      case Some(apiKey) if validApiKey(apiKey) => block(RequestWithAuthentication(isPermittedTopicType(apiKey), request))
       case _ => Future.successful(Unauthorized("A valid api key is required"))
     }
   }
