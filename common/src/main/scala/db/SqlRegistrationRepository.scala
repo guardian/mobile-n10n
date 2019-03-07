@@ -10,7 +10,7 @@ import cats.data.NonEmptyList
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 import doobie.Fragments
-import models.PlatformCount
+import models.{PlatformCount, TopicCount}
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
@@ -112,5 +112,17 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
     q.query[PlatformCount]
       .unique
       .transact(xa)
+  }
+
+  override def topicCounts: Stream[F, TopicCount] = {
+    sql"""
+         SELECT topic, count(topic) as topic_couunt from registrations
+         GROUP BY topic
+         HAVING count(topic) > 2
+         ORDER BY topic_count
+      """
+        .query[TopicCount]
+        .stream
+        .transact(xa)
   }
 }

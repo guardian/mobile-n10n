@@ -27,6 +27,12 @@ case class FcmWorkerConfiguration(
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
 
+case class TopicCountsConfiguration (
+  jdbcConfig: JdbcConfig,
+  bucketName: String,
+  fileName: String
+)
+
 object Configuration {
 
   private def fetchConfiguration(): Config = {
@@ -81,6 +87,16 @@ object Configuration {
     CleanerConfiguration(
       jdbcConfig(config.getConfig("cleaner"))
     )
+  }
+
+  def fetchTopicCounter(): TopicCountsConfiguration = {
+    val config = fetchConfiguration()
+    val tc = TopicCountsConfiguration(
+      jdbcConfig(config),
+      config.getString("topicCounts.bucket"),
+      config.getString("topicCounts.fileName")
+    )
+    tc
   }
 
 }

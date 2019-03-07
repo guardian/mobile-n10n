@@ -5,7 +5,7 @@ import cats.effect.internals.IOContextShift
 import cats.effect.{Async, ContextShift, IO}
 import doobie.util.transactor.Transactor
 import fs2.Stream
-import models.{Platform, ShardRange, PlatformCount}
+import models.{Platform, PlatformCount, ShardRange, TopicCount}
 import play.api.Configuration
 import play.api.inject.ApplicationLifecycle
 
@@ -19,6 +19,7 @@ class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F
   def remove(sub: Registration): F[Int] = repository.remove(sub)
   def removeAllByToken(token: String): F[Int] = repository.removeByToken(token)
   def countPerPlatformForTopics(topics: NonEmptyList[Topic]): F[PlatformCount] = repository.countPerPlatformForTopics(topics)
+  def topicCounts: S[F, TopicCount] = repository.topicCounts
 }
 
 

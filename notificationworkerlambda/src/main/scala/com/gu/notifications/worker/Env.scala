@@ -5,7 +5,7 @@ case class Env(app: String, stack: String, stage: String) {
 
 object Env {
   def apply(): Env = Env(
-    Option(System.getenv("App")).getOrElse("DEV"),
+    Option(System.getenv("App")).getOrElse("worker"),
     Option(System.getenv("Stack")).getOrElse("DEV"),
     Option(System.getenv("Stage")).getOrElse("DEV")
   )
