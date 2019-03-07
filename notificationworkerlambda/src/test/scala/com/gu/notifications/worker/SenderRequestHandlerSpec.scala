@@ -140,6 +140,8 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
             ()
           }
         }
+
+        override def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable] = throw new RuntimeException()
       }
     }
   }

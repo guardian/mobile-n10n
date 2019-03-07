@@ -1,10 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Consumes events produced by the notification service and sends notifications to individual devices
-Mappings:
-  Constants:
-    App:
-      Value: harvester
+Description: Consumes events produced by the notification service and batches notifications for senders to send
 Parameters:
+  App:
+    Description: App name
+    Type: String
+    Default: harvester
+    AllowedValues:
+      - harvester
   Stack:
     Description: Stack name
     Type: String
@@ -43,7 +45,6 @@ Conditions:
   IsProdStage: !Equals [!Ref Stage, PROD]
 
 Resources:
-
   Dlq:
     Type: AWS::SQS::Queue
     Properties:
@@ -53,7 +54,7 @@ Resources:
         - Key: Stack
           Value: !Ref Stack
         - Key: App
-          Value: !FindInMap [Constants, App, Value]
+          Value: !Ref App
 
   Sqs:
     Type: AWS::SQS::Queue
@@ -69,7 +70,7 @@ Resources:
         - Key: Stack
           Value: !Ref Stack
         - Key: App
-          Value: !FindInMap [Constants, App, Value]
+          Value: !Ref App
 
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -151,7 +152,7 @@ Resources:
         Variables:
           Stage: !Ref Stage
           Stack: !Ref Stack
-          App: !FindInMap [Constants, App, Value]
+          App: !Ref App
       Description: Consumes shard events and may send notifications or queue them for sending
       Handler: com.gu.notifications.worker.Havester::handleRequest
       MemorySize: 3008
@@ -170,7 +171,7 @@ Resources:
         - Key: Stack
           Value: !Ref Stack
         - Key: App
-          Value: !FindInMap [Constants, App, Value]
+          Value: !Ref App
 
   SqsEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping

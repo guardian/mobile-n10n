@@ -171,6 +171,8 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
             ()
           }
         }
+
+        override def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable] = throw new RuntimeException()
       }
 
       override def tokenService: IO[TokenService[IO]] = IO.pure(new TokenService[IO] {

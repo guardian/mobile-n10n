@@ -11,6 +11,11 @@ deployments:
       fileName: notificationworkerlambda.jar
       prefixStack: false
     dependencies: [ios-notification-worker-cfn, android-notification-worker-cfn, registration-cleaning-worker-cfn, topic-counter-cfn]
+  harvester-cfn:
+    type: cloud-formation
+    app: harvester
+    parameters:
+      templatePath: harvester-cfn.yaml
   ios-notification-worker-cfn:
     type: cloud-formation
     app: ios-notification-worker
