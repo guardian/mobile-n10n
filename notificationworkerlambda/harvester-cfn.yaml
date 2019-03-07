@@ -129,17 +129,6 @@ Resources:
             Action: cloudwatch:PutMetricData
             Resource: "*"
 
-  LambdaSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: !Sub Lambda to db in ${Stage}
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-      VpcId: !Ref VpcId
-
   HavesterLambda:
     Type: AWS::Lambda::Function
     Properties:

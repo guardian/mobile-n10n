@@ -10,7 +10,7 @@ deployments:
       functionNames: [ios-notification-worker-, ios-notification-worker-sender-, android-notification-worker-sender-, android-notification-worker-, registration-cleaning-worker-, topic-counter-, mobile-notifications-harvester-]
       fileName: notificationworkerlambda.jar
       prefixStack: false
-    dependencies: [ios-notification-worker-cfn, android-notification-worker-cfn, registration-cleaning-worker-cfn, topic-counter-cfn]
+    dependencies: [ios-notification-worker-cfn, android-notification-worker-cfn, registration-cleaning-worker-cfn, topic-counter-cfn, harvester-cfn]
   harvester-cfn:
     type: cloud-formation
     app: harvester
