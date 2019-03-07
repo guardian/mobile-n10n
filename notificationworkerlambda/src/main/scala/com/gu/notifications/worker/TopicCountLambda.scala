@@ -43,7 +43,7 @@ class TopicCountLambda extends Logging {
 
   def handleRequest() : Unit = {
     logger.info("Handlin request")
-    //opicCounts.handleRequest()
+    topicCounts.handleRequest()
     logger.info("Done")
   }
 
