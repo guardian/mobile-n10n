@@ -1,6 +1,6 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Android, Newsstand, Platform, ShardedNotification, iOS}
+import _root_.models.{Android, Newsstand, Notification, Platform, ShardRange, ShardedNotification, iOS}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -34,41 +34,46 @@ trait HarvesterRequestHandler extends Logging {
     throwables.broadcastTo(logErrors, cloudwatch.sendFailures(env.stage, platform))
   }
 
-  val firebaseSink: Sink[IO, ChunkedTokens] = {
+  def firebaseSink(notification: Notification, range: ShardRange): Sink[IO, String] = {
     val androidSinkErrors = sinkErrors(Android)
-    chunkedTokens => {
-      chunkedTokens.filter(_.platform == Android)
+    tokens => tokens.chunkN(1000)
+        .map(chunk => ChunkedTokens(notification, chunk.toList, Android, range))
         .map(firebaseDeliveryService.sending)
         .parJoin(maxConcurrency)
         .collect {
           case Left(throwable) => throwable
         }
         .to(androidSinkErrors)
-    }
   }
 
-  val apnsSink: Sink[IO, ChunkedTokens] = {
+  def apnsSink(notification: Notification, range: ShardRange, platform: Platform): Sink[IO, String] = {
     val iosSinkErrors = sinkErrors(iOS)
-    chunkedTokens => {
-      chunkedTokens.filter(chunkedTokens => chunkedTokens.platform == iOS || chunkedTokens.platform == Newsstand)
-        .map(apnsDeliveryService.sending)
+    tokens => tokens.chunkN(1000)
+      .map(chunk => ChunkedTokens(notification, chunk.toList, platform, range))
+      .map(apnsDeliveryService.sending)
         .parJoin(maxConcurrency)
         .collect {
           case Left(throwable) => throwable
         }
         .to(iosSinkErrors)
-    }
+
   }
 
   def queueShardedNotification(shardNotifications: Stream[IO, ShardedNotification]): Stream[IO, Unit] = {
-    val chunkedTokenStream = for {
+    for {
       n <- shardNotifications
       platform = n.platform
+      sink: Sink[IO, String] = platform match {
+        case Android => firebaseSink(n.notification, n.range)
+        case _root_.models.iOS => apnsSink(n.notification, n.range, platform)
+        case Newsstand => apnsSink(n.notification, n.range, platform)
+        case _ => throw new Exception("Unknown platform")
+      }
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
-      tokens <- tokenService.tokens(n.notification, n.range, platform).chunkN(1000)
-    } yield ChunkedTokens(n.notification, tokens.toList, platform, n.range)
-    chunkedTokenStream.broadcastTo(firebaseSink, apnsSink)
+      tokens = tokenService.tokens(n.notification, n.range, platform)
+      resp <- tokens.to(sink)
+    } yield resp
   }
 
   def handleHarvesting(event: SQSEvent, context: Context): Unit = {
