@@ -11,18 +11,17 @@ class NotificationAuthAction(configuration: Configuration, controllerComponents:
 
   override def validApiKey(apiKey: String): Boolean = configuration.apiKeys.contains(apiKey) || configuration.newsstandRestrictedApiKeys.contains(apiKey)
 
-  override def isPermittedTopicType(apiKey: String): TopicType => Boolean = {
-    if (configuration.newsstandRestrictedApiKeys.contains(apiKey)) {
-      case Newsstand => true
-      case other =>
-        Logger.warn(s"Received notification of type $other that isn't Newsstand, with the Newsstand api key")
-        true
-    } else {
-      case Newsstand => {
-        Logger.warn(s"Received a Newsstand notification with a non Newsstand api key")
-        true
-      }
-      case _ => true
+  override def isPermittedTopicType(apiKey: String): TopicType => Boolean = { topicType => {
+    def checkApiKeyForTopic(apiKeysForTopic: Set[String], configName: String): Boolean = {
+      val matched = apiKeysForTopic.contains(apiKey)
+      if (!matched) Logger.warn(s"Api key cannot be used for $topicType. Expected in $configName keys")
+      matched
     }
+
+    topicType match {
+      case Newsstand => checkApiKeyForTopic(configuration.newsstandRestrictedApiKeys, "newsstand restricted")
+      case _ => checkApiKeyForTopic(configuration.apiKeys, "api")
+    }
+  }
   }
 }
