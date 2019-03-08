@@ -10,21 +10,21 @@ import models.TopicCount.topicCountJf
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Format
 
+import scala.concurrent.ExecutionContext
+
 class TopicCounts(registrationService: RegistrationService[IO, Stream], topicCountS3: TopicCountS3) extends Logging {
 
   def logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def
-  handleRequest()(implicit format: Format[TopicCount]): IO[PutObjectResult] = {
+  def handleRequest()(implicit format: Format[TopicCount], executionContext: ExecutionContext): Unit = {
 
     logger.info("Fetching topic countrs")
     val topicCountStream = registrationService.topicCounts
     val ioTopicList = topicCountStream.compile.toList.unsafeToFuture
-    val l = ioTopicList.map {
+    ioTopicList.map {
       topicCounts =>
         logger.info(s"Got topic counts ${topicCounts.size}")
         topicCountS3.put(topicCounts)
     }
-    l
  }
 }
