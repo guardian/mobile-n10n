@@ -26,5 +26,6 @@ class TopicCounts(registrationService: RegistrationService[IO, Stream], topicCou
         logger.info(s"Got topic counts ${topicCounts.size}")
         topicCountS3.put(topicCounts)
     }
+    logger.info("Done fetching")
  }
 }
