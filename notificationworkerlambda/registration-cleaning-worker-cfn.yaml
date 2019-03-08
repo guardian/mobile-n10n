@@ -127,45 +127,6 @@ Resources:
         S3Bucket:
           Ref: DeployBucket
         S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
-    CloudWatch
-    Dashboards
-    Alarms
-        28
-        ALARM
-        65
-        INSUFFICIENT
-        70
-        OK
-        Billing
-    Events
-        Rules
-        Event Buses
-    Logs
-        Insights
-    Metrics
-    Favorites
-
-CloudWatchLog Groups/aws/lambda/topic-counter-CODE2019/03/08/[$LATEST]892dfc62cc904742b66b885f3b19f304
-Row
-Text
-Time (UTC +00:00)
-Message
-2019-03-08
-
-12:14:01
-[[37minfo[0m] c.g.AppIdentity$ - Detected the following AppIdentity: AwsIdentity(topic-counter,mobile-notifications,CODE,eu-west-1)
-
-12:14:01
-[[37minfo[0m] c.g.c.ConfigurationLoader$ - Fetching configuration for AwsIdentity(topic-counter,mobile-notifications,CODE,eu-west-1)
-
-12:14:01
-[[37minfo[0m] c.g.c.SSMConfigurationLocation - Attempting to load configuration from SSM for path = /notifications/CODE/workers and region = eu-west-1
-
-12:14:04
-[[37minfo[0m] c.g.n.w.TopicCountLambda - Cunf: TopicCountsConfiguration(JdbcConfig(org.postgresql.Driver,jdbc:postgresql://notifications-registrations-db-private-code.crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsCODE?currentSchema=registrations,worker_user,q!Ej+4ZJ^l<f3933XG<;J>+uQZ<.G7iXi{D,1),mobile-notifications-topics,counts.json)
-
-12:14:04
-[[37minfo[0m] c.z.h.HikariDataSource - HikariPool-1 - Starting...
       Environment:
         Variables:
           Stage: !Ref Stage

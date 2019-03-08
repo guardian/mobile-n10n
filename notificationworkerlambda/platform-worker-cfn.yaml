@@ -34,9 +34,6 @@ Parameters:
   SenderFullyQualifiedHandler:
     Description: The full name of the handler for sending notifications, including path, class name and method
     Type: String
-  CommentCountsFullyQualifiedHandler:
-    Description: The full name of the handler for persisting topic counts, including paths, class name and method
-    Type: String
   CleanerQueueArn:
     Type: String
     Description: The ARN of the cleaner SQS queue
