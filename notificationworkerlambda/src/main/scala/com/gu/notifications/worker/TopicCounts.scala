@@ -14,11 +14,12 @@ class TopicCounts(registrationService: RegistrationService[IO, Stream], topicCou
 
   def logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def handleRequest()(implicit format: Format[TopicCount]): IO[PutObjectResult] = {
+  def
+  handleRequest()(implicit format: Format[TopicCount]): IO[PutObjectResult] = {
 
     logger.info("Fetching topic countrs")
     val topicCountStream = registrationService.topicCounts
-    val ioTopicList = topicCountStream.compile.toList
+    val ioTopicList = topicCountStream.compile.toList.unsafeToFuture
     val l = ioTopicList.map {
       topicCounts =>
         logger.info(s"Got topic counts ${topicCounts.size}")
