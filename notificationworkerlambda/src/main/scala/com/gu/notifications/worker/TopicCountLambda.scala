@@ -17,9 +17,12 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 class TopicCountLambda extends Logging {
 
+  logger.info("Hello chaps")
   def logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def env = Env()
+
+  logger.info("Anyone there?")
 
   lazy val credentials: AWSCredentialsProviderChain = new AWSCredentialsProviderChain(
     new ProfileCredentialsProvider("mobile"),
@@ -35,14 +38,13 @@ class TopicCountLambda extends Logging {
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
 
   val config: TopicCountsConfiguration = Configuration.fetchTopicCounter()
-  logger.info(s"Cunf: $config")
   lazy val topicsS3 = new TopicCountS3(s3Client, config.bucketName, s"${env.stage}/${config.fileName}")
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
   val registrationService = RegistrationService(transactor)
   lazy val topicCounts = new TopicCounts(registrationService, topicsS3)
 
   def handleRequest() : Unit = {
-    logger.info("Handlin request")
+    logger.info("Handling request")
     topicCounts.handleRequest()
     logger.info("Done")
   }

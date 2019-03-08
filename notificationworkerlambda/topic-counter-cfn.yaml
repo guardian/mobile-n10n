@@ -34,29 +34,8 @@ Parameters:
 
 Resources:
 
-  Dlq:
-    Type: AWS::SQS::Queue
-
-  Sqs:
-    Type: AWS::SQS::Queue
-    Properties:
-      VisibilityTimeout: 300
-      MessageRetentionPeriod: 3600 # 1 hour
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt Dlq.Arn
-        maxReceiveCount: 5
-      Tags:
-        - Key: Stage
-          Value: !Ref Stage
-        - Key: Stack
-          Value: !Ref Stack
-        - Key: App
-          Value: !Ref App
-
-
   ExecutionRole:
     Type: AWS::IAM::Role
-    DependsOn: Sqs
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -79,12 +58,6 @@ Resources:
             - logs:PutLogEvents
             Resource:
             - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${App}-${Stage}:*"
-      - PolicyName: SQS
-        PolicyDocument:
-          Statement:
-            Effect: Allow
-            Action: sqs:*
-            Resource: !GetAtt Sqs.Arn
       - PolicyName: VPC
         PolicyDocument:
           Statement:
@@ -107,6 +80,16 @@ Resources:
             Effect: Allow
             Action: cloudwatch:PutMetricData
             Resource: "*"
+      - PolicyName: S3
+        PolicyDocument:
+          Statement:
+          - Action:
+            - s3:PutObject
+            Effect: Allow
+            Resource: arn:aws:s3:::mobile-notifications-topics/*
+          - Action:  s3:ListBucket
+            Effect: Allow
+            Resource: arn:aws:s3:::mobile-notifications-topics
 
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -119,22 +102,22 @@ Resources:
           ToPort: 443
       VpcId: !Ref VpcId
 
-  WorkerLambda:
+  TopicCounterWorker:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub ${App}-${Stage}
       Code:
-        S3Bucket:
-          Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
+         S3Bucket:
+           Ref: DeployBucket
+         S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
       Environment:
-        Variables:
-          Stage: !Ref Stage
-          Stack: !Ref Stack
-          App: !Ref App
-      Description: Consumes queue events and sends notifications
+         Variables:
+           Stage: !Ref Stage
+           Stack: !Ref Stack
+           App: !Ref App
+      Description: Sends notifications
       Handler: !Ref FullyQualifiedHandler
-      MemorySize: 1024
+      MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
@@ -152,19 +135,18 @@ Resources:
         - Key: App
           Value: !Ref App
 
-
-  SqsEventSourceMapping:
-    Type: AWS::Lambda::EventSourceMapping
-    DependsOn:
-    - Sqs
-    - WorkerLambda
+  TopicCounterEventRule:
+    Type: AWS::Events::Rule
     Properties:
-      BatchSize: 1
-      Enabled: True
-      EventSourceArn: !GetAtt Sqs.Arn
-      FunctionName: !Sub ${App}-${Stage}
+      ScheduleExpression: rate(10 minutes)
+      Targets:
+      - Id: !Sub TopicCounter${Stage}Target
+        Arn: !GetAtt TopicCounterWorker.Arn
 
-Outputs:
-  SQSArn:
-    Description: The arn of the sqs queue
-    Value: !GetAtt Sqs.Arn
+  TopicCounterLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt TopicCounterWorker.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt TopicCounterEventRule.Arn

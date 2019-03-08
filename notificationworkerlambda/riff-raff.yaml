@@ -32,3 +32,11 @@ deployments:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: registration-cleaning-worker-cfn
       templatePath: registration-cleaning-worker-cfn.yaml
+  topic-counter-cfn:
+    type: cloud-formation
+    app: topic-counter
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: topic-counter-cfn
+      templatePath: topic-counter-cfn.yaml
+
