@@ -8,21 +8,17 @@ import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsPro
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
-import com.gu.notifications.worker.utils.{Logging, TopicCountS3}
+import com.gu.notifications.worker.utils.{Logging, TopicCountsS3}
 import db.{DatabaseConfig, RegistrationService}
 import doobie.util.transactor.Transactor
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-class TopicCountLambda extends Logging {
-
-  logger.info("Hello chaps")
+class TopicCounterLambda extends Logging {
   def logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def env = Env()
-
-  logger.info("Anyone there?")
 
   lazy val credentials: AWSCredentialsProviderChain = new AWSCredentialsProviderChain(
     new ProfileCredentialsProvider("mobile"),
@@ -38,10 +34,10 @@ class TopicCountLambda extends Logging {
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
 
   val config: TopicCountsConfiguration = Configuration.fetchTopicCounter()
-  lazy val topicsS3 = new TopicCountS3(s3Client, config.bucketName, s"${env.stage}/${config.fileName}")
+  lazy val topicsS3 = new TopicCountsS3(s3Client, config.bucketName, s"${env.stage}/${config.fileName}")
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
   val registrationService = RegistrationService(transactor)
-  lazy val topicCounts = new TopicCounts(registrationService, topicsS3)
+  val topicCounts = new TopicCounter(registrationService, topicsS3)
 
   def handleRequest() : Unit = {
     logger.info("Handling request")
@@ -50,16 +46,12 @@ class TopicCountLambda extends Logging {
   }
 
   def runLocally(): Unit = {
-     logger.info("Running locally")
+    topicCounts.handleRequest()
+    s3Client.shutdown()
   }
 
-  def withScheduledExecutorService(function: ScheduledExecutorService => Any) : Unit = {
-    val scheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-    try {
-      function(scheduledExecutorService)
-    }
-    finally {
-      scheduledExecutorService.isShutdown()
-    }
+  def withS3Client(function: AmazonS3 => Any): Unit = {
+    
   }
+
 }

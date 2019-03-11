@@ -115,13 +115,12 @@ Resources:
            Stage: !Ref Stage
            Stack: !Ref Stack
            App: !Ref App
-      Description: Sends notifications
+      Description: Persists registrations per topic to s3 ( for counts of over 1000 )
       Handler: !Ref FullyQualifiedHandler
       MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
-      ReservedConcurrentExecutions: 100
       VpcConfig:
         SecurityGroupIds:
           - !GetAtt LambdaSecurityGroup.GroupId

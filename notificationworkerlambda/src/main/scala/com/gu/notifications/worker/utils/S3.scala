@@ -30,7 +30,7 @@ trait S3[T] extends Logging {
   }
 }
 
-class TopicCountS3(override val s3Client: AmazonS3, override val bucketName: String, override val path: String) extends S3[TopicCount]  {
+class TopicCountsS3(override val s3Client: AmazonS3, override val bucketName: String, override val path: String) extends S3[TopicCount]  {
   override def logger: Logger = LoggerFactory.getLogger(this.getClass)
 }
 
