@@ -129,7 +129,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
         )""".update.run
 
         (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync
-         RegistrationService(transactor)
+        RegistrationService(transactor)
       }
     }
   }

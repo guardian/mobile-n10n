@@ -14,16 +14,16 @@ import scala.concurrent.{Await, ExecutionContext}
 
 class TopicCounter(registrationService: RegistrationService[IO, Stream], topicCountS3: TopicCountsS3) extends Logging {
 
-  def logger: Logger = LoggerFactory.getLogger(this.getClass)
+  val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def handleRequest()(implicit format: Format[TopicCount], executionContext: ExecutionContext): Unit = {
 
     val topicCountStream = registrationService.topicCounts
-    val ioTopicList = topicCountStream.compile.toList.unsafeToFuture
+    val ioTopicListF = topicCountStream.compile.toList.unsafeToFuture
 
-    val x = Await.result(ioTopicList, Duration.Inf)
-    logger.info(s"Retrieved ${x.length} topic counts of over 1000")
+    val ioTopicList = Await.result(ioTopicListF, Duration.Inf)
+    logger.info(s"Retrieved ${ioTopicList.length} topic counts of over 1000")
 
-    topicCountS3.put(x)
+    topicCountS3.put(ioTopicList)
  }
 }

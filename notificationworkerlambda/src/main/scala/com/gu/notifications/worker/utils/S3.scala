@@ -25,7 +25,7 @@ trait S3[T] extends Logging {
   }
 
   private def jsonInputStreamAndContentLength(data: Seq[T])(implicit format: Format[T]): (InputStream, Long) = {
-    val jsonAsBytes  = Json.toJson(data).toString().getBytes(StandardCharsets.UTF_8.name())
+    val jsonAsBytes  = Json.toBytes(Json.toJson(data))
     (new ByteArrayInputStream(jsonAsBytes), jsonAsBytes.length)
   }
 }
