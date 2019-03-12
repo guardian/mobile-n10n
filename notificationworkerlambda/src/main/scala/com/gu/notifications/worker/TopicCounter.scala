@@ -5,8 +5,7 @@ import com.amazonaws.services.s3.model.PutObjectResult
 import fs2.Stream
 import com.gu.notifications.worker.utils.{Logging, TopicCountsS3}
 import db.RegistrationService
-import models.TopicCount
-import models.TopicCount.topicCountJf
+import _root_.models.TopicCount
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Format
 

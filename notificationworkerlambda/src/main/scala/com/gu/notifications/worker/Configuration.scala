@@ -91,12 +91,10 @@ object Configuration {
 
   def fetchTopicCounter(): TopicCountsConfiguration = {
     val config = fetchConfiguration()
-    val tc = TopicCountsConfiguration(
+    TopicCountsConfiguration(
       jdbcConfig(config),
       config.getString("topicCounts.bucket"),
       config.getString("topicCounts.fileName")
     )
-    tc
   }
-
 }
