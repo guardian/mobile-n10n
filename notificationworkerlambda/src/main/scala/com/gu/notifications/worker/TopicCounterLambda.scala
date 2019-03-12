@@ -40,9 +40,9 @@ class TopicCounterLambda extends Logging {
   val topicCounts = new TopicCounter(registrationService, topicsS3)
 
   def handleRequest() : Unit = {
-    logger.info("Handling request")
+    logger.info("Handling request to get topic counts: ")
     topicCounts.handleRequest()
-    logger.info("Done")
+    logger.info("Topic counts Done")
   }
 
   def runLocally(): Unit = {
@@ -50,8 +50,4 @@ class TopicCounterLambda extends Logging {
     s3Client.shutdown()
   }
 
-  def withS3Client(function: AmazonS3 => Any): Unit = {
-    
-  }
-
-}
+  def withS3Client(function: AmazonS3 => Any)
