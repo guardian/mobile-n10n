@@ -26,9 +26,9 @@ class TopicCounterLambda extends Logging {
   )
 
   lazy val s3Client: AmazonS3 = AmazonS3ClientBuilder.standard
-      .withRegion(Regions.EU_WEST_1)
-        .withCredentials(credentials)
-        .build()
+    .withRegion(Regions.EU_WEST_1)
+    .withCredentials(credentials)
+    .build()
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
@@ -39,15 +39,14 @@ class TopicCounterLambda extends Logging {
   val registrationService = RegistrationService(transactor)
   val topicCounts = new TopicCounter(registrationService, topicsS3)
 
-  def handleRequest() : Unit = {
-    logger.info("Handling request to get topic counts: ")
+  def handleRequest(): Unit = {
+    logger.info("Handling request to get topic counters: ")
     topicCounts.handleRequest()
-    logger.info("Topic counts Done")
+    logger.info("Done")
   }
 
   def runLocally(): Unit = {
     topicCounts.handleRequest()
     s3Client.shutdown()
   }
-
-  def withS3Client(function: AmazonS3 => Any)
+}
