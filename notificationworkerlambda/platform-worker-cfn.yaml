@@ -227,7 +227,7 @@ Resources:
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
-      ReservedConcurrentExecutions: 100
+      ReservedConcurrentExecutions: 1000
       Tags:
         - Key: Stage
           Value: !Ref Stage
