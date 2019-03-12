@@ -118,7 +118,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
     sql"""
          SELECT topic, count(topic) as topic_count from registrations
          GROUP BY topic
-         HAVING count(topic) > 2
+         HAVING count(topic) > 1000
          ORDER BY topic_count desc
       """
         .query[TopicCount]
