@@ -2,7 +2,6 @@ package models
 
 import play.api.libs.json.{Format, Json}
 
-//TODO String -> Topi
 case class TopicCount(topicName: String,  registrationCount: Long)
 
 object TopicCount{
