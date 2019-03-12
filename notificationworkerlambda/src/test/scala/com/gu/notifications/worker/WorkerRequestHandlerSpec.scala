@@ -50,7 +50,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       tokensToCleanCount shouldEqual 0
       tokenStreamCount shouldEqual 1
       sqsDeliveriesCount shouldEqual 1
-    }.pendingUntilFixed
+    }
 
 
     "Clean invalid tokens" in new WRHSScope {
