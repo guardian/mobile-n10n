@@ -137,7 +137,7 @@ Resources:
   TopicCounterEventRule:
     Type: AWS::Events::Rule
     Properties:
-      ScheduleExpression: "cron(55 */2 * * * *)"
+      ScheduleExpression: "cron(55 */2 * * *)"
       Targets:
       - Id: !Sub TopicCounter${Stage}Target
         Arn: !GetAtt TopicCounterWorker.Arn
