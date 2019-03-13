@@ -109,7 +109,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
   } yield resp
 
   def shouldDeliverToSqs(shardedNotification: ShardedNotification): Boolean =
-    shardedNotification.notification.`type` != _root_.models.NotificationType.BreakingNews && !shardedNotification.notification.topic.exists(x => x.name == "uk")
+    !(shardedNotification.notification.`type` == _root_.models.NotificationType.BreakingNews && shardedNotification.notification.topic.exists(x => x.name == "uk"))
 
 
   val pipeShardNotificationToDeliveries: Pipe[IO, ShardedNotification, Unit] = allShards => {
