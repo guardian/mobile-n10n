@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Consumes events produced by the notification service and sends notifications to individual devices
+Description: Retrieves the numbers of registrations per topic ( > 1000 ) and persists them to S3
 Parameters:
   Stack:
     Description: Stack name
@@ -28,9 +28,6 @@ Parameters:
   VPCSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: The default security group of the VPC
-  FullyQualifiedHandler:
-    Description: The full name of the handler, including path, class name and method
-    Type: String
 
 Resources:
 
@@ -116,7 +113,7 @@ Resources:
            Stack: !Ref Stack
            App: !Ref App
       Description: Persists registrations per topic to s3 ( for counts of over 1000 )
-      Handler: !Ref FullyQualifiedHandler
+      Handler: com.gu.notifications.worker.TopicCounterLambda::handleRequest
       MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
