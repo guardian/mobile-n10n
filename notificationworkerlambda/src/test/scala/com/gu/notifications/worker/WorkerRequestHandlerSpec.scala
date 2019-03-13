@@ -28,16 +28,16 @@ import scala.collection.JavaConverters._
 class WorkerRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
-    "Send one notification" in new WRHSScope {
+    "Queue one breaking news notification" in new WRHSScope {
       workerRequestHandler.handleRequest(sqsEventShardNotification(breakingNewsNotification), null)
 
-      deliveryCallsCount shouldEqual 1
-      cloudwatchCallsCount shouldEqual 1
-      cleaningCallsCount shouldEqual 1
-      sendingResults shouldEqual Some(SendingResults(1, 0, 0))
+      deliveryCallsCount shouldEqual 0
+      cloudwatchCallsCount shouldEqual 0
+      cleaningCallsCount shouldEqual 0
+      sendingResults shouldEqual None
       tokensToCleanCount shouldEqual 0
       tokenStreamCount shouldEqual 1
-      sqsDeliveriesCount shouldEqual 0
+      sqsDeliveriesCount shouldEqual 1
 
     }
     "Queue one content notification" in new WRHSScope {
@@ -53,7 +53,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
     }
 
 
-    "Clean invalid tokens" in new WRHSScope {
+    "Sender must clean invalid tokens" in new WRHSScope {
       override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
         Stream(
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
@@ -61,16 +61,16 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
       workerRequestHandler.handleRequest(sqsEventShardNotification(breakingNewsNotification), null)
 
-      deliveryCallsCount shouldEqual 1
-      cloudwatchCallsCount shouldEqual 1
-      cleaningCallsCount shouldEqual 1
-      sendingResults shouldEqual Some(SendingResults(0, 1, 0))
-      tokensToCleanCount shouldEqual 1
+      deliveryCallsCount shouldEqual 0
+      cloudwatchCallsCount shouldEqual 0
+      cleaningCallsCount shouldEqual 0
+      sendingResults shouldEqual None
+      tokensToCleanCount shouldEqual 0
       tokenStreamCount shouldEqual 1
-      sqsDeliveriesCount shouldEqual 0
+      sqsDeliveriesCount shouldEqual 1
     }
 
-    "Count dry runs" in new WRHSScope {
+    "Dry runs should be queued" in new WRHSScope {
       override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
         Stream(
           Right(ApnsDeliverySuccess("token", dryRun = true))
@@ -78,13 +78,13 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
 
       workerRequestHandler.handleRequest(sqsEventShardNotification(breakingNewsNotification), null)
 
-      deliveryCallsCount shouldEqual 1
-      cloudwatchCallsCount shouldEqual 1
-      cleaningCallsCount shouldEqual 1
-      sendingResults shouldEqual Some(SendingResults(0, 0, 1))
+      deliveryCallsCount shouldEqual 0
+      cloudwatchCallsCount shouldEqual 0
+      cleaningCallsCount shouldEqual 0
+      sendingResults shouldEqual None
       tokensToCleanCount shouldEqual 0
       tokenStreamCount shouldEqual 1
-      sqsDeliveriesCount shouldEqual 0
+      sqsDeliveriesCount shouldEqual 1
     }
   }
 
