@@ -142,13 +142,13 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
-      Description: Consumes shard events and may send notifications or queue them for sending
+      Description: Consumes events produced by the notification service and fetches batches of tokens for senders to send
       Handler: com.gu.notifications.worker.Harvester::handleHarvesting
       MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
-      ReservedConcurrentExecutions: 100
+      ReservedConcurrentExecutions: 200
       VpcConfig:
         SecurityGroupIds:
           - !Ref VPCSecurityGroup
