@@ -93,7 +93,7 @@ Resources:
     Properties:
       GroupDescription: !Sub Lambda to db in ${Stage}
       SecurityGroupEgress:
-        - CidrIp: 70.0.0.0/0
+        - CidrIp: 0.0.0.0/0
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
