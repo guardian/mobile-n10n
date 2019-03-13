@@ -86,7 +86,7 @@ Resources:
   SenderSqs:
     Type: AWS::SQS::Queue
     Properties:
-      VisibilityTimeout: 300
+      VisibilityTimeout: 45
       MessageRetentionPeriod: 3600 # 1 hour
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt SenderDlq.Arn
@@ -226,7 +226,7 @@ Resources:
       MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
-      Timeout: 300
+      Timeout: 45
       ReservedConcurrentExecutions: 1000
       Tags:
         - Key: Stage
