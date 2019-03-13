@@ -1,7 +1,7 @@
 package db
 
 import cats.data.NonEmptyList
-import models.PlatformCount
+import models.{PlatformCount, TopicCount}
 
 trait RegistrationRepository[F[_], S[_[_], _]] {
   def findTokens(topics: NonEmptyList[String], platform: Option[String], shardRange: Option[Range]): S[F, String]
@@ -10,4 +10,5 @@ trait RegistrationRepository[F[_], S[_[_], _]] {
   def remove(sub: Registration): F[Int]
   def removeByToken(token: String): F[Int]
   def countPerPlatformForTopics(topics: NonEmptyList[Topic]): F[PlatformCount]
+  def topicCounts: S[F, TopicCount]
 }

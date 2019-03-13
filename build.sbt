@@ -1,6 +1,6 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 import play.sbt.PlayImport.specs2
-import sbt.Keys.libraryDependencies
+import sbt.Keys.{libraryDependencies, mainClass}
 import sbt.dsl.enablePlugins
 import sbtassembly.AssemblyPlugin.autoImport.{assemblyJarName, assemblyMergeStrategy}
 import sbtassembly.MergeStrategy
@@ -331,6 +331,7 @@ lazy val notificationworkerlambda = project
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.2",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
+      "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
       "org.slf4j" % "slf4j-simple" % "1.7.25",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "com.squareup.okhttp3" % "okhttp" % "3.12.1",
@@ -350,7 +351,9 @@ lazy val notificationworkerlambda = project
     riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
     riffRaffArtifactResources += (baseDirectory.value / "platform-worker-cfn.yaml", s"ios-notification-worker-cfn/platform-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "platform-worker-cfn.yaml", s"android-notification-worker-cfn/platform-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml")
+    riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"topic-counter-cfn/topic-counter-cfn.yaml"),
+    mainClass := Some("com.gu.notifications.worker.TopicCounterLocalRun")
   )
 
 lazy val root = (project in file(".")).

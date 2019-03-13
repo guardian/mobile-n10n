@@ -1,0 +1,148 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Retrieves the numbers of registrations per topic ( > 1000 ) and persists them to S3
+Parameters:
+  Stack:
+    Description: Stack name
+    Type: String
+    Default: mobile-notifications
+  App:
+    Description: Application name
+    Type: String
+  Stage:
+    Description: Stage name
+    Type: String
+    AllowedValues:
+    - CODE
+    - PROD
+    Default: CODE
+  DeployBucket:
+    Description: Bucket where RiffRaff uploads artifacts on deploy
+    Type: String
+    Default: mobile-notifications-dist
+  VpcId:
+    Description: ID of the Notification VPC
+    Type: AWS::EC2::VPC::Id
+  VpcSubnets:
+    Description: Subnets to use in the VPC
+    Type: List<AWS::EC2::Subnet::Id>
+  VPCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The default security group of the VPC
+
+Resources:
+
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: logs
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: logs:CreateLogGroup
+            Resource: !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:*"
+          - Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${App}-${Stage}:*"
+      - PolicyName: VPC
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action:
+            - ec2:CreateNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DeleteNetworkInterface
+            Resource: "*"
+      - PolicyName: Conf
+        PolicyDocument:
+          Statement:
+          - Action: ssm:GetParametersByPath
+            Effect: Allow
+            Resource:
+              !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
+      - PolicyName: Cloudwatch
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action: cloudwatch:PutMetricData
+            Resource: "*"
+      - PolicyName: S3
+        PolicyDocument:
+          Statement:
+          - Action:
+            - s3:PutObject
+            Effect: Allow
+            Resource: arn:aws:s3:::mobile-notifications-topics/*
+          - Action:  s3:ListBucket
+            Effect: Allow
+            Resource: arn:aws:s3:::mobile-notifications-topics
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub Lambda to db in ${Stage}
+      SecurityGroupEgress:
+        - CidrIp: 70.0.0.0/0
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId: !Ref VpcId
+
+  TopicCounterWorker:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${App}-${Stage}
+      Code:
+         S3Bucket:
+           Ref: DeployBucket
+         S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
+      Environment:
+         Variables:
+           Stage: !Ref Stage
+           Stack: !Ref Stack
+           App: !Ref App
+      Description: Persists registrations per topic to s3 ( for counts of over 1000 )
+      Handler: com.gu.notifications.worker.TopicCounterLambda::handleRequest
+      MemorySize: 3008
+      Role: !GetAtt ExecutionRole.Arn
+      Runtime: java8
+      Timeout: 300
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt LambdaSecurityGroup.GroupId
+          - !Ref VPCSecurityGroup
+        SubnetIds: !Ref VpcSubnets
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
+
+  TopicCounterEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: cron(55 */2 * * ? *)
+      Targets:
+      - Id: !Sub TopicCounter${Stage}Target
+        Arn: !GetAtt TopicCounterWorker.Arn
+
+  TopicCounterLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt TopicCounterWorker.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt TopicCounterEventRule.Arn

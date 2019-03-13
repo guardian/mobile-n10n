@@ -68,7 +68,26 @@ Pair device registrations to topics. Then notifications can be sent per topic, i
 
 By integrating Apps directly with the Notification System, you risk vendor lock-in and most control. 
 
+### Topic Counter
 
+Part of [Notification Worker Lambda(s)](notificationworkerlambda). Retrieves the topics which have more than 1000 subscribers and stores them to s3. Can be run locally by creating the placing the creating the following file in `.gu/notification-worker.comf`
+
+````registration {
+  	db {
+  		url="jdbc:postgresql://localhost:5432/registrationsCODE?currentSchema=registrations"
+  		user="worker_user"
+  		password="<CODE DB PASSWORD"
+          maxConnectionPoolSize=1
+  	}
+  }
+  topicCounts {
+  	bucket="mobile-notifications-topics"
+  	fileName="counts.json"
+  }
+  
+````
+
+Tunnel to the notifications database(See[Mobile Platform](https://github.com/guardian/mobile-platform/))) Run `sbt` set `project notificationworkerlambda` and `run` runs the lambda locally. 
 
    
 
