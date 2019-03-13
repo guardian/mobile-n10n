@@ -151,7 +151,6 @@ Resources:
       ReservedConcurrentExecutions: 100
       VpcConfig:
         SecurityGroupIds:
-          - !GetAtt LambdaSecurityGroup.GroupId
           - !Ref VPCSecurityGroup
         SubnetIds: !Ref VpcSubnets
       Tags:
