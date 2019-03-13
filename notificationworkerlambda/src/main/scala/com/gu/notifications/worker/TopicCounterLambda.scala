@@ -1,12 +1,8 @@
 package com.gu.notifications.worker
 
-import java.util.concurrent.{Executors, ScheduledExecutorService}
-
 import cats.effect.{ContextShift, IO}
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
-import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
+import com.amazonaws.auth.AWSCredentialsProviderChain
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.gu.notifications.worker.utils.{Aws, Logging, TopicCountsS3}
 import db.{DatabaseConfig, RegistrationService}

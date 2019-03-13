@@ -1,11 +1,10 @@
 package com.gu.notifications.worker
 
+import _root_.models.TopicCount
 import cats.effect.IO
-import com.amazonaws.services.s3.model.PutObjectResult
-import fs2.Stream
 import com.gu.notifications.worker.utils.{Logging, TopicCountsS3}
 import db.RegistrationService
-import _root_.models.TopicCount
+import fs2.Stream
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Format
 
