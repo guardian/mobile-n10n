@@ -90,7 +90,7 @@ trait WorkerRequestHandler[C <: DeliveryClient] extends Logging {
     tokenService <- Stream.eval(tokenService)
     chunkedTokens = for {
       n <- shardNotifications
-      platform = n.platform.getOrElse(platformFromTopics(n.notification.topic))
+      platform = n.platform
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
       tokens <- tokenService.tokens(n.notification, n.range, platform).chunkN(1000)
