@@ -8,7 +8,7 @@ import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsPro
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
-import com.gu.notifications.worker.utils.{Logging, TopicCountsS3}
+import com.gu.notifications.worker.utils.{Aws, Logging, TopicCountsS3}
 import db.{DatabaseConfig, RegistrationService}
 import doobie.util.transactor.Transactor
 import org.slf4j.{Logger, LoggerFactory}
@@ -20,10 +20,7 @@ class TopicCounterLambda extends Logging {
 
   def env = Env()
 
-  lazy val credentials: AWSCredentialsProviderChain = new AWSCredentialsProviderChain(
-    new ProfileCredentialsProvider("mobile"),
-    DefaultAWSCredentialsProviderChain.getInstance
-  )
+  lazy val credentials: AWSCredentialsProviderChain = Aws.credentialsProvider
 
   lazy val s3Client: AmazonS3 = AmazonS3ClientBuilder.standard
     .withRegion(Regions.EU_WEST_1)
@@ -34,7 +31,7 @@ class TopicCounterLambda extends Logging {
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
 
   val config: TopicCountsConfiguration = Configuration.fetchTopicCounter()
-  lazy val topicsS3 = new TopicCountsS3(s3Client, config.bucketName, s"${env.stage}/${config.fileName}")
+  val topicsS3 = new TopicCountsS3(s3Client, config.bucketName, s"${env.stage}/${config.fileName}")
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
   val registrationService = RegistrationService(transactor)
   val topicCounts = new TopicCounter(registrationService, topicsS3)

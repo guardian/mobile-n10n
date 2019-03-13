@@ -96,7 +96,7 @@ Resources:
     Properties:
       GroupDescription: !Sub Lambda to db in ${Stage}
       SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
+        - CidrIp: 70.0.0.0/0
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
@@ -137,7 +137,7 @@ Resources:
   TopicCounterEventRule:
     Type: AWS::Events::Rule
     Properties:
-      ScheduleExpression: rate(10 minutes)
+      ScheduleExpression: "cron(55 */2 * * * *)"
       Targets:
       - Id: !Sub TopicCounter${Stage}Target
         Arn: !GetAtt TopicCounterWorker.Arn
