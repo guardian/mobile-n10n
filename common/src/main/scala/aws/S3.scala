@@ -41,7 +41,7 @@ trait S3[T]  {
   private def parseS3Object()(implicit format: Format[T]) : List[T] = {
     Json.fromJson[List[T]](Json.parse(asString(s3Client.getObject(bucketName, path)))) match {
       case JsSuccess(list, __) =>
-        logger.debug(s"Got ${list.length} topic counnts from s3")
+        logger.debug(s"Got ${list.length} topic counts from s3")
         list
       case JsError(errors) =>
         val errorPaths = errors.map { error => error._1.toString() }.mkString(",")

@@ -16,10 +16,12 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
+import models.TopicCount.topicCountJF
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
 import org.apache.commons.lang3.concurrent.ConcurrentUtils
+import play.api.libs.json.Format
 
 class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "GuardianNotificationSender" should {
@@ -78,7 +80,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       override val notificationSender = new GuardianNotificationSender(
         sqsClient = sqsClient,
         registrationCounter = new TopicRegistrationCounter {
-          override def count(topics: List[Topic]): Future[PlatformCount] = Future.failed(new RuntimeException("exception"))
+          override def count(topics: List[Topic])(implicit format: Format[TopicCount]): Future[PlatformCount] = Future.failed(new RuntimeException("exception"))
         },
         platform = iOS,
         harvesterSqsUrl = ""
@@ -154,7 +156,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
     val notificationSender = new GuardianNotificationSender(
       sqsClient = sqsClient,
       registrationCounter = new TopicRegistrationCounter {
-        override def count(topics: List[Topic]): Future[PlatformCount] = Future.successful(topicStats(registrationCount))
+        override def count(topics: List[Topic])(implicit format: Format[TopicCount] ): Future[PlatformCount] = Future.successful(topicStats(registrationCount))
       },
       platform = iOS,
       harvesterSqsUrl = ""

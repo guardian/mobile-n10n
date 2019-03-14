@@ -4,7 +4,7 @@ import java.net.URI
 
 import _root_.controllers.AssetsComponents
 import akka.actor.ActorSystem
-import aws.AsyncDynamo
+import aws.{AsyncDynamo, TopicCountsS3}
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.softwaremill.macwire._
 import controllers.Main
@@ -13,8 +13,11 @@ import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 import com.gu.AppIdentity
 import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
 import _root_.models.{Android, Newsstand, iOS}
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import metrics.CloudWatchMetrics
+import _root_.models.TopicCount
 import notification.authentication.NotificationAuthAction
+import notification.data.{CacheingDataStore, S3DataStore}
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services.{NewsstandSender, _}
 import notification.services.guardian.{GuardianNotificationSender, ReportTopicRegistrationCounter, TopicRegistrationCounter}
@@ -68,11 +71,20 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     new FrontendAlerts(frontendConfig, wsClient)
   }
 
-  lazy val topicRegistrationCounter: TopicRegistrationCounter = new ReportTopicRegistrationCounter(
-    wsClient,
-    configuration.get[String]("report.url"),
-    configuration.get[String]("report.apiKey")
+  lazy val s3Client: AmazonS3 = {
+    AmazonS3ClientBuilder.standard()
+      .withRegion(EU_WEST_1)
+      .withCredentials(credentialsProvider)
+      .build()
+  }
+
+  lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("notifications.topicCounts.bucket"), configuration.get[String]("notifications.topicCounts.fileNamw"))
+  
+  lazy val topicCountCacheingDataStore: CacheingDataStore[TopicCount] = new CacheingDataStore[TopicCount](
+    new S3DataStore[TopicCount](topicCountsS3)
   )
+
+  lazy val topicRegistrationCounter: TopicRegistrationCounter = new ReportTopicRegistrationCounter(topicCountCacheingDataStore)
 
   lazy val sqsClient: AmazonSQSAsync = AmazonSQSAsyncClientBuilder.standard()
     .withCredentials(credentialsProvider)
