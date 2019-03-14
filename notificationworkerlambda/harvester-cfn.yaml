@@ -1,0 +1,230 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Consumes events produced by the notification service and batches notifications for senders to send
+Parameters:
+  App:
+    Description: App name
+    Type: String
+    Default: harvester
+    AllowedValues:
+      - harvester
+  Stack:
+    Description: Stack name
+    Type: String
+    Default: mobile-notifications
+  Stage:
+    Description: Stage name
+    Type: String
+    AllowedValues:
+    - CODE
+    - PROD
+    Default: CODE
+  DeployBucket:
+    Description: Bucket where RiffRaff uploads artifacts on deploy
+    Type: String
+    Default: mobile-notifications-dist
+  VpcId:
+    Description: ID of the Notification VPC
+    Type: AWS::EC2::VPC::Id
+  VpcSubnets:
+    Description: Subnets to use in the VPC
+    Type: List<AWS::EC2::Subnet::Id>
+  VPCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The default security group of the VPC
+  IosSqsArn:
+    Type: String
+    Description: IOS Sqs queue
+  AndroidSqsArn:
+    Type: String
+    Description: Android Sqs queue
+  AlarmTopic:
+    Type: String
+    Description: The ARN of the SNS topic to send all the cloudwatch alarms to
+
+Conditions:
+  IsProdStage: !Equals [!Ref Stage, PROD]
+
+Resources:
+  Dlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
+
+  Sqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 3600 # 1 hour
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt Dlq.Arn
+        maxReceiveCount: 5
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
+
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    DependsOn: Sqs
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: logs
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: logs:CreateLogGroup
+            Resource: !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:*"
+          - Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource:
+            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${Stack}-${App}-${Stage}:*"
+      - PolicyName: SQSInput
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action: sqs:*
+            Resource:
+            - !GetAtt Sqs.Arn
+            - !Ref IosSqsArn
+            - !Ref AndroidSqsArn
+      - PolicyName: VPC
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action:
+            - ec2:CreateNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DeleteNetworkInterface
+            Resource: "*"
+      - PolicyName: Conf
+        PolicyDocument:
+          Statement:
+          - Action: ssm:GetParametersByPath
+            Effect: Allow
+            Resource:
+              !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
+      - PolicyName: Cloudwatch
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action: cloudwatch:PutMetricData
+            Resource: "*"
+
+  HavesterLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      Code:
+        S3Bucket:
+          Ref: DeployBucket
+        S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+          Stack: !Ref Stack
+          App: !Ref App
+      Description: Consumes events produced by the notification service and fetches batches of tokens for senders to send
+      Handler: com.gu.notifications.worker.Harvester::handleHarvesting
+      MemorySize: 3008
+      Role: !GetAtt ExecutionRole.Arn
+      Runtime: java8
+      Timeout: 300
+      ReservedConcurrentExecutions: 200
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref VPCSecurityGroup
+        SubnetIds: !Ref VpcSubnets
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: !Ref Stack
+        - Key: App
+          Value: !Ref App
+
+  SqsEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    DependsOn:
+    - Sqs
+    - HavesterLambda
+    Properties:
+      BatchSize: 1
+      Enabled: True
+      EventSourceArn: !GetAtt Sqs.Arn
+      FunctionName: !Sub ${Stack}-${App}-${Stage}
+
+  ThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      AlarmDescription: !Sub Triggers if the ${App} lambda is throttled in ${Stage}
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value: !Sub ${Stack}-${App}-${Stage}
+      EvaluationPeriods: 1
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Period: 360
+      Statistic: Sum
+      Threshold: 0
+
+
+  ErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      AlarmDescription: !Sub Triggers if the ${App} lambda errors in ${Stage}
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+      - Name: FunctionName
+        Value: !Sub ${Stack}-${App}-${Stage}
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 360
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: notBreaching
+
+  TooFewInvocationsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      ActionsEnabled: !If [IsProdStage, true, false]
+      AlarmDescription: !Sub Triggers if the ${App} lambda is not frequently invoked in ${Stage}
+      ComparisonOperator: LessThanOrEqualToThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Sub ${Stack}-${App}-${Stage}
+      EvaluationPeriods: 1
+      MetricName: Invocations
+      Namespace: AWS/Lambda
+      Period: 7200
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: breaching
+
+Outputs:
+  SQSArn:
+    Description: The arn of the sqs queue
+    Value: !GetAtt Sqs.Arn

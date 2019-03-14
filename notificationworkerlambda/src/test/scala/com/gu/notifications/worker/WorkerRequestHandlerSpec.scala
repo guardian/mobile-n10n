@@ -120,7 +120,7 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       val shardedNotification = ShardedNotification(
         notification = notification,
         range = ShardRange(0, 1),
-        platform = Some(Android)
+        platform = Android
       )
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
@@ -171,6 +171,8 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
             ()
           }
         }
+
+        override def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable] = throw new RuntimeException()
       }
 
       override def tokenService: IO[TokenService[IO]] = IO.pure(new TokenService[IO] {
