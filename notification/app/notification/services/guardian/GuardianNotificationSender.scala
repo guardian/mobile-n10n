@@ -5,7 +5,7 @@ import notification.models.Push
 import notification.services.{NotificationSender, SenderError, SenderResult}
 import aws.AWSAsync._
 import com.amazonaws.services.sqs.model.{SendMessageBatchRequest, SendMessageBatchRequestEntry, SendMessageBatchResult}
-import models.NotificationType.Content
+import models.NotificationType.BreakingNews
 import models.Provider.Guardian
 import models._
 import org.joda.time.DateTime
@@ -34,7 +34,7 @@ class GuardianNotificationSender(
 
   private val logger: Logger = Logger.apply(classOf[GuardianNotificationSender])
 
-  def shouldSendToHarveseter(notification: Notification) = notification.`type` == Content
+  def shouldSendToHarveseter(notification: Notification) = notification.`type` != BreakingNews
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     val result = for {
