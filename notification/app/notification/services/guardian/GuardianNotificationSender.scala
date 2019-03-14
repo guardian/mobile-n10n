@@ -5,6 +5,7 @@ import notification.models.Push
 import notification.services.{NotificationSender, SenderError, SenderResult}
 import aws.AWSAsync._
 import com.amazonaws.services.sqs.model.{SendMessageBatchRequest, SendMessageBatchRequestEntry, SendMessageBatchResult}
+import models.NotificationType.Content
 import models.Provider.Guardian
 import models._
 import org.joda.time.DateTime
@@ -24,7 +25,8 @@ class GuardianNotificationSender(
   sqsClient: AmazonSQSAsync,
   registrationCounter: TopicRegistrationCounter,
   platform: Platform,
-  sqsUrl: String,
+  workerSqsUrl: String,
+  harvesterSqsUrl: String,
 )(implicit ec: ExecutionContext) extends NotificationSender {
 
   val WORKER_BATCH_SIZE: Int = 10000
@@ -32,11 +34,18 @@ class GuardianNotificationSender(
 
   private val logger: Logger = Logger.apply(classOf[GuardianNotificationSender])
 
+  def shouldSendToHarveseter(notification: Notification) = notification.`type` == Content
+
   override def sendNotification(push: Push): Future[SenderResult] = {
     val result = for {
       registrationCount <- countRegistration(platform, push.notification.topic)
       workerBatches = prepareBatch(platform, push.notification, registrationCount)
-      sqsBatchResults <- sendBatch(workerBatches)
+      sqsUrl = if (shouldSendToHarveseter(push.notification)) {
+        harvesterSqsUrl
+      } else {
+        workerSqsUrl
+      }
+      sqsBatchResults <- sendBatch(workerBatches, sqsUrl)
     } yield {
       val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
       if (failed.isEmpty) {
@@ -80,7 +89,7 @@ class GuardianNotificationSender(
     }
   }
 
-  def sendBatch(workerBatches: List[SendMessageBatchRequestEntry]): Future[List[SendMessageBatchResult]] = {
+  def sendBatch(workerBatches: List[SendMessageBatchRequestEntry], sqsUrl: String): Future[List[SendMessageBatchResult]] = {
     val sqsBatches = workerBatches.grouped(SQS_BATCH_SIZE).toList
     Future.traverse(sqsBatches) { sqsBatch =>
       val request: SendMessageBatchRequest = new SendMessageBatchRequest(sqsUrl, sqsBatch.asJava)

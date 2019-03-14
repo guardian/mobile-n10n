@@ -83,21 +83,24 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     sqsClient = sqsClient,
     registrationCounter = topicRegistrationCounter,
     platform = iOS,
-    sqsUrl = configuration.get[String]("notifications.queues.ios")
+    workerSqsUrl = configuration.get[String]("notifications.queues.ios"),
+    harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
   lazy val guardianAndroidNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
     sqsClient = sqsClient,
     registrationCounter = topicRegistrationCounter,
     platform = Android,
-    sqsUrl = configuration.get[String]("notifications.queues.android")
+    workerSqsUrl = configuration.get[String]("notifications.queues.android"),
+    harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
   lazy val guardianNewsstandNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
     sqsClient = sqsClient,
     registrationCounter = topicRegistrationCounter,
     platform = Newsstand,
-    sqsUrl = configuration.get[String]("notifications.queues.ios")
+    workerSqsUrl = configuration.get[String]("notifications.queues.ios"),
+    harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
   def withFilter(notificationSender: NotificationSender, invertCondition: Boolean): NotificationSender =
