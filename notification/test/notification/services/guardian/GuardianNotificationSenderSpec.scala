@@ -127,7 +127,8 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       link = Internal("some/capi/id", None, GITContent),
       imageUrl = Some(new URI("https://invalid.url/img.png")),
       importance = Major,
-      topic = List(Topic(`type` = Breaking, name = "uk"))
+      topic = List(Topic(`type` = Breaking, name = "uk")),
+      dryRun = None
     )
 
     def topicStats(registrationCount: Int): PlatformCount = PlatformCount(

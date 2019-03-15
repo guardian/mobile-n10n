@@ -25,7 +25,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 
   type Success = FcmDeliverySuccess
   type Payload = FcmPayload
-
+  val dryRun = config.dryRun
   val platform: Platform = Android
 
   private val invalidTokenErrorCodes = Seq(
@@ -37,7 +37,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayload(n, config.debug)
 
-  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {
 
@@ -48,7 +48,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
       .build
 
 
-    if(config.dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
+    if(dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
       onComplete(Right(FcmDeliverySuccess(token, "dryrun", dryRun = true)))
     } else {
       import FirebaseHelpers._

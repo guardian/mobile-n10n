@@ -17,6 +17,7 @@ sealed trait Notification {
   def importance: Importance
   def topic: List[Topic]
   def withTopics(topics: List[Topic]): Notification
+  def dryRun: Option[Boolean]
 }
 
 object Notification {
@@ -58,7 +59,8 @@ case class BreakingNewsNotification(
   link: Link,
   imageUrl: Option[URI],
   importance: Importance,
-  topic: List[Topic]
+  topic: List[Topic],
+  dryRun: Option[Boolean]
 ) extends Notification with NotificationWithLink {
   override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
@@ -71,7 +73,7 @@ object BreakingNewsNotification {
 case class NewsstandShardNotification(
                                        id: UUID,
                                        shard:Int,
-                                       `type`: NotificationType = NewsstandShard,
+                                       `type`: NotificationType = NewsstandShard
                                      ) extends Notification {
   override def title = ""
   override def message: String = ""
@@ -79,6 +81,7 @@ case class NewsstandShardNotification(
   override def importance: Importance = Importance.Minor
   override def withTopics(topics: List[Topic]): Notification = this
   override def topic: List[Topic] = List(Topic(TopicTypes.NewsstandShard, s"newsstand-shard-$shard"))
+  override def dryRun = None
 
 }
 object NewsstandShardNotification {
@@ -96,7 +99,8 @@ case class ContentNotification(
   sender: String,
   link: Link,
   importance: Importance,
-  topic: List[Topic]
+  topic: List[Topic],
+  dryRun: Option[Boolean]
 ) extends Notification with NotificationWithLink {
   override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
@@ -131,7 +135,8 @@ case class FootballMatchStatusNotification(
   topic: List[Topic],
   matchStatus: String,
   eventId: String,
-  debug: Boolean
+  debug: Boolean,
+  dryRun: Option[Boolean]
 ) extends Notification {
   override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
@@ -162,7 +167,8 @@ case class GoalAlertNotification(
   mapiUrl: URI,
   importance: Importance,
   topic: List[Topic],
-  addedTime: Option[String]
+  addedTime: Option[String],
+  dryRun: Option[Boolean]
 ) extends Notification {
   override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }
@@ -185,7 +191,8 @@ case class LiveEventNotification(
   link1: Link,
   link2: Link,
   imageUrl: Option[URI],
-  topic: List[Topic]
+  topic: List[Topic],
+  dryRun: Option[Boolean]
 ) extends Notification {
   override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
 }

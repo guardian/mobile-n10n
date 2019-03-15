@@ -12,9 +12,10 @@ trait DeliveryClient {
   type Payload <: DeliveryPayload
 
   def close(): Unit
-  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit
   def payloadBuilder: Notification => Option[Payload]
+  val dryRun: Boolean
 }
 

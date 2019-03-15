@@ -44,7 +44,8 @@ class FcmPayloadSpec extends Specification with Matchers {
       link = Internal("some/capi/id", None, GITContent),
       imageUrl = Some(new URI("https://invalid.url/img.png")),
       importance = Major,
-      topic = List(Topic(`type` = Breaking, name = "uk"))
+      topic = List(Topic(`type` = Breaking, name = "uk")),
+      dryRun = None
     )
 
     val expected = Some(
@@ -79,7 +80,8 @@ class FcmPayloadSpec extends Specification with Matchers {
       link = Internal("some/capi/id", None, GITContent),
       importance = Major,
       topic = List(Topic(`type` = Breaking, name = "uk")),
-      iosUseMessage = Some(true)
+      iosUseMessage = Some(true),
+      dryRun = None
     )
 
     val expected = Some(
@@ -126,7 +128,8 @@ class FcmPayloadSpec extends Specification with Matchers {
       articleUri = Some(new URI("https://some.other.invalid.url/detail")),
       matchStatus = "1",
       eventId = "2",
-      debug = true
+      debug = true,
+      dryRun = None
     )
 
     val expected = Some(

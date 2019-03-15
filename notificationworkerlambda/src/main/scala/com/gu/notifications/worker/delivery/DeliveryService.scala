@@ -41,7 +41,8 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           notification.id,
           token,
           payload,
-          platform
+          platform,
+          notification.dryRun.contains(true) || client.dryRun
         )(cb)
       }
 
