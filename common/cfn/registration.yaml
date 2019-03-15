@@ -36,6 +36,9 @@ Parameters:
   VPCSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: The default security group of the VPC
+  AlarmTopic:
+    Type: String
+    Description: The ARN of the SNS topic to send all the cloudwatch alarms to
   VpcId:
     Type: AWS::EC2::VPC::Id
     Description: The VPC
@@ -66,6 +69,9 @@ Parameters:
   DomainName:
     Type: String
     Description: The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.
+  NotEnough200sThreshold:
+    Type: Number
+    Description: Alarm if less than this many 200s in half an hour
 Resources:
   DistributionInstanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -298,3 +304,45 @@ Resources:
       AutoScalingGroupName: !Ref PrivateRegistrationAutoscalingGroup
       Cooldown: 300
       ScalingAdjustment: 100
+
+  NotEnoughHttpCode200sAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      AlarmDescription: !Sub Triggers if load balancer in ${Stage} does not have enough 200s
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+        - Name: LoadBalancerName
+          Value: !Ref LoadBalancerToPrivateASG
+      EvaluationPeriods: 1
+      MetricName: HTTPCode_Backend_2XX
+      Namespace: AWS/ELB
+      Period: 1800
+      Statistic: Sum
+      Threshold: !Ref NotEnough200sThreshold
+      TreatMissingData: breaching
+
+  OutlierHttpCode200Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      AlarmDescription: !Sub Triggers if registrations fall below 2 standard deviations from the mean
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 1
+      Threshold: 0
+      TreatMissingData: breaching
+      Metrics:
+        - Id: e1
+          Expression: m1-(AVG(m1)-(2*STDDEV((m1))))
+          Label: Difference from 2 standard deviations below the mean
+        - Id: m1
+          MetricStat:
+            Metric:
+              Namespace: AWS/ELB
+              MetricName: HTTPCode_Backend_2XX
+              Dimensions:
+                - Name: LoadBalancerName
+                  Value: !Ref LoadBalancerToPrivateASG
+            Period: 86400
+            Stat: Sum
+          ReturnData: false
