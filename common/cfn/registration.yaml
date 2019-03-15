@@ -321,3 +321,28 @@ Resources:
       Statistic: Sum
       Threshold: !Ref NotEnough200sThreshold
       TreatMissingData: breaching
+
+  OutlierHttpCode200Alarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      AlarmDescription: !Sub Triggers if registrations fall below 2 standard deviations from the mean
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 1
+      Threshold: 0
+      TreatMissingData: breaching
+      Metrics:
+        - Id: e1
+          Expression: m1-(AVG(m1)-(2*STDDEV((m1))))
+          Label: Difference from 2 standard deviations below the mean
+        - Id: m1
+          MetricStat:
+            Metric:
+              Namespace: AWS/ELB
+              MetricName: HTTPCode_Backend_2XX
+              Dimensions:
+                - Name: LoadBalancerName
+                  Value: !Ref LoadBalancerToPrivateASG
+            Period: 86400
+            Stat: Sum
+          ReturnData: false
