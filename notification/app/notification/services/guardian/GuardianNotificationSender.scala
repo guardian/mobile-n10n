@@ -34,7 +34,7 @@ class GuardianNotificationSender(
 
   private val logger: Logger = Logger.apply(classOf[GuardianNotificationSender])
 
-  def shouldSendToHarveseter(notification: Notification) = !(notification.`type` == BreakingNews && notification.topic.exists(x => x.name == "uk"))
+  def shouldSendToHarveseter(notification: Notification) = true
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     val result = for {
