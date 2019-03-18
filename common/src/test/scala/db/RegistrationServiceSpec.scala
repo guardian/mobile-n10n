@@ -102,16 +102,5 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
       run(service.save(reg.copy(shard = Shard(newShardId))))
       run(service.findByToken(reg.device.token)).head.shard.id should equalTo(newShardId)
     }
-    "return 0 if no registration has that topic" in {
-      run(service.countPerPlatformForTopics(NonEmptyList.one(Topic("idontexist")))) shouldEqual PlatformCount(0,0,0,0)
-      run(service.countPerPlatformForTopics(NonEmptyList(Topic("idontexist"), List(Topic("neitherdoi"))))) shouldEqual PlatformCount(0,0,0,0)
-    }
-    "count per platform and per topic with one topic" in {
-      run(service.countPerPlatformForTopics(NonEmptyList.one(Topic("topic3")))) shouldEqual PlatformCount(1,1,0,0)
-    }
-    "count per platform and per topic with two or more topics" in {
-      run(service.countPerPlatformForTopics(NonEmptyList(Topic("topic3"), List(Topic("topic4"))))) shouldEqual PlatformCount(2,1,1,0)
-    }
   }
-
 }
