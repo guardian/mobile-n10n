@@ -15,6 +15,7 @@ import play.api.libs.json.Json
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import models.TopicCount.topicCountJF
 
 case class GuardianFailedToQueueShard(
   senderName: String,
