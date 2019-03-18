@@ -21,8 +21,8 @@ class ReportTopicRegistrationCounter(topicCountDataStore: DataStore[TopicCount])
           val totalRegistrationsForTopics = top.filter{
             topicCount => topicNames.contains(topicCount.topicName)
           }
-          .foldRight(0){ (topic, count) => count + topic.registrationCount }
-         PlatformCount(total = totalRegistrationsForTopics, ios = 0, android = 0, newsstand = 0)
+          .map(_.registrationCount).sum
+           PlatformCount(total = totalRegistrationsForTopics, ios = 0, android = 0, newsstand = 0)
       }
     }
   }

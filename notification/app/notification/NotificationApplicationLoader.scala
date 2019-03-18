@@ -17,7 +17,7 @@ import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import metrics.CloudWatchMetrics
 import _root_.models.TopicCount
 import notification.authentication.NotificationAuthAction
-import notification.data.{CacheingDataStore, S3DataStore}
+import notification.data.{CachingDataStore, S3DataStore}
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services.{NewsstandSender, _}
 import notification.services.guardian.{GuardianNotificationSender, ReportTopicRegistrationCounter, TopicRegistrationCounter}
@@ -78,9 +78,9 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
       .build()
   }
 
-  lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("notifications.topicCounts.bucket"), configuration.get[String]("notifications.topicCounts.fileNamw"))
+  lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("notifications.topicCounts.bucket"), configuration.get[String]("notifications.topicCounts.fileName"))
   
-  lazy val topicCountCacheingDataStore: CacheingDataStore[TopicCount] = new CacheingDataStore[TopicCount](
+  lazy val topicCountCacheingDataStore: CachingDataStore[TopicCount] = new CachingDataStore[TopicCount](
     new S3DataStore[TopicCount](topicCountsS3)
   )
 
