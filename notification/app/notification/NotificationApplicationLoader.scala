@@ -83,7 +83,6 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     sqsClient = sqsClient,
     registrationCounter = topicRegistrationCounter,
     platform = iOS,
-    workerSqsUrl = configuration.get[String]("notifications.queues.ios"),
     harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
@@ -91,7 +90,6 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     sqsClient = sqsClient,
     registrationCounter = topicRegistrationCounter,
     platform = Android,
-    workerSqsUrl = configuration.get[String]("notifications.queues.android"),
     harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
@@ -99,7 +97,6 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     sqsClient = sqsClient,
     registrationCounter = topicRegistrationCounter,
     platform = Newsstand,
-    workerSqsUrl = configuration.get[String]("notifications.queues.ios"),
     harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
