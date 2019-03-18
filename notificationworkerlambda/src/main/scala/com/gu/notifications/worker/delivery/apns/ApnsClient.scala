@@ -24,7 +24,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   type Success = ApnsDeliverySuccess
   type Payload = ApnsPayload
-
+  val dryRun = config.dryRun
   val platform: Platform = iOS
 
   private val invalidTokenErrorCodes = Seq(
@@ -36,7 +36,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   def payloadBuilder: Notification => Option[ApnsPayload] = ApnsPayload.apply _
 
-  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit = {
 
@@ -82,7 +82,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
       }
     }
 
-    if(config.dryRun) {
+    if(dryRun) {
       onComplete(Right(ApnsDeliverySuccess(token, dryRun = true)))
     } else {
       underlying

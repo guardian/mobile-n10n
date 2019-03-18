@@ -82,7 +82,8 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       imageUrl = None,
       importance = Major,
-      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
+      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
+      dryRun = None
     )
     val chunkedTokens = ChunkedTokens(
       notification = notification,

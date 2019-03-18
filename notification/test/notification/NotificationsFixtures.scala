@@ -24,7 +24,8 @@ trait NotificationsFixtures {
     imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/" +
       "0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
     importance = Major,
-    topic = topics
+    topic = topics,
+    dryRun = None
   )
 
   def newsstandShardNotification() = NewsstandShardNotification(
@@ -42,7 +43,8 @@ trait NotificationsFixtures {
       link = Internal("capiId", None, GITContent),
       imageUrl = None,
       importance = importance,
-      topic = List()
+      topic = List(),
+      dryRun = None
     ),
     destination = Set(Topic(Content, "us-presidential-2016"))
   )

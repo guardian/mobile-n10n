@@ -47,7 +47,8 @@ class NotificationSpec extends Specification {
        imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/" +
          "0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
        importance = Major,
-       topic = List(Topic(Breaking, "uk"))
+       topic = List(Topic(Breaking, "uk")),
+       dryRun = None
      )
 
      val expected =
@@ -83,7 +84,8 @@ class NotificationSpec extends Specification {
        sender = "test",
        link = Internal("environment/ng-interactive/2015/oct/16/which-countries-are-doing-the-most-to-stop-dangerous-global-warming", None, GITContent),
        importance = Major,
-       topic = List(Topic(TagSeries, "environment/series/keep-it-in-the-ground"))
+       topic = List(Topic(TagSeries, "environment/series/keep-it-in-the-ground")),
+       dryRun = None
      )
 
      val expected =
@@ -131,7 +133,8 @@ class NotificationSpec extends Specification {
          Topic(FootballTeam, "41"),
          Topic(FootballMatch, "3833380")
        ),
-       addedTime = None
+       addedTime = None,
+       dryRun = None
      )
 
      val expected =

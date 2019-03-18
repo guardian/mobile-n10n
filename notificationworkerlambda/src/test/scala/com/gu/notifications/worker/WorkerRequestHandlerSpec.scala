@@ -101,7 +101,8 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       imageUrl = None,
       importance = Major,
-      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"))
+      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
+      dryRun = None
     )
     val contentNotification = BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd8"),
@@ -113,7 +114,8 @@ class WorkerRequestHandlerSpec extends Specification with Matchers {
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
       imageUrl = None,
       importance = Major,
-      topic = List(Topic(Content, "some-content"))
+      topic = List(Topic(Content, "some-content")),
+      dryRun = None
     )
 
     def sqsEventShardNotification(notification: Notification): SQSEvent = {

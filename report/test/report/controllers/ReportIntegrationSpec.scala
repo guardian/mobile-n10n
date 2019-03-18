@@ -84,7 +84,8 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
           link = Internal(s"content/api/id/$prefix", None, GITContent),
           imageUrl = Some(new URI(s"http://some.url/$prefix.jpg")),
           importance = Major,
-          topic = List(Topic(Breaking, "uk"))
+          topic = List(Topic(Breaking, "uk")),
+          dryRun = None
         ),
         reports = List(
           SenderReport("Firebase", DateTime.now.withZone(UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
@@ -108,7 +109,8 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
           link = Internal(s"content/api/id/$prefix", None, GITContent),
           importance = Major,
           topic = List(Topic(Breaking, "uk")),
-          iosUseMessage = None
+          iosUseMessage = None,
+          dryRun = None
         ),
         reports = List(
           SenderReport("Firebase", DateTime.now.withZone(UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
