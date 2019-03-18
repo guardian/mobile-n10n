@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Consumes events produced by the notification service and sends notifications to individual devices
+Description: Consumes batched tokens with notifications to send to individual devices
 Parameters:
   Stack:
     Description: Stack name
