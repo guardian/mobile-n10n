@@ -10,20 +10,17 @@ import scala.concurrent.duration.DurationLong
 
 class ReportTopicRegistrationCounter(topicCountDataStore: DataStore[TopicCount])(implicit ec: ExecutionContext) extends TopicRegistrationCounter {
 
-  val lruCache: LruCache[PlatformCount] = new LruCache[PlatformCount](200, 1000, 3.days)
 
   override def count(topics: List[Topic])(implicit format: Format[TopicCount] ): Future[PlatformCount]  =  {
-    lruCache(topics.toSet) {
-      val topicNames = topics.map(topic => topic.fullName)
-      val persitedTopicRegistrationCounts = topicCountDataStore.get()
-      persitedTopicRegistrationCounts.map {
-        top =>
-          val totalRegistrationsForTopics = top.filter{
-            topicCount => topicNames.contains(topicCount.topicName)
-          }
-          .map(_.registrationCount).sum
-           PlatformCount(total = totalRegistrationsForTopics, ios = 0, android = 0, newsstand = 0)
-      }
+    val topicNames = topics.map(topic => topic.fullName)
+    val persitedTopicRegistrationCounts = topicCountDataStore.get()
+    persitedTopicRegistrationCounts.map {
+      topicCounts =>
+        val totalRegistrationsForTopics = topicCounts.filter {
+          topicCount => topicNames.contains(topicCount.topicName)
+        }
+        .map(_.registrationCount).sum
+         PlatformCount(total = totalRegistrationsForTopics, ios = 0, android = 0, newsstand = 0)
     }
   }
 }
