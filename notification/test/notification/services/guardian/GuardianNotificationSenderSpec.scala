@@ -81,7 +81,6 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
           override def count(topics: List[Topic]): Future[PlatformCount] = Future.failed(new RuntimeException("exception"))
         },
         platform = iOS,
-        workerSqsUrl = "",
         harvesterSqsUrl = ""
       )
 
@@ -158,7 +157,6 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
         override def count(topics: List[Topic]): Future[PlatformCount] = Future.successful(topicStats(registrationCount))
       },
       platform = iOS,
-      workerSqsUrl = "",
       harvesterSqsUrl = ""
     )
   }

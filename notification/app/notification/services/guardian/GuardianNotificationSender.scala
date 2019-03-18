@@ -25,7 +25,6 @@ class GuardianNotificationSender(
   sqsClient: AmazonSQSAsync,
   registrationCounter: TopicRegistrationCounter,
   platform: Platform,
-  workerSqsUrl: String,
   harvesterSqsUrl: String,
 )(implicit ec: ExecutionContext) extends NotificationSender {
 
@@ -40,12 +39,7 @@ class GuardianNotificationSender(
     val result = for {
       registrationCount <- countRegistration(platform, push.notification.topic)
       workerBatches = prepareBatch(platform, push.notification, registrationCount)
-      sqsUrl = if (shouldSendToHarveseter(push.notification)) {
-        harvesterSqsUrl
-      } else {
-        workerSqsUrl
-      }
-      sqsBatchResults <- sendBatch(workerBatches, sqsUrl)
+      sqsBatchResults <- sendBatch(workerBatches, harvesterSqsUrl)
     } yield {
       val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
       if (failed.isEmpty) {
