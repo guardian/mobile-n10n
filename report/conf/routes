@@ -2,3 +2,5 @@ GET         /healthcheck                         report.controllers.Report.healt
 GET         /notifications                       report.controllers.Report.notifications(`type`: NotificationType, from: Option[DateTime], until: Option[DateTime])
 GET         /notifications/:id                   report.controllers.Report.notification(id: java.util.UUID)
 
+GET         /registration-count                  report.controllers.RegistrationCount.forTopics(topics: List[models.Topic])
+

@@ -1,9 +1,8 @@
 package com.gu.notifications.worker
 
 import _root_.models.TopicCount
-import aws.TopicCountsS3
 import cats.effect.IO
-import com.gu.notifications.worker.utils.Logging
+import com.gu.notifications.worker.utils.{Logging, TopicCountsS3}
 import db.RegistrationService
 import fs2.Stream
 import org.slf4j.{Logger, LoggerFactory}
