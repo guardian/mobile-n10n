@@ -10,5 +10,5 @@ trait RegistrationRepository[F[_], S[_[_], _]] {
   def remove(sub: Registration): F[Int]
   def removeByToken(token: String): F[Int]
   def countPerPlatformForTopics(topics: NonEmptyList[Topic]): F[PlatformCount]
-  def topicCounts: S[F, TopicCount]
+  def topicCounts(countsThreshold: Int): S[F, TopicCount]
 }

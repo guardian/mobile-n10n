@@ -11,13 +11,13 @@ import play.api.libs.json.Format
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext}
 
-class TopicCounter(registrationService: RegistrationService[IO, Stream], topicCountS3: TopicCountsS3) extends Logging {
+class TopicCounter(registrationService: RegistrationService[IO, Stream], topicCountS3: TopicCountsS3, countsThreshold: Int) extends Logging {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def handleRequest()(implicit format: Format[TopicCount], executionContext: ExecutionContext): Unit = {
 
-    val topicCountStream = registrationService.topicCounts
+    val topicCountStream = registrationService.topicCounts(countsThreshold)
     val ioTopicListF = topicCountStream.compile.toList.unsafeToFuture
 
     val ioTopicList = Await.result(ioTopicListF, Duration.Inf)

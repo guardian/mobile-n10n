@@ -114,11 +114,11 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       .transact(xa)
   }
 
-  override def topicCounts: Stream[F, TopicCount] = {
+  override def topicCounts(countThreshold: Int): Stream[F, TopicCount] = {
     sql"""
          SELECT topic, count(topic) as topic_count from registrations
          GROUP BY topic
-         HAVING count(topic) > 1000
+         HAVING count(topic) > $countThreshold
          ORDER BY topic_count desc
       """
         .query[TopicCount]
