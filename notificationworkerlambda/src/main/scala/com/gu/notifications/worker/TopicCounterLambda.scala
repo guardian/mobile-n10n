@@ -1,11 +1,10 @@
 package com.gu.notifications.worker
 
-import aws.TopicCountsS3
 import cats.effect.{ContextShift, IO}
 import com.amazonaws.auth.AWSCredentialsProviderChain
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
-import com.gu.notifications.worker.utils.{Aws, Logging}
+import com.gu.notifications.worker.utils.{Aws, Logging, TopicCountsS3}
 import db.{DatabaseConfig, RegistrationService}
 import doobie.util.transactor.Transactor
 import org.slf4j.{Logger, LoggerFactory}

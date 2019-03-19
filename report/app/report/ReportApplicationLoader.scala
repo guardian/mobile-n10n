@@ -16,7 +16,7 @@ import play.filters.HttpFiltersComponents
 import play.filters.gzip.GzipFilter
 import play.filters.hosts.AllowedHostsFilter
 import report.authentication.ReportAuthAction
-import report.controllers.Report
+import report.controllers.{RegistrationCount, Report}
 import report.services.Configuration
 import tracking.{DynamoNotificationReportRepository, SentNotificationReportRepository}
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
@@ -47,6 +47,8 @@ class ReportApplicationComponents(context: Context) extends BuiltInComponentsFro
     new DynamoNotificationReportRepository(AsyncDynamo(regions = EU_WEST_1, credentialsProvider), appConfig.dynamoReportsTableName)
 
   lazy val registrationDbService: db.RegistrationService[IO, fs2.Stream] = db.RegistrationService.fromConfig(configuration, applicationLifecycle)
+
+  lazy val registrationCount: RegistrationCount = wire[RegistrationCount]
 
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"

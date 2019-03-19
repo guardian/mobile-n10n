@@ -15,7 +15,6 @@ import play.api.libs.json.Json
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
-import models.TopicCount.topicCountJF
 
 case class GuardianFailedToQueueShard(
   senderName: String,
@@ -93,15 +92,19 @@ class GuardianNotificationSender(
   }
 
   def shard(registrationCount: Int): List[ShardRange] = {
-    val shardSpace = -Short.MinValue.toInt + Short.MaxValue.toInt
-    val shardCount = Math.ceil(Math.max(1, registrationCount) / WORKER_BATCH_SIZE.toDouble)
-    val step = Math.ceil(shardSpace / shardCount).toInt
+    if (registrationCount == 0) {
+      Nil
+    } else {
+      val shardSpace = -Short.MinValue.toInt + Short.MaxValue.toInt
+      val shardCount = Math.ceil(Math.max(1, registrationCount) / WORKER_BATCH_SIZE.toDouble)
+      val step = Math.ceil(shardSpace / shardCount).toInt
 
-    (Short.MinValue until Short.MaxValue by step).toList.map { i =>
-      ShardRange(
-        start = if (i == Short.MinValue.toInt) Short.MinValue else (i + 1).toShort,
-        end = Math.min(i + step, Short.MaxValue).toShort
-      )
+      (Short.MinValue until Short.MaxValue by step).toList.map { i =>
+        ShardRange(
+          start = if (i == Short.MinValue.toInt) Short.MinValue else (i + 1).toShort,
+          end = Math.min(i + step, Short.MaxValue).toShort
+        )
+      }
     }
   }
 
