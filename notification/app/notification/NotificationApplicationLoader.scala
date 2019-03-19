@@ -78,7 +78,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
       .build()
   }
 
-  lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("notifications.topicCounts.bucket"), configuration.get[String]("notifications.topicCounts.fileName"))
+  lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("topicCounts.bucket"), configuration.get[String]("topicCounts.fileName"))
   
   lazy val topicCountCacheingDataStore: CachingDataStore[TopicCount] = new CachingDataStore[TopicCount](
     new S3DataStore[TopicCount](topicCountsS3)
