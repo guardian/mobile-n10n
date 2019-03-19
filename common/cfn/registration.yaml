@@ -72,6 +72,9 @@ Parameters:
   NotEnough200sThreshold:
     Type: Number
     Description: Alarm if less than this many 200s in half an hour
+  NotEnough200sPerDayThreshold:
+    Type: Number
+    Description: Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.
 Resources:
   DistributionInstanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -309,7 +312,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
-      AlarmDescription: !Sub Triggers if load balancer in ${Stage} does not have enough 200s
+      AlarmDescription: !Sub Triggers if load balancer in ${Stage} does not have enough 200s in half an hour
       ComparisonOperator: LessThanThreshold
       Dimensions:
         - Name: LoadBalancerName
@@ -322,27 +325,20 @@ Resources:
       Threshold: !Ref NotEnough200sThreshold
       TreatMissingData: breaching
 
-  OutlierHttpCode200Alarm:
+
+  NotEnoughHttpCode200sPerDayAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
-      AlarmDescription: !Sub Triggers if registrations fall below 2 standard deviations from the mean
+      AlarmDescription: !Sub Triggers if load balancer in ${Stage} does not have enough 200s in a whole day
       ComparisonOperator: LessThanThreshold
+      Dimensions:
+        - Name: LoadBalancerName
+          Value: !Ref LoadBalancerToPrivateASG
       EvaluationPeriods: 1
-      Threshold: 0
+      MetricName: HTTPCode_Backend_2XX
+      Namespace: AWS/ELB
+      Period: 86400
+      Statistic: Sum
+      Threshold: !Ref NotEnough200sPerDayThreshold
       TreatMissingData: breaching
-      Metrics:
-        - Id: e1
-          Expression: m1-(AVG(m1)-(2*STDDEV((m1))))
-          Label: Difference from 2 standard deviations below the mean
-        - Id: m1
-          MetricStat:
-            Metric:
-              Namespace: AWS/ELB
-              MetricName: HTTPCode_Backend_2XX
-              Dimensions:
-                - Name: LoadBalancerName
-                  Value: !Ref LoadBalancerToPrivateASG
-            Period: 86400
-            Stat: Sum
-          ReturnData: false
