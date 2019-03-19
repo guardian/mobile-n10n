@@ -26,7 +26,7 @@ final class Report(
     Ok("Good")
   }
 
-  def notifications(notificationType: NotificationType, from: Option[DateTime], until: Option[DateTime]): Action[AnyContent] = {
+  def notifications(notificationType: NotificationType, from: Option[DateTime], until: Option[DateTime], includeDryRun: Option[Boolean]): Action[AnyContent] = {
     authAction.async { request =>
 
       reportRepository.getByTypeWithDateRange(
@@ -34,7 +34,11 @@ final class Report(
         from = from.getOrElse(DateTime.now.minusWeeks(1)),
         to = until.getOrElse(DateTime.now)
       ) map {
-        case Right(result) => Ok(Json.toJson(result.map(new NotificationReport(_))))
+        case Right(result) => {
+          val includeDryRunBoolean: Boolean = includeDryRun.contains(true)
+          val filteredResults = result.filter(report => report.notification.dryRun.contains(true) == includeDryRunBoolean)
+          Ok(Json.toJson(filteredResults.map(new NotificationReport(_))))
+        }
         case Left(error) => InternalServerError(error.message)
       }
     }
