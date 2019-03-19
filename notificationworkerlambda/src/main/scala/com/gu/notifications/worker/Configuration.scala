@@ -36,6 +36,7 @@ case class CleanerConfiguration(jdbcConfig: JdbcConfig)
 
 case class TopicCountsConfiguration (
   jdbcConfig: JdbcConfig,
+  countThreshold: Int,
   bucketName: String,
   fileName: String
 )
@@ -108,6 +109,7 @@ object Configuration {
     val config = fetchConfiguration()
     TopicCountsConfiguration(
       jdbcConfig(config),
+      config.getInt("topicCounts.countThreshold"),
       config.getString("topicCounts.bucket"),
       config.getString("topicCounts.fileName")
     )

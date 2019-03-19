@@ -30,7 +30,7 @@ class TopicCounterLambda extends Logging {
   val topicsS3 = new TopicCountsS3(s3Client, config.bucketName, s"${env.stage}/${config.fileName}")
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
   val registrationService = RegistrationService(transactor)
-  val topicCounts = new TopicCounter(registrationService, topicsS3)
+  val topicCounts = new TopicCounter(registrationService, topicsS3, config.countThreshold)
 
   def handleRequest(): Unit = {
     logger.info("Handling request to get topic counters: ")
