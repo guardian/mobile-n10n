@@ -45,7 +45,7 @@ trait S3[T]  {
         list
       case JsError(errors) =>
         val errorPaths = errors.map { error => error._1.toString() }.mkString(",")
-        logger.error(s"Error parsing topi counts paths: ${errorPaths}")
+        logger.error(s"Error parsing topic counts. paths: ${errorPaths}")
         throw new TopicCounterException(s"could not extract list of topic registration counts from json. Errors paths(s): $errors")
     }
   }

@@ -10,7 +10,7 @@ import com.softwaremill.macwire._
 import controllers.Main
 import _root_.models.NewsstandShardConfig
 import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
-import com.gu.AppIdentity
+import com.gu.{AppIdentity, AwsIdentity}
 import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
 import _root_.models.{Android, Newsstand, iOS}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
@@ -78,7 +78,12 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
       .build()
   }
 
-  lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("notifications.topicCounts.bucket"), configuration.get[String]("notifications.topicCounts.fileName"))
+  lazy val stage = identity match {
+    case AwsIdentity(_, _, stage, _) => stage
+    case _ => "DEV"
+  }
+
+  lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("notifications.topicCounts.bucket"), s"${stage}/${configuration.get[String]("notifications.topicCounts.fileName")}")
   
   lazy val topicCountCacheingDataStore: CachingDataStore[TopicCount] = new CachingDataStore[TopicCount](
     new S3DataStore[TopicCount](topicCountsS3)
