@@ -78,10 +78,12 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
       .build()
   }
 
+/*
   lazy val stage = identity match {
     case AwsIdentity(_, _, stage, _) => stage
     case _ => "DEV"
   }
+*/
 
   lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("notifications.topicCounts.bucket"), s"${stage}/${configuration.get[String]("notifications.topicCounts.fileName")}")
   
