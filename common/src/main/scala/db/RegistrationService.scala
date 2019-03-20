@@ -18,6 +18,7 @@ class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F
   def save(sub: Registration): F[Int] = repository.save(sub)
   def remove(sub: Registration): F[Int] = repository.remove(sub)
   def removeAllByToken(token: String): F[Int] = repository.removeByToken(token)
+  def countPerPlatformForTopics(topics: NonEmptyList[Topic]): F[PlatformCount] = repository.countPerPlatformForTopics(topics)
   def topicCounts(countThreshold: Int): S[F, TopicCount] = repository.topicCounts(countThreshold)
 }
 

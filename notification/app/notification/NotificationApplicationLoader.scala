@@ -4,20 +4,17 @@ import java.net.URI
 
 import _root_.controllers.AssetsComponents
 import akka.actor.ActorSystem
-import aws.{AsyncDynamo, TopicCountsS3}
+import aws.AsyncDynamo
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.softwaremill.macwire._
 import controllers.Main
 import _root_.models.NewsstandShardConfig
 import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
-import com.gu.{AppIdentity, AwsIdentity}
+import com.gu.AppIdentity
 import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
 import _root_.models.{Android, Newsstand, iOS}
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import metrics.CloudWatchMetrics
-import _root_.models.TopicCount
 import notification.authentication.NotificationAuthAction
-import notification.data.{CachingDataStore, S3DataStore}
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services.{NewsstandSender, _}
 import notification.services.guardian.{GuardianNotificationSender, ReportTopicRegistrationCounter, TopicRegistrationCounter}
@@ -49,7 +46,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   implicit lazy val implicitActorSystem: ActorSystem = actorSystem
 
-  lazy val appConfig = new Configuration(configuration, identity)
+  lazy val appConfig = new Configuration(configuration)
   lazy val metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
 
   lazy val authAction = wire[NotificationAuthAction]
@@ -71,20 +68,11 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     new FrontendAlerts(frontendConfig, wsClient)
   }
 
-  lazy val s3Client: AmazonS3 = {
-    AmazonS3ClientBuilder.standard()
-      .withRegion(EU_WEST_1)
-      .withCredentials(credentialsProvider)
-      .build()
-  }
-
-  lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("notifications.topicCounts.bucket"), s"${appConfig.stage}/${configuration.get[String]("notifications.topicCounts.fileName")}")
-  
-  lazy val topicCountCacheingDataStore: CachingDataStore[TopicCount] = new CachingDataStore[TopicCount](
-    new S3DataStore[TopicCount](topicCountsS3)
+  lazy val topicRegistrationCounter: TopicRegistrationCounter = new ReportTopicRegistrationCounter(
+    wsClient,
+    configuration.get[String]("report.url"),
+    configuration.get[String]("report.apiKey")
   )
-
-  lazy val topicRegistrationCounter: TopicRegistrationCounter = new ReportTopicRegistrationCounter(topicCountCacheingDataStore)
 
   lazy val sqsClient: AmazonSQSAsync = AmazonSQSAsyncClientBuilder.standard()
     .withCredentials(credentialsProvider)

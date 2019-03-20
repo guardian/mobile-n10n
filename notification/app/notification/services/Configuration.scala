@@ -1,11 +1,10 @@
 package notification.services
 
-import com.gu.{AppIdentity, AwsIdentity}
 import play.api.{Configuration => PlayConfig}
 
 import scala.concurrent.duration._
 
-class Configuration(conf: PlayConfig, identity: AppIdentity) {
+class Configuration(conf: PlayConfig) {
 
   lazy val apiKeys: Set[String] = conf.get[Seq[String]]("notifications.api.secretKeys").toSet
   lazy val frontendNewsAlertEndpoint: String = conf.get[String]("notifications.frontendNewsAlert.endpoint")
@@ -15,9 +14,4 @@ class Configuration(conf: PlayConfig, identity: AppIdentity) {
   lazy val newsstandRestrictedApiKeys: Set[String] = conf.get[Seq[String]]("notifications.api.newsstandRestrictedKeys").toSet
 
   lazy val newsstandShards: Int = conf.get[Int]("newsstand.shards")
-  lazy val stage = identity match {
-    case AwsIdentity(_, _, stage, _) => stage
-    case _ => "DEV"
-  }
-
 }
