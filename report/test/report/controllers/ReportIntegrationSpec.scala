@@ -163,7 +163,6 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
             override def save(sub: db.Registration): IO[Port] = ???
             override def remove(sub: db.Registration): IO[Port] = ???
             override def removeByToken(token: String): IO[Port] = ???
-            override def countPerPlatformForTopics(topics: NonEmptyList[db.Topic]): IO[PlatformCount] = ???
 
             override def topicCounts(countsThreshold: Int): fs2.Stream[IO, TopicCount] = ???
           }

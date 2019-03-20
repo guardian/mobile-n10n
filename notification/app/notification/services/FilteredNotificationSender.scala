@@ -4,6 +4,7 @@ import notification.models.Push
 import notification.services.guardian.TopicRegistrationCounter
 import org.joda.time.DateTime
 import play.api.Logger
+import models.TopicCount.topicCountJF
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
