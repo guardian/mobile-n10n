@@ -36,10 +36,12 @@ object UkRegularStories {
 }
 
 class TopUkRegularStory(okHttpClient: OkHttpClient, ukRegularStoriesUrl: String) {
-  def fetchTopFrontAsBreakingNews: Future[BreakingNewsPayload] = {
+  def fetchTopFrontAsBreakingNews(): Future[BreakingNewsPayload] = {
 
     val promise = Promise[BreakingNewsPayload]
-    val call = okHttpClient.newCall(new Request.Builder().build())
+    val call = okHttpClient.newCall(new Request.Builder()
+      .url(ukRegularStoriesUrl)
+      .build())
     call.enqueue(new Callback {
       override def onFailure(call: Call, e: IOException): Unit = promise.failure(new Exception(s"Error getting $ukRegularStoriesUrl", e))
 
@@ -63,12 +65,11 @@ class TopUkRegularStory(okHttpClient: OkHttpClient, ukRegularStoriesUrl: String)
               git = client.models.GITContent,
               blockId = None
             ),
-
             imageUrl = None,
             importance = client.models.Importance.Major,
             topic = List(client.models.Topic.BreakingNewsInternalTest),
-            debug = false
-
+            debug = false,
+            dryRun = Some(true)
           )
         } yield breakingNewsPayload
         maybebreakingNewsNotification.get

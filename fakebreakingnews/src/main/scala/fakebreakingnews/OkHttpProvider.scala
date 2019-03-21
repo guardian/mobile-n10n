@@ -1,66 +1,58 @@
 package fakebreakingnews
 
 import java.io.IOException
+import java.nio.charset.StandardCharsets
 
 import com.gu.mobile.notifications.client.{ContentType, HttpError, HttpOk, HttpProvider, HttpResponse}
+import fakebreakingnews.RequestToPromise.requestToPromise
 import okhttp3.{Call, Callback, MediaType, OkHttpClient, Request, RequestBody, Response}
 
 import scala.concurrent.{Future, Promise}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
-class OkHttpProvider(okhttp: OkHttpClient) extends HttpProvider {
-  override def post(url: String, apiKey: String, contentType: ContentType, body: Array[Byte]): Future[HttpResponse] = {
-    val promise = Promise[HttpResponse]
-    val call = okhttp.newCall(new Request.Builder()
-      .url(url)
-      .addHeader("Authorization", s"Bearer $apiKey")
-      .post(RequestBody.create(MediaType.get(s"${contentType.mediaType}; charset=${contentType.charset}"), body))
-      .build())
-    call.enqueue(new Callback {
-      override def onFailure(call: Call, e: IOException): Unit = promise.failure(new Exception(s"Error posting to $url", e))
+object RequestToPromise {
 
-      override def onResponse(call: Call, response: Response): Unit = {
+  def requestToPromise[T](okHttpClient: OkHttpClient, request: Request, transform: (Int, Option[Array[Byte]]) => T) = {
+    val promise = Promise[T]
+    val url = request.url()
+    val method = request.method()
+    okHttpClient.newCall(request).enqueue(new Callback {
+      override def onFailure(call: Call, e: IOException): Unit = promise.failure(new Exception(s"$method $url", e))
+
+      override def onResponse(call: Call, response: Response): Unit = promise.complete(
         Try {
-          val body = Option(response.body).map(_.string()).getOrElse("")
-          if (response.code < 400) {
-            HttpError(response.code, body)
-          }
-          else {
-            HttpOk(response.code, body)
-          }
-        }
-      } match {
-        case Success(httpResponse) => promise.success(httpResponse)
-        case Failure(e) => promise.failure(new Exception(s"Error posting to $url", e))
-      }
+          val maybeBytes = Option(response.body).map(_.bytes())
+          transform(response.code, maybeBytes)
+        }.recoverWith { case e => Failure(new Exception(s"$method $url", e)) }
+      )
     })
     promise.future
   }
+}
+
+class OkHttpProvider(okhttp: OkHttpClient) extends HttpProvider {
+  def codeAndBodyToHttpResponse(code: Int, maybeBodyArray: Option[Array[Byte]]): HttpResponse = {
+    val body = maybeBodyArray.map(new String(_, StandardCharsets.UTF_8)).getOrElse("")
+    if (code >= 200 && code < 300) {
+      HttpOk(code, body)
+    } else {
+      HttpError(code, body)
+    }
+  }
+  override def post(url: String, apiKey: String, contentType: ContentType, body: Array[Byte]): Future[HttpResponse] = {
+    val request = new Request.Builder()
+      .url(url)
+      .addHeader("Authorization", s"Bearer $apiKey")
+      .post(RequestBody.create(MediaType.get(s"${contentType.mediaType}; charset=${contentType.charset}"), body))
+      .build()
+    requestToPromise(okhttp, request, codeAndBodyToHttpResponse)
+  }
 
   override def get(url: String): Future[HttpResponse] = {
-    val promise = Promise[HttpResponse]
-    val call = okhttp.newCall(new Request.Builder()
+    val request = new Request.Builder()
       .url(url)
       .get()
-      .build())
-    call.enqueue(new Callback {
-      override def onFailure(call: Call, e: IOException): Unit = promise.failure(new Exception(s"Error getting $url", e))
-
-      override def onResponse(call: Call, response: Response): Unit = {
-        Try {
-          val body = Option(response.body).map(_.string()).getOrElse("")
-          if (response.code < 400) {
-            HttpError(response.code, body)
-          }
-          else {
-            HttpOk(response.code, body)
-          }
-        }
-      } match {
-        case Success(httpResponse) => promise.success(httpResponse)
-        case Failure(e) => promise.failure(new Exception(s"Error getting $url", e))
-      }
-    })
-    promise.future
+      .build()
+    requestToPromise(okhttp, request, codeAndBodyToHttpResponse)
   }
 }

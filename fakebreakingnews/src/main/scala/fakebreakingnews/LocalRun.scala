@@ -1,5 +1,6 @@
 package fakebreakingnews
 
 object LocalRun extends App {
-  new FakeBreakingNewsLambda().handleRequest()
+  private val fakeBreakingNewsLambda = new FakeBreakingNewsLambda()
+  fakeBreakingNewsLambda.handleRequest()
 }

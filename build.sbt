@@ -384,6 +384,7 @@ lazy val fakebreakingnews = project
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
+    riffRaffArtifactResources += (baseDirectory.value / "fakebreakingnews-cfn.yaml", s"fakebreakingnews-cfn/fakebreakingnews-cfn.yaml"),
     mainClass := Some("fakebreakingnews.LocalRun")
   )
 
