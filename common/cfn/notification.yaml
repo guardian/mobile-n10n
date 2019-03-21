@@ -86,6 +86,10 @@ Parameters:
   S3LoggingBucket:
     Type: String
     Description: The name of the s3 bucket containing the access logs
+  S3TopicCountBucket:
+    Type: String
+    Description: Name of the bucket storing the persisted topic subscription counts
+
 Resources:
   DnsRecord:
     Type: AWS::Route53::RecordSet
@@ -227,7 +231,9 @@ Resources:
           Statement:
           - Action: s3:GetObject
             Effect: Allow
-            Resource: !Sub arn:aws:s3:::${DistBucket}/*
+            Resource:
+            - !Sub arn:aws:s3:::${DistBucket}/*
+            - !Sub arn:aws:s3:::${S3TopicCountBucket}/*
           - Action: ec2:DescribeTags
             Effect: Allow
             Resource: '*'
