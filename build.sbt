@@ -248,7 +248,7 @@ lazy val apiClient = {
     ),
     organization := "com.gu",
     bintrayOrganization := Some("guardian"),
-    bintrayRepository := "platforms",
+    bintrayRepository := "mobile",
     description := "Scala client for the Guardian Push Notifications API",
     scmInfo := Some(ScmInfo(
       url("https://github.com/guardian/mobile-n10n"),
