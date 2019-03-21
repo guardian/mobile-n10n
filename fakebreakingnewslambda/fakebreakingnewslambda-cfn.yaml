@@ -71,7 +71,7 @@ Resources:
           App: !Ref App
       Description: Sends a fake breaking news
       Handler: fakebreakingnews.FakeBreakingNewsLambda::handleRequest
-      MemorySize: 3008
+      MemorySize: 512
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
