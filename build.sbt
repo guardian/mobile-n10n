@@ -401,5 +401,5 @@ lazy val root = (project in file(".")).
     apiClient,
     eventconsumer,
     notificationworkerlambda,
-    fakebreakingnews
+    fakebreakingnewslambda
   )
