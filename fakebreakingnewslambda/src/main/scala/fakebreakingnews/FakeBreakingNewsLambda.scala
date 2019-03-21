@@ -31,10 +31,12 @@ class FakeBreakingNewsLambda {
   val topFrontFetcher = new TopUkRegularStory(okhttp, config.getString("mobileFronts.ukRegularStoriesUrl"))
   val fakeRegistrations = new FakeRegistrations(okhttp, config.getString("registration.legacyDeviceRegistrationUrl"))
   def handleRequest(): Unit = {
-    val eventualRegistrations = Future.sequence(Seq(fakeRegistrations.register(androidUuid, Android), fakeRegistrations.register(iosUuid, iOS)))
+    val eventualAndroidRegistration = fakeRegistrations.register(androidUuid, Android)
+    val eventualIosRegistration = fakeRegistrations.register(iosUuid, iOS)
     val eventualBreakingNewsPayload = topFrontFetcher.fetchTopFrontAsBreakingNews()
     val futureResult: Future[Either[ApiClientError, Unit]] = for {
-      _ <- eventualRegistrations
+      _ <- eventualAndroidRegistration
+      _ <- eventualIosRegistration
       breakingNewsNotification <- eventualBreakingNewsPayload
       sendResult <- client.send(breakingNewsNotification)
     } yield sendResult
