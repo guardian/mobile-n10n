@@ -327,6 +327,7 @@ lazy val notificationworkerlambda = project
   .enablePlugins(RiffRaffArtifact)
   .settings(
     libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.turo" % "pushy" % "0.13.5",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",

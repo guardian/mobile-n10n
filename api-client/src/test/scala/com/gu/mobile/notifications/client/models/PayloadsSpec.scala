@@ -49,7 +49,8 @@ class PayloadsSpec extends Specification {
           |    "type" : "breaking",
           |    "name" : "uk"
           |  } ],
-          |  "debug":true
+          |  "debug":true,
+          |  "dryRun" : false
           |}
         """.stripMargin
 
@@ -91,7 +92,8 @@ class PayloadsSpec extends Specification {
           |    "type" : "breaking",
           |    "name" : "n2"
           |    }],
-          |    "debug" : false
+          |    "debug" : false,
+          |    "dryRun" : false
           |}
         """.stripMargin
       verifySerialization(payload, expectedJson)
