@@ -42,31 +42,6 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
     "successfully send payload" in apiTest {
       client => client.send(payload) must beRight.await
     }
-    "successfully send multiple HTTP calls for breaking news with more than one tag" in {
-      val payLoadMultipleTopics = payload.copy(topic = List(Topic(Breaking, "n1"), Topic(Breaking, "n2")))
-
-      val fakeHttpProvider = mock[HttpProvider]
-      fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(HttpOk(201, """{"id":"someId"}"""))
-
-      val testApiClient = getTestApiClient(fakeHttpProvider)
-      testApiClient.send(payLoadMultipleTopics)
-
-      val bodyCapture = new ArgumentCapture[Array[Byte]]
-      val apiKeyCapture = new ArgumentCapture[String]
-      val urlCapture = new ArgumentCapture[String]
-      val contentTypeCapture = new ArgumentCapture[ContentType]
-
-      there was two(fakeHttpProvider).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
-      urlCapture.value mustEqual expectedPostUrl
-      contentTypeCapture.value mustEqual ContentType("application/json", "UTF-8")
-      apiKeyCapture.value mustEqual apiKey
-
-      val ids = bodyCapture.values
-        .asScala.toList
-        .map(Json.parse)
-        .map(_ \ "id")
-      ids(0) mustNotEqual ids(1)
-    }
     "return HttpApiError error if http provider returns ApiHttpError" in apiTest(serverResponse = HttpError(500, "")) {
       client => client.send(payload) must beEqualTo(Left(ApiHttpError(status = 500, Some("")))).await
     }
@@ -88,5 +63,4 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
       client.send(payload) must beEqualTo(Left(HttpProviderError(throwable))).await
     }
   }
-
 }
