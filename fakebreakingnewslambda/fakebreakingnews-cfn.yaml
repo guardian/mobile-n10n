@@ -63,7 +63,7 @@ Resources:
       Code:
         S3Bucket:
           Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/fakebreakingnews/fakebreakingnews.jar
+        S3Key: !Sub ${Stack}/${Stage}/fakebreakingnewslambda/fakebreakingnewslambda.jar
       Environment:
         Variables:
           Stage: !Ref Stage
