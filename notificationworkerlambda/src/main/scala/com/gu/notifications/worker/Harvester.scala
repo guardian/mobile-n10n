@@ -77,13 +77,10 @@ trait HarvesterRequestHandler extends Logging {
       iosSink = apnsSink(n.notification, n.range, iOS)
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
-      tokens = {
-        n.platform
-          .map(p =>
-            tokenService.tokens(n.notification, n.range, p)
-              .map(token => (token, p)))
-          .getOrElse(tokenService.tokens(n.notification, n.range))
-      }
+      tokens = n.platform match {
+          case Some(platform) => tokenService.tokens(n.notification, n.range, platform).map(token => (token, platform))
+          case None => tokenService.tokens(n.notification, n.range)
+        }
       resp <- tokens.broadcastTo(firebaseSink, newsstandSink, iosSink)
     } yield resp
   }
