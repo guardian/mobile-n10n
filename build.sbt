@@ -1,7 +1,6 @@
 import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 import play.sbt.PlayImport.specs2
 import sbt.Keys.{libraryDependencies, mainClass}
-import sbt.dsl.enablePlugins
 import sbtassembly.AssemblyPlugin.autoImport.{assemblyJarName, assemblyMergeStrategy}
 import sbtassembly.MergeStrategy
 
