@@ -25,7 +25,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
     "Send one Android breaking news notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, Android), null)
+      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, Some(Android)), null)
       tokenStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 3
       apnsSqsDeliveriesCount.get() shouldEqual 0
@@ -33,15 +33,24 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       apnsSqsDeliveriesTotal.get() shouldEqual 0
     }
     "Queue one Android content notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(contentNotification, Android), null)
+      workerRequestHandler.handleHarvesting(sqsEventShardNotification(contentNotification, Some(Android)), null)
       tokenStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 3
       apnsSqsDeliveriesCount.get() shouldEqual 0
       firebaseSqsDeliveriesTotal.get() shouldEqual 2002
       apnsSqsDeliveriesTotal.get() shouldEqual 0
     }
+    "Queue one multi platform breaking news notification" in new WRHSScope {
+      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, None), null)
+      tokenStreamCount.get() shouldEqual 0
+      tokenPlatformStreamCount.get() shouldEqual 1
+      firebaseSqsDeliveriesCount.get() shouldEqual 3
+      apnsSqsDeliveriesCount.get() shouldEqual 3
+      firebaseSqsDeliveriesTotal.get() shouldEqual 2002
+      apnsSqsDeliveriesTotal.get() shouldEqual 2002
+    }
     "Send one iOS breaking news notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, iOS), null)
+      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, Some(iOS)), null)
       tokenStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 0
       apnsSqsDeliveriesCount.get() shouldEqual 3
@@ -49,7 +58,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       apnsSqsDeliveriesTotal.get() shouldEqual 2002
     }
     "Queue one iOS content notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(contentNotification, iOS), null)
+      workerRequestHandler.handleHarvesting(sqsEventShardNotification(contentNotification, Some(iOS)), null)
       tokenStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 0
       apnsSqsDeliveriesCount.get() shouldEqual 3
@@ -89,12 +98,11 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       dryRun = None
     )
 
-    def sqsEventShardNotification(notification: Notification, platform: Platform): SQSEvent = {
+    def sqsEventShardNotification(notification: Notification, platform: Option[Platform]): SQSEvent = {
       val shardedNotification = ShardedNotification(
         notification = notification,
         range = ShardRange(0, 1),
-        platform = platform
-      )
+        platform = platform)
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
       sqsMessage.setBody(Json.stringify(Json.toJson(shardedNotification)))
@@ -104,12 +112,14 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
     val twoThousandTwoTokens: List[String] = Range(0,2002).map(num => s"token-$num").toList
     def tokenStream: Stream[IO, String] = Stream.emits(twoThousandTwoTokens)
+    def tokenPlatformStream: Stream[IO, (String, Platform)] = Stream.emits(twoThousandTwoTokens.map((_, Android)) ::: twoThousandTwoTokens.map((_, iOS)))
 
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 
 
     var cloudwatchFailures = new AtomicInteger()
     val tokenStreamCount = new AtomicInteger()
+    val tokenPlatformStreamCount = new AtomicInteger()
     var apnsSqsDeliveriesCount = new AtomicInteger()
     var firebaseSqsDeliveriesCount = new AtomicInteger()
     var apnsSqsDeliveriesTotal = new AtomicInteger()
@@ -117,9 +127,16 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
     val workerRequestHandler = new HarvesterRequestHandler {
 
-      override val tokenService: TokenService[IO] = (notification: Notification, shardRange: ShardRange, platform: Platform) => {
-        tokenStreamCount.incrementAndGet()
-        tokenStream
+      override val tokenService: TokenService[IO] = new TokenService[IO] {
+        override def tokens(notification: Notification, shardRange: ShardRange, platform: Platform): Stream[IO, String] = {
+          tokenStreamCount.incrementAndGet()
+          tokenStream
+        }
+
+        override def tokens(notification: Notification, shardRange: ShardRange): Stream[IO, (String, Platform)] = {
+          tokenPlatformStreamCount.incrementAndGet()
+          tokenPlatformStream
+        }
       }
       override val apnsDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
         apnsSqsDeliveriesCount.incrementAndGet()
