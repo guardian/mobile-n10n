@@ -83,7 +83,6 @@ lazy val common = project
       "joda-time" % "joda-time" % "2.9.9",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
-      "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.gu" %% "pa-client" % "6.1.0",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
@@ -137,6 +136,7 @@ lazy val registration = project
       "models.pagination._"
     ),
     libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-logback" % "2.6.16",
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
@@ -158,6 +158,7 @@ lazy val notification = project
       "models._"
     ),
     libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
@@ -221,6 +222,9 @@ lazy val report = project
       "org.joda.time.DateTime",
       "models._"
     ),
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-logback" % "2.6.16"
+    ),
     riffRaffPackageType := (packageBin in Debian).value,
     riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
@@ -233,9 +237,6 @@ lazy val apiClient = {
   import ReleaseStateTransformations._
   Project("api-client", file("api-client")).settings(Seq(
     name := "mobile-notifications-client",
-    scalaVersion := "2.11.12",
-    crossScalaVersions := Seq("2.11.12", "2.12.6"),
-    releaseCrossBuild := true,
     resolvers ++= Seq(
       "Guardian GitHub Releases" at "http://guardian.github.io/maven/repo-releases",
       "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
@@ -325,6 +326,7 @@ lazy val notificationworkerlambda = project
   .enablePlugins(RiffRaffArtifact)
   .settings(
     libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.turo" % "pushy" % "0.13.5",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
@@ -356,6 +358,37 @@ lazy val notificationworkerlambda = project
     mainClass := Some("com.gu.notifications.worker.TopicCounterLocalRun")
   )
 
+lazy val fakebreakingnewslambda = project
+  .dependsOn(common)
+  .dependsOn(apiClient  % "test->test", apiClient  % "compile->compile")
+  .enablePlugins(RiffRaffArtifact)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
+      "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
+      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+      "com.squareup.okhttp3" % "okhttp" % "3.12.1",
+      specs2 % Test
+    ),
+    assemblyJarName := s"${name.value}.jar",
+    assemblyMergeStrategy in assembly := {
+      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
+      case _ => MergeStrategy.first
+    },
+    fork := true,
+    scalacOptions := compilerOptions,
+    riffRaffPackageType := assembly.value,
+    riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
+    riffRaffUploadManifestBucket := Option("riffraff-builds"),
+    riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
+    riffRaffArtifactResources += (baseDirectory.value / "fakebreakingnewslambda-cfn.yaml", s"fakebreakingnewslambda-cfn/fakebreakingnewslambda-cfn.yaml"),
+    mainClass := Some("fakebreakingnews.LocalRun")
+  )
+
+
 lazy val root = (project in file(".")).
   aggregate(
     registration,
@@ -366,5 +399,6 @@ lazy val root = (project in file(".")).
     schedulelambda,
     apiClient,
     eventconsumer,
-    notificationworkerlambda
+    notificationworkerlambda,
+    fakebreakingnewslambda
   )
