@@ -21,3 +21,4 @@ dynamodb-local-schedule-lambda/
 # Scala-IDE specific
 .scala_dependencies
 .worksheet
+**.DS_Store
