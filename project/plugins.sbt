@@ -10,7 +10,7 @@ addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.6")
 
 addSbtPlugin("com.localytics" % "sbt-dynamodb" % "2.0.3")
 
-addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.2")
+//addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.2")
 
 libraryDependencies += "org.vafer" % "jdeb" % "1.6" artifacts (Artifact("jdeb", "jar", "jar"))
 
