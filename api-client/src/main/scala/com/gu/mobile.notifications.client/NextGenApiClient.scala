@@ -3,9 +3,11 @@ package com.gu.mobile.notifications.client
 import java.util.UUID
 
 import com.gu.mobile.notifications.client.models.{BreakingNewsPayload, NotificationPayload, Topic}
+import com.sun.net.httpserver.Authenticator.{Failure, Success}
 import play.api.libs.json.Json
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 case class NextGenResponse(id: String)
 
@@ -44,8 +46,11 @@ protected class NextGenApiClient(
 
         val responsesFuture = orderedPayloads.foldLeft(Future.successful(Seq.empty[Either[ApiClientError, Unit]])) {
         (futureResults, payload) => futureResults.flatMap{ results => {
-          //doSend(payload).transform()
-          doSend(payload).map(result => results :+ result) }
+          doSend(payload).transformWith {
+            case Success(result) => Future.successful(results :+ result)
+            case Failure(error) => Future.successful(results :+ Left(HttpProviderError(error) ))
+          }
+          }
         }
       }
 
@@ -59,7 +64,7 @@ protected class NextGenApiClient(
     }
 
     notificationPayload match {
-      case breakingNews: BreakingNewsPayload if breakingNews.topic.size > 1 => doSendOncePerTopic(breakingNews)
+      case breakingNews: BreakingNewsPayload if breakingNews.topic.size > 1  => doSendOncePerTopic(breakingNews)
       case _ => doSend(notificationPayload)
     }
   }

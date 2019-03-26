@@ -6,8 +6,9 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.execute.Result
 import org.specs2.mock.mockito.ArgumentCapture
 import play.api.libs.json.Json
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
+import scala.concurrent
 import scala.concurrent.Future
 
 
@@ -71,9 +72,24 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
 
 
     "sort breaking news with more than one tag into the correct order" in {
+      val editions = List("us", "uk", "international", "au")
+      val multiRegionBreakingNewsPayload = payload.copy( topic = editions.map { t => Topic(Breaking, s"breaking/${t}" )} )
 
 
 
+      val fakeHttpProvider = mock[HttpProvider]
+      fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(HttpOk(201, """{"id":"someId"}"""))
+
+      val testApiClient = getTestApiClient(fakeHttpProvider)
+
+      val bodyCapture = new ArgumentCapture[Array[Byte]]
+      val apiKeyCapture = new ArgumentCapture[String]
+      val urlCapture = new ArgumentCapture[String]
+      val contentTypeCapture = new ArgumentCapture[ContentType]
+
+      there was exactly(4)(testApiClient).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
+
+      val
 
     }
 
