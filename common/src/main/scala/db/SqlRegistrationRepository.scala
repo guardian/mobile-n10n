@@ -12,10 +12,10 @@ import doobie.postgres.sqlstate
 import doobie.Fragments
 import models.{Platform, PlatformCount, TopicCount}
 import play.api.Logger
-import tracking.DynamoNotificationReportRepository
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
+  val logger = Logger(classOf[SqlRegistrationRepository[F]])
   override def findTokens(
     topics: NonEmptyList[String],
     platform: Option[String],
