@@ -3,7 +3,6 @@ package com.gu.mobile.notifications.client
 import java.util.UUID
 
 import com.gu.mobile.notifications.client.models.{BreakingNewsPayload, NotificationPayload, Topic}
-import com.sun.net.httpserver.Authenticator.{Failure, Success}
 import play.api.libs.json.Json
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,15 +49,14 @@ protected class NextGenApiClient(
             case Success(result) => Future.successful(results :+ result)
             case Failure(error) => Future.successful(results :+ Left(HttpProviderError(error) ))
           }
-          }
-        }
+        }}
       }
 
       responsesFuture.map { responses =>
         responses.collect { case Left(error) => error } match {
           case Nil => Right(())
           case onlyOneError :: Nil => Left(onlyOneError)
-         ` case errors: List[ApiClientError] => Left(UnexpectedApiResponseError(errors.map(_.description).mkString(", ")))
+          case errors: List[ApiClientError] => Left(UnexpectedApiResponseError(errors.map(_.description).mkString(", ")))
         }
       }
     }

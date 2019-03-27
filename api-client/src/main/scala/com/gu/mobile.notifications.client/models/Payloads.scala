@@ -86,7 +86,11 @@ sealed trait NotificationWithLink extends NotificationPayload {
   def link: Link
 }
 
-object BreakingNewsPayload { val jf = Json.writes[BreakingNewsPayload] withTypeString BreakingNews.toString }
+object BreakingNewsPayload {
+  val jf = Json.writes[BreakingNewsPayload] withTypeString BreakingNews.toString
+  val jfReads = Json.reads[BreakingNewsPayload] withTypeString BreakingNews.toString
+}
+
 case class BreakingNewsPayload(
   id: UUID = UUID.randomUUID,
   title: String = "The Guardian",

@@ -1,15 +1,19 @@
 package com.gu.mobile.notifications.client
 
+import java.util.concurrent.TimeUnit
+
 import com.gu.mobile.notifications.client.models.TopicTypes._
 import com.gu.mobile.notifications.client.models._
+import com.gu.mobile.notifications.client.models.NotificationPayload.jf
+
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.execute.Result
 import org.specs2.mock.mockito.ArgumentCapture
 import play.api.libs.json.Json
 
 import scala.collection.JavaConverters._
-import scala.concurrent
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 
 
 class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[NextGenApiClient] {
@@ -45,14 +49,13 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
       client => client.send(payload) must beRight.await
     }
     "successfully send multiple HTTP calls for breaking news with more than one tag" in {
-      val payLoadMultipleTopics = payload.copy(topic = List(Topic(Breaking, "n1"), Topic(Breaking, "n2")))
+      val payLoadMultipleTopics = payload.copy(topic = List(Topic(Breaking, "breaking/uk"), Topic(Breaking, "breaking/us")))
 
       val fakeHttpProvider = mock[HttpProvider]
       fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(HttpOk(201, """{"id":"someId"}"""))
 
       val testApiClient = getTestApiClient(fakeHttpProvider)
-      testApiClient.send(payLoadMultipleTopics)
-
+      Await.result(testApiClient.send(payLoadMultipleTopics), Duration.Inf)
       val bodyCapture = new ArgumentCapture[Array[Byte]]
       val apiKeyCapture = new ArgumentCapture[String]
       val urlCapture = new ArgumentCapture[String]
@@ -74,22 +77,27 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
     "sort breaking news with more than one tag into the correct order" in {
       val editions = List("us", "uk", "international", "au")
       val multiRegionBreakingNewsPayload = payload.copy( topic = editions.map { t => Topic(Breaking, s"breaking/${t}" )} )
-
-
+      val orderedBreakingNewsPayloads = List("uk", "international", "us", "au")
 
       val fakeHttpProvider = mock[HttpProvider]
       fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(HttpOk(201, """{"id":"someId"}"""))
 
       val testApiClient = getTestApiClient(fakeHttpProvider)
+      Await.result(testApiClient.send(multiRegionBreakingNewsPayload), Duration.Inf)
 
       val bodyCapture = new ArgumentCapture[Array[Byte]]
       val apiKeyCapture = new ArgumentCapture[String]
       val urlCapture = new ArgumentCapture[String]
       val contentTypeCapture = new ArgumentCapture[ContentType]
 
-      there was exactly(4)(testApiClient).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
+      there was exactly(4)(fakeHttpProvider).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
 
-      val
+      val d = bodyCapture.values
+        .asScala.toList
+        .map{
+          bodyBytes => Json.fromJson[B()
+        }
+
 
     }
 
