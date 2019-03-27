@@ -16,7 +16,6 @@ import tracking.DynamoNotificationReportRepository
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
-  val logger = Logger(classOf[DynamoNotificationReportRepository])
   override def findTokens(
     topics: NonEmptyList[String],
     platform: Option[String],

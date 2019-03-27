@@ -117,7 +117,6 @@ class GuardianNotificationSender(
     }
 
     shard(countWithDefault).map { shard =>
-      ShardedNotification(notification, shard, Some(platform))
       val shardedNotification = ShardedNotification(notification, shard, Some(platform))
       val payloadJson = Json.stringify(Json.toJson(shardedNotification))
       val messageId = s"${notification.id}-$platform-${shard.start}-${shard.end}"
