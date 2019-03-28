@@ -137,7 +137,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         Some(Fragments.in(fr"topic", topics)),
         shardRange.map(s => Fragments.and(fr"shard >= ${s.min}", fr"shard <= ${s.max}"))
       )
-      ++ fr"GROUP BY token"
+      ++ fr"GROUP BY (token, platform)"
       )
       .query[(String, String)]
       .stream
