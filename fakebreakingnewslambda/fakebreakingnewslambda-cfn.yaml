@@ -120,7 +120,7 @@ Resources:
           Value: ios
       EvaluationPeriods: 1
       MetricName: dryrun
-      Namespace: Notifications/${Stage}/workers
+      Namespace: !Sub Notifications/${Stage}/workers
       Period: 7200
       Statistic: Sum
       Threshold: 1
@@ -137,7 +137,7 @@ Resources:
           Value: android
       EvaluationPeriods: 1
       MetricName: dryrun
-      Namespace: Notifications/${Stage}/workers
+      Namespace: !Sub Notifications/${Stage}/workers
       Period: 7200
       Statistic: Sum
       Threshold: 1
