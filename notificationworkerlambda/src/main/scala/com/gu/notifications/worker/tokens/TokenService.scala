@@ -27,14 +27,20 @@ trait TokenService[F[_]] {
     shardRange: ShardRange,
     platform: Platform
   ): Stream[F, String]
+
+  def tokens(
+    notification: Notification,
+    shardRange: ShardRange
+  ): Stream[F, (String, Platform)]
 }
+
 class TokenServiceImpl[F[_]](
   registrationService: RegistrationService[F, Stream]
 )(implicit ece: ExecutionContextExecutor,
   contextShift: Concurrent[F],
   F: Async[F],
   T: Timer[F]
-) extends TokenService[F]{
+) extends TokenService[F] {
   override def tokens(
     notification: Notification,
     shardRange: ShardRange,
@@ -50,6 +56,20 @@ class TokenServiceImpl[F[_]](
     for {
       topics <- Stream.eval(topicsF)
       res <- registrationService.findTokens(topics, Some(platform), Some(shardRange))
+    } yield res
+  }
+
+  override def tokens(notification: Notification, shardRange: ShardRange): Stream[F, (String, Platform)] = {
+    val topicsF: F[NonEmptyList[Topic]] = notification
+      .topic
+      .map(t => Topic(t.fullName))
+      .toNel
+      .map(nel => F.delay(nel))
+      .getOrElse(F.raiseError(InvalidTopics(notification.id)))
+
+    for {
+      topics <- Stream.eval(topicsF)
+      res <- registrationService.findTokens(topics, Some(shardRange))
     } yield res
   }
 }
