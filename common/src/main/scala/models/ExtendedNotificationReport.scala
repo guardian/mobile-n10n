@@ -24,7 +24,7 @@ object ExtendedSenderReport {
     senderName = s.senderName,
     sentTime = s.sentTime,
     sendersId = s.sendersId,
-    platformStatistics = s.platformStatistics
+    platformStatistics = None
   )
 }
 

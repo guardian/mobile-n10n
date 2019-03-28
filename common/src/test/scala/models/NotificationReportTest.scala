@@ -44,11 +44,7 @@ class NotificationReportTest extends Specification {
           |  "reports": [
           |    {
           |     "senderName": "Firebase",
-          |     "sentTime": "2015-01-01T00:00:00.000Z",
-          |     "platformStatistics": {
-          |       "platform": "android",
-          |       "recipientsCount": 3
-          |     }
+          |     "sentTime": "2015-01-01T00:00:00.000Z"
           |    }
           |
           | ],
@@ -71,7 +67,7 @@ class NotificationReportTest extends Specification {
             dryRun = None
           ),
           reports = List(
-            SenderReport("Firebase", sentTime, None, Some(PlatformStatistics(Android, recipientsCount = 3)))
+            SenderReport("Firebase", sentTime, None)
           ),
           Some(UUID.fromString("524dd8a4-b12d-427b-a3e9-ddbc9c2380d2"))
         )

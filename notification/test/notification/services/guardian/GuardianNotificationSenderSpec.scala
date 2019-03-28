@@ -58,7 +58,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       result should beRight.which { senderReport =>
         senderReport.senderName shouldEqual "Guardian"
         senderReport.sendersId should beNone
-        senderReport.platformStatistics should beSome(PlatformStatistics(iOS, 1))
+        senderReport.platformStatistics should beNone
       }
     }
 
@@ -71,7 +71,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       result should beRight.which { senderReport =>
         senderReport.senderName shouldEqual "Guardian"
         senderReport.sendersId should beNone
-        senderReport.platformStatistics should beSome(PlatformStatistics(iOS, 3000000))
+        senderReport.platformStatistics should beNone
       }
     }
 
@@ -82,7 +82,6 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
         registrationCounter = new TopicRegistrationCounter {
           override def count(topics: List[Topic])(implicit format: Format[TopicCount]): Future[PlatformCount] = Future.failed(new RuntimeException("exception"))
         },
-        platform = iOS,
         harvesterSqsUrl = ""
       )
 
@@ -108,7 +107,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       there was one(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
 
       result should beLeft(GuardianFailedToQueueShard(
-        senderName = s"Guardian ios",
+        senderName = s"Guardian",
         reason = s"Unable to queue notification. Please check the logs for notification 4c261110-4672-4451-a5b8-3422c6839c42"
       ): SenderError)
     }
@@ -133,7 +132,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
     )
 
     def topicStats(registrationCount: Int): PlatformCount = PlatformCount(
-      total = registrationCount * 2,
+      total = registrationCount,
       ios = registrationCount,
       android = registrationCount,
       newsstand = 0
@@ -158,7 +157,6 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       registrationCounter = new TopicRegistrationCounter {
         override def count(topics: List[Topic])(implicit format: Format[TopicCount] ): Future[PlatformCount] = Future.successful(topicStats(registrationCount))
       },
-      platform = iOS,
       harvesterSqsUrl = ""
     )
   }

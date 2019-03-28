@@ -83,7 +83,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
         dryRun = None,
       ),
       reports = List(
-        SenderReport("Firebase", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
+        SenderReport("Firebase", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), Some(s"hub-$id"))
       ),
       version = version,
       events = None

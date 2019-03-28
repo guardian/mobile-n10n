@@ -25,7 +25,6 @@ case class GuardianFailedToQueueShard(
 class GuardianNotificationSender(
   sqsClient: AmazonSQSAsync,
   registrationCounter: TopicRegistrationCounter,
-  platform: Platform,
   harvesterSqsUrl: String,
 )(implicit ec: ExecutionContext) extends NotificationSender {
 
@@ -38,8 +37,8 @@ class GuardianNotificationSender(
 
   override def sendNotification(push: Push): Future[SenderResult] = {
     val result = for {
-      registrationCount <- countRegistration(platform, push.notification.topic)
-      workerBatches = prepareBatch(platform, push.notification, registrationCount)
+      registrationCount <- countRegistration(push.notification.topic)
+      workerBatches = prepareBatch(push.notification, registrationCount)
       sqsBatchResults <- sendBatch(workerBatches, harvesterSqsUrl)
     } yield {
       val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
@@ -47,19 +46,15 @@ class GuardianNotificationSender(
         Right(SenderReport(
           Guardian.value,
           DateTime.now,
-          None,
-          registrationCount.map { count => PlatformStatistics(
-            platform,
-            count
-          )}
+          None
         ))
       } else {
         failed.foreach { failure =>
-          logger.error(s"Unable to queue notification ${push.notification.id} for platform $platform: " +
+          logger.error(s"Unable to queue notification ${push.notification.id}: " +
             s"${failure.getId} - ${failure.getCode} - ${failure.getMessage}")
         }
         Left(GuardianFailedToQueueShard(
-          senderName = s"Guardian $platform",
+          senderName = s"Guardian",
           reason = s"Unable to queue notification. Please check the logs for notification ${push.notification.id}")
         )
       }
@@ -69,15 +64,15 @@ class GuardianNotificationSender(
       case NonFatal(e) =>
         logger.error(e.getMessage, e)
         Left(GuardianFailedToQueueShard(
-          senderName = s"Guardian $platform",
+          senderName = s"Guardian",
           reason = s"Unable to send notification, got an exception ${e.getMessage}"
         ))
     }
   }
 
-  private def countRegistration(platform: Platform, topics: List[Topic]): Future[Option[Int]] = {
+  private def countRegistration(topics: List[Topic]): Future[Option[Int]] = {
     // in case of an exception when calling registrationCounter, we want to continue anyway
-    registrationCounter.count(topics).map(platformCount => Some(platformCount.get(platform))).recover {
+    registrationCounter.count(topics).map(platformCount => Some(platformCount.total)).recover {
       case NonFatal(e) =>
         logger.error("Unable to count registration for a list of topics", e)
         None
@@ -105,10 +100,10 @@ class GuardianNotificationSender(
     }
   }
 
-  def prepareBatch(platform: Platform, notification: Notification, registrationCount: Option[Int]): List[SendMessageBatchRequestEntry] = {
+  def prepareBatch(notification: Notification, registrationCount: Option[Int]): List[SendMessageBatchRequestEntry] = {
     val countWithDefault: Int = registrationCount match {
       case Some(count) => count
-      case None if notification.topic.exists(_.`type` == TopicTypes.Breaking) && platform != Newsstand =>
+      case None if notification.topic.exists(_.`type` == TopicTypes.Breaking)  =>
         logger.error("Unable to count registration for a list of topics during a breaking news, falling back on 1.5M")
         1500000 // fallback on 1.5M: the worst case
       case None =>
@@ -117,9 +112,9 @@ class GuardianNotificationSender(
     }
 
     shard(countWithDefault).map { shard =>
-      val shardedNotification = ShardedNotification(notification, shard, Some(platform))
+      val shardedNotification = ShardedNotification(notification, shard, None)
       val payloadJson = Json.stringify(Json.toJson(shardedNotification))
-      val messageId = s"${notification.id}-$platform-${shard.start}-${shard.end}"
+      val messageId = s"${notification.id}-${shard.start}-${shard.end}"
       new SendMessageBatchRequestEntry(messageId, payloadJson)
     }
   }
