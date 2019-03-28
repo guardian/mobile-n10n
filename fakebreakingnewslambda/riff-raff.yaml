@@ -1,0 +1,18 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+
+deployments:
+  fakebreakingnewslambda:
+    type: aws-lambda
+    app: fakebreakingnewslambda
+    parameters:
+      bucket: mobile-notifications-dist
+      functionNames: [mobile-notifications-fakebreakingnews-]
+      fileName: fakebreakingnewslambda.jar
+      prefixStack: false
+  fakebreakingnewslambda-cfn:
+    type: cloud-formation
+    app: fakebreakingnewslambda
+    parameters:
+      templatePath: fakebreakingnewslambda-cfn.yaml
+

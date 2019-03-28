@@ -28,7 +28,8 @@ class PayloadsSpec extends Specification {
         link = ExternalLink("http://mylink"),
         importance = Importance.Major,
         topic = List(BreakingNewsUk),
-        debug = true
+        debug = true,
+        dryRun = Some(false)
       )
       val expectedJson =
         """
@@ -48,7 +49,8 @@ class PayloadsSpec extends Specification {
           |    "type" : "breaking",
           |    "name" : "uk"
           |  } ],
-          |  "debug":true
+          |  "debug":true,
+          |  "dryRun" : false
           |}
         """.stripMargin
 
@@ -90,7 +92,8 @@ class PayloadsSpec extends Specification {
           |    "type" : "breaking",
           |    "name" : "n2"
           |    }],
-          |    "debug" : false
+          |    "debug" : false,
+          |    "dryRun" : false
           |}
         """.stripMargin
       verifySerialization(payload, expectedJson)
@@ -141,6 +144,7 @@ trait ContentAlertScope extends Scope {
     link = internalLink,
     importance = Importance.Minor,
     topic = List(Topic(TagSeries, "environment/series/keep-it-in-the-ground"), Topic(Breaking, "n2")),
-    debug = false)
+    debug = false,
+    dryRun = Some(false))
 
 }

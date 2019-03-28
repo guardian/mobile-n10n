@@ -22,7 +22,8 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
     link = ExternalLink("http://mylink"),
     importance = Importance.Major,
     topic = List(Topic(Breaking, "n1")),
-    debug = true
+    debug = true,
+    dryRun = Some(false)
   )
 
   val expectedPostUrl = s"$host/push/topic"

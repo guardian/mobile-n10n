@@ -1,10 +1,11 @@
 package db
 
 import cats.data.NonEmptyList
-import models.{PlatformCount, TopicCount}
+import models.{Platform, TopicCount}
 
 trait RegistrationRepository[F[_], S[_[_], _]] {
   def findTokens(topics: NonEmptyList[String], platform: Option[String], shardRange: Option[Range]): S[F, String]
+  def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): S[F, (String, Platform)]
   def findByToken(token: String): S[F, Registration]
   def save(sub: Registration): F[Int]
   def remove(sub: Registration): F[Int]

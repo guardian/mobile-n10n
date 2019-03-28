@@ -10,11 +10,12 @@ import cats.data.NonEmptyList
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 import doobie.Fragments
-import models.{PlatformCount, TopicCount}
+import models.{Platform, PlatformCount, TopicCount}
+import play.api.Logger
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
-
+  val logger = Logger(classOf[SqlRegistrationRepository[F]])
   override def findTokens(
     topics: NonEmptyList[String],
     platform: Option[String],
@@ -124,5 +125,32 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         .query[TopicCount]
         .stream
         .transact(xa)
+  }
+
+  override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): Stream[F, (String, Platform)] = {
+    (sql"""
+        SELECT (token, platform)
+        FROM registrations
+    """
+      ++
+      Fragments.whereAndOpt(
+        Some(Fragments.in(fr"topic", topics)),
+        shardRange.map(s => Fragments.and(fr"shard >= ${s.min}", fr"shard <= ${s.max}"))
+      )
+      ++ fr"GROUP BY token"
+      )
+      .query[(String, String)]
+      .stream
+      .transact(xa)
+      .map{ case(token, platformString) => {
+        val maybePlatform = Platform.fromString(platformString)
+        if(maybePlatform.isEmpty) {
+          logger.error(s"Unknown platform in db $platformString")
+        }
+        (token, maybePlatform)
+      }}
+      .collect {
+        case (token, Some(platform)) => (token, platform)
+      }
   }
 }

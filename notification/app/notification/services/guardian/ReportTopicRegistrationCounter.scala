@@ -20,7 +20,11 @@ class ReportTopicRegistrationCounter(topicCountDataStore: DataStore[TopicCount])
           topicCount => topicNames.contains(topicCount.topicName)
         }
         .map(_.registrationCount).sum
-         PlatformCount(total = totalRegistrationsForTopics, ios = 0, android = 0, newsstand = 0)
+         PlatformCount(
+           total = totalRegistrationsForTopics,
+           ios = totalRegistrationsForTopics,
+           android = totalRegistrationsForTopics,
+           newsstand = totalRegistrationsForTopics)
     }
   }
 }

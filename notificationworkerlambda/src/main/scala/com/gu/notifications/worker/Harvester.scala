@@ -34,9 +34,14 @@ trait HarvesterRequestHandler extends Logging {
     throwables.broadcastTo(logErrors, cloudwatch.sendFailures(env.stage, platform))
   }
 
-  def firebaseSink(notification: Notification, range: ShardRange): Sink[IO, String] = {
+  def firebaseSinkBuilder(notification: Notification, range: ShardRange): Sink[IO, (String, Platform)] = {
     val androidSinkErrors = sinkErrors(Android)
-    tokens => tokens.chunkN(1000)
+    tokens =>
+      tokens
+        .collect {
+          case (token, Android) => token
+        }
+        .chunkN(1000)
         .map(chunk => ChunkedTokens(notification, chunk.toList, Android, range))
         .map(firebaseDeliveryService.sending)
         .parJoin(maxConcurrency)
@@ -46,11 +51,16 @@ trait HarvesterRequestHandler extends Logging {
         .to(androidSinkErrors)
   }
 
-  def apnsSink(notification: Notification, range: ShardRange, platform: Platform): Sink[IO, String] = {
+  def apnsSink(notification: Notification, range: ShardRange, platform: Platform): Sink[IO, (String, Platform)] = {
     val iosSinkErrors = sinkErrors(iOS)
-    tokens => tokens.chunkN(1000)
-      .map(chunk => ChunkedTokens(notification, chunk.toList, platform, range))
-      .map(apnsDeliveryService.sending)
+    tokens =>
+      tokens
+        .collect {
+          case (token, tokenPlatform) if tokenPlatform == platform => token
+        }
+        .chunkN(1000)
+        .map(chunk => ChunkedTokens(notification, chunk.toList, platform, range))
+        .map(apnsDeliveryService.sending)
         .parJoin(maxConcurrency)
         .collect {
           case Left(throwable) => throwable
@@ -62,17 +72,16 @@ trait HarvesterRequestHandler extends Logging {
   def queueShardedNotification(shardNotifications: Stream[IO, ShardedNotification]): Stream[IO, Unit] = {
     for {
       n <- shardNotifications
-      platform = n.platform
-      sink: Sink[IO, String] = platform match {
-        case Android => firebaseSink(n.notification, n.range)
-        case _root_.models.iOS => apnsSink(n.notification, n.range, platform)
-        case Newsstand => apnsSink(n.notification, n.range, platform)
-        case _ => throw new Exception("Unknown platform")
-      }
+      firebaseSink = firebaseSinkBuilder(n.notification, n.range)
+      newsstandSink = apnsSink(n.notification, n.range, Newsstand)
+      iosSink = apnsSink(n.notification, n.range, iOS)
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
-      tokens = tokenService.tokens(n.notification, n.range, platform)
-      resp <- tokens.to(sink)
+      tokens = n.platform match {
+          case Some(platform) => tokenService.tokens(n.notification, n.range, platform).map(token => (token, platform))
+          case None => tokenService.tokens(n.notification, n.range)
+        }
+      resp <- tokens.broadcastTo(firebaseSink, newsstandSink, iosSink)
     } yield resp
   }
 
