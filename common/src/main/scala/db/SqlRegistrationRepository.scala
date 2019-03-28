@@ -129,7 +129,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
 
   override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): Stream[F, (String, Platform)] = {
     (sql"""
-        SELECT (token, platform)
+        SELECT token, platform
         FROM registrations
     """
       ++
