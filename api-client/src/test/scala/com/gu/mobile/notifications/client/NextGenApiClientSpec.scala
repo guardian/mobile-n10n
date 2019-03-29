@@ -4,19 +4,20 @@ import java.util.concurrent.TimeUnit
 
 import com.gu.mobile.notifications.client.models.TopicTypes._
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.client.models.NotificationPayload.jf
-
+import com.gu.mobile.notifications.client.models.BreakingNewsPayload.jf
+import com.gu.mobile.notifications.client.models.BreakingNewsPayload.jfReads
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.execute.Result
+import org.specs2.matcher.ThrownMessages
 import org.specs2.mock.mockito.ArgumentCapture
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, JsSuccess, Json}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 
-class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[NextGenApiClient] {
+class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[NextGenApiClient] with ThrownMessages {
 
   val payload = BreakingNewsPayload(
     title = "myTitle",
@@ -77,7 +78,7 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
     "sort breaking news with more than one tag into the correct order" in {
       val editions = List("us", "uk", "international", "au")
       val multiRegionBreakingNewsPayload = payload.copy( topic = editions.map { t => Topic(Breaking, s"breaking/${t}" )} )
-      val orderedBreakingNewsPayloads = List("uk", "international", "us", "au")
+      val expectedOrderdTopics = List("uk", "international", "us", "au").map( ed => Topic(Breaking, s"breaking/${ed}") )
 
       val fakeHttpProvider = mock[HttpProvider]
       fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(HttpOk(201, """{"id":"someId"}"""))
@@ -92,13 +93,16 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
 
       there was exactly(4)(fakeHttpProvider).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
 
-      val d = bodyCapture.values
+      bodyCapture.values
         .asScala.toList
-        .map{
-          bodyBytes => Json.fromJson[B()
+        .zip(expectedOrderdTopics).map { case (bodyBytes, expectedTopic) =>
+           Json.parse(bodyBytes).validate[BreakingNewsPayload] match {
+            case JsSuccess(breakingPayload, _) => breakingPayload.topic must beEqualTo(List(expectedTopic))
+            case JsError(errors) =>
+              val errorPaths = errors.map{ error => error._1.toString() }.mkString(",")
+              fail(s"Could not parse Breaking news payload. $errorPaths")
+          }
         }
-
-
     }
 
     "return HttpApiError error if http provider returns ApiHttpError" in apiTest(serverResponse = HttpError(500, "")) {
