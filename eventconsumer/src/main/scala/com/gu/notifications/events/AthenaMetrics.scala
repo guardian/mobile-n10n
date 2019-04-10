@@ -11,7 +11,7 @@ import com.amazonaws.services.athena.model.{GetQueryExecutionRequest, GetQueryEx
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.gu.notifications.events.dynamo.DynamoReportUpdater
 import com.gu.notifications.events.model.{AggregationCounts, EventAggregation, NotificationReportEvent, PlatformCount}
-import org.apache.logging.log4j.{LogManager, Logger}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -31,7 +31,7 @@ class AthenaMetrics {
   import ExecutionContext.Implicits.global
 
   private val envDependencies = new EnvDependencies
-  private val logger: Logger = LogManager.getLogger(classOf[AthenaMetrics])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   private val stage: String = envDependencies.stage
 
   val dynamoReportUpdater = new DynamoReportUpdater(stage)

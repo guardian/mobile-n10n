@@ -1,6 +1,6 @@
 package com.gu.notifications.events.model
 
-import org.apache.logging.log4j.LogManager
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -11,7 +11,7 @@ case class AggregationCounts(success: Int, failure: Int) {
 }
 
 object AggregationCounts {
-  private val logger = LogManager.getLogger(classOf[AggregationCounts])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   implicit val jf = Json.format[AggregationCounts]
 
 

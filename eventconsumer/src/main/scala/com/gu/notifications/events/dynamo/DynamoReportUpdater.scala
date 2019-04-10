@@ -7,7 +7,7 @@ import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.amazonaws.services.dynamodbv2.model._
 import com.gu.notifications.events.model.{EventAggregation, NotificationReportEvent}
-import org.apache.logging.log4j.LogManager
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -21,7 +21,7 @@ class DynamoReportUpdater(stage: String) {
   private val newVersionKey = ":newversion"
   private val newEventsKey = ":newevents"
   private val oldVersionKey = ":oldversion"
-  private val logger = LogManager.getLogger(classOf[DynamoReportUpdater])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   private val tableName: String = s"mobile-notifications-reports-$stage"
 
   def updateSetEventsReceivedAfter(eventAggregations: List[NotificationReportEvent], startOfReportingWindow: ZonedDateTime)(implicit executionContext: ExecutionContext, dynamoDbClient: AmazonDynamoDBAsync): List[Future[Unit]] = {
