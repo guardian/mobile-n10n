@@ -136,7 +136,7 @@ lazy val registration = project
       "models.pagination._"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16",
+      logback,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
@@ -158,7 +158,7 @@ lazy val notification = project
       "models._"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16",
+      logback,
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
@@ -223,7 +223,7 @@ lazy val report = project
       "models._"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16"
+      logback
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
