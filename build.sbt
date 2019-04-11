@@ -54,7 +54,7 @@ val standardSettings = Seq[Setting[_]](
     "org.specs2" %% "specs2-matcher-extra" % "3.8.9" % Test
   )
 )
-val log4j2Version: String = "2.10.0"
+
 lazy val commoneventconsumer = project
   .settings(Seq(
     libraryDependencies ++= Seq(
@@ -136,7 +136,7 @@ lazy val registration = project
       "models.pagination._"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16",
+      logback,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
@@ -158,7 +158,7 @@ lazy val notification = project
       "models._"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16",
+      logback,
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
@@ -184,10 +184,10 @@ lazy val schedulelambda = project
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
         "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
+        "org.slf4j" % "slf4j-api" % "1.7.26",
+        "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.11.2",
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
-        "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
-        "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
         "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
         "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
         "org.specs2" %% "specs2-core" % specsVersion % "test",
@@ -223,7 +223,7 @@ lazy val report = project
       "models._"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16"
+      logback
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
@@ -291,11 +291,11 @@ lazy val eventconsumer = project
       description := "Consumes events produced when an app receives a notification",
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-        "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
+        "org.slf4j" % "slf4j-api" % "1.7.26",
+        "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.11.2",
+        "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
-        "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
-        "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
         "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
           specs2 % Test
@@ -326,14 +326,15 @@ lazy val notificationworkerlambda = project
   .enablePlugins(RiffRaffArtifact)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16",
+      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
+      "org.slf4j" % "slf4j-api" % "1.7.26",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.11.2",
       "com.turo" % "pushy" % "0.13.5",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.2",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
-      "org.slf4j" % "slf4j-simple" % "1.7.25",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "com.squareup.okhttp3" % "okhttp" % "3.12.1",
       specs2 % Test
@@ -366,8 +367,8 @@ lazy val fakebreakingnewslambda = project
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
-      "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
+      "org.slf4j" % "slf4j-api" % "1.7.26",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.11.2",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "com.squareup.okhttp3" % "okhttp" % "3.12.1",
       specs2 % Test
