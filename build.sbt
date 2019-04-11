@@ -10,6 +10,10 @@ val projectVersion = "1.0-latest"
 organization := "com.gu"
 scalaVersion in ThisBuild := "2.12.6"
 
+// this prevents deadlocks when running the tests from the root project.
+// See https://github.com/sbt/sbt/issues/3022
+Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
+
 val compilerOptions = Seq(
   "-deprecation",
   "-Xfatal-warnings",
