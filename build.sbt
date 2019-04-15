@@ -333,6 +333,12 @@ lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreaking
     riffRaffArtifactResources += (baseDirectory.value / "fakebreakingnewslambda-cfn.yaml", "fakebreakingnewslambda-cfn/fakebreakingnewslambda-cfn.yaml")
   )
 
+lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("com.gu.notifications.extractor.LocalRun"))
+  .dependsOn(common)
+  .settings(
+    riffRaffArtifactResources += (baseDirectory.value / "reportextractor-cfn.yaml", "reportextractor-cfn/reportextractor-cfn.yaml")
+  )
+
 lazy val root = (project in file(".")).
   aggregate(
     registration,
@@ -344,5 +350,6 @@ lazy val root = (project in file(".")).
     apiClient,
     eventconsumer,
     notificationworkerlambda,
-    fakebreakingnewslambda
+    fakebreakingnewslambda,
+    reportExtractor
   )
