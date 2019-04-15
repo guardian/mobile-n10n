@@ -1,0 +1,19 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+deployments:
+  schedule:
+    type: aws-lambda
+    parameters:
+      bucket: mobile-notifications-dist
+      functionNames: [mobile-notifications-schedule-]
+      fileName: schedule.jar
+      prefixStack: false
+    dependencies: [schedule-cfn]
+
+  schedule-cfn:
+    type: cloud-formation
+    app: schedule
+    parameters:
+      prependStackToCloudFormationStackName: true
+      cloudFormationStackName: schedule
+      templatePath: cfn.yaml

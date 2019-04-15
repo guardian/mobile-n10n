@@ -286,7 +286,7 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
         "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
         "org.specs2" %% "specs2-mock" % specsVersion % "test"
       ),
-      riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+      riffRaffArtifactResources += (file(s"schedulelambda/cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
     )
   }
 
