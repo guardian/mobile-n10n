@@ -336,7 +336,7 @@ lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreaking
 lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("com.gu.notifications.extractor.LocalRun"))
   .dependsOn(common)
   .settings(
-    riffRaffArtifactResources += (baseDirectory.value / "reportextractor-cfn.yaml", "reportextractor-cfn/reportextractor-cfn.yaml")
+    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "reportextractor-cfn/cfn.yaml")
   )
 
 lazy val root = (project in file(".")).

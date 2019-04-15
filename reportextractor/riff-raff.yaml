@@ -1,19 +1,19 @@
 stacks: [mobile-notifications]
 regions: [eu-west-1]
 deployments:
-  schedule:
+  reportextractor:
     type: aws-lambda
     parameters:
       bucket: mobile-notifications-dist
-      functionNames: [mobile-notifications-schedule-]
-      fileName: schedule.jar
+      functionNames: [mobile-notifications-reportextractor-]
+      fileName: reportextractor.jar
       prefixStack: false
-    dependencies: [schedule-cfn]
+    dependencies: [reportextractor-cfn]
 
-  schedule-cfn:
+  reportextractor-cfn:
     type: cloud-formation
-    app: schedule
+    app: reportextractor
     parameters:
       prependStackToCloudFormationStackName: true
-      cloudFormationStackName: schedule
+      cloudFormationStackName: reportextractor
       templatePath: cfn.yaml
