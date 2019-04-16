@@ -10,8 +10,6 @@ import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBu
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.gu.{AppIdentity, AwsIdentity}
-import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
-import com.typesafe.config.Config
 import models.NotificationType
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.{JsValue, Json}
@@ -39,10 +37,6 @@ class Lambda extends RequestHandler[DateRange, Unit] {
 
   val identity: AppIdentity = AppIdentity.whoAmI(defaultAppName = "report-extractor", credentials = credentials)
 
-  val conf: Config = ConfigurationLoader.load(identity, credentials = credentials) {
-    case AwsIdentity(_, _, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/extractor")
-  }
-
   def tableName: String = identity match {
     case AwsIdentity(_, _, stage, _) => s"mobile-notifications-reports-$stage"
     case _ => s"mobile-notifications-reports-CODE"
@@ -51,6 +45,11 @@ class Lambda extends RequestHandler[DateRange, Unit] {
   def region: Regions = identity match {
     case AwsIdentity(_, _, _, region) => Regions.fromName(region)
     case _ => Regions.EU_WEST_1
+  }
+
+  def s3Path: String = identity match {
+    case AwsIdentity(_, _, "PROD", _) => "data"
+    case _ => "code-data"
   }
 
   val notificationTypesToExtract: List[NotificationType] = List(
@@ -66,7 +65,7 @@ class Lambda extends RequestHandler[DateRange, Unit] {
     val results: List[JsValue] = notificationTypesToExtract.flatMap(nt => fetchNotifications(nt, input, dynamoDB))
     val buffer: String = results.map(Json.stringify).mkString
 
-    s3.putObject("ophan-raw-push-notification", s"code-data/${LocalDate.now()}.json", buffer)
+    s3.putObject("ophan-raw-push-notification", s"$s3Path/${LocalDate.now()}.json", buffer)
   }
 
   private def fetchNotifications(notificationType: NotificationType, input: DateRange, dynamoDB: AmazonDynamoDB): List[JsValue] = {

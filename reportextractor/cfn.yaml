@@ -42,13 +42,6 @@ Resources:
                 - logs:PutLogEvents
                 - cloudwatch:putMetricData
               Resource: "*"
-        - PolicyName: config
-          PolicyDocument:
-            Statement:
-              Action:
-                - ssm:GetParametersByPath
-              Effect: Allow
-              Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/${Stack}
         - PolicyName: dynamo
           PolicyDocument:
             Statement:
@@ -81,8 +74,7 @@ Resources:
           Stack: !Ref Stack
           App: !Ref App
       FunctionName: !Sub ${Stack}-${App}-${Stage}
-      Handler: com.gu.notifications.extractor.Lambda::handler
-
+      Handler: com.gu.notifications.extractor.Lambda
       MemorySize: 384
       ReservedConcurrentExecutions: 1
       Role: !GetAtt Role.Arn
