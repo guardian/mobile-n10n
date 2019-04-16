@@ -18,12 +18,18 @@ import play.api.libs.json.{JsValue, Json}
 import utils.MobileAwsCredentialsProvider
 
 import scala.annotation.tailrec
+import scala.beans.BeanProperty
 import scala.collection.JavaConverters._
 
-case class DateRange(
-  from: Option[LocalDate],
-  to: Option[LocalDate]
-)
+
+class DateRange(
+  @BeanProperty var from: String,
+  @BeanProperty var to: String
+) {
+  def this() {
+    this(null, null)
+  }
+}
 
 class Lambda extends RequestHandler[DateRange, Unit] {
 
@@ -65,8 +71,8 @@ class Lambda extends RequestHandler[DateRange, Unit] {
 
   private def fetchNotifications(notificationType: NotificationType, input: DateRange, dynamoDB: AmazonDynamoDB): List[JsValue] = {
     val sentTimeIndex = "sentTime-index"
-    val from = input.from.getOrElse(LocalDate.now().minusDays(1)).atStartOfDay().toString
-    val to = input.to.getOrElse(LocalDate.now()).atStartOfDay().toString
+    val from = Option(input.from).map(LocalDate.parse).getOrElse(LocalDate.now().minusDays(1)).atStartOfDay().toString
+    val to = Option(input.to).map(LocalDate.parse).getOrElse(LocalDate.now()).atStartOfDay().toString
 
     val query = new QueryRequest(tableName)
       .withIndexName(sentTimeIndex)
