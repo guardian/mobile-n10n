@@ -1,6 +1,7 @@
 package com.gu.notifications.extractor
 
-import java.time.LocalDate
+import java.time.temporal.{ChronoUnit, TemporalUnit}
+import java.time.{Duration, LocalDate}
 
 import aws.AsyncDynamo.{keyBetween, keyEquals}
 import aws.DynamoJsonConversions
@@ -37,17 +38,20 @@ class Lambda extends RequestHandler[DateRange, Unit] {
 
   val identity: AppIdentity = AppIdentity.whoAmI(defaultAppName = "report-extractor", credentials = credentials)
 
-  def tableName: String = identity match {
-    case AwsIdentity(_, _, stage, _) => s"mobile-notifications-reports-$stage"
-    case _ => s"mobile-notifications-reports-CODE"
-  }
-
-  def region: Regions = identity match {
+  val region: Regions = identity match {
     case AwsIdentity(_, _, _, region) => Regions.fromName(region)
     case _ => Regions.EU_WEST_1
   }
 
-  def s3Path: String = identity match {
+  val dynamoDB = AmazonDynamoDBClientBuilder.standard().withCredentials(credentials).withRegion(region).build()
+  val s3 = AmazonS3ClientBuilder.standard().withCredentials(credentials).withRegion(region).build()
+
+  val tableName: String = identity match {
+    case AwsIdentity(_, _, stage, _) => s"mobile-notifications-reports-$stage"
+    case _ => s"mobile-notifications-reports-CODE"
+  }
+
+  val s3Path: String = identity match {
     case AwsIdentity(_, _, "PROD", _) => "data"
     case _ => "code-data"
   }
@@ -58,20 +62,38 @@ class Lambda extends RequestHandler[DateRange, Unit] {
     NotificationType.FootballMatchStatus
   )
 
-  override def handleRequest(input: DateRange, context: Context): Unit = {
-    val dynamoDB = AmazonDynamoDBClientBuilder.standard().withCredentials(credentials).withRegion(region).build()
-    val s3 = AmazonS3ClientBuilder.standard().withCredentials(credentials).withRegion(region).build()
-
-    val results: List[JsValue] = notificationTypesToExtract.flatMap(nt => fetchNotifications(nt, input, dynamoDB))
-    val buffer: String = results.map(Json.stringify).mkString
-
-    s3.putObject("ophan-raw-push-notification", s"$s3Path/${LocalDate.now()}.json", buffer)
+  override def handleRequest(dateRange: DateRange, context: Context): Unit = {
+    daysToExtract(dateRange).foreach(extractNotificationsByDay)
   }
 
-  private def fetchNotifications(notificationType: NotificationType, input: DateRange, dynamoDB: AmazonDynamoDB): List[JsValue] = {
+  private def daysToExtract(dateRange: DateRange): List[LocalDate] = {
+    lazy val yesterday = LocalDate.now().minusDays(1)
+    val from = Option(dateRange.from).map(LocalDate.parse).getOrElse(yesterday)
+    val to = Option(dateRange.to).map(LocalDate.parse).getOrElse(yesterday)
+
+    val numberOfDays = ChronoUnit.DAYS.between(from, to)
+
+    val results = (0L to numberOfDays).map(from.plusDays).toList
+
+    logger.info(s"Extracting ${numberOfDays + 1} day(s): $results")
+
+    results
+  }
+
+  private def extractNotificationsByDay(day: LocalDate): Unit = {
+    logger.info(s"Extracting $day...")
+    val results = notificationTypesToExtract.flatMap(nt => extractNotifications(day, nt))
+    val notificationCount = results.size
+    val buffer: String = results.map(Json.stringify).mkString
+    s3.putObject("ophan-raw-push-notification", s"$s3Path/date=$day/notifications.json", buffer)
+    logger.info(s"Extracted $notificationCount notifications for $day")
+  }
+
+  private def extractNotifications(day: LocalDate, notificationType: NotificationType): List[JsValue] = {
     val sentTimeIndex = "sentTime-index"
-    val from = Option(input.from).map(LocalDate.parse).getOrElse(LocalDate.now().minusDays(1)).atStartOfDay().toString
-    val to = Option(input.to).map(LocalDate.parse).getOrElse(LocalDate.now()).atStartOfDay().toString
+
+    val from = day.atStartOfDay().toString
+    val to = day.plusDays(1).atStartOfDay().toString
 
     val query = new QueryRequest(tableName)
       .withIndexName(sentTimeIndex)
