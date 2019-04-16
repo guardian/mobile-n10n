@@ -10,10 +10,6 @@ val projectVersion = "1.0-latest"
 organization := "com.gu"
 scalaVersion in ThisBuild := "2.12.6"
 
-// this prevents deadlocks when running the tests from the root project.
-// See https://github.com/sbt/sbt/issues/3022
-Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
-
 val compilerOptions = Seq(
   "-deprecation",
   "-Xfatal-warnings",
@@ -57,7 +53,9 @@ val standardSettings = Seq[Setting[_]](
     "com.softwaremill.macwire" %% "macros" % "2.3.0" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % "3.8.9" % Test
-  )
+  ),
+  // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
+  parallelExecution in Test := false
 )
 
 lazy val commoneventconsumer = project
@@ -271,7 +269,9 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := s"mobile-n10n:$projectName",
-    mainClass := mainClassName
+    mainClass := mainClassName,
+    // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
+    parallelExecution in Test := false
   )
 
 lazy val schedulelambda = lambda("schedule", "schedulelambda")
