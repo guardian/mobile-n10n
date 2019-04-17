@@ -1,13 +1,13 @@
 package com.gu.notifications.extractor
 
-import java.time.temporal.{ChronoUnit, TemporalUnit}
-import java.time.{Duration, LocalDate}
+import java.time.temporal.ChronoUnit
+import java.time.LocalDate
 
 import aws.AsyncDynamo.{keyBetween, keyEquals}
 import aws.DynamoJsonConversions
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.model._
-import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBuilder}
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.gu.{AppIdentity, AwsIdentity}
