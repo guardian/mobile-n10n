@@ -9,7 +9,7 @@ import com.gu.{AppIdentity, AwsIdentity}
 import com.typesafe.config.Config
 import models.{Android, iOS}
 import okhttp3.OkHttpClient
-import org.apache.logging.log4j.{LogManager, Logger}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -18,7 +18,7 @@ class FakeBreakingNewsLambda {
   val iosUuid = UUID.fromString("3bf283d8-35f3-48e6-b377-b862c3f030e3")
   val androidUuid = UUID.fromString("a9b4c7cd-1713-4a56-9ada-aa4279dcf534")
   import scala.concurrent.ExecutionContext.Implicits.global
-  private val logger: Logger = LogManager.getLogger(classOf[FakeBreakingNewsLambda])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   private val config: Config = ConfigurationLoader.load(AppIdentity.whoAmI(defaultAppName = "fake-breaking-news")) {
     case AwsIdentity(_, _, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/fakebreakingnews")
   }
@@ -42,7 +42,7 @@ class FakeBreakingNewsLambda {
     } yield sendResult
     val result = Await.result(
       futureResult, Duration(3, TimeUnit.MINUTES))
-    logger.info(result)
+    logger.info(result.toString)
 
   }
 }

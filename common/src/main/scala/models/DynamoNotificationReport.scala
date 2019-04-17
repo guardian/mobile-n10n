@@ -70,11 +70,12 @@ object DynamoNotificationReport {
     reports,
     version,
     events,
-    ttlFromSentTime(sentTime, `type`)
+    ttlFromSentTime(sentTime, notification)
   )
 
-  private def ttlFromSentTime(sentTime: DateTime, notificationType: NotificationType): Option[Long] = {
-    notificationType match {
+  private def ttlFromSentTime(sentTime: DateTime, notification: Notification): Option[Long] = {
+    notification.`type` match {
+      case BreakingNews if notification.dryRun.contains(true) => Some(sentTime.plusDays(7).getMillis / 1000)
       case BreakingNews => None
       case _ => Some(sentTime.plusMonths(3).getMillis / 1000)
 
@@ -94,7 +95,7 @@ object DynamoNotificationReport {
       reports,
       version,
       None,
-      ttlFromSentTime(lastSentTime, notification.`type`)
+      ttlFromSentTime(lastSentTime, notification)
     )
   }
 

@@ -4,7 +4,7 @@ import java.util.UUID
 
 import models.{Android, Platform, iOS}
 import okhttp3.{MediaType, OkHttpClient, Request, RequestBody}
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 
 import scala.concurrent.Future
@@ -52,7 +52,7 @@ object FakeRegistration {
 }
 
 class FakeRegistrations(okHttpClient: OkHttpClient, legacyDeviceRegistrationUrl: String) {
-  val logger = LogManager.getLogger(classOf[FakeRegistrations])
+  val logger = LoggerFactory.getLogger(this.getClass)
 
   def register(uuid: UUID, platform: Platform): Future[Unit] = {
     val firebaseToken: Option[String] = if (platform == Android) Some(s"token-for-firebase-$uuid") else None

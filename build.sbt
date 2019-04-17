@@ -10,6 +10,10 @@ val projectVersion = "1.0-latest"
 organization := "com.gu"
 scalaVersion in ThisBuild := "2.12.6"
 
+// this prevents deadlocks when running the tests from the root project.
+// See https://github.com/sbt/sbt/issues/3022
+Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
+
 val compilerOptions = Seq(
   "-deprecation",
   "-Xfatal-warnings",
@@ -36,6 +40,7 @@ val awsSdkVersion: String = "1.11.433"
 val doobieVersion: String = "0.6.0"
 val catsVersion: String = "1.4.0"
 val simpleConfigurationVersion: String = "1.5.0"
+val okHttpVersion: String = "3.14.0"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -54,7 +59,7 @@ val standardSettings = Seq[Setting[_]](
     "org.specs2" %% "specs2-matcher-extra" % "3.8.9" % Test
   )
 )
-val log4j2Version: String = "2.10.0"
+
 lazy val commoneventconsumer = project
   .settings(Seq(
     libraryDependencies ++= Seq(
@@ -136,7 +141,7 @@ lazy val registration = project
       "models.pagination._"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16",
+      logback,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
@@ -158,7 +163,7 @@ lazy val notification = project
       "models._"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16",
+      logback,
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
@@ -166,49 +171,6 @@ lazy val notification = project
     packageName in Debian := name.value,
     version := projectVersion
   )
-
-lazy val schedulelambda = project
-  .dependsOn(commonscheduledynamodb)
-  .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
-  .settings {
-
-    val byteBuddyVersion = "1.8.8"
-    List(
-      resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
-      assemblyJarName := s"${name.value}.jar",
-      assemblyMergeStrategy in assembly := {
-        case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-        case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
-        case resource => (assemblyMergeStrategy in assembly).value(resource)
-      },
-      libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-        "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
-        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
-        "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
-        "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
-        "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
-        "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
-        "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-        "org.specs2" %% "specs2-core" % specsVersion % "test",
-        "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
-        "org.specs2" %% "specs2-mock" % specsVersion % "test",
-        "com.squareup.okhttp3" % "okhttp" % "3.10.0"
-      ),
-      fork := true,
-      riffRaffPackageType := file(".nothing"),
-      riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
-      riffRaffUploadManifestBucket := Option("riffraff-builds"),
-      riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
-      riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
-      riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
-
-      name := "schedule",
-      organization := "com.gu",
-      scalacOptions ++= compilerOptions,
-      riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value
-    )
-  }
 
 lazy val report = project
   .dependsOn(common, commontest % "test->test")
@@ -223,7 +185,7 @@ lazy val report = project
       "models._"
     ),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16"
+      logback
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
@@ -283,111 +245,93 @@ lazy val apiClient = {
   ))
 }
 
-lazy val eventconsumer = project
-  .dependsOn(commoneventconsumer)
+def lambda(projectName: String, directoryName: String, mainClassName: Option[String] = None): Project =
+  Project(projectName, file(directoryName))
   .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
+  .settings(
+    organization := "com.gu",
+    resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
+    libraryDependencies ++= Seq(
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
+      "org.slf4j" % "slf4j-api" % "1.7.26",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.11.2",
+      "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
+      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+      specs2 % Test
+    ),
+    assemblyJarName := s"$projectName.jar",
+    assemblyMergeStrategy in assembly := {
+      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+      case _ => MergeStrategy.first
+    },
+    fork in (Test, run) := true,
+    scalacOptions := compilerOptions,
+    riffRaffPackageType := assembly.value,
+    riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
+    riffRaffUploadManifestBucket := Option("riffraff-builds"),
+    riffRaffManifestProjectName := s"mobile-n10n:$projectName",
+    mainClass := mainClassName
+  )
+
+lazy val schedulelambda = lambda("schedule", "schedulelambda")
+  .dependsOn(commonscheduledynamodb)
+  .settings {
+    List(
+      libraryDependencies ++= Seq(
+        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
+        "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+        "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
+        "org.specs2" %% "specs2-core" % specsVersion % "test",
+        "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
+        "org.specs2" %% "specs2-mock" % specsVersion % "test"
+      ),
+      riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    )
+  }
+
+lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.notifications.events.LocalRun"))
+  .dependsOn(commoneventconsumer)
   .settings({
     Seq(
       description := "Consumes events produced when an app receives a notification",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
         "com.typesafe.play" %% "play-json" % playJsonVersion,
-        "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
-        "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
-        "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
-        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
-          specs2 % Test
+        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0"
       ),
-      fork := true,
-      scalacOptions := compilerOptions,
-      assemblyJarName := s"${name.value}.jar",
-      assemblyMergeStrategy in assembly := {
-        case "mime.types" => new MergeMimeTypesStrategy
-        case "META-INF/io.netty.versions.properties" => MergeStrategy.concat
-        case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-        case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
-        case resource => (assemblyMergeStrategy in assembly).value(resource)
-      },
-      riffRaffPackageType := file(".nothing"),
-      riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
-      riffRaffUploadManifestBucket := Option("riffraff-builds"),
-      riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
-      riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
-      riffRaffArtifactResources += (assembly).value -> s"${(name).value}/${(assembly).value.getName}",
-      riffRaffUpload := (riffRaffUpload dependsOn (assembly)).value,
-      mainClass := Some("com.gu.notifications.events.LocalRun")
+      riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml")
     )
   })
 
-lazy val notificationworkerlambda = project
+lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notificationworkerlambda", Some("com.gu.notifications.worker.TopicCounterLocalRun"))
   .dependsOn(common)
-  .enablePlugins(RiffRaffArtifact)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-logback" % "2.6.16",
       "com.turo" % "pushy" % "0.13.5",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
-      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.2",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
-      "org.slf4j" % "slf4j-simple" % "1.7.25",
-      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "com.squareup.okhttp3" % "okhttp" % "3.12.1",
-      specs2 % Test
+      "com.squareup.okhttp3" % "okhttp" % okHttpVersion
     ),
-
-    assemblyJarName := s"${name.value}.jar",
-    assemblyMergeStrategy in assembly := {
-      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-      case _ => MergeStrategy.first
-    },
-    fork := true,
-    scalacOptions := compilerOptions,
-    riffRaffPackageType := assembly.value,
-    riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
-    riffRaffUploadManifestBucket := Option("riffraff-builds"),
-    riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
     riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"harvester-cfn/harvester-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"ios-notification-worker-cfn/sender-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"android-notification-worker-cfn/sender-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"topic-counter-cfn/topic-counter-cfn.yaml"),
-    mainClass := Some("com.gu.notifications.worker.TopicCounterLocalRun")
+    riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"topic-counter-cfn/topic-counter-cfn.yaml")
   )
 
-lazy val fakebreakingnewslambda = project
+lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
   .dependsOn(common)
   .dependsOn(apiClient  % "test->test", apiClient  % "compile->compile")
-  .enablePlugins(RiffRaffArtifact)
   .settings(
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
-      "org.apache.logging.log4j" % "log4j-api" % log4j2Version,
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % log4j2Version,
-      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "com.squareup.okhttp3" % "okhttp" % "3.12.1",
-      specs2 % Test
+      "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
     ),
-    assemblyJarName := s"${name.value}.jar",
-    assemblyMergeStrategy in assembly := {
-      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
-      case _ => MergeStrategy.first
-    },
-    fork := true,
-    scalacOptions := compilerOptions,
-    riffRaffPackageType := assembly.value,
-    riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
-    riffRaffUploadManifestBucket := Option("riffraff-builds"),
-    riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
-    riffRaffArtifactResources += (baseDirectory.value / "fakebreakingnewslambda-cfn.yaml", s"fakebreakingnewslambda-cfn/fakebreakingnewslambda-cfn.yaml"),
-    mainClass := Some("fakebreakingnews.LocalRun")
+    riffRaffArtifactResources += (baseDirectory.value / "fakebreakingnewslambda-cfn.yaml", "fakebreakingnewslambda-cfn/fakebreakingnewslambda-cfn.yaml")
   )
-
 
 lazy val root = (project in file(".")).
   aggregate(
