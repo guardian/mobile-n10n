@@ -10,10 +10,6 @@ val projectVersion = "1.0-latest"
 organization := "com.gu"
 scalaVersion in ThisBuild := "2.12.6"
 
-// this prevents deadlocks when running the tests from the root project.
-// See https://github.com/sbt/sbt/issues/3022
-Global / concurrentRestrictions += Tags.limit(Tags.Test, 1)
-
 val compilerOptions = Seq(
   "-deprecation",
   "-Xfatal-warnings",
@@ -57,7 +53,9 @@ val standardSettings = Seq[Setting[_]](
     "com.softwaremill.macwire" %% "macros" % "2.3.0" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % "3.8.9" % Test
-  )
+  ),
+  // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
+  parallelExecution in Test := false
 )
 
 lazy val commoneventconsumer = project
@@ -271,7 +269,9 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
     riffRaffUploadManifestBucket := Option("riffraff-builds"),
     riffRaffManifestProjectName := s"mobile-n10n:$projectName",
-    mainClass := mainClassName
+    mainClass := mainClassName,
+    // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
+    parallelExecution in Test := false
   )
 
 lazy val schedulelambda = lambda("schedule", "schedulelambda")
@@ -286,7 +286,7 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
         "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
         "org.specs2" %% "specs2-mock" % specsVersion % "test"
       ),
-      riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+      riffRaffArtifactResources += (file(s"schedulelambda/cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
     )
   }
 
@@ -333,6 +333,12 @@ lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreaking
     riffRaffArtifactResources += (baseDirectory.value / "fakebreakingnewslambda-cfn.yaml", "fakebreakingnewslambda-cfn/fakebreakingnewslambda-cfn.yaml")
   )
 
+lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("com.gu.notifications.extractor.LocalRun"))
+  .dependsOn(common)
+  .settings(
+    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "reportextractor-cfn/cfn.yaml")
+  )
+
 lazy val root = (project in file(".")).
   aggregate(
     registration,
@@ -344,5 +350,6 @@ lazy val root = (project in file(".")).
     apiClient,
     eventconsumer,
     notificationworkerlambda,
-    fakebreakingnewslambda
+    fakebreakingnewslambda,
+    reportExtractor
   )
