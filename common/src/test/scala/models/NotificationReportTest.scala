@@ -6,11 +6,11 @@ import java.util.UUID
 import models.Link.Internal
 import models.Importance.Major
 import models.TopicTypes.Breaking
-import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.{DateTime, DateTimeZone}
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
-
 import cats.implicits._
+import org.specs2.specification.Scope
 
 class NotificationReportTest extends Specification {
   "NotificationReport" should {
@@ -79,5 +79,44 @@ class NotificationReportTest extends Specification {
 
       Json.toJson(report) mustEqual Json.parse(json)
     }
+
+    "have no TTL for breaking news" in new NotificationReportScope {
+      val report = DynamoNotificationReport.create(
+        notification = breakingNews,
+        reports = List(
+          SenderReport("Firebase", DateTime.now(), None, Some(PlatformStatistics(Android, recipientsCount = 3)))
+        ),
+        Some(UUID.fromString("524dd8a4-b12d-427b-a3e9-ddbc9c2380d2"))
+      )
+
+      report.ttl should beNone
+    }
+
+    "have a TTL for dry run breaking news" in new NotificationReportScope {
+      val report = DynamoNotificationReport.create(
+        notification = breakingNews.copy(dryRun = Some(true)),
+        reports = List(
+          SenderReport("Firebase", DateTime.now(), None, Some(PlatformStatistics(Android, recipientsCount = 3)))
+        ),
+        Some(UUID.fromString("524dd8a4-b12d-427b-a3e9-ddbc9c2380d2"))
+      )
+
+      report.ttl should beSome
+    }
+  }
+
+  trait NotificationReportScope extends Scope {
+    val breakingNews = BreakingNewsNotification(
+      id = UUID.fromString("d00ceaea-8a27-11a5-9da0-a51c69a460b9"),
+      sender = "sender",
+      title = "title",
+      message = "message",
+      thumbnailUrl = Some(new URI("http://some.url/my.png")),
+      link = Internal("some/capi/id-with-dashes", None, GITContent),
+      imageUrl = Some(new URI("http://some.url/i.jpg")),
+      importance = Major,
+      topic = List(Topic(Breaking, "uk")),
+      dryRun = None
+    )
   }
 }
