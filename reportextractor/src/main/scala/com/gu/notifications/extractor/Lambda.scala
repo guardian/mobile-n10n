@@ -1,5 +1,6 @@
 package com.gu.notifications.extractor
 
+import java.io.{BufferedInputStream, ByteArrayInputStream}
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate
 
@@ -10,6 +11,7 @@ import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.s3.model.{CannedAccessControlList, ObjectMetadata, PutObjectRequest}
 import com.gu.{AppIdentity, AwsIdentity}
 import models.NotificationType
 import org.slf4j.{Logger, LoggerFactory}
@@ -85,6 +87,16 @@ class Lambda extends RequestHandler[DateRange, Unit] {
     val results = notificationTypesToExtract.flatMap(nt => extractNotifications(day, nt))
     val notificationCount = results.size
     val buffer: String = results.map(Json.stringify).mkString
+    val inputStream = new ByteArrayInputStream(buffer.getBytes)
+    val objectMetaData = new ObjectMetadata()
+    objectMetaData.setContentLength(buffer.getBytes().size)
+    val putObjectRequest = new PutObjectRequest(
+      "ophan-raw-push-notification",
+      s"$s3Path/date=$day/notifications.json",
+      inputStream,
+      objectMetaData
+    )
+    putObjectRequest.withCannedAcl(CannedAccessControlList.BucketOwnerFullControl)
     s3.putObject("ophan-raw-push-notification", s"$s3Path/date=$day/notifications.json", buffer)
     logger.info(s"Extracted $notificationCount notifications for $day")
   }
