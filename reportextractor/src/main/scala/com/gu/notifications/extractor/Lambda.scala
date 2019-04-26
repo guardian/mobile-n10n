@@ -86,7 +86,7 @@ class Lambda extends RequestHandler[DateRange, Unit] {
     logger.info(s"Extracting $day...")
     val results = notificationTypesToExtract.flatMap(nt => extractNotifications(day, nt))
     val notificationCount = results.size
-    val buffer: String = results.map(Json.stringify).mkString
+    val buffer: String = results.map(Json.stringify).mkString("\n")
     val inputStream = new ByteArrayInputStream(buffer.getBytes)
     val objectMetaData = new ObjectMetadata()
     objectMetaData.setContentLength(buffer.getBytes().length)
