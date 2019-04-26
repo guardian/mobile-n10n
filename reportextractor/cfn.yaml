@@ -48,8 +48,8 @@ Resources:
             Statement:
               Effect: Allow
               Action:
-                - "dynamodb:GetItem"
-                - "dynamodb:Query"
+                - dynamodb:GetItem
+                - dynamodb:Query
               Resource:
                 - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/mobile-notifications-reports-${Stage}
                 - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/mobile-notifications-reports-${Stage}/index/sentTime-index
@@ -58,7 +58,8 @@ Resources:
             Statement:
               Effect: Allow
               Action:
-                - "s3:PutObject"
+                - s3:PutObjectAcl
+                - s3:PutObject
               Resource:
                 - !Ref OutputBucket
                 - !Sub ${OutputBucket}/*
