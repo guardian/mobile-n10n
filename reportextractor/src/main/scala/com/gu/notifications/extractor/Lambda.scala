@@ -89,7 +89,7 @@ class Lambda extends RequestHandler[DateRange, Unit] {
     val buffer: String = results.map(Json.stringify).mkString
     val inputStream = new ByteArrayInputStream(buffer.getBytes)
     val objectMetaData = new ObjectMetadata()
-    objectMetaData.setContentLength(buffer.getBytes().size)
+    objectMetaData.setContentLength(buffer.getBytes().length)
     val putObjectRequest = new PutObjectRequest(
       "ophan-raw-push-notification",
       s"$s3Path/date=$day/notifications.json",
@@ -97,7 +97,7 @@ class Lambda extends RequestHandler[DateRange, Unit] {
       objectMetaData
     )
     putObjectRequest.withCannedAcl(CannedAccessControlList.BucketOwnerFullControl)
-    s3.putObject("ophan-raw-push-notification", s"$s3Path/date=$day/notifications.json", buffer)
+    s3.putObject(putObjectRequest)
     logger.info(s"Extracted $notificationCount notifications for $day")
   }
 
