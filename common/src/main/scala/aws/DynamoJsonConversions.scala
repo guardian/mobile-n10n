@@ -17,6 +17,10 @@ object DynamoJsonConversions {
     fjs.reads(JsObject(m.mapValues(fromAttributeValue)))
   }
 
+  def jsonFromAttributeMap(m: Map[String, AttributeValue]): JsObject = {
+    JsObject(m.mapValues(fromAttributeValue))
+  }
+
   private def fromAttributeValue(att: AttributeValue): JsValue = List(
     Option(att.getS) map parseString,
     Option(att.getN) map parseNumber,
