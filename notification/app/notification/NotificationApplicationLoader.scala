@@ -112,9 +112,6 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
-  def withFilter(notificationSender: NotificationSender, invertCondition: Boolean): NotificationSender =
-    new FilteredNotificationSender(notificationSender, topicRegistrationCounter, invertCondition)
-
   lazy val notificationSenders = List(
     guardianIosNotificationSender,
     guardianAndroidNotificationSender,
