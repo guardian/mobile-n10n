@@ -46,7 +46,8 @@ case class SenderReport(
   senderName: String,
   sentTime: DateTime,
   sendersId: Option[String] = None,
-  platformStatistics: Option[PlatformStatistics] = None
+  platformStatistics: Option[PlatformStatistics] = None,
+  totalRegistrationCount: Option[Int] = None
 )
 
 object SenderReport {
