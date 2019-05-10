@@ -4,16 +4,17 @@ import java.net.URI
 
 import _root_.models.NotificationType._
 import _root_.models._
+import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
 import com.gu.notifications.worker.delivery.{ApnsPayload => Payload}
 import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import com.gu.notifications.worker.delivery.apns.models.payload.CustomProperty.Keys
 import com.gu.notifications.worker.delivery.apns.models.payload.PlatformUriTypes.{External, Item}
-import com.turo.pushy.apns.util.ApnsPayloadBuilder
+import com.turo.pushy.apns.util.{ApnsPayloadBuilder => Builder}
 
 case class PayLoadAndTimeToLive(payLoad: String, timeToLive: Option[Long] = None)
 
 
-object ApnsPayload {
+class ApnsPayloadBuilder(config: ApnsConfig) {
 
   def apply(notification: Notification): Option[Payload] = {
     val payload: Option[PayLoadAndTimeToLive] = notification match {
@@ -36,7 +37,7 @@ object ApnsPayload {
     customProperties: Seq[CustomProperty] = Seq()
   ) {
     def payload: String = {
-      val payloadBuilder = new ApnsPayloadBuilder()
+      val payloadBuilder = new Builder()
       alertTitle.foreach(payloadBuilder.setAlertTitle)
       alertBody.foreach(payloadBuilder.setAlertBody)
       categoryName.foreach(payloadBuilder.setCategoryName)
@@ -156,7 +157,7 @@ object ApnsPayload {
   }
 
   private def toIosLink(link: Link) = link match {
-    case Link.Internal(contentApiId, Some(shortUrl), _) => new URI(s"x-gu://${new URI(shortUrl).getPath}")
+    case Link.Internal(contentApiId, _, _) => new URI(s"${config.mapiBaseUrl}/items/$contentApiId")
     case _ => link.webUri("http://www.theguardian.com/")
   }
 }

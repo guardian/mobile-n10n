@@ -4,6 +4,7 @@ import java.net.URI
 import java.util.UUID
 
 import com.google.gson.JsonParser
+import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
 import models.Importance.Major
 import models.Link.Internal
 import models.TopicTypes.{Breaking, TagSeries}
@@ -12,7 +13,7 @@ import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
-class ApnsPayloadSpec extends Specification with Matchers {
+class ApnsPayloadBuilderSpec extends Specification with Matchers {
 
   "ApnsPayload" should {
     "generate correct payload for Breaking News notification" in new BreakingNewsScope {
@@ -40,7 +41,17 @@ class ApnsPayloadSpec extends Specification with Matchers {
     def expected: Option[String]
 
     private def expectedTrimmedJson = expected.map(s => new JsonParser().parse(s).toString)
-    def checkPayload() = ApnsPayload(notification).map(_.jsonString) should beEqualTo(expectedTrimmedJson)
+    def checkPayload() = {
+      val dummyConfig = new ApnsConfig(
+        teamId = "",
+        bundleId = "",
+        newsstandBundleId = "",
+        keyId = "",
+        certificate = "",
+        mapiBaseUrl = "https://mobile.guardianapis.com"
+      )
+      new ApnsPayloadBuilder(dummyConfig).apply(notification).map(_.jsonString) should beEqualTo(expectedTrimmedJson)
+    }
   }
 
   trait BreakingNewsScope extends NotificationScope {
