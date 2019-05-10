@@ -74,7 +74,8 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "t":"m",
         |   "aps":{
         |      "alert":{
-        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"
+        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+        |         "title" : "Breaking News"
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
@@ -85,7 +86,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
         |   "uriType":"item",
         |   "imageUrl":"https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg",
-        |   "link":"x-gu:///p/4p7xt",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"news",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
@@ -113,7 +114,8 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "t":"m",
         |   "aps":{
         |      "alert":{
-        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"
+        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+        |         "title" : "Breaking News"
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
@@ -124,7 +126,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
         |   "uriType":"item",
         |   "imageUrl":"https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg",
-        |   "link":"x-gu:///p/4p7xt",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"news",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
@@ -152,7 +154,8 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "t":"m",
         |   "aps":{
         |      "alert":{
-        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"
+        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+        |         "title" : "Breaking News"
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
@@ -161,7 +164,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "provider":"Guardian",
         |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
         |   "uriType":"item",
-        |   "link":"x-gu:///p/4p7xt",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"news",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
@@ -198,7 +201,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "provider":"Guardian",
         |   "topics":"tag-series/series-a,tag-series/series-b",
         |   "uriType":"item",
-        |   "link":"x-gu:///p/4p7xt",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"content",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
