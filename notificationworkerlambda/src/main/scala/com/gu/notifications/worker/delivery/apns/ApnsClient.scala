@@ -47,16 +47,15 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
       case _ => config.bundleId
     }
 
-    val collapseId = notificationId.toString
     val pushNotification = new SimpleApnsPushNotification(
       TokenUtil.sanitizeTokenString(token),
       bundleId,
       payload.jsonString,
       //Default to no invalidation time but an hour for breaking news and 10 mins for football
       //See https://stackoverflow.com/questions/12317037/apns-notifications-ttl
-      payload.ttl.map(invalidationTime(_).toDate).getOrElse(null),
+      payload.ttl.map(invalidationTime(_).toDate).orNull,
       DeliveryPriority.IMMEDIATE,
-      collapseId
+      payload.collapseId.orNull
     )
 
     type Feedback = PushNotificationFuture[SimpleApnsPushNotification, PushNotificationResponse[SimpleApnsPushNotification]]

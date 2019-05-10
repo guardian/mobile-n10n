@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery.fcm.models.payload
 import java.net.URI
 import java.util.UUID
 
-import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayload.FirebaseAndroidNotification
+import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder.FirebaseAndroidNotification
 import models.Importance.Major
 import models.Link.Internal
 import models.TopicTypes.Breaking
@@ -13,7 +13,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import com.gu.notifications.worker.delivery.utils.TimeToLive
 
-class FcmPayloadSpec extends Specification with Matchers {
+class FcmPayloadBuilderSpec extends Specification with Matchers {
 
   "FcmPayload" should {
     "generate correct data for Breaking News notification" in new BreakingNewsScope {

@@ -9,7 +9,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, Message}
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken}
-import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayload
+import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
 import models.FcmConfig
 import _root_.models.{Android, Notification, Platform}
@@ -35,7 +35,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 
   def close(): Unit = firebaseApp.delete()
 
-  def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayload(n, config.debug)
+  def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayloadBuilder(n, config.debug)
 
   def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
