@@ -11,7 +11,7 @@ import com.gu.notifications.worker.delivery.fcm.models.payload.Editions.Edition
 import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import models._
 
-object FcmPayload {
+object FcmPayloadBuilder {
 
   def apply(notification: Notification, debug: Boolean): Option[FcmPayload] =
     FirebaseAndroidNotification(notification, debug).map(n => new FcmPayload(n.androidConfig))
