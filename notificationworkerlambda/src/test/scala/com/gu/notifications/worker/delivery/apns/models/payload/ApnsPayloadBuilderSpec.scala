@@ -74,8 +74,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "t":"m",
         |   "aps":{
         |      "alert":{
-        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
-        |         "title" : "Breaking News"
+        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
@@ -114,8 +113,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "t":"m",
         |   "aps":{
         |      "alert":{
-        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
-        |         "title" : "Breaking News"
+        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
@@ -154,8 +152,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "t":"m",
         |   "aps":{
         |      "alert":{
-        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
-        |         "title" : "Breaking News"
+        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",

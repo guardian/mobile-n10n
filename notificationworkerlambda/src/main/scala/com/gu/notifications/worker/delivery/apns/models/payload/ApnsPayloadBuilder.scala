@@ -57,7 +57,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
     val link = toPlatformLink(n.link)
     val imageUrl = n.thumbnailUrl.orElse(n.imageUrl)
     val payload = PushyPayload(
-      alertTitle = Some("Breaking News"),
+      alertTitle = None,
       alertBody = Some(n.message),
       categoryName = Option(n.link match {
         case _: Link.External => ""
