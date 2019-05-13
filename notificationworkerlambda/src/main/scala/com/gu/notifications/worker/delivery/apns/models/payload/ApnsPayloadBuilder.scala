@@ -1,6 +1,7 @@
 package com.gu.notifications.worker.delivery.apns.models.payload
 
 import java.net.URI
+import java.util.UUID
 
 import _root_.models.NotificationType._
 import _root_.models._
@@ -156,7 +157,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
   }
 
   private def toCollapseId(link: Link): Option[String] = link match {
-    case Link.Internal(contentApiId, _, _) => Some(contentApiId)
+    case Link.Internal(contentApiId, _, _) => Some(UUID.nameUUIDFromBytes(contentApiId.getBytes).toString)
     case _ => None
   }
 }
