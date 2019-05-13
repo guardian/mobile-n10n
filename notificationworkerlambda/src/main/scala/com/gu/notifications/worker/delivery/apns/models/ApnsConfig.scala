@@ -6,6 +6,7 @@ case class ApnsConfig(
   newsstandBundleId: String,
   keyId: String,
   certificate: String,
+  mapiBaseUrl: String,
   sendingToProdServer: Boolean = false,
   dryRun: Boolean = true
 )
