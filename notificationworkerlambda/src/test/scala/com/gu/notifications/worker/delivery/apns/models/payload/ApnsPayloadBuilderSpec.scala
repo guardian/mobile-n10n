@@ -4,6 +4,7 @@ import java.net.URI
 import java.util.UUID
 
 import com.google.gson.JsonParser
+import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
 import models.Importance.Major
 import models.Link.Internal
 import models.TopicTypes.{Breaking, TagSeries}
@@ -12,7 +13,7 @@ import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
-class ApnsPayloadSpec extends Specification with Matchers {
+class ApnsPayloadBuilderSpec extends Specification with Matchers {
 
   "ApnsPayload" should {
     "generate correct payload for Breaking News notification" in new BreakingNewsScope {
@@ -40,7 +41,17 @@ class ApnsPayloadSpec extends Specification with Matchers {
     def expected: Option[String]
 
     private def expectedTrimmedJson = expected.map(s => new JsonParser().parse(s).toString)
-    def checkPayload() = ApnsPayload(notification).map(_.jsonString) should beEqualTo(expectedTrimmedJson)
+    def checkPayload() = {
+      val dummyConfig = new ApnsConfig(
+        teamId = "",
+        bundleId = "",
+        newsstandBundleId = "",
+        keyId = "",
+        certificate = "",
+        mapiBaseUrl = "https://mobile.guardianapis.com"
+      )
+      new ApnsPayloadBuilder(dummyConfig).apply(notification).map(_.jsonString) should beEqualTo(expectedTrimmedJson)
+    }
   }
 
   trait BreakingNewsScope extends NotificationScope {
@@ -74,7 +85,7 @@ class ApnsPayloadSpec extends Specification with Matchers {
         |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
         |   "uriType":"item",
         |   "imageUrl":"https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg",
-        |   "link":"x-gu:///p/4p7xt",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"news",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
@@ -113,7 +124,7 @@ class ApnsPayloadSpec extends Specification with Matchers {
         |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
         |   "uriType":"item",
         |   "imageUrl":"https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg",
-        |   "link":"x-gu:///p/4p7xt",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"news",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
@@ -150,7 +161,7 @@ class ApnsPayloadSpec extends Specification with Matchers {
         |   "provider":"Guardian",
         |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
         |   "uriType":"item",
-        |   "link":"x-gu:///p/4p7xt",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"news",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
@@ -187,7 +198,7 @@ class ApnsPayloadSpec extends Specification with Matchers {
         |   "provider":"Guardian",
         |   "topics":"tag-series/series-a,tag-series/series-b",
         |   "uriType":"item",
-        |   "link":"x-gu:///p/4p7xt",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"content",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"

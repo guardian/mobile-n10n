@@ -69,6 +69,7 @@ object Configuration {
         newsstandBundleId = config.getString("apns.newsstandBundleId"),
         keyId = config.getString("apns.keyId"),
         certificate = config.getString("apns.certificate"),
+        mapiBaseUrl = config.getString("mapi.baseUrl"),
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
         dryRun = config.getBoolean("dryrun")
       ),

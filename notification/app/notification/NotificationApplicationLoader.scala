@@ -91,34 +91,14 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     .withRegion(EU_WEST_1)
     .build()
 
-  lazy val guardianIosNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
+  lazy val notificationSender: GuardianNotificationSender = new GuardianNotificationSender(
     sqsClient = sqsClient,
     registrationCounter = topicRegistrationCounter,
-    platform = iOS,
     harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
-
-  lazy val guardianAndroidNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
-    sqsClient = sqsClient,
-    registrationCounter = topicRegistrationCounter,
-    platform = Android,
-    harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
-  )
-
-  lazy val guardianNewsstandNotificationSender: GuardianNotificationSender = new GuardianNotificationSender(
-    sqsClient = sqsClient,
-    registrationCounter = topicRegistrationCounter,
-    platform = Newsstand,
-    harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
-  )
-
-  def withFilter(notificationSender: NotificationSender, invertCondition: Boolean): NotificationSender =
-    new FilteredNotificationSender(notificationSender, topicRegistrationCounter, invertCondition)
 
   lazy val notificationSenders = List(
-    guardianIosNotificationSender,
-    guardianAndroidNotificationSender,
-    guardianNewsstandNotificationSender,
+    notificationSender,
   )
 
   lazy val mainController = wire[Main]

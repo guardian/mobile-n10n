@@ -1,29 +1,25 @@
 package com.gu.notifications.worker.delivery.apns.models.payload
 
 import java.net.URI
+import java.util.UUID
 
 import _root_.models.NotificationType._
 import _root_.models._
-import com.gu.notifications.worker.delivery.{ApnsPayload => Payload}
+import com.gu.notifications.worker.delivery.ApnsPayload
+import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
 import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import com.gu.notifications.worker.delivery.apns.models.payload.CustomProperty.Keys
 import com.gu.notifications.worker.delivery.apns.models.payload.PlatformUriTypes.{External, Item}
-import com.turo.pushy.apns.util.ApnsPayloadBuilder
+import com.turo.pushy.apns.util.{ApnsPayloadBuilder => Builder}
 
-case class PayLoadAndTimeToLive(payLoad: String, timeToLive: Option[Long] = None)
+class ApnsPayloadBuilder(config: ApnsConfig) {
 
-
-object ApnsPayload {
-
-  def apply(notification: Notification): Option[Payload] = {
-    val payload: Option[PayLoadAndTimeToLive] = notification match {
+  def apply(notification: Notification): Option[ApnsPayload] = notification match {
       case n: BreakingNewsNotification => Some(breakingNewsPayload(n))
       case n: ContentNotification => Some(contentPayload(n))
       case n: FootballMatchStatusNotification => Some(footballMatchStatusPayload(n))
       case n: NewsstandShardNotification => Some(newsstandPayload(n))
       case _ => None
-    }
-    payload.map(p => new Payload(p.payLoad, p.timeToLive))
   }
 
   private case class PushyPayload(
@@ -36,7 +32,7 @@ object ApnsPayload {
     customProperties: Seq[CustomProperty] = Seq()
   ) {
     def payload: String = {
-      val payloadBuilder = new ApnsPayloadBuilder()
+      val payloadBuilder = new Builder()
       alertTitle.foreach(payloadBuilder.setAlertTitle)
       alertBody.foreach(payloadBuilder.setAlertBody)
       categoryName.foreach(payloadBuilder.setCategoryName)
@@ -57,7 +53,7 @@ object ApnsPayload {
     }
   }
 
-  private def breakingNewsPayload(n: BreakingNewsNotification): PayLoadAndTimeToLive = {
+  private def breakingNewsPayload(n: BreakingNewsNotification): ApnsPayload = {
     val link = toPlatformLink(n.link)
     val imageUrl = n.thumbnailUrl.orElse(n.imageUrl)
     val payload = PushyPayload(
@@ -81,10 +77,10 @@ object ApnsPayload {
         CustomProperty(Keys.UriType -> link.`type`.toString)
       ) ++ imageUrl.map(u => CustomProperty(Keys.ImageUrl -> u.toString)).toSeq
     ).payload
-    PayLoadAndTimeToLive(payload, Some(BreakingNewsTtl))
+    ApnsPayload(payload, Some(BreakingNewsTtl), toCollapseId(n.link))
   }
 
-  private def contentPayload(n: ContentNotification): PayLoadAndTimeToLive = {
+  private def contentPayload(n: ContentNotification): ApnsPayload = {
     val link = toPlatformLink(n.link)
     val payLoad = PushyPayload(
       alertTitle = None,
@@ -104,10 +100,10 @@ object ApnsPayload {
         CustomProperty(Keys.UriType -> link.`type`.toString)
       )
     ).payload
-    PayLoadAndTimeToLive(payLoad)
+    ApnsPayload(payLoad, None, toCollapseId(n.link))
   }
 
-  private def footballMatchStatusPayload(n: FootballMatchStatusNotification): PayLoadAndTimeToLive = {
+  private def footballMatchStatusPayload(n: FootballMatchStatusNotification): ApnsPayload = {
     val payLoad = PushyPayload(
       alertTitle = Some(n.title),
       alertBody = Some(n.message),
@@ -144,11 +140,11 @@ object ApnsPayload {
         )
       )
     ).payload
-    PayLoadAndTimeToLive(payLoad, Some(FootballMatchStatusTtl))
+    ApnsPayload(payLoad, Some(FootballMatchStatusTtl), Some(n.matchId))
   }
 
-  private def newsstandPayload(notification: NewsstandShardNotification): PayLoadAndTimeToLive =
-    PayLoadAndTimeToLive(PushyPayload(contentAvailable = true).payload)
+  private def newsstandPayload(notification: NewsstandShardNotification): ApnsPayload =
+    ApnsPayload(PushyPayload(contentAvailable = true).payload, None, None)
 
   private def toPlatformLink(link: Link) = link match {
     case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
@@ -156,8 +152,13 @@ object ApnsPayload {
   }
 
   private def toIosLink(link: Link) = link match {
-    case Link.Internal(contentApiId, Some(shortUrl), _) => new URI(s"x-gu://${new URI(shortUrl).getPath}")
+    case Link.Internal(contentApiId, _, _) => new URI(s"${config.mapiBaseUrl}/items/$contentApiId")
     case _ => link.webUri("http://www.theguardian.com/")
+  }
+
+  private def toCollapseId(link: Link): Option[String] = link match {
+    case Link.Internal(contentApiId, _, _) => Some(UUID.nameUUIDFromBytes(contentApiId.getBytes).toString)
+    case _ => None
   }
 }
 

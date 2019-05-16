@@ -10,7 +10,7 @@ import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
 import models.ApnsConfig
 import _root_.models.{Newsstand, Notification, Platform, iOS}
-import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayload
+import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayloadBuilder
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
 import com.turo.pushy.apns.util.{SimpleApnsPushNotification, TokenUtil}
@@ -27,6 +27,8 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
   val dryRun = config.dryRun
   val platform: Platform = iOS
 
+  private val apnsPayloadBuilder = new ApnsPayloadBuilder(config)
+
   private val invalidTokenErrorCodes = Seq(
     "BadDeviceToken",
     "Unregistered"
@@ -34,7 +36,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   def close(): Unit = underlying.close().get
 
-  def payloadBuilder: Notification => Option[ApnsPayload] = ApnsPayload.apply _
+  def payloadBuilder: Notification => Option[ApnsPayload] = apnsPayloadBuilder.apply _
 
   def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
@@ -45,16 +47,15 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
       case _ => config.bundleId
     }
 
-    val collapseId = notificationId.toString
     val pushNotification = new SimpleApnsPushNotification(
       TokenUtil.sanitizeTokenString(token),
       bundleId,
       payload.jsonString,
       //Default to no invalidation time but an hour for breaking news and 10 mins for football
       //See https://stackoverflow.com/questions/12317037/apns-notifications-ttl
-      payload.ttl.map(invalidationTime(_).toDate).getOrElse(null),
+      payload.ttl.map(invalidationTime(_).toDate).orNull,
       DeliveryPriority.IMMEDIATE,
-      collapseId
+      payload.collapseId.orNull
     )
 
     type Feedback = PushNotificationFuture[SimpleApnsPushNotification, PushNotificationResponse[SimpleApnsPushNotification]]
