@@ -6,10 +6,16 @@ import java.util.UUID
 import com.gu.mobile.notifications.client.lib.JsonFormatsHelper._
 import com.gu.mobile.notifications.client.models.Importance.Importance
 import play.api.libs.json._
+import com.gu.mobile.notifications.client.models.Topic.reads
+import com.gu.mobile.notifications.client.models.TopicType.reads
+import com.gu.mobile.notifications.client.models.Importance.reads
+
+
 import NotificationPayloadType._
 sealed case class GuardianItemType(mobileAggregatorPrefix: String)
 object GuardianItemType {
-  implicit val jf = Json.writes[GuardianItemType]
+  implicit val writes = Json.writes[GuardianItemType]
+  implicit val reads = Json.reads[GuardianItemType]
 }
 
 object GITSection extends GuardianItemType("section")
@@ -18,15 +24,28 @@ object GITContent extends GuardianItemType("item-trimmed")
 
 sealed trait Link
 object Link {
-  implicit val jf = new Writes[Link] {
+  implicit val writes = new Writes[Link] {
     override def writes(o: Link): JsValue = o match {
-      case l: ExternalLink => ExternalLink.jf.writes(l)
-      case l: GuardianLinkDetails => GuardianLinkDetails.jf.writes(l)
+      case l: ExternalLink => ExternalLink.writes.writes(l)
+      case l: GuardianLinkDetails => GuardianLinkDetails.writes.writes(l)
     }
+  }
+
+  implicit val reads = new Reads[Link] {
+    override def reads(json: JsValue): JsResult[Link] =
+      (json \ "url", json \ "contentApiId") match {
+        case (JsDefined(_), _) => ExternalLink.reads.reads(json)
+        case (_, JsDefined(_)) => GuardianLinkDetails.reads.reads(json)
+        case _ => JsError(s"Unknown link type $json")
+      }
   }
 }
 
-object ExternalLink { implicit val jf = Json.writes[ExternalLink] }
+object ExternalLink {
+  implicit val writes = Json.writes[ExternalLink]
+  implicit val reads = Json.reads[ExternalLink]
+
+}
 case class ExternalLink(url: String) extends Link {
   override val toString = url
 }
@@ -42,7 +61,8 @@ case class GuardianLinkDetails(
 }
 
 object GuardianLinkDetails {
-  implicit val jf = Json.writes[GuardianLinkDetails]
+  implicit val writes = Json.writes[GuardianLinkDetails]
+  implicit val reads = Json.reads[GuardianLinkDetails]
 }
 
 sealed trait GoalType
@@ -86,7 +106,11 @@ sealed trait NotificationWithLink extends NotificationPayload {
   def link: Link
 }
 
-object BreakingNewsPayload { val jf = Json.writes[BreakingNewsPayload] withTypeString BreakingNews.toString }
+object BreakingNewsPayload {
+  val jf = Json.writes[BreakingNewsPayload] withTypeString BreakingNews.toString
+  implicit val jfReads: Reads[BreakingNewsPayload] = Json.reads[BreakingNewsPayload] withTypeString BreakingNews.toString
+}
+
 case class BreakingNewsPayload(
   id: UUID = UUID.randomUUID,
   title: String = "The Guardian",

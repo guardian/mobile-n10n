@@ -1,17 +1,23 @@
 package com.gu.mobile.notifications.client
 
+import java.util.concurrent.TimeUnit
+
 import com.gu.mobile.notifications.client.models.TopicTypes._
 import com.gu.mobile.notifications.client.models._
+import com.gu.mobile.notifications.client.models.BreakingNewsPayload.jf
+import com.gu.mobile.notifications.client.models.BreakingNewsPayload.jfReads
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.execute.Result
+import org.specs2.matcher.ThrownMessages
 import org.specs2.mock.mockito.ArgumentCapture
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, JsSuccess, Json}
+
 import scala.collection.JavaConverters._
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 
-import scala.concurrent.Future
 
-
-class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[NextGenApiClient] {
+class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[NextGenApiClient] with ThrownMessages {
 
   val payload = BreakingNewsPayload(
     title = "myTitle",
@@ -43,6 +49,62 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
     "successfully send payload" in apiTest {
       client => client.send(payload) must beRight.await
     }
+    "successfully send multiple HTTP calls for breaking news with more than one tag" in {
+      val payLoadMultipleTopics = payload.copy(topic = List(Topic(Breaking, "breaking/uk"), Topic(Breaking, "breaking/us")))
+
+      val fakeHttpProvider = mock[HttpProvider]
+      fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(HttpOk(201, """{"id":"someId"}"""))
+
+      val testApiClient = getTestApiClient(fakeHttpProvider)
+      Await.result(testApiClient.send(payLoadMultipleTopics), Duration.Inf)
+      val bodyCapture = new ArgumentCapture[Array[Byte]]
+      val apiKeyCapture = new ArgumentCapture[String]
+      val urlCapture = new ArgumentCapture[String]
+      val contentTypeCapture = new ArgumentCapture[ContentType]
+
+      there was two(fakeHttpProvider).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
+      urlCapture.value mustEqual expectedPostUrl
+      contentTypeCapture.value mustEqual ContentType("application/json", "UTF-8")
+      apiKeyCapture.value mustEqual apiKey
+
+      val ids = bodyCapture.values
+        .asScala.toList
+        .map(Json.parse)
+        .map(_ \ "id")
+      ids(0) mustNotEqual ids(1)
+    }
+
+
+    "sort breaking news with more than one tag into the correct order" in {
+      val editions = List("us", "uk", "international", "au")
+      val multiRegionBreakingNewsPayload = payload.copy( topic = editions.map { t => Topic(Breaking, s"breaking/${t}" )} )
+      val expectedOrderdTopics = List("uk", "international", "us", "au").map( ed => Topic(Breaking, s"breaking/${ed}") )
+
+      val fakeHttpProvider = mock[HttpProvider]
+      fakeHttpProvider.post(anyString, anyString, any[ContentType], any[Array[Byte]]) returns Future.successful(HttpOk(201, """{"id":"someId"}"""))
+
+      val testApiClient = getTestApiClient(fakeHttpProvider)
+      Await.result(testApiClient.send(multiRegionBreakingNewsPayload), Duration.Inf)
+
+      val bodyCapture = new ArgumentCapture[Array[Byte]]
+      val apiKeyCapture = new ArgumentCapture[String]
+      val urlCapture = new ArgumentCapture[String]
+      val contentTypeCapture = new ArgumentCapture[ContentType]
+
+      there was exactly(4)(fakeHttpProvider).post(urlCapture, apiKeyCapture, contentTypeCapture, bodyCapture)
+
+      bodyCapture.values
+        .asScala.toList
+        .zip(expectedOrderdTopics).map { case (bodyBytes, expectedTopic) =>
+           Json.parse(bodyBytes).validate[BreakingNewsPayload] match {
+            case JsSuccess(breakingPayload, _) => breakingPayload.topic must beEqualTo(List(expectedTopic))
+            case JsError(errors) =>
+              val errorPaths = errors.map{ error => error._1.toString() }.mkString(",")
+              fail(s"Could not parse Breaking news payload. $errorPaths")
+          }
+        }
+    }
+
     "return HttpApiError error if http provider returns ApiHttpError" in apiTest(serverResponse = HttpError(500, "")) {
       client => client.send(payload) must beEqualTo(Left(ApiHttpError(status = 500, Some("")))).await
     }
@@ -64,4 +126,5 @@ class NextGenApiClientSpec(implicit ee: ExecutionEnv) extends ApiClientSpec[Next
       client.send(payload) must beEqualTo(Left(HttpProviderError(throwable))).await
     }
   }
+
 }
