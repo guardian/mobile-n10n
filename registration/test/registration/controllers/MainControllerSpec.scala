@@ -1,6 +1,5 @@
 package registration.controllers
 
-import models._
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mock.Mockito
 import play.api.libs.json.Json
@@ -9,7 +8,7 @@ import registration.services.topic.TopicValidator
 
 import scala.concurrent.Future
 import cats.implicits._
-import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
+import play.api.libs.ws.WSClient
 import play.api.mvc.AnyContentAsJson
 
 class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockito {
@@ -45,22 +44,6 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       contentAsString(result) must /("preferences") /("topics") /# 0 /("name" -> "uk")
 
       contentAsString(result) must (/("preferences") / "topics" andHave size(1))
-    }
-
-    "return registrations for topic" in new RegistrationsContext {
-      val Some(register) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyIosRegistrationWithFootballMatchTopicJson)))
-      status(register) must equalTo(OK)
-
-      val Some(result) = route(app, FakeRequest(GET, "/registrations?topic=breaking/uk"))
-      status(result) must equalTo(OK)
-      contentAsString(result) must /("results") /#(0) /("platform" -> "ios")
-      contentAsString(result) must /("results") /#(0) /("deviceId" -> "4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4")
-      contentAsString(result) must (/("results") andHave size(1))
-    }.pendingUntilFixed("Endpoint to be dropped")
-
-    "return 204 when unregistering" in new RegistrationsContext {
-      val Some(register) = route(app, FakeRequest(DELETE, "/registrations?platform=ios&azureToken=4027049721A496EA56A4C789B62F2C10B0380427C2A6B0CFC1DE692BDA2CC5D4"))
-      status(register) must equalTo(NO_CONTENT)
     }
 
     "returns 400 for a android registration without a fcmToken" in new RegistrationsContext {
