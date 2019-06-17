@@ -1,6 +1,5 @@
 package models
 
-
 case class Registration(
   deviceToken: DeviceToken,
   platform: Platform,

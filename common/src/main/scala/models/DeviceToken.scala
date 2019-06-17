@@ -1,14 +1,16 @@
 package models
 
-sealed trait DeviceToken {
-  def fcmToken: String
-  def azureToken: String
-}
+import play.api.libs.json._
 
-case class FcmToken(fcmToken: String) extends DeviceToken {
-  override def azureToken: String = throw new RuntimeException("No azure token for this device token")
+case class DeviceToken(token: String)
+
+object DeviceToken {
+  implicit val deviceTokenJF: Format[DeviceToken] = new Format[DeviceToken] {
+    override def reads(json: JsValue): JsResult[DeviceToken] = json match {
+      case JsString(token) => JsSuccess(DeviceToken(token))
+      case _ => JsError("Expected a string device token")
+    }
+
+    override def writes(o: DeviceToken): JsValue = JsString(o.token)
+  }
 }
-case class AzureToken(azureToken: String) extends DeviceToken {
-  override def fcmToken: String = throw new RuntimeException("No fcm token for this device token")
-}
-case class BothTokens(azureToken: String, fcmToken: String) extends DeviceToken

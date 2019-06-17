@@ -16,9 +16,8 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
         //This first case is to handle lange numbers of android devices not using the latest version of the app
         //See: https://theguardian.atlassian.net/browse/MSS-609
         case (Android, _, None) => Left(MalformattedRegistration("Android device without firebase registration token"))
-        case (_, Some(azureToken), Some(fcmToken)) => Right(BothTokens(azureToken, fcmToken))
-        case (_, Some(azureToken), None) => Right(AzureToken(azureToken))
-        case (_, None, Some(fcmToken)) => Right(FcmToken(fcmToken))
+        case (Android, _, Some(fcmToken)) => Right(DeviceToken(fcmToken))
+        case (_, Some(azureToken), None) => Right(DeviceToken(azureToken))
         case _ => Left(MalformattedRegistration("no fcm token nor azure token"))
       }
     }
@@ -30,13 +29,6 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
       )
     }
 
-    def guessProvider(token: DeviceToken, platform: Platform): Option[Provider] = token match {
-      case AzureToken(_) => Some(Azure)
-      case FcmToken(_) => Some(FCM)
-      case BothTokens(_, _) if platform == Android => Some(Azure)
-      case _ => None
-    }
-
     for {
       platform <- platformFromRegistration
       deviceToken <- deviceTokenFromRegistration(platform)
@@ -45,7 +37,7 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
       platform = platform,
       topics = topics(legacyRegistration),
       buildTier = Some(legacyRegistration.device.buildTier),
-      provider = legacyRegistration.preferences.provider.orElse(guessProvider(deviceToken, platform))
+      provider = legacyRegistration.preferences.provider.orElse(None)
     )
   }
 

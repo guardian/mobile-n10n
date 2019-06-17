@@ -18,22 +18,16 @@ class DatabaseRegistrar(
 )(implicit ec: ExecutionContext) extends NotificationRegistrar {
   override val providerIdentifier: String = "DatabaseRegistrar"
 
-  private def extractToken(deviceToken: DeviceToken, platform: Platform): String = platform match {
-    case Android => deviceToken.fcmToken
-    case _ => deviceToken.azureToken
-  }
-
   override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = {
-    val token = extractToken(deviceToken, registration.platform)
 
     def toDBRegistration(topic: Topic) = db.Registration(
-      device = db.Device(token, registration.platform),
+      device = db.Device(deviceToken.token, registration.platform),
       topic = db.Topic(topic.toString),
-      shard = db.Shard.fromToken(token)
+      shard = db.Shard.fromToken(deviceToken)
     )
 
     val insertedRegistrations = for {
-      _ <- registrationService.removeAllByToken(token)
+      _ <- registrationService.removeAllByToken(deviceToken.token)
       dbRegistrations = registration.topics.toList.map(toDBRegistration)
       insertionResults <- dbRegistrations.map(registrationService.save).sequence: IO[List[Int]]
     } yield insertionResults.sum
@@ -41,7 +35,7 @@ class DatabaseRegistrar(
     val latencyStart = System.currentTimeMillis
     val result = insertedRegistrations.map { _ =>
       Right(RegistrationResponse(
-        deviceId = token,
+        deviceId = deviceToken.token,
         platform = registration.platform,
         topics = registration.topics,
         provider = Provider.Guardian
@@ -60,6 +54,6 @@ class DatabaseRegistrar(
   }
 
   override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] = {
-    registrationService.removeAllByToken(extractToken(deviceToken, platform)).unsafeToFuture.map(_ => Right(()))
+    registrationService.removeAllByToken(deviceToken.token).unsafeToFuture.map(_ => Right(()))
   }
 }
