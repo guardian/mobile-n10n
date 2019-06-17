@@ -5,7 +5,6 @@ import registration.models.LegacyTopic
 import models._
 import registration.models.LegacyRegistration
 import cats.implicits._
-import models.Provider.{Azure, FCM}
 
 class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistration] {
 
@@ -17,7 +16,7 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
         //See: https://theguardian.atlassian.net/browse/MSS-609
         case (Android, _, None) => Left(MalformattedRegistration("Android device without firebase registration token"))
         case (Android, _, Some(fcmToken)) => Right(DeviceToken(fcmToken))
-        case (_, Some(azureToken), None) => Right(DeviceToken(azureToken))
+        case (_, Some(azureToken), _) => Right(DeviceToken(azureToken))
         case _ => Left(MalformattedRegistration("no fcm token nor azure token"))
       }
     }
@@ -36,8 +35,7 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
       deviceToken = deviceToken,
       platform = platform,
       topics = topics(legacyRegistration),
-      buildTier = Some(legacyRegistration.device.buildTier),
-      provider = legacyRegistration.preferences.provider.orElse(None)
+      buildTier = Some(legacyRegistration.device.buildTier)
     )
   }
 
