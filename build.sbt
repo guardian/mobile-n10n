@@ -135,8 +135,7 @@ lazy val registration = project
     routesImport ++= Seq(
       "binders.querystringbinders._",
       "binders.pathbinders._",
-      "models._",
-      "models.pagination._"
+      "models._"
     ),
     libraryDependencies ++= Seq(
       logback,

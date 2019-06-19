@@ -4,7 +4,6 @@ import models._
 import providers.ProviderError
 
 import scala.concurrent.Future
-import models.pagination.Paginated
 
 case class RegistrationResponse(
   deviceId: String,
@@ -49,9 +48,6 @@ trait NotificationRegistrar {
   val providerIdentifier: String
   def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse]
   def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit]
-  def findRegistrations(topic: Topic, cursor: Option[String] = None): RegistrarResponse[Paginated[StoredRegistration]]
-  def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]]
-  def findRegistrations(udid: UniqueDeviceIdentifier): RegistrarResponse[Paginated[StoredRegistration]]
 }
 
 object NotificationRegistrar {
