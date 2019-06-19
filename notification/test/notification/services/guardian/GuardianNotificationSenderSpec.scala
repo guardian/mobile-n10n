@@ -58,7 +58,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       result should beRight.which { senderReport =>
         senderReport.senderName shouldEqual "Guardian"
         senderReport.sendersId should beNone
-        senderReport.totalRegistrationCount should beSome(2)
+        senderReport.totalRegistrationCount should beSome(1)
       }
     }
 
@@ -66,12 +66,12 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       val futureResult = notificationSender.sendNotification(Push(notification, Set()))
       val result = Await.result(futureResult, 10.seconds)
 
-      there was exactly(60)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
+      there was exactly(30)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
 
       result should beRight.which { senderReport =>
         senderReport.senderName shouldEqual "Guardian"
         senderReport.sendersId should beNone
-        senderReport.totalRegistrationCount should beSome(6000000)
+        senderReport.totalRegistrationCount should beSome(3000000)
       }
     }
 
@@ -80,7 +80,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       override val notificationSender = new GuardianNotificationSender(
         sqsClient = sqsClient,
         registrationCounter = new TopicRegistrationCounter {
-          override def count(topics: List[Topic])(implicit format: Format[TopicCount]): Future[PlatformCount] = Future.failed(new RuntimeException("exception"))
+          override def count(topics: List[Topic])(implicit format: Format[TopicCount]): Future[Int] = Future.failed(new RuntimeException("exception"))
         },
         harvesterSqsUrl = ""
       )
@@ -131,13 +131,6 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       dryRun = None
     )
 
-    def topicStats(registrationCount: Int): PlatformCount = PlatformCount(
-      total = registrationCount * 2,
-      ios = registrationCount,
-      android = registrationCount,
-      newsstand = 0
-    )
-
     val sqsClient = {
       val s = mock[AmazonSQSAsync]
       s.sendMessageBatchAsync(
@@ -155,7 +148,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
     val notificationSender = new GuardianNotificationSender(
       sqsClient = sqsClient,
       registrationCounter = new TopicRegistrationCounter {
-        override def count(topics: List[Topic])(implicit format: Format[TopicCount] ): Future[PlatformCount] = Future.successful(topicStats(registrationCountPerPlatform))
+        override def count(topics: List[Topic])(implicit format: Format[TopicCount] ): Future[Int] = Future.successful(registrationCountPerPlatform)
       },
       harvesterSqsUrl = ""
     )

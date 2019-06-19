@@ -6,7 +6,7 @@ import doobie.implicits._
 import cats.effect.IO
 import cats.implicits._
 import doobie.util.transactor.Transactor
-import models.{Android, PlatformCount, ShardRange, Ios}
+import models.{Android, ShardRange, Ios}
 import org.specs2.specification.BeforeEach
 import fs2.Stream
 import org.specs2.concurrent.ExecutionEnv
