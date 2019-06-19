@@ -1,5 +1,7 @@
 GET         /healthcheck                                    registration.controllers.Main.healthCheck
 
+POST        /device/register                                registration.controllers.Main.register
+
 # Legacy Android/iOS API registration endpoint
 POST        /legacy/device/register                         registration.controllers.Main.legacyRegister
 
