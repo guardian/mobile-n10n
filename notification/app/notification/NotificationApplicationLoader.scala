@@ -12,7 +12,7 @@ import _root_.models.NewsstandShardConfig
 import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 import com.gu.{AppIdentity, AwsIdentity}
 import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
-import _root_.models.{Android, Newsstand, iOS}
+import _root_.models.{Android, Newsstand, Ios}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import metrics.CloudWatchMetrics
 import _root_.models.TopicCount

@@ -7,7 +7,7 @@ import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.gu.mobile.notifications.client.{ApiClient, ApiClientError}
 import com.gu.{AppIdentity, AwsIdentity}
 import com.typesafe.config.Config
-import models.{Android, iOS}
+import models.{Android, Ios}
 import okhttp3.OkHttpClient
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -32,7 +32,7 @@ class FakeBreakingNewsLambda {
   val fakeRegistrations = new FakeRegistrations(okhttp, config.getString("registration.legacyDeviceRegistrationUrl"))
   def handleRequest(): Unit = {
     val eventualAndroidRegistration = fakeRegistrations.register(androidUuid, Android)
-    val eventualIosRegistration = fakeRegistrations.register(iosUuid, iOS)
+    val eventualIosRegistration = fakeRegistrations.register(iosUuid, Ios)
     val eventualBreakingNewsPayload = topFrontFetcher.fetchTopFrontAsBreakingNews()
     val futureResult: Future[Either[ApiClientError, Unit]] = for {
       _ <- eventualAndroidRegistration

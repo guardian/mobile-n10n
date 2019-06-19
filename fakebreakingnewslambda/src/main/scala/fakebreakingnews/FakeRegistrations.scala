@@ -2,7 +2,7 @@ package fakebreakingnews
 
 import java.util.UUID
 
-import models.{Android, Platform, iOS}
+import models.{Android, Platform, Ios}
 import okhttp3.{MediaType, OkHttpClient, Request, RequestBody}
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
@@ -56,7 +56,7 @@ class FakeRegistrations(okHttpClient: OkHttpClient, legacyDeviceRegistrationUrl:
 
   def register(uuid: UUID, platform: Platform): Future[Unit] = {
     val firebaseToken: Option[String] = if (platform == Android) Some(s"token-for-firebase-$uuid") else None
-    val pushToken: Option[String] = if (platform == iOS) Some(s"token-for-push-$uuid") else None
+    val pushToken: Option[String] = if (platform == Ios) Some(s"token-for-push-$uuid") else None
     val body = Json.toJson(FakeRegistration(FakeRegistrationDevice(platform.toString, firebaseToken, pushToken)))
     val request = new Request.Builder()
       .url(legacyDeviceRegistrationUrl)
