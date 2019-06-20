@@ -55,6 +55,8 @@ package object auditor {
 
   case class FootballMatchAuditor(client: PaClient)(implicit ec: ExecutionContext) extends Auditor {
 
+    private val logger: Logger = Logger(this.getClass)
+
     private val matchStatusCache: LruCache[String] = LruCache[String](timeToLive = 5 minutes)
 
     private val matchEndedStatuses = List(
@@ -88,7 +90,7 @@ package object auditor {
         case _ => false
       } recover {
         case _ =>
-          Logger.error(s"Unable to determine match status of $matchId.  Assuming that it is in the future")
+          logger.error(s"Unable to determine match status of $matchId.  Assuming that it is in the future")
           false
       }
     }

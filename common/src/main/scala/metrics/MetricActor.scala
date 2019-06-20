@@ -10,6 +10,8 @@ import play.api.{Environment, Logger, Mode}
 
 trait MetricActorLogic {
 
+  private val logger: Logger = Logger(this.getClass)
+
   def cloudWatchClient: AmazonCloudWatchClient
   def stage: String
   def appName: String
@@ -56,7 +58,7 @@ trait MetricActorLogic {
 
   def aggregatePoints(points: List[MetricDataPoint]): Unit = {
     if (points.isEmpty) {
-      Logger.debug(s"No metric sent to cloudwatch.")
+      logger.debug(s"No metric sent to cloudwatch.")
     } else {
       val metricsPerNamespaceBatches = aggregatePointsPerNamespaceBatches(points)
 
@@ -72,13 +74,13 @@ trait MetricActorLogic {
 
           cloudWatchClient.putMetricData(metricRequest)
         }
-        Logger.info("Sent metrics to cloudwatch. " +
+        logger.info("Sent metrics to cloudwatch. " +
           s"Data points: ${points.size}, " +
           s"Metrics: $metricsCount, " +
           s"Namespaces: $namespacesCount, " +
           s"Batches: $batchesCount")
       } catch {
-        case e: Exception => Logger.error(s"Unable to send metrics to cloudwatch", e)
+        case e: Exception => logger.error(s"Unable to send metrics to cloudwatch", e)
       }
     }
   }

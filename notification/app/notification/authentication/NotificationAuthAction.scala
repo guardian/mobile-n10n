@@ -9,12 +9,14 @@ import play.api.mvc.ControllerComponents
 
 class NotificationAuthAction(configuration: Configuration, controllerComponents: ControllerComponents) extends AuthAction(controllerComponents) {
 
+  private val logger: Logger = Logger(this.getClass)
+
   override def validApiKey(apiKey: String): Boolean = configuration.apiKeys.contains(apiKey) || configuration.newsstandRestrictedApiKeys.contains(apiKey)
 
   override def isPermittedTopicType(apiKey: String): TopicType => Boolean = { topicType => {
     def checkApiKeyForTopic(apiKeysForTopic: Set[String], configName: String): Boolean = {
       val matched = apiKeysForTopic.contains(apiKey)
-      if (!matched) Logger.warn(s"Api key cannot be used for $topicType. Expected in $configName keys")
+      if (!matched) logger.warn(s"Api key cannot be used for $topicType. Expected in $configName keys")
       matched
     }
 
