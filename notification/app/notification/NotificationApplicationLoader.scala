@@ -20,7 +20,7 @@ import notification.authentication.NotificationAuthAction
 import notification.data.{CachingDataStore, S3DataStore}
 import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
 import notification.services.{NewsstandSender, _}
-import notification.services.guardian.{GuardianNotificationSender, ReportTopicRegistrationCounter, TopicRegistrationCounter}
+import notification.services.guardian.{GuardianNotificationSender, TopicRegistrationCounterImpl, TopicRegistrationCounter}
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.routing.Router
 import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
@@ -84,7 +84,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     new S3DataStore[TopicCount](topicCountsS3)
   )
 
-  lazy val topicRegistrationCounter: TopicRegistrationCounter = new ReportTopicRegistrationCounter(topicCountCacheingDataStore)
+  lazy val topicRegistrationCounter: TopicRegistrationCounter = new TopicRegistrationCounterImpl(topicCountCacheingDataStore)
 
   lazy val sqsClient: AmazonSQSAsync = AmazonSQSAsyncClientBuilder.standard()
     .withCredentials(credentialsProvider)

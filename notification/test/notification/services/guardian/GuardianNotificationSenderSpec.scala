@@ -80,7 +80,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       override val notificationSender = new GuardianNotificationSender(
         sqsClient = sqsClient,
         registrationCounter = new TopicRegistrationCounter {
-          override def count(topics: List[Topic])(implicit format: Format[TopicCount]): Future[Int] = Future.failed(new RuntimeException("exception"))
+          override def count(topics: List[Topic]): Future[Int] = Future.failed(new RuntimeException("exception"))
         },
         harvesterSqsUrl = ""
       )
@@ -148,7 +148,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
     val notificationSender = new GuardianNotificationSender(
       sqsClient = sqsClient,
       registrationCounter = new TopicRegistrationCounter {
-        override def count(topics: List[Topic])(implicit format: Format[TopicCount] ): Future[Int] = Future.successful(registrationCountPerPlatform)
+        override def count(topics: List[Topic]): Future[Int] = Future.successful(registrationCountPerPlatform)
       },
       harvesterSqsUrl = ""
     )
