@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
 import models.ApnsConfig
-import _root_.models.{Newsstand, Notification, Platform, iOS}
+import _root_.models.{Newsstand, Notification, Platform, Ios}
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayloadBuilder
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
@@ -25,7 +25,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
   type Success = ApnsDeliverySuccess
   type Payload = ApnsPayload
   val dryRun = config.dryRun
-  val platform: Platform = iOS
+  val platform: Platform = Ios
 
   private val apnsPayloadBuilder = new ApnsPayloadBuilder(config)
 

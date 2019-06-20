@@ -84,7 +84,7 @@ class LegacyRegistrationConverterSpec extends Specification {
     )
     val expectedDefaultRegistration = Registration(
       deviceToken = DeviceToken("abc"),
-      platform = iOS,
+      platform = Ios,
       topics = Set(Topic(TopicTypes.Breaking, "uk")),
       buildTier = Some("test")
     )

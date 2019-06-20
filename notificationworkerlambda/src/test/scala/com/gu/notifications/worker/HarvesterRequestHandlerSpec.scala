@@ -50,7 +50,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       apnsSqsDeliveriesTotal.get() shouldEqual 2002
     }
     "Send one iOS breaking news notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, Some(iOS)), null)
+      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, Some(Ios)), null)
       tokenStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 0
       apnsSqsDeliveriesCount.get() shouldEqual 3
@@ -58,7 +58,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       apnsSqsDeliveriesTotal.get() shouldEqual 2002
     }
     "Queue one iOS content notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(contentNotification, Some(iOS)), null)
+      workerRequestHandler.handleHarvesting(sqsEventShardNotification(contentNotification, Some(Ios)), null)
       tokenStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 0
       apnsSqsDeliveriesCount.get() shouldEqual 3
@@ -112,7 +112,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
     val twoThousandTwoTokens: List[String] = Range(0,2002).map(num => s"token-$num").toList
     def tokenStream: Stream[IO, String] = Stream.emits(twoThousandTwoTokens)
-    def tokenPlatformStream: Stream[IO, (String, Platform)] = Stream.emits(twoThousandTwoTokens.map((_, Android)) ::: twoThousandTwoTokens.map((_, iOS)))
+    def tokenPlatformStream: Stream[IO, (String, Platform)] = Stream.emits(twoThousandTwoTokens.map((_, Android)) ::: twoThousandTwoTokens.map((_, Ios)))
 
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 

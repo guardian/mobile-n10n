@@ -1,6 +1,6 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Android, Newsstand, Notification, Platform, ShardRange, ShardedNotification, iOS}
+import _root_.models.{Android, Newsstand, Notification, Platform, ShardRange, ShardedNotification, Ios}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -52,7 +52,7 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def apnsSink(notification: Notification, range: ShardRange, platform: Platform): Sink[IO, (String, Platform)] = {
-    val iosSinkErrors = sinkErrors(iOS)
+    val iosSinkErrors = sinkErrors(Ios)
     tokens =>
       tokens
         .collect {
@@ -74,7 +74,7 @@ trait HarvesterRequestHandler extends Logging {
       n <- shardNotifications
       firebaseSink = firebaseSinkBuilder(n.notification, n.range)
       newsstandSink = apnsSink(n.notification, n.range, Newsstand)
-      iosSink = apnsSink(n.notification, n.range, iOS)
+      iosSink = apnsSink(n.notification, n.range, Ios)
       notificationLog = s"(notification: ${n.notification.id} ${n.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
       tokens = n.platform match {

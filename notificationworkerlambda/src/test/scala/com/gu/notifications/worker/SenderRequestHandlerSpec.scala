@@ -112,7 +112,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     var sendingResults: Option[SendingResults] = None
 
     val workerRequestHandler = new SenderRequestHandler[ApnsClient] {
-      override def platform: Platform = iOS
+      override def platform: Platform = Ios
 
       override val maxConcurrency = 100
 
