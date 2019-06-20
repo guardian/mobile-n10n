@@ -6,7 +6,7 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import pa.{MatchDay, PaClient}
-import org.mockito.Matchers.{eq => argEq}
+import org.mockito.ArgumentMatchers.{eq => argEq}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._

@@ -8,7 +8,7 @@ val projectVersion = "1.0-latest"
 
 
 organization := "com.gu"
-scalaVersion in ThisBuild := "2.12.6"
+scalaVersion in ThisBuild := "2.12.8"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -30,7 +30,7 @@ val minJacksonLibs = Seq(
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion
 )
 
-val playJsonVersion = "2.6.9"
+val playJsonVersion = "2.7.4"
 val specsVersion: String = "4.0.3"
 val awsSdkVersion: String = "1.11.433"
 val doobieVersion: String = "0.6.0"

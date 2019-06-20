@@ -12,9 +12,7 @@ import play.api.{Application, ApplicationLoader, BuiltInComponents, Environment,
 trait WithPlayApp extends Around with Scope {
   lazy val app: Application = new TestApplicationLoader(configureComponents).load(context)
 
-  private def context = ApplicationLoader.createContext(
-    new Environment(new File("."), classOf[TestApplicationLoader].getClassLoader, Mode.Test)
-  )
+  private def context = Context.create(Environment.simple())
 
   override def around[T: AsResult](t: => T): Result = {
     Helpers.running(app)(AsResult.effectively(t))
