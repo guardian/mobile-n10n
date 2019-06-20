@@ -6,7 +6,7 @@ import java.sql.Timestamp
 import java.time.LocalDateTime
 
 import doobie.util.Meta
-import models.Platform
+import models.{DeviceToken, Platform}
 
 object Registration {
   implicit val PlatformMeta: Meta[Platform] =
@@ -26,9 +26,9 @@ case class Shard(id: Short)
 object Shard {
 
   // evenly distribute tokens across the range of short (16 bits, from -32768 to +32767 inclusive)
-  def fromToken(token: String): Shard = {
+  def fromToken(deviceToken: DeviceToken): Shard = {
     val md = MessageDigest.getInstance("SHA-1")
-    val bytes = md.digest(token.getBytes)
+    val bytes = md.digest(deviceToken.token.getBytes)
     md.reset()
 
     if (bytes.length > 2) {
