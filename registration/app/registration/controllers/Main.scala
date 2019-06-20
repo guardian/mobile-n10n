@@ -52,6 +52,10 @@ final class Main(
   def legacyRegister: Action[LegacyRegistration] =
     registerWithConverter(legacyRegistrationConverter)
 
+  def register: Action[Registration] = actionWithTimeout(parse.json[Registration]) { request: Request[Registration] =>
+    registerCommon(request.body).map(processResponse(_))
+  }
+
   private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(parse.json[T]) { request =>
     val legacyRegistration = request.body
     val result = for {
