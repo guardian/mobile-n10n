@@ -58,11 +58,7 @@ final class Main(
     }
   }
 
-  @deprecated("A push notification can be sent to multiple topics, this is for backward compatibility only", since = "07/12/2015")
-  def pushTopic(topic: Topic): Action[Notification] = pushTopics
-
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
-    val avoidGuardianProvider = request.headers.get("x-avoid-guardian-provider").map(_.toBoolean)
     val notification = request.body
     val topics = notification.topic
     val MaxTopics = 3
@@ -71,7 +67,7 @@ final class Main(
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{topic => request.isPermittedTopicType(topic.`type`)} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
-      case _ => pushWithDuplicateProtection(Push(notification.withTopics(topics), topics.toSet, avoidGuardianProvider))
+      case _ => pushWithDuplicateProtection(Push(notification.withTopics(topics), topics.toSet))
     }) recoverWith {
       case NonFatal(exception) => {
         logger.warn(s"Pushing notification failed: $notification", exception)
