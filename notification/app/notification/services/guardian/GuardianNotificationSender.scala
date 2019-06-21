@@ -1,6 +1,7 @@
 package notification.services.guardian
 
 import com.amazonaws.services.sqs.AmazonSQSAsync
+import notification.models.Push
 import notification.services.{NotificationSender, SenderError, SenderResult}
 import aws.AWSAsync._
 import com.amazonaws.services.sqs.model.{SendMessageBatchRequest, SendMessageBatchRequestEntry, SendMessageBatchResult}
@@ -34,10 +35,10 @@ class GuardianNotificationSender(
 
   def shouldSendToHarveseter(notification: Notification) = true
 
-  override def sendNotification(notification: Notification): Future[SenderResult] = {
+  override def sendNotification(push: Push): Future[SenderResult] = {
     val result = for {
-      registrationCount <- countRegistration(notification.topic)
-      workerBatches = prepareBatch(notification, registrationCount)
+      registrationCount <- countRegistration(push.notification.topic)
+      workerBatches = prepareBatch(push.notification, registrationCount)
       sqsBatchResults <- sendBatch(workerBatches, harvesterSqsUrl)
     } yield {
       val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
@@ -51,12 +52,12 @@ class GuardianNotificationSender(
         ))
       } else {
         failed.foreach { failure =>
-          logger.error(s"Unable to queue notification ${notification.id}: " +
+          logger.error(s"Unable to queue notification ${push.notification.id}: " +
             s"${failure.getId} - ${failure.getCode} - ${failure.getMessage}")
         }
         Left(GuardianFailedToQueueShard(
           senderName = s"Guardian",
-          reason = s"Unable to queue notification. Please check the logs for notification ${notification.id}")
+          reason = s"Unable to queue notification. Please check the logs for notification ${push.notification.id}")
         )
       }
     }
