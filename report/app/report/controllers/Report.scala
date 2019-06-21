@@ -37,7 +37,7 @@ final class Report(
         case Right(result) => {
           val includeDryRunBoolean: Boolean = includeDryRun.contains(true)
           val filteredResults = result.filter(report => report.notification.dryRun.contains(true) == includeDryRunBoolean)
-          Ok(Json.toJson(filteredResults))
+          Ok(Json.toJson(filteredResults.map(new NotificationReport(_))))
         }
         case Left(error) => InternalServerError(error.message)
       }
