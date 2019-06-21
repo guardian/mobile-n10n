@@ -2,7 +2,7 @@ package notification.models
 
 import java.util.UUID
 
-import models.DynamoNotificationReport
+import models.NotificationReport
 import notification.services.SenderError
 import play.api.libs.json._
 import tracking.RepositoryError
@@ -18,7 +18,7 @@ case class PushResult(
 }
 
 object PushResult {
-  def fromReport(report: DynamoNotificationReport): PushResult = PushResult(report.notification.id)
+  def fromReport(report: NotificationReport): PushResult = PushResult(report.notification.id)
 
   implicit val jf = Json.format[PushResult]
 }
