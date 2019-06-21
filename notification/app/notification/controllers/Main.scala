@@ -22,7 +22,7 @@ import scala.util.control.NonFatal
 
 final class Main(
   configuration: Configuration,
-  senders: List[NotificationSender],
+  notificationSender: NotificationSender,
   newsstandSender: NewsstandSender,
   notificationReportRepository: SentNotificationReportRepository,
   metrics: CloudWatchMetrics,
@@ -87,8 +87,8 @@ final class Main(
 
   private def pushGeneric(push: Push) = {
     prepareReportAndSendPush(push) flatMap {
-      case (Nil, reports@_ :: _) =>
-        reportPushSent(push.notification, reports) map {
+      case Right(report) =>
+        reportPushSent(push.notification, List(report)) map {
           case Right(_) =>
             logger.info(s"Notification was sent: $push")
             Created(toJson(PushResult(push.notification.id)))
@@ -96,42 +96,22 @@ final class Main(
             logger.error(s"Notification ($push) sent but report could not be stored ($error)")
             Created(toJson(PushResult(push.notification.id).withReportingError(error)))
         }
-      case (rejected@_ :: _, reports@_ :: _) =>
-        reportPushSent(push.notification, reports) map {
-          case Right(_) =>
-            logger.warn(s"Notification ($push) was rejected by some providers: ($rejected)")
-            Created(toJson(PushResult(push.notification.id).withRejected(rejected)))
-          case Left(error) =>
-            logger.error(s"Notification ($push) was rejected by some providers and there was error in reporting")
-            Created(toJson(PushResult(push.notification.id).withRejected(rejected).withReportingError(error)))
-        }
-      case (allRejected@_ :: _, Nil) =>
-        logger.error(s"Notification ($push) could not be sent: $allRejected")
+      case Left(error) =>
+        logger.error(s"Notification ($push) could not be sent: $error")
         Future.successful(InternalServerError)
-      case _ =>
-        Future.successful(NotFound)
     }
   }
 
-  private def sendPush(push: Push): Future[(List[services.SenderError], List[SenderReport])] = {
-    sequence(senders.map(_.sendNotification(push))) map { results =>
-      val rejected = results.flatMap(s => s.swap.toOption)
-      val reports = results.flatMap(_.toOption)
-      (rejected, reports)
-    }
+  private def prepareReportAndSendPush(push: Push): Future[Either[services.SenderError, SenderReport]] = {
+    val notificationReport = DynamoNotificationReport.create(push.notification.id, push.notification.`type`, push.notification, DateTime.now(DateTimeZone.UTC), List(), Some(UUID.randomUUID()), None)
+    for {
+      initialEmptyNotificationReport <- notificationReportRepository.store(notificationReport)
+      sentPush <- initialEmptyNotificationReport match {
+        case Left(error) => Future.failed(new Exception(error.message))
+        case Right(_) => notificationSender.sendNotification(push)
+      }
+    } yield sentPush
   }
-
-  private def prepareReportAndSendPush(push: Push): Future[(List[services.SenderError], List[SenderReport])] = {
-      val notificationReport = DynamoNotificationReport.create(push.notification.id, push.notification.`type`, push.notification, DateTime.now(DateTimeZone.UTC), List(), Some(UUID.randomUUID()), None)
-      for {
-        initialEmptyNotificationReport <- notificationReportRepository.store(notificationReport)
-        sentPush <- initialEmptyNotificationReport match {
-          case Left(error) => Future.failed(new Exception(error.message))
-          case Right(_) => sendPush(push)
-        }
-      } yield sentPush
-
-    }
 
   private def reportPushSent(notification: Notification, reports: List[SenderReport]): Future[RepositoryResult[Unit]] =
     notificationReportRepository.update(DynamoNotificationReport.create(notification, reports, Some(UUID.randomUUID())))
