@@ -60,7 +60,7 @@ final class Main(
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
     val notification = request.body
     val topics = notification.topic
-    val MaxTopics = 3
+    val MaxTopics = 20
     (topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
