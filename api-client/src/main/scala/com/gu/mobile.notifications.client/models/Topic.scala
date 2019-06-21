@@ -7,26 +7,9 @@ import play.api.libs.json._
 sealed trait TopicType
 
 object TopicType {
-  implicit val writes = new Writes[TopicType] {
+  implicit val jf = new Writes[TopicType] {
     override def writes(o: TopicType): JsValue = JsString(o.toString)
   }
-
-  implicit val reads = new Reads[TopicType] {
-    override def reads(json: JsValue): JsResult[TopicType] = json match {
-      case JsString("breaking") => JsResult.applicativeJsResult.pure(Breaking)
-      case JsString("content") => JsResult.applicativeJsResult.pure(Content)
-      case JsString("tag-contributor") => JsResult.applicativeJsResult.pure(TagContributor)
-      case JsString("tag-keyword") => JsResult.applicativeJsResult.pure(TagKeyword)
-      case JsString("tag-series") => JsResult.applicativeJsResult.pure(TagSeries)
-      case JsString("tag-blog") => JsResult.applicativeJsResult.pure(TagBlog)
-      case JsString("football-team") => JsResult.applicativeJsResult.pure(FootballTeam)
-      case JsString("football-match") => JsResult.applicativeJsResult.pure(FootballMatch)
-      case JsString("user-type") => JsResult.applicativeJsResult.pure(User)
-      case JsString("newsstand") => JsResult.applicativeJsResult.pure(Newsstand)
-      case _ => JsError(s"Unknown topic type: $json")
-    }
-  }
-
 }
 
 object TopicTypes {
@@ -46,8 +29,7 @@ case class Topic(`type`: TopicType, name: String) {
   def toTopicString = `type`.toString + "//" + name
 }
 object Topic {
-  implicit val writes = Json.writes[Topic]
-  implicit val reads = Json.reads[Topic]
+  implicit val jf = Json.writes[Topic]
   val BreakingNewsUk = Topic(Breaking, UK.toString)
   val BreakingNewsUs = Topic(Breaking, US.toString)
   val BreakingNewsAu = Topic(Breaking, AU.toString)
