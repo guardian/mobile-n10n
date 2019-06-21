@@ -66,11 +66,6 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
       new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client))
   }
 
-  lazy val frontendAlerts: NotificationSender = {
-    val frontendConfig = FrontendAlertsConfig(new URI(appConfig.frontendNewsAlertEndpoint), appConfig.frontendNewsAlertApiKey)
-    new FrontendAlerts(frontendConfig, wsClient)
-  }
-
   lazy val s3Client: AmazonS3 = {
     AmazonS3ClientBuilder.standard()
       .withRegion(EU_WEST_1)
@@ -91,14 +86,10 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     .withRegion(EU_WEST_1)
     .build()
 
-  lazy val notificationSender: GuardianNotificationSender = new GuardianNotificationSender(
+  lazy val notificationSender: NotificationSender = new GuardianNotificationSender(
     sqsClient = sqsClient,
     registrationCounter = topicRegistrationCounter,
     harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
-  )
-
-  lazy val notificationSenders = List(
-    notificationSender,
   )
 
   lazy val mainController = wire[Main]
