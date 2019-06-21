@@ -1,9 +1,9 @@
 package notification.services
 
-import models.Notification
+import notification.models.Push
 
 import scala.concurrent.Future
 
 trait NotificationSender {
-  def sendNotification(notification: Notification): Future[SenderResult]
+  def sendNotification(push: Push): Future[SenderResult]
 }
