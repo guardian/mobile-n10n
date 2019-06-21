@@ -126,7 +126,7 @@ final class Main(
   }
 
   private def prepareReportAndSendPush(push: Push): Future[(List[services.SenderError], List[SenderReport])] = {
-      val notificationReport = NotificationReport.create(push.notification.id, push.notification.`type`, push.notification, DateTime.now(DateTimeZone.UTC), List(), None)
+      val notificationReport = DynamoNotificationReport.create(push.notification.id, push.notification.`type`, push.notification, DateTime.now(DateTimeZone.UTC), List(), Some(UUID.randomUUID()), None)
       for {
         initialEmptyNotificationReport <- notificationReportRepository.store(notificationReport)
         sentPush <- initialEmptyNotificationReport match {
@@ -138,6 +138,6 @@ final class Main(
     }
 
   private def reportPushSent(notification: Notification, reports: List[SenderReport]): Future[RepositoryResult[Unit]] =
-    notificationReportRepository.update(NotificationReport.create(notification, reports))
+    notificationReportRepository.update(DynamoNotificationReport.create(notification, reports, Some(UUID.randomUUID())))
 }
 

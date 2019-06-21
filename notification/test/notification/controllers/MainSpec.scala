@@ -66,7 +66,8 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
       status(response) must equalTo(CREATED)
       val dateTime = DateTime.now
-      def normalise(notificationReport: NotificationReport) = notificationReport.copy(
+      def normalise(notificationReport: DynamoNotificationReport) = notificationReport.copy(
+        version = None,
         sentTime = dateTime,
         reports = notificationReport.reports.map(_.copy(sentTime = dateTime)),
         ttl = Some(dateTime.plusMonths(3).getMillis / 1000)

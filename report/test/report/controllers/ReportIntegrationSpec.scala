@@ -35,7 +35,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
 
-      val dynamoNotificationReports: List[NotificationReport] = contentAsJson(result).as[List[NotificationReport]]
+      val dynamoNotificationReports: List[DynamoNotificationReport] = contentAsJson(result).as[List[DynamoNotificationReport]]
       dynamoNotificationReports.flatMap(_.ttl) must beEmpty
       dynamoNotificationReports mustEqual recentReports
     }
@@ -45,7 +45,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
-      contentAsJson(result).as[List[NotificationReport]] mustEqual reportsInRange
+      contentAsJson(result).as[List[DynamoNotificationReport]] mustEqual reportsInRange
     }
 
 
@@ -54,7 +54,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
-      val dynamoNotificationReports: List[NotificationReport] = contentAsJson(result).as[List[NotificationReport]]
+      val dynamoNotificationReports: List[DynamoNotificationReport] = contentAsJson(result).as[List[DynamoNotificationReport]]
       dynamoNotificationReports.flatMap(_.ttl) must not be empty
       dynamoNotificationReports mustEqual recentContentReports
     }
@@ -71,7 +71,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
   trait ReportTestScope extends WithPlayApp {
     private def notificationReport(date: String, prefix: String) = {
       val id = UUID.randomUUID
-      NotificationReport.create(
+      DynamoNotificationReport.create(
         id = id,
         sentTime = DateTime.parse(date).withZone(UTC),
         `type` = BreakingNews,
@@ -90,12 +90,13 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         reports = List(
           SenderReport("Firebase", DateTime.now.withZone(UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
         ),
+        version = Some(UUID.randomUUID()),
         events = None
       )
     }
     private def contentReport(date: String, prefix: String) = {
       val id = UUID.randomUUID
-      NotificationReport.create(
+      DynamoNotificationReport.create(
         id = id,
         sentTime = DateTime.parse(date).withZone(UTC),
         `type` = Content,
@@ -114,6 +115,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         reports = List(
           SenderReport("Firebase", DateTime.now.withZone(UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
         ),
+        version = Some(UUID.randomUUID()),
         events = None
       )
     }

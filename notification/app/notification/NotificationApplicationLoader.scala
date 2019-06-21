@@ -31,7 +31,7 @@ import play.filters.gzip.GzipFilter
 import play.filters.hosts.AllowedHostsFilter
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
-import tracking.NotificationReportRepository
+import tracking.DynamoNotificationReportRepository
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new NotificationApplicationComponents(identity, context)
@@ -58,7 +58,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   val asyncDynamo: AsyncDynamo = AsyncDynamo(EU_WEST_1, credentialsProvider)
 
-  lazy val notificationReportRepository = new NotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
+  lazy val notificationReportRepository = new DynamoNotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
 
   lazy val newsstandNotificationSender: NewsstandSender = {
     new NewsstandSender(
