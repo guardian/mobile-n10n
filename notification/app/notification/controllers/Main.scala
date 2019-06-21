@@ -6,7 +6,7 @@ import authentication.AuthAction
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
 import models.{TopicTypes, _}
-import notification.models.{Push, PushResult}
+import notification.models.PushResult
 import notification.services
 import notification.services.{Configuration, NewsstandSender, NotificationSender}
 import org.joda.time.{DateTime, DateTimeZone}
@@ -16,7 +16,6 @@ import play.api.mvc._
 import tracking.Repository.RepositoryResult
 import tracking.SentNotificationReportRepository
 
-import scala.concurrent.Future.sequence
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -67,7 +66,7 @@ final class Main(
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{topic => request.isPermittedTopicType(topic.`type`)} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
-      case _ => pushWithDuplicateProtection(Push(notification.withTopics(topics), topics.toSet))
+      case _ => pushWithDuplicateProtection(notification)
     }) recoverWith {
       case NonFatal(exception) => {
         logger.warn(s"Pushing notification failed: $notification", exception)
@@ -76,39 +75,39 @@ final class Main(
     }
   }
 
-  private def pushWithDuplicateProtection(push: Push): Future[Result] = {
-    val isDuplicate = notificationReportRepository.getByUuid(push.notification.id).map(_.isRight)
+  private def pushWithDuplicateProtection(notification: Notification): Future[Result] = {
+    val isDuplicate = notificationReportRepository.getByUuid(notification.id).map(_.isRight)
 
     isDuplicate.flatMap {
-      case true => Future.successful(BadRequest(s"${push.notification.id} has been sent before - refusing to resend"))
-      case false => pushGeneric(push)
+      case true => Future.successful(BadRequest(s"${notification.id} has been sent before - refusing to resend"))
+      case false => pushGeneric(notification)
     }
   }
 
-  private def pushGeneric(push: Push) = {
-    prepareReportAndSendPush(push) flatMap {
+  private def pushGeneric(notification: Notification) = {
+    prepareReportAndSendPush(notification) flatMap {
       case Right(report) =>
-        reportPushSent(push.notification, List(report)) map {
+        reportPushSent(notification, List(report)) map {
           case Right(_) =>
-            logger.info(s"Notification was sent: $push")
-            Created(toJson(PushResult(push.notification.id)))
+            logger.info(s"Notification was sent: $notification")
+            Created(toJson(PushResult(notification.id)))
           case Left(error) =>
-            logger.error(s"Notification ($push) sent but report could not be stored ($error)")
-            Created(toJson(PushResult(push.notification.id).withReportingError(error)))
+            logger.error(s"Notification ($notification) sent but report could not be stored ($error)")
+            Created(toJson(PushResult(notification.id).withReportingError(error)))
         }
       case Left(error) =>
-        logger.error(s"Notification ($push) could not be sent: $error")
+        logger.error(s"Notification ($notification) could not be sent: $error")
         Future.successful(InternalServerError)
     }
   }
 
-  private def prepareReportAndSendPush(push: Push): Future[Either[services.SenderError, SenderReport]] = {
-    val notificationReport = NotificationReport.create(push.notification.id, push.notification.`type`, push.notification, DateTime.now(DateTimeZone.UTC), List(), None)
+  private def prepareReportAndSendPush(notification: Notification): Future[Either[services.SenderError, SenderReport]] = {
+    val notificationReport = NotificationReport.create(notification.id, notification.`type`, notification, DateTime.now(DateTimeZone.UTC), List(), None)
     for {
       initialEmptyNotificationReport <- notificationReportRepository.store(notificationReport)
       sentPush <- initialEmptyNotificationReport match {
         case Left(error) => Future.failed(new Exception(error.message))
-        case Right(_) => notificationSender.sendNotification(push)
+        case Right(_) => notificationSender.sendNotification(notification)
       }
     } yield sentPush
   }
