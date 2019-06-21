@@ -5,7 +5,6 @@ import java.util.UUID
 
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
-import notification.models.Push
 import notification.services.{NewsstandSender, _}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.JsonMatchers
@@ -30,7 +29,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
 
       status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(validTopics.toSet))
+      pushSent must beSome.which(_.topic.toSet must beEqualTo(validTopics.toSet))
     }
     "refuse a notification with an invalid key" in new MainScope {
       val request = invalidAuthenticatedRequest.withBody(breakingNewsNotification(validTopics))
@@ -98,21 +97,21 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val request = authenticatedRequest.withBody(newsstandShardNotification())
       val response = main.pushTopics(request)
       status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(validNewsstandNotificationsTopic.toSet))
+      pushSent must beSome.which(_.topic.toSet must beEqualTo(validNewsstandNotificationsTopic.toSet))
 
     }
   }
 
   trait NotificationSenderSupportScope extends Scope {
     self: NotificationsFixtures =>
-    var pushSent: Option[Push] = None
+    var pushSent: Option[Notification] = None
 
     val newsstandNotificationSender = mock[NewsstandSender]
     newsstandNotificationSender.sendNotification(any[UUID]) returns Future.successful(Right(Some("")))
     val mockNotificationSender = {
       new NotificationSender {
-        override def sendNotification(push: Push): Future[SenderResult] = {
-          pushSent = Some(push)
+        override def sendNotification(notification: Notification): Future[SenderResult] = {
+          pushSent = Some(notification)
           Future.successful(Right(senderReport(Senders.AzureNotificationsHub)))
         }
       }
