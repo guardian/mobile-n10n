@@ -20,7 +20,7 @@ import scala.concurrent.duration._
 
 import cats.syntax.either._
 
-class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends DynamodbSpecification with Mockito {
+class NotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends DynamodbSpecification with Mockito {
 
   override val TableName = "test-table"
 
@@ -43,9 +43,9 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
   }
 
   trait RepositoryScope extends AsyncDynamoScope {
-    val repository = new DynamoNotificationReportRepository(asyncClient, TableName)
+    val repository = new NotificationReportRepository(asyncClient, TableName)
 
-    def afterStoringReports[T](reports: List[DynamoNotificationReport])(fn: => Future[RepositoryResult[T]]): Future[T] = {
+    def afterStoringReports[T](reports: List[NotificationReport])(fn: => Future[RepositoryResult[T]]): Future[T] = {
       Future.sequence(reports map repository.store) flatMap { _ => fn.map(_.toOption.get) }
     }
   }
@@ -66,7 +66,7 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
 
     val reportsInInterval = allReports.filter(report => interval.contains(report.sentTime))
 
-    def createNotificationReport(id: UUID, sentTime: String, version: Option[UUID]): DynamoNotificationReport = DynamoNotificationReport.create(
+    def createNotificationReport(id: UUID, sentTime: String, version: Option[UUID]): NotificationReport = NotificationReport.create(
       id = id,
       `type` = BreakingNews,
       sentTime = DateTime.parse(sentTime).withZone(DateTimeZone.UTC),
@@ -85,7 +85,6 @@ class DynamoNotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends 
       reports = List(
         SenderReport("Firebase", DateTime.parse(sentTime).withZone(DateTimeZone.UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
       ),
-      version = version,
       events = None
     )
   }

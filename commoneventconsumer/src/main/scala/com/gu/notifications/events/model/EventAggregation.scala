@@ -1,26 +1,21 @@
 package com.gu.notifications.events.model
 
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json._
 
 
 case class EventAggregation(platformCounts: PlatformCount)
 
 object EventAggregation {
+  private val defaultJsonReads = Json.reads[EventAggregation]
 
-  def from(dynamoEventAggregation: DynamoEventAggregation): EventAggregation = EventAggregation(dynamoEventAggregation.platform)
-
-  def from(
-    platform: Platform,
-  ): EventAggregation = {
-    EventAggregation(
-      platformCounts = PlatformCount.from(platform)
-    )
+  implicit val jreads = new Reads[EventAggregation] {
+    override def reads(json: JsValue): JsResult[EventAggregation] = json match {
+      case JsObject(fields) =>
+        val platformCount = fields.get("platform").orElse(fields.get("platformCounts"))
+        val newFields = platformCount.map(pc => Map("platformCounts" -> pc)).getOrElse(Map.empty)
+        defaultJsonReads.reads(JsObject(newFields))
+      case _ => JsError("Expected a JsObject to parse EventAggregation")
+    }
   }
-
-  def combine(aggA: EventAggregation, aggB: EventAggregation): EventAggregation = EventAggregation(
-    platformCounts = PlatformCount.combine(aggA.platformCounts, aggB.platformCounts)
-  )
-
-  implicit val jreads = Json.reads[EventAggregation]
   implicit val jwrites: Writes[EventAggregation] = Json.writes[EventAggregation]
 }

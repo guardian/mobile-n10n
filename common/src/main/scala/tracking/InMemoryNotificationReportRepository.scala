@@ -1,7 +1,7 @@
 package tracking
 
 import java.util.UUID
-import models.{DynamoNotificationReport, NotificationType}
+import models.{NotificationReport, NotificationType}
 import org.joda.time.{DateTime, Interval}
 import tracking.Repository.RepositoryResult
 
@@ -10,18 +10,18 @@ import cats.implicits._
 
 class InMemoryNotificationReportRepository extends SentNotificationReportRepository {
 
-  val db = scala.collection.mutable.MutableList.empty[DynamoNotificationReport]
+  val db = scala.collection.mutable.MutableList.empty[NotificationReport]
 
-  override def store(report: DynamoNotificationReport): Future[RepositoryResult[Unit]] = {
+  override def store(report: NotificationReport): Future[RepositoryResult[Unit]] = {
     db += report
     Future.successful(Right(()))
   }
 
-  override def getByUuid(uuid: UUID): Future[RepositoryResult[DynamoNotificationReport]] = {
+  override def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
     Future.successful(Either.fromOption(db.find(_.id == uuid), RepositoryError("Notification report not found")))
   }
 
-  override def getByTypeWithDateRange(`type`: NotificationType, from: DateTime, until: DateTime): Future[RepositoryResult[List[DynamoNotificationReport]]] = {
+  override def getByTypeWithDateRange(`type`: NotificationType, from: DateTime, until: DateTime): Future[RepositoryResult[List[NotificationReport]]] = {
     val interval = new Interval(from, until)
     Future.successful(Right(
       db.filter({report =>
@@ -30,7 +30,7 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
     ))
   }
 
-  override def update(report: DynamoNotificationReport): Future[RepositoryResult[Unit]] = {
+  override def update(report: NotificationReport): Future[RepositoryResult[Unit]] = {
     db.transform {
       case existingReport if existingReport.id == report.id && existingReport.reports == Nil => report
       case report => report
