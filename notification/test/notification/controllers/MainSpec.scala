@@ -1,12 +1,10 @@
 package notification.controllers
 
-import models.TopicTypes.{Breaking, TagSeries}
+import models.TopicTypes.Breaking
 import java.util.UUID
 
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
-import notification.models.{Push, PushResult}
-import notification.services.frontend.FrontendAlerts
 import notification.services.{NewsstandSender, _}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.JsonMatchers
@@ -31,7 +29,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
 
       status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(validTopics.toSet))
+      pushSent must beSome.which(_.topic.toSet must beEqualTo(validTopics.toSet))
     }
     "refuse a notification with an invalid key" in new MainScope {
       val request = invalidAuthenticatedRequest.withBody(breakingNewsNotification(validTopics))
@@ -61,7 +59,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     "notify reporting repository about added notifications" in new MainScope {
       val request = requestWithValidTopics
       val expectedReport = reportWithSenderReports(List(
-        senderReport(Senders.AzureNotificationsHub), senderReport(Senders.FrontendAlerts)
+        senderReport(Senders.AzureNotificationsHub)
       ))
       val response = main.pushTopics()(request)
       status(response) must equalTo(CREATED)
@@ -73,41 +71,6 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       )
 
       reportRepository.getByUuid(expectedReport.notification.id).map(_.right.map(normalise)) must equalTo(Right(normalise(expectedReport))).await
-    }
-
-    "report frontend alerts rejected notifications" in new MainScope {
-      val request = requestWithValidTopics
-      frontendAlerts.sendNotification(any) returns Future.successful(Left(providerError))
-
-      val response = main.pushTopics()(request)
-
-      status(response) must equalTo(CREATED)
-      contentAsJson(response).as[PushResult].rejectedNotifications must beSome.which(_.length == 1)
-    }
-
-    "send notification to frontend news alerts" in new MainScope {
-      val request = requestWithValidTopics
-
-      val response = main.pushTopics()(request)
-
-      status(response) must equalTo(CREATED)
-      there was one(frontendAlerts).sendNotification(any)
-    }
-
-
-    "notification report has sent time of last sender report" in new MainScope {
-      val request = requestWithValidTopics
-      val frontendAlertsReport = senderReport(Senders.FrontendAlerts, sentTimeOffsetSeconds = 1)
-      frontendAlerts.sendNotification(any) returns Future.successful(Right(frontendAlertsReport))
-
-      val response = main.pushTopics()(request)
-
-
-      status(response) must equalTo(CREATED)
-
-      val sentTime = reportRepository.getByUuid(breakingNewsNotification(List.empty).id).map(_.map(_.sentTime))
-
-      sentTime must beEqualTo(Right(frontendAlertsReport.sentTime)).await
     }
   }
 
@@ -133,36 +96,29 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val request = authenticatedRequest.withBody(newsstandShardNotification())
       val response = main.pushTopics(request)
       status(response) must equalTo(CREATED)
-      pushSent must beSome.which(_.destination must beEqualTo(validNewsstandNotificationsTopic.toSet))
+      pushSent must beSome.which(_.topic.toSet must beEqualTo(validNewsstandNotificationsTopic.toSet))
 
     }
   }
 
   trait NotificationSenderSupportScope extends Scope {
     self: NotificationsFixtures =>
-    var pushSent: Option[Push] = None
+    var pushSent: Option[Notification] = None
 
     val newsstandNotificationSender = mock[NewsstandSender]
     newsstandNotificationSender.sendNotification(any[UUID]) returns Future.successful(Right(Some("")))
-    val windowsNotificationSender = {
+    val mockNotificationSender = {
       new NotificationSender {
-        override def sendNotification(push: Push): Future[SenderResult] = {
-          pushSent = Some(push)
+        override def sendNotification(notification: Notification): Future[SenderResult] = {
+          pushSent = Some(notification)
           Future.successful(Right(senderReport(Senders.AzureNotificationsHub)))
         }
       }
     }
   }
 
-  trait FrontendAlertsScope extends Scope {
-    self: NotificationsFixtures =>
-    val frontendAlerts = mock[FrontendAlerts]
-    frontendAlerts.sendNotification(any) returns Future.successful(Right(senderReport(Senders.FrontendAlerts, None)))
-  }
-
   trait MainScope extends Scope
     with NotificationSenderSupportScope
-    with FrontendAlertsScope
     with NotificationsFixtures {
     val conf: Configuration = {
       val m = mock[Configuration]
@@ -178,7 +134,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
     val main = new Main(
       configuration = conf,
-      senders = List(windowsNotificationSender, frontendAlerts),
+      notificationSender = mockNotificationSender,
       newsstandSender = newsstandNotificationSender,
       metrics = metrics,
       notificationReportRepository = reportRepository,

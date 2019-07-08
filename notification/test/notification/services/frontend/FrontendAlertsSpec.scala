@@ -19,9 +19,7 @@ class FrontendAlertsSpec(implicit ee: ExecutionEnv) extends Specification with M
   "Frontend alerts notified about notification" should {
     "skip breaking news notification without capi id (i.e. with non-internal Link)" in new FrontendAlertsScope {
 
-      val push = contentTargetedBreakingNewsPush().copy(
-        notification = breakingNewsNotification(validTopics).asInstanceOf[BreakingNewsNotification].copy(link = External("url"))
-      )
+      val push = contentTargetedBreakingNewsPush().asInstanceOf[BreakingNewsNotification].copy(link = External("url"))
 
       alerts.sendNotification(push) must beEqualTo(Left(FrontendAlertsProviderError("Alert could not be created"))).await
 
