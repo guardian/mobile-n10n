@@ -42,14 +42,9 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit = {
 
-    val bundleId = platform match {
-      case Newsstand => config.newsstandBundleId
-      case _ => config.bundleId
-    }
-
     val pushNotification = new SimpleApnsPushNotification(
       TokenUtil.sanitizeTokenString(token),
-      bundleId,
+      config.bundleId,
       payload.jsonString,
       //Default to no invalidation time but an hour for breaking news and 10 mins for football
       //See https://stackoverflow.com/questions/12317037/apns-notifications-ttl

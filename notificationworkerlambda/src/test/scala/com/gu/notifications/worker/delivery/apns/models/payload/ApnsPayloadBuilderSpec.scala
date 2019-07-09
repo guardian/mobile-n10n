@@ -45,7 +45,6 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
       val dummyConfig = new ApnsConfig(
         teamId = "",
         bundleId = "",
-        newsstandBundleId = "",
         keyId = "",
         certificate = "",
         mapiBaseUrl = "https://mobile.guardianapis.com"

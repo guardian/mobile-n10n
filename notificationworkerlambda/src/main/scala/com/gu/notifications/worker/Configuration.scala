@@ -6,6 +6,7 @@ import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.typesafe.config.Config
 import db.JdbcConfig
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
+import _root_.models.{Platform, Ios}
 
 sealed trait WorkerConfiguration {
   def jdbcConfig: JdbcConfig
@@ -50,6 +51,10 @@ object Configuration {
     }
   }
 
+  private def platform: Platform = Option(System.getenv("Platform"))
+    .flatMap(Platform.fromString)
+    .get // exception if this isn't set correctly, the lambda shouldn't run
+
   private def jdbcConfig(config: Config) = JdbcConfig(
     driverClassName = "org.postgresql.Driver",
     url = config.getString("registration.db.url"),
@@ -65,8 +70,7 @@ object Configuration {
       config.getString("cleaner.sqsUrl"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
-        bundleId = config.getString("apns.bundleId"),
-        newsstandBundleId = config.getString("apns.newsstandBundleId"),
+        bundleId = if (platform == Ios) config.getString("apns.bundleId") else config.getString("apns.newsstandBundleId"),
         keyId = config.getString("apns.keyId"),
         certificate = config.getString("apns.certificate"),
         mapiBaseUrl = config.getString("mapi.baseUrl"),
