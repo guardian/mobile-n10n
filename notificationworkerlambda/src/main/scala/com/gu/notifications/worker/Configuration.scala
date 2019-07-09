@@ -51,9 +51,7 @@ object Configuration {
     }
   }
 
-  private def platform: Platform = Option(System.getenv("Platform"))
-    .flatMap(Platform.fromString)
-    .get // exception if this isn't set correctly, the lambda shouldn't run
+  def platform: Option[Platform] = Option(System.getenv("Platform")).flatMap(Platform.fromString)
 
   private def jdbcConfig(config: Config) = JdbcConfig(
     driverClassName = "org.postgresql.Driver",
@@ -70,7 +68,7 @@ object Configuration {
       config.getString("cleaner.sqsUrl"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
-        bundleId = if (platform == Ios) config.getString("apns.bundleId") else config.getString("apns.newsstandBundleId"),
+        bundleId = if (platform.contains(Ios)) config.getString("apns.bundleId") else config.getString("apns.newsstandBundleId"),
         keyId = config.getString("apns.keyId"),
         certificate = config.getString("apns.certificate"),
         mapiBaseUrl = config.getString("mapi.baseUrl"),

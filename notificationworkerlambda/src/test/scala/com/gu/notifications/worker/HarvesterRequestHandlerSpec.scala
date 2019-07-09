@@ -117,7 +117,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
         sqsDeliveries
       }
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Platform): Sink[IO, SendingResults] = ???
+        override def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults] = ???
 
         override def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable] = {
           cloudwatchFailures.incrementAndGet()

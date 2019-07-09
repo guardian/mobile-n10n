@@ -25,7 +25,6 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
   type Success = ApnsDeliverySuccess
   type Payload = ApnsPayload
   val dryRun = config.dryRun
-  val platform: Platform = Ios
 
   private val apnsPayloadBuilder = new ApnsPayloadBuilder(config)
 
@@ -38,7 +37,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   def payloadBuilder: Notification => Option[ApnsPayload] = apnsPayloadBuilder.apply _
 
-  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform, dryRun: Boolean)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit = {
 

@@ -112,12 +112,11 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     var sendingResults: Option[SendingResults] = None
 
     val workerRequestHandler = new SenderRequestHandler[ApnsClient] {
-      override def platform: Platform = Ios
 
       override val maxConcurrency = 100
 
       override def deliveryService: IO[DeliveryService[IO, ApnsClient]] = IO.pure(new DeliveryService[IO, ApnsClient] {
-        override def send(notification: Notification, token: String, platform: Platform): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
+        override def send(notification: Notification, token: String): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
           deliveryCallsCount += 1
           deliveries
         }
@@ -134,7 +133,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       }
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Platform): Sink[IO, SendingResults] = { stream =>
+        override def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults] = { stream =>
           cloudwatchCallsCount += 1
           stream.map { results =>
             sendingResults = Some(results)
