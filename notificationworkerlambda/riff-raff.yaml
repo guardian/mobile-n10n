@@ -7,10 +7,24 @@ deployments:
     app: notificationworkerlambda
     parameters:
       bucket: mobile-notifications-dist
-      functionNames: [ios-notification-worker-sender-, android-notification-worker-sender-, registration-cleaning-worker-, topic-counter-, mobile-notifications-harvester-]
+      functionNames:
+        - ios-notification-worker-sender-
+        - android-notification-worker-sender-
+        - ios-edition-notification-worker-sender-
+        - android-edition-notification-worker-sender-
+        - registration-cleaning-worker-
+        - topic-counter-
+        - mobile-notifications-harvester-
       fileName: notificationworkerlambda.jar
       prefixStack: false
-    dependencies: [ios-notification-worker-cfn, android-notification-worker-cfn, registration-cleaning-worker-cfn, topic-counter-cfn, harvester-cfn]
+    dependencies:
+      - ios-notification-worker-cfn
+      - android-notification-worker-cfn
+      - ios-edition-notification-worker-cfn
+      - android-edition-notification-worker-cfn
+      - registration-cleaning-worker-cfn
+      - topic-counter-cfn
+      - harvester-cfn
   harvester-cfn:
     type: cloud-formation
     app: harvester
@@ -29,6 +43,20 @@ deployments:
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: android-notification-worker-cfn
+      templatePath: sender-worker-cfn.yaml
+  ios-edition-notification-worker-cfn:
+    type: cloud-formation
+    app: ios-edition-notification-worker
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: ios-edition-notification-worker-cfn
+      templatePath: sender-worker-cfn.yaml
+  android-edition-notification-worker-cfn:
+    type: cloud-formation
+    app: android-edition-notification-worker
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: android-edition-notification-worker-cfn
       templatePath: sender-worker-cfn.yaml
   registration-cleaning-worker-cfn:
     type: cloud-formation
