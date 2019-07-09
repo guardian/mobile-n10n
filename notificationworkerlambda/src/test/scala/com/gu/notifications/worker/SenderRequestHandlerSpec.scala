@@ -88,7 +88,6 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     val chunkedTokens = ChunkedTokens(
       notification = notification,
       range = ShardRange(0, 1),
-      platform = Android,
       tokens = List("token")
     )
 
