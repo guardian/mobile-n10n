@@ -1,6 +1,6 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Android, Newsstand, Notification, Platform, ShardRange, ShardedNotification, Ios}
+import _root_.models.{Android, Ios, Newsstand, AndroidEdition, IosEdition, Platform, ShardedNotification}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -26,6 +26,8 @@ trait HarvesterRequestHandler extends Logging {
   val tokenService: TokenService[IO]
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
+  val supportedPlatforms = List(Ios, Android, IosEdition, AndroidEdition)
+
   val logErrors: Sink[IO, Throwable] = throwables => {
     throwables.map(throwable => logger.warn("Error queueing", throwable))
   }
@@ -34,33 +36,16 @@ trait HarvesterRequestHandler extends Logging {
     throwables.broadcastTo(logErrors, cloudwatch.sendFailures(env.stage, platform))
   }
 
-  def firebaseSinkBuilder(notification: Notification, range: ShardRange): Sink[IO, (String, Platform)] = {
-    val androidSinkErrors = sinkErrors(Android)
-    tokens =>
-      tokens
-        .collect {
-          case (token, Android) => token
-        }
-        .chunkN(1000)
-        .map(chunk => ChunkedTokens(notification, chunk.toList, Android, range))
-        .map(firebaseDeliveryService.sending)
-        .parJoin(maxConcurrency)
-        .collect {
-          case Left(throwable) => throwable
-        }
-        .to(androidSinkErrors)
-  }
-
-  def apnsSink(notification: Notification, range: ShardRange, platform: Platform): Sink[IO, (String, Platform)] = {
-    val iosSinkErrors = sinkErrors(Ios)
+  def platformSink(shardedNotification: ShardedNotification, platform: Platform, deliveryService: SqsDeliveryService[IO]): Sink[IO, (String, Platform)] = {
+    val iosSinkErrors = sinkErrors(platform)
     tokens =>
       tokens
         .collect {
           case (token, tokenPlatform) if tokenPlatform == platform => token
         }
         .chunkN(1000)
-        .map(chunk => ChunkedTokens(notification, chunk.toList, platform, range))
-        .map(apnsDeliveryService.sending)
+        .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, platform, shardedNotification.range))
+        .map(deliveryService.sending)
         .parJoin(maxConcurrency)
         .collect {
           case Left(throwable) => throwable
@@ -69,19 +54,18 @@ trait HarvesterRequestHandler extends Logging {
 
   }
 
-  def queueShardedNotification(shardNotifications: Stream[IO, ShardedNotification]): Stream[IO, Unit] = {
+  def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification]): Stream[IO, Unit] = {
     for {
-      n <- shardNotifications
-      firebaseSink = firebaseSinkBuilder(n.notification, n.range)
-      newsstandSink = apnsSink(n.notification, n.range, Newsstand)
-      iosSink = apnsSink(n.notification, n.range, Ios)
-      notificationLog = s"(notification: ${n.notification.id} ${n.range})"
+      shardedNotification <- shardedNotifications
+      androidSink = platformSink(shardedNotification, Android, firebaseDeliveryService)
+      iosSink = platformSink(shardedNotification, Ios, apnsDeliveryService)
+      newsstandSink = platformSink(shardedNotification, Newsstand, apnsDeliveryService)
+      androidEditionSink = platformSink(shardedNotification, AndroidEdition, firebaseDeliveryService)
+      iosEditionSink = platformSink(shardedNotification, IosEdition, apnsDeliveryService)
+      notificationLog = s"(notification: ${shardedNotification.notification.id} ${shardedNotification.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
-      tokens = n.platform match {
-          case Some(platform) => tokenService.tokens(n.notification, n.range, platform).map(token => (token, platform))
-          case None => tokenService.tokens(n.notification, n.range)
-        }
-      resp <- tokens.broadcastTo(firebaseSink, newsstandSink, iosSink)
+      tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
+      resp <- tokens.broadcastTo(androidSink, iosSink, newsstandSink, androidEditionSink, iosEditionSink)
     } yield resp
   }
 
