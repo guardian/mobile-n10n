@@ -37,7 +37,7 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def platformSink(shardedNotification: ShardedNotification, platform: Platform, deliveryService: SqsDeliveryService[IO]): Sink[IO, (String, Platform)] = {
-    val iosSinkErrors = sinkErrors(Ios)
+    val iosSinkErrors = sinkErrors(platform)
     tokens =>
       tokens
         .collect {
