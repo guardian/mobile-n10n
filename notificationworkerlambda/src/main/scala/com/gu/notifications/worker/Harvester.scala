@@ -21,8 +21,12 @@ trait HarvesterRequestHandler extends Logging {
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
   val env = Env()
-  val apnsDeliveryService: SqsDeliveryService[IO]
-  val firebaseDeliveryService: SqsDeliveryService[IO]
+
+  val iosLiveDeliveryService: SqsDeliveryService[IO]
+  val iosEditionDeliveryService: SqsDeliveryService[IO]
+  val androidLiveDeliveryService: SqsDeliveryService[IO]
+  val androidEditionDeliveryService: SqsDeliveryService[IO]
+
   val tokenService: TokenService[IO]
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
@@ -57,11 +61,11 @@ trait HarvesterRequestHandler extends Logging {
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification]): Stream[IO, Unit] = {
     for {
       shardedNotification <- shardedNotifications
-      androidSink = platformSink(shardedNotification, Android, firebaseDeliveryService)
-      iosSink = platformSink(shardedNotification, Ios, apnsDeliveryService)
-      newsstandSink = platformSink(shardedNotification, Newsstand, apnsDeliveryService)
-      androidEditionSink = platformSink(shardedNotification, AndroidEdition, firebaseDeliveryService)
-      iosEditionSink = platformSink(shardedNotification, IosEdition, apnsDeliveryService)
+      androidSink = platformSink(shardedNotification, Android, androidLiveDeliveryService)
+      iosSink = platformSink(shardedNotification, Ios, iosLiveDeliveryService)
+      newsstandSink = platformSink(shardedNotification, Newsstand, iosEditionDeliveryService)
+      androidEditionSink = platformSink(shardedNotification, AndroidEdition, androidEditionDeliveryService)
+      iosEditionSink = platformSink(shardedNotification, IosEdition, iosEditionDeliveryService)
       notificationLog = s"(notification: ${shardedNotification.notification.id} ${shardedNotification.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
@@ -87,6 +91,8 @@ class Harvester extends HarvesterRequestHandler {
   val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
   override val cloudwatch: Cloudwatch = new CloudwatchImpl
   override val tokenService: TokenServiceImpl[IO] = new TokenServiceImpl[IO](registrationService)
-  override val apnsDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.apnsSqsUrl)
-  override val firebaseDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.firebaseSqsUrl)
+  override val iosLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsUrl)
+  override val androidLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsUrl)
+  override val iosEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl)
+  override val androidEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl)
 }

@@ -105,17 +105,22 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
           tokenPlatformStream
         }
       }
-      override val apnsDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
+      override val iosLiveDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
         apnsSqsDeliveriesCount.incrementAndGet()
         apnsSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
         sqsDeliveries
       }
 
-      override val firebaseDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
+      override val androidLiveDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
         firebaseSqsDeliveriesCount.incrementAndGet()
         firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
         sqsDeliveries
       }
+
+      override val iosEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
+
+      override val androidEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
+
       override val cloudwatch: Cloudwatch = new Cloudwatch {
         override def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults] = ???
 

@@ -22,8 +22,10 @@ case class ApnsWorkerConfiguration(
 
 case class HarvesterConfiguration(
   jdbcConfig: JdbcConfig,
-  apnsSqsUrl: String,
-  firebaseSqsUrl: String
+  iosLiveSqsUrl: String,
+  iosEditionSqsUrl: String,
+  androidLiveSqsUrl: String,
+  androidEditionSqsUrl: String
 )
 
 case class FcmWorkerConfiguration(
@@ -81,9 +83,11 @@ object Configuration {
   def fetchHarvester(): HarvesterConfiguration = {
     val config = fetchConfiguration()
     HarvesterConfiguration(
-      jdbcConfig(config),
-      config.getString("delivery.apnsSqsUrl"),
-      config.getString("delivery.firebaseSqsUrl")
+      jdbcConfig = jdbcConfig(config),
+      iosLiveSqsUrl = config.getString("delivery.apnsSqsUrl"),
+      iosEditionSqsUrl = config.getString("delivery.iosEditionSqsUrl"),
+      androidLiveSqsUrl = config.getString("delivery.firebaseSqsUrl"),
+      androidEditionSqsUrl = config.getString("delivery.androidEditionSqsUrl")
     )
   }
 
