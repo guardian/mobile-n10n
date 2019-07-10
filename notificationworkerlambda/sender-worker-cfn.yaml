@@ -36,6 +36,9 @@ Parameters:
       - ios
       - android-edition
       - ios-edition
+  SenderTooFewInvocationsAlarmPeriod:
+    Type: String
+    Description: How long until no execution is suspicious, in seconds
 
 Conditions:
   IsProdStage: !Equals [!Ref Stage, PROD]
@@ -208,7 +211,7 @@ Resources:
       EvaluationPeriods: 1
       MetricName: Invocations
       Namespace: AWS/Lambda
-      Period: 7200
+      Period: !Ref SenderTooFewInvocationsAlarmPeriod
       Statistic: Sum
       Threshold: 0
       TreatMissingData: breaching
