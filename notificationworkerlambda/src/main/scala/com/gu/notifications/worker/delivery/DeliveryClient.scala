@@ -2,7 +2,7 @@ package com.gu.notifications.worker.delivery
 
 import java.util.UUID
 
-import models.{Notification, Platform}
+import models.Notification
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -12,7 +12,7 @@ trait DeliveryClient {
   type Payload <: DeliveryPayload
 
   def close(): Unit
-  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform, dryRun: Boolean)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit
   def payloadBuilder: Notification => Option[Payload]

@@ -6,6 +6,7 @@ import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.typesafe.config.Config
 import db.JdbcConfig
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
+import _root_.models.{Platform, Ios}
 
 sealed trait WorkerConfiguration {
   def jdbcConfig: JdbcConfig
@@ -21,8 +22,10 @@ case class ApnsWorkerConfiguration(
 
 case class HarvesterConfiguration(
   jdbcConfig: JdbcConfig,
-  apnsSqsUrl: String,
-  firebaseSqsUrl: String
+  iosLiveSqsUrl: String,
+  iosEditionSqsUrl: String,
+  androidLiveSqsUrl: String,
+  androidEditionSqsUrl: String
 )
 
 case class FcmWorkerConfiguration(
@@ -50,6 +53,8 @@ object Configuration {
     }
   }
 
+  def platform: Option[Platform] = Option(System.getenv("Platform")).flatMap(Platform.fromString)
+
   private def jdbcConfig(config: Config) = JdbcConfig(
     driverClassName = "org.postgresql.Driver",
     url = config.getString("registration.db.url"),
@@ -65,8 +70,7 @@ object Configuration {
       config.getString("cleaner.sqsUrl"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
-        bundleId = config.getString("apns.bundleId"),
-        newsstandBundleId = config.getString("apns.newsstandBundleId"),
+        bundleId = if (platform.contains(Ios)) config.getString("apns.bundleId") else config.getString("apns.newsstandBundleId"),
         keyId = config.getString("apns.keyId"),
         certificate = config.getString("apns.certificate"),
         mapiBaseUrl = config.getString("mapi.baseUrl"),
@@ -79,9 +83,11 @@ object Configuration {
   def fetchHarvester(): HarvesterConfiguration = {
     val config = fetchConfiguration()
     HarvesterConfiguration(
-      jdbcConfig(config),
-      config.getString("delivery.apnsSqsUrl"),
-      config.getString("delivery.firebaseSqsUrl")
+      jdbcConfig = jdbcConfig(config),
+      iosLiveSqsUrl = config.getString("delivery.apnsSqsUrl"),
+      iosEditionSqsUrl = config.getString("delivery.iosEditionSqsUrl"),
+      androidLiveSqsUrl = config.getString("delivery.firebaseSqsUrl"),
+      androidEditionSqsUrl = config.getString("delivery.androidEditionSqsUrl")
     )
   }
 

@@ -318,6 +318,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"harvester-cfn/harvester-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"ios-notification-worker-cfn/sender-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"android-notification-worker-cfn/sender-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"ios-edition-notification-worker-cfn/sender-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"android-edition-notification-worker-cfn/sender-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"topic-counter-cfn/topic-counter-cfn.yaml")
   )

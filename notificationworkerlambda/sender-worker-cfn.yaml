@@ -28,6 +28,14 @@ Parameters:
   AlarmTopic:
     Type: String
     Description: The ARN of the SNS topic to send all the cloudwatch alarms to
+  Platform:
+    Type: String
+    Description: The platform handled by this worker
+    AllowedValues:
+      - android
+      - ios
+      - android-edition
+      - ios-edition
 
 Conditions:
   IsProdStage: !Equals [!Ref Stage, PROD]
@@ -127,6 +135,7 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
+          Platform: !Ref Platform
       Description: Sends notifications
       Handler: !Ref SenderFullyQualifiedHandler
       MemorySize: 3008

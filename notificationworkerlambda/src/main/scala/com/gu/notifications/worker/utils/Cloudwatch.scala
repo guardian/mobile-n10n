@@ -10,7 +10,7 @@ import models.Platform
 import scala.collection.JavaConverters._
 
 trait Cloudwatch {
-  def sendMetrics(stage: String, platform: Platform): Sink[IO, SendingResults]
+  def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults]
   def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable]
 }
 
@@ -29,9 +29,9 @@ class CloudwatchImpl extends Cloudwatch {
       .withValue(value.toDouble)
       .withDimensions(dimension)
 
-  def sendMetrics(stage: String, platform: Platform): Sink[IO, SendingResults] = _.evalMap { results =>
+  def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults] = _.evalMap { results =>
     IO.delay {
-      val dimension = new Dimension().withName("platform").withValue(platform.toString)
+      val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
       val metrics: Seq[MetricDatum] = Seq(
         countDatum("success", results.successCount, dimension),
         countDatum("failure", results.failureCount, dimension),
