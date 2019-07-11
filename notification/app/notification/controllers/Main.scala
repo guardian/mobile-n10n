@@ -8,7 +8,7 @@ import metrics.{CloudWatchMetrics, MetricDataPoint}
 import models.{TopicTypes, _}
 import notification.models.PushResult
 import notification.services
-import notification.services.{Configuration, NewsstandSender, NotificationSender}
+import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Logger
 import play.api.libs.json.Json.toJson
@@ -24,6 +24,7 @@ final class Main(
   notificationSender: NotificationSender,
   newsstandSender: NewsstandSender,
   notificationReportRepository: SentNotificationReportRepository,
+  articlePurge: ArticlePurge,
   metrics: CloudWatchMetrics,
   controllerComponents: ControllerComponents,
   authAction: AuthAction
@@ -101,10 +102,21 @@ final class Main(
     }
   }
 
+  private def decacheArticle(notification: Notification): Future[Unit] = {
+    articlePurge.purgeFromNotification(notification)
+      .map(_ => ())
+      .recover {
+      case NonFatal(e) =>
+        logger.warn(s"Unable to decache article for notification ${notification.id}", e)
+        ()
+    }
+  }
+
   private def prepareReportAndSendPush(notification: Notification): Future[Either[services.SenderError, SenderReport]] = {
     val notificationReport = NotificationReport.create(notification.id, notification.`type`, notification, DateTime.now(DateTimeZone.UTC), List(), None)
     for {
       initialEmptyNotificationReport <- notificationReportRepository.store(notificationReport)
+      _ <- decacheArticle(notification)
       sentPush <- initialEmptyNotificationReport match {
         case Left(error) => Future.failed(new Exception(error.message))
         case Right(_) => notificationSender.sendNotification(notification)

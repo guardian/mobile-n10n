@@ -14,6 +14,8 @@ class Configuration(conf: PlayConfig, identity: AppIdentity) {
   lazy val dynamoScheduleTableName: String = conf.get[String]("db.dynamo.schedule.table-name")
   lazy val newsstandRestrictedApiKeys: Set[String] = conf.get[Seq[String]]("notifications.api.newsstandRestrictedKeys").toSet
 
+  lazy val mapiEndpointBase: String = conf.get[String]("mapi.base")
+
   lazy val newsstandShards: Int = conf.get[Int]("newsstand.shards")
   lazy val stage = identity match {
     case AwsIdentity(_, _, stage, _) => stage

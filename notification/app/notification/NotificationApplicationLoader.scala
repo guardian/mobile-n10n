@@ -92,6 +92,9 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
+  lazy val fastlyPurge: FastlyPurge = wire[FastlyPurgeImpl]
+  lazy val articlePurge: ArticlePurge = wire[ArticlePurge]
+
   lazy val mainController = wire[Main]
   lazy val router: Router = wire[Routes]
 

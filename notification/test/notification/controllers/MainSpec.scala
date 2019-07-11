@@ -127,6 +127,11 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       m
     }
 
+    val fastlyPurge = new FastlyPurge {
+      override def softPurge(url: String): Future[Boolean] = Future.successful(true)
+    }
+    val articlePurge = new ArticlePurge(fastlyPurge, conf)
+
     val controllerComponents = stubControllerComponents()
     val reportRepository = new InMemoryNotificationReportRepository
     val authAction = new NotificationAuthAction(conf, controllerComponents)
@@ -138,6 +143,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       newsstandSender = newsstandNotificationSender,
       metrics = metrics,
       notificationReportRepository = reportRepository,
+      articlePurge = articlePurge,
       controllerComponents = controllerComponents,
       authAction = authAction
     )
