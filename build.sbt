@@ -339,18 +339,3 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
   .settings(
     riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "reportextractor-cfn/cfn.yaml")
   )
-
-lazy val root = (project in file(".")).
-  aggregate(
-    registration,
-    notification,
-    report,
-    common,
-    commonscheduledynamodb,
-    schedulelambda,
-    apiModels,
-    eventconsumer,
-    notificationworkerlambda,
-    fakebreakingnewslambda,
-    reportExtractor
-  )
