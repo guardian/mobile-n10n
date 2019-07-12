@@ -190,12 +190,12 @@ lazy val report = project
     version := projectVersion
   )
 
-lazy val apiClient = {
+lazy val apiModels = {
   import sbt.Keys.organization
   import sbtrelease._
   import ReleaseStateTransformations._
-  Project("api-client", file("api-client")).settings(Seq(
-    name := "mobile-notifications-client",
+  Project("api-models", file("api-models")).settings(Seq(
+    name := "mobile-notifications-api-models",
     resolvers ++= Seq(
       "Guardian GitHub Releases" at "http://guardian.github.io/maven/repo-releases",
       "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
@@ -208,12 +208,12 @@ lazy val apiClient = {
     organization := "com.gu",
     bintrayOrganization := Some("guardian"),
     bintrayRepository := "mobile",
-    description := "Scala client for the Guardian Push Notifications API",
+    description := "Scala models for the Guardian Push Notifications API",
     scmInfo := Some(ScmInfo(
       url("https://github.com/guardian/mobile-n10n"),
       "scm:git:git@github.com:guardian/mobile-n10n.git"
     )), pomExtra in Global := {
-      <url>https://github.com/guardian/mobile-notifications-api-client</url>
+      <url>https://github.com/guardian/mobile-n10n</url>
         <developers>
           <developer>
             <id>@guardian</id>
@@ -223,7 +223,7 @@ lazy val apiClient = {
         </developers>
     },
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    releaseVersionFile := file("api-client/version.sbt"),
+    releaseVersionFile := file("api-models/version.sbt"),
     licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
@@ -326,7 +326,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
   .dependsOn(common)
-  .dependsOn(apiClient  % "test->test", apiClient  % "compile->compile")
+  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(
     libraryDependencies ++= Seq(
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -348,7 +348,7 @@ lazy val root = (project in file(".")).
     common,
     commonscheduledynamodb,
     schedulelambda,
-    apiClient,
+    apiModels,
     eventconsumer,
     notificationworkerlambda,
     fakebreakingnewslambda,
