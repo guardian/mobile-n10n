@@ -3,16 +3,17 @@ package fakebreakingnews
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 
-import com.gu.mobile.notifications.client.{ContentType, HttpError, HttpOk, HttpProvider, HttpResponse}
-import fakebreakingnews.RequestToPromise.requestToPromise
+import com.gu.mobile.notifications.client.models.NotificationPayload
+import fakebreakingnews.RequestToPromise.requestToFuture
 import okhttp3.{Call, Callback, MediaType, OkHttpClient, Request, RequestBody, Response}
+import play.api.libs.json.Json
 
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Try}
 
 object RequestToPromise {
 
-  def requestToPromise[T](okHttpClient: OkHttpClient, request: Request, transform: (Int, Option[Array[Byte]]) => T) = {
+  def requestToFuture[T](okHttpClient: OkHttpClient, request: Request, transform: (Int, Option[Array[Byte]]) => T): Future[T] = {
     val promise = Promise[T]
     val url = request.url()
     val method = request.method()
@@ -30,29 +31,24 @@ object RequestToPromise {
   }
 }
 
-class OkHttpProvider(okhttp: OkHttpClient) extends HttpProvider {
-  def codeAndBodyToHttpResponse(code: Int, maybeBodyArray: Option[Array[Byte]]): HttpResponse = {
+class NotificationClient(okhttp: OkHttpClient, url: String, apiKey: String) {
+  def codeAndBodyToHttpResponse(code: Int, maybeBodyArray: Option[Array[Byte]]): String = {
     val body = maybeBodyArray.map(new String(_, StandardCharsets.UTF_8)).getOrElse("")
     if (code >= 200 && code < 300) {
-      HttpOk(code, body)
+      s"OK: HTTP $code $body"
     } else {
-      HttpError(code, body)
+      s"ERROR: HTTP $code $body"
     }
   }
-  override def post(url: String, apiKey: String, contentType: ContentType, body: Array[Byte]): Future[HttpResponse] = {
+
+  def send(notification: NotificationPayload): Future[String] = {
+    val body = Json.stringify(NotificationPayload.jf.writes(notification))
     val request = new Request.Builder()
       .url(url)
       .addHeader("Authorization", s"Bearer $apiKey")
-      .post(RequestBody.create(MediaType.get(s"${contentType.mediaType}; charset=${contentType.charset}"), body))
+      .post(RequestBody.create(MediaType.get(s"application/json; charset=UTF-8"), body))
       .build()
-    requestToPromise(okhttp, request, codeAndBodyToHttpResponse)
+    requestToFuture(okhttp, request, codeAndBodyToHttpResponse)
   }
 
-  override def get(url: String): Future[HttpResponse] = {
-    val request = new Request.Builder()
-      .url(url)
-      .get()
-      .build()
-    requestToPromise(okhttp, request, codeAndBodyToHttpResponse)
-  }
 }
