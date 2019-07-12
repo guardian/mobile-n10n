@@ -4,7 +4,6 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
-import com.gu.mobile.notifications.client.{ApiClient, ApiClientError}
 import com.gu.{AppIdentity, AwsIdentity}
 import com.typesafe.config.Config
 import models.{Android, Ios}
@@ -23,10 +22,10 @@ class FakeBreakingNewsLambda {
     case AwsIdentity(_, _, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/fakebreakingnews")
   }
   val okhttp: OkHttpClient = new OkHttpClient()
-  val client = ApiClient(
-    host = config.getString("notification.notificationHost"),
-    apiKey = config.getString("notification.fakeBreakingNewsApiKey"),
-    httpProvider = new OkHttpProvider(okhttp)
+  val client = new NotificationClient(
+    okhttp = okhttp,
+    url = config.getString("notification.notificationHost"),
+    apiKey = config.getString("notification.fakeBreakingNewsApiKey")
   )
   val topFrontFetcher = new TopUkRegularStory(okhttp, config.getString("mobileFronts.ukRegularStoriesUrl"))
   val fakeRegistrations = new FakeRegistrations(okhttp, config.getString("registration.legacyDeviceRegistrationUrl"))
@@ -34,7 +33,7 @@ class FakeBreakingNewsLambda {
     val eventualAndroidRegistration = fakeRegistrations.register(androidUuid, Android)
     val eventualIosRegistration = fakeRegistrations.register(iosUuid, Ios)
     val eventualBreakingNewsPayload = topFrontFetcher.fetchTopFrontAsBreakingNews()
-    val futureResult: Future[Either[ApiClientError, Unit]] = for {
+    val futureResult: Future[String] = for {
       _ <- eventualAndroidRegistration
       _ <- eventualIosRegistration
       breakingNewsNotification <- eventualBreakingNewsPayload

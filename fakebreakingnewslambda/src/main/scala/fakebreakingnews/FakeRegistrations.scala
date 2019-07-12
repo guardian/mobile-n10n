@@ -62,7 +62,7 @@ class FakeRegistrations(okHttpClient: OkHttpClient, legacyDeviceRegistrationUrl:
       .url(legacyDeviceRegistrationUrl)
       .post(RequestBody.create(MediaType.get("application/json; charset=UTF-8"), Json.toBytes(body)))
       .build()
-    RequestToPromise.requestToPromise(okHttpClient, request, (code, _) => {
+    RequestToPromise.requestToFuture(okHttpClient, request, (code, _) => {
       if (code < 200 || code >= 300) {
         throw new Exception(s"Unexpected code $code for request ${request.method()} ${request.url()}")
       }
