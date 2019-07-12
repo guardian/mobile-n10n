@@ -1,15 +1,15 @@
-package auditor
+package registration.auditor
 
 import models.{Topic, TopicTypes}
 import org.joda.time.DateTime
+import org.mockito.Matchers.{eq => argEq}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import pa.{MatchDay, PaClient}
-import org.mockito.Matchers.{eq => argEq}
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 
 class FootballMatchAuditorSpec(implicit ev: ExecutionEnv) extends Specification with Mockito {
   "Football match client" should {

@@ -1,12 +1,12 @@
 package registration.services
 
-import auditor.ApiConfig
 import pa.{PaClient, Response}
 import play.api.libs.ws.WSClient
+import registration.auditor.AuditorApiConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class WSPaClient(apiConfig: ApiConfig, wsClient: WSClient)(implicit ec: ExecutionContext) extends PaClient with pa.Http {
+class WSPaClient(apiConfig: AuditorApiConfig, wsClient: WSClient)(implicit ec: ExecutionContext) extends PaClient with pa.Http {
   override lazy val base = apiConfig.url
   override val apiKey = apiConfig.apiKey
 

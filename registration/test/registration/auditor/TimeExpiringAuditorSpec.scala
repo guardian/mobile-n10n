@@ -1,4 +1,4 @@
-package auditor
+package registration.auditor
 
 import models.Topic
 import models.TopicTypes.{TagKeyword, TagSeries}
