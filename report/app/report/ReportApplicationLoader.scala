@@ -3,7 +3,6 @@ package report
 import _root_.controllers.AssetsComponents
 import akka.actor.ActorSystem
 import aws.AsyncDynamo
-import cats.effect.IO
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.gu.AppIdentity
 import play.api.routing.Router
@@ -45,8 +44,6 @@ class ReportApplicationComponents(context: Context) extends BuiltInComponentsFro
 
   lazy val notificationReportRepository: SentNotificationReportRepository =
     new NotificationReportRepository(AsyncDynamo(regions = EU_WEST_1, credentialsProvider), appConfig.dynamoReportsTableName)
-
-  lazy val registrationDbService: db.RegistrationService[IO, fs2.Stream] = db.RegistrationService.fromConfig(configuration, applicationLifecycle)
 
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
