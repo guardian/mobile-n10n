@@ -4,8 +4,6 @@ import java.net.URI
 import java.util.UUID
 
 import application.WithPlayApp
-import cats.data.NonEmptyList
-import cats.effect.IO
 import models.Link.Internal
 import models.Importance.Major
 import models.NotificationType.{BreakingNews, Content}
@@ -21,7 +19,6 @@ import play.api.test._
 import report.ReportApplicationComponents
 import report.services.Configuration
 import tracking.InMemoryNotificationReportRepository
-import db.{RegistrationRepository, RegistrationService}
 
 import scala.concurrent.Future
 
@@ -154,18 +151,6 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
       new ReportApplicationComponents(context) {
         override lazy val notificationReportRepository = reportRepositoryMock
         override lazy val appConfig = appConfigMock
-        override lazy val registrationDbService: RegistrationService[IO, fs2.Stream] = new RegistrationService(
-          new RegistrationRepository[IO, fs2.Stream] {
-            override def findTokens(topics: NonEmptyList[String], platform: Option[String], shardRange: Option[Range]): fs2.Stream[IO, String] = ???
-            override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): fs2.Stream[IO, (String, Platform)] = ???
-            override def findByToken(token: String): fs2.Stream[IO, db.Registration] = ???
-            override def save(sub: db.Registration): IO[Port] = ???
-            override def remove(sub: db.Registration): IO[Port] = ???
-            override def removeByToken(token: String): IO[Port] = ???
-
-            override def topicCounts(countsThreshold: Int): fs2.Stream[IO, TopicCount] = ???
-          }
-        )
       }
     }
 

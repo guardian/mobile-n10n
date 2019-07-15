@@ -1,16 +1,15 @@
-package auditor
+package registration.auditor
 
-import models.TopicTypes
-import org.specs2.specification.Scope
-import play.api.libs.ws.WSRequest
-import models.Topic
+import models.{Topic, TopicTypes}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
+import org.specs2.specification.Scope
 import play.api.libs.json.Json
-import play.api.libs.ws.{WSClient, WSResponse}
-import scala.concurrent.duration._
+import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
+
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class LiveblogAuditorSpec(implicit ev: ExecutionEnv) extends Specification with Mockito {
 
@@ -59,7 +58,7 @@ class LiveblogAuditorSpec(implicit ev: ExecutionEnv) extends Specification with 
   }
 
   trait AuditorScope extends Scope {
-    val config = ApiConfig(url = "http://localhost:1234", apiKey = "test-key")
+    val config = AuditorApiConfig(url = "http://localhost:1234", apiKey = "test-key")
 
     val wsClient = mock[WSClient]
 

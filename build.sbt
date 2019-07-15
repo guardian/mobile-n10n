@@ -142,7 +142,7 @@ lazy val registration = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
-    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (file(s"registration/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
@@ -164,7 +164,7 @@ lazy val notification = project
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
-    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (file(s"notification/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
@@ -185,7 +185,7 @@ lazy val report = project
       logback
     ),
     riffRaffPackageType := (packageBin in Debian).value,
-    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (file(s"report/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
@@ -338,19 +338,4 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
   .dependsOn(common)
   .settings(
     riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "reportextractor-cfn/cfn.yaml")
-  )
-
-lazy val root = (project in file(".")).
-  aggregate(
-    registration,
-    notification,
-    report,
-    common,
-    commonscheduledynamodb,
-    schedulelambda,
-    apiModels,
-    eventconsumer,
-    notificationworkerlambda,
-    fakebreakingnewslambda,
-    reportExtractor
   )

@@ -1,18 +1,18 @@
 package registration.services
 
-import auditor.{AuditorGroupConfig, ApiConfig}
 import play.api.{Configuration => PlayConfig}
+import registration.auditor.{AuditorApiConfig, AuditorGroupConfig}
 
 import scala.concurrent.duration._
 
 class Configuration(conf: PlayConfig) {
 
   lazy val auditorConfiguration = AuditorGroupConfig(
-    contentApiConfig = ApiConfig(
+    contentApiConfig = AuditorApiConfig(
       apiKey = conf.get[String]("notifications.auditor.contentApi.apiKey"),
       url = conf.get[String]("notifications.auditor.contentApi.url")
     ),
-    paApiConfig = ApiConfig(
+    paApiConfig = AuditorApiConfig(
       apiKey = conf.get[String]("notifications.auditor.paApi.apiKey"),
       url = conf.get[String]("notifications.auditor.paApi.url")
     )
