@@ -24,7 +24,7 @@ class FakeBreakingNewsLambda {
   val okhttp: OkHttpClient = new OkHttpClient()
   val client = new NotificationClient(
     okhttp = okhttp,
-    url = config.getString("notification.notificationHost"),
+    host = config.getString("notification.notificationHost"),
     apiKey = config.getString("notification.fakeBreakingNewsApiKey")
   )
   val topFrontFetcher = new TopUkRegularStory(okhttp, config.getString("mobileFronts.ukRegularStoriesUrl"))

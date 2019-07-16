@@ -31,7 +31,9 @@ object RequestToPromise {
   }
 }
 
-class NotificationClient(okhttp: OkHttpClient, url: String, apiKey: String) {
+class NotificationClient(okhttp: OkHttpClient, host: String, apiKey: String) {
+  private val url = s"$host/push/topic"
+
   def codeAndBodyToHttpResponse(code: Int, maybeBodyArray: Option[Array[Byte]]): String = {
     val body = maybeBodyArray.map(new String(_, StandardCharsets.UTF_8)).getOrElse("")
     if (code >= 200 && code < 300) {
