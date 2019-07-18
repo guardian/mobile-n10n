@@ -11,10 +11,10 @@ import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.ExecutionContextExecutor
 
-case class IndividualNotification(notification: Notification, token: String, platform: Platform)
+case class IndividualNotification(notification: Notification, token: String)
 
-case class ChunkedTokens(notification: Notification, tokens: List[String], platform: Platform, range: ShardRange) {
-  def toNotificationToSends: List[IndividualNotification] = tokens.map(IndividualNotification(notification, _, platform))
+case class ChunkedTokens(notification: Notification, tokens: List[String], range: ShardRange) {
+  def toNotificationToSends: List[IndividualNotification] = tokens.map(IndividualNotification(notification, _))
 }
 
 object ChunkedTokens {

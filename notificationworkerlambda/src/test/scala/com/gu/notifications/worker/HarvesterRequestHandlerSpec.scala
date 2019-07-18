@@ -24,24 +24,8 @@ import scala.collection.JavaConverters._
 class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
-    "Send one Android breaking news notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, Some(Android)), null)
-      tokenStreamCount.get() shouldEqual 1
-      firebaseSqsDeliveriesCount.get() shouldEqual 3
-      apnsSqsDeliveriesCount.get() shouldEqual 0
-      firebaseSqsDeliveriesTotal.get() shouldEqual 2002
-      apnsSqsDeliveriesTotal.get() shouldEqual 0
-    }
-    "Queue one Android content notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(contentNotification, Some(Android)), null)
-      tokenStreamCount.get() shouldEqual 1
-      firebaseSqsDeliveriesCount.get() shouldEqual 3
-      apnsSqsDeliveriesCount.get() shouldEqual 0
-      firebaseSqsDeliveriesTotal.get() shouldEqual 2002
-      apnsSqsDeliveriesTotal.get() shouldEqual 0
-    }
     "Queue one multi platform breaking news notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, None), null)
+      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification), null)
       tokenStreamCount.get() shouldEqual 0
       tokenPlatformStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 3
@@ -49,23 +33,6 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       firebaseSqsDeliveriesTotal.get() shouldEqual 2002
       apnsSqsDeliveriesTotal.get() shouldEqual 2002
     }
-    "Send one iOS breaking news notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification, Some(iOS)), null)
-      tokenStreamCount.get() shouldEqual 1
-      firebaseSqsDeliveriesCount.get() shouldEqual 0
-      apnsSqsDeliveriesCount.get() shouldEqual 3
-      firebaseSqsDeliveriesTotal.get() shouldEqual 0
-      apnsSqsDeliveriesTotal.get() shouldEqual 2002
-    }
-    "Queue one iOS content notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(contentNotification, Some(iOS)), null)
-      tokenStreamCount.get() shouldEqual 1
-      firebaseSqsDeliveriesCount.get() shouldEqual 0
-      apnsSqsDeliveriesCount.get() shouldEqual 3
-      firebaseSqsDeliveriesTotal.get() shouldEqual 0
-      apnsSqsDeliveriesTotal.get() shouldEqual 2002
-    }
-
   }
 
 
@@ -98,11 +65,11 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       dryRun = None
     )
 
-    def sqsEventShardNotification(notification: Notification, platform: Option[Platform]): SQSEvent = {
+    def sqsEventShardNotification(notification: Notification): SQSEvent = {
       val shardedNotification = ShardedNotification(
         notification = notification,
-        range = ShardRange(0, 1),
-        platform = platform)
+        range = ShardRange(0, 1)
+      )
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
       sqsMessage.setBody(Json.stringify(Json.toJson(shardedNotification)))
@@ -112,7 +79,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
     val twoThousandTwoTokens: List[String] = Range(0,2002).map(num => s"token-$num").toList
     def tokenStream: Stream[IO, String] = Stream.emits(twoThousandTwoTokens)
-    def tokenPlatformStream: Stream[IO, (String, Platform)] = Stream.emits(twoThousandTwoTokens.map((_, Android)) ::: twoThousandTwoTokens.map((_, iOS)))
+    def tokenPlatformStream: Stream[IO, (String, Platform)] = Stream.emits(twoThousandTwoTokens.map((_, Android)) ::: twoThousandTwoTokens.map((_, Ios)))
 
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 
@@ -138,19 +105,24 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
           tokenPlatformStream
         }
       }
-      override val apnsDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
+      override val iosLiveDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
         apnsSqsDeliveriesCount.incrementAndGet()
         apnsSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
         sqsDeliveries
       }
 
-      override val firebaseDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
+      override val androidLiveDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
         firebaseSqsDeliveriesCount.incrementAndGet()
         firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
         sqsDeliveries
       }
+
+      override val iosEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
+
+      override val androidEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
+
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Platform): Sink[IO, SendingResults] = ???
+        override def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults] = ???
 
         override def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable] = {
           cloudwatchFailures.incrementAndGet()

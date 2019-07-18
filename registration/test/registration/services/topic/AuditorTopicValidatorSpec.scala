@@ -1,6 +1,5 @@
 package registration.services.topic
 
-import auditor.{ApiConfig, Auditor, AuditorGroup, AuditorGroupConfig}
 import models.{Topic, TopicTypes}
 import models.TopicTypes.{Content, FootballMatch}
 import org.specs2.concurrent.ExecutionEnv
@@ -14,6 +13,7 @@ import play.api.{Configuration => PlayConfig}
 import scala.concurrent.Future.successful
 import scala.concurrent.ExecutionContext
 import cats.implicits._
+import registration.auditor.{Auditor, AuditorApiConfig, AuditorGroup, AuditorGroupConfig}
 
 class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification with Mockito with EitherMatchers {
   "Auditor Topic Validator" should {
@@ -69,8 +69,8 @@ class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification
     val topicValidator = {
       val configuration = new Configuration(PlayConfig.empty) {
         override lazy val auditorConfiguration = AuditorGroupConfig(
-          contentApiConfig = ApiConfig(apiKey = "test", url = "test"),
-          paApiConfig = ApiConfig(apiKey = "test", url = "test")
+          contentApiConfig = AuditorApiConfig(apiKey = "test", url = "test"),
+          paApiConfig = AuditorApiConfig(apiKey = "test", url = "test")
         )
         override lazy val maxTopics = testMaxTopics
       }

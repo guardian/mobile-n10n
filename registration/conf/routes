@@ -1,7 +1,6 @@
 GET         /healthcheck                                    registration.controllers.Main.healthCheck
 
-GET         /registrations                                  registration.controllers.Main.registrations(selector: RegistrationsSelector)
-DELETE      /registrations                                  registration.controllers.Main.unregister(selector: RegistrationsByDeviceToken)
+POST        /device/register                                registration.controllers.Main.register
 
 # Legacy Android/iOS API registration endpoint
 POST        /legacy/device/register                         registration.controllers.Main.legacyRegister

@@ -1,7 +1,6 @@
 package notification.services.guardian
 
 import com.amazonaws.services.sqs.AmazonSQSAsync
-import notification.models.Push
 import notification.services.{NotificationSender, SenderError, SenderResult}
 import aws.AWSAsync._
 import com.amazonaws.services.sqs.model.{SendMessageBatchRequest, SendMessageBatchRequestEntry, SendMessageBatchResult}
@@ -35,10 +34,10 @@ class GuardianNotificationSender(
 
   def shouldSendToHarveseter(notification: Notification) = true
 
-  override def sendNotification(push: Push): Future[SenderResult] = {
+  override def sendNotification(notification: Notification): Future[SenderResult] = {
     val result = for {
-      registrationCount <- countRegistration(push.notification.topic)
-      workerBatches = prepareBatch(push.notification, registrationCount)
+      registrationCount <- countRegistration(notification.topic)
+      workerBatches = prepareBatch(notification, registrationCount)
       sqsBatchResults <- sendBatch(workerBatches, harvesterSqsUrl)
     } yield {
       val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
@@ -52,12 +51,12 @@ class GuardianNotificationSender(
         ))
       } else {
         failed.foreach { failure =>
-          logger.error(s"Unable to queue notification ${push.notification.id}: " +
+          logger.error(s"Unable to queue notification ${notification.id}: " +
             s"${failure.getId} - ${failure.getCode} - ${failure.getMessage}")
         }
         Left(GuardianFailedToQueueShard(
           senderName = s"Guardian",
-          reason = s"Unable to queue notification. Please check the logs for notification ${push.notification.id}")
+          reason = s"Unable to queue notification. Please check the logs for notification ${notification.id}")
         )
       }
     }
@@ -74,7 +73,7 @@ class GuardianNotificationSender(
 
   private def countRegistration(topics: List[Topic]): Future[Option[Int]] = {
     // in case of an exception when calling registrationCounter, we want to continue anyway
-    registrationCounter.count(topics).map(platformCount => Some(platformCount.total)).recover {
+    registrationCounter.count(topics).map(platformCount => Some(platformCount)).recover {
       case NonFatal(e) =>
         logger.error("Unable to count registration for a list of topics", e)
         None
@@ -114,7 +113,7 @@ class GuardianNotificationSender(
     }
 
     shard(countWithDefault).map { shard =>
-      val shardedNotification = ShardedNotification(notification, shard, platform = None)
+      val shardedNotification = ShardedNotification(notification, shard)
       val payloadJson = Json.stringify(Json.toJson(shardedNotification))
       val messageId = s"${notification.id}-${shard.start}-${shard.end}"
       new SendMessageBatchRequestEntry(messageId, payloadJson)

@@ -64,7 +64,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         case _: Link.Internal => "ITEM_CATEGORY"
       }),
       contentAvailable = true,
-      mutableContent = imageUrl.isDefined,
+      mutableContent = true,
       sound = Some("default"),
       customProperties = Seq(
         CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
@@ -87,7 +87,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       alertBody = Some(n.title),
       categoryName = Some("ITEM_CATEGORY"),
       contentAvailable = true,
-      mutableContent = false,
+      mutableContent = true,
       sound = Some("default"),
       customProperties = Seq(
         CustomProperty(Keys.UniqueIdentifier -> n.id.toString),

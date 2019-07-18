@@ -12,7 +12,7 @@ import _root_.models.NewsstandShardConfig
 import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 import com.gu.{AppIdentity, AwsIdentity}
 import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
-import _root_.models.{Android, Newsstand, iOS}
+import _root_.models.{Android, Newsstand, Ios}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import metrics.CloudWatchMetrics
 import _root_.models.TopicCount
@@ -31,7 +31,7 @@ import play.filters.gzip.GzipFilter
 import play.filters.hosts.AllowedHostsFilter
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
-import tracking.DynamoNotificationReportRepository
+import tracking.NotificationReportRepository
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new NotificationApplicationComponents(identity, context)
@@ -58,17 +58,12 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   val asyncDynamo: AsyncDynamo = AsyncDynamo(EU_WEST_1, credentialsProvider)
 
-  lazy val notificationReportRepository = new DynamoNotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
+  lazy val notificationReportRepository = new NotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
 
   lazy val newsstandNotificationSender: NewsstandSender = {
     new NewsstandSender(
       NewsstandShardConfig(appConfig.newsstandShards),
       new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client))
-  }
-
-  lazy val frontendAlerts: NotificationSender = {
-    val frontendConfig = FrontendAlertsConfig(new URI(appConfig.frontendNewsAlertEndpoint), appConfig.frontendNewsAlertApiKey)
-    new FrontendAlerts(frontendConfig, wsClient)
   }
 
   lazy val s3Client: AmazonS3 = {
@@ -91,15 +86,14 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     .withRegion(EU_WEST_1)
     .build()
 
-  lazy val notificationSender: GuardianNotificationSender = new GuardianNotificationSender(
+  lazy val notificationSender: NotificationSender = new GuardianNotificationSender(
     sqsClient = sqsClient,
     registrationCounter = topicRegistrationCounter,
     harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
-  lazy val notificationSenders = List(
-    notificationSender,
-  )
+  lazy val fastlyPurge: FastlyPurge = wire[FastlyPurgeImpl]
+  lazy val articlePurge: ArticlePurge = wire[ArticlePurge]
 
   lazy val mainController = wire[Main]
   lazy val router: Router = wire[Routes]

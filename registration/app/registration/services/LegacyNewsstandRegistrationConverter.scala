@@ -16,11 +16,10 @@ class LegacyNewsstandRegistrationConverter(config: NewsstandShardConfig) extends
     val newstandShardTopic = s"newsstand-shard-$shard"
     logger.info(s"User registered to Newsstand Shard Topic: $newstandShardTopic")
     Right(Registration(
-      deviceToken = AzureToken(legacyRegistration.pushToken),
+      deviceToken = DeviceToken(legacyRegistration.pushToken),
       platform = Newsstand,
       topics = Set(Topic(TopicTypes.NewsstandShard, newstandShardTopic)),
-      buildTier = None,
-      provider = None
+      buildTier = None
     ))
   }
 

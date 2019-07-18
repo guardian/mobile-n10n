@@ -28,6 +28,17 @@ Parameters:
   AlarmTopic:
     Type: String
     Description: The ARN of the SNS topic to send all the cloudwatch alarms to
+  Platform:
+    Type: String
+    Description: The platform handled by this worker
+    AllowedValues:
+      - android
+      - ios
+      - android-edition
+      - ios-edition
+  SenderTooFewInvocationsAlarmPeriod:
+    Type: String
+    Description: How long until no execution is suspicious, in seconds
 
 Conditions:
   IsProdStage: !Equals [!Ref Stage, PROD]
@@ -127,6 +138,7 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
+          Platform: !Ref Platform
       Description: Sends notifications
       Handler: !Ref SenderFullyQualifiedHandler
       MemorySize: 3008
@@ -199,7 +211,7 @@ Resources:
       EvaluationPeriods: 1
       MetricName: Invocations
       Namespace: AWS/Lambda
-      Period: 7200
+      Period: !Ref SenderTooFewInvocationsAlarmPeriod
       Statistic: Sum
       Threshold: 0
       TreatMissingData: breaching

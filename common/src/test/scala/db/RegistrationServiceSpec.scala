@@ -6,7 +6,7 @@ import doobie.implicits._
 import cats.effect.IO
 import cats.implicits._
 import doobie.util.transactor.Transactor
-import models.{Android, PlatformCount, ShardRange, iOS}
+import models.{Android, ShardRange, Ios}
 import org.specs2.specification.BeforeEach
 import fs2.Stream
 import org.specs2.concurrent.ExecutionEnv
@@ -48,11 +48,11 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
 
   val registrations = Seq(
     Registration(Device("a", Android), Topic("topic1"), Shard(1)),
-    Registration(Device("b", iOS), Topic("topic1"), Shard(1)),
-    Registration(Device("c", iOS), Topic("topic1"), Shard(1)),
-    Registration(Device("d", iOS), Topic("topic1"), Shard(2)),
+    Registration(Device("b", Ios), Topic("topic1"), Shard(1)),
+    Registration(Device("c", Ios), Topic("topic1"), Shard(1)),
+    Registration(Device("d", Ios), Topic("topic1"), Shard(2)),
     Registration(Device("e", Android), Topic("topic2"), Shard(1)),
-    Registration(Device("f", iOS), Topic("topic3"), Shard(1)),
+    Registration(Device("f", Ios), Topic("topic3"), Shard(1)),
     Registration(Device("f", Android), Topic("topic4"), Shard(1))
   )
 
@@ -74,9 +74,9 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
     "allow finding registrations by topics, platform and shard" in {
       run(service.findTokens(topicsAll, None, None)).length should equalTo(6)
       run(service.findTokens(topics1, None, None)).length should equalTo(4)
-      run(service.findTokens(topics1, Some(iOS), None)).length should equalTo(3)
-      run(service.findTokens(topics1, Some(iOS), Some(allShards))).length should equalTo(3)
-      run(service.findTokens(topics1, Some(iOS), Some(shardRange1))).length should equalTo(2)
+      run(service.findTokens(topics1, Some(Ios), None)).length should equalTo(3)
+      run(service.findTokens(topics1, Some(Ios), Some(allShards))).length should equalTo(3)
+      run(service.findTokens(topics1, Some(Ios), Some(shardRange1))).length should equalTo(2)
       run(service.findTokens(topics2, Some(Android), Some(shardRange1))).length should equalTo(1)
       run(service.findTokens(topics2, Some(Android), Some(shardRange2))).length should equalTo(0)
     }

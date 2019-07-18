@@ -26,7 +26,6 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
   type Success = FcmDeliverySuccess
   type Payload = FcmPayload
   val dryRun = config.dryRun
-  val platform: Platform = Android
 
   private val invalidTokenErrorCodes = Seq(
     "invalid-registration-token",
@@ -37,7 +36,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayloadBuilder(n, config.debug)
 
-  def sendNotification(notificationId: UUID, token: String, payload: Payload, platform: Platform, dryRun: Boolean)
+  def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {
 

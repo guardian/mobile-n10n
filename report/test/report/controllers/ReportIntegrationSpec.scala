@@ -4,8 +4,6 @@ import java.net.URI
 import java.util.UUID
 
 import application.WithPlayApp
-import cats.data.NonEmptyList
-import cats.effect.IO
 import models.Link.Internal
 import models.Importance.Major
 import models.NotificationType.{BreakingNews, Content}
@@ -21,7 +19,6 @@ import play.api.test._
 import report.ReportApplicationComponents
 import report.services.Configuration
 import tracking.InMemoryNotificationReportRepository
-import db.{RegistrationRepository, RegistrationService}
 
 import scala.concurrent.Future
 
@@ -35,7 +32,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
 
-      val dynamoNotificationReports: List[DynamoNotificationReport] = contentAsJson(result).as[List[DynamoNotificationReport]]
+      val dynamoNotificationReports: List[NotificationReport] = contentAsJson(result).as[List[NotificationReport]]
       dynamoNotificationReports.flatMap(_.ttl) must beEmpty
       dynamoNotificationReports mustEqual recentReports
     }
@@ -45,7 +42,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
-      contentAsJson(result).as[List[DynamoNotificationReport]] mustEqual reportsInRange
+      contentAsJson(result).as[List[NotificationReport]] mustEqual reportsInRange
     }
 
 
@@ -54,7 +51,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
 
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
-      val dynamoNotificationReports: List[DynamoNotificationReport] = contentAsJson(result).as[List[DynamoNotificationReport]]
+      val dynamoNotificationReports: List[NotificationReport] = contentAsJson(result).as[List[NotificationReport]]
       dynamoNotificationReports.flatMap(_.ttl) must not be empty
       dynamoNotificationReports mustEqual recentContentReports
     }
@@ -71,7 +68,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
   trait ReportTestScope extends WithPlayApp {
     private def notificationReport(date: String, prefix: String) = {
       val id = UUID.randomUUID
-      DynamoNotificationReport.create(
+      NotificationReport.create(
         id = id,
         sentTime = DateTime.parse(date).withZone(UTC),
         `type` = BreakingNews,
@@ -90,13 +87,12 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         reports = List(
           SenderReport("Firebase", DateTime.now.withZone(UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
         ),
-        version = Some(UUID.randomUUID()),
         events = None
       )
     }
     private def contentReport(date: String, prefix: String) = {
       val id = UUID.randomUUID
-      DynamoNotificationReport.create(
+      NotificationReport.create(
         id = id,
         sentTime = DateTime.parse(date).withZone(UTC),
         `type` = Content,
@@ -115,7 +111,6 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         reports = List(
           SenderReport("Firebase", DateTime.now.withZone(UTC), Some(s"hub-$id"), Some(PlatformStatistics(Android, 5)))
         ),
-        version = Some(UUID.randomUUID()),
         events = None
       )
     }
@@ -156,18 +151,6 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
       new ReportApplicationComponents(context) {
         override lazy val notificationReportRepository = reportRepositoryMock
         override lazy val appConfig = appConfigMock
-        override lazy val registrationDbService: RegistrationService[IO, fs2.Stream] = new RegistrationService(
-          new RegistrationRepository[IO, fs2.Stream] {
-            override def findTokens(topics: NonEmptyList[String], platform: Option[String], shardRange: Option[Range]): fs2.Stream[IO, String] = ???
-            override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): fs2.Stream[IO, (String, Platform)] = ???
-            override def findByToken(token: String): fs2.Stream[IO, db.Registration] = ???
-            override def save(sub: db.Registration): IO[Port] = ???
-            override def remove(sub: db.Registration): IO[Port] = ???
-            override def removeByToken(token: String): IO[Port] = ???
-
-            override def topicCounts(countsThreshold: Int): fs2.Stream[IO, TopicCount] = ???
-          }
-        )
       }
     }
 

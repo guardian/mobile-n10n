@@ -4,7 +4,6 @@ import akka.actor.ActorSystem
 import akka.pattern.after
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import binders.querystringbinders.{RegistrationsByDeviceToken, RegistrationsByTopicParams, RegistrationsByUdidParams, RegistrationsSelector}
 import cats.data.EitherT
 import error.{NotificationsError, RequestError}
 import models._
@@ -17,7 +16,6 @@ import registration.services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
 import cats.implicits._
-import models.pagination.{CursorSet, Paginated}
 import play.api.http.HttpEntity
 import providers.ProviderError
 
@@ -48,18 +46,15 @@ final class Main(
     )
   }
 
-  def unregister(selector: RegistrationsByDeviceToken): Action[AnyContent] = actionWithTimeout {
-    registrar.unregister(selector.deviceToken, selector.platform).map {
-      case Right(_) => NoContent
-      case Left(error) => processErrors(error)
-    }
-  }
-
   def newsstandRegister: Action[LegacyNewsstandRegistration] =
     registerWithConverter(legacyNewsstandRegistrationConverter)
 
   def legacyRegister: Action[LegacyRegistration] =
     registerWithConverter(legacyRegistrationConverter)
+
+  def register: Action[Registration] = actionWithTimeout(parse.json[Registration]) { request: Request[Registration] =>
+    registerCommon(request.body).map(processResponse(_))
+  }
 
   private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(parse.json[T]) { request =>
     val legacyRegistration = request.body
@@ -71,48 +66,6 @@ final class Main(
     }
 
     result.value.map(processResponse(_))
-  }
-
-  def registrations(selector: RegistrationsSelector): Action[AnyContent] = {
-    selector match {
-      case v: RegistrationsByUdidParams => registrationsByUdid(v.udid)
-      case v: RegistrationsByTopicParams => registrationsByTopic(v.topic, v.cursor)
-      case v: RegistrationsByDeviceToken => registrationsByDeviceToken(v.platform, v.deviceToken)
-    }
-  }
-
-  def registrationsByTopic(topic: Topic, cursors: Option[CursorSet]): Action[AnyContent] = Action.async {
-    val isFirstPage = cursors.isEmpty
-
-    val registrarResults = {
-      val cursorForProvider = cursors.flatMap(_.providerCursor(registrar.providerIdentifier))
-
-      if (isFirstPage || cursorForProvider.isDefined)
-        registrar.findRegistrations(topic, cursorForProvider.map(_.cursor)).map(_.toOption)
-      else
-        Future.successful(None)
-    }
-
-    registrarResults.map { pageAttempts =>
-      val results = pageAttempts.map(_.results).getOrElse(Nil)
-      val cursor = pageAttempts.flatMap(_.cursor).map(c => CursorSet.apply(List(c)))
-
-      Ok(Json.toJson(Paginated(results, cursor)))
-    }
-  }
-
-  def registrationsByDeviceToken(platform: Platform, deviceToken: DeviceToken): Action[AnyContent] = Action.async {
-    val result = for {
-      registrations <- EitherT(registrar.findRegistrations(deviceToken, platform): Future[Either[NotificationsError, List[StoredRegistration]]])
-    } yield registrations
-    result.fold(processErrors, res => Ok(Json.toJson(res)))
-  }
-
-  def registrationsByUdid(udid: UniqueDeviceIdentifier): Action[AnyContent] = Action.async {
-    registrar.findRegistrations(udid).map {
-      case Right(Paginated(responses, _)) => Ok(Json.toJson(responses))
-      case Left(error) => processErrors(error)
-    }
   }
 
   private def registerCommon(registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {

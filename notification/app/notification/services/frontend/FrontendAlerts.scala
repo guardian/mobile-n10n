@@ -2,8 +2,7 @@ package notification.services.frontend
 
 import java.net.URI
 
-import models.{BreakingNewsNotification, SenderReport}
-import notification.models.Push
+import models.{BreakingNewsNotification, Notification, SenderReport}
 import notification.services.{NotificationSender, SenderError, SenderResult, Senders}
 import org.joda.time.DateTime
 import play.api.Logger
@@ -32,17 +31,17 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit 
       }
     }
 
-  override def sendNotification(push: Push): Future[SenderResult] = push.notification match {
+  override def sendNotification(notification: Notification): Future[SenderResult] = notification match {
     case bn: BreakingNewsNotification =>
-      sendAsBreakingNewsAlert(push, bn)
+      sendAsBreakingNewsAlert(notification, bn)
     case _ =>
-      logger.info(s"Frontend alert not sent. Push report ($push) ignored as notification is not BreakingNews.")
+      logger.info(s"Frontend alert not sent. Push report ($notification) ignored as notification is not BreakingNews.")
       Future.successful {
         Left(FrontendAlertsProviderError("Only Breaking News notification currently supported"))
       }
   }
 
-  private def sendAsBreakingNewsAlert(push: Push, bn: BreakingNewsNotification) = {
+  private def sendAsBreakingNewsAlert(notification: Notification, bn: BreakingNewsNotification) = {
     NewsAlert.fromNotification(bn, DateTime.now) match {
       case Some(alert) =>
         sendBreakingNewsAlert(alert) map {
@@ -50,7 +49,7 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit 
           case Left(e) => Left(FrontendAlertsProviderError(s"Could not send breaking news alert ($e)"))
         }
       case _ =>
-        logger.error(s"Frontend alert not sent. Could not create alert from notification ${ push.notification }")
+        logger.error(s"Frontend alert not sent. Could not create alert from notification ${ notification }")
         Future.successful {
           Left(FrontendAlertsProviderError("Alert could not be created"))
         }

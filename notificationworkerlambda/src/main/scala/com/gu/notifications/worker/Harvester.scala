@@ -1,6 +1,6 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Android, Newsstand, Notification, Platform, ShardRange, ShardedNotification, iOS}
+import _root_.models.{Android, Ios, Newsstand, AndroidEdition, IosEdition, Platform, ShardedNotification}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -21,11 +21,17 @@ trait HarvesterRequestHandler extends Logging {
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
   val env = Env()
-  val apnsDeliveryService: SqsDeliveryService[IO]
-  val firebaseDeliveryService: SqsDeliveryService[IO]
+
+  val iosLiveDeliveryService: SqsDeliveryService[IO]
+  val iosEditionDeliveryService: SqsDeliveryService[IO]
+  val androidLiveDeliveryService: SqsDeliveryService[IO]
+  val androidEditionDeliveryService: SqsDeliveryService[IO]
+
   val tokenService: TokenService[IO]
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
+  val supportedPlatforms = List(Ios, Android, IosEdition, AndroidEdition)
+
   val logErrors: Sink[IO, Throwable] = throwables => {
     throwables.map(throwable => logger.warn("Error queueing", throwable))
   }
@@ -34,33 +40,16 @@ trait HarvesterRequestHandler extends Logging {
     throwables.broadcastTo(logErrors, cloudwatch.sendFailures(env.stage, platform))
   }
 
-  def firebaseSinkBuilder(notification: Notification, range: ShardRange): Sink[IO, (String, Platform)] = {
-    val androidSinkErrors = sinkErrors(Android)
-    tokens =>
-      tokens
-        .collect {
-          case (token, Android) => token
-        }
-        .chunkN(1000)
-        .map(chunk => ChunkedTokens(notification, chunk.toList, Android, range))
-        .map(firebaseDeliveryService.sending)
-        .parJoin(maxConcurrency)
-        .collect {
-          case Left(throwable) => throwable
-        }
-        .to(androidSinkErrors)
-  }
-
-  def apnsSink(notification: Notification, range: ShardRange, platform: Platform): Sink[IO, (String, Platform)] = {
-    val iosSinkErrors = sinkErrors(iOS)
+  def platformSink(shardedNotification: ShardedNotification, platform: Platform, deliveryService: SqsDeliveryService[IO]): Sink[IO, (String, Platform)] = {
+    val iosSinkErrors = sinkErrors(platform)
     tokens =>
       tokens
         .collect {
           case (token, tokenPlatform) if tokenPlatform == platform => token
         }
         .chunkN(1000)
-        .map(chunk => ChunkedTokens(notification, chunk.toList, platform, range))
-        .map(apnsDeliveryService.sending)
+        .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range))
+        .map(deliveryService.sending)
         .parJoin(maxConcurrency)
         .collect {
           case Left(throwable) => throwable
@@ -69,19 +58,18 @@ trait HarvesterRequestHandler extends Logging {
 
   }
 
-  def queueShardedNotification(shardNotifications: Stream[IO, ShardedNotification]): Stream[IO, Unit] = {
+  def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification]): Stream[IO, Unit] = {
     for {
-      n <- shardNotifications
-      firebaseSink = firebaseSinkBuilder(n.notification, n.range)
-      newsstandSink = apnsSink(n.notification, n.range, Newsstand)
-      iosSink = apnsSink(n.notification, n.range, iOS)
-      notificationLog = s"(notification: ${n.notification.id} ${n.range})"
+      shardedNotification <- shardedNotifications
+      androidSink = platformSink(shardedNotification, Android, androidLiveDeliveryService)
+      iosSink = platformSink(shardedNotification, Ios, iosLiveDeliveryService)
+      newsstandSink = platformSink(shardedNotification, Newsstand, iosEditionDeliveryService)
+      androidEditionSink = platformSink(shardedNotification, AndroidEdition, androidEditionDeliveryService)
+      iosEditionSink = platformSink(shardedNotification, IosEdition, iosEditionDeliveryService)
+      notificationLog = s"(notification: ${shardedNotification.notification.id} ${shardedNotification.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
-      tokens = n.platform match {
-          case Some(platform) => tokenService.tokens(n.notification, n.range, platform).map(token => (token, platform))
-          case None => tokenService.tokens(n.notification, n.range)
-        }
-      resp <- tokens.broadcastTo(firebaseSink, newsstandSink, iosSink)
+      tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
+      resp <- tokens.broadcastTo(androidSink, iosSink, newsstandSink, androidEditionSink, iosEditionSink)
     } yield resp
   }
 
@@ -103,6 +91,8 @@ class Harvester extends HarvesterRequestHandler {
   val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
   override val cloudwatch: Cloudwatch = new CloudwatchImpl
   override val tokenService: TokenServiceImpl[IO] = new TokenServiceImpl[IO](registrationService)
-  override val apnsDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.apnsSqsUrl)
-  override val firebaseDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.firebaseSqsUrl)
+  override val iosLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsUrl)
+  override val androidLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsUrl)
+  override val iosEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl)
+  override val androidEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl)
 }

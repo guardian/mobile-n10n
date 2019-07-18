@@ -135,15 +135,14 @@ lazy val registration = project
     routesImport ++= Seq(
       "binders.querystringbinders._",
       "binders.pathbinders._",
-      "models._",
-      "models.pagination._"
+      "models._"
     ),
     libraryDependencies ++= Seq(
       logback,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (packageBin in Debian).value,
-    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (file(s"registration/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
@@ -165,7 +164,7 @@ lazy val notification = project
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
-    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (file(s"notification/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
@@ -186,17 +185,17 @@ lazy val report = project
       logback
     ),
     riffRaffPackageType := (packageBin in Debian).value,
-    riffRaffArtifactResources += (file(s"common/cfn/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (file(s"report/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     packageName in Debian := name.value,
     version := projectVersion
   )
 
-lazy val apiClient = {
+lazy val apiModels = {
   import sbt.Keys.organization
   import sbtrelease._
   import ReleaseStateTransformations._
-  Project("api-client", file("api-client")).settings(Seq(
-    name := "mobile-notifications-client",
+  Project("api-models", file("api-models")).settings(Seq(
+    name := "mobile-notifications-api-models",
     resolvers ++= Seq(
       "Guardian GitHub Releases" at "http://guardian.github.io/maven/repo-releases",
       "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
@@ -209,12 +208,12 @@ lazy val apiClient = {
     organization := "com.gu",
     bintrayOrganization := Some("guardian"),
     bintrayRepository := "mobile",
-    description := "Scala client for the Guardian Push Notifications API",
+    description := "Scala models for the Guardian Push Notifications API",
     scmInfo := Some(ScmInfo(
       url("https://github.com/guardian/mobile-n10n"),
       "scm:git:git@github.com:guardian/mobile-n10n.git"
     )), pomExtra in Global := {
-      <url>https://github.com/guardian/mobile-notifications-api-client</url>
+      <url>https://github.com/guardian/mobile-n10n</url>
         <developers>
           <developer>
             <id>@guardian</id>
@@ -224,7 +223,7 @@ lazy val apiClient = {
         </developers>
     },
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    releaseVersionFile := file("api-client/version.sbt"),
+    releaseVersionFile := file("api-models/version.sbt"),
     licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
@@ -319,13 +318,15 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"harvester-cfn/harvester-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"ios-notification-worker-cfn/sender-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"android-notification-worker-cfn/sender-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"ios-edition-notification-worker-cfn/sender-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"android-edition-notification-worker-cfn/sender-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"topic-counter-cfn/topic-counter-cfn.yaml")
   )
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
   .dependsOn(common)
-  .dependsOn(apiClient  % "test->test", apiClient  % "compile->compile")
+  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(
     libraryDependencies ++= Seq(
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -337,19 +338,4 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
   .dependsOn(common)
   .settings(
     riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "reportextractor-cfn/cfn.yaml")
-  )
-
-lazy val root = (project in file(".")).
-  aggregate(
-    registration,
-    notification,
-    report,
-    common,
-    commonscheduledynamodb,
-    schedulelambda,
-    apiClient,
-    eventconsumer,
-    notificationworkerlambda,
-    fakebreakingnewslambda,
-    reportExtractor
   )

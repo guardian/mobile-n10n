@@ -20,11 +20,13 @@ class LegacyRegistrationConverterSpec extends Specification {
       val legacyRegistration = defaultLegacyRegistration.copy(
         device = defaultLegacyRegistration.device.copy(
           pushToken = None,
-          firebaseToken = Some("def")
+          firebaseToken = Some("def"),
+          platform = "android"
         )
       )
       val expectedRegistration = expectedDefaultRegistration.copy(
-        deviceToken = FcmToken("def")
+        platform = Android,
+        deviceToken = DeviceToken("def")
       )
       val registration = legacyRegistrationConverter.toRegistration(legacyRegistration)
 
@@ -39,7 +41,7 @@ class LegacyRegistrationConverterSpec extends Specification {
         )
       )
       val expectedRegistration = expectedDefaultRegistration.copy(
-        deviceToken = BothTokens("abc", "def")
+        deviceToken = DeviceToken("abc")
       )
       val registration = legacyRegistrationConverter.toRegistration(legacyRegistration)
 
@@ -81,11 +83,10 @@ class LegacyRegistrationConverterSpec extends Specification {
       )
     )
     val expectedDefaultRegistration = Registration(
-      deviceToken = AzureToken("abc"),
-      platform = iOS,
+      deviceToken = DeviceToken("abc"),
+      platform = Ios,
       topics = Set(Topic(TopicTypes.Breaking, "uk")),
-      buildTier = Some("test"),
-      provider = Some(Azure)
+      buildTier = Some("test")
     )
   }
 }

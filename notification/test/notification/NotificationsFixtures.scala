@@ -8,7 +8,6 @@ import _root_.models.Link.Internal
 import _root_.models.TopicTypes.Breaking
 import _root_.models._
 import _root_.models.TopicTypes.Content
-import notification.models.Push
 import notification.services.guardian.GuardianFailedToQueueShard
 import org.joda.time.DateTime
 import play.api.test.FakeRequest
@@ -33,25 +32,17 @@ trait NotificationsFixtures {
     shard = 1
   )
   
-  def contentTargetedBreakingNewsPush(importance: Importance = Major): Push = Push(
-    notification = BreakingNewsNotification(
-      id = UUID.randomUUID(),
-      title = "",
-      message = "",
-      thumbnailUrl = None,
-      sender = "test",
-      link = Internal("capiId", None, GITContent),
-      imageUrl = None,
-      importance = importance,
-      topic = List(),
-      dryRun = None
-    ),
-    destination = Set(Topic(Content, "us-presidential-2016"))
-  )
-
-  def topicTargetedBreakingNewsPush(notification: Notification): Push = Push(
-    notification = notification,
-    destination = notification.topic.toSet
+  def contentTargetedBreakingNewsPush(importance: Importance = Major): Notification = BreakingNewsNotification(
+    id = UUID.randomUUID(),
+    title = "",
+    message = "",
+    thumbnailUrl = None,
+    sender = "test",
+    link = Internal("capiId", None, GITContent),
+    imageUrl = None,
+    importance = importance,
+    topic = List(Topic(Content, "us-presidential-2016")),
+    dryRun = None
   )
 
   val providerError =  GuardianFailedToQueueShard("test", "test")
@@ -71,10 +62,9 @@ trait NotificationsFixtures {
   ): SenderReport =
     SenderReport(senderName, DateTime.now.plusSeconds(sentTimeOffsetSeconds), sendersId, platformStats)
 
-  def reportWithSenderReports(reports: List[SenderReport]): DynamoNotificationReport = DynamoNotificationReport.create(
+  def reportWithSenderReports(reports: List[SenderReport]): NotificationReport = NotificationReport.create(
     breakingNewsNotification(validTopics),
-    reports = reports,
-    version = None
+    reports = reports
   )
 }
 

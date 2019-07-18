@@ -1,8 +1,7 @@
 package registration.services.topic
 
-
-import auditor.AuditorGroup
 import models.Topic
+import registration.auditor.AuditorGroup
 import registration.services.Configuration
 
 import scala.concurrent.{ExecutionContext, Future}

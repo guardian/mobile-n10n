@@ -11,7 +11,6 @@ import error.NotificationsError
 import models.Provider.Unknown
 import models.TopicTypes.{Breaking, FootballMatch}
 import models._
-import models.pagination.Paginated
 import play.api.ApplicationLoader.Context
 import play.api.{BuiltInComponents, Logger, Configuration => PlayConfig}
 import play.api.libs.ws.WSClient
@@ -26,6 +25,7 @@ import scala.concurrent.Future
 
 trait DelayedRegistrationsBase extends RegistrationsBase {
   override lazy val fakeNotificationRegistrar: NotificationRegistrar = new NotificationRegistrar {
+
     override val providerIdentifier: String = "test"
 
     override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = Future.successful {
@@ -41,12 +41,6 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
 
     override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] =
       Future.successful(Right(()))
-
-    override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = ???
-
-    override def findRegistrations(topic: Topic, cursor: Option[String]): RegistrarResponse[Paginated[StoredRegistration]] = ???
-
-    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
   }
 }
 
@@ -87,21 +81,6 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
     override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] =
       Future.successful(Right(()))
 
-    override def findRegistrations(topic: Topic, cursor: Option[String] = None): Future[Either[ProviderError, Paginated[StoredRegistration]]] = {
-      val selected = if (cursor.contains("abc")) {
-        registrations.filter(_.topics.contains(topic)).map(StoredRegistration.fromRegistration).drop(5)
-      } else {
-        registrations.filter(_.topics.contains(topic)).map(StoredRegistration.fromRegistration).take(5)
-      }
-      Future.successful(Right(Paginated(selected.toList, None)))
-    }
-
-    override def findRegistrations(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[List[StoredRegistration]] = {
-      val selected = registrations.filter(_.deviceToken.azureToken == deviceToken.azureToken).map(StoredRegistration.fromRegistration)
-      Future.successful(Right(selected.toList))
-    }
-
-    override def findRegistrations(udid: UniqueDeviceIdentifier): Future[Either[ProviderError, Paginated[StoredRegistration]]] = ???
   }
 
 

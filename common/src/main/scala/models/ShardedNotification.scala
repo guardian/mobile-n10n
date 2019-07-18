@@ -13,7 +13,7 @@ object ShardRange {
 case class ShardedNotification(
   notification: Notification,
   range: ShardRange,
-  platform: Option[Platform])
+)
 
 object ShardedNotification {
   implicit val shardedNotificationJF: Format[ShardedNotification] = Json.format[ShardedNotification]
