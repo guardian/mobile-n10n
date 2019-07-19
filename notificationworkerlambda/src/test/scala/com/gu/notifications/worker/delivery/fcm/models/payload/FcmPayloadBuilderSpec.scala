@@ -4,7 +4,7 @@ import java.net.URI
 import java.util.UUID
 
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder.FirebaseAndroidNotification
-import models.Importance.Major
+import models.Importance.{Major, Minor}
 import models.Link.Internal
 import models.TopicTypes.Breaking
 import models.{GITContent, Notification, Topic}
@@ -23,6 +23,9 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       check()
     }
     "generate correct data for Match Status notification" in new MatchStatusNotificationScope {
+      check()
+    }
+    "generate correct data for Editions notification" in new EditionsScope {
       check()
     }
   }
@@ -69,6 +72,27 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
         ttl = TimeToLive.BreakingNewsTtl      )
     )
   }
+
+  trait EditionsScope extends NotificationScope {
+     val notification = models.EditionsShardNotification(
+       id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+       shard = 123,
+     )
+
+    val expected = Some(
+      FirebaseAndroidNotification(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
+          Keys.NotificationType -> "editions-shard",
+          Keys.Type -> "custom",
+          Keys.Message -> "guardian-editions",
+          Keys.Topics -> "editions-shard//editions-shard-123",
+          Keys.Importance -> "Minor"
+        ),
+        ttl = TimeToLive.DefaulTtl)
+    )
+  }
+
 
   trait ContentNotificationScope extends NotificationScope {
     val notification = models.ContentNotification(
