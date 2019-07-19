@@ -70,6 +70,28 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     )
   }
 
+  trait EditionsScope extends NotificationScope {
+     val notification = models.EditionsShardNotification(
+       id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+       shard = 123,
+     )
+
+    val expected = Some(
+      FirebaseAndroidNotification(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
+          Keys.NotificationType -> "editions-shard",
+          Keys.Type -> "custom",
+          Keys.Title -> "",
+          Keys.Ticker -> "",
+          Keys.Message -> "",
+          Keys.Topics -> "breaking//uk"
+      ),
+        ttl = TimeToLive.BreakingNewsTtl    )
+    )
+  }
+
+
   trait ContentNotificationScope extends NotificationScope {
     val notification = models.ContentNotification(
       id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
