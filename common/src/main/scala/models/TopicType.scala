@@ -17,6 +17,7 @@ object TopicTypes {
   object FootballMatch extends TopicType("football-match", 1)
   object Newsstand extends TopicType("newsstand", 100)
   object NewsstandShard extends TopicType("newsstand-shard", 100)
+  object EditionsShard extends TopicType("editions-shard", 100)
   object LiveNotification extends TopicType("live-notification", 51)
 }
 

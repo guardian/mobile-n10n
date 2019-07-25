@@ -97,9 +97,9 @@ case class EditionsShardNotification(
 ) extends Notification {
   override def sender: String = ""
   override def title: String = ""
-  override def message: String = "guardian-editios"
+  override def message: String = "guardian-editions"
   override def importance: Importance = Importance.Minor
-  override def topic: List[Topic] = List(Topic(TopicTypes.NewsstandShard, s"newsstand-shard-$shard"))
+  override def topic: List[Topic] = List(Topic(TopicTypes.EditionsShard, s"editions-shard-$shard"))
   override def withTopics(topics: List[Topic]): Notification = this
   override def dryRun: Option[Boolean] = None
 }                                                   

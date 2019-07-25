@@ -130,6 +130,7 @@ object FcmPayloadBuilder {
       notificationId = editionsShardNotification.id,
       data = Map (
         Keys.Type -> MessageTypes.Custom,
+        Keys.NotificationType -> editionsShardNotification.`type`.value,
         Keys.Topics -> editionsShardNotification.topic.map(toAndroidTopic).mkString(","),
         Keys.Message -> editionsShardNotification.message,
         Keys.Importance -> editionsShardNotification.importance.toString
