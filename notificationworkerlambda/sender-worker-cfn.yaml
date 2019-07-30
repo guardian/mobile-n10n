@@ -116,7 +116,7 @@ Resources:
           - Action: ssm:GetParametersByPath
             Effect: Allow
             Resource:
-              !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
+              !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers/${Platform}
       - PolicyName: Cloudwatch
         PolicyDocument:
           Statement:
