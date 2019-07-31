@@ -7,7 +7,7 @@ import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import models.Importance.Major
 import models.Link.Internal
 import models.TopicTypes.Breaking
-import models.{GITContent, Notification, Topic}
+import models.{GITContent, NewsstandShardNotification, Notification, Topic}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
@@ -23,6 +23,9 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       check()
     }
     "generate correct data for Match Status notification" in new MatchStatusNotificationScope {
+      check()
+    }
+    "generate correct data for a Newsstand notification" in new NewsstandNotificationScope {
       check()
     }
   }
@@ -158,5 +161,18 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       )
     )
 
+  }
+
+  trait NewsstandNotificationScope extends NotificationScope {
+    override def notification: Notification = NewsstandShardNotification(
+      UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      shard = 0
+    )
+
+    override def expected: Option[FirebaseAndroidNotification] = Some(FirebaseAndroidNotification(
+      notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      data = Map(),
+      ttl = TimeToLive.DefaulTtl
+    ))
   }
 }

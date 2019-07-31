@@ -35,6 +35,7 @@ object FcmPayloadBuilder {
       case n: BreakingNewsNotification => Some(breakingNewsAndroidNotification(n, debug))
       case n: ContentNotification => Some(contentAndroidNotification(n, debug))
       case n: FootballMatchStatusNotification => Some(footballMatchStatusAndroidNotification(n))
+      case n: NewsstandShardNotification => Some(newsstandShardNotification(n))
       case _ => None
     }
   }
@@ -123,6 +124,15 @@ object FcmPayloadBuilder {
         ++ matchStatusAlert.venue.map(Keys.Venue -> _).toMap,
       ttl = FootballMatchStatusTtl
     )
+
+  private def newsstandShardNotification(newsstandShardNotification: NewsstandShardNotification): FirebaseAndroidNotification = {
+    FirebaseAndroidNotification(
+      notificationId = newsstandShardNotification.id,
+      data = Map(
+      ),
+      ttl = DefaulTtl
+    )
+  }
 
   private case class PlatformUri(uri: String, `type`: String)
 
