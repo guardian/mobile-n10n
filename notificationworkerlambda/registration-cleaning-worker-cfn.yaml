@@ -100,7 +100,7 @@ Resources:
           - Action: ssm:GetParametersByPath
             Effect: Allow
             Resource:
-              !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
+              !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers/cleaner
       - PolicyName: Cloudwatch
         PolicyDocument:
           Statement:

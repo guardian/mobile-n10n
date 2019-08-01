@@ -7,7 +7,7 @@ import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl}
 
 class AndroidSender extends SenderRequestHandler[FcmClient] {
   val config: FcmWorkerConfiguration = Configuration.fetchFirebase()
-  val cleaningClient = new CleaningClientImpl(config.sqsUrl)
+  val cleaningClient = new CleaningClientImpl(config.cleaningSqsUrl)
   val cloudwatch: Cloudwatch = new CloudwatchImpl
 
   override val deliveryService: IO[Fcm[IO]] =
