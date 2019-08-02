@@ -35,7 +35,7 @@ object FcmPayloadBuilder {
       case n: BreakingNewsNotification => Some(breakingNewsAndroidNotification(n, debug))
       case n: ContentNotification => Some(contentAndroidNotification(n, debug))
       case n: FootballMatchStatusNotification => Some(footballMatchStatusAndroidNotification(n))
-      case n: EditionsShardNotification => Some(editionsAndroidNotification(n))
+      case n: EditionsNotification => Some(editionsAndroidNotification(n))
       case _ => None
     }
   }
@@ -125,7 +125,7 @@ object FcmPayloadBuilder {
       ttl = FootballMatchStatusTtl
     )
 
-  private def editionsAndroidNotification(editionsShardNotification: EditionsShardNotification): FirebaseAndroidNotification =
+  private def editionsAndroidNotification(editionsShardNotification: EditionsNotification): FirebaseAndroidNotification =
     FirebaseAndroidNotification(
       notificationId = editionsShardNotification.id,
       data = Map (
@@ -133,7 +133,10 @@ object FcmPayloadBuilder {
         Keys.NotificationType -> editionsShardNotification.`type`.value,
         Keys.Topics -> editionsShardNotification.topic.map(toAndroidTopic).mkString(","),
         Keys.Message -> editionsShardNotification.message,
-        Keys.Importance -> editionsShardNotification.importance.toString
+        Keys.Importance -> editionsShardNotification.importance.toString,
+        Keys.EditionsDate -> editionsShardNotification.date,
+        Keys.EditionsKey -> editionsShardNotification.key,
+        Keys.EditionsName -> editionsShardNotification.name
       )
     )
 

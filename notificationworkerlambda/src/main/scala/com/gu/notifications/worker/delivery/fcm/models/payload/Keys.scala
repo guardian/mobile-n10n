@@ -36,6 +36,10 @@ object Keys {
   final val CompetitionName = "competitionName"
   final val Venue = "venue"
   final val ArticleUri = "articleUri"
+
+  final val EditionsDate = "date"
+  final val EditionsKey = "key"
+  final val EditionsName = "name"
 }
 
 

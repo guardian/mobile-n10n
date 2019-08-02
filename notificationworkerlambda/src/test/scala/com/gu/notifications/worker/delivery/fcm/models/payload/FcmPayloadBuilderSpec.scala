@@ -7,7 +7,7 @@ import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import models.Importance.{Major, Minor}
 import models.Link.Internal
 import models.TopicTypes.Breaking
-import models.{GITContent, Notification, Topic}
+import models.{GITContent, Notification, Topic, TopicTypes}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
@@ -74,20 +74,27 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
   }
 
   trait EditionsScope extends NotificationScope {
-     val notification = models.EditionsShardNotification(
+     val notification = models.EditionsNotification(
        id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
-       shard = 123,
+       topic = List(Topic(TopicTypes.Editions, "uk")),
+       key = "aKey",
+       date = "aDate",
+       name = "aName",
+       sender = "EditionsTeam"
      )
 
     val expected = Some(
       FirebaseAndroidNotification(
         notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
         data = Map(
-          Keys.NotificationType -> "editions-shard",
+          Keys.NotificationType -> "editions",
           Keys.Type -> "custom",
           Keys.Message -> "guardian-editions",
-          Keys.Topics -> "editions-shard//editions-shard-123",
-          Keys.Importance -> "Minor"
+          Keys.Topics -> "editions//uk",
+          Keys.Importance -> "Minor",
+          Keys.EditionsDate -> "aDate",
+          Keys.EditionsKey -> "aKey",
+          Keys.EditionsName -> "aName"
         ),
         ttl = TimeToLive.DefaulTtl)
     )

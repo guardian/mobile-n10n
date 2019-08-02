@@ -16,7 +16,6 @@ sealed trait Notification {
   def message: String
   def importance: Importance
   def topic: List[Topic]
-  def withTopics(topics: List[Topic]): Notification
   def dryRun: Option[Boolean]
 }
 
@@ -30,7 +29,7 @@ object Notification {
       case n: LiveEventNotification => LiveEventNotification.jf.writes(n)
       case n: FootballMatchStatusNotification => FootballMatchStatusNotification.jf.writes(n)
       case n: NewsstandShardNotification => NewsstandShardNotification.jf.writes(n)
-      case n: EditionsShardNotification => EditionsShardNotification.jf.writes(n)
+      case n: EditionsNotification => EditionsNotification.jf.writes(n)
     }
     override def reads(json: JsValue): JsResult[Notification] = {
       (json \ "type").validate[NotificationType].flatMap {
@@ -40,7 +39,7 @@ object Notification {
         case LiveEventAlert => LiveEventNotification.jf.reads(json)
         case FootballMatchStatus => FootballMatchStatusNotification.jf.reads(json)
         case NewsstandShard => NewsstandShardNotification.jf.reads(json)
-        case EditionsShard => EditionsShardNotification.jf.reads(json)
+        case Editions => EditionsNotification.jf.reads(json)
       }
     }
   }
@@ -63,9 +62,7 @@ case class BreakingNewsNotification(
   importance: Importance,
   topic: List[Topic],
   dryRun: Option[Boolean]
-) extends Notification with NotificationWithLink {
-  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
-}
+) extends Notification
 
 object BreakingNewsNotification {
   import JsonUtils._
@@ -73,15 +70,14 @@ object BreakingNewsNotification {
 }
 
 case class NewsstandShardNotification(
-                                       id: UUID,
-                                       shard:Int,
-                                       `type`: NotificationType = NewsstandShard
-                                     ) extends Notification {
+  id: UUID,
+  shard:Int,
+  `type`: NotificationType = NewsstandShard
+) extends Notification {
   override def title = ""
   override def message: String = ""
   override def sender: String = "newsstand-shard"
   override def importance: Importance = Importance.Minor
-  override def withTopics(topics: List[Topic]): Notification = this
   override def topic: List[Topic] = List(Topic(TopicTypes.NewsstandShard, s"newsstand-shard-$shard"))
   override def dryRun = None
 
@@ -90,24 +86,24 @@ object NewsstandShardNotification {
   implicit val jf = Json.format[NewsstandShardNotification]
 }
 
-case class EditionsShardNotification(
+case class EditionsNotification(
   id: UUID,
-  shard: Int,
-  `type`: NotificationType = EditionsShard
+  `type`: NotificationType = Editions,
+  topic: List[Topic],
+  key: String,
+  name: String,
+  date: String,
+  sender: String,
+  dryRun: Option[Boolean] = None
 ) extends Notification {
-  override def sender: String = ""
   override def title: String = ""
   override def message: String = "guardian-editions"
   override def importance: Importance = Importance.Minor
-  override def topic: List[Topic] = List(Topic(TopicTypes.EditionsShard, s"editions-shard-$shard"))
-  override def withTopics(topics: List[Topic]): Notification = this
-  override def dryRun: Option[Boolean] = None
-}                                                   
-
-object EditionsShardNotification {
-  implicit val jf = Json.format[EditionsShardNotification]
 }
 
+object EditionsNotification {
+  implicit val jf = Json.format[EditionsNotification]
+}
 
 case class ContentNotification(
   id: UUID,
@@ -121,9 +117,7 @@ case class ContentNotification(
   importance: Importance,
   topic: List[Topic],
   dryRun: Option[Boolean]
-) extends Notification with NotificationWithLink {
-  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
-}
+) extends Notification with NotificationWithLink
 
 object ContentNotification {
   import JsonUtils._
@@ -157,9 +151,7 @@ case class FootballMatchStatusNotification(
   eventId: String,
   debug: Boolean,
   dryRun: Option[Boolean]
-) extends Notification {
-  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
-}
+) extends Notification
 
 object FootballMatchStatusNotification {
   import JsonUtils._
@@ -189,9 +181,7 @@ case class GoalAlertNotification(
   topic: List[Topic],
   addedTime: Option[String],
   dryRun: Option[Boolean]
-) extends Notification {
-  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
-}
+) extends Notification
 
 object GoalAlertNotification {
   import JsonUtils._
@@ -213,9 +203,7 @@ case class LiveEventNotification(
   imageUrl: Option[URI],
   topic: List[Topic],
   dryRun: Option[Boolean]
-) extends Notification {
-  override def withTopics(topics: List[Topic]): Notification = copy(topic = topics)
-}
+) extends Notification
 
 object LiveEventNotification {
   import JsonUtils._
