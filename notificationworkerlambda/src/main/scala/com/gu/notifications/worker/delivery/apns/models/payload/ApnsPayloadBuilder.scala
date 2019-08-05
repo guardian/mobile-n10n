@@ -19,6 +19,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       case n: ContentNotification => Some(contentPayload(n))
       case n: FootballMatchStatusNotification => Some(footballMatchStatusPayload(n))
       case n: NewsstandShardNotification => Some(newsstandPayload(n))
+      case n: EditionsNotification => Some(editionsPayload(n))
       case _ => None
   }
 
@@ -145,6 +146,16 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
 
   private def newsstandPayload(notification: NewsstandShardNotification): ApnsPayload =
     ApnsPayload(PushyPayload(contentAvailable = true).payload, None, None)
+
+  private def editionsPayload(notification: EditionsNotification): ApnsPayload =
+    ApnsPayload(PushyPayload(
+      customProperties = Seq(
+        CustomProperty(Keys.EditionsDate -> notification.date),
+        CustomProperty(Keys.EditionsKey -> notification.key),
+        CustomProperty(Keys.EditionsName -> notification.name)
+      ),
+      contentAvailable = true
+    ).payload, None, None)
 
   private def toPlatformLink(link: Link) = link match {
     case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)

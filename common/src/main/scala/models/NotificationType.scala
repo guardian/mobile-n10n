@@ -13,6 +13,7 @@ object NotificationType {
   case object LiveEventAlert extends NotificationType
   case object FootballMatchStatus extends NotificationType
   case object NewsstandShard extends NotificationType
+  case object Editions extends NotificationType
 
   val fromRep: Map[String, NotificationType] = Map(
     "news" -> BreakingNews,
@@ -20,7 +21,8 @@ object NotificationType {
     "goal" -> GoalAlert,
     "live-notification" -> LiveEventAlert,
     "football-match-status" -> FootballMatchStatus,
-    "newsstand-shard" -> NewsstandShard
+    "newsstand-shard" -> NewsstandShard,
+    "editions" -> Editions
   )
 
   val toRep: Map[NotificationType, String] = fromRep.map(_.swap)
