@@ -36,6 +36,7 @@ object TopicType {
     case "newsstand" => TopicTypes.Newsstand
     case "newsstand-shard" => TopicTypes.NewsstandShard
     case "live-notification" => LiveNotification
+    case "editions" => Editions
   }
 
   implicit val jf = new Format[TopicType] {
