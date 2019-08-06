@@ -7,12 +7,12 @@ import akka.actor.ActorSystem
 import aws.{AsyncDynamo, TopicCountsS3}
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.softwaremill.macwire._
-import controllers.Main
+import controllers.{Main, Schedule}
 import _root_.models.NewsstandShardConfig
 import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 import com.gu.{AppIdentity, AwsIdentity}
-import com.gu.notificationschedule.dynamo.NotificationSchedulePersistenceImpl
-import _root_.models.{Android, Newsstand, Ios}
+import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceAsync, NotificationSchedulePersistenceImpl}
+import _root_.models.{Android, Ios, Newsstand}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import metrics.CloudWatchMetrics
 import _root_.models.TopicCount
@@ -60,10 +60,12 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   lazy val notificationReportRepository = new NotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
 
+  lazy val notificationSchedulePersistence: NotificationSchedulePersistenceAsync = new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client)
+
   lazy val newsstandNotificationSender: NewsstandSender = {
     new NewsstandSender(
       NewsstandShardConfig(appConfig.newsstandShards),
-      new NotificationSchedulePersistenceImpl(appConfig.dynamoScheduleTableName, asyncDynamo.client))
+      notificationSchedulePersistence)
   }
 
   lazy val s3Client: AmazonS3 = {
@@ -96,6 +98,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
   lazy val articlePurge: ArticlePurge = wire[ArticlePurge]
 
   lazy val mainController = wire[Main]
+  lazy val scheduleController = wire[Schedule]
   lazy val router: Router = wire[Routes]
 
 }
