@@ -64,7 +64,6 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         case _: Link.External => ""
         case _: Link.Internal => "ITEM_CATEGORY"
       }),
-      contentAvailable = true,
       mutableContent = true,
       sound = Some("default"),
       customProperties = Seq(
@@ -87,7 +86,6 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       alertTitle = None,
       alertBody = Some(n.title),
       categoryName = Some("ITEM_CATEGORY"),
-      contentAvailable = true,
       mutableContent = true,
       sound = Some("default"),
       customProperties = Seq(
@@ -109,7 +107,6 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       alertTitle = Some(n.title),
       alertBody = Some(n.message),
       categoryName = Some("football-match"),
-      contentAvailable = false,
       mutableContent = true,
       sound = if (n.importance == Importance.Major) Some("default") else None,
       customProperties = Seq(
