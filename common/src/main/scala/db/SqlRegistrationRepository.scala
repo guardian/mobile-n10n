@@ -28,26 +28,20 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       .transact(xa)
   }
 
-  override def save(reg: Registration): F[Int] =
-    // save = upsert (trying to insert first, if unique violation then update)
-    insert(reg).exceptSomeSqlState {
-      case sqlstate.class23.UNIQUE_VIOLATION => update(reg)
-    }.transact(xa)
-
-  override def remove(reg: Registration): F[Int] = sql"""
+  override def delete(reg: Registration): ConnectionIO[Int] = sql"""
         DELETE FROM registrations WHERE token = ${reg.device.token} AND topic = ${reg.topic.name}
       """
-      .update.run.transact(xa)
+      .update.run
 
 
-  override def removeByToken(token: String): F[Int] = {
+  override def deleteByToken(token: String): ConnectionIO[Int] = {
     sql"""
       DELETE FROM registrations WHERE token = $token
     """
-    .update.run.transact(xa)
+    .update.run
   }
 
-  private def insert(reg: Registration): ConnectionIO[Int] =
+  def insert(reg: Registration): ConnectionIO[Int] =
     sql"""
         INSERT INTO registrations (token, platform, topic, shard, lastModified)
         VALUES (
@@ -59,14 +53,6 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         )
       """
     .update.run
-
-  private def update(reg: Registration): ConnectionIO[Int] =
-    sql"""
-        UPDATE registrations
-        SET lastModified = CURRENT_TIMESTAMP, shard = ${reg.shard.id}
-        WHERE token = ${reg.device.token} AND topic = ${reg.topic.name}
-      """
-      .update.run
 
   override def topicCounts(countThreshold: Int): Stream[F, TopicCount] = {
     sql"""

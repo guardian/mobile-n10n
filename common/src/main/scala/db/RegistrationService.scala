@@ -3,21 +3,43 @@ package db
 import cats.data.NonEmptyList
 import cats.effect.internals.IOContextShift
 import cats.effect.{Async, ContextShift, IO}
+import doobie.free.connection.ConnectionIO
 import doobie.util.transactor.Transactor
 import fs2.Stream
-import models.{ Platform, ShardRange, TopicCount }
+import models.{Platform, ShardRange, TopicCount}
 import play.api.Configuration
 import play.api.inject.ApplicationLifecycle
 
+import cats.implicits._
+import doobie.implicits._
+
 import scala.concurrent.ExecutionContext
 
-class RegistrationService[F[_], S[_[_], _]](repository: RegistrationRepository[F, S]) {
+class RegistrationService[F[_]: Async, S[_[_], _]](repository: RegistrationRepository[F, S], xa: Transactor[F]) {
   def findByToken(token: String): S[F, Registration] = repository.findByToken(token)
   def findTokens(topics: NonEmptyList[Topic], shardRange: Option[ShardRange]): S[F, (String, Platform)] =
     repository.findTokens(topics.map(_.name), shardRange.map(_.range))
-  def save(sub: Registration): F[Int] = repository.save(sub)
-  def remove(sub: Registration): F[Int] = repository.remove(sub)
-  def removeAllByToken(token: String): F[Int] = repository.removeByToken(token)
+
+  def registerDevice(token: String, registrations: List[Registration]): F[Int] = {
+    val prog = for {
+      _ <- repository.deleteByToken(token)
+      inserted <- registrations.map(repository.insert).sequence
+    } yield inserted.sum
+    prog.transact(xa)
+  }
+
+  def insert(registration: Registration): F[Int] = {
+    repository.insert(registration).transact(xa)
+  }
+
+  def delete(registration: Registration): F[Int] = {
+    repository.delete(registration).transact(xa)
+  }
+
+  def removeAllByToken(token: String): F[Int] = {
+    repository.deleteByToken(token).transact(xa)
+  }
+
   def topicCounts(countThreshold: Int): S[F, TopicCount] = repository.topicCounts(countThreshold)
 }
 
@@ -26,7 +48,7 @@ object RegistrationService {
 
   def apply[F[_]: Async](xa: Transactor[F]): RegistrationService[F, Stream] = {
     val repo = new SqlRegistrationRepository[F](xa)
-    new RegistrationService[F, Stream](repo)
+    new RegistrationService[F, Stream](repo, xa)
   }
 
   def fromConfig(config: Configuration, applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext): RegistrationService[IO, Stream] = {

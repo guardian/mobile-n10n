@@ -37,10 +37,6 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
         provider = Unknown
       ))
     }
-
-
-    override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] =
-      Future.successful(Right(()))
   }
 }
 
@@ -76,10 +72,6 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
         provider = Unknown
       ))
     }
-
-
-    override def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit] =
-      Future.successful(Right(()))
 
   }
 

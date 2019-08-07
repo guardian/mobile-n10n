@@ -22,7 +22,6 @@ trait NotificationRegistrar {
   import NotificationRegistrar.RegistrarResponse
   val providerIdentifier: String
   def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse]
-  def unregister(deviceToken: DeviceToken, platform: Platform): RegistrarResponse[Unit]
 }
 
 object NotificationRegistrar {
