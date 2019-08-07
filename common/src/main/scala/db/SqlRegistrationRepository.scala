@@ -16,27 +16,6 @@ import play.api.Logger
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
   val logger = Logger(classOf[SqlRegistrationRepository[F]])
-  override def findTokens(
-    topics: NonEmptyList[String],
-    platform: Option[String],
-    shardRange: Option[Range]
-  ): Stream[F, String] = {
-    (sql"""
-        SELECT token
-        FROM registrations
-    """
-      ++
-      Fragments.whereAndOpt(
-        Some(Fragments.in(fr"topic", topics)),
-        platform.map(p => fr"platform = $p"),
-        shardRange.map(s => Fragments.and(fr"shard >= ${s.min}", fr"shard <= ${s.max}"))
-      )
-      ++ fr"GROUP BY token"
-      )
-      .query[String]
-      .stream
-      .transact(xa)
-  }
 
   override def findByToken(token: String): Stream[F, Registration] = {
     sql"""

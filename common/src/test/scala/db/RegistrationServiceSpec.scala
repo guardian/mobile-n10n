@@ -72,13 +72,13 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
       run(service.save(reg)) should equalTo(1)
     }
     "allow finding registrations by topics, platform and shard" in {
-      run(service.findTokens(topicsAll, None, None)).length should equalTo(6)
-      run(service.findTokens(topics1, None, None)).length should equalTo(4)
-      run(service.findTokens(topics1, Some(Ios), None)).length should equalTo(3)
-      run(service.findTokens(topics1, Some(Ios), Some(allShards))).length should equalTo(3)
-      run(service.findTokens(topics1, Some(Ios), Some(shardRange1))).length should equalTo(2)
-      run(service.findTokens(topics2, Some(Android), Some(shardRange1))).length should equalTo(1)
-      run(service.findTokens(topics2, Some(Android), Some(shardRange2))).length should equalTo(0)
+      run(service.findTokens(topicsAll, None)).length should equalTo(6)
+      run(service.findTokens(topics1, None)).length should equalTo(4)
+      run(service.findTokens(topics1, None)).length should equalTo(3)
+      run(service.findTokens(topics1, Some(allShards))).length should equalTo(3)
+      run(service.findTokens(topics1, Some(shardRange1))).length should equalTo(2)
+      run(service.findTokens(topics2, Some(shardRange1))).length should equalTo(1)
+      run(service.findTokens(topics2, Some(shardRange2))).length should equalTo(0)
     }
     "allow finding registrations by token" in {
       run(service.findByToken("f")).length should equalTo(2)
