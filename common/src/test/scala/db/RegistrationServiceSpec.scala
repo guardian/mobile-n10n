@@ -40,7 +40,7 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
 
   override def before() = {
     initializeDatabase()
-    registrations.map(service.save).foreach(io => run(io))
+    registrations.map(service.insert).foreach(io => run(io))
   }
 
   def run[A](s: Stream[IO, A]): List[A] = s.compile.toList.unsafeRunSync()
@@ -62,23 +62,22 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
   val shardRange2 = ShardRange(2, 2)
 
   val topicsAll: NonEmptyList[Topic] =
-    NonEmptyList.of(registrations.head.topic, registrations.tail.map(_.topic):_*)
+    NonEmptyList.of(Topic("topic1"), Topic("topic2"), Topic("topic3"), Topic("topic4"))
   val topics1 = NonEmptyList.one(Topic("topic1"))
   val topics2 = NonEmptyList.one(Topic("topic2"))
 
   "RegistrationService" should {
     "allow adding registration" in {
       val reg = Registration(Device("something", Android), Topic("someTopic"), Shard(1))
-      run(service.save(reg)) should equalTo(1)
+      run(service.insert(reg)) should equalTo(1)
     }
-    "allow finding registrations by topics, platform and shard" in {
-      run(service.findTokens(topicsAll, None, None)).length should equalTo(6)
-      run(service.findTokens(topics1, None, None)).length should equalTo(4)
-      run(service.findTokens(topics1, Some(Ios), None)).length should equalTo(3)
-      run(service.findTokens(topics1, Some(Ios), Some(allShards))).length should equalTo(3)
-      run(service.findTokens(topics1, Some(Ios), Some(shardRange1))).length should equalTo(2)
-      run(service.findTokens(topics2, Some(Android), Some(shardRange1))).length should equalTo(1)
-      run(service.findTokens(topics2, Some(Android), Some(shardRange2))).length should equalTo(0)
+    "allow finding registrations by topics and shard" in {
+      run(service.findTokens(topicsAll, None)).length should equalTo(7)
+      run(service.findTokens(topics1, None)).length should equalTo(4)
+      run(service.findTokens(topics1, Some(allShards))).length should equalTo(4)
+      run(service.findTokens(topics1, Some(shardRange1))).length should equalTo(3)
+      run(service.findTokens(topics2, Some(shardRange1))).length should equalTo(1)
+      run(service.findTokens(topics2, Some(shardRange2))).length should equalTo(0)
     }
     "allow finding registrations by token" in {
       run(service.findByToken("f")).length should equalTo(2)
@@ -87,20 +86,14 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
     "allow removing registrations" in {
       val regB = registrations.filter(_.device.token == "b").head
       val regE = registrations.filter(_.device.token == "e").head
-      run(service.remove(regB)) should equalTo(1)
-      run(service.remove(regE)) should equalTo(1)
+      run(service.delete(regB)) should equalTo(1)
+      run(service.delete(regE)) should equalTo(1)
       run(service.findByToken(regB.device.token)).length should equalTo(0)
       run(service.findByToken(regE.device.token)).length should equalTo(0)
     }
     "allow removing registrations by token" in {
       run(service.removeAllByToken("f")) should equalTo(2)
       run(service.findByToken("f")).length should equalTo(0)
-    }
-    "update when saving the same registration twice" in {
-      val reg = registrations.filter(_.device.token == "a").head
-      val newShardId: Short = 99
-      run(service.save(reg.copy(shard = Shard(newShardId))))
-      run(service.findByToken(reg.device.token)).head.shard.id should equalTo(newShardId)
     }
   }
 }
