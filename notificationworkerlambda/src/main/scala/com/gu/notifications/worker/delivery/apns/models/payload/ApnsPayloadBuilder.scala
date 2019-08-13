@@ -64,7 +64,6 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         case _: Link.External => ""
         case _: Link.Internal => "ITEM_CATEGORY"
       }),
-      contentAvailable = true,
       mutableContent = true,
       sound = Some("default"),
       customProperties = Seq(
