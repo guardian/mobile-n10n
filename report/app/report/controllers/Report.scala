@@ -45,7 +45,7 @@ final class Report(
   }
 
   def notification(id: UUID): Action[AnyContent] = authAction.async {
-    EitherT(reportRepository.getByUuid(id)).map(ExtendedNotificationReport.fromNotificationReport).fold(
+    EitherT(reportRepository.getByUuid(id)).fold(
       error => InternalServerError(error.message),
       result => Ok(Json.toJson(result))
     )
