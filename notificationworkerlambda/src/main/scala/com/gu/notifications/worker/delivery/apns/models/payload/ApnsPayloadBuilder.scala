@@ -149,11 +149,6 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
 
   private def editionsPayload(notification: EditionsNotification): ApnsPayload =
     ApnsPayload(PushyPayload(
-      customProperties = Seq(
-        CustomProperty(Keys.EditionsDate -> notification.date),
-        CustomProperty(Keys.EditionsKey -> notification.key),
-        CustomProperty(Keys.EditionsName -> notification.name)
-      ),
       contentAvailable = true
     ).payload, None, None)
 

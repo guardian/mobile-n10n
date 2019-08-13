@@ -312,10 +312,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |{
         |   "aps":{
         |      "content-available":1
-        |   },
-        |   "name": "aName",
-        |   "date": "aDate",
-        |   "key": "aKey"
+        |   }
         |}""".stripMargin
     )
   }
