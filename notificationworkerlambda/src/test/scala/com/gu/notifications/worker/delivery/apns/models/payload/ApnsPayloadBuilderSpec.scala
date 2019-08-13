@@ -88,7 +88,8 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
-        |      "mutable-content":1
+        |      "mutable-content":1,
+        |      "content-available":1,
         |   },
         |   "provider":"Guardian",
         |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
@@ -126,7 +127,8 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
-        |      "mutable-content":1
+        |      "mutable-content":1,
+        |      "content-available":1,
         |   },
         |   "provider":"Guardian",
         |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
@@ -164,7 +166,8 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
-        |      "mutable-content":1
+        |      "mutable-content":1,
+        |      "content-available":1,
         |   },
         |   "provider":"Guardian",
         |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
