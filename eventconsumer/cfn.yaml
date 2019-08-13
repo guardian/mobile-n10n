@@ -120,7 +120,7 @@ Resources:
           Stack: !Ref Stack
           App: !Ref App
           IngestLocation: !Sub
-            - s3://${BucketNamePrefix}-${BucketStage}/fastly
+            - s3://${BucketNamePrefix}-${BucketStage}/fastly/notifications/received
             - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
           AthenaOutputLocation: !Sub
             - s3://${BucketNamePrefix}-${BucketStage}/athena
