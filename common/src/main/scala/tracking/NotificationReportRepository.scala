@@ -11,6 +11,7 @@ import com.amazonaws.services.dynamodbv2.model._
 import models.{NotificationReport, NotificationType}
 import org.joda.time.{DateTime, Days}
 import play.api.Logger
+import play.api.libs.json.{JsError, JsSuccess}
 import tracking.Repository.RepositoryResult
 
 import scala.collection.JavaConverters._
@@ -35,30 +36,48 @@ class NotificationReportRepository(client: AsyncDynamo, tableName: String)
       return Future.successful(Left(RepositoryError("Date range too big to query")))
     }
 
-    def maybeLastKey(result: QueryResult): Option[util.Map[String, AttributeValue]] = Option(result.getLastEvaluatedKey).flatMap(lastKey => if (lastKey.isEmpty) None else Some(lastKey))
+    def maybeStartKey(result: QueryResult): Option[util.Map[String, AttributeValue]] = Option(result.getLastEvaluatedKey).flatMap(lastKey => if (lastKey.isEmpty) None else Some(lastKey))
 
-    def reportsFromResult(result: QueryResult): List[NotificationReport] = result.getItems.asScala.toList.flatMap { item =>
-      fromAttributeMap[NotificationReport](item.asScala.toMap).asOpt
+    def reportsFromResult(result: QueryResult): RepositoryResult[List[NotificationReport]] = {
+      val results = result.getItems.asScala.toList.map { item =>
+        fromAttributeMap[NotificationReport](item.asScala.toMap)
+      }
+      val error = results.collectFirst {
+        case JsError(errors) => Left(RepositoryError(s"Unable to parse notification report $errors"))
+      }
+
+      val reports = results.collect{
+        case JsSuccess(report, _) => report
+      }
+
+      error.getOrElse(Right(reports))
     }
 
-    def query(): QueryRequest = new QueryRequest(tableName)
+    def buildDynamoQuery(startKey: Option[util.Map[String, AttributeValue]]): QueryRequest = new QueryRequest(tableName)
       .withIndexName(SentTimeIndex)
       .withKeyConditions(Map(
         TypeField -> keyEquals(notificationType.value),
         SentTimeField -> keyBetween(from.toString, to.toString)
       ).asJava)
+      .withExclusiveStartKey(startKey.orNull)
 
-    def queryWithKey(lastKey: util.Map[String, AttributeValue]): QueryRequest = query().withExclusiveStartKey(lastKey)
-
-    def enrichWithRest(lastKey: util.Map[String, AttributeValue], lastList: List[NotificationReport]): Future[List[NotificationReport]] = client.query(queryWithKey(lastKey)) flatMap { result =>
-      val reports = lastList ++ reportsFromResult(result)
-      maybeLastKey(result).map(enrichWithRest(_, reports)).getOrElse(Future.successful(reports))
+    def fetch(
+      startKey: Option[util.Map[String, AttributeValue]] = None,
+      lastList: RepositoryResult[List[NotificationReport]] = Right(Nil)
+    ): Future[RepositoryResult[List[NotificationReport]]] = {
+      client.query(buildDynamoQuery(startKey)) flatMap { result =>
+        val reports = for {
+          list1 <- lastList
+          list2 <- reportsFromResult(result)
+        } yield list1 ++ list2
+        maybeStartKey(result) match {
+          case None => Future.successful(reports)
+          case Some(newStartKey) => fetch(Some(newStartKey), reports)
+        }
+      }
     }
 
-    (client.query(query()) flatMap ((result: QueryResult) => {
-      val reports = reportsFromResult(result)
-      maybeLastKey(result).map(enrichWithRest(_, reports)).getOrElse(Future.successful(reports))
-    })).map(Right(_))
+    fetch()
   }
 
   override def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
