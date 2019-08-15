@@ -63,13 +63,13 @@ class NotificationReportRepository(client: AsyncDynamo, tableName: String)
 
     def fetch(
       startKey: Option[util.Map[String, AttributeValue]] = None,
-      lastList: RepositoryResult[List[NotificationReport]] = Right(Nil)
+      lastListResult: RepositoryResult[List[NotificationReport]] = Right(Nil)
     ): Future[RepositoryResult[List[NotificationReport]]] = {
       client.query(buildDynamoQuery(startKey)) flatMap { result =>
         val reports = for {
-          list1 <- lastList
-          list2 <- reportsFromResult(result)
-        } yield list1 ++ list2
+          lastList <- lastListResult
+          fetched <- reportsFromResult(result)
+        } yield lastList ++ fetched
         maybeStartKey(result) match {
           case None => Future.successful(reports)
           case Some(newStartKey) => fetch(Some(newStartKey), reports)
