@@ -136,7 +136,9 @@ class AthenaMetrics {
 
   private def routeFromQueryToUpdateDynamoDb(query: Query, startOfReportingWindow: ZonedDateTime)(implicit athenaAsync: AmazonAthenaAsync, dynamoDBAsync: AmazonDynamoDBAsync, scheduledExecutorService: ScheduledExecutorService): Future[Unit] = {
     startQuery(query)
-      .flatMap(fetchQueryResponse(_, rows => rows.map(cells => (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt))).groupBy(_._1).mapValues(_.map(_._2).head)))
+      .flatMap(fetchQueryResponse(_, rows => rows.map(cells =>
+        (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt, Some(cells(4).toInt), Some(cells(5).toInt)))
+      ).groupBy(_._1).mapValues(_.map(_._2).head)))
       .flatMap(updateDynamoIfRecent(_, startOfReportingWindow))
       .map((aggregationCounts: AggregationCounts) => {
         logger.info(s"Aggregation counts $aggregationCounts")
@@ -158,7 +160,9 @@ class AthenaMetrics {
       | 	notificationid,
       | 	count(*) AS total,
       | 	count_if(platform = 'ios') AS ios,
-      | 	count_if(platform = 'android') AS android
+      | 	count_if(platform = 'android') AS android,
+      | 	count_if(platform = 'ios-edition') AS iosEdition,
+      | 	count_if(platform = 'android-edition') AS androidEdition
       |FROM
       |	 notification_received_${stage.toLowerCase()}
       |WHERE
