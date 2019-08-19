@@ -60,7 +60,7 @@ Resources:
                 - ssm:GetParametersByPath
               Effect: Allow
               Resource:
-                !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers
+                !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/workers/cleaner
         - PolicyName: VPC
           PolicyDocument:
             Statement:
@@ -87,7 +87,7 @@ Resources:
       Handler: Provided
       MemorySize: 128
       Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
+      Runtime: provided
       Timeout: 60
       VpcConfig:
         SecurityGroupIds:

@@ -24,12 +24,6 @@ object ChunkedTokens {
 trait TokenService[F[_]] {
   def tokens(
     notification: Notification,
-    shardRange: ShardRange,
-    platform: Platform
-  ): Stream[F, String]
-
-  def tokens(
-    notification: Notification,
     shardRange: ShardRange
   ): Stream[F, (String, Platform)]
 }
@@ -41,23 +35,6 @@ class TokenServiceImpl[F[_]](
   F: Async[F],
   T: Timer[F]
 ) extends TokenService[F] {
-  override def tokens(
-    notification: Notification,
-    shardRange: ShardRange,
-    platform: Platform
-  ): Stream[F, String] = {
-    val topicsF: F[NonEmptyList[Topic]] = notification
-      .topic
-      .map(t => Topic(t.fullName))
-      .toNel
-      .map(nel => F.delay(nel))
-      .getOrElse(F.raiseError(InvalidTopics(notification.id)))
-
-    for {
-      topics <- Stream.eval(topicsF)
-      res <- registrationService.findTokens(topics, Some(platform), Some(shardRange))
-    } yield res
-  }
 
   override def tokens(notification: Notification, shardRange: ShardRange): Stream[F, (String, Platform)] = {
     val topicsF: F[NonEmptyList[Topic]] = notification

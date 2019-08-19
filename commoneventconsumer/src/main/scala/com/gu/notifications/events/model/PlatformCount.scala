@@ -5,7 +5,9 @@ import play.api.libs.json.Json
 case class PlatformCount(
   total: Int,
   ios: Int,
-  android: Int
+  android: Int,
+  iosEdition: Option[Int],
+  androidEdition: Option[Int]
 )
 
 

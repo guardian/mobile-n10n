@@ -82,7 +82,7 @@ fn fetch_config(credentials: ChainProvider) -> Result<HashMap<String, String>, S
         Region::EuWest1
     );
 
-    let path: String = "/notifications/".to_owned() + &stage + "/workers";
+    let path: String = "/notifications/".to_owned() + &stage + "/workers/cleaner";
 
     let config = HashMap::new();
 
@@ -96,11 +96,11 @@ fn fetch_config(credentials: ChainProvider) -> Result<HashMap<String, String>, S
 }
 
 fn config_to_connection_parameter(config: HashMap<String, String>) -> Result<ConnectionParameters, String> {
-    config.get("cleaner.registration.db.url").and_then(|jdbc_url| {
+    config.get("registration.db.url").and_then(|jdbc_url| {
         Some(ConnectionParameters {
             jdbc_url: jdbc_url.to_owned(),
-            user: config.get("cleaner.registration.db.user")?.to_owned(),
-            password: config.get("cleaner.registration.db.password")?.to_owned(),
+            user: config.get("registration.db.user")?.to_owned(),
+            password: config.get("registration.db.password")?.to_owned(),
         })
     }).ok_or("Unable to read the url, user or password from the configuration".to_string())
 }
@@ -189,9 +189,9 @@ mod test_config_to_connection_parameter {
     #[test]
     fn test_config_to_connection_parameter() {
         let mut config = HashMap::new();
-        config.insert("cleaner.registration.db.url".to_owned(), "someUrl".to_owned());
-        config.insert("cleaner.registration.db.user".to_owned(), "user".to_owned());
-        config.insert("cleaner.registration.db.password".to_owned(), "password".to_owned());
+        config.insert("registration.db.url".to_owned(), "someUrl".to_owned());
+        config.insert("registration.db.user".to_owned(), "user".to_owned());
+        config.insert("registration.db.password".to_owned(), "password".to_owned());
 
         let params = config_to_connection_parameter(config);
         let expected = ConnectionParameters {

@@ -12,6 +12,7 @@ import models.{GITContent, Notification, NotificationType, Topic}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
+import play.api.libs.json.Json
 
 class ApnsPayloadBuilderSpec extends Specification with Matchers {
 
@@ -34,6 +35,9 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     "generate correct payload for Newsstand notification" in new NewsstandNotificationScope {
       checkPayload()
     }
+    "generate correct payload for Edition notification" in new EditionsNotificationScope {
+      checkPayload()
+    }
   }
 
   trait NotificationScope extends Scope {
@@ -49,7 +53,14 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         certificate = "",
         mapiBaseUrl = "https://mobile.guardianapis.com"
       )
-      new ApnsPayloadBuilder(dummyConfig).apply(notification).map(_.jsonString) should beEqualTo(expectedTrimmedJson)
+      val generatedJson = new ApnsPayloadBuilder(dummyConfig)
+        .apply(notification)
+        .map(_.jsonString)
+        .map(Json.parse)
+
+      val expectedJson = expectedTrimmedJson.map(Json.parse)
+
+       generatedJson should beEqualTo(expectedJson)
     }
   }
 
@@ -193,7 +204,6 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
-        |      "content-available":1,
         |      "mutable-content":1
         |   },
         |   "provider":"Guardian",
@@ -282,6 +292,29 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "aps":{
         |      "content-available":1
         |   }
+        |}""".stripMargin
+    )
+  }
+
+  trait EditionsNotificationScope extends NotificationScope {
+    val notification = models.EditionsNotification(
+      id = UUID.randomUUID(),
+      topic = Nil,
+      key = "aKey",
+      name = "aName",
+      date = "aDate",
+      sender = "EditionsTeam"
+    )
+
+    val expected = Some(
+      """
+        |{
+        |   "aps":{
+        |      "content-available":1
+        |   },
+        |   "name": "aName",
+        |   "date": "aDate",
+        |   "key": "aKey"
         |}""".stripMargin
     )
   }

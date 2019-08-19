@@ -95,11 +95,6 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
     val workerRequestHandler = new HarvesterRequestHandler {
 
       override val tokenService: TokenService[IO] = new TokenService[IO] {
-        override def tokens(notification: Notification, shardRange: ShardRange, platform: Platform): Stream[IO, String] = {
-          tokenStreamCount.incrementAndGet()
-          tokenStream
-        }
-
         override def tokens(notification: Notification, shardRange: ShardRange): Stream[IO, (String, Platform)] = {
           tokenPlatformStreamCount.incrementAndGet()
           tokenPlatformStream
