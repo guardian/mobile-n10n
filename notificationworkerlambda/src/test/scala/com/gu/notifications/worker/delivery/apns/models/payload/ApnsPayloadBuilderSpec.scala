@@ -88,7 +88,6 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
-        |      "content-available":1,
         |      "mutable-content":1
         |   },
         |   "provider":"Guardian",
@@ -127,7 +126,6 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
-        |      "content-available":1,
         |      "mutable-content":1
         |   },
         |   "provider":"Guardian",
@@ -166,7 +164,6 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
-        |      "content-available":1,
         |      "mutable-content":1
         |   },
         |   "provider":"Guardian",
