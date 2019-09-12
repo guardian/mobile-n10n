@@ -16,6 +16,9 @@ class Configuration(conf: PlayConfig, identity: AppIdentity) {
 
   lazy val mapiEndpointBase: String = conf.get[String]("mapi.base")
 
+  lazy val fastlyApiEndpoint: String = conf.get[String]("notifications.fastly.apiUrl")
+  lazy val fastlyKey: String = conf.get[String]("notifications.fastly.fastlyKey")
+
   lazy val newsstandShards: Int = conf.get[Int]("newsstand.shards")
   lazy val stage = identity match {
     case AwsIdentity(_, _, stage, _) => stage

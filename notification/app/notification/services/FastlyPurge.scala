@@ -6,14 +6,15 @@ import play.api.libs.ws.WSClient
 import scala.concurrent.{ExecutionContext, Future}
 
 trait FastlyPurge {
-  def softPurge(url: String): Future[Boolean]
+  def softPurge(contentApiId: String): Future[Boolean]
 }
 
-class FastlyPurgeImpl(wsClient: WSClient)(implicit ec: ExecutionContext) extends FastlyPurge {
+class FastlyPurgeImpl(wsClient: WSClient, configuration: Configuration)(implicit ec: ExecutionContext) extends FastlyPurge {
 
   private val logger: Logger = Logger(this.getClass)
 
-  def softPurge(url: String): Future[Boolean] = {
+  def softPurge(contentApiId: String, url: String): Future[Boolean] = {
+    val url = s"${configuration.fastlyApiEndpoint}/service/${configuration.fastlyKey}/purge/${surrogateKey}/contentApiId"
 
     wsClient.url(url)
       .addHttpHeaders("Fastly-Soft-Purge" -> "1")
