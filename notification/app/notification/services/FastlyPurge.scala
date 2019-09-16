@@ -2,7 +2,7 @@ package notification.services
 
 import play.api.Logger
 import play.api.libs.ws.WSClient
-import scala.concurrent.duration._
+//import scala.concurrent.duration._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -19,7 +19,7 @@ class FastlyPurgeImpl(wsClient: WSClient, configuration: Configuration)(implicit
 
     wsClient.url(url)
       .addHttpHeaders("Fastly-Soft-Purge" -> "1")
-      .withRequestTimeout(durationToPair(2.seconds))
+//      .withRequestTimeout(durationToPair(2.seconds))
       .execute("PURGE")
       .map { resp =>
         logger.info(s"Soft purged $url got HTTP ${resp.status} back")
