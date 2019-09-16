@@ -59,7 +59,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
     val imageUrl = n.thumbnailUrl.orElse(n.imageUrl)
     val payload = PushyPayload(
       alertTitle = None,
-      alertBody = Some(n.message),
+      alertBody = n.message,
       categoryName = Option(n.link match {
         case _: Link.External => ""
         case _: Link.Internal => "ITEM_CATEGORY"
@@ -105,7 +105,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
   private def footballMatchStatusPayload(n: FootballMatchStatusNotification): ApnsPayload = {
     val payLoad = PushyPayload(
       alertTitle = Some(n.title),
-      alertBody = Some(n.message),
+      alertBody = n.message,
       categoryName = Some("football-match"),
       mutableContent = true,
       sound = if (n.importance == Importance.Major) Some("default") else None,

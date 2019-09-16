@@ -64,7 +64,7 @@ sealed trait NotificationPayload {
   def id: UUID
   def title: String
   def `type`: NotificationPayloadType
-  def message: String
+  def message: Option[String]
   def thumbnailUrl: Option[URI]
   def sender: String
   def importance: Importance
@@ -90,7 +90,7 @@ object BreakingNewsPayload { val jf = Json.writes[BreakingNewsPayload] withTypeS
 case class BreakingNewsPayload(
   id: UUID = UUID.randomUUID,
   title: String = "The Guardian",
-  message: String,
+  message: Option[String],
   thumbnailUrl: Option[URI],
   sender: String,
   link: Link,
@@ -111,7 +111,7 @@ object ContentAlertPayload {
 
 case class ContentAlertPayload(
   title: String,
-  message: String,
+  message: Option[String],
   thumbnailUrl: Option[URI],
   sender: String,
   link: Link,
@@ -173,7 +173,7 @@ object FootballMatchStatusPayload {
 }
 case class FootballMatchStatusPayload(
   title: String,
-  message: String,
+  message: Option[String],
   thumbnailUrl: Option[URI] = None,
   sender: String,
   awayTeamName: String,

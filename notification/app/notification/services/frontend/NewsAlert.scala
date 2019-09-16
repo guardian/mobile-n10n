@@ -33,7 +33,7 @@ object NewsAlert {
         uid = notification.id,
         urlId = capiIdUri,
         title = notification.title,
-        message = notification.message,
+        message = notification.message.getOrElse(""),
         link = new URI(s"http://www.theguardian.com/$capiIdUri"),
         thumbnailUrl = notification.thumbnailUrl,
         imageUrl = notification.thumbnailUrl,

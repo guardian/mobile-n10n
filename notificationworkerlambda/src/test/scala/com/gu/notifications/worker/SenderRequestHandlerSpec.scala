@@ -76,7 +76,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       `type` = NotificationType.BreakingNews,
       title = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
-      message = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+      message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
       link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),

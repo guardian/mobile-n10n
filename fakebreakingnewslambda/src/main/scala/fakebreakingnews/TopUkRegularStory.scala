@@ -54,7 +54,7 @@ class TopUkRegularStory(okHttpClient: OkHttpClient, ukRegularStoriesUrl: String)
           breakingNewsPayload = BreakingNewsPayload(
             id = UUID.randomUUID(),
             title = firstUkRegularStory.title,
-            message = firstUkRegularStory.title,
+            message = Some(firstUkRegularStory.title),
             thumbnailUrl = None,
             sender = "newstester",
             link = GuardianLinkDetails(
