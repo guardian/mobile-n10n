@@ -15,7 +15,7 @@ class FastlyPurgeImpl(wsClient: WSClient, configuration: Configuration)(implicit
   private val logger: Logger = Logger(this.getClass)
 
   def softPurge(contentApiId: String): Future[Boolean] = {
-    val url = s"${configuration.fastlyApiEndpoint}/service/${configuration.fastlyKey}/purge/items/$contentApiId"
+    val url = s"${configuration.fastlyApiEndpoint}/service/${configuration.fastlyKey}/purge/Item/$contentApiId"
 
     wsClient.url(url)
       .addHttpHeaders("Fastly-Soft-Purge" -> "1")
