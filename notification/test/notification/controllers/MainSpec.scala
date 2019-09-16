@@ -130,7 +130,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     val fastlyPurge = new FastlyPurge {
       override def softPurge(url: String): Future[Boolean] = Future.successful(true)
     }
-    val articlePurge = new ArticlePurge(fastlyPurge, conf)
+    val articlePurge = new ArticlePurge(fastlyPurge)
 
     val controllerComponents = stubControllerComponents()
     val reportRepository = new InMemoryNotificationReportRepository
