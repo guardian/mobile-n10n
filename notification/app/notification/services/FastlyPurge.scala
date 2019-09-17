@@ -19,11 +19,11 @@ class FastlyPurgeImpl(wsClient: WSClient, configuration: Configuration)(implicit
 
     wsClient.url(url)
       .addHttpHeaders("Fastly-Soft-Purge" -> "1")
-      .addHttpHeaders("Fastly-key:" -> s"${configuration.fastlyKey}")
+      .addHttpHeaders("Fastly-Key" -> s"${configuration.fastlyKey}")
       .withRequestTimeout(durationToPair(2.seconds))
-      .execute("PURGE")
+      .execute("POST")
       .map { resp =>
-        logger.info(s"Soft purged $url got HTTP ${resp.status} back")
+        logger.info(s"Soft purged $url got HTTP ${resp.status} back ${resp.body}")
         if (resp.status == 200) {
           true
         } else {
