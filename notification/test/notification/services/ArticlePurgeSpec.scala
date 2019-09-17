@@ -20,7 +20,7 @@ class ArticlePurgeSpec(implicit ee: ExecutionEnv) extends Specification with Moc
       val urlCaptor = capture[String]
       there was one(fastlyPurge).softPurge(urlCaptor)
       println(urlCaptor.value)
-      urlCaptor.value shouldEqual "https://somemapihost.com/items/expected/article/id"
+      urlCaptor.value shouldEqual "expected/article/id"
     }
 
     "do nothing for any other notification type" in new ArticlePurgeScope {
@@ -32,19 +32,13 @@ class ArticlePurgeSpec(implicit ee: ExecutionEnv) extends Specification with Moc
 
   trait ArticlePurgeScope extends Scope {
 
-    val conf: Configuration = {
-      val m = mock[Configuration]
-      m.mapiEndpointBase returns s"https://somemapihost.com"
-      m
-    }
-
     val fastlyPurge: FastlyPurge = {
       val m = mock[FastlyPurge]
       m.softPurge(any[String]) returns Future.successful(true)
       m
     }
 
-    val articlePurge = new ArticlePurge(fastlyPurge, conf)
+    val articlePurge = new ArticlePurge(fastlyPurge)
 
   }
 
