@@ -2,7 +2,7 @@ package notification.services
 
 import play.api.Logger
 import play.api.libs.ws.WSClient
-//import scala.concurrent.duration._
+import scala.concurrent.duration._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -15,11 +15,12 @@ class FastlyPurgeImpl(wsClient: WSClient, configuration: Configuration)(implicit
   private val logger: Logger = Logger(this.getClass)
 
   def softPurge(contentApiId: String): Future[Boolean] = {
-    val url = s"${configuration.fastlyApiEndpoint}/service/${configuration.fastlyKey}/purge/Item/$contentApiId"
+    val url = s"${configuration.fastlyApiEndpoint}/service/${configuration.fastlyService}/purge/Item/$contentApiId"
 
     wsClient.url(url)
       .addHttpHeaders("Fastly-Soft-Purge" -> "1")
-//      .withRequestTimeout(durationToPair(2.seconds))
+      .addHttpHeaders("Fastly-key:" -> s"${configuration.fastlyKey}")
+      .withRequestTimeout(durationToPair(2.seconds))
       .execute("PURGE")
       .map { resp =>
         logger.info(s"Soft purged $url got HTTP ${resp.status} back")

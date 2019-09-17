@@ -18,6 +18,7 @@ class Configuration(conf: PlayConfig, identity: AppIdentity) {
 
   lazy val fastlyApiEndpoint: String = conf.get[String]("notifications.fastly.apiUrl")
   lazy val fastlyKey: String = conf.get[String]("notifications.fastly.fastlyKey")
+  lazy val fastlyService: String = conf.get[String]("notifications.fastly.fastlyService")
 
   lazy val newsstandShards: Int = conf.get[Int]("newsstand.shards")
   lazy val stage = identity match {
