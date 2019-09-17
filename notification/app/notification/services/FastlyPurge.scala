@@ -20,7 +20,7 @@ class FastlyPurgeImpl(wsClient: WSClient, configuration: Configuration)(implicit
     wsClient.url(url)
       .addHttpHeaders("Fastly-Soft-Purge" -> "1")
       .addHttpHeaders("Fastly-Key" -> s"${configuration.fastlyKey}")
-      .withRequestTimeout(durationToPair(2.seconds))
+      .withRequestTimeout(2.seconds)
       .execute("POST")
       .map { resp =>
         logger.info(s"Soft purged $url got HTTP ${resp.status} back ${resp.body}")
