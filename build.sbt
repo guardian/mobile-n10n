@@ -308,7 +308,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
   .dependsOn(common)
   .settings(
     libraryDependencies ++= Seq(
-      "com.turo" % "pushy" % "0.13.5",
+      "com.turo" % "pushy" % "0.13.9",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.2",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
