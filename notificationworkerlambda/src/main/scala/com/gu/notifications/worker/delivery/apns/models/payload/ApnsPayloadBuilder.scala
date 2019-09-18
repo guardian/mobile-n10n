@@ -11,6 +11,7 @@ import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import com.gu.notifications.worker.delivery.apns.models.payload.CustomProperty.Keys
 import com.gu.notifications.worker.delivery.apns.models.payload.PlatformUriTypes.{External, Item}
 import com.turo.pushy.apns.util.{ApnsPayloadBuilder => Builder}
+import com.turo.pushy.apns.PushType
 
 class ApnsPayloadBuilder(config: ApnsConfig) {
 
@@ -77,7 +78,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         CustomProperty(Keys.UriType -> link.`type`.toString)
       ) ++ imageUrl.map(u => CustomProperty(Keys.ImageUrl -> u.toString)).toSeq
     ).payload
-    ApnsPayload(payload, Some(BreakingNewsTtl), toCollapseId(n.link))
+    ApnsPayload(payload, Some(BreakingNewsTtl), toCollapseId(n.link), PushType.ALERT)
   }
 
   private def contentPayload(n: ContentNotification): ApnsPayload = {
@@ -99,7 +100,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         CustomProperty(Keys.UriType -> link.`type`.toString)
       )
     ).payload
-    ApnsPayload(payLoad, None, toCollapseId(n.link))
+    ApnsPayload(payLoad, None, toCollapseId(n.link), PushType.ALERT)
   }
 
   private def footballMatchStatusPayload(n: FootballMatchStatusNotification): ApnsPayload = {
@@ -138,11 +139,11 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         )
       )
     ).payload
-    ApnsPayload(payLoad, Some(FootballMatchStatusTtl), Some(n.matchId))
+    ApnsPayload(payLoad, Some(FootballMatchStatusTtl), Some(n.matchId), PushType.ALERT)
   }
 
   private def newsstandPayload(notification: NewsstandShardNotification): ApnsPayload =
-    ApnsPayload(PushyPayload(contentAvailable = true).payload, None, None)
+    ApnsPayload(PushyPayload(contentAvailable = true).payload, None, None, PushType.BACKGROUND)
 
   private def editionsPayload(notification: EditionsNotification): ApnsPayload =
     ApnsPayload(PushyPayload(
@@ -152,7 +153,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         CustomProperty(Keys.EditionsName -> notification.name)
       ),
       contentAvailable = true
-    ).payload, None, None)
+    ).payload, None, None, PushType.BACKGROUND)
 
   private def toPlatformLink(link: Link) = link match {
     case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
