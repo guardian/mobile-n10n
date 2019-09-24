@@ -73,7 +73,7 @@ class NotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends Dynamo
       notification = BreakingNewsNotification(
         id = id,
         sender = "sender",
-        title = "title",
+        title = Some("title"),
         message = Some("message"),
         thumbnailUrl = Some(new URI("http://some.url/my.png")),
         link = Internal("some/capi/id-with-dashes", None, GITContent),

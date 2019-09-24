@@ -85,7 +85,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
     val link = toPlatformLink(n.link)
     val payLoad = PushyPayload(
       alertTitle = None,
-      alertBody = Some(n.title),
+      alertBody = n.title,
       categoryName = Some("ITEM_CATEGORY"),
       mutableContent = true,
       sound = Some("default"),
@@ -105,7 +105,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
 
   private def footballMatchStatusPayload(n: FootballMatchStatusNotification): ApnsPayload = {
     val payLoad = PushyPayload(
-      alertTitle = Some(n.title),
+      alertTitle = n.title,
       alertBody = n.message,
       categoryName = Some("football-match"),
       mutableContent = true,
