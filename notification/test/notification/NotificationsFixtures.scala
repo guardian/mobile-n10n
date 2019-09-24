@@ -16,7 +16,7 @@ trait NotificationsFixtures {
   def breakingNewsNotification(topics: List[Topic]): BreakingNewsNotification = BreakingNewsNotification(
     id = UUID.fromString("30aac5f5-34bb-4a88-8b69-97f995a4907b"),
     title = "The Guardian",
-    message = "Mali hotel attack: UN counts 27 bodies as hostage situation ends",
+    message = Some("Mali hotel attack: UN counts 27 bodies as hostage situation ends"),
     thumbnailUrl = Some(new URI("http://media.guim.co.uk/09951387fda453719fe1fee3e5dcea4efa05e4fa/0_181_3596_2160/140.jpg")),
     sender = "test",
     link = Internal("world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates", None, GITContent),
@@ -35,7 +35,7 @@ trait NotificationsFixtures {
   def contentTargetedBreakingNewsPush(importance: Importance = Major): Notification = BreakingNewsNotification(
     id = UUID.randomUUID(),
     title = "",
-    message = "",
+    message = None,
     thumbnailUrl = None,
     sender = "test",
     link = Internal("capiId", None, GITContent),

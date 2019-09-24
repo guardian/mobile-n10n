@@ -66,8 +66,6 @@ object FcmPayloadBuilder {
         Keys.NotificationType -> breakingNews.`type`.value,
         Keys.Type -> MessageTypes.Custom,
         Keys.Title -> breakingNews.title,
-        Keys.Ticker -> breakingNews.message,
-        Keys.Message -> breakingNews.message,
         Keys.Debug -> debug.toString,
         Keys.Editions -> editions.mkString(","),
         Keys.Link -> toAndroidLink(breakingNews.link).toString,
@@ -77,7 +75,9 @@ object FcmPayloadBuilder {
         ++ edition.map(Keys.Edition -> _.toString).toMap
         ++ keyword.map(Keys.Keyword -> _.toString).toMap
         ++ breakingNews.imageUrl.map(Keys.ImageUrl -> _.toString).toMap
-        ++ breakingNews.thumbnailUrl.map(Keys.ThumbnailUrl -> _.toString).toMap,
+        ++ breakingNews.thumbnailUrl.map(Keys.ThumbnailUrl -> _.toString).toMap
+        ++ breakingNews.message.map(Keys.Message -> _).toMap
+        ++ breakingNews.message.map(Keys.Ticker -> _).toMap,
       ttl = BreakingNewsTtl
     )
   }
@@ -90,14 +90,14 @@ object FcmPayloadBuilder {
       Map(
         Keys.Type -> MessageTypes.Custom,
         Keys.Title -> cn.title,
-        Keys.Ticker -> cn.message,
-        Keys.Message -> cn.message,
         Keys.Link -> toAndroidLink(cn.link).toString,
         Keys.Topics -> cn.topic.map(toAndroidTopic).mkString(","),
         Keys.UriType -> link.`type`,
         Keys.Uri -> new URI(link.uri).toString,
         Keys.Debug -> debug.toString
       ) ++ cn.thumbnailUrl.map(Keys.ThumbnailUrl -> _.toString).toMap
+        ++ cn.message.map(Keys.Message -> _.toString).toMap
+        ++ cn.message.map(Keys.Ticker -> _.toString).toMap
     )
   }
 
@@ -132,12 +132,11 @@ object FcmPayloadBuilder {
         Keys.Type -> MessageTypes.Custom,
         Keys.NotificationType -> editionsShardNotification.`type`.value,
         Keys.Topics -> editionsShardNotification.topic.map(toAndroidTopic).mkString(","),
-        Keys.Message -> editionsShardNotification.message,
         Keys.Importance -> editionsShardNotification.importance.toString,
         Keys.EditionsDate -> editionsShardNotification.date,
         Keys.EditionsKey -> editionsShardNotification.key,
         Keys.EditionsName -> editionsShardNotification.name
-      )
+      ) ++ editionsShardNotification.message.map(Keys.Message -> _.toString).toMap
     )
 
   private case class PlatformUri(uri: String, `type`: String)
