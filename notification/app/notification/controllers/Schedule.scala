@@ -18,7 +18,7 @@ class Schedule(authAction: AuthAction, controllerComponents: ControllerComponent
     val notification = request.body
     val sevenDaysInSeconds = Duration.ofDays(7).getSeconds
     notificationSchedulePersistence.writeAsync(NotificationsScheduleEntry(
-      UUID.randomUUID().toString,
+      notification.id.toString,
       Json.prettyPrint(Json.toJson(notification)),
       date.toEpochSecond,
       date.toEpochSecond + sevenDaysInSeconds
