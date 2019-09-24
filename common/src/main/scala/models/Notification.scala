@@ -12,7 +12,7 @@ sealed trait Notification {
   def id: UUID
   def `type`: NotificationType
   def sender: String
-  def title: String
+  def title: Option[String]
   def message: Option[String]
   def importance: Importance
   def topic: List[Topic]
@@ -53,7 +53,7 @@ trait NotificationWithLink {
 case class BreakingNewsNotification(
   id: UUID,
   `type`: NotificationType = BreakingNews,
-  title: String,
+  title: Option[String],
   message: Option[String],
   thumbnailUrl: Option[URI],
   sender: String,
@@ -74,7 +74,7 @@ case class NewsstandShardNotification(
   shard:Int,
   `type`: NotificationType = NewsstandShard
 ) extends Notification {
-  override def title = ""
+  override def title = None
   override def message: Option[String] = None
   override def sender: String = "newsstand-shard"
   override def importance: Importance = Importance.Minor
@@ -96,7 +96,7 @@ case class EditionsNotification(
   sender: String,
   dryRun: Option[Boolean] = None
 ) extends Notification {
-  override def title: String = ""
+  override def title: Option[String] = None
   override def message: Option[String] = Some("guardian-editions")
   override def importance: Importance = Importance.Minor
 }
@@ -108,7 +108,7 @@ object EditionsNotification {
 case class ContentNotification(
   id: UUID,
   `type`: NotificationType = Content,
-  title: String,
+  title: Option[String],
   message: Option[String],
   iosUseMessage: Option[Boolean],
   thumbnailUrl: Option[URI],
@@ -128,7 +128,7 @@ object ContentNotification {
 case class FootballMatchStatusNotification(
   id: UUID,
   `type`: NotificationType = FootballMatchStatus,
-  title: String,
+  title: Option[String],
   message: Option[String],
   thumbnailUrl: Option[URI] = None,
   sender: String,
@@ -162,7 +162,7 @@ object FootballMatchStatusNotification {
 case class GoalAlertNotification(
   id: UUID,
   `type`: NotificationType = GoalAlert,
-  title: String,
+  title: Option[String],
   message: Option[String],
   thumbnailUrl: Option[URI] = None,
   sender: String,
@@ -193,7 +193,7 @@ case class LiveEventNotification(
   id: UUID,
   `type`: NotificationType = LiveEventAlert,
   sender: String,
-  title: String,
+  title: Option[String],
   message: Option[String],
   expandedMessage: Option[String],
   shortMessage: Option[String],

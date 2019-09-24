@@ -15,7 +15,7 @@ import play.api.test.FakeRequest
 trait NotificationsFixtures {
   def breakingNewsNotification(topics: List[Topic]): BreakingNewsNotification = BreakingNewsNotification(
     id = UUID.fromString("30aac5f5-34bb-4a88-8b69-97f995a4907b"),
-    title = "The Guardian",
+    title = Some("The Guardian"),
     message = Some("Mali hotel attack: UN counts 27 bodies as hostage situation ends"),
     thumbnailUrl = Some(new URI("http://media.guim.co.uk/09951387fda453719fe1fee3e5dcea4efa05e4fa/0_181_3596_2160/140.jpg")),
     sender = "test",
@@ -34,7 +34,7 @@ trait NotificationsFixtures {
   
   def contentTargetedBreakingNewsPush(importance: Importance = Major): Notification = BreakingNewsNotification(
     id = UUID.randomUUID(),
-    title = "",
+    title = None,
     message = None,
     thumbnailUrl = None,
     sender = "test",

@@ -75,7 +75,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         notification = BreakingNewsNotification(
           id = id,
           sender = s"$prefix:sender",
-          title = s"$prefix:title",
+          title = Some(s"$prefix:title"),
           message = Some(s"$prefix:message"),
           thumbnailUrl = Some(new URI(s"http://some.url/$prefix.png")),
           link = Internal(s"content/api/id/$prefix", None, GITContent),
@@ -99,7 +99,7 @@ class ReportIntegrationSpec(implicit ee: ExecutionEnv) extends PlaySpecification
         notification = ContentNotification(
           id = id,
           sender = s"$prefix:sender",
-          title = s"$prefix:title",
+          title = Some(s"$prefix:title"),
           message = Some(s"$prefix:message"),
           thumbnailUrl = Some(new URI(s"http://some.url/$prefix.png")),
           link = Internal(s"content/api/id/$prefix", None, GITContent),

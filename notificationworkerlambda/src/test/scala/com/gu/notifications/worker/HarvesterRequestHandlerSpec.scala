@@ -41,7 +41,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
     val breakingNewsNotification = BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       `type` = NotificationType.BreakingNews,
-      title = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+      title = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
@@ -54,7 +54,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
     val contentNotification = BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd8"),
       `type` = NotificationType.Content,
-      title = "French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+      title = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",

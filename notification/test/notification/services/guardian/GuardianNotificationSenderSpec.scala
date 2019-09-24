@@ -119,7 +119,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
 
     val notification = BreakingNewsNotification(
       id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
-      title = "Test notification",
+      title = Some("Test notification"),
       message = Some("The message"),
       thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
       sender = "UnitTests",
