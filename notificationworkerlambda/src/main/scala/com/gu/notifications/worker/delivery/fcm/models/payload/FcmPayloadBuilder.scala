@@ -65,7 +65,6 @@ object FcmPayloadBuilder {
       data = Map(
         Keys.NotificationType -> breakingNews.`type`.value,
         Keys.Type -> MessageTypes.Custom,
-        Keys.Title -> breakingNews.title,
         Keys.Debug -> debug.toString,
         Keys.Editions -> editions.mkString(","),
         Keys.Link -> toAndroidLink(breakingNews.link).toString,
@@ -77,7 +76,8 @@ object FcmPayloadBuilder {
         ++ breakingNews.imageUrl.map(Keys.ImageUrl -> _.toString).toMap
         ++ breakingNews.thumbnailUrl.map(Keys.ThumbnailUrl -> _.toString).toMap
         ++ breakingNews.message.map(Keys.Message -> _).toMap
-        ++ breakingNews.message.map(Keys.Ticker -> _).toMap,
+        ++ breakingNews.message.map(Keys.Ticker -> _).toMap
+        ++ breakingNews.title.map(Keys.Title -> _).toMap,
       ttl = BreakingNewsTtl
     )
   }
@@ -89,7 +89,6 @@ object FcmPayloadBuilder {
       notificationId = cn.id,
       Map(
         Keys.Type -> MessageTypes.Custom,
-        Keys.Title -> cn.title,
         Keys.Link -> toAndroidLink(cn.link).toString,
         Keys.Topics -> cn.topic.map(toAndroidTopic).mkString(","),
         Keys.UriType -> link.`type`,
@@ -98,6 +97,7 @@ object FcmPayloadBuilder {
       ) ++ cn.thumbnailUrl.map(Keys.ThumbnailUrl -> _.toString).toMap
         ++ cn.message.map(Keys.Message -> _.toString).toMap
         ++ cn.message.map(Keys.Ticker -> _.toString).toMap
+        ++ cn.title.map(Keys.Title -> _).toMap
     )
   }
 

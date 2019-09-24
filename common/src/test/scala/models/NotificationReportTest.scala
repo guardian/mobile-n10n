@@ -60,7 +60,7 @@ class NotificationReportTest extends Specification {
           notification = BreakingNewsNotification(
             id = UUID.fromString("d00ceaea-8a27-11a5-9da0-a51c69a460b9"),
             sender = "sender",
-            title = "title",
+            title = Some("title"),
             message = Some("message"),
             thumbnailUrl = Some(new URI("http://some.url/my.png")),
             link = Internal("some/capi/id-with-dashes", None, GITContent),
@@ -105,7 +105,7 @@ class NotificationReportTest extends Specification {
     val breakingNews = BreakingNewsNotification(
       id = UUID.fromString("d00ceaea-8a27-11a5-9da0-a51c69a460b9"),
       sender = "sender",
-      title = "title",
+      title = Some("title"),
       message = Some("message"),
       thumbnailUrl = Some(new URI("http://some.url/my.png")),
       link = Internal("some/capi/id-with-dashes", None, GITContent),
