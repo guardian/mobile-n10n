@@ -20,7 +20,7 @@ class PayloadsSpec extends Specification {
 
       val payload = BreakingNewsPayload(
         id = UUID.fromString("30aac5f5-34bb-4a88-8b69-97f995a4907b"),
-        title = "The Guardian",
+        title = Some("The Guardian"),
         message = Some("Mali hotel attack: UN counts 27 bodies as hostage situation ends"),
         sender = "test",
         imageUrl = Some(new URI("https://mobile.guardianapis.com/img/media/a5fb401022d09b2f624a0cc0484c563fd1b6ad93/0_308_4607_2764/master/4607.jpg/6ad3110822bdb2d1d7e8034bcef5dccf?width=800&height=-&quality=85")),
@@ -137,7 +137,7 @@ trait ContentAlertScope extends Scope {
     git = GITContent)
 
   val payload = ContentAlertPayload(
-    title = "Follow",
+    title = Some("Follow"),
     message = Some("Which countries are doing the most to stop dangerous global warming?"),
     thumbnailUrl = Some(new URI("http://media.guim.co.uk/a07334e4ed5d13d3ecf4c1ac21145f7f4a099f18/127_0_3372_2023/140.jpg")),
     sender = "test",

@@ -62,7 +62,7 @@ object GoalType {
 
 sealed trait NotificationPayload {
   def id: UUID
-  def title: String
+  def title: Option[String]
   def `type`: NotificationPayloadType
   def message: Option[String]
   def thumbnailUrl: Option[URI]
@@ -89,7 +89,7 @@ sealed trait NotificationWithLink extends NotificationPayload {
 object BreakingNewsPayload { val jf = Json.writes[BreakingNewsPayload] withTypeString BreakingNews.toString }
 case class BreakingNewsPayload(
   id: UUID = UUID.randomUUID,
-  title: String = "The Guardian",
+  title: Option[String] = Some("The Guardian"),
   message: Option[String],
   thumbnailUrl: Option[URI],
   sender: String,
@@ -110,7 +110,7 @@ object ContentAlertPayload {
 }
 
 case class ContentAlertPayload(
-  title: String,
+  title: Option[String],
   message: Option[String],
   thumbnailUrl: Option[URI],
   sender: String,
@@ -172,7 +172,7 @@ object FootballMatchStatusPayload {
   }
 }
 case class FootballMatchStatusPayload(
-  title: String,
+  title: Option[String],
   message: Option[String],
   thumbnailUrl: Option[URI] = None,
   sender: String,

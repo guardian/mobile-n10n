@@ -53,7 +53,7 @@ class TopUkRegularStory(okHttpClient: OkHttpClient, ukRegularStoriesUrl: String)
           firstUkRegularStory = bodyJson.as[UkRegularStories].cards(0)
           breakingNewsPayload = BreakingNewsPayload(
             id = UUID.randomUUID(),
-            title = firstUkRegularStory.title,
+            title = Some(firstUkRegularStory.title),
             message = Some(firstUkRegularStory.title),
             thumbnailUrl = None,
             sender = "newstester",
