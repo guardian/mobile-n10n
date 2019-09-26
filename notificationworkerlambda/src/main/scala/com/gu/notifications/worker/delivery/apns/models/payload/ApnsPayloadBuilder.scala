@@ -84,8 +84,8 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
   private def contentPayload(n: ContentNotification): ApnsPayload = {
     val link = toPlatformLink(n.link)
     val payLoad = PushyPayload(
-      alertTitle = None,
-      alertBody = n.title,
+      alertTitle = n.title,
+      alertBody = n.message,
       categoryName = Some("ITEM_CATEGORY"),
       mutableContent = true,
       sound = Some("default"),
