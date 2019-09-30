@@ -181,7 +181,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     val notification = models.ContentNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       `type` = NotificationType.Content,
-      title  = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
+      title  = Some("Following"),
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       iosUseMessage = None,
       thumbnailUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg")),
@@ -197,6 +197,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "t":"m",
         |   "aps":{
         |      "alert":{
+        |         "title": "Following",
         |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"
         |      },
         |      "sound":"default",
