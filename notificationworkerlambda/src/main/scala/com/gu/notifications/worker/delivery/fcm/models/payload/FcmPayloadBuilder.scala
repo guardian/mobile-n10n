@@ -93,11 +93,11 @@ object FcmPayloadBuilder {
         Keys.Topics -> cn.topic.map(toAndroidTopic).mkString(","),
         Keys.UriType -> link.`type`,
         Keys.Uri -> new URI(link.uri).toString,
-        Keys.Debug -> debug.toString
+        Keys.Debug -> debug.toString,
+        Keys.Title -> cn.title.getOrElse("")
       ) ++ cn.thumbnailUrl.map(Keys.ThumbnailUrl -> _.toString).toMap
         ++ cn.message.map(Keys.Message -> _.toString).toMap
         ++ cn.message.map(Keys.Ticker -> _.toString).toMap
-        ++ cn.title.map(Keys.Title -> _).toMap
     )
   }
 
