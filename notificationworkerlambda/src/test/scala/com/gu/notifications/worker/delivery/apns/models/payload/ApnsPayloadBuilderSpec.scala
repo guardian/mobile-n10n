@@ -296,7 +296,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
 
   trait EditionsNotificationScope extends NotificationScope {
     val notification = models.EditionsNotification(
-      id = UUID.randomUUID(),
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       topic = Nil,
       key = "aKey",
       name = "aName",
@@ -312,7 +312,8 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   },
         |   "name": "aName",
         |   "date": "aDate",
-        |   "key": "aKey"
+        |   "key": "aKey",
+        |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
         |}""".stripMargin
     )
   }
