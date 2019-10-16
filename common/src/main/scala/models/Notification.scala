@@ -97,7 +97,7 @@ case class EditionsNotification(
   dryRun: Option[Boolean] = None
 ) extends Notification {
   override def title: Option[String] = None
-  override def message: Option[String] = Some("guardian-editions")
+  override def message: Option[String] = None
   override def importance: Importance = Importance.Minor
 }
 

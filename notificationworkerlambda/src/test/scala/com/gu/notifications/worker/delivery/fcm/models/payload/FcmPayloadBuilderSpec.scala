@@ -89,7 +89,6 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
         data = Map(
           Keys.NotificationType -> "editions",
           Keys.Type -> "custom",
-          Keys.Message -> "guardian-editions",
           Keys.Topics -> "editions//uk",
           Keys.Importance -> "Minor",
           Keys.EditionsDate -> "aDate",
