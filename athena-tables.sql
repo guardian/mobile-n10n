@@ -45,7 +45,9 @@ CREATE OR REPLACE VIEW notification_received_prod AS
     "date" "partition_date",
     "hour" "partition_hour"
   FROM
-    notifications.raw_events_prod;
+    notifications.raw_events_prod
+  WHERE
+    event = '/notification/received';
 
 
 CREATE OR REPLACE VIEW notification_received_code AS
@@ -57,7 +59,9 @@ CREATE OR REPLACE VIEW notification_received_code AS
     "date" "partition_date",
     "hour" "partition_hour"
   FROM
-    notifications.raw_events_code;
+    notifications.raw_events_code
+  WHERE
+    event = '/notification/received';
 
 CREATE OR REPLACE VIEW notification_received_72h_prod AS
   SELECT
