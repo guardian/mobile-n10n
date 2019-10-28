@@ -61,7 +61,8 @@ class Lambda extends RequestHandler[DateRange, Unit] {
   val notificationTypesToExtract: List[NotificationType] = List(
     NotificationType.BreakingNews,
     NotificationType.Content,
-    NotificationType.FootballMatchStatus
+    NotificationType.FootballMatchStatus,
+    NotificationType.Editions
   )
 
   override def handleRequest(dateRange: DateRange, context: Context): Unit = {
