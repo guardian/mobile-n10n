@@ -28,7 +28,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   private val apnsPayloadBuilder = new ApnsPayloadBuilder(config)
 
-  private val invalidTokenErrorCodes = Seq(
+  private val invalidTokenErrorCodes = Set(
     "BadDeviceToken",
     "Unregistered"
   )
