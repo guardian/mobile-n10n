@@ -144,7 +144,7 @@ Resources:
       MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
-      Timeout: 45
+      Timeout: 90
       ReservedConcurrentExecutions: 1000
       Tags:
         - Key: Stage
