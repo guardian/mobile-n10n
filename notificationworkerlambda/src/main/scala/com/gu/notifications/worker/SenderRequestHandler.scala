@@ -41,6 +41,10 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .to(cloudwatch.sendMetrics(env.stage, Configuration.platform))
   }
 
+  def trackProgress[C <: DeliveryClient](notificationId: UUID): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
+    input.chunkN(100).evalMap(chunk => IO.delay(logger.info(s"Processed ${chunk.size} individual notification")))
+  }
+
   def cleanupFailures[C <: DeliveryClient]: Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
     input
       .collect {
@@ -64,7 +68,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       chunkedTokens <- chunkedTokenStream
       individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
       resp <- deliverIndividualNotificationStream(individualNotifications)
-        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range), cleanupFailures)
+        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range), cleanupFailures, trackProgress(chunkedTokens.notification.id))
     } yield resp
   }
 

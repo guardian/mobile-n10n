@@ -5,8 +5,9 @@ import java.util.concurrent.TimeUnit
 import _root_.models.{Notification, Platform}
 import cats.effect._
 import cats.syntax.either._
-import com.gu.notifications.worker.delivery.DeliveryException.{GenericFailure, InvalidPayload}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, GenericFailure, InvalidPayload, InvalidToken}
 import fs2.Stream
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.FiniteDuration
@@ -27,6 +28,7 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
   F: Async[F],
   T: Timer[F]
 ) extends DeliveryService[F, C] {
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def send(
     notification: Notification,
@@ -54,7 +56,15 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           sendAsync(client)(token, payload),
           delay = FiniteDuration(delayInMs, TimeUnit.MILLISECONDS),
           nextDelay = _.mul(2),
-          maxAttempts = 3
+          maxAttempts = 3,
+          retriable = {
+            case NonFatal(e: FailedDelivery) => true
+            case NonFatal(e: InvalidToken) => false
+            case NonFatal(exception: Exception) =>
+              logger.error("Encountered an error, will retry", exception)
+              true
+            case _ => false
+          }
         )
         .attempt
         .map {
