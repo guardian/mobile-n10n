@@ -30,7 +30,8 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   private val invalidTokenErrorCodes = Set(
     "BadDeviceToken",
-    "Unregistered"
+    "Unregistered",
+    "DeviceTokenNotForTopic"
   )
 
   def close(): Unit = underlying.close().get
