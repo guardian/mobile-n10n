@@ -8,7 +8,10 @@
         </Lambda>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <Logger name="com.turo.pushy.apns.ApnsClientHandler" level="TRACE">
+            <RegexFilter regex=".*Failed to write push notification on stream.*" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Logger>
+        <Root level="INFO">
             <AppenderRef ref="Lambda"/>
         </Root>
     </Loggers>
