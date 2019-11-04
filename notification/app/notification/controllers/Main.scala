@@ -59,6 +59,7 @@ final class Main(
   }
 
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
+    val startTime = System.currentTimeMillis()
     val notification = request.body
     val topics = notification.topic
     val MaxTopics = 20
@@ -67,7 +68,10 @@ final class Main(
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{topic => request.isPermittedTopicType(topic.`type`)} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
-      case _ => pushWithDuplicateProtection(notification)
+      case _ =>
+        val result = pushWithDuplicateProtection(notification)
+        result.foreach(_ => logger.info(s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}"))
+        result
     }) recoverWith {
       case NonFatal(exception) => {
         logger.warn(s"Pushing notification failed: $notification", exception)
