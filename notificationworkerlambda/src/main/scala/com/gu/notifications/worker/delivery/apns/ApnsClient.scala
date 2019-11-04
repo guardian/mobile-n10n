@@ -3,18 +3,18 @@ package com.gu.notifications.worker.delivery.apns
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
-import java.util.{Date, UUID}
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
 import models.ApnsConfig
-import _root_.models.{Ios, Newsstand, Notification, Platform}
+import _root_.models.Notification
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayloadBuilder
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
 import com.turo.pushy.apns.util.{SimpleApnsPushNotification, TokenUtil}
-import com.turo.pushy.apns.{ApnsClientBuilder, DeliveryPriority, PushNotificationResponse, ApnsClient => PushyApnsClient}
+import com.turo.pushy.apns.{ApnsClientBuilder, PushNotificationResponse, ApnsClient => PushyApnsClient}
 import org.joda.time.DateTime
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -51,7 +51,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
       //Default to no invalidation time but an hour for breaking news and 10 mins for football
       //See https://stackoverflow.com/questions/12317037/apns-notifications-ttl
       payload.ttl.map(invalidationTime(_).toDate).orNull,
-      DeliveryPriority.IMMEDIATE,
+      payload.deliveryPriority,
       payload.collapseId.orNull
     )
 

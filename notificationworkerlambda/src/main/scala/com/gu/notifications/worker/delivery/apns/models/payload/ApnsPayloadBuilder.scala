@@ -11,7 +11,7 @@ import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import com.gu.notifications.worker.delivery.apns.models.payload.CustomProperty.Keys
 import com.gu.notifications.worker.delivery.apns.models.payload.PlatformUriTypes.{External, Item}
 import com.turo.pushy.apns.util.{ApnsPayloadBuilder => Builder}
-import com.turo.pushy.apns.PushType
+import com.turo.pushy.apns.{DeliveryPriority, PushType}
 
 class ApnsPayloadBuilder(config: ApnsConfig) {
 
@@ -143,18 +143,30 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
   }
 
   private def newsstandPayload(notification: NewsstandShardNotification): ApnsPayload =
-    ApnsPayload(PushyPayload(contentAvailable = true).payload, None, None, PushType.BACKGROUND)
+    ApnsPayload(
+      jsonString = PushyPayload(contentAvailable = true).payload,
+      ttl = None,
+      collapseId = None,
+      pushType = PushType.BACKGROUND,
+      deliveryPriority = DeliveryPriority.CONSERVE_POWER
+    )
 
   private def editionsPayload(notification: EditionsNotification): ApnsPayload =
-    ApnsPayload(PushyPayload(
-      customProperties = Seq(
-        CustomProperty(Keys.UniqueIdentifier -> notification.id.toString),
-        CustomProperty(Keys.EditionsDate -> notification.date),
-        CustomProperty(Keys.EditionsKey -> notification.key),
-        CustomProperty(Keys.EditionsName -> notification.name)
-      ),
-      contentAvailable = true
-    ).payload, None, None, PushType.BACKGROUND)
+    ApnsPayload(
+      jsonString = PushyPayload(
+        customProperties = Seq(
+          CustomProperty(Keys.UniqueIdentifier -> notification.id.toString),
+          CustomProperty(Keys.EditionsDate -> notification.date),
+          CustomProperty(Keys.EditionsKey -> notification.key),
+          CustomProperty(Keys.EditionsName -> notification.name)
+        ),
+        contentAvailable = true
+      ).payload,
+      ttl = None,
+      collapseId = None,
+      pushType = PushType.BACKGROUND,
+      deliveryPriority = DeliveryPriority.CONSERVE_POWER
+    )
 
   private def toPlatformLink(link: Link) = link match {
     case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
