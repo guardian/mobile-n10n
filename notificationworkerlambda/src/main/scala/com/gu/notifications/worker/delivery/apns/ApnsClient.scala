@@ -3,8 +3,8 @@ package com.gu.notifications.worker.delivery.apns
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
-import java.util.UUID
-import java.util.concurrent.TimeUnit
+import java.util.{Timer, UUID}
+import java.util.concurrent.{TimeUnit, TimeoutException}
 
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
@@ -12,7 +12,7 @@ import models.ApnsConfig
 import _root_.models.Notification
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayloadBuilder
 import com.turo.pushy.apns.auth.ApnsSigningKey
-import com.turo.pushy.apns.util.concurrent.{PushNotificationFuture, PushNotificationResponseListener}
+import com.turo.pushy.apns.util.concurrent.PushNotificationFuture
 import com.turo.pushy.apns.util.{SimpleApnsPushNotification, TokenUtil}
 import com.turo.pushy.apns.{ApnsClientBuilder, PushNotificationResponse, ApnsClient => PushyApnsClient}
 import org.joda.time.DateTime
@@ -27,6 +27,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
   type Payload = ApnsPayload
   val dryRun = config.dryRun
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  private val timer = new Timer("ios-worker-timeout", true)
 
   private val apnsPayloadBuilder = new ApnsPayloadBuilder(config)
 
@@ -57,8 +58,12 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
     type Feedback = PushNotificationFuture[SimpleApnsPushNotification, PushNotificationResponse[SimpleApnsPushNotification]]
 
-    def responseHandler = new PushNotificationResponseListener[SimpleApnsPushNotification]() {
-      override def operationComplete(feedback: Feedback): Unit = {
+    def responseHandler = new PushNotificationResponseListenerWithTimeout[SimpleApnsPushNotification]() {
+      def timeout(): Unit = {
+        onComplete(Left(FailedRequest(notificationId, token, new TimeoutException("No APNs response received in time"), Some("ClientTimeout"))))
+      }
+
+      override def operationCompleteWithoutTimeout(feedback: Feedback): Unit = {
         if (feedback.isSuccess) {
           val response = feedback.getNow
           if (response.isAccepted) {
@@ -90,9 +95,10 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     if(dryRun) {
       onComplete(Right(ApnsDeliverySuccess(token, dryRun = true)))
     } else {
-      underlying
-        .sendNotification(pushNotification)
-        .addListener(responseHandler)
+      val futureResult = underlying.sendNotification(pushNotification)
+      val handler = responseHandler
+      handler.startTimeout(timer, timeoutInMs = 20000L)
+      futureResult.addListener(handler)
     }
   }
 
