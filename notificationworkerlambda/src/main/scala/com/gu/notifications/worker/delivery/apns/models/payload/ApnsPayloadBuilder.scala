@@ -21,6 +21,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       case n: FootballMatchStatusNotification => Some(footballMatchStatusPayload(n))
       case n: NewsstandShardNotification => Some(newsstandPayload(n))
       case n: EditionsNotification => Some(editionsPayload(n))
+      case n: ElectionNotification => Some(electionPayload(n))
       case _ => None
   }
 
@@ -167,6 +168,24 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       pushType = PushType.BACKGROUND,
       deliveryPriority = DeliveryPriority.CONSERVE_POWER
     )
+
+  private def electionPayload(n: ElectionNotification): ApnsPayload = {
+    val imageUrl = n.thumbnailUrl.orElse(n.imageUrl)
+    val payload = PushyPayload(
+      alertTitle = n.title,
+      alertBody = n.message,
+      mutableContent = true,
+      sound = Some("default"),
+      customProperties = Seq(
+        CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
+        CustomProperty(Keys.Provider -> Provider.Guardian.value),
+        CustomProperty(Keys.MessageType -> MessageTypes.NewsAlert),
+        CustomProperty(Keys.NotificationType -> BreakingNews.value),
+        CustomProperty(Keys.Topics -> n.topic.map(_.toString).mkString(","))
+      ) ++ imageUrl.map(u => CustomProperty(Keys.ImageUrl -> u.toString)).toSeq
+    ).payload
+    ApnsPayload(payload, Some(DefaulTtl), None, PushType.ALERT)
+  }
 
   private def toPlatformLink(link: Link) = link match {
     case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)

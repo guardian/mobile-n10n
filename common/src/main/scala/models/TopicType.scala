@@ -19,6 +19,7 @@ object TopicTypes {
   object NewsstandShard extends TopicType("newsstand-shard", 100)
   object Editions extends TopicType("editions", 100)
   object LiveNotification extends TopicType("live-notification", 51)
+  object Election extends TopicType("election", 1)
 }
 
 object TopicType {
@@ -37,6 +38,7 @@ object TopicType {
     case "newsstand-shard" => TopicTypes.NewsstandShard
     case "live-notification" => LiveNotification
     case "editions" => Editions
+    case "election" => Election
   }
 
   implicit val jf = new Format[TopicType] {
