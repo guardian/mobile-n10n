@@ -35,6 +35,7 @@ object Topic {
   val BreakingNewsAu = Topic(Breaking, AU.toString)
   val BreakingNewsInternational = Topic(Breaking, International.toString)
   val BreakingNewsSport = Topic(Breaking, "sport")
+  val BreakingNewsElection = Topic(Breaking, "election")
   val BreakingNewsInternalTest = Topic(Breaking, "internal-test")
   val NewsstandIos = Topic(Newsstand, "newsstandIos")
 }
