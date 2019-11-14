@@ -28,7 +28,7 @@ It has many uses:
 * Logging for diagnostics and status of each notification
 
 ## Architecture
-![Architecture Diagram](Architecture.jpg)
+![Architecture Diagram](Notifications-Architecture.jpg)
 
 ## Services
 
