@@ -19,6 +19,9 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "generate correct data for Breaking News notification" in new BreakingNewsScope {
       check()
     }
+    "generate correct data for Breaking News notification with no title" in new BreakingNewsScopeNoTitle {
+      check()
+    }
     "generate correct data for Content notification" in new ContentNotificationScope {
       check()
     }
@@ -58,6 +61,42 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
           Keys.NotificationType -> "news",
           Keys.Type -> "custom",
           Keys.Title -> "Test notification",
+          Keys.Ticker -> "The message",
+          Keys.Message -> "The message",
+          Keys.Debug -> "true",
+          Keys.Editions -> "uk",
+          Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id",
+          Keys.UriType -> "item",
+          Keys.Uri -> "x-gu:///items/some/capi/id",
+          Keys.Edition -> "uk",
+          Keys.ImageUrl -> "https://invalid.url/img.png",
+          Keys.ThumbnailUrl -> "https://invalid.url/img.png"
+        ),
+        ttl = TimeToLive.BreakingNewsTtl      )
+    )
+  }
+
+  trait BreakingNewsScopeNoTitle extends NotificationScope {
+    val notification = models.BreakingNewsNotification(
+      id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      title = None,
+      message = Some("The message"),
+      thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
+      sender = "UnitTests",
+      link = Internal("some/capi/id", None, GITContent),
+      imageUrl = Some(new URI("https://invalid.url/img.png")),
+      importance = Major,
+      topic = List(Topic(`type` = Breaking, name = "uk")),
+      dryRun = None
+    )
+
+    val expected = Some(
+      FirebaseAndroidNotification(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
+          Keys.NotificationType -> "news",
+          Keys.Type -> "custom",
+          Keys.Title -> "The Guardian",
           Keys.Ticker -> "The message",
           Keys.Message -> "The message",
           Keys.Debug -> "true",
