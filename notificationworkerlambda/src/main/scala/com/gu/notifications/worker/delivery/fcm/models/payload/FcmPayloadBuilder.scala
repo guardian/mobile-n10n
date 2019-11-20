@@ -55,10 +55,10 @@ object FcmPayloadBuilder {
       .map(_.name)
       .collect(Edition.fromString)
 
-    val androidLink = toAndroidLink(breakingNews.link)
     val platformLink = toPlatformLink(breakingNews.link)
     val edition = if (editions.size == 1) Some(editions.head) else None
     val keyword = tagLink.map(new URI(_))
+    val title = breakingNews.title.getOrElse("The Guardian")
 
     FirebaseAndroidNotification(
       notificationId = breakingNews.id,
@@ -69,15 +69,15 @@ object FcmPayloadBuilder {
         Keys.Editions -> editions.mkString(","),
         Keys.Link -> toAndroidLink(breakingNews.link).toString,
         Keys.UriType -> platformLink.`type`,
-        Keys.Uri -> platformLink.uri
+        Keys.Uri -> platformLink.uri,
+        Keys.Title -> title,
       ) ++ sectionLink.map(new URI(_)).map(Keys.Section -> _.toString).toMap
         ++ edition.map(Keys.Edition -> _.toString).toMap
         ++ keyword.map(Keys.Keyword -> _.toString).toMap
         ++ breakingNews.imageUrl.map(Keys.ImageUrl -> _.toString).toMap
         ++ breakingNews.thumbnailUrl.map(Keys.ThumbnailUrl -> _.toString).toMap
         ++ breakingNews.message.map(Keys.Message -> _).toMap
-        ++ breakingNews.message.map(Keys.Ticker -> _).toMap
-        ++ breakingNews.title.map(Keys.Title -> _).toMap,
+        ++ breakingNews.message.map(Keys.Ticker -> _).toMap,
       ttl = BreakingNewsTtl
     )
   }
