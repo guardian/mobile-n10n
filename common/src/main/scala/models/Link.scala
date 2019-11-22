@@ -17,7 +17,7 @@ object Link {
   }
 
   case class Internal(contentApiId: String, shortUrl: Option[String], git: GuardianItemType, blockId: Option[String]) extends Link {
-    def webUri(frontendBaseUrl: String): URI = new URI(s"$frontendBaseUrl$contentApiId#$blockId")
+    def webUri(frontendBaseUrl: String): URI = new URI(s"$frontendBaseUrl$contentApiId")
   }
   object Internal {
     implicit val jf = Json.format[Internal]
