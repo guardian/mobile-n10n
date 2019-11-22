@@ -8,7 +8,7 @@ import scala.concurrent.Future
 class ArticlePurge(fastlyPurge: FastlyPurge) {
   private def getContentApiId(notification: Notification): Option[String] = {
     def linkToContentApiId(link: Link): Option[String] = link match {
-      case Internal(contentApiId, _, GITContent) => Some(contentApiId)
+      case Internal(contentApiId, _, GITContent, _) => Some(contentApiId)
       case _ => None
     }
 

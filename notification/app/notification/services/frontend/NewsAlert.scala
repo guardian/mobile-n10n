@@ -27,7 +27,7 @@ object NewsAlert {
   implicit val jf = Json.format[NewsAlert]
 
   def fromNotification(notification: BreakingNewsNotification, sent: DateTime): Option[NewsAlert] = {
-    val urlId = condOpt(notification.link) { case Internal(contentId, _, _) => new URI(contentId) }
+    val urlId = condOpt(notification.link) { case Internal(contentId, _, _, _) => new URI(contentId) }
     urlId.map { capiIdUri =>
       NewsAlert(
         uid = notification.id,
