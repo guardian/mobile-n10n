@@ -169,13 +169,13 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
     )
 
   private def toPlatformLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _, Some(blockId)) => PlatformUri(s"https://www.theguardian.com/$contentApiId#$blockId", Item)
+    case Link.Internal(contentApiId, _, _, Some(blockId)) => PlatformUri(s"https://www.theguardian.com/$contentApiId?page=with:$blockId#$blockId", Item)
     case Link.Internal(contentApiId, _, _, None) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
     case Link.External(url) => PlatformUri(url, External)
   }
 
   private def toIosLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _, Some(blockId)) => new URI(s"${config.mapiBaseUrl}/items/$contentApiId#$blockId")
+    case Link.Internal(contentApiId, _, _, Some(blockId)) => new URI(s"${config.mapiBaseUrl}/items/$contentApiId?page=with:$blockId#$blockId")
     case Link.Internal(contentApiId, _, _, None) => new URI(s"${config.mapiBaseUrl}/items/$contentApiId")
     case _ => link.webUri("http://www.theguardian.com/")
   }
