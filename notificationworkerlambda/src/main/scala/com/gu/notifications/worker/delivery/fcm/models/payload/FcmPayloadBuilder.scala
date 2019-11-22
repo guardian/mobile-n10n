@@ -142,13 +142,13 @@ object FcmPayloadBuilder {
   private case class PlatformUri(uri: String, `type`: String)
 
   private def toPlatformLink(link: Link): PlatformUri = link match {
-    case Link.Internal(contentApiId, _, _, Some(blockId)) => PlatformUri(s"x-gu:///items/$contentApiId#$blockId", "item")
+    case Link.Internal(contentApiId, _, _, Some(blockId)) => PlatformUri(s"x-gu:///items/$contentApiId?page=with:$blockId#$blockId", "item")
     case Link.Internal(contentApiId, _, _, None) => PlatformUri(s"x-gu:///items/$contentApiId", "item")
     case Link.External(url) => PlatformUri(url, "external")
   }
 
   private def toAndroidLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _, Some(blockId)) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId#$blockId")
+    case Link.Internal(contentApiId, _, _, Some(blockId)) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId?page=with:$blockId#$blockId")
     case Link.Internal(contentApiId, _, _, None) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId")
     case Link.External(url) => new URI(url)
   }
