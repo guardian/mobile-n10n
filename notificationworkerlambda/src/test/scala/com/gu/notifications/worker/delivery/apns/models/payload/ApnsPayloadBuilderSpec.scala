@@ -26,6 +26,9 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     "generate correct payload for Breaking News notification with no image" in new BreakingNewsScopeNoImage {
       checkPayload()
     }
+    "generate correct payload for Liveblog notifications if blockId exists" in new LiveblogNotificationScopeBlockId {
+      checkPayload()
+    }
     "generate correct payload for Content notification" in new ContentNotificationScope {
       checkPayload()
     }
@@ -210,6 +213,43 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"content",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
+        |}""".stripMargin
+    )
+  }
+
+  trait LiveblogNotificationScopeBlockId extends NotificationScope {
+    val notification = models.BreakingNewsNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      `type` = NotificationType.BreakingNews,
+      title  = Some("General election 2019: Nigel Farage plays down claims Brexit party could split leave vote – live news"),
+      message = Some("General election 2019: Nigel Farage plays down claims Brexit party could split leave vote – live news"),
+      thumbnailUrl = None,
+      sender = "matt.wells@guardian.co.uk",
+      link = Internal("politics/live/2019/nov/22/general-election-2019-corbyn-tells-voters-to-make-sure-their-voice-is-heard-live-news", Some("https://gu.com/p/cnvcd"), GITContent, Some("block-5dd7ca0f8f080fd59fb15354")),
+      imageUrl = None,
+      importance = Major,
+      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
+      dryRun = None
+    )
+
+    val expected = Some(
+      """{
+        |   "t":"m",
+        |   "aps":{
+        |      "alert":{
+        |         "body":"General election 2019: Nigel Farage plays down claims Brexit party could split leave vote – live news"
+        |      },
+        |      "sound":"default",
+        |      "category":"ITEM_CATEGORY",
+        |      "mutable-content":1
+        |   },
+        |   "provider":"Guardian",
+        |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
+        |   "uriType":"item",
+        |   "link":"https://mobile.guardianapis.com/items/politics/live/2019/nov/22/general-election-2019-corbyn-tells-voters-to-make-sure-their-voice-is-heard-live-news?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
+        |   "notificationType":"news",
+        |   "uri":"https://www.theguardian.com/politics/live/2019/nov/22/general-election-2019-corbyn-tells-voters-to-make-sure-their-voice-is-heard-live-news?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
         |}""".stripMargin
     )
