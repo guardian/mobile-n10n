@@ -226,7 +226,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
       message = Some("General election 2019: Nigel Farage plays down claims Brexit party could split leave vote – live news"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
-      link = Internal("politics/live/2019/nov/22/general-election-2019-corbyn-tells-voters-to-make-sure-their-voice-is-heard-live-news", Some("https://gu.com/p/cnvcd"), GITContent, Some("block-5dd7ca0f8f080fd59fb15354")),
+      link = Internal("politics/live/2019/nov/22/general-election-2019-corbyn-tells-voters-to-make-sure-their-voice-is-heard-live-news", Some("https://gu.com/p/cnvcd"), GITContent, Some("5dd7ca0f8f080fd59fb15354")),
       imageUrl = None,
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
