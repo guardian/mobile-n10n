@@ -22,6 +22,9 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "generate correct data for Liveblog with a Block ID notification" in new LiveBlogBlockIdScope {
       check()
     }
+    "generate correct data for Breaking News notification with no title" in new BreakingNewsScopeNoTitle {
+      check()
+    }
     "generate correct data for Content notification" in new ContentNotificationScope {
       check()
     }
@@ -76,6 +79,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     )
   }
 
+<<<<<<< HEAD
   trait LiveBlogBlockIdScope extends NotificationScope {
     val notification = models.BreakingNewsNotification(
       id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
@@ -84,6 +88,16 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
       sender = "UnitTests",
       link = Internal("some/capi/id", None, GITContent, Some("5dd7ca0f8f080fd59fb15354")),
+=======
+  trait BreakingNewsScopeNoTitle extends NotificationScope {
+    val notification = models.BreakingNewsNotification(
+      id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      title = None,
+      message = Some("The message"),
+      thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
+      sender = "UnitTests",
+      link = Internal("some/capi/id", None, GITContent),
+>>>>>>> master
       imageUrl = Some(new URI("https://invalid.url/img.png")),
       importance = Major,
       topic = List(Topic(`type` = Breaking, name = "uk")),
@@ -96,14 +110,24 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
         data = Map(
           Keys.NotificationType -> "news",
           Keys.Type -> "custom",
+<<<<<<< HEAD
           Keys.Title -> "Test notification",
+=======
+          Keys.Title -> "The Guardian",
+>>>>>>> master
           Keys.Ticker -> "The message",
           Keys.Message -> "The message",
           Keys.Debug -> "true",
           Keys.Editions -> "uk",
+<<<<<<< HEAD
           Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
           Keys.UriType -> "item",
           Keys.Uri -> "x-gu:///items/some/capi/id?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
+=======
+          Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id",
+          Keys.UriType -> "item",
+          Keys.Uri -> "x-gu:///items/some/capi/id",
+>>>>>>> master
           Keys.Edition -> "uk",
           Keys.ImageUrl -> "https://invalid.url/img.png",
           Keys.ThumbnailUrl -> "https://invalid.url/img.png"

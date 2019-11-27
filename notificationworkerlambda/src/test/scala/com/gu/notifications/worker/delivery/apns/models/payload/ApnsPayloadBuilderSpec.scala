@@ -29,6 +29,9 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     "generate correct payload for Liveblog notifications if blockId exists" in new LiveblogNotificationScopeBlockId {
       checkPayload()
     }
+    "generate correct payload for Breaking News notification with no title" in new BreakingNewsScopeNoTitle {
+      checkPayload()
+    }
     "generate correct payload for Content notification" in new ContentNotificationScope {
       checkPayload()
     }
@@ -71,7 +74,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     val notification = models.BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       `type` = NotificationType.BreakingNews,
-      title  = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
+      title  = Some("The Guardian"),
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg")),
       sender = "matt.wells@guardian.co.uk",
@@ -87,7 +90,8 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "t":"m",
         |   "aps":{
         |      "alert":{
-        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"
+        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+        |         "title":"The Guardian"
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
@@ -109,7 +113,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     val notification = models.BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       `type` = NotificationType.BreakingNews,
-      title  = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
+      title  = Some("The Guardian"),
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
@@ -125,7 +129,8 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "t":"m",
         |   "aps":{
         |      "alert":{
-        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"
+        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+        |         "title":"The Guardian"
         |      },
         |      "sound":"default",
         |      "category":"ITEM_CATEGORY",
@@ -147,7 +152,45 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     val notification = models.BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
       `type` = NotificationType.BreakingNews,
-      title  = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
+      title  = Some("The Guardian"),
+      message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
+      thumbnailUrl = None,
+      sender = "matt.wells@guardian.co.uk",
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      imageUrl = None,
+      importance = Major,
+      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
+      dryRun = None
+    )
+
+    val expected = Some(
+      """{
+        |   "t":"m",
+        |   "aps":{
+        |      "alert":{
+        |         "body":"French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State",
+        |         "title":"The Guardian"
+        |      },
+        |      "sound":"default",
+        |      "category":"ITEM_CATEGORY",
+        |      "mutable-content":1
+        |   },
+        |   "provider":"Guardian",
+        |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
+        |   "uriType":"item",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        |   "notificationType":"news",
+        |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
+        |}""".stripMargin
+    )
+  }
+
+  trait BreakingNewsScopeNoTitle extends NotificationScope {
+    val notification = models.BreakingNewsNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      `type` = NotificationType.BreakingNews,
+      title  = None,
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
