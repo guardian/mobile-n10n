@@ -123,7 +123,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       message = Some("The message"),
       thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
       sender = "UnitTests",
-      link = Internal("some/capi/id", None, GITContent),
+      link = Internal("some/capi/id", None, GITContent, None),
       imageUrl = Some(new URI("https://invalid.url/img.png")),
       importance = Major,
       topic = List(Topic(`type` = Breaking, name = "uk")),

@@ -169,17 +169,19 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
     )
 
   private def toPlatformLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
+    case Link.Internal(contentApiId, _, _, Some(blockId)) => PlatformUri(s"https://www.theguardian.com/$contentApiId?page=with:block-$blockId#block-$blockId", Item)
+    case Link.Internal(contentApiId, _, _, None) => PlatformUri(s"https://www.theguardian.com/$contentApiId", Item)
     case Link.External(url) => PlatformUri(url, External)
   }
 
   private def toIosLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _) => new URI(s"${config.mapiBaseUrl}/items/$contentApiId")
+    case Link.Internal(contentApiId, _, _, Some(blockId)) => new URI(s"${config.mapiBaseUrl}/items/$contentApiId?page=with:block-$blockId#block-$blockId")
+    case Link.Internal(contentApiId, _, _, None) => new URI(s"${config.mapiBaseUrl}/items/$contentApiId")
     case _ => link.webUri("http://www.theguardian.com/")
   }
 
   private def toCollapseId(link: Link): Option[String] = link match {
-    case Link.Internal(contentApiId, _, _) => Some(UUID.nameUUIDFromBytes(contentApiId.getBytes).toString)
+    case Link.Internal(contentApiId, _, _, _) => Some(UUID.nameUUIDFromBytes(contentApiId.getBytes).toString)
     case _ => None
   }
 }

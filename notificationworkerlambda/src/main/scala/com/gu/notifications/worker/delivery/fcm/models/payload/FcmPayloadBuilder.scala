@@ -43,11 +43,11 @@ object FcmPayloadBuilder {
   private def breakingNewsAndroidNotification(breakingNews: BreakingNewsNotification, debug: Boolean): FirebaseAndroidNotification = {
 
     val sectionLink = condOpt(breakingNews.link) {
-      case Link.Internal(contentApiId, _, GITSection) => contentApiId
+      case Link.Internal(contentApiId, _, GITSection, _) => contentApiId
     }
 
     val tagLink = condOpt(breakingNews.link) {
-      case Link.Internal(contentApiId, _, GITTag) => contentApiId
+      case Link.Internal(contentApiId, _, GITTag, _) => contentApiId
     }
 
     val editions = breakingNews.topic
@@ -142,12 +142,14 @@ object FcmPayloadBuilder {
   private case class PlatformUri(uri: String, `type`: String)
 
   private def toPlatformLink(link: Link): PlatformUri = link match {
-    case Link.Internal(contentApiId, _, _) => PlatformUri(s"x-gu:///items/$contentApiId", "item")
+    case Link.Internal(contentApiId, _, _, Some(blockId)) => PlatformUri(s"x-gu:///items/$contentApiId?page=with:block-$blockId#block-$blockId", "item")
+    case Link.Internal(contentApiId, _, _, None) => PlatformUri(s"x-gu:///items/$contentApiId", "item")
     case Link.External(url) => PlatformUri(url, "external")
   }
 
   private def toAndroidLink(link: Link) = link match {
-    case Link.Internal(contentApiId, _, _) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId")
+    case Link.Internal(contentApiId, _, _, Some(blockId)) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId?page=with:block-$blockId#block-$blockId")
+    case Link.Internal(contentApiId, _, _, None) => new URI(s"x-gu://www.guardian.co.uk/$contentApiId")
     case Link.External(url) => new URI(url)
   }
 

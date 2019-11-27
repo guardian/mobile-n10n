@@ -79,7 +79,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
       imageUrl = None,
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),

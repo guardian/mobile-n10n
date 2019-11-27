@@ -14,7 +14,7 @@ class ArticlePurgeSpec(implicit ee: ExecutionEnv) extends Specification with Moc
 
   "ArticlePurge" should {
     "trigger a soft purge for a breaking news" in new ArticlePurgeScope {
-      val breakingNews = breakingNewsNotification(Nil).copy(link = new Internal("expected/article/id", None, GITContent))
+      val breakingNews = breakingNewsNotification(Nil).copy(link = new Internal("expected/article/id", None, GITContent, None))
 
       articlePurge.purgeFromNotification(breakingNews) should beEqualTo(true).await
       val urlCaptor = capture[String]

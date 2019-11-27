@@ -26,6 +26,9 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     "generate correct payload for Breaking News notification with no image" in new BreakingNewsScopeNoImage {
       checkPayload()
     }
+    "generate correct payload for Liveblog notifications if blockId exists" in new LiveblogNotificationScopeBlockId {
+      checkPayload()
+    }
     "generate correct payload for Breaking News notification with no title" in new BreakingNewsScopeNoTitle {
       checkPayload()
     }
@@ -75,7 +78,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg")),
       sender = "matt.wells@guardian.co.uk",
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
       imageUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg")),
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
@@ -114,7 +117,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
       imageUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500-image-url.jpg")),
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
@@ -153,7 +156,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
       imageUrl = None,
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
@@ -191,7 +194,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
       message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
       thumbnailUrl = None,
       sender = "matt.wells@guardian.co.uk",
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
       imageUrl = None,
       importance = Major,
       topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
@@ -229,7 +232,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
       iosUseMessage = None,
       thumbnailUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg")),
       sender = "matt.wells@guardian.co.uk",
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent),
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
       importance = Major,
       topic = List(Topic(TagSeries, "series-a"), Topic(TagSeries, "series-b")),
       dryRun = None
@@ -253,6 +256,45 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"content",
         |   "uri":"https://www.theguardian.com/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
+        |}""".stripMargin
+    )
+  }
+
+  trait LiveblogNotificationScopeBlockId extends NotificationScope {
+    val notification = models.BreakingNewsNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      `type` = NotificationType.BreakingNews,
+      title  = Some("General election 2019: Nigel Farage plays down claims Brexit party could split leave vote – live news"),
+      message = Some("General election 2019: Nigel Farage plays down claims Brexit party could split leave vote – live news"),
+      thumbnailUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg")),
+      sender = "matt.wells@guardian.co.uk",
+      link = Internal("politics/live/2019/nov/22/general-election-2019-corbyn-tells-voters-to-make-sure-their-voice-is-heard-live-news", Some("https://gu.com/p/cnvcd"), GITContent, Some("5dd7ca0f8f080fd59fb15354")),
+      imageUrl = Some(new URI("https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg")),
+      importance = Major,
+      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
+      dryRun = None
+    )
+
+    val expected = Some(
+      """{
+        |   "t":"m",
+        |   "aps":{
+        |      "alert":{
+        |         "body":"General election 2019: Nigel Farage plays down claims Brexit party could split leave vote – live news",
+        |         "title":"General election 2019: Nigel Farage plays down claims Brexit party could split leave vote – live news"
+        |      },
+        |      "sound":"default",
+        |      "category":"ITEM_CATEGORY",
+        |      "mutable-content":1
+        |   },
+        |   "provider":"Guardian",
+        |   "topics":"breaking/uk,breaking/us,breaking/au,breaking/international",
+        |   "uriType":"item",
+        |   "imageUrl":"https://media.guim.co.uk/633850064fba4941cdac17e8f6f8de97dd736029/24_0_1800_1080/500.jpg",
+        |   "link":"https://mobile.guardianapis.com/items/politics/live/2019/nov/22/general-election-2019-corbyn-tells-voters-to-make-sure-their-voice-is-heard-live-news?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
+        |   "notificationType":"news",
+        |   "uri":"https://www.theguardian.com/politics/live/2019/nov/22/general-election-2019-corbyn-tells-voters-to-make-sure-their-voice-is-heard-live-news?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"
         |}""".stripMargin
     )
