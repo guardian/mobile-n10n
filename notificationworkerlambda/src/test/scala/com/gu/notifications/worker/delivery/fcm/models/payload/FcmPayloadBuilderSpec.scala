@@ -19,9 +19,6 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "generate correct data for Breaking News notification" in new BreakingNewsScope {
       check()
     }
-    "generate correct data for Liveblog with a Block ID notification" in new LiveBlogBlockIdScope {
-      check()
-    }
     "generate correct data for Breaking News notification with no title" in new BreakingNewsScopeNoTitle {
       check()
     }
@@ -79,16 +76,6 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     )
   }
 
-<<<<<<< HEAD
-  trait LiveBlogBlockIdScope extends NotificationScope {
-    val notification = models.BreakingNewsNotification(
-      id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
-      title = Some("Test notification"),
-      message = Some("The message"),
-      thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
-      sender = "UnitTests",
-      link = Internal("some/capi/id", None, GITContent, Some("5dd7ca0f8f080fd59fb15354")),
-=======
   trait BreakingNewsScopeNoTitle extends NotificationScope {
     val notification = models.BreakingNewsNotification(
       id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
@@ -96,8 +83,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       message = Some("The message"),
       thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
       sender = "UnitTests",
-      link = Internal("some/capi/id", None, GITContent),
->>>>>>> master
+      link = Internal("some/capi/id", None, GITContent, None),
       imageUrl = Some(new URI("https://invalid.url/img.png")),
       importance = Major,
       topic = List(Topic(`type` = Breaking, name = "uk")),
@@ -110,24 +96,50 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
         data = Map(
           Keys.NotificationType -> "news",
           Keys.Type -> "custom",
-<<<<<<< HEAD
-          Keys.Title -> "Test notification",
-=======
           Keys.Title -> "The Guardian",
->>>>>>> master
           Keys.Ticker -> "The message",
           Keys.Message -> "The message",
           Keys.Debug -> "true",
           Keys.Editions -> "uk",
-<<<<<<< HEAD
-          Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
-          Keys.UriType -> "item",
-          Keys.Uri -> "x-gu:///items/some/capi/id?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
-=======
           Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id",
           Keys.UriType -> "item",
           Keys.Uri -> "x-gu:///items/some/capi/id",
->>>>>>> master
+          Keys.Edition -> "uk",
+          Keys.ImageUrl -> "https://invalid.url/img.png",
+          Keys.ThumbnailUrl -> "https://invalid.url/img.png"
+        ),
+        ttl = TimeToLive.BreakingNewsTtl      )
+    )
+  }
+
+  trait LiveBlogScopeBlockId extends NotificationScope {
+    val notification = models.BreakingNewsNotification(
+      id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      title = None,
+      message = Some("The message"),
+      thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
+      sender = "UnitTests",
+      link = Internal("some/capi/id", None, GITContent, Some("5dd7ca0f8f080fd59fb15354")),
+      imageUrl = Some(new URI("https://invalid.url/img.png")),
+      importance = Major,
+      topic = List(Topic(`type` = Breaking, name = "uk")),
+      dryRun = None
+    )
+
+    val expected = Some(
+      FirebaseAndroidNotification(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
+          Keys.NotificationType -> "news",
+          Keys.Type -> "custom",
+          Keys.Title -> "The Guardian",
+          Keys.Ticker -> "The message",
+          Keys.Message -> "The message",
+          Keys.Debug -> "true",
+          Keys.Editions -> "uk",
+          Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
+          Keys.UriType -> "item",
+          Keys.Uri -> "x-gu:///items/some/capi/id?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
           Keys.Edition -> "uk",
           Keys.ImageUrl -> "https://invalid.url/img.png",
           Keys.ThumbnailUrl -> "https://invalid.url/img.png"
@@ -137,14 +149,14 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
   }
 
   trait EditionsScope extends NotificationScope {
-     val notification = models.EditionsNotification(
-       id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
-       topic = List(Topic(TopicTypes.Editions, "uk")),
-       key = "aKey",
-       date = "aDate",
-       name = "aName",
-       sender = "EditionsTeam"
-     )
+    val notification = models.EditionsNotification(
+      id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      topic = List(Topic(TopicTypes.Editions, "uk")),
+      key = "aKey",
+      date = "aDate",
+      name = "aName",
+      sender = "EditionsTeam"
+    )
 
     val expected = Some(
       FirebaseAndroidNotification(
