@@ -19,6 +19,9 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "generate correct data for Breaking News notification" in new BreakingNewsScope {
       check()
     }
+    "generate correct data for Liveblog with a Block ID notification" in new LiveBlogBlockIdScope {
+      check()
+    }
     "generate correct data for Content notification" in new ContentNotificationScope {
       check()
     }
@@ -65,6 +68,42 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
           Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id",
           Keys.UriType -> "item",
           Keys.Uri -> "x-gu:///items/some/capi/id",
+          Keys.Edition -> "uk",
+          Keys.ImageUrl -> "https://invalid.url/img.png",
+          Keys.ThumbnailUrl -> "https://invalid.url/img.png"
+        ),
+        ttl = TimeToLive.BreakingNewsTtl      )
+    )
+  }
+
+  trait LiveBlogBlockIdScope extends NotificationScope {
+    val notification = models.BreakingNewsNotification(
+      id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      title = Some("Test notification"),
+      message = Some("The message"),
+      thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
+      sender = "UnitTests",
+      link = Internal("some/capi/id", None, GITContent, Some("5dd7ca0f8f080fd59fb15354")),
+      imageUrl = Some(new URI("https://invalid.url/img.png")),
+      importance = Major,
+      topic = List(Topic(`type` = Breaking, name = "uk")),
+      dryRun = None
+    )
+
+    val expected = Some(
+      FirebaseAndroidNotification(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
+          Keys.NotificationType -> "news",
+          Keys.Type -> "custom",
+          Keys.Title -> "Test notification",
+          Keys.Ticker -> "The message",
+          Keys.Message -> "The message",
+          Keys.Debug -> "true",
+          Keys.Editions -> "uk",
+          Keys.Link -> "x-gu://www.guardian.co.uk/some/capi/id?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
+          Keys.UriType -> "item",
+          Keys.Uri -> "x-gu:///items/some/capi/id?page=with:block-5dd7ca0f8f080fd59fb15354#block-5dd7ca0f8f080fd59fb15354",
           Keys.Edition -> "uk",
           Keys.ImageUrl -> "https://invalid.url/img.png",
           Keys.ThumbnailUrl -> "https://invalid.url/img.png"
