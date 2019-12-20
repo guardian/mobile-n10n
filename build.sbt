@@ -25,14 +25,16 @@ scalacOptions in ThisBuild ++= compilerOptions
 val minJacksonVersion: String = "2.8.9"
 val minJacksonLibs = Seq(
   "com.fasterxml.jackson.core" % "jackson-core" % minJacksonVersion,
-  "com.fasterxml.jackson.core" % "jackson-databind" % minJacksonVersion,
   "com.fasterxml.jackson.core" % "jackson-annotations" % minJacksonVersion,
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion
 )
 
-val playJsonVersion = "2.6.9"
+val jacksonDatabind = "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10.1"
+val jacksonDatatype = "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.9.8"
+
+val playJsonVersion = "2.6.14"
 val specsVersion: String = "4.0.3"
-val awsSdkVersion: String = "1.11.433"
+val awsSdkVersion: String = "1.11.692"
 val doobieVersion: String = "0.6.0"
 val catsVersion: String = "1.4.0"
 val simpleConfigurationVersion: String = "1.5.0"
@@ -62,7 +64,9 @@ lazy val commoneventconsumer = project
   .settings(Seq(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.specs2" %% "specs2-core" % specsVersion % "test"
+      "org.specs2" %% "specs2-core" % specsVersion % "test",
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10.1",
+      "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.9.8"
     )
   ))
 
@@ -70,7 +74,9 @@ lazy val commontest = project
   .settings(Seq(
     libraryDependencies ++= Seq(
       specs2,
-      playCore
+      playCore,
+      jacksonDatabind,
+      jacksonDatatype
     )
   ))
 
@@ -101,6 +107,8 @@ lazy val common = project
       "com.gu" %% "mobile-logstash-encoder" % "1.0.2"
     ),
     libraryDependencies ++= minJacksonLibs,
+    libraryDependencies += jacksonDatabind,
+    libraryDependencies += jacksonDatatype,
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
@@ -120,6 +128,7 @@ lazy val commonscheduledynamodb = project
 
     ),
     libraryDependencies ++= minJacksonLibs,
+    libraryDependencies += jacksonDatabind,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
     testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
     testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
@@ -203,7 +212,9 @@ lazy val apiModels = {
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
-      "org.specs2" %% "specs2-mock" % specsVersion % "test"
+      "org.specs2" %% "specs2-mock" % specsVersion % "test",
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10.1",
+      "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.9.8"
     ),
     organization := "com.gu",
     bintrayOrganization := Some("guardian"),
@@ -298,7 +309,8 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
-        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0"
+        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10.1"
       ),
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml")
     )
