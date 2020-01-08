@@ -22,15 +22,15 @@ val compilerOptions = Seq(
 
 scalacOptions in ThisBuild ++= compilerOptions
 
-val minJacksonVersion: String = "2.8.9"
+val minJacksonVersion: String = "2.10.1"
 val minJacksonLibs = Seq(
   "com.fasterxml.jackson.core" % "jackson-core" % minJacksonVersion,
   "com.fasterxml.jackson.core" % "jackson-annotations" % minJacksonVersion,
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion,
 )
 
-val jacksonDatabind = "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10.1"
-val jacksonDatatype = "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.9.8"
+val jacksonDatabind = "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.1"
+val jacksonDatatype = "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.10.1"
 
 val playJsonVersion = "2.6.14"
 val specsVersion: String = "4.0.3"
@@ -65,8 +65,8 @@ lazy val commoneventconsumer = project
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
-      "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10.1",
-      "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.9.8"
+      jacksonDatabind,
+      jacksonDatatype
     )
   ))
 
@@ -213,8 +213,8 @@ lazy val apiModels = {
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
-      "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10.1",
-      "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.9.8"
+      jacksonDatabind,
+      jacksonDatatype
     ),
     organization := "com.gu",
     bintrayOrganization := Some("guardian"),
@@ -310,7 +310,7 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
         "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.10.1"
+        jacksonDatabind
       ),
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml")
     )
