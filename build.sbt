@@ -22,17 +22,18 @@ val compilerOptions = Seq(
 
 scalacOptions in ThisBuild ++= compilerOptions
 
-val minJacksonVersion: String = "2.8.9"
+val minJacksonVersion: String = "2.10.1"
 val minJacksonLibs = Seq(
   "com.fasterxml.jackson.core" % "jackson-core" % minJacksonVersion,
-  "com.fasterxml.jackson.core" % "jackson-databind" % minJacksonVersion,
   "com.fasterxml.jackson.core" % "jackson-annotations" % minJacksonVersion,
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-databind" % minJacksonVersion,
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % minJacksonVersion
 )
 
-val playJsonVersion = "2.6.9"
+val playJsonVersion = "2.6.14"
 val specsVersion: String = "4.0.3"
-val awsSdkVersion: String = "1.11.433"
+val awsSdkVersion: String = "1.11.692"
 val doobieVersion: String = "0.6.0"
 val catsVersion: String = "1.4.0"
 val simpleConfigurationVersion: String = "1.5.0"
@@ -62,16 +63,18 @@ lazy val commoneventconsumer = project
   .settings(Seq(
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.specs2" %% "specs2-core" % specsVersion % "test"
-    )
+      "org.specs2" %% "specs2-core" % specsVersion % "test",
+    ),
+    libraryDependencies ++= minJacksonLibs,
   ))
 
 lazy val commontest = project
   .settings(Seq(
     libraryDependencies ++= Seq(
       specs2,
-      playCore
-    )
+      playCore,
+    ),
+    libraryDependencies ++= minJacksonLibs,
   ))
 
 
@@ -203,8 +206,9 @@ lazy val apiModels = {
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
-      "org.specs2" %% "specs2-mock" % specsVersion % "test"
+      "org.specs2" %% "specs2-mock" % specsVersion % "test",
     ),
+    libraryDependencies ++= minJacksonLibs,
     organization := "com.gu",
     bintrayOrganization := Some("guardian"),
     bintrayRepository := "mobile",
@@ -298,8 +302,9 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
-        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0"
+        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
       ),
+      libraryDependencies ++= minJacksonLibs,
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml")
     )
   })
