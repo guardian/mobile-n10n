@@ -89,6 +89,10 @@ Parameters:
   S3TopicCountBucket:
     Type: String
     Description: Name of the bucket storing the persisted topic subscription counts
+  DashboardCopy:
+    Type: String
+    Description: Copy and link to CloudWatch dashboard (used for alerts)
+    Default: Check the dashboard for more details - https://eu-west-1.console.aws.amazon.com/cloudwatch/home?region=eu-west-1#dashboards:name=NotificationsN10N.
 
 Resources:
   DnsRecord:
@@ -360,7 +364,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
-      AlarmDescription: !Sub Triggers if notification errors in ${Stage} with 5XX
+      AlarmDescription: !Sub Triggers if notification errors in ${Stage} with 5XX. ${DashboardCopy}
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: LoadBalancerName
@@ -377,7 +381,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
-      AlarmDescription: !Sub Triggers if load balancer errors in ${Stage} with 5XX
+      AlarmDescription: !Sub Triggers if load balancer errors in ${Stage} with 5XX. ${DashboardCopy}
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: LoadBalancerName
