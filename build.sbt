@@ -197,8 +197,8 @@ lazy val apiModels = {
   Project("api-models", file("api-models")).settings(Seq(
     name := "mobile-notifications-api-models",
     resolvers ++= Seq(
-      "Guardian GitHub Releases" at "http://guardian.github.io/maven/repo-releases",
-      "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+      "Guardian GitHub Releases" at "https://guardian.github.io/maven/repo-releases",
+      "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
     ),
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
