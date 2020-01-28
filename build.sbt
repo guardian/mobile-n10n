@@ -4,6 +4,8 @@ import sbt.Keys.{libraryDependencies, mainClass}
 import sbtassembly.AssemblyPlugin.autoImport.{assemblyJarName, assemblyMergeStrategy}
 import sbtassembly.MergeStrategy
 
+import scala.io.Source
+
 val projectVersion = "1.0-latest"
 
 
@@ -264,6 +266,8 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     assemblyJarName := s"$projectName.jar",
     assemblyMergeStrategy in assembly := {
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+      case path if path.startsWith("META-INF/versions/9/") => MergeStrategy.discard
+      case "module-info.class" => MergeStrategy.discard
       case _ => MergeStrategy.first
     },
     fork in (Test, run) := true,
@@ -310,8 +314,19 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
   })
 
 lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notificationworkerlambda", Some("com.gu.notifications.worker.TopicCounterLocalRun"))
+  .enablePlugins(SbtProguard)
   .dependsOn(common)
   .settings(
+    proguardOptions in Proguard ++= Seq("-dontpreverify", "-dontoptimize", "-dontnote", "-dontwarn", "-ignorewarnings", "-dontobfuscate", "-dontskipnonpubliclibraryclasses", "-dontskipnonpubliclibraryclassmembers"),
+    proguardOptions in Proguard ++= Source.fromFile(file("tokeep.pro")).mkString.split("-").filter(_.trim.nonEmpty).map(opt => s"-$opt").toSeq,
+    proguardInputs in Proguard := Seq((assemblyOutputPath in assembly).value),
+    proguardLibraries in Proguard := Seq(),
+    proguardInputFilter in Proguard := { file => None },
+    proguardMerge in Proguard := false,
+    proguardConfiguration in Proguard := file("proguard-rules.pro"),
+    //proguard := (Proguard / proguard).dependsOn(Compile / assembly).value,
+    Proguard / proguard / javaOptions := Seq("-Xmx2G"),
+    riffRaffPackageType := (Proguard / proguardOutputs).value.head,
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.9",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
