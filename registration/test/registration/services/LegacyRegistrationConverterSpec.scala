@@ -86,7 +86,8 @@ class LegacyRegistrationConverterSpec extends Specification {
       deviceToken = DeviceToken("abc"),
       platform = Ios,
       topics = Set(Topic(TopicTypes.Breaking, "uk")),
-      buildTier = Some("test")
+      buildTier = Some("test"),
+      appVersion = None
     )
   }
 }
