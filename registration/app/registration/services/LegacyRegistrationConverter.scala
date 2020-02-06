@@ -35,7 +35,8 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
       deviceToken = deviceToken,
       platform = platform,
       topics = topics(legacyRegistration),
-      buildTier = Some(legacyRegistration.device.buildTier)
+      buildTier = Some(legacyRegistration.device.buildTier),
+      appVersion = None
     )
   }
 
