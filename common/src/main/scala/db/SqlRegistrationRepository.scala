@@ -19,7 +19,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
 
   override def findByToken(token: String): Stream[F, Registration] = {
     sql"""
-         SELECT token, platform, topic, shard, lastModified
+         SELECT token, platform, topic, shard, lastModified, buildTier
          FROM registrations
          WHERE token = $token
       """
@@ -41,7 +41,8 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
     .update.run
   }
 
-  def insert(reg: Registration): ConnectionIO[Int] =
+  def insert(reg: Registration): ConnectionIO[Int] = {
+    val buildTierForDb: Option[String] = reg.buildTier.map(_.tier)
     sql"""
         INSERT INTO registrations (token, platform, topic, shard, lastModified, buildTier)
         VALUES (
@@ -50,10 +51,11 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
           ${reg.topic.name},
           ${reg.shard.id},
           CURRENT_TIMESTAMP,
-          ${reg.buildTier.map(_.tier)}
+          $buildTierForDb
         )
       """
     .update.run
+  }
 
   override def topicCounts(countThreshold: Int): Stream[F, TopicCount] = {
     sql"""
