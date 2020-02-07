@@ -30,6 +30,7 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
           platform VARCHAR NOT NULL,
           shard SMALLINT NOT NULL,
           lastModified TIMESTAMP WITH TIME ZONE NOT NULL,
+          buildTier VARCHAR,
           PRIMARY KEY (token, topic)
         )
         """
@@ -47,13 +48,13 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
   def run[A](io: IO[A]) = io.unsafeRunSync()
 
   val registrations = Seq(
-    Registration(Device("a", Android), Topic("topic1"), Shard(1)),
-    Registration(Device("b", Ios), Topic("topic1"), Shard(1)),
-    Registration(Device("c", Ios), Topic("topic1"), Shard(1)),
-    Registration(Device("d", Ios), Topic("topic1"), Shard(2)),
-    Registration(Device("e", Android), Topic("topic2"), Shard(1)),
-    Registration(Device("f", Ios), Topic("topic3"), Shard(1)),
-    Registration(Device("f", Android), Topic("topic4"), Shard(1))
+    Registration(Device("a", Android), Topic("topic1"), Shard(1), None, None),
+    Registration(Device("b", Ios), Topic("topic1"), Shard(1), None, None),
+    Registration(Device("c", Ios), Topic("topic1"), Shard(1), None, None),
+    Registration(Device("d", Ios), Topic("topic1"), Shard(2), None, None),
+    Registration(Device("e", Android), Topic("topic2"), Shard(1), None, None),
+    Registration(Device("f", Ios), Topic("topic3"), Shard(1), None, None),
+    Registration(Device("f", Android), Topic("topic4"), Shard(1), None, None)
   )
 
   def shardOrdering: Ordering[Registration] = _.shard.id compare _.shard.id
@@ -67,10 +68,17 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
   val topics2 = NonEmptyList.one(Topic("topic2"))
 
   "RegistrationService" should {
-    "allow adding registration" in {
-      val reg = Registration(Device("something", Android), Topic("someTopic"), Shard(1))
+
+    "allow adding registration (without a build tier specified)" in {
+      val reg = Registration(Device("something", Android), Topic("someTopic"), Shard(1), None, None)
       run(service.insert(reg)) should equalTo(1)
     }
+
+    "allow adding registration (with a build tier specified)" in {
+      val reg = Registration(Device("something", Android), Topic("someTopic"), Shard(1), None, Some(BuildTier("RELEASE")))
+      run(service.insert(reg)) should equalTo(1)
+    }
+
     "allow finding registrations by topics and shard" in {
       run(service.findTokens(topicsAll, None)).length should equalTo(7)
       run(service.findTokens(topics1, None)).length should equalTo(4)

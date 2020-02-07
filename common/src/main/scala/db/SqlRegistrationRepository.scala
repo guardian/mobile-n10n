@@ -43,13 +43,14 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
 
   def insert(reg: Registration): ConnectionIO[Int] =
     sql"""
-        INSERT INTO registrations (token, platform, topic, shard, lastModified)
+        INSERT INTO registrations (token, platform, topic, shard, lastModified, buildTier)
         VALUES (
           ${reg.device.token},
           ${reg.device.platform},
           ${reg.topic.name},
           ${reg.shard.id},
-          CURRENT_TIMESTAMP
+          CURRENT_TIMESTAMP,
+          ${reg.buildTier.map(_.tier)}
         )
       """
     .update.run
