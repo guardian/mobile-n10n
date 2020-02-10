@@ -54,7 +54,7 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
     Registration(Device("d", Ios), Topic("topic1"), Shard(2), None, None),
     Registration(Device("e", Android), Topic("topic2"), Shard(1), None, None),
     Registration(Device("f", Ios), Topic("topic3"), Shard(1), None, None),
-    Registration(Device("f", Android), Topic("topic4"), Shard(1), None, None)
+    Registration(Device("f", Android), Topic("topic4"), Shard(1), None, Some(BuildTier.RELEASE))
   )
 
   def shardOrdering: Ordering[Registration] = _.shard.id compare _.shard.id
@@ -75,7 +75,7 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
     }
 
     "allow adding registration (with a build tier specified)" in {
-      val reg = Registration(Device("something", Android), Topic("someTopic"), Shard(1), None, Some(BuildTier("RELEASE")))
+      val reg = Registration(Device("something", Android), Topic("someTopic"), Shard(1), None, Some(BuildTier.RELEASE))
       run(service.insert(reg)) should equalTo(1)
     }
 

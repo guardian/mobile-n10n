@@ -42,7 +42,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   }
 
   def insert(reg: Registration): ConnectionIO[Int] = {
-    val buildTierForDb: Option[String] = reg.buildTier.map(_.tier)
+    val buildTierForDb: Option[String] = reg.buildTier.map(_.value.toString)
     sql"""
         INSERT INTO registrations (token, platform, topic, shard, lastModified, buildTier)
         VALUES (

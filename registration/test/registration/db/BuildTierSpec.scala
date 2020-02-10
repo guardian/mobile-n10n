@@ -11,17 +11,17 @@ class BuildTierSpec extends Specification {
     // This test should be deleted as part of https://theguardian.atlassian.net/browse/MSS-1392
     "Mark an Android beta build which fails to send an app version as a release build" in {
       val result = BuildTier.chooseTier(Some("BETA"), Android, None)
-      result.contains(BuildTier("RELEASE"))
+      result.contains(BuildTier.RELEASE)
     }
 
     "Mark an Android beta build which includes an app version as a beta build" in {
       val result = BuildTier.chooseTier(Some("BETA"), Android, Some("3000"))
-      result.contains(BuildTier("BETA"))
+      result.contains(BuildTier.BETA)
     }
 
     "Mark an iOS beta build as a beta build" in {
       val result = BuildTier.chooseTier(Some("BETA"), Ios, None)
-      result.contains(BuildTier("BETA"))
+      result.contains(BuildTier.BETA)
     }
 
     "Return None if the client sends an invalid build tier" in {
