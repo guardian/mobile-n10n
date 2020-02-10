@@ -96,6 +96,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
           platform VARCHAR NOT NULL,
           shard SMALLINT NOT NULL,
           lastModified TIMESTAMP WITH TIME ZONE NOT NULL,
+          buildTier VARCHAR,
           PRIMARY KEY (token, topic)
         )""".update.run
 

@@ -24,7 +24,12 @@ class DatabaseRegistrar(
     def toDBRegistration(topic: Topic) = db.Registration(
       device = db.Device(deviceToken.token, registration.platform),
       topic = db.Topic(topic.toString),
-      shard = db.Shard.fromToken(deviceToken)
+      shard = db.Shard.fromToken(deviceToken),
+      buildTier = db.BuildTier.chooseTier(
+        buildTier = registration.buildTier,
+        platform = registration.platform,
+        appVersion = registration.appVersion
+      )
     )
 
     val dbRegistrations = registration.topics.toList.map(toDBRegistration)
