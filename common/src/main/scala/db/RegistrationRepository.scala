@@ -10,5 +10,6 @@ trait RegistrationRepository[F[_], S[_[_], _]] {
   def insert(reg: Registration): ConnectionIO[Int]
   def delete(sub: Registration): ConnectionIO[Int]
   def deleteByToken(token: String): ConnectionIO[Int]
+  def deleteByDate(olderThanDays: Int): ConnectionIO[Int]
   def topicCounts(countsThreshold: Int): S[F, TopicCount]
 }

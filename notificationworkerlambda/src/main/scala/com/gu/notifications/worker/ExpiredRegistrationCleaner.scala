@@ -3,7 +3,7 @@ package com.gu.notifications.worker
 import cats.effect.{ContextShift, IO}
 import com.amazonaws.auth.AWSCredentialsProviderChain
 import com.gu.notifications.worker.utils.Aws
-import db.DatabaseConfig
+import db.{DatabaseConfig, RegistrationService}
 import doobie.util.transactor.Transactor
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -18,6 +18,7 @@ class ExpiredRegistrationCleaner {
 }
 
 class ExpiredRegistrationCleanerLambda {
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   def env = Env()
 
   lazy val credentials: AWSCredentialsProviderChain = Aws.credentialsProvider
@@ -28,9 +29,12 @@ class ExpiredRegistrationCleanerLambda {
   val config: CleanerConfiguration = Configuration.fetchCleaner()
   val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
 
+  val registrationService = RegistrationService(transactor)
+
   def handleRequest(): Unit = {
-    val cleaner = new ExpiredRegistrationCleaner
-    cleaner.clean()
+    val olderThanDays = 300
+    val rowCount = registrationService.deleteByDate(olderThanDays).unsafeRunSync()
+    logger.info(s"Deleted $rowCount rows older than $olderThanDays days")
   }
 }
 
