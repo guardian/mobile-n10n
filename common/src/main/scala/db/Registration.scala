@@ -5,8 +5,9 @@ import java.security.MessageDigest
 import java.sql.Timestamp
 import java.time.LocalDateTime
 
+import db.BuildTier.BuildTier
 import doobie.util.Meta
-import models.{DeviceToken, Platform}
+import models.{Android, DeviceToken, Platform}
 
 object Registration {
   implicit val PlatformMeta: Meta[Platform] =
@@ -14,11 +15,16 @@ object Registration {
       s => Platform.fromString(s).getOrElse(throw doobie.util.invariant.InvalidEnum[Platform](s)),
     )(_.toString)
 
+  implicit val BuildTierMeta: Meta[BuildTier] =
+    Meta[String].timap(
+      s => BuildTier.fromString(s).getOrElse(throw doobie.util.invariant.InvalidEnum[BuildTier](s)),
+    )(_.toString)
+
   implicit val DateTimeMeta: Meta[LocalDateTime] =
     Meta[Timestamp].timap(ts => ts.toLocalDateTime)(dt => Timestamp.valueOf(dt))
 }
 
-case class Registration(device: Device, topic: Topic, shard: Shard, lastModified: Option[LocalDateTime] = None)
+case class Registration(device: Device, topic: Topic, shard: Shard, lastModified: Option[LocalDateTime] = None, buildTier: Option[BuildTier])
 case class Device(token: String, platform: Platform)
 case class Topic(name: String)
 case class Shard(id: Short)
@@ -38,4 +44,24 @@ object Shard {
       Shard(0)
     }
   }
+}
+
+object BuildTier extends Enumeration {
+
+  type BuildTier = Value
+  val DEBUG, BETA, RELEASE = Value
+
+  def fromString(s: String): Option[BuildTier] = values.find(_.toString == s)
+
+  def chooseTier(buildTier: Option[String], platform: Platform, appVersion: Option[String]): Option[BuildTier] = {
+    buildTier.flatMap { tier =>
+      val tierFromClient = BuildTier.fromString(tier)
+      if (tierFromClient.contains(BETA) && platform == Android && appVersion.isEmpty) { //This case is a temporary lie to cope with the Android Firebase migration; it should be removed with https://theguardian.atlassian.net/browse/MSS-1392
+        Some(RELEASE)
+      } else {
+        tierFromClient
+      }
+    }
+  }
+
 }
