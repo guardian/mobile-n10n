@@ -41,6 +41,12 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
     .update.run
   }
 
+  override def deleteByDate(olderThanDays: Int): ConnectionIO[Int] = {
+    sql"""
+      delete from registrations.registrations where lastmodified <= now() - make_interval(days => $olderThanDays);
+    """.update.run
+  }
+
   def insert(reg: Registration): ConnectionIO[Int] = {
     val buildTierForDb: Option[String] = reg.buildTier.map(_.value.toString)
     sql"""

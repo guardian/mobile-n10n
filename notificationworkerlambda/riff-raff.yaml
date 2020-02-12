@@ -15,6 +15,7 @@ deployments:
         - registration-cleaning-worker-
         - topic-counter-
         - mobile-notifications-harvester-
+        - mobile-notifications-expired-registration-cleaner-
       fileName: notificationworkerlambda.jar
       prefixStack: false
     dependencies:
@@ -25,6 +26,7 @@ deployments:
       - registration-cleaning-worker-cfn
       - topic-counter-cfn
       - harvester-cfn
+      - expired-registration-cleaner-cfn
   harvester-cfn:
     type: cloud-formation
     app: harvester
@@ -72,4 +74,11 @@ deployments:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: topic-counter-cfn
       templatePath: topic-counter-cfn.yaml
+  expired-registration-cleaner-cfn:
+    type: cloud-formation
+    app: expired-registration-cleaner
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: expired-registration-cleaner-cfn
+      templatePath: expired-registration-cleaner-cfn.yaml
 

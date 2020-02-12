@@ -36,6 +36,9 @@ class RegistrationService[F[_]: Async, S[_[_], _]](repository: RegistrationRepos
     repository.delete(registration).transact(xa)
   }
 
+  def deleteByDate(olderThanDays: Int): F[Int] =
+    repository.deleteByDate(olderThanDays).transact(xa)
+
   def removeAllByToken(token: String): F[Int] = {
     repository.deleteByToken(token).transact(xa)
   }
