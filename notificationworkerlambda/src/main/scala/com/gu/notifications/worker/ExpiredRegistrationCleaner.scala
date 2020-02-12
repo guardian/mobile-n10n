@@ -1,8 +1,6 @@
 package com.gu.notifications.worker
 
 import cats.effect.{ContextShift, IO}
-import com.amazonaws.auth.AWSCredentialsProviderChain
-import com.gu.notifications.worker.utils.Aws
 import db.{DatabaseConfig, RegistrationService}
 import doobie.util.transactor.Transactor
 import org.slf4j.{Logger, LoggerFactory}
@@ -11,9 +9,6 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 class ExpiredRegistrationCleanerLambda {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  def env = Env()
-
-  lazy val credentials: AWSCredentialsProviderChain = Aws.credentialsProvider
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
