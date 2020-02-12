@@ -9,14 +9,6 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-class ExpiredRegistrationCleaner {
-  def logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-  def clean(): Unit = {
-    logger.info("Hello")
-  }
-}
-
 class ExpiredRegistrationCleanerLambda {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   def env = Env()
