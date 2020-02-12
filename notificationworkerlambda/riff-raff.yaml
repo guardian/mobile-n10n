@@ -15,7 +15,7 @@ deployments:
         - registration-cleaning-worker-
         - topic-counter-
         - mobile-notifications-harvester-
-        - expired-registration-cleaner-
+        - mobile-notifications-expired-registration-cleaner-
       fileName: notificationworkerlambda.jar
       prefixStack: false
     dependencies:
