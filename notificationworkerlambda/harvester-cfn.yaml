@@ -56,7 +56,7 @@ Resources:
   Sqs:
     Type: AWS::SQS::Queue
     Properties:
-      VisibilityTimeout: 300
+      VisibilityTimeout: 70
       MessageRetentionPeriod: 3600 # 1 hour
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt Dlq.Arn
@@ -148,7 +148,7 @@ Resources:
       MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
-      Timeout: 300
+      Timeout: 60
       ReservedConcurrentExecutions: 200
       VpcConfig:
         SecurityGroupIds:
@@ -189,22 +189,21 @@ Resources:
       Statistic: Sum
       Threshold: 0
 
-
-  ErrorAlarm:
+  DlqDepthAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmActions: [!Ref AlarmTopic]
-      AlarmDescription: !Sub Triggers if the ${App} lambda errors in ${Stage}
-      ComparisonOperator: GreaterThanThreshold
+      AlarmDescription: !Sub Triggers if the ${App} lambda failed to process some messages in ${Stage}. Check the logs of ${App} for errors.
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
       Dimensions:
-      - Name: FunctionName
-        Value: !Sub ${Stack}-${App}-${Stage}
-      EvaluationPeriods: 1
-      MetricName: Errors
-      Namespace: AWS/Lambda
-      Period: 360
+        - Name: QueueName
+          Value: !GetAtt Dlq.QueueName
+      Period: 60
       Statistic: Sum
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
       Threshold: 0
+      AlarmActions: [!Ref AlarmTopic]
       TreatMissingData: notBreaching
 
   TooFewInvocationsAlarm:
