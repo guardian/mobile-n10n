@@ -11,6 +11,7 @@ deployments:
         - ios-notification-worker-sender-
         - android-notification-worker-sender-
         - ios-edition-notification-worker-sender-
+        - android-beta-notification-worker-sender-
         - android-edition-notification-worker-sender-
         - registration-cleaning-worker-
         - topic-counter-
@@ -22,6 +23,7 @@ deployments:
       - ios-notification-worker-cfn
       - android-notification-worker-cfn
       - ios-edition-notification-worker-cfn
+      - android-beta-notification-worker-cfn
       - android-edition-notification-worker-cfn
       - registration-cleaning-worker-cfn
       - topic-counter-cfn
@@ -59,6 +61,13 @@ deployments:
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: android-edition-notification-worker-cfn
+      templatePath: sender-worker-cfn.yaml
+  android-beta-notification-worker-cfn:
+    type: cloud-formation
+    app: android-beta-notification-worker
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: android-beta-notification-worker-cfn
       templatePath: sender-worker-cfn.yaml
   registration-cleaning-worker-cfn:
     type: cloud-formation

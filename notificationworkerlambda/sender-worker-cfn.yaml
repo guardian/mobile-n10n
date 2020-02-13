@@ -33,12 +33,16 @@ Parameters:
     Description: The platform handled by this worker
     AllowedValues:
       - android
+      - android-beta
       - ios
       - android-edition
       - ios-edition
   SenderTooFewInvocationsAlarmPeriod:
     Type: String
     Description: How long until no execution is suspicious, in seconds
+  ReservedConcurrency:
+    Type: String
+    Description: How many concurrent execution to provision the lamdba with
 
 Conditions:
   IsProdStage: !Equals [!Ref Stage, PROD]
@@ -58,7 +62,7 @@ Resources:
   SenderSqs:
     Type: AWS::SQS::Queue
     Properties:
-      VisibilityTimeout: 45
+      VisibilityTimeout: 100
       MessageRetentionPeriod: 3600 # 1 hour
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt SenderDlq.Arn
@@ -145,7 +149,7 @@ Resources:
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 90
-      ReservedConcurrentExecutions: 1000
+      ReservedConcurrentExecutions: !Ref ReservedConcurrency
       Tags:
         - Key: Stage
           Value: !Ref Stage
