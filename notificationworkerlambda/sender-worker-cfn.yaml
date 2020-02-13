@@ -40,6 +40,9 @@ Parameters:
   SenderTooFewInvocationsAlarmPeriod:
     Type: String
     Description: How long until no execution is suspicious, in seconds
+  ReservedConcurrency:
+    Type: String
+    Description: How many concurrent execution to provision the lamdba with
 
 Conditions:
   IsProdStage: !Equals [!Ref Stage, PROD]
@@ -146,7 +149,7 @@ Resources:
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 90
-      ReservedConcurrentExecutions: 1000
+      ReservedConcurrentExecutions: !Ref ReservedConcurrency
       Tags:
         - Key: Stage
           Value: !Ref Stage
