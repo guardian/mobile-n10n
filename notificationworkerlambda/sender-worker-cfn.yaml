@@ -33,6 +33,7 @@ Parameters:
     Description: The platform handled by this worker
     AllowedValues:
       - android
+      - android-beta
       - ios
       - android-edition
       - ios-edition
@@ -58,7 +59,7 @@ Resources:
   SenderSqs:
     Type: AWS::SQS::Queue
     Properties:
-      VisibilityTimeout: 45
+      VisibilityTimeout: 100
       MessageRetentionPeriod: 3600 # 1 hour
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt SenderDlq.Arn
