@@ -1,6 +1,6 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Android, Ios, Newsstand, AndroidEdition, IosEdition, Platform, ShardedNotification}
+import _root_.models.{Android, AndroidEdition, Ios, IosEdition, Newsstand, Platform, ShardedNotification, Registration}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -41,7 +41,7 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def platformSink(shardedNotification: ShardedNotification, platform: Platform, deliveryService: SqsDeliveryService[IO]): Sink[IO, (String, Platform)] = {
-    val iosSinkErrors = sinkErrors(platform)
+    val platformSinkErrors = sinkErrors(platform)
     tokens =>
       tokens
         .collect {
@@ -54,7 +54,7 @@ trait HarvesterRequestHandler extends Logging {
         .collect {
           case Left(throwable) => throwable
         }
-        .to(iosSinkErrors)
+        .to(platformSinkErrors)
 
   }
 
