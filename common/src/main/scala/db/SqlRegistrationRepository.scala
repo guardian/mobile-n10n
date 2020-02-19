@@ -75,7 +75,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         .transact(xa)
   }
 
-  override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): Stream[F, (String, Platform)] = {
+  override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): Stream[F, HarvestedToken] = {
     (sql"""
         SELECT token, platform
         FROM registrations
@@ -98,7 +98,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         (token, maybePlatform)
       }}
       .collect {
-        case (token, Some(platform)) => (token, platform)
+        case (token, Some(platform)) => HarvestedToken(token, platform)
       }
   }
 }

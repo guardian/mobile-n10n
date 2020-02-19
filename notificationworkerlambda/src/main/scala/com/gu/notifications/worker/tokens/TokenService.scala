@@ -5,7 +5,7 @@ import cats.data.NonEmptyList
 import cats.effect.{Async, Concurrent, Timer}
 import cats.syntax.list._
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidTopics
-import db.{RegistrationService, Topic}
+import db.{HarvestedToken, RegistrationService, Topic}
 import fs2.Stream
 import play.api.libs.json.{Format, Json}
 
@@ -25,7 +25,7 @@ trait TokenService[F[_]] {
   def tokens(
     notification: Notification,
     shardRange: ShardRange
-  ): Stream[F, (String, Platform)]
+  ): Stream[F, HarvestedToken]
 }
 
 class TokenServiceImpl[F[_]](
@@ -36,7 +36,7 @@ class TokenServiceImpl[F[_]](
   T: Timer[F]
 ) extends TokenService[F] {
 
-  override def tokens(notification: Notification, shardRange: ShardRange): Stream[F, (String, Platform)] = {
+  override def tokens(notification: Notification, shardRange: ShardRange): Stream[F, HarvestedToken] = {
     val topicsF: F[NonEmptyList[Topic]] = notification
       .topic
       .map(t => Topic(t.fullName))

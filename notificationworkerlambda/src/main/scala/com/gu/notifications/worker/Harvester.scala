@@ -1,12 +1,12 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Android, AndroidEdition, Ios, IosEdition, Newsstand, Platform, ShardedNotification, Registration}
+import _root_.models.{Android, AndroidEdition, Ios, IosEdition, Newsstand, Platform, Registration, ShardedNotification}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, SqsDeliveryServiceImpl, TokenService, TokenServiceImpl}
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, Logging, NotificationParser}
-import db.{DatabaseConfig, RegistrationService}
+import db.{DatabaseConfig, HarvestedToken, RegistrationService}
 import doobie.util.transactor.Transactor
 import fs2.{Sink, Stream}
 import org.slf4j.{Logger, LoggerFactory}
@@ -40,12 +40,12 @@ trait HarvesterRequestHandler extends Logging {
     throwables.broadcastTo(logErrors, cloudwatch.sendFailures(env.stage, platform))
   }
 
-  def platformSink(shardedNotification: ShardedNotification, platform: Platform, deliveryService: SqsDeliveryService[IO]): Sink[IO, (String, Platform)] = {
+  def platformSink(shardedNotification: ShardedNotification, platform: Platform, deliveryService: SqsDeliveryService[IO]): Sink[IO, HarvestedToken] = {
     val platformSinkErrors = sinkErrors(platform)
     tokens =>
       tokens
         .collect {
-          case (token, tokenPlatform) if tokenPlatform == platform => token
+          case HarvestedToken(token, tokenPlatform) if tokenPlatform == platform => token
         }
         .chunkN(1000)
         .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range))
