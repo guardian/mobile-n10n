@@ -96,7 +96,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         if(maybePlatform.isEmpty) {
           logger.error(s"Unknown platform in db $platformString")
         }
-        val maybeBuildTier: Option[BuildTier] = BuildTier.fromString(buildTierString.toString)
+        val maybeBuildTier: Option[BuildTier] = BuildTier.fromString(buildTierString.getOrElse(""))
         (token, maybePlatform, maybeBuildTier)
       }}
       .collect {
@@ -104,4 +104,3 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       }
   }
 }
-
