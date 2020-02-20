@@ -7,6 +7,7 @@ import doobie.util.transactor.Transactor
 import fs2.Stream
 import Registration._
 import cats.data.NonEmptyList
+import db.BuildTier.BuildTier
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 import doobie.Fragments
@@ -87,7 +88,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       )
       ++ fr"GROUP BY token, platform"
       )
-      .query[(String, String, String)]
+      .query[(String, String, Option[String])]
       .stream
       .transact(xa)
       .map{ case (token, platformString, buildTierString) => {
@@ -95,7 +96,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         if(maybePlatform.isEmpty) {
           logger.error(s"Unknown platform in db $platformString")
         }
-        val maybeBuildTier = BuildTier.fromString(buildTierString)
+        val maybeBuildTier: Option[BuildTier] = BuildTier.fromString(buildTierString.toString)
         (token, maybePlatform, maybeBuildTier)
       }}
       .collect {
@@ -103,3 +104,4 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       }
   }
 }
+
