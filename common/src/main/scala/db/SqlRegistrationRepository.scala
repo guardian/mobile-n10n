@@ -77,7 +77,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
 
   override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): Stream[F, HarvestedToken] = {
     (sql"""
-        SELECT token, platform
+        SELECT token, platform, buildTier
         FROM registrations
     """
       ++
@@ -87,18 +87,19 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       )
       ++ fr"GROUP BY token, platform"
       )
-      .query[(String, String)]
+      .query[(String, String, String)]
       .stream
       .transact(xa)
-      .map{ case(token, platformString) => {
+      .map{ case (token, platformString, buildTierString) => {
         val maybePlatform = Platform.fromString(platformString)
         if(maybePlatform.isEmpty) {
           logger.error(s"Unknown platform in db $platformString")
         }
-        (token, maybePlatform)
+        val maybeBuildTier = BuildTier.fromString(buildTierString)
+        (token, maybePlatform, maybeBuildTier)
       }}
       .collect {
-        case (token, Some(platform)) => HarvestedToken(token, platform)
+        case (token, Some(platform), Some(buildTier)) => HarvestedToken(token, platform, Some(buildTier))
       }
   }
 }

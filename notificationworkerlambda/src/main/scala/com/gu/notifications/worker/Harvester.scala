@@ -1,12 +1,13 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Android, AndroidEdition, Ios, IosEdition, Newsstand, Platform, Registration, ShardedNotification}
+import _root_.models.{Android, AndroidEdition, Ios, IosEdition, Newsstand, Platform, ShardedNotification}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, SqsDeliveryServiceImpl, TokenService, TokenServiceImpl}
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, Logging, NotificationParser}
-import db.{DatabaseConfig, HarvestedToken, RegistrationService}
+import db.BuildTier.BuildTier
+import db.{BuildTier, DatabaseConfig, HarvestedToken, RegistrationService}
 import doobie.util.transactor.Transactor
 import fs2.{Sink, Stream}
 import org.slf4j.{Logger, LoggerFactory}
@@ -26,6 +27,7 @@ trait HarvesterRequestHandler extends Logging {
   val iosEditionDeliveryService: SqsDeliveryService[IO]
   val androidLiveDeliveryService: SqsDeliveryService[IO]
   val androidEditionDeliveryService: SqsDeliveryService[IO]
+  val androidBetaDeliveryService: SqsDeliveryService[IO]
 
   val tokenService: TokenService[IO]
   val cloudwatch: Cloudwatch
@@ -40,12 +42,12 @@ trait HarvesterRequestHandler extends Logging {
     throwables.broadcastTo(logErrors, cloudwatch.sendFailures(env.stage, platform))
   }
 
-  def platformSink(shardedNotification: ShardedNotification, platform: Platform, deliveryService: SqsDeliveryService[IO]): Sink[IO, HarvestedToken] = {
+  def platformSink(shardedNotification: ShardedNotification, platform: Platform, deliveryService: SqsDeliveryService[IO], buildTier: Option[BuildTier] = None): Sink[IO, HarvestedToken] = {
     val platformSinkErrors = sinkErrors(platform)
     tokens =>
       tokens
         .collect {
-          case HarvestedToken(token, tokenPlatform) if tokenPlatform == platform => token
+          case HarvestedToken(token, tokenPlatform, Some(tokenBuildTier)) if tokenPlatform == platform && buildTier.contains(tokenBuildTier) => token
         }
         .chunkN(1000)
         .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range))
@@ -66,10 +68,11 @@ trait HarvesterRequestHandler extends Logging {
       newsstandSink = platformSink(shardedNotification, Newsstand, iosEditionDeliveryService)
       androidEditionSink = platformSink(shardedNotification, AndroidEdition, androidEditionDeliveryService)
       iosEditionSink = platformSink(shardedNotification, IosEdition, iosEditionDeliveryService)
+      androidBetaSink = platformSink(shardedNotification, Android, androidBetaDeliveryService, Some(BuildTier.BETA))
       notificationLog = s"(notification: ${shardedNotification.notification.id} ${shardedNotification.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
-      resp <- tokens.broadcastTo(androidSink, iosSink, newsstandSink, androidEditionSink, iosEditionSink)
+      resp <- tokens.broadcastTo(androidSink, iosSink, newsstandSink, androidEditionSink, iosEditionSink, androidBetaSink)
     } yield resp
   }
 
@@ -95,4 +98,5 @@ class Harvester extends HarvesterRequestHandler {
   override val androidLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsUrl)
   override val iosEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl)
   override val androidEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl)
+  override val androidBetaDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
 }

@@ -13,7 +13,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, TokenService}
 import com.gu.notifications.worker.utils.Cloudwatch
-import db.HarvestedToken
+import db.{BuildTier, HarvestedToken}
 import fs2.{Sink, Stream}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
@@ -80,7 +80,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
     val twoThousandTwoTokens: List[String] = Range(0,2002).map(num => s"token-$num").toList
     def tokenStream: Stream[IO, String] = Stream.emits(twoThousandTwoTokens)
-    def tokenPlatformStream: Stream[IO, HarvestedToken] = Stream.emits(twoThousandTwoTokens.map(HarvestedToken(_, Android)) ::: twoThousandTwoTokens.map(HarvestedToken(_, Ios)))
+    def tokenPlatformStream: Stream[IO, HarvestedToken] = Stream.emits(twoThousandTwoTokens.map(HarvestedToken(_, Android, None)) ::: twoThousandTwoTokens.map(HarvestedToken(_, Ios, None)))
 
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 
@@ -108,6 +108,12 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       }
 
       override val androidLiveDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
+        firebaseSqsDeliveriesCount.incrementAndGet()
+        firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+        sqsDeliveries
+      }
+
+      override val androidBetaDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
         firebaseSqsDeliveriesCount.incrementAndGet()
         firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
         sqsDeliveries
