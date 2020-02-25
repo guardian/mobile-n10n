@@ -5,9 +5,11 @@ import cats.implicits._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
+import Registration._
 import cats.data.NonEmptyList
 import db.BuildTier.BuildTier
 import doobie.free.connection.ConnectionIO
+import doobie.postgres.sqlstate
 import doobie.Fragments
 import models.{Platform, TopicCount}
 import play.api.Logger
