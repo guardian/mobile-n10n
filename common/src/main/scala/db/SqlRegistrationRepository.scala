@@ -86,7 +86,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         Some(Fragments.in(fr"topic", topics)),
         shardRange.map(s => Fragments.and(fr"shard >= ${s.min}", fr"shard <= ${s.max}"))
       )
-      ++ fr"GROUP BY token, platform"
+      ++ fr"GROUP BY token, platform, buildTier"
       )
       .query[(String, String, Option[String])]
       .stream
@@ -96,11 +96,11 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         if(maybePlatform.isEmpty) {
           logger.error(s"Unknown platform in db $platformString")
         }
-        val maybeBuildTier: Option[BuildTier] = BuildTier.fromString(buildTierString.getOrElse(""))
+        val maybeBuildTier: Option[BuildTier] = buildTierString.flatMap(BuildTier.fromString)
         (token, maybePlatform, maybeBuildTier)
       }}
       .collect {
-        case (token, Some(platform), Some(buildTier)) => HarvestedToken(token, platform, Some(buildTier))
+        case (token, Some(platform), buildTier) => HarvestedToken(token, platform, buildTier)
       }
   }
 }

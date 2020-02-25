@@ -47,7 +47,7 @@ trait HarvesterRequestHandler extends Logging {
     tokens =>
       tokens
         .collect {
-          case HarvestedToken(token, tokenPlatform, Some(tokenBuildTier)) if tokenPlatform == platform && buildTier.contains(tokenBuildTier) => token
+          case HarvestedToken(token, tokenPlatform, tokenBuildTier) if tokenPlatform == platform && (buildTier.isEmpty || buildTier == tokenBuildTier) => token
         }
         .chunkN(1000)
         .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range))

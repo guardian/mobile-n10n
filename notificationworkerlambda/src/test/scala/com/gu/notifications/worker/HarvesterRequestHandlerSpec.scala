@@ -113,10 +113,10 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
         sqsDeliveries
       }
 
-      override val androidBetaDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
-        firebaseSqsDeliveriesCount.incrementAndGet()
-        firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
-        sqsDeliveries
+       override val androidBetaDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
+         firebaseSqsDeliveriesCount.incrementAndGet()
+         firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+         sqsDeliveries
       }
 
       override val iosEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
