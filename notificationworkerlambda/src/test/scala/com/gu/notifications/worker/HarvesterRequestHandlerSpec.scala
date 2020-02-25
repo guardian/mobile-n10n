@@ -13,7 +13,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, TokenService}
 import com.gu.notifications.worker.utils.Cloudwatch
-import db.{BuildTier, HarvestedToken}
+import db.HarvestedToken
 import fs2.{Sink, Stream}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
@@ -113,10 +113,10 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
         sqsDeliveries
       }
 
-       override val androidBetaDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
-         firebaseSqsDeliveriesCount.incrementAndGet()
-         firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
-         sqsDeliveries
+      override val androidBetaDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
+       firebaseSqsDeliveriesCount.incrementAndGet()
+       firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+       sqsDeliveries
       }
 
       override val iosEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
