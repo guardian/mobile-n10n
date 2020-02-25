@@ -13,8 +13,7 @@ case class HarvesterConfiguration(
   iosLiveSqsUrl: String,
   iosEditionSqsUrl: String,
   androidLiveSqsUrl: String,
-  androidEditionSqsUrl: String,
-  androidBetaSqsUrl: String
+  androidEditionSqsUrl: String
 )
 
 sealed trait WorkerConfiguration {
@@ -71,8 +70,7 @@ object Configuration {
       iosLiveSqsUrl = config.getString("iosLiveSqsUrl"),
       iosEditionSqsUrl = config.getString("iosEditionSqsUrl"),
       androidLiveSqsUrl = config.getString("androidLiveSqsUrl"),
-      androidEditionSqsUrl = config.getString("androidEditionSqsUrl"),
-      androidBetaSqsUrl = config.getString("androidBetaSqsUrl")
+      androidEditionSqsUrl = config.getString("androidEditionSqsUrl")
     )
   }
 
