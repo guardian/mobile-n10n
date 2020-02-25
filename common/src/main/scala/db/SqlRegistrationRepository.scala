@@ -7,6 +7,7 @@ import doobie.util.transactor.Transactor
 import fs2.Stream
 import Registration._
 import cats.data.NonEmptyList
+import db.BuildTier.BuildTier
 import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 import doobie.Fragments
@@ -75,9 +76,9 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         .transact(xa)
   }
 
-  override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): Stream[F, (String, Platform)] = {
+  override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): Stream[F, HarvestedToken] = {
     (sql"""
-        SELECT token, platform
+        SELECT token, platform, buildTier
         FROM registrations
     """
       ++
@@ -85,20 +86,21 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         Some(Fragments.in(fr"topic", topics)),
         shardRange.map(s => Fragments.and(fr"shard >= ${s.min}", fr"shard <= ${s.max}"))
       )
-      ++ fr"GROUP BY token, platform"
+      ++ fr"GROUP BY token, platform, buildTier"
       )
-      .query[(String, String)]
+      .query[(String, String, Option[String])]
       .stream
       .transact(xa)
-      .map{ case(token, platformString) => {
+      .map{ case (token, platformString, buildTierString) => {
         val maybePlatform = Platform.fromString(platformString)
         if(maybePlatform.isEmpty) {
           logger.error(s"Unknown platform in db $platformString")
         }
-        (token, maybePlatform)
+        val maybeBuildTier: Option[BuildTier] = buildTierString.flatMap(BuildTier.fromString)
+        (token, maybePlatform, maybeBuildTier)
       }}
       .collect {
-        case (token, Some(platform)) => (token, platform)
+        case (token, Some(platform), buildTier) => HarvestedToken(token, platform, buildTier)
       }
   }
 }
