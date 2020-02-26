@@ -27,9 +27,10 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
   type Payload = FcmPayload
   val dryRun = config.dryRun
 
-  private val invalidTokenErrorCodes = Seq(
+  private val invalidTokenErrorCodes = Set(
     "invalid-registration-token",
-    "registration-token-not-registered"
+    "registration-token-not-registered",
+    "mismatched-credential"
   )
 
   def close(): Unit = firebaseApp.delete()
