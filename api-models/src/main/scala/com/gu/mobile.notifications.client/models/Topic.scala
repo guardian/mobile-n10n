@@ -39,7 +39,8 @@ object Topic {
   val BreakingNewsCovid19Uk = Topic(Breaking, "uk-covid-19")
   val BreakingNewsCovid19Us = Topic(Breaking, "us-covid-19")
   val BreakingNewsCovid19Au = Topic(Breaking, "au-covid-19")
-  val BreakingNewsCovid19International = Topic(Breaking, "international-covid-19")
+  val BreakingNewsCovid19International = Topic(Breaking, "international-covid-19"),
+  val BreakingNewsCovid19Global = Topic(Breaking, "global-covid-19"),
   val BreakingNewsInternalTest = Topic(Breaking, "internal-test")
   val NewsstandIos = Topic(Newsstand, "newsstandIos")
 }
