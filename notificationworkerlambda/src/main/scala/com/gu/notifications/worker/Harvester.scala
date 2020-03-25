@@ -68,11 +68,10 @@ trait HarvesterRequestHandler extends Logging {
       newsstandSink = platformSink(shardedNotification, Newsstand, iosEditionDeliveryService)
       androidEditionSink = platformSink(shardedNotification, AndroidEdition, androidEditionDeliveryService)
       iosEditionSink = platformSink(shardedNotification, IosEdition, iosEditionDeliveryService)
-      androidBetaSink = platformSink(shardedNotification, Android, androidBetaDeliveryService, Some(BuildTier.BETA))
       notificationLog = s"(notification: ${shardedNotification.notification.id} ${shardedNotification.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
-      resp <- tokens.broadcastTo(androidSink, iosSink, newsstandSink, androidEditionSink, iosEditionSink, androidBetaSink)
+      resp <- tokens.broadcastTo(androidSink, iosSink, newsstandSink, androidEditionSink, iosEditionSink)
     } yield resp
   }
 
