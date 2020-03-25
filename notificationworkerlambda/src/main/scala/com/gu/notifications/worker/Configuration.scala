@@ -6,7 +6,7 @@ import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.typesafe.config.Config
 import db.JdbcConfig
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
-import _root_.models.{Platform, Ios, Android, IosEdition, AndroidEdition}
+import _root_.models.{Android, AndroidEdition, AndroidBeta, Ios, IosEdition, Platform}
 
 case class HarvesterConfiguration(
   jdbcConfig: JdbcConfig,
@@ -52,7 +52,7 @@ object Configuration {
   def platform: Option[Platform] = Option(System.getenv("Platform")).flatMap(Platform.fromString)
 
   def confPrefixFromPlatform: String = platform match {
-    case Some(p @ (Ios | Android | IosEdition | AndroidEdition)) => p.toString
+    case Some(p @ (Ios | Android | IosEdition | AndroidEdition | AndroidBeta)) => p.toString
     case _ => throw new IllegalStateException("No Platform environment variable defined")
   }
 
