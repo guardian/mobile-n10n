@@ -68,7 +68,7 @@ trait HarvesterRequestHandler extends Logging {
 
   }
 
-  def routeToSqs(harvestedToken: HarvestedToken): (WorkerSqs, HarvestedToken) = harvestedToken match {
+  def routeToSqs: PartialFunction[HarvestedToken, (WorkerSqs, HarvestedToken)] = {
     case token @ HarvestedToken(_, Ios, _) => (WorkerSqs.IosWorkerSqs, token)
     case token @ HarvestedToken(_, IosEdition, _) => (WorkerSqs.IosEditionWorkerSqs, token)
     case token @ HarvestedToken(_, Android, Some(BuildTier.BETA)) => (WorkerSqs.AndroidBetaWorkerSqs, token)
@@ -88,7 +88,7 @@ trait HarvesterRequestHandler extends Logging {
       _ = logger.info(s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
       resp <- tokens
-        .map(routeToSqs)
+        .collect(routeToSqs)
         .broadcastTo(androidSink, androidBetaSink, androidEditionSink, iosSink, iosEditionSink)
     } yield resp
   }
