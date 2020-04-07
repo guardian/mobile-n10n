@@ -3,8 +3,8 @@ package db
 import org.specs2.mutable.Specification
 
 class VersionSpec extends Specification {
-  "db.BuildTier.versionAboveOrEqual" should {
-    "return false when the client sends no appVersion" in {
+  "db.BuildTier.versionBefore" should {
+    "return true when the client sends no appVersion" in {
       BuildTier.versionBefore(None, 2000) should beTrue
     }
     "return false if the build version is equal or greater" in {
