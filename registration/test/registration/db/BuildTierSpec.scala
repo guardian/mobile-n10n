@@ -15,7 +15,7 @@ class BuildTierSpec extends Specification {
     }
 
     "Mark an Android beta build which includes an app version as a beta build" in {
-      val result = BuildTier.chooseTier(Some("BETA"), Android, Some("3000"))
+      val result = BuildTier.chooseTier(Some("BETA"), Android, Some("6.40.12000"))
       result.contains(BuildTier.BETA)
     }
 

@@ -9,6 +9,8 @@ import db.BuildTier.BuildTier
 import doobie.util.Meta
 import models.{Android, DeviceToken, Platform}
 
+import scala.util.Try
+
 object Registration {
   implicit val PlatformMeta: Meta[Platform] =
     Meta[String].timap(
@@ -53,10 +55,20 @@ object BuildTier extends Enumeration {
 
   def fromString(s: String): Option[BuildTier] = values.find(_.toString == s)
 
+  def versionBefore(appVersion: Option[String], targetBuild: Int): Boolean = appVersion match {
+    case None => true
+    case Some(versionString) =>
+      versionString
+        .split("\\.")
+        .lastOption
+        .flatMap(build => Try(build.toInt).toOption)
+        .exists( _ < targetBuild)
+  }
+
   def chooseTier(buildTier: Option[String], platform: Platform, appVersion: Option[String]): Option[BuildTier] = {
     buildTier.flatMap { tier =>
       val tierFromClient = BuildTier.fromString(tier)
-      if (tierFromClient.contains(BETA) && platform == Android && appVersion.isEmpty) { //This case is a temporary lie to cope with the Android Firebase migration; it should be removed with https://theguardian.atlassian.net/browse/MSS-1392
+      if (tierFromClient.contains(BETA) && platform == Android && versionBefore(appVersion, 10000)) { //This case is a temporary lie to cope with the Android Firebase migration; it should be removed with https://theguardian.atlassian.net/browse/MSS-1392
         Some(RELEASE)
       } else {
         tierFromClient
