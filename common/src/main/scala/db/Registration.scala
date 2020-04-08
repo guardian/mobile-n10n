@@ -68,7 +68,7 @@ object BuildTier extends Enumeration {
   def chooseTier(buildTier: Option[String], platform: Platform, appVersion: Option[String]): Option[BuildTier] = {
     buildTier.flatMap { tier =>
       val tierFromClient = BuildTier.fromString(tier)
-      if (tierFromClient.contains(BETA) && platform == Android && versionBefore(appVersion, 10000)) { //This case is a temporary lie to cope with the Android Firebase migration; it should be removed with https://theguardian.atlassian.net/browse/MSS-1392
+      if (tierFromClient.contains(BETA) && platform == Android && versionBefore(appVersion, 2274)) { //This case is a temporary lie to cope with the Android Firebase migration; it should be removed with https://theguardian.atlassian.net/browse/MSS-1392
         Some(RELEASE)
       } else {
         tierFromClient
