@@ -1,6 +1,6 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Android, AndroidEdition, Ios, IosEdition, Newsstand, Platform, ShardedNotification}
+import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Newsstand, Platform, ShardedNotification}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -15,6 +15,14 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
+sealed trait WorkerSqs
+object WorkerSqs {
+  case object AndroidWorkerSqs extends WorkerSqs
+  case object AndroidBetaWorkerSqs extends WorkerSqs
+  case object AndroidEditionWorkerSqs extends WorkerSqs
+  case object IosWorkerSqs extends WorkerSqs
+  case object IosEditionWorkerSqs extends WorkerSqs
+}
 
 trait HarvesterRequestHandler extends Logging {
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
@@ -42,12 +50,12 @@ trait HarvesterRequestHandler extends Logging {
     throwables.broadcastTo(logErrors, cloudwatch.sendFailures(env.stage, platform))
   }
 
-  def platformSink(shardedNotification: ShardedNotification, platform: Platform, deliveryService: SqsDeliveryService[IO], buildTier: Option[BuildTier] = None): Sink[IO, HarvestedToken] = {
+  def platformSink(shardedNotification: ShardedNotification, platform: Platform, workerSqs: WorkerSqs, deliveryService: SqsDeliveryService[IO]): Sink[IO, (WorkerSqs, HarvestedToken)] = {
     val platformSinkErrors = sinkErrors(platform)
     tokens =>
       tokens
         .collect {
-          case HarvestedToken(token, tokenPlatform, tokenBuildTier) if tokenPlatform == platform && (buildTier.isEmpty || buildTier == tokenBuildTier) => token
+          case (targetSqs, harvestedToken) if targetSqs == workerSqs => harvestedToken.token
         }
         .chunkN(1000)
         .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range))
@@ -60,18 +68,28 @@ trait HarvesterRequestHandler extends Logging {
 
   }
 
+  def routeToSqs: PartialFunction[HarvestedToken, (WorkerSqs, HarvestedToken)] = {
+    case token @ HarvestedToken(_, Ios, _) => (WorkerSqs.IosWorkerSqs, token)
+    case token @ HarvestedToken(_, IosEdition, _) => (WorkerSqs.IosEditionWorkerSqs, token)
+    case token @ HarvestedToken(_, Android, Some(BuildTier.BETA)) => (WorkerSqs.AndroidBetaWorkerSqs, token)
+    case token @ HarvestedToken(_, Android, _) => (WorkerSqs.AndroidWorkerSqs, token)
+    case token @ HarvestedToken(_, AndroidEdition, _) => (WorkerSqs.AndroidEditionWorkerSqs, token)
+  }
+
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification]): Stream[IO, Unit] = {
     for {
       shardedNotification <- shardedNotifications
-      androidSink = platformSink(shardedNotification, Android, androidLiveDeliveryService)
-      iosSink = platformSink(shardedNotification, Ios, iosLiveDeliveryService)
-      newsstandSink = platformSink(shardedNotification, Newsstand, iosEditionDeliveryService)
-      androidEditionSink = platformSink(shardedNotification, AndroidEdition, androidEditionDeliveryService)
-      iosEditionSink = platformSink(shardedNotification, IosEdition, iosEditionDeliveryService)
+      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, androidLiveDeliveryService)
+      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, androidBetaDeliveryService)
+      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, androidEditionDeliveryService)
+      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, iosLiveDeliveryService)
+      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, iosEditionDeliveryService)
       notificationLog = s"(notification: ${shardedNotification.notification.id} ${shardedNotification.range})"
       _ = logger.info(s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
-      resp <- tokens.broadcastTo(androidSink, iosSink, newsstandSink, androidEditionSink, iosEditionSink)
+      resp <- tokens
+        .collect(routeToSqs)
+        .broadcastTo(androidSink, androidBetaSink, androidEditionSink, iosSink, iosEditionSink)
     } yield resp
   }
 
