@@ -9,13 +9,12 @@ import models.{NewsstandShardConfig, NewsstandShardNotification, Notification, T
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
-import org.specs2.specification.mutable.ExecutionEnvironment
 import play.api.libs.json.Json
 
 import scala.concurrent.Promise
 import scala.util.Try
 
-class NewsstandSenderTest extends Specification with Mockito with ExecutionEnvironment {
+class NewsstandSenderTest extends Specification with Mockito {
   def is(implicit ee: ExecutionEnv) = {
     "Newsstand sender" should {
       "Send a simple newsstand notification" in {
