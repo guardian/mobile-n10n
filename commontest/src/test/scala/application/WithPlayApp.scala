@@ -1,20 +1,17 @@
 package application
 
-import java.io.File
-
 import org.specs2.execute.{AsResult, Result}
 import org.specs2.mutable.Around
 import org.specs2.specification.Scope
 import play.api.ApplicationLoader.Context
 import play.api.test.Helpers
-import play.api.{Application, ApplicationLoader, BuiltInComponents, Environment, LoggerConfigurator, Mode}
+import play.api.{Application, ApplicationLoader, BuiltInComponents, Environment, LoggerConfigurator}
 
 trait WithPlayApp extends Around with Scope {
-  lazy val app: Application = new TestApplicationLoader(configureComponents).load(context)
 
-  private def context = ApplicationLoader.createContext(
-    new Environment(new File("."), classOf[TestApplicationLoader].getClassLoader, Mode.Test)
-  )
+  private def context: Context = Context.create(Environment.simple())
+
+  lazy val app: Application = new TestApplicationLoader(configureComponents).load(context)
 
   override def around[T: AsResult](t: => T): Result = {
     Helpers.running(app)(AsResult.effectively(t))
