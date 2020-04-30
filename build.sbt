@@ -32,7 +32,7 @@ val minJacksonLibs = Seq(
 )
 
 val playJsonVersion = "2.6.14"
-val specsVersion: String = "4.0.3"
+val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.692"
 val doobieVersion: String = "0.6.0"
 val catsVersion: String = "1.4.0"
@@ -53,7 +53,7 @@ val standardSettings = Seq[Setting[_]](
     "com.github.nscala-time" %% "nscala-time" % "2.18.0",
     "com.softwaremill.macwire" %% "macros" % "2.3.0" % "provided",
     specs2 % Test,
-    "org.specs2" %% "specs2-matcher-extra" % "3.8.9" % Test
+    "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
   // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
   parallelExecution in Test := false
