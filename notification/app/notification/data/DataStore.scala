@@ -1,8 +1,7 @@
 package notification.data
 
 import aws.S3
-import models.TopicCount
-import play.api.Logger
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Format
 import utils.LruCache
 
@@ -21,7 +20,7 @@ class CachingDataStore[T](dataStore: DataStore[T]) extends DataStore[T] {
   //There's only ever one list of topic counts
   private val lruCache: LruCache[List[T]] = new LruCache[List[T]](1, 1, 5 minutes)
   private val cacheKey = "topicCounts"
-  private val logger = Logger(classOf[CachingDataStore[T]])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   
   override def get()(implicit executionContext: ExecutionContext, format: Format[T]): Future[List[T]] = lruCache(cacheKey) {
     logger.info("Retrieving topic counts data")

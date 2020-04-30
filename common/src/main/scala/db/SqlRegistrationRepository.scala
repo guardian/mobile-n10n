@@ -12,11 +12,11 @@ import doobie.free.connection.ConnectionIO
 import doobie.postgres.sqlstate
 import doobie.Fragments
 import models.{Platform, TopicCount}
-import play.api.Logger
+import org.slf4j.{Logger, LoggerFactory}
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
-  val logger = Logger(classOf[SqlRegistrationRepository[F]])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def findByToken(token: String): Stream[F, Registration] = {
     sql"""

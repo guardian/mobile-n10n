@@ -1,14 +1,15 @@
 package registration.auditor
 
 import models.{Topic, TopicTypes}
+import org.slf4j.{Logger, LoggerFactory}
 import pa.PaClient
-import play.api.Logger
 import utils.LruCache
-
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future}
 
 case class FootballMatchAuditor(client: PaClient)(implicit ec: ExecutionContext) extends Auditor {
+
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val matchStatusCache: LruCache[String] = LruCache[String](timeToLive = 5.minutes)
 
@@ -43,7 +44,7 @@ case class FootballMatchAuditor(client: PaClient)(implicit ec: ExecutionContext)
       case _ => false
     } recover {
       case _ =>
-        Logger.error(s"Unable to determine match status of $matchId.  Assuming that it is in the future")
+        logger.error(s"Unable to determine match status of $matchId.  Assuming that it is in the future")
         false
     }
   }
