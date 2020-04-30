@@ -6,10 +6,11 @@ import java.nio.charset.StandardCharsets
 import error.NotificationsError
 import models._
 import org.apache.commons.codec.digest.DigestUtils
+import org.slf4j.{Logger, LoggerFactory}
 import registration.models.LegacyNewsstandRegistration
-import play.api.Logger
+
 class LegacyNewsstandRegistrationConverter(config: NewsstandShardConfig) extends RegistrationConverter[LegacyNewsstandRegistration] {
-  val logger = Logger(classOf[LegacyNewsstandRegistrationConverter])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   private val shards = config.shards
   def toRegistration(legacyRegistration: LegacyNewsstandRegistration): Either[NotificationsError, Registration] = {
     val shard = deterministicallyShard(legacyRegistration.pushToken, shards)

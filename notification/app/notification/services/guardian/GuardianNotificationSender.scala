@@ -8,13 +8,13 @@ import models.NotificationType.BreakingNews
 import models.Provider.Guardian
 import models._
 import org.joda.time.DateTime
-import play.api.Logger
 import play.api.libs.json.Json
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import models.TopicCount.topicCountJF
+import org.slf4j.{Logger, LoggerFactory}
 
 case class GuardianFailedToQueueShard(
   senderName: String,
@@ -30,7 +30,7 @@ class GuardianNotificationSender(
   val WORKER_BATCH_SIZE: Int = 10000
   val SQS_BATCH_SIZE: Int = 10
 
-  private val logger: Logger = Logger.apply(classOf[GuardianNotificationSender])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def shouldSendToHarveseter(notification: Notification) = true
 

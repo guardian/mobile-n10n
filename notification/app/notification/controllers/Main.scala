@@ -10,7 +10,7 @@ import notification.models.PushResult
 import notification.services
 import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender}
 import org.joda.time.{DateTime, DateTimeZone}
-import play.api.Logger
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import tracking.Repository.RepositoryResult
@@ -31,7 +31,7 @@ final class Main(
 )(implicit executionContext: ExecutionContext)
   extends AbstractController(controllerComponents) {
 
-  val logger = Logger(classOf[Main])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   val weekendReadingTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-reading")
   val weekendRoundUpTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-round-up")
 

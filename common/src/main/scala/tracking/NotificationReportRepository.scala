@@ -10,7 +10,7 @@ import cats.implicits._
 import com.amazonaws.services.dynamodbv2.model._
 import models.{NotificationReport, NotificationType}
 import org.joda.time.{DateTime, Days}
-import play.api.Logger
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.{JsError, JsSuccess}
 import tracking.Repository.RepositoryResult
 
@@ -20,7 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class NotificationReportRepository(client: AsyncDynamo, tableName: String)
   (implicit ec: ExecutionContext)
   extends SentNotificationReportRepository {
-  val logger = Logger(classOf[NotificationReportRepository])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   private val SentTimeField = "sentTime"
   private val IdField = "id"
   private val TypeField = "type"

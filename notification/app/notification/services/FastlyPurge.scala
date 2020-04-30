@@ -1,9 +1,9 @@
 package notification.services
 
-import play.api.Logger
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.ws.WSClient
-import scala.concurrent.duration._
 
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
 trait FastlyPurge {
@@ -12,7 +12,7 @@ trait FastlyPurge {
 
 class FastlyPurgeImpl(wsClient: WSClient, configuration: Configuration)(implicit ec: ExecutionContext) extends FastlyPurge {
 
-  private val logger: Logger = Logger(this.getClass)
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def softPurge(contentApiId: String): Future[Boolean] = {
     val url = s"${configuration.fastlyApiEndpoint}/service/${configuration.fastlyService}/purge/Item/$contentApiId"

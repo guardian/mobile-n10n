@@ -5,7 +5,7 @@ import java.net.URI
 import models.{BreakingNewsNotification, Notification, SenderReport}
 import notification.services.{NotificationSender, SenderError, SenderResult, Senders}
 import org.joda.time.DateTime
-import play.api.Logger
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.mvc.Http.Status.CREATED
@@ -15,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 case class FrontendAlertsConfig(endpoint: URI, apiKey: String)
 
 class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit val ec: ExecutionContext) extends NotificationSender {
-  val logger = Logger(classOf[FrontendAlerts])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def sendBreakingNewsAlert(alert: NewsAlert): Future[Either[String, Unit]] =
     wsClient.url(s"${ config.endpoint }/alert")

@@ -7,7 +7,6 @@ import akka.util.ByteString
 import cats.data.EitherT
 import error.{NotificationsError, RequestError}
 import models._
-import play.api.Logger
 import play.api.libs.json.{Format, Json, Writes}
 import play.api.mvc._
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
@@ -16,6 +15,7 @@ import registration.services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
 import cats.implicits._
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.http.HttpEntity
 import providers.ProviderError
 
@@ -32,7 +32,7 @@ final class Main(
   (implicit system: ActorSystem, executionContext: ExecutionContext)
   extends AbstractController(controllerComponents) {
 
-  private val logger = Logger(classOf[Main])
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def healthCheck: Action[AnyContent] = Action {
     // This forces Play to close the connection rather than allowing
