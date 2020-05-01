@@ -56,7 +56,7 @@ object RegistrationService {
 
   def fromConfig(config: Configuration, applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext): RegistrationService[IO, Stream] = {
 
-    implicit val contextShift: ContextShift[IO] = IOContextShift(ec)
+    implicit val contextShift: ContextShift[IO] = IO.contextShift(ec)
 
     val masterUrl = config.get[String]("registration.db.url")
     val user = config.get[String]("registration.db.user")

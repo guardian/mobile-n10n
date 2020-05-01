@@ -5,13 +5,14 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
 import com.gu.notifications.worker.models.SendingResults
-import fs2.Sink
+import fs2.Pipe
 import models.Platform
+
 import scala.collection.JavaConverters._
 
 trait Cloudwatch {
-  def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults]
-  def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable]
+  def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit]
+  def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit]
 }
 
 class CloudwatchImpl extends Cloudwatch {
@@ -29,7 +30,7 @@ class CloudwatchImpl extends Cloudwatch {
       .withValue(value.toDouble)
       .withDimensions(dimension)
 
-  def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults] = _.evalMap { results =>
+  def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = _.evalMap { results =>
     IO.delay {
       val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
       val metrics: Seq[MetricDatum] = Seq(
@@ -46,7 +47,7 @@ class CloudwatchImpl extends Cloudwatch {
     }
   }
 
-  def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable] = input => input.fold(0) {
+  def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = input => input.fold(0) {
     case (count, _) => count + 1
   }.evalMap { count =>
     IO.delay {

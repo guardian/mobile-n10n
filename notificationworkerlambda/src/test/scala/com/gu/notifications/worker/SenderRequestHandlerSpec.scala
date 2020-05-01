@@ -16,7 +16,7 @@ import com.gu.notifications.worker.delivery.{ApnsDeliverySuccess, DeliveryExcept
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService}
 import com.gu.notifications.worker.utils.Cloudwatch
-import fs2.{Chunk, Sink, Stream}
+import fs2.{Chunk, Pipe, Stream}
 import org.slf4j.Logger
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
@@ -122,7 +122,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       })
 
       override val cleaningClient: CleaningClient = new CleaningClient {
-        override def sendInvalidTokensToCleaning(implicit logger: Logger): Sink[IO, Chunk[String]] = { stream =>
+        override def sendInvalidTokensToCleaning(implicit logger: Logger): Pipe[IO, Chunk[String], Unit] = { stream =>
           cleaningCallsCount += 1
           stream.map { chunk =>
             tokensToCleanCount += chunk.size
@@ -132,7 +132,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       }
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults] = { stream =>
+        override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = { stream =>
           cloudwatchCallsCount += 1
           stream.map { results =>
             sendingResults = Some(results)
@@ -140,7 +140,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           }
         }
 
-        override def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable] = throw new RuntimeException()
+        override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = throw new RuntimeException()
       }
     }
   }

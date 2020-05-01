@@ -5,12 +5,12 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.sqs.{AmazonSQS, AmazonSQSClient}
 import com.gu.notifications.worker.models.InvalidTokens
 import com.gu.notifications.worker.utils.Aws
-import fs2.{Chunk, Sink}
+import fs2.{Chunk, Pipe}
 import org.slf4j.Logger
 import play.api.libs.json.Json
 
 trait CleaningClient {
-  def sendInvalidTokensToCleaning(implicit logger: Logger): Sink[IO, Chunk[String]]
+  def sendInvalidTokensToCleaning(implicit logger: Logger): Pipe[IO, Chunk[String], Unit]
 }
 
 class CleaningClientImpl(sqsUrl: String) extends CleaningClient {
@@ -22,7 +22,7 @@ class CleaningClientImpl(sqsUrl: String) extends CleaningClient {
     .build
 
 
-  def sendInvalidTokensToCleaning(implicit logger: Logger): Sink[IO, Chunk[String]] =
+  def sendInvalidTokensToCleaning(implicit logger: Logger): Pipe[IO, Chunk[String], Unit] =
     _.evalMap { chunk =>
       IO.delay {
         val json = Json.stringify(Json.toJson(InvalidTokens(chunk.toList)))

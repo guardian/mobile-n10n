@@ -14,7 +14,7 @@ import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, TokenService}
 import com.gu.notifications.worker.utils.Cloudwatch
 import db.HarvestedToken
-import fs2.{Sink, Stream}
+import fs2.{Pipe, Stream}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
@@ -124,9 +124,9 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       override val androidEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Option[Platform]): Sink[IO, SendingResults] = ???
+        override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
 
-        override def sendFailures(stage: String, platform: Platform): Sink[IO, Throwable] = {
+        override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = {
           cloudwatchFailures.incrementAndGet()
           _.map(_ => ())
         }
