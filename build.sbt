@@ -6,9 +6,8 @@ import sbtassembly.MergeStrategy
 
 val projectVersion = "1.0-latest"
 
-
 organization := "com.gu"
-scalaVersion in ThisBuild := "2.12.6"
+scalaVersion in ThisBuild := "2.12.11"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -22,22 +21,13 @@ val compilerOptions = Seq(
 
 scalacOptions in ThisBuild ++= compilerOptions
 
-val minJacksonVersion: String = "2.10.1"
-val minJacksonLibs = Seq(
-  "com.fasterxml.jackson.core" % "jackson-core" % minJacksonVersion,
-  "com.fasterxml.jackson.core" % "jackson-annotations" % minJacksonVersion,
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % minJacksonVersion,
-  "com.fasterxml.jackson.core" % "jackson-databind" % minJacksonVersion,
-  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % minJacksonVersion
-)
-
-val playJsonVersion = "2.6.14"
-val specsVersion: String = "4.0.3"
-val awsSdkVersion: String = "1.11.692"
+val playJsonVersion = "2.7.4"
+val specsVersion: String = "4.5.1"
+val awsSdkVersion: String = "1.11.772"
 val doobieVersion: String = "0.6.0"
-val catsVersion: String = "1.4.0"
+val catsVersion: String = "1.6.1"
 val simpleConfigurationVersion: String = "1.5.0"
-val okHttpVersion: String = "3.14.0"
+val okHttpVersion: String = "3.14.8"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -50,10 +40,10 @@ val standardSettings = Seq[Setting[_]](
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
   riffRaffUploadManifestBucket := Option("riffraff-builds"),
   libraryDependencies ++= Seq(
-    "com.github.nscala-time" %% "nscala-time" % "2.18.0",
-    "com.softwaremill.macwire" %% "macros" % "2.3.0" % "provided",
+    "com.github.nscala-time" %% "nscala-time" % "2.24.0",
+    "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided",
     specs2 % Test,
-    "org.specs2" %% "specs2-matcher-extra" % "3.8.9" % Test
+    "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
   // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
   parallelExecution in Test := false
@@ -65,7 +55,6 @@ lazy val commoneventconsumer = project
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
     ),
-    libraryDependencies ++= minJacksonLibs,
   ))
 
 lazy val commontest = project
@@ -74,7 +63,6 @@ lazy val commontest = project
       specs2,
       playCore,
     ),
-    libraryDependencies ++= minJacksonLibs,
   ))
 
 
@@ -94,7 +82,7 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
-      "ai.x" %% "play-json-extensions" % "0.10.0",
+      "ai.x" %% "play-json-extensions" % "0.40.2",
       "org.tpolecat" %% "doobie-core"      % doobieVersion,
       "org.tpolecat" %% "doobie-hikari"    % doobieVersion,
       "org.tpolecat" %% "doobie-postgres"  % doobieVersion,
@@ -103,7 +91,6 @@ lazy val common = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
       "com.gu" %% "mobile-logstash-encoder" % "1.0.2"
     ),
-    libraryDependencies ++= minJacksonLibs,
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
@@ -122,7 +109,6 @@ lazy val commonscheduledynamodb = project
       specs2 % Test
 
     ),
-    libraryDependencies ++= minJacksonLibs,
     test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
     testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
     testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
@@ -208,7 +194,6 @@ lazy val apiModels = {
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
     ),
-    libraryDependencies ++= minJacksonLibs,
     organization := "com.gu",
     bintrayOrganization := Some("guardian"),
     bintrayRepository := "mobile",
@@ -253,10 +238,10 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     organization := "com.gu",
     resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.0",
-      "org.slf4j" % "slf4j-api" % "1.7.26",
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.11.2",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
+      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.1",
+      "org.slf4j" % "slf4j-api" % "1.7.30",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.13.2",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       specs2 % Test
@@ -302,9 +287,8 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
-        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
+        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
       ),
-      libraryDependencies ++= minJacksonLibs,
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml")
     )
   })
@@ -313,9 +297,9 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
   .dependsOn(common)
   .settings(
     libraryDependencies ++= Seq(
-      "com.turo" % "pushy" % "0.13.9",
+      "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
-      "com.amazonaws" % "aws-lambda-java-events" % "2.2.2",
+      "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion
