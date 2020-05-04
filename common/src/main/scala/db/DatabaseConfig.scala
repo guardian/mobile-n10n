@@ -1,10 +1,8 @@
 package db
 
-import java.util.Properties
 import java.util.concurrent.Executors
 
-import cats.effect.internals.IOContextShift
-import cats.effect.{Async, ContextShift, IO}
+import cats.effect.{Async, Blocker, ContextShift, IO}
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import doobie.Transactor
 import play.api.inject.ApplicationLifecycle
@@ -22,7 +20,7 @@ case class JdbcConfig(
 object DatabaseConfig {
 
   def simpleTransactor(config: JdbcConfig)(implicit ec: ExecutionContext) = {
-    implicit val cs: ContextShift[IO] = IOContextShift(ec)
+    implicit val cs: ContextShift[IO] = IO.contextShift(ec)
     Transactor.fromDriverManager[IO](
       config.driverClassName,
       config.url,
@@ -42,7 +40,7 @@ object DatabaseConfig {
     hikariConfig.addDataSourceProperty("socketTimeout", "30")
     val dataSource = new HikariDataSource(hikariConfig)
 
-    (Transactor.fromDataSource.apply(dataSource, connectEC, transactEC), dataSource)
+    (Transactor.fromDataSource.apply(dataSource, connectEC, Blocker.liftExecutionContext(transactEC)), dataSource)
   }
 
   def transactor[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): Transactor[F] = {

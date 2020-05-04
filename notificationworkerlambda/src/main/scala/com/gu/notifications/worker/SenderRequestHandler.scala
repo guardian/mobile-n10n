@@ -12,7 +12,7 @@ import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, IndividualNotification}
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
-import fs2.{Sink, Stream}
+import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
@@ -34,18 +34,18 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
+  def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${notificationId} ${range})"
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
       .evalTap(logInfo(prefix = s"Results $notificationLog: "))
-      .to(cloudwatch.sendMetrics(env.stage, Configuration.platform))
+      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
   }
 
-  def trackProgress[C <: DeliveryClient](notificationId: UUID): Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
+  def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     input.chunkN(100).evalMap(chunk => IO.delay(logger.info(s"Processed ${chunk.size} individual notification")))
   }
 
-  def cleanupFailures[C <: DeliveryClient]: Sink[IO, Either[DeliveryException, DeliverySuccess]] = { input =>
+  def cleanupFailures[C <: DeliveryClient]: Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     input
       .collect {
         case Left(InvalidToken(_, token, _, _)) =>
@@ -53,7 +53,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
           token
       }
       .chunkN(1000)
-      .to(cleaningClient.sendInvalidTokensToCleaning)
+      .through(cleaningClient.sendInvalidTokensToCleaning)
   }
 
   def deliverIndividualNotificationStream(individualNotificationStream: Stream[IO, IndividualNotification]): Stream[IO, Either[DeliveryException, C#Success]] = for {

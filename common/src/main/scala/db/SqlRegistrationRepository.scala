@@ -5,14 +5,15 @@ import cats.implicits._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
-import Registration._
 import cats.data.NonEmptyList
 import db.BuildTier.BuildTier
 import doobie.free.connection.ConnectionIO
-import doobie.postgres.sqlstate
 import doobie.Fragments
 import models.{Platform, TopicCount}
 import org.slf4j.{Logger, LoggerFactory}
+
+import Registration._
+import doobie.implicits.javatime.JavaTimeLocalDateTimeMeta
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {

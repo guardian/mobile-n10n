@@ -6,7 +6,8 @@ import java.sql.Timestamp
 import java.time.LocalDateTime
 
 import db.BuildTier.BuildTier
-import doobie.util.Meta
+import doobie.util.meta.Meta
+
 import models.{Android, DeviceToken, Platform}
 
 import scala.util.Try
@@ -21,9 +22,6 @@ object Registration {
     Meta[String].timap(
       s => BuildTier.fromString(s).getOrElse(throw doobie.util.invariant.InvalidEnum[BuildTier](s)),
     )(_.toString)
-
-  implicit val DateTimeMeta: Meta[LocalDateTime] =
-    Meta[Timestamp].timap(ts => ts.toLocalDateTime)(dt => Timestamp.valueOf(dt))
 }
 
 case class Registration(device: Device, topic: Topic, shard: Shard, lastModified: Option[LocalDateTime] = None, buildTier: Option[BuildTier])

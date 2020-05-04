@@ -9,7 +9,7 @@ import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, Logging, N
 import db.BuildTier.BuildTier
 import db.{BuildTier, DatabaseConfig, HarvestedToken, RegistrationService}
 import doobie.util.transactor.Transactor
-import fs2.{Sink, Stream}
+import fs2.{Pipe, Sink, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
@@ -42,15 +42,15 @@ trait HarvesterRequestHandler extends Logging {
   val maxConcurrency: Int = 100
   val supportedPlatforms = List(Ios, Android, IosEdition, AndroidEdition)
 
-  val logErrors: Sink[IO, Throwable] = throwables => {
+  val logErrors: Pipe[IO, Throwable, Unit] = throwables => {
     throwables.map(throwable => logger.warn("Error queueing", throwable))
   }
 
-  def sinkErrors(platform: Platform): Sink[IO, Throwable] = throwables => {
+  def sinkErrors(platform: Platform): Pipe[IO, Throwable, Unit] = throwables => {
     throwables.broadcastTo(logErrors, cloudwatch.sendFailures(env.stage, platform))
   }
 
-  def platformSink(shardedNotification: ShardedNotification, platform: Platform, workerSqs: WorkerSqs, deliveryService: SqsDeliveryService[IO]): Sink[IO, (WorkerSqs, HarvestedToken)] = {
+  def platformSink(shardedNotification: ShardedNotification, platform: Platform, workerSqs: WorkerSqs, deliveryService: SqsDeliveryService[IO]): Pipe[IO, (WorkerSqs, HarvestedToken), Unit] = {
     val platformSinkErrors = sinkErrors(platform)
     tokens =>
       tokens
@@ -64,7 +64,7 @@ trait HarvesterRequestHandler extends Logging {
         .collect {
           case Left(throwable) => throwable
         }
-        .to(platformSinkErrors)
+        .through(platformSinkErrors)
 
   }
 
