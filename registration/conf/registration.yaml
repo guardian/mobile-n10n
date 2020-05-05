@@ -2,29 +2,29 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Registration for mobile notifications
 Mappings:
   Constants:
-    App: 
+    App:
       Value: registration
     Stack:
       Value: mobile-notifications
   StageVariables:
-    CODE: 
+    CODE:
       CPUAlarmPeriodLower: 300
       CPUAlarmPeriodUpper: 1200
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
       NotificationAlarmPeriod: 1200
-    PROD: 
+    PROD:
       CPUAlarmPeriodLower: 300
       CPUAlarmPeriodUpper: 60
       CPUAlarmThresholdLower: 20
-      CPUAlarmThresholdUpper: 50 
+      CPUAlarmThresholdUpper: 50
       NotificationAlarmPeriod: 1200
 Outputs:
   LoadBalancerUrl:
     Value:
       !GetAtt LoadBalancerToPrivateASG.DNSName
 Parameters:
-  AMI: 
+  AMI:
     Type: AWS::EC2::Image::Id
     Description: AMI used by the instances
   Stage:
@@ -312,6 +312,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if load balancer in ${Stage} does not have enough 200s in half an hour
       ComparisonOperator: LessThanThreshold
       Dimensions:
@@ -330,6 +331,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if load balancer in ${Stage} does not have enough 200s in a whole day
       ComparisonOperator: LessThanThreshold
       Dimensions:
