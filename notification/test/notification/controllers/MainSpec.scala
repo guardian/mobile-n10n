@@ -70,7 +70,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
         ttl = Some(dateTime.plusMonths(3).getMillis / 1000)
       )
 
-      reportRepository.getByUuid(expectedReport.notification.id).map(_.right.map(normalise)) must equalTo(Right(normalise(expectedReport))).await
+      reportRepository.getByUuid(expectedReport.notification.id).map(_.map(normalise)) must equalTo(Right(normalise(expectedReport))).await
     }
   }
 

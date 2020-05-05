@@ -20,14 +20,14 @@ import utils.MobileAwsCredentialsProvider
 
 import scala.annotation.tailrec
 import scala.beans.BeanProperty
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 class DateRange(
   @BeanProperty var from: String,
   @BeanProperty var to: String
 ) {
-  def this() {
+  def this() = {
     this(null, null)
   }
 }

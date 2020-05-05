@@ -4,7 +4,7 @@ import java.net.URI
 import java.util.UUID
 
 import scala.PartialFunction._
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import com.google.firebase.messaging.AndroidConfig
 import com.gu.notifications.worker.delivery.FcmPayload
 import com.gu.notifications.worker.delivery.fcm.models.payload.Editions.Edition

@@ -3,7 +3,7 @@ package com.gu.notifications.events.dynamo
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.gu.notifications.events.model.EventAggregation
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object DynamoConversion {
 

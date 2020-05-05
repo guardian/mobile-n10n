@@ -12,7 +12,7 @@ import doobie.util.transactor.Transactor
 import fs2.{Pipe, Sink, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 sealed trait WorkerSqs

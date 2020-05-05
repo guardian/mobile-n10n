@@ -14,7 +14,7 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import tracking.Repository.RepositoryResult
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 

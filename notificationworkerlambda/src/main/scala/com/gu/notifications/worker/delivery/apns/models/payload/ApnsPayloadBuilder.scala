@@ -46,7 +46,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
           case CustomPropertyString(k, v) => (k, v)
           case CustomPropertyInt(k, v) => (k, v)
           case CustomPropertySeq(k, v) =>
-            import collection.JavaConverters._
+            import scala.jdk.CollectionConverters._
             (k, v.map(p => (p.key, p.value)).toMap.asJava) // .asJava because Gson which is used by Pushy to encode custom properties doesn't seem to like Scala collections
         }
         payloadBuilder.addCustomProperty(key, value)

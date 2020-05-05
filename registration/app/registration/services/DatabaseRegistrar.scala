@@ -48,7 +48,7 @@ class DatabaseRegistrar(
     result.onComplete {
       case Success(_) =>
         metrics.send(MetricDataPoint(name = "SuccessfulRegistrationInsertion", value = 1d, unit = StandardUnit.Count))
-        metrics.send(MetricDataPoint(name = "RegistrationInsertionLatency", value = System.currentTimeMillis - latencyStart, unit = StandardUnit.Milliseconds))
+        metrics.send(MetricDataPoint(name = "RegistrationInsertionLatency", value = (System.currentTimeMillis - latencyStart).toDouble, unit = StandardUnit.Milliseconds))
       case Failure(_) =>
         metrics.send(MetricDataPoint(name = "FailedRegistrationInsertion", value = 1d, unit = StandardUnit.Count))
     }

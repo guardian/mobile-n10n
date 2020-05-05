@@ -6,7 +6,7 @@ import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.amazonaws.services.dynamodbv2.model._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Promise
 
 
@@ -41,13 +41,12 @@ class NotificationSchedulePersistenceImpl(tableName: String, client: AmazonDynam
     .withExpressionAttributeValues(Map(
       ":sent" -> new AttributeValue().withS(false.toString),
       ":now" -> new AttributeValue().withN(Instant.now().getEpochSecond.toString)
-    ).asJava)).getItems.asScala.map(item => NotificationsScheduleEntry(
+    ).asJava)).getItems.asScala.toList.map(item => NotificationsScheduleEntry(
     uuid = item.get("uuid").getS,
     notification = item.get("notification").getS,
     dueEpochSeconds = item.get("due_epoch_s").getN.toLong,
     ttlEpochSeconds = item.get("ttl_epoch_s").getN.toLong
-  )
-  )
+  ))
 
   private def makePutItemRequest(notificationsScheduleEntry: NotificationsScheduleEntry, maybeEpochSentS: Option[Long]) = new PutItemRequest(tableName, (Map(
     "uuid" -> new AttributeValue().withS(notificationsScheduleEntry.uuid),

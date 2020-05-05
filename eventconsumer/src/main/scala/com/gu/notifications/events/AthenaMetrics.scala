@@ -14,7 +14,7 @@ import com.gu.notifications.events.model.{AggregationCounts, EventAggregation, N
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.{Await, ExecutionContext, Future, Promise, duration}
 
 object AthenaMetrics {
@@ -138,7 +138,7 @@ class AthenaMetrics {
     startQuery(query)
       .flatMap(fetchQueryResponse(_, rows => rows.map(cells =>
         (cells.head, PlatformCount(cells(1).toInt, cells(2).toInt, cells(3).toInt, Some(cells(4).toInt), Some(cells(5).toInt)))
-      ).groupBy(_._1).mapValues(_.map(_._2).head)))
+      ).groupBy(_._1).view.mapValues(_.map(_._2).head).toMap))
       .flatMap(updateDynamoIfRecent(_, startOfReportingWindow))
       .map((aggregationCounts: AggregationCounts) => {
         logger.info(s"Aggregation counts $aggregationCounts")
