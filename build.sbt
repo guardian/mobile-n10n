@@ -14,8 +14,7 @@ val compilerOptions = Seq(
   "-Xfatal-warnings",
   "-feature",
   "-language:postfixOps",
-  "-language:implicitConversions",
-  "-language:higherKinds"
+  "-language:implicitConversions"
 )
 
 scalacOptions in ThisBuild ++= compilerOptions
