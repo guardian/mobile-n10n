@@ -8,13 +8,13 @@ deployments:
     parameters:
       bucket: mobile-notifications-dist
       functionNames:
-        - ios-notification-worker-sender-
-        - android-notification-worker-sender-
-        - ios-edition-notification-worker-sender-
-        - android-beta-notification-worker-sender-
-        - android-edition-notification-worker-sender-
-        - registration-cleaning-worker-
-        - topic-counter-
+        - mobile-notifications-ios-notification-worker-sender-
+        - mobile-notifications-android-notification-worker-sender-
+        - mobile-notifications-ios-edition-notification-worker-sender-
+        - mobile-notifications-android-beta-notification-worker-sender-
+        - mobile-notifications-android-edition-notification-worker-sender-
+        - mobile-notifications-registration-cleaning-worker-
+        - mobile-notifications-topic-counter-
         - mobile-notifications-harvester-
         - mobile-notifications-expired-registration-cleaner-
       fileName: notificationworkerlambda.jar
