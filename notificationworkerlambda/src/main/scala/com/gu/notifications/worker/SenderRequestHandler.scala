@@ -15,7 +15,7 @@ import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParse
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 

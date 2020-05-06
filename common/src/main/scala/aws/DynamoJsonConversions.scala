@@ -1,7 +1,7 @@
 package aws
 
 import java.util.Base64
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import play.api.libs.json._
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 
@@ -10,15 +10,15 @@ import java.nio.ByteBuffer
 object DynamoJsonConversions {
 
   def toAttributeMap[T](o: T)(implicit tjs: OWrites[T]): Map[String, AttributeValue] = tjs.writes(o) match {
-    case JsObject(m) => m.mapValues(toAttributeValue).toMap
+    case JsObject(m) => m.view.mapValues(toAttributeValue).toMap
   }
 
   def fromAttributeMap[T](m: Map[String, AttributeValue])(implicit fjs: Reads[T]): JsResult[T] = {
-    fjs.reads(JsObject(m.mapValues(fromAttributeValue)))
+    fjs.reads(JsObject(m.view.mapValues(fromAttributeValue).toMap))
   }
 
   def jsonFromAttributeMap(m: Map[String, AttributeValue]): JsObject = {
-    JsObject(m.mapValues(fromAttributeValue))
+    JsObject(m.view.mapValues(fromAttributeValue).toMap)
   }
 
   private def fromAttributeValue(att: AttributeValue): JsValue = List(
@@ -41,7 +41,7 @@ object DynamoJsonConversions {
       case JsBoolean(b) => att.setBOOL(b)
       case JsNull => att.setNULL(true)
       case JsArray(a) => att.setL(a.map(toAttributeValue).asJava)
-      case JsObject(o) => att.setM(o.mapValues(toAttributeValue).asJava)
+      case JsObject(o) => att.setM(o.view.mapValues(toAttributeValue).toMap.asJava)
     }
     att
   }
@@ -54,7 +54,7 @@ object DynamoJsonConversions {
 
   private def parseList(ls: java.util.List[AttributeValue]) = JsArray(ls.asScala map fromAttributeValue)
 
-  private def parseMap(m: java.util.Map[String, AttributeValue]) = JsObject(m.asScala mapValues fromAttributeValue)
+  private def parseMap(m: java.util.Map[String, AttributeValue]) = JsObject(m.asScala.view.mapValues(fromAttributeValue).toMap)
 
   private def parseBinary(bin: ByteBuffer) = JsString(Base64.getEncoder.encodeToString(bin.array))
 

@@ -1,7 +1,8 @@
 package registration.auditor
 
+import java.time.ZonedDateTime
+
 import models.{Topic, TopicTypes}
-import org.joda.time.DateTime
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -15,7 +16,7 @@ class FootballMatchAuditorSpec(implicit ev: ExecutionEnv) extends Specification 
     "query PA and return matches that have ended" in {
       val defaultMatchDay = MatchDay(
         id =  "match-id-1",
-        date =  DateTime.now,
+        date = ZonedDateTime.now(),
         competition = None,
         stage = null,
         round = null,

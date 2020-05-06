@@ -10,7 +10,7 @@ import cats.implicits._
 
 class InMemoryNotificationReportRepository extends SentNotificationReportRepository {
 
-  val db = scala.collection.mutable.MutableList.empty[NotificationReport]
+  val db = scala.collection.mutable.ArrayBuffer.empty[NotificationReport]
 
   override def store(report: NotificationReport): Future[RepositoryResult[Unit]] = {
     db += report
@@ -31,7 +31,7 @@ class InMemoryNotificationReportRepository extends SentNotificationReportReposit
   }
 
   override def update(report: NotificationReport): Future[RepositoryResult[Unit]] = {
-    db.transform {
+    db.mapInPlace {
       case existingReport if existingReport.id == report.id && existingReport.reports == Nil => report
       case report => report
     }

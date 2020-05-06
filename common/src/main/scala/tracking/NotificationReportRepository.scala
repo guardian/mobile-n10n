@@ -14,7 +14,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.{JsError, JsSuccess}
 import tracking.Repository.RepositoryResult
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
 class NotificationReportRepository(client: AsyncDynamo, tableName: String)
@@ -101,7 +101,8 @@ class NotificationReportRepository(client: AsyncDynamo, tableName: String)
       .withAttributeUpdates(
         toAttributeMap(report)
           .filterNot { case (key, _) => key == "id" }
-          .mapValues(value => new AttributeValueUpdate().withAction(AttributeAction.PUT).withValue(value)).asJava)
+          .view.mapValues(value => new AttributeValueUpdate().withAction(AttributeAction.PUT).withValue(value)).toMap.asJava
+      )
     client.updateItem(updateItemRequest).map { _ => Right(()) }
   }
 }

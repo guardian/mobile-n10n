@@ -6,7 +6,7 @@ import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataReques
 import com.gu.{AppIdentity, AwsIdentity}
 import org.slf4j.{Logger, LoggerFactory}
 
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import play.api.{Environment, Mode}
 
 trait MetricActorLogic {

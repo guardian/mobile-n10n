@@ -11,10 +11,10 @@ import scala.util.Try
 object JsonFormatsHelper {
   implicit class RichJsObject(obj: JsObject) {
     def +:(kv: (String, JsValue)): JsObject = obj match {
-      case JsObject(entries) => JsObject(entries + kv)
+      case JsObject(entries) => JsObject(entries.concat(Map(kv)))
     }
     def ++:(kv: Map[String, JsValue]): JsObject = obj match {
-      case JsObject(entries) => JsObject(kv ++: entries)
+      case JsObject(entries) => JsObject(kv.concat(entries))
     }
   }
 
@@ -29,7 +29,7 @@ object JsonFormatsHelper {
       case x: JsValue => x
     }}
 
-    def withAdditionalStringFields(fields: Map[String, String]): Writes[A] = withAdditionalFields(fields.mapValues(JsString))
+    def withAdditionalStringFields(fields: Map[String, String]): Writes[A] = withAdditionalFields(fields.view.mapValues(JsString).toMap)
   }
 
 

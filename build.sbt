@@ -7,16 +7,14 @@ import sbtassembly.MergeStrategy
 val projectVersion = "1.0-latest"
 
 organization := "com.gu"
-scalaVersion in ThisBuild := "2.12.11"
+scalaVersion in ThisBuild := "2.13.2"
 
 val compilerOptions = Seq(
   "-deprecation",
   "-Xfatal-warnings",
   "-feature",
   "-language:postfixOps",
-  "-language:implicitConversions",
-  "-language:higherKinds",
-  "-Ypartial-unification"
+  "-language:implicitConversions"
 )
 
 scalacOptions in ThisBuild ++= compilerOptions
@@ -26,7 +24,7 @@ val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.772"
 val doobieVersion: String = "0.9.0"
 val catsVersion: String = "2.1.1"
-val simpleConfigurationVersion: String = "1.5.0"
+val simpleConfigurationVersion: String = "1.5.2"
 val okHttpVersion: String = "3.14.8"
 
 val standardSettings = Seq[Setting[_]](
@@ -77,7 +75,7 @@ lazy val common = project
       "joda-time" % "joda-time" % "2.9.9",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
-      "com.gu" %% "pa-client" % "6.1.0",
+      "com.gu" %% "pa-client" % "7.0.4",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
@@ -89,7 +87,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
-      "com.gu" %% "mobile-logstash-encoder" % "1.0.2"
+      "com.gu" %% "mobile-logstash-encoder" % "1.1.0"
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
@@ -185,10 +183,6 @@ lazy val apiModels = {
   import ReleaseStateTransformations._
   Project("api-models", file("api-models")).settings(Seq(
     name := "mobile-notifications-api-models",
-    resolvers ++= Seq(
-      "Guardian GitHub Releases" at "https://guardian.github.io/maven/repo-releases",
-      "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
-    ),
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",

@@ -11,7 +11,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json
 import fs2.Stream
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.util.control.NonFatal
 

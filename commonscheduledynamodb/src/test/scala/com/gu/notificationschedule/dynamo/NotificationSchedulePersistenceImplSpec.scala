@@ -8,7 +8,7 @@ import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsy
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeAfterEach
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class NotificationSchedulePersistenceImplSpec extends Specification with BeforeAfterEach {
   val tableName = "test-table"

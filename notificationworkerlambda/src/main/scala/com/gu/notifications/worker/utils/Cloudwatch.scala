@@ -8,7 +8,7 @@ import com.gu.notifications.worker.models.SendingResults
 import fs2.Pipe
 import models.Platform
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 trait Cloudwatch {
   def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit]

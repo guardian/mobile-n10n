@@ -11,7 +11,7 @@ import com.typesafe.config.ConfigFactory
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Success
 
 class ProcessNotificationScheduleLambdaSpec extends Specification with Mockito {

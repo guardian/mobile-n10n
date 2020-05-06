@@ -41,7 +41,4 @@ package object querystringbinders {
     serialize = NotificationType.toRep,
     typeName = "NotificationType"
   )
-
-  private def optionEitherSwap[A, B](value: Option[Either[A, B]]): Either[A, Option[B]] =
-    value.map(_.right.map(Option.apply)).getOrElse(Right(None))
 }
