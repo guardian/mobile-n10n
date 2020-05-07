@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery.fcm.oktransport
 import com.google.api.client.http.{HttpTransport, LowLevelHttpRequest}
 import okhttp3.{Dns, OkHttpClient}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Random
 
 

@@ -135,8 +135,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       s.sendMessageBatchAsync(
         any[SendMessageBatchRequest],
         any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]]
-      ) answers { p =>
-        val params = p.asInstanceOf[Array[Object]]
+      ) answers { params: Array[AnyRef] =>
         val handler = params(1).asInstanceOf[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]]
         handler.onSuccess(params(0).asInstanceOf[SendMessageBatchRequest], sendMessageBatchResult)
         ConcurrentUtils.constantFuture(sendMessageBatchResult)

@@ -4,13 +4,12 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import notification.services.{NotificationSender, SenderError, SenderResult}
 import aws.AWSAsync._
 import com.amazonaws.services.sqs.model.{SendMessageBatchRequest, SendMessageBatchRequestEntry, SendMessageBatchResult}
-import models.NotificationType.BreakingNews
 import models.Provider.Guardian
 import models._
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import models.TopicCount.topicCountJF
@@ -31,8 +30,6 @@ class GuardianNotificationSender(
   val SQS_BATCH_SIZE: Int = 10
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-  def shouldSendToHarveseter(notification: Notification) = true
 
   override def sendNotification(notification: Notification): Future[SenderResult] = {
     val result = for {

@@ -23,7 +23,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.libs.json.Json
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class SenderRequestHandlerSpec extends Specification with Matchers {
 
