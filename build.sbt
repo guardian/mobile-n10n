@@ -272,7 +272,7 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
     )
   }
 
-lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.notifications.events.LocalRun"))
+lazy val eventconsumer = lambda("mobile-notifications-eventconsumer", "eventconsumer", Some("com.gu.notifications.events.LocalRun"))
   .dependsOn(commoneventconsumer)
   .settings({
     Seq(

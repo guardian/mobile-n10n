@@ -10,8 +10,8 @@ deployments:
       - mobile-notifications-eventconsumer-athena-
       fileName: eventconsumer.jar
       prefixStack: false
-    dependencies: [eventconsumer-cfn]
-  eventconsumer-cfn:
+    dependencies: [mobile-notifications-eventconsumer-cfn]
+  mobile-notifications-eventconsumer-cfn:
     type: cloud-formation
     parameters:
       prependStackToCloudFormationStackName: false
