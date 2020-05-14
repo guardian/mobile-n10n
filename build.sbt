@@ -299,14 +299,14 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion
     ),
     riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"harvester-cfn/harvester-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"ios-notification-worker-cfn/sender-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"android-notification-worker-cfn/sender-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"ios-edition-notification-worker-cfn/sender-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"android-edition-notification-worker-cfn/sender-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"android-beta-notification-worker-cfn/sender-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"topic-counter-cfn/topic-counter-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml")
+    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-ios-notification-worker-cfn/sender-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-android-notification-worker-cfn/sender-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-ios-edition-notification-worker-cfn/sender-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-android-edition-notification-worker-cfn/sender-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-android-beta-notification-worker-cfn/sender-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"mobile-notifications-registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"mobile-notifications-topic-counter-cfn/topic-counter-cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"mobile-notifications-expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml")
   )
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
