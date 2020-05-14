@@ -272,7 +272,7 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
     )
   }
 
-lazy val eventconsumer = lambda("mobile-notifications-eventconsumer", "eventconsumer", Some("com.gu.notifications.events.LocalRun"))
+lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.notifications.events.LocalRun"))
   .dependsOn(commoneventconsumer)
   .settings({
     Seq(
@@ -283,7 +283,7 @@ lazy val eventconsumer = lambda("mobile-notifications-eventconsumer", "eventcons
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
         "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
       ),
-      riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"${name.value}-cfn/cfn.yaml")
+      riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"mobile-notifications-eventconsumer-cfn/cfn.yaml")
     )
   })
 
