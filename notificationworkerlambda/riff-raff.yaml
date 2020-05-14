@@ -20,15 +20,15 @@ deployments:
       fileName: notificationworkerlambda.jar
       prefixStack: false
     dependencies:
-      - ios-worker-cfn
-      - android-worker-cfn
-      - ios-edition-worker-cfn
-      - android-beta-worker-cfn
-      - android-edition-worker-cfn
-      - registration-cleaning-worker-cfn
-      - topic-counter-cfn
-      - harvester-cfn
-      - expired-registration-cleaner-cfn
+      - mobile-notifications-ios-worker-cfn
+      - mobile-notifications-android-worker-cfn
+      - mobile-notifications-ios-edition-worker-cfn
+      - mobile-notifications-android-beta-worker-cfn
+      - mobile-notifications-android-edition-worker-cfn
+      - mobile-notifications-registration-cleaning-worker-cfn
+      - mobile-notifications-topic-counter-cfn
+      - mobile-notifications-harvester-cfn
+      - mobile-notifications-expired-registration-cleaner-cfn
   harvester-cfn:
     type: cloud-formation
     app: harvester
