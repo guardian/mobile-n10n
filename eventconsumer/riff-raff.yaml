@@ -13,6 +13,7 @@ deployments:
     dependencies: [mobile-notifications-eventconsumer-cfn]
   mobile-notifications-eventconsumer-cfn:
     type: cloud-formation
+    app: eventconsumer
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: eventconsumer
