@@ -100,7 +100,7 @@ Resources:
             - logs:CreateLogStream
             - logs:PutLogEvents
             Resource:
-            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${App}-sender-${Stage}:*"
+            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${Stack}-${App}-sender-${Stage}:*"
       - PolicyName: SQSInput
         PolicyDocument:
           Statement:
@@ -132,7 +132,7 @@ Resources:
   SenderLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${App}-sender-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-sender-${Stage}
       Code:
         S3Bucket:
           Ref: DeployBucket
@@ -167,7 +167,7 @@ Resources:
       BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt SenderSqs.Arn
-      FunctionName: !Sub ${App}-sender-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-sender-${Stage}
 
   SenderThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -177,7 +177,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${App}-sender-${Stage}
+          Value: !Sub ${Stack}-${App}-sender-${Stage}
       EvaluationPeriods: 1
       MetricName: Throttles
       Namespace: AWS/Lambda
@@ -193,7 +193,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${App}-sender-${Stage}
+          Value: !Sub ${Stack}-${App}-sender-${Stage}
       EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
@@ -211,7 +211,7 @@ Resources:
       ComparisonOperator: LessThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${App}-sender-${Stage}
+          Value: !Sub ${Stack}-${App}-sender-${Stage}
       EvaluationPeriods: 1
       MetricName: Invocations
       Namespace: AWS/Lambda

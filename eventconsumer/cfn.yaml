@@ -109,7 +109,7 @@ Resources:
   AthenaLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${App}-athena-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-athena-${Stage}
       Code:
         S3Bucket:
           Ref: DeployBucket

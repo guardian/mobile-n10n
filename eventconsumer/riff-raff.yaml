@@ -7,12 +7,13 @@ deployments:
     parameters:
       bucket: mobile-notifications-dist
       functionNames:
-      - eventconsumer-athena-
+      - mobile-notifications-eventconsumer-athena-
       fileName: eventconsumer.jar
       prefixStack: false
-    dependencies: [eventconsumer-cfn]
-  eventconsumer-cfn:
+    dependencies: [mobile-notifications-eventconsumer-cfn]
+  mobile-notifications-eventconsumer-cfn:
     type: cloud-formation
+    app: eventconsumer
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: eventconsumer

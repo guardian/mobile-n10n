@@ -8,82 +8,82 @@ deployments:
     parameters:
       bucket: mobile-notifications-dist
       functionNames:
-        - ios-notification-worker-sender-
-        - android-notification-worker-sender-
-        - ios-edition-notification-worker-sender-
-        - android-beta-notification-worker-sender-
-        - android-edition-notification-worker-sender-
-        - registration-cleaning-worker-
-        - topic-counter-
+        - mobile-notifications-ios-worker-sender-
+        - mobile-notifications-android-worker-sender-
+        - mobile-notifications-ios-edition-worker-sender-
+        - mobile-notifications-android-beta-worker-sender-
+        - mobile-notifications-android-edition-worker-sender-
+        - mobile-notifications-registration-cleaning-worker-
+        - mobile-notifications-topic-counter-
         - mobile-notifications-harvester-
         - mobile-notifications-expired-registration-cleaner-
       fileName: notificationworkerlambda.jar
       prefixStack: false
     dependencies:
-      - ios-notification-worker-cfn
-      - android-notification-worker-cfn
-      - ios-edition-notification-worker-cfn
-      - android-beta-notification-worker-cfn
-      - android-edition-notification-worker-cfn
-      - registration-cleaning-worker-cfn
-      - topic-counter-cfn
-      - harvester-cfn
-      - expired-registration-cleaner-cfn
-  harvester-cfn:
+      - mobile-notifications-ios-worker-cfn
+      - mobile-notifications-android-worker-cfn
+      - mobile-notifications-ios-edition-worker-cfn
+      - mobile-notifications-android-beta-worker-cfn
+      - mobile-notifications-android-edition-worker-cfn
+      - mobile-notifications-registration-cleaning-worker-cfn
+      - mobile-notifications-topic-counter-cfn
+      - mobile-notifications-harvester-cfn
+      - mobile-notifications-expired-registration-cleaner-cfn
+  mobile-notifications-harvester-cfn:
     type: cloud-formation
     app: harvester
     parameters:
       templatePath: harvester-cfn.yaml
-  ios-notification-worker-cfn:
+  mobile-notifications-ios-worker-cfn:
     type: cloud-formation
-    app: ios-notification-worker
+    app: ios-worker
     parameters:
       prependStackToCloudFormationStackName: false
-      cloudFormationStackName: ios-notification-worker-cfn
+      cloudFormationStackName: ios-worker-cfn
       templatePath: sender-worker-cfn.yaml
-  android-notification-worker-cfn:
+  mobile-notifications-android-worker-cfn:
     type: cloud-formation
-    app: android-notification-worker
+    app: android-worker
     parameters:
       prependStackToCloudFormationStackName: false
-      cloudFormationStackName: android-notification-worker-cfn
+      cloudFormationStackName: android-worker-cfn
       templatePath: sender-worker-cfn.yaml
-  ios-edition-notification-worker-cfn:
+  mobile-notifications-ios-edition-worker-cfn:
     type: cloud-formation
-    app: ios-edition-notification-worker
+    app: ios-edition-worker
     parameters:
       prependStackToCloudFormationStackName: false
-      cloudFormationStackName: ios-edition-notification-worker-cfn
+      cloudFormationStackName: ios-edition-worker-cfn
       templatePath: sender-worker-cfn.yaml
-  android-edition-notification-worker-cfn:
+  mobile-notifications-android-edition-worker-cfn:
     type: cloud-formation
-    app: android-edition-notification-worker
+    app: android-edition-worker
     parameters:
       prependStackToCloudFormationStackName: false
-      cloudFormationStackName: android-edition-notification-worker-cfn
+      cloudFormationStackName: android-edition-worker-cfn
       templatePath: sender-worker-cfn.yaml
-  android-beta-notification-worker-cfn:
+  mobile-notifications-android-beta-worker-cfn:
     type: cloud-formation
-    app: android-beta-notification-worker
+    app: android-beta-worker
     parameters:
       prependStackToCloudFormationStackName: false
-      cloudFormationStackName: android-beta-notification-worker-cfn
+      cloudFormationStackName: android-beta-worker-cfn
       templatePath: sender-worker-cfn.yaml
-  registration-cleaning-worker-cfn:
+  mobile-notifications-registration-cleaning-worker-cfn:
     type: cloud-formation
     app: registration-cleaning-worker
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: registration-cleaning-worker-cfn
       templatePath: registration-cleaning-worker-cfn.yaml
-  topic-counter-cfn:
+  mobile-notifications-topic-counter-cfn:
     type: cloud-formation
     app: topic-counter
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: topic-counter-cfn
       templatePath: topic-counter-cfn.yaml
-  expired-registration-cleaner-cfn:
+  mobile-notifications-expired-registration-cleaner-cfn:
     type: cloud-formation
     app: expired-registration-cleaner
     parameters:
