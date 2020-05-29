@@ -185,6 +185,7 @@ Resources:
       Period: 360
       Statistic: Sum
       Threshold: 0
+      TreatMissingData: notBreaching
 
   SenderErrorAlarm:
     Type: AWS::CloudWatch::Alarm

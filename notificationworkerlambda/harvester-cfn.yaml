@@ -189,6 +189,7 @@ Resources:
       Period: 360
       Statistic: Sum
       Threshold: 0
+      TreatMissingData: notBreaching
 
   DlqDepthAlarm:
     Type: AWS::CloudWatch::Alarm
