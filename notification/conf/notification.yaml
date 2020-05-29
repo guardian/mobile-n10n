@@ -39,7 +39,7 @@ Parameters:
     Description: AMI used by the instances
     Type: AWS::EC2::Image::Id
   Stage:
-    AllowedValues: 
+    AllowedValues:
     - CODE
     - PROD
     Description: Environment name
@@ -221,7 +221,7 @@ Resources:
     Properties:
       AssumeRolePolicyDocument:
         Statement:
-        - Action: 
+        - Action:
             - sts:AssumeRole
           Effect: Allow
           Principal:
@@ -364,6 +364,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if notification errors in ${Stage} with 5XX. ${DashboardCopy}
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
@@ -381,6 +382,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if load balancer errors in ${Stage} with 5XX. ${DashboardCopy}
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
@@ -398,6 +400,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub
           - triggers if less that ${DailyNewsstandPushCount} daily edition notification was sent for ${Stage} in the last 24 hours..
           - DailyNewsstandPushCount: !FindInMap [ StageVariables, !Ref Stage, DailyNewsstandPushCount ]
@@ -405,13 +408,13 @@ Resources:
       EvaluationPeriods: 1
       Namespace: !FindInMap [ StageVariables, !Ref Stage, MetricNamespace ]
       MetricName:
-        !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ] 
+        !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationMetricName ]
       Period: 86400
       Statistic: Sum
       Threshold: !FindInMap [ StageVariables, !Ref Stage, NewsstandNotificationAlarmThreshold ]
       TreatMissingData: breaching
 
 
-      
+
 
 

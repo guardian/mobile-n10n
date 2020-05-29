@@ -173,6 +173,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if the ${App} sender lambda is throttled in ${Stage}
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
@@ -189,6 +190,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if the ${App} sender lambda errors in ${Stage}
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
@@ -206,6 +208,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       ActionsEnabled: !If [IsProdStage, true, false]
       AlarmDescription: !Sub Triggers if the ${App} senderlambda is not frequently invoked in ${Stage}
       ComparisonOperator: LessThanOrEqualToThreshold

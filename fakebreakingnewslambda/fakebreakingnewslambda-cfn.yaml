@@ -113,6 +113,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if not enough Ios dry run notifications are happening on ${Stage}
       ComparisonOperator: LessThanThreshold
       Dimensions:
@@ -130,6 +131,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if not enough Android dry run notifications are happening on ${Stage}
       ComparisonOperator: LessThanThreshold
       Dimensions:
