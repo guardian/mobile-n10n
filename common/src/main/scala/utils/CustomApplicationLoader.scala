@@ -22,7 +22,7 @@ abstract class CustomApplicationLoader extends ApplicationLoader {
       case AwsIdentity(app, stack, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/$stack")
     }
     val loadedConfig = Configuration(config)
-    val newContext = context.copy(initialConfiguration = context.initialConfiguration ++ loadedConfig )
+    val newContext = context.copy(initialConfiguration = context.initialConfiguration.withFallback(loadedConfig))
     buildComponents(identity, newContext).application
   }
 }

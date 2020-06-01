@@ -35,9 +35,9 @@ class CloudWatchMetrics(applicationLifecycle: ApplicationLifecycle, env: Environ
 
   private val metricActor = actorSystem.actorOf(Props(classOf[MetricActor], cloudWatchClient, identity, env))
 
-  actorSystem.scheduler.schedule(
+  actorSystem.scheduler.scheduleWithFixedDelay(
     initialDelay = 0.second,
-    interval = 1.minute,
+    delay = 1.minute,
     receiver = metricActor,
     message = MetricActor.Aggregate
   )
