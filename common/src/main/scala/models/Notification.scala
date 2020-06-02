@@ -7,6 +7,7 @@ import play.api.libs.json._
 import java.net.URI
 
 import ai.x.play.json.Jsonx
+import ai.x.play.json.Encoders.encoder
 
 sealed trait Notification {
   def id: UUID
