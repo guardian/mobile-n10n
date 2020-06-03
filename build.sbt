@@ -233,9 +233,9 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
-      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.1.1",
+      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.2.0",
       "org.slf4j" % "slf4j-api" % "1.7.30",
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.13.2",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.13.3",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       specs2 % Test
@@ -243,6 +243,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     assemblyJarName := s"$projectName.jar",
     assemblyMergeStrategy in assembly := {
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
       case _ => MergeStrategy.first
     },
     fork in (Test, run) := true,
