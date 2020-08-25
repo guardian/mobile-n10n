@@ -32,7 +32,8 @@ val standardSettings = Seq[Setting[_]](
     "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots",
     "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
-    "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
+    "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend",
+    "Guardian Mobile Bintray" at "https://dl.bintray.com/guardian/mobile",
   ),
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
@@ -277,7 +278,6 @@ lazy val footballlambda = lambda("mobile-notifications-football", "mobile-notifi
   .dependsOn(common)
   .settings {
     List(
-      resolvers += "Guardian Mobile Bintray" at "https://dl.bintray.com/guardian/mobile",
       libraryDependencies ++= Seq(
         "org.slf4j" % "slf4j-simple" % "1.7.25",
         "com.typesafe" % "config" % "1.3.2",
