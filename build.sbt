@@ -273,6 +273,27 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
     )
   }
 
+lazy val footballlambda = lambda("mobile-notifications-football", "mobile-notifications-football")
+  .dependsOn(common)
+  .settings {
+    List(
+      resolvers += "Guardian Mobile Bintray" at "https://dl.bintray.com/guardian/mobile",
+      libraryDependencies ++= Seq(
+        "org.slf4j" % "slf4j-simple" % "1.7.25",
+        "com.typesafe" % "config" % "1.3.2",
+        "com.gu" %% "mobile-notifications-client" % "1.5",
+        "com.gu" %% "scanamo" % "0.8.1",
+        "com.gu" %% "content-api-client-default" % "14.3",
+        "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+        "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
+        "com.google.code.findbugs" % "jsr305" % "3.0.2",
+        "org.specs2" %% "specs2-core" % specsVersion % "test",
+        "org.specs2" %% "specs2-mock" % specsVersion % "test"
+      ),
+      riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "mobile-notifications-football-cfn/cfn.yaml")
+    )
+  }
+
 lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.notifications.events.LocalRun"))
   .dependsOn(commoneventconsumer)
   .settings({

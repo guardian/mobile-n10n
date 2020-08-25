@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<matches>
+    <match matchID="4011135" date="11/08/2017" koTime="19:45">
+        <competition competitionID="100" seasonID="4578">Premier League 17/18</competition>
+        <stage stageNumber="1" stageType="League"/>
+        <round roundNumber="1">League</round>
+        <leg>1</leg>
+        <liveMatch>No</liveMatch>
+        <result>Yes</result>
+        <previewAvailable>No</previewAvailable>
+        <reportAvailable>No</reportAvailable>
+        <lineupsAvailable>Yes</lineupsAvailable>
+        <matchStatus>FT</matchStatus>
+        <attendance>59387</attendance>
+        <referee refereeID="100924">Mike Dean</referee>
+        <venue venueID="69">Emirates Stadium</venue>
+        <homeTeam teamID="1006">
+            <teamName>Arsenal</teamName>
+            <score>4</score>
+            <htScore>2</htScore>
+            <aggregateScore/>
+            <scorers>
+                <![CDATA[Alexandre Lacazette (2),Danny Welbeck (45 +1:55),Aaron Ramsey (83),Olivier Giroud (85)]]></scorers>
+        </homeTeam>
+        <awayTeam teamID="29">
+            <teamName>Leicester</teamName>
+            <score>3</score>
+            <htScore>2</htScore>
+            <aggregateScore/>
+            <scorers><![CDATA[Shinji Okazaki (5),Jamie Vardy (29),Jamie Vardy (56)]]></scorers>
+        </awayTeam>
+        <comments/>
+    </match>
+</matches>
