@@ -276,14 +276,15 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
 
 lazy val footballlambda = lambda("mobile-notifications-football", "mobile-notifications-football")
   .dependsOn(common)
+  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings {
     List(
       libraryDependencies ++= Seq(
         "org.slf4j" % "slf4j-simple" % "1.7.25",
         "com.typesafe" % "config" % "1.3.2",
-        "com.gu" %% "mobile-notifications-client" % "1.5",
-        "com.gu" %% "scanamo" % "0.8.1",
-        "com.gu" %% "content-api-client-default" % "14.3",
+        "org.scanamo" %% "scanamo" % "1.0.0-M11",
+        "org.scanamo" %% "scanamo-testkit" % "1.0.0-M11" % "test",
+        "com.gu" %% "content-api-client-default" % "15.9",
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
         "com.google.code.findbugs" % "jsr305" % "3.0.2",

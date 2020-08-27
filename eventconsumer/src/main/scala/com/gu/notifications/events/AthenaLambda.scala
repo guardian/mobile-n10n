@@ -8,6 +8,7 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.athena.{AmazonAthenaAsync, AmazonAthenaAsyncClient}
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
+import com.football.notifications.events.AthenaMetrics
 
 import scala.beans.BeanProperty
 
