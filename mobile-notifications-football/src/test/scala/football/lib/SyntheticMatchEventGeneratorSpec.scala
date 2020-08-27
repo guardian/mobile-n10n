@@ -1,11 +1,11 @@
 package football.lib
 
+import java.time.ZonedDateTime
 import java.util.UUID
 
-import org.joda.time.DateTime
 import org.specs2.mutable.Specification
-import pa.{MatchDay, MatchDayTeam, Round, Stage}
 import org.specs2.specification.Scope
+import pa.{MatchDay, MatchDayTeam, Round, Stage}
 
 class SyntheticMatchEventGeneratorSpec extends Specification {
 
@@ -15,7 +15,7 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
 
     val matchInfo = MatchDay(
       id = "some-match-id",
-      date = DateTime.parse("2000-01-01T00:00:00Z"),
+      date = ZonedDateTime.parse("2000-01-01T00:00:00Z"),
       competition = None,
       stage = Stage("1"),
       round = Round("1", None),

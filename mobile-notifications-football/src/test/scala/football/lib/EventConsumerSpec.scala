@@ -23,8 +23,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
       val result: List[NotificationPayload] = eventConsumer.eventsToNotifications(matchData)
 
       val expectedNotification = FootballMatchStatusPayload(
-        title = "Kick-off!",
-        message = "Arsenal 0-0 Leicester (1st)",
+        title = Some("Kick-off!"),
+        message = Some("Arsenal 0-0 Leicester (1st)"),
         thumbnailUrl = None,
         sender = "mobile-notifications-football-lambda",
         awayTeamName = "Leicester",
@@ -48,7 +48,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
         ),
         matchStatus = "1st",
         eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
-        debug = false
+        debug = false,
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -60,8 +61,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
       val result: List[NotificationPayload] = eventConsumer.eventsToNotifications(matchData)
 
       val expectedNotification = FootballMatchStatusPayload(
-        title = "Half-time",
-        message = "Arsenal 3-0 Leicester (HT)",
+        title = Some("Half-time"),
+        message = Some("Arsenal 3-0 Leicester (HT)"),
         thumbnailUrl = None,
         sender = "mobile-notifications-football-lambda",
         awayTeamName = "Leicester",
@@ -85,7 +86,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
         ),
         matchStatus = "HT",
         eventId = "bb346058-64d0-3ab1-9016-ea19d90837f0",
-        debug = false
+        debug = false,
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -99,8 +101,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
       val result: List[NotificationPayload] = eventConsumer.eventsToNotifications(matchData)
 
       val expectedNotification = FootballMatchStatusPayload(
-        title = "Second-half start",
-        message = "Arsenal 2-0 Leicester (2nd)",
+        title = Some("Second-half start"),
+        message = Some("Arsenal 2-0 Leicester (2nd)"),
         thumbnailUrl = None,
         sender = "mobile-notifications-football-lambda",
         awayTeamName = "Leicester",
@@ -124,7 +126,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
         ),
         matchStatus = "2nd",
         eventId = "a45dfca1-ead9-3d8c-bf83-c4966a737b05",
-        debug = false
+        debug = false,
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -136,8 +139,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
       val result: List[NotificationPayload] = eventConsumer.eventsToNotifications(matchData)
 
       val expectedNotification = FootballMatchStatusPayload(
-        title = "Full-Time",
-        message = "Arsenal 3-0 Leicester (FT)",
+        title = Some("Full-Time"),
+        message = Some("Arsenal 3-0 Leicester (FT)"),
         thumbnailUrl = None,
         sender = "mobile-notifications-football-lambda",
         awayTeamName = "Leicester",
@@ -161,7 +164,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
         ),
         matchStatus = "FT",
         eventId = "d59c9939-8199-3b8b-ad63-16aa020c1a73",
-        debug = false
+        debug = false,
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -173,8 +177,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
       val result: List[NotificationPayload] = eventConsumer.eventsToNotifications(matchData)
 
       val expectedNotification = FootballMatchStatusPayload(
-        title = "Goal!",
-        message = "Arsenal 1-0 Leicester (1st)\nHenrikh Mkhitaryan 10min",
+        title = Some("Goal!"),
+        message = Some("Arsenal 1-0 Leicester (1st)\nHenrikh Mkhitaryan 10min"),
         thumbnailUrl = None,
         sender = "mobile-notifications-football-lambda",
         awayTeamName = "Leicester",
@@ -198,7 +202,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
         ),
         matchStatus = "1st",
         eventId = "1c8d67f9-0f32-342a-8543-aa3e21ee7da4",
-        debug = false
+        debug = false,
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -208,8 +213,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
       val result: List[NotificationPayload] = eventConsumer.eventsToNotifications(matchData)
 
       val expectedNotification = FootballMatchStatusPayload(
-        "Red card",
-        "Arsenal 3-0 Leicester (1st)\nHenrikh Mkhitaryan (Arsenal) 114min",
+        Some("Red card"),
+        Some("Arsenal 3-0 Leicester (1st)\nHenrikh Mkhitaryan (Arsenal) 114min"),
         None,
         "mobile-notifications-football-lambda",
         "Leicester",
@@ -229,7 +234,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
         List(Topic(FootballTeam,"1006"), Topic(FootballTeam,"29"), Topic(FootballMatch,"4011135")),
         "1st",
         "7c92d6ca-9f20-398f-9510-eb4c179fb5ae",
-        false)
+        false,
+        None)
 
       result should contain(expectedNotification)
     }

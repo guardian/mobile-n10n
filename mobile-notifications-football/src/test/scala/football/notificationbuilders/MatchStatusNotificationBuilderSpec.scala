@@ -1,14 +1,15 @@
 package football.notificationbuilders
 
+import java.net.URI
+import java.time.ZonedDateTime
+import java.util.UUID
+
 import com.gu.mobile.notifications.client.models.Importance.Major
 import com.gu.mobile.notifications.client.models._
 import football.models.{Goal, GoalContext, Score}
-import org.joda.time.DateTime
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
-import java.net.URI
-import java.util.UUID
 
 
 class MatchStatusNotificationBuilderSpec extends Specification {
@@ -18,8 +19,8 @@ class MatchStatusNotificationBuilderSpec extends Specification {
     "Build a notification" in new MatchEventsContext {
       val notification = builder.build(baseGoal, matchInfo, List.empty, Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live"))
       notification shouldEqual FootballMatchStatusPayload(
-        title = "Goal!",
-        message = "Liverpool 1-0 Plymouth (1st)\nSteve 5min",
+        title = Some("Goal!"),
+        message = Some("Liverpool 1-0 Plymouth (1st)\nSteve 5min"),
         thumbnailUrl = None,
         sender = "mobile-notifications-football-lambda",
         awayTeamName = "Plymouth",
@@ -39,7 +40,8 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         matchStatus = "1st",
         debug = false,
         competitionName = Some("FA Cup"),
-        venue = Some("Wembley")
+        venue = Some("Wembley"),
+        dryRun = None
       )
     }
 
@@ -54,7 +56,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
     val goalContext = GoalContext(home, away, "match-1", Score(2, 0))
     val matchInfo = MatchDay(
       id = "some-match-id",
-      date = DateTime.parse("2000-01-01T00:00:00Z"),
+      date = ZonedDateTime.parse("2000-01-01T00:00:00Z"),
       competition = Some(Competition(id = "1", name = "FA Cup")),
       stage = Stage("1"),
       round = Round("1", None),

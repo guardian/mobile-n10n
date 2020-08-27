@@ -40,7 +40,7 @@ object DynamoDistinctCheck {
 class DynamoDistinctCheck(client: AmazonDynamoDBAsync, tableName: String) extends Logging {
   def insertNotification(notification: NotificationPayload)(implicit ec: ExecutionContext): Future[DistinctStatus] = {
     import org.scanamo.syntax._
-    import org.scanamo.auto._
+    import org.scanamo.generic.auto._
 
     lazy val scanamoAsync: ScanamoAsync = ScanamoAsync(client)
     lazy val notificationsTable = Table[DynamoMatchNotification](tableName)
