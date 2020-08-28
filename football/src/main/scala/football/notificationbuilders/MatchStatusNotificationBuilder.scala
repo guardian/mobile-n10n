@@ -56,7 +56,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     )
   }
 
-  def transformTeamName(name: String): String = name.replace(" Ladies", "").replace("Wolfsburg Women", "Wolfsburg")
+  def transformTeamName(name: String): String = name.replace(" Ladies", "")
 
   private def goalDescription(goal: Goal) = {
     val extraInfo = {
