@@ -8,8 +8,8 @@ deployments:
       bucket: mobile-dist
       functionNames: [-football-]
       fileName: football.jar
-    dependencies: [football-cfn]
-  football-cfn:
+    dependencies: [mobile-notifications-football-cfn]
+  mobile-notifications-football-cfn:
     type: cloud-formation
     app: football
     parameters:
