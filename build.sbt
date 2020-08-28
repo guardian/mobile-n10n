@@ -274,7 +274,7 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
     )
   }
 
-lazy val footballlambda = lambda("mobile-notifications-football", "mobile-notifications-football")
+lazy val footballlambda = lambda("footballlambda", "footballlambda")
   .dependsOn(common)
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings {
