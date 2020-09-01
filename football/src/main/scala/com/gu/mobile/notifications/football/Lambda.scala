@@ -1,6 +1,7 @@
 package com.gu.mobile.notifications.football
 
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
@@ -93,7 +94,7 @@ object Lambda extends Logging {
       .flatMap(notificationSender.sendNotifications)
 
     // we're in a lambda so we do need to block the main thread until processing is finished
-    val result = Await.ready(processing, Duration("40"))
+    val result = Await.ready(processing, Duration(40, TimeUnit.SECONDS))
 
     result.value match {
       case Some(Failure(e: TimeoutException)) => logger.error("Task timed out", e)
