@@ -51,11 +51,11 @@ class FootballData(
     }
   }
   
-  def pollFootballData: Future[List[RawMatchData]] = {
+  def pollFootballData(dateTime: ZonedDateTime): Future[List[RawMatchData]] = {
     logger.info("Starting poll for new match events")
 
     val matchesData = for {
-      liveMatches <- matchIdsInProgress
+      liveMatches <- matchIdsInProgress(dateTime)
       md <- Batch.process(liveMatches, 5)(processMatch)
     } yield md.flatten
 
@@ -67,9 +67,9 @@ class FootballData(
     }
   }
 
-  private def matchIdsInProgress: Future[List[MatchDay]] = {
+  def matchIdsInProgress(dateTime: ZonedDateTime): Future[List[MatchDay]] = {
     def inProgress(m: MatchDay): Boolean =
-      m.date.minusMinutes(5).isBefore(ZonedDateTime.now()) && m.date.plusHours(4).isAfter(ZonedDateTime.now())
+      m.date.minusMinutes(5).isBefore(dateTime) && m.date.plusHours(4).isAfter(dateTime)
 
 
     // unfortunately PA provide 00:00 as start date when they don't have the start date
@@ -92,8 +92,8 @@ class FootballData(
       }.getOrElse(false) //Shouldn't ever happen
     }
 
-    logger.info("Retrieving today's matches from PA")
-    val matches = paClient.aroundToday
+    logger.info(s"Retrieving matches on or around $dateTime from PA")
+    val matches = paClient.aroundToday(dateTime)
     matches.map(
       _.filter(inProgress)
        .filter(paProvideAlerts)

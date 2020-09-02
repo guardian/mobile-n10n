@@ -1,6 +1,7 @@
 package com.gu.mobile.notifications.football
 
 import java.net.URL
+import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 import com.amazonaws.regions.Regions
@@ -8,7 +9,6 @@ import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsy
 import com.gu.contentapi.client.GuardianContentClient
 import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, EventConsumer, EventFilter, FootballData, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.notificationbuilders.MatchStatusNotificationBuilder
-import org.joda.time.{DateTime, DateTimeUtils}
 import play.api.libs.json.Json
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -63,15 +63,16 @@ object Lambda extends Logging {
 
   lazy val articleSearcher = new ArticleSearcher(capiClient)
 
-  def debugSetTime(): Unit = {
-    // this is only used to debug
-    if (configuration.stage == "CODE") {
+  def getZonedDateTime(): ZonedDateTime = {
+    val zonedDateTime = if (configuration.stage == "CODE") {
       val is = new URL("https://hdjq4n85yi.execute-api.eu-west-1.amazonaws.com/Prod/getTime").openStream()
       val json = Json.parse(Source.fromInputStream(is).mkString)
-      val date = DateTime.parse((json \ "currentDate").as[String])
-      logger.info(s"Force the date to $date")
-      DateTimeUtils.setCurrentMillisFixed(date.getMillis)
+      ZonedDateTime.parse((json \ "currentDate").as[String])
+    } else {
+      ZonedDateTime.now()
     }
+    logger.info(s"Using date time: $zonedDateTime")
+    zonedDateTime
   }
 
   private def logContainer() = {
@@ -84,10 +85,10 @@ object Lambda extends Logging {
   }
 
   def handler(): String = {
-    debugSetTime()
+
     logContainer()
 
-    val processing = footballData.pollFootballData
+    val processing = footballData.pollFootballData(getZonedDateTime())
       .flatMap(articleSearcher.tryToMatchWithCapiArticle)
       .map(_.flatMap(eventConsumer.eventsToNotifications))
       .flatMap(eventFilter.filterNotifications)

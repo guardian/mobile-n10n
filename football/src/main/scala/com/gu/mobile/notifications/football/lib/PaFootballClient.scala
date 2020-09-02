@@ -42,8 +42,8 @@ class PaFootballClient(override val apiKey: String, apiBase: String) extends PaC
 
   override protected def get(suffix: String)(implicit context: ExecutionContext): Future[String] = super.get(suffix)(context)
 
-  def aroundToday: Future[List[MatchDay]] = {
-    val today = ZonedDateTime.now().toLocalDate
+  def aroundToday(dateTime: ZonedDateTime): Future[List[MatchDay]] = {
+    val today = dateTime.toLocalDate
     val yesterday = today.minusDays(1)
     val tomorrow = today.plusDays(1)
 
