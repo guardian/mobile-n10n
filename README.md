@@ -20,6 +20,7 @@ It has many uses:
 * [Schedule Lambda](schedulelambda) - A lambda sending notifications on schedule, based on a plan inserted in dynamo. (polling based)
 * [DB Cleaner](db-cleaner) - A lambda that deletes token that haven't been active in 120 days. This has been implemented in Rust as an experiment.
 * [Fake Breaking News](fakebreakingnewslambda) - A lambda that periodically sends a fake ("dry run") breaking news in order to spot any potential misconfiguration, technical issue or regression. The results of the dry run are closely monitored and raise an alarm if anything goes wrong.
+* [Football](football) - A lambda that polls PA and sends football match alerts to Notification
 * [Report Extractor](reportextractor) - A daily lambda to export the metadata of each notification into our datalake.
 
 ## Features
