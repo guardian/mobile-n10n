@@ -13,5 +13,3 @@ In order to facilitate testing when there are no matches in progress, you can fo
 1. Set a date and time for just before the match started (n.b. the [ZonedDateTime](https://docs.oracle.com/javase/8/docs/api/java/time/ZonedDateTime.html) used must be [URL encoded](https://www.urlencoder.org/)) e.g. `curl https://hdjq4n85yi.execute-api.eu-west-1.amazonaws.com/Prod/setDate?startDate=2020-07-26T14%3A59%3A00%2B01%3A00%5BEurope%2FLondon%5D`
 1. Check the [logs](https://logs.gutools.co.uk/s/mobile/goto/cc75dcf9f10d33851bc1bc1e851f96be) to track progress of the match.
 1. Your device should receive notifications when significant match events occur (e.g. kick off, goals, half-time etc.)
-
-
