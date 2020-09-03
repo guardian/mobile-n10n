@@ -6,7 +6,7 @@ subscribed users.
 
 ### Testing in CODE
 
-In order to facilitate testing when there are no matches in progress, you can force the `CODE` environment to run in the past using [`football-time-machine`](https://github.com/guardian/football-time-machine).
+In order to facilitate testing when there are no matches in progress, you can [force](https://github.com/guardian/mobile-n10n/blob/682289cc9651f4f8475c9efc5eb2a3da35985c15/football/src/main/scala/com/gu/mobile/notifications/football/Lambda.scala#L66-L76) the `CODE` environment to run in the past using [`football-time-machine`](https://github.com/guardian/football-time-machine).
 
 1. Find a match which [recently took place](https://www.theguardian.com/football/results).
 1. Install a debug version of the app and start following a relevant team or match.
