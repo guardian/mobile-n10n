@@ -1,0 +1,176 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: mobile-notifications-football
+Parameters:
+  Stack:
+    Description: Stack name
+    Type: String
+    Default: mobile-notifications
+  App:
+    Description: Application name
+    Type: String
+    Default: football
+  Stage:
+    Description: Stage name
+    Type: String
+    AllowedValues:
+      - CODE
+      - PROD
+    Default: CODE
+  DeployBucket:
+    Description: Bucket where RiffRaff uploads artifacts on deploy
+    Type: String
+    Default: mobile-dist
+  DynamoNotificationTopic:
+    Description: SNS topic to notify when there's a dynamo throttling event
+    Type: String
+Resources:
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: logs
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: arn:aws:logs:*:*:*
+        - PolicyName: lambda
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: "*"
+        - PolicyName: ssmConfig
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action:
+                - ssm:GetParametersByPath
+              Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${App}/${Stage}/${Stack}
+        - PolicyName: dynamodb
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:Query
+              Resource: !Sub arn:aws:dynamodb:eu-west-1:201359054765:table/${Stack}-${App}-notifications-${Stage}
+  Lambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      Code:
+        S3Bucket:
+          Ref: DeployBucket
+        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
+      Environment:
+        Variables:
+          App: !Ref App
+          Stack: !Ref Stack
+          Stage: !Ref Stage
+          
+      Description: Send Goal Alert notifications
+      Handler: com.gu.mobile.notifications.football.Lambda::handler
+      MemorySize: 512
+      Role: !GetAtt ExecutionRole.Arn
+      Runtime: java8
+      Timeout: 60
+
+  MinuteEvent:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Event sent to poll PA for match events
+      ScheduleExpression: cron(* * * * ? *)
+      Targets:
+        - Id: Lambda
+          Arn: !GetAtt Lambda.Arn
+
+  MinuteEventLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt Lambda.Arn
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt MinuteEvent.Arn
+
+  GoalEvent:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Lambda}"
+      FilterPattern: "successfully sent"
+      MetricTransformations:
+        - MetricNamespace: !Sub "${Stage}/football-notifications"
+          MetricName: "goal-success"
+          MetricValue: 1
+
+  ErrorEvent:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Lambda}"
+      FilterPattern: "Error"
+      MetricTransformations:
+        - MetricNamespace: !Sub "${Stage}/football-notifications"
+          MetricName: "error"
+          MetricValue: 1
+
+  DynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${Stack}-${App}-notifications-${Stage}
+      AttributeDefinitions:
+        - AttributeName: notificationId
+          AttributeType: S
+      KeySchema:
+      - AttributeName: notificationId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 3
+        WriteCapacityUnits: 3
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  MobileNotificationsFootballConsumedReadThrottleEvents:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/DynamoDB
+      MetricName: ReadThrottleEvents
+      Unit: Count
+      Statistic: Sum
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: TableName
+        Value: !Ref DynamoTable
+      Threshold: 10
+      Period: 300
+      EvaluationPeriods: 1
+      AlarmActions: [ !Ref DynamoNotificationTopic ]
+
+  MobileNotificationsFootballConsumedWriteThrottleEvents:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/DynamoDB
+      MetricName: WriteThrottleEvents
+      Unit: Count
+      Statistic: Sum
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+      - Name: TableName
+        Value: !Ref DynamoTable
+      Threshold: 10
+      Period: 300
+      EvaluationPeriods: 1
+      AlarmActions: [ !Ref DynamoNotificationTopic ]

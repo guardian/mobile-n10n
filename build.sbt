@@ -26,6 +26,7 @@ val doobieVersion: String = "0.9.0"
 val catsVersion: String = "2.1.1"
 val simpleConfigurationVersion: String = "1.5.2"
 val okHttpVersion: String = "3.14.8"
+val paClientVersion: String = "7.0.4"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -75,7 +76,7 @@ lazy val common = project
       "joda-time" % "joda-time" % "2.9.9",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
-      "com.gu" %% "pa-client" % "7.0.4",
+      "com.gu" %% "pa-client" % paClientVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
@@ -272,6 +273,26 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
       riffRaffArtifactResources += (file(s"schedulelambda/cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
     )
   }
+
+lazy val football = lambda("football", "football")
+  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
+  .settings(
+    resolvers += "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend",
+    libraryDependencies ++= Seq(
+      "org.slf4j" % "slf4j-simple" % "1.7.25",
+      "com.typesafe" % "config" % "1.3.2",
+      "org.scanamo" %% "scanamo" % "1.0.0-M12",
+      "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12" % "test",
+      "com.gu" %% "content-api-client-default" % "15.9",
+      "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+      "com.gu" %% "pa-client" % paClientVersion,
+      "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
+      "com.google.code.findbugs" % "jsr305" % "3.0.2",
+      "org.specs2" %% "specs2-core" % specsVersion % "test",
+      "org.specs2" %% "specs2-mock" % specsVersion % "test"
+    ),
+    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "mobile-notifications-football-cfn/cfn.yaml")
+  )
 
 lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.notifications.events.LocalRun"))
   .dependsOn(commoneventconsumer)

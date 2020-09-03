@@ -1,4 +1,4 @@
-package com.gu.notifications.events
+package com.football.notifications.events
 
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, ZonedDateTime}
@@ -9,6 +9,7 @@ import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.athena.AmazonAthenaAsync
 import com.amazonaws.services.athena.model.{GetQueryExecutionRequest, GetQueryExecutionResult, GetQueryResultsRequest, GetQueryResultsResult, QueryExecutionContext, QueryExecutionState, ResultConfiguration, StartQueryExecutionRequest, StartQueryExecutionResult}
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
+import com.gu.notifications.events.{EnvDependencies, ReportingWindow}
 import com.gu.notifications.events.dynamo.DynamoReportUpdater
 import com.gu.notifications.events.model.{AggregationCounts, EventAggregation, NotificationReportEvent, PlatformCount}
 import org.slf4j.{Logger, LoggerFactory}
