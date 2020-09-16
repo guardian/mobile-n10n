@@ -14,10 +14,10 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
       (platform, legacyRegistration.device.pushToken, legacyRegistration.device.firebaseToken) match {
         //This first case is to handle lange numbers of android devices not using the latest version of the app
         //See: https://theguardian.atlassian.net/browse/MSS-609
-        case (Android, _, None) => Left(MalformattedRegistration("Android device without firebase registration token"))
+        case (Android, _, None) => Left(MalformattedRegistration(s"Android device without firebase registration token, platform: $platform"))
         case (Android, _, Some(fcmToken)) => Right(DeviceToken(fcmToken))
         case (_, Some(azureToken), _) => Right(DeviceToken(azureToken))
-        case _ => Left(MalformattedRegistration("no fcm token nor azure token"))
+        case _ => Left(MalformattedRegistration(s"no fcm token nor azure token, platform: $platform"))
       }
     }
 
