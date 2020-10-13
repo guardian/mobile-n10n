@@ -1,6 +1,5 @@
 package registration
 
-import javax.inject._
 import org.slf4j.{Logger, LoggerFactory}
 import play.api._
 import play.api.http.DefaultHttpErrorHandler
