@@ -8,7 +8,7 @@ import play.api.routing.Router
 import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
 import play.api.ApplicationLoader.Context
 import com.softwaremill.macwire._
-import _root_.models.{Topic, NewsstandShardConfig}
+import _root_.models.{NewsstandShardConfig, Topic}
 import org.joda.time.DateTime
 import controllers.Main
 import play.api.mvc.EssentialFilter
@@ -21,6 +21,7 @@ import router.Routes
 import cats.effect.IO
 import com.gu.AppIdentity
 import metrics.{CloudWatchMetrics, Metrics}
+import play.api.http.HttpErrorHandler
 import play.filters.gzip.GzipFilter
 
 class RegistrationApplicationLoader extends CustomApplicationLoader {
@@ -35,7 +36,8 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
   implicit val implicitActorSystem: ActorSystem = actorSystem
 
   val gzipFilter = new GzipFilter()
-  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot{ filter => filter.getClass == classOf[AllowedHostsFilter] } :+ gzipFilter
+
+  override def httpFilters: Seq[EssentialFilter] = super.httpFilters.filterNot { filter => filter.getClass == classOf[AllowedHostsFilter] } :+ gzipFilter
 
   lazy val appConfig = new Configuration(configuration)
   lazy val metrics: Metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
@@ -61,4 +63,7 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
 
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"
+
+  override lazy val httpErrorHandler: HttpErrorHandler = new CustomErrorHandler(environment, configuration, None, Some(router))
+
 }
