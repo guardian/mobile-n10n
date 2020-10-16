@@ -21,6 +21,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       case n: FootballMatchStatusNotification => Some(footballMatchStatusPayload(n))
       case n: NewsstandShardNotification => Some(newsstandPayload(n))
       case n: EditionsNotification => Some(editionsPayload(n))
+      case n: Us2020ResultsNotification => Some(us2020ResultsPayload(n))
       case _ => None
   }
 
@@ -166,6 +167,15 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       collapseId = None,
       pushType = PushType.BACKGROUND,
       deliveryPriority = DeliveryPriority.CONSERVE_POWER
+    )
+
+  private def us2020ResultsPayload(notification: Us2020ResultsNotification): ApnsPayload =
+    ApnsPayload(
+      jsonString = ???,
+      ttl = ???,
+      collapseId = ???,
+      pushType = ???,
+      deliveryPriority = ???
     )
 
   private def toPlatformLink(link: Link) = link match {
