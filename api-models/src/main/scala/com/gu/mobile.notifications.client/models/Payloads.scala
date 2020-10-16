@@ -79,6 +79,7 @@ object NotificationPayload {
       case n: BreakingNewsPayload => BreakingNewsPayload.jf.writes(n)
       case n: ContentAlertPayload => ContentAlertPayload.jf.writes(n)
       case n: FootballMatchStatusPayload => FootballMatchStatusPayload.jf.writes(n)
+      case n: Us2020ResultsPayload => Us2020ResultsPayload.jf.writes(n)
     }
   }
 }
@@ -202,4 +203,26 @@ case class FootballMatchStatusPayload(
 trait derivedId {
   val derivedId: String
   lazy val id = UUID.nameUUIDFromBytes(derivedId.getBytes)
+}
+
+object Us2020ResultsPayload {
+  implicit val jf = new Writes[Us2020ResultsPayload] {
+    override def writes(o: Us2020ResultsPayload): JsValue = ???
+  }
+}
+
+case class Us2020ResultsPayload(
+  id: UUID = UUID.randomUUID,
+  title: Option[String],
+  message: Option[String],
+  sender: String,
+  importance: Importance,
+  topic: List[Topic],
+  debug: Boolean,
+  dryRun: Option[Boolean],
+  leftCandidateName: String,
+  rightCandidateName: String,
+) extends NotificationPayload {
+  val `type`: NotificationPayloadType = BreakingNews
+  val thumbnailUrl: Option[URI] = None
 }
