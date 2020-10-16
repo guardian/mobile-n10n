@@ -40,6 +40,9 @@ object Keys {
   final val EditionsDate = "date"
   final val EditionsKey = "key"
   final val EditionsName = "name"
+
+  final val LeftCandidateName = "leftCandidateName"
+  final val RightCandidateName = "rightCandidateName"
 }
 
 

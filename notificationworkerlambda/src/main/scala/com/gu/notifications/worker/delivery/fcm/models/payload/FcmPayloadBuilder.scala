@@ -143,7 +143,19 @@ object FcmPayloadBuilder {
   private def us2020ResultsNotification(notification: Us2020ResultsNotification): FirebaseAndroidNotification =
     FirebaseAndroidNotification(
       notificationId = notification.id,
-      data = ???
+      data = Map (
+        Keys.Type -> MessageTypes.Us2020Results,
+
+        // Copied these key/value pairs from editionsAndroidNotification above, may need changes:
+        Keys.NotificationType -> notification.`type`.value,
+        Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
+        Keys.Importance -> notification.importance.toString,
+
+        // US results specific keys:
+        Keys.LeftCandidateName -> notification.leftCandidateName,
+        Keys.RightCandidateName -> notification.rightCandidateName
+        // More to be added here...
+      )
     )
 
   private case class PlatformUri(uri: String, `type`: String)

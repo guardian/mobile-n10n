@@ -169,14 +169,18 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       deliveryPriority = DeliveryPriority.CONSERVE_POWER
     )
 
-  private def us2020ResultsPayload(notification: Us2020ResultsNotification): ApnsPayload =
+  private def us2020ResultsPayload(notification: Us2020ResultsNotification): ApnsPayload = {
+    // Lots of stuff I don't know exactly how to fill in here...
     ApnsPayload(
-      jsonString = ???,
+      jsonString = PushyPayload(
+        customProperties = ???
+      ).payload,
       ttl = ???,
       collapseId = ???,
       pushType = ???,
       deliveryPriority = ???
     )
+  }
 
   private def toPlatformLink(link: Link) = link match {
     case Link.Internal(contentApiId, _, _, Some(blockId)) => PlatformUri(s"https://www.theguardian.com/$contentApiId?page=with:block-$blockId#block-$blockId", Item)
