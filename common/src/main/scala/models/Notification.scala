@@ -31,6 +31,7 @@ object Notification {
       case n: FootballMatchStatusNotification => FootballMatchStatusNotification.jf.writes(n)
       case n: NewsstandShardNotification => NewsstandShardNotification.jf.writes(n)
       case n: EditionsNotification => EditionsNotification.jf.writes(n)
+      case n: Us2020ResultsNotification => Us2020ResultsNotification.jf.writes(n)
     }
     override def reads(json: JsValue): JsResult[Notification] = {
       (json \ "type").validate[NotificationType].flatMap {
@@ -41,6 +42,7 @@ object Notification {
         case FootballMatchStatus => FootballMatchStatusNotification.jf.reads(json)
         case NewsstandShard => NewsstandShardNotification.jf.reads(json)
         case Editions => EditionsNotification.jf.reads(json)
+        case Us2020Results => Us2020ResultsNotification.jf.reads(json)
       }
     }
   }
@@ -209,4 +211,27 @@ case class LiveEventNotification(
 object LiveEventNotification {
   import JsonUtils._
   implicit val jf = Json.format[LiveEventNotification]
+}
+
+case class Us2020ResultsNotification (
+  id: UUID,
+  sender: String,
+  title: Option[String],
+  message: Option[String],
+  importance: Importance,
+  topic: List[Topic],
+  dryRun: Option[Boolean],
+
+  // Stuff specific to these notifications:
+  leftCandidateName: String,
+  rightCandidateName: String,
+  // will add others later...
+
+) extends Notification {
+  val `type`: NotificationType = Us2020Results
+}
+
+object Us2020ResultsNotification {
+  import JsonUtils._
+  implicit val jf = Json.format[Us2020ResultsNotification]
 }
