@@ -1,13 +1,12 @@
 package models
 
+import java.net.URI
 import java.util.UUID
 
+import ai.x.play.json.Encoders.encoder
+import ai.x.play.json.Jsonx
 import models.NotificationType._
 import play.api.libs.json._
-import java.net.URI
-
-import ai.x.play.json.Jsonx
-import ai.x.play.json.Encoders.encoder
 
 sealed trait Notification {
   def id: UUID
@@ -68,7 +67,6 @@ case class BreakingNewsNotification(
 ) extends Notification
 
 object BreakingNewsNotification {
-  import JsonUtils._
   implicit val jf = Json.format[BreakingNewsNotification]
 }
 
@@ -123,7 +121,6 @@ case class ContentNotification(
 ) extends Notification with NotificationWithLink
 
 object ContentNotification {
-  import JsonUtils._
   implicit val jf = Json.format[ContentNotification]
 }
 
@@ -157,7 +154,6 @@ case class FootballMatchStatusNotification(
 ) extends Notification
 
 object FootballMatchStatusNotification {
-  import JsonUtils._
 
   implicit val jf: Format[FootballMatchStatusNotification] = Jsonx.formatCaseClass[FootballMatchStatusNotification]
 }
@@ -187,7 +183,6 @@ case class GoalAlertNotification(
 ) extends Notification
 
 object GoalAlertNotification {
-  import JsonUtils._
   implicit val jf = Json.format[GoalAlertNotification]
 }
 
@@ -209,12 +204,12 @@ case class LiveEventNotification(
 ) extends Notification
 
 object LiveEventNotification {
-  import JsonUtils._
   implicit val jf = Json.format[LiveEventNotification]
 }
 
 case class Us2020ResultsNotification (
   id: UUID,
+  `type`: NotificationType = Us2020Results,
   sender: String,
   title: Option[String],
   message: Option[String],
@@ -227,11 +222,8 @@ case class Us2020ResultsNotification (
   rightCandidateName: String,
   // will add others later...
 
-) extends Notification {
-  val `type`: NotificationType = Us2020Results
-}
+) extends Notification
 
 object Us2020ResultsNotification {
-  import JsonUtils._
   implicit val jf = Json.format[Us2020ResultsNotification]
 }
