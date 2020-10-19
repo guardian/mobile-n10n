@@ -169,17 +169,27 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       deliveryPriority = DeliveryPriority.CONSERVE_POWER
     )
 
-  private def us2020ResultsPayload(notification: Us2020ResultsNotification): ApnsPayload = {
-    // Lots of stuff I don't know exactly how to fill in here...
-    ApnsPayload(
-      jsonString = PushyPayload(
-        customProperties = ???
-      ).payload,
-      ttl = ???,
-      collapseId = ???,
-      pushType = ???,
-      deliveryPriority = ???
-    )
+  private def us2020ResultsPayload(n: Us2020ResultsNotification): ApnsPayload = {
+    val payLoad = PushyPayload(
+      alertTitle = n.title,
+      alertBody = n.message,
+      categoryName = Some("us-election-2020"),
+      mutableContent = true,
+      sound = if (n.importance == Importance.Major) Some("default") else None,
+      customProperties = Seq(
+        CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
+        CustomProperty(Keys.Provider -> Provider.Guardian.value),
+        CustomProperty(Keys.MessageType -> MessageTypes.UsElection2020),
+        CustomProperty(Keys.NotificationType -> Us2020Results.value),
+        CustomProperty(Keys.UsElection2020 ->
+          Seq(
+            CustomProperty(Keys.LeftCandidateName -> n.leftCandidateName),
+            CustomProperty(Keys.RightCandidateName -> n.rightCandidateName)
+          )
+        )
+      )
+    ).payload
+    ApnsPayload(payLoad, Some(FootballMatchStatusTtl), Some("us-election-2020-collapse"), PushType.ALERT)
   }
 
   private def toPlatformLink(link: Link) = link match {

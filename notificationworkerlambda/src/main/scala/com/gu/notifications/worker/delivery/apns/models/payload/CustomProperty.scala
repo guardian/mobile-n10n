@@ -27,6 +27,7 @@ object CustomProperty {
     final val ImageUrl = "imageUrl"
     final val Provider = "provider"
     final val UniqueIdentifier = "uniqueIdentifier"
+
     final val FootballMatch = "footballMatch"
     final val HomeTeamName = "homeTeamName"
     final val HomeTeamId = "homeTeamId"
@@ -44,6 +45,10 @@ object CustomProperty {
     final val ArticleUri = "articleUri"
     final val CompetitionName = "competitionName"
     final val Venue = "venue"
+
+    final val UsElection2020 = "usElection2020"
+    final val LeftCandidateName = "leftCandidateName"
+    final val RightCandidateName = "rightCandidateName"
 
     final val EditionsDate = "date"
     final val EditionsKey = "key"
