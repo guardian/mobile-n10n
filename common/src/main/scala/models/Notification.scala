@@ -234,5 +234,5 @@ case class Us2020ResultsNotification (
 ) extends Notification
 
 object Us2020ResultsNotification {
-  implicit val jf = Json.format[Us2020ResultsNotification]
+  implicit val jf: Format[Us2020ResultsNotification] = Jsonx.formatCaseClass[Us2020ResultsNotification]
 }
