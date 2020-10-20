@@ -183,13 +183,26 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         CustomProperty(Keys.NotificationType -> Us2020Results.value),
         CustomProperty(Keys.UsElection2020 ->
           Seq(
+            CustomProperty(Keys.ExpandedTitle -> n.expandedTitle),
             CustomProperty(Keys.LeftCandidateName -> n.leftCandidateName),
-            CustomProperty(Keys.RightCandidateName -> n.rightCandidateName)
+            CustomProperty(Keys.LeftCandidateColour -> n.leftCandidateColour),
+            CustomProperty(Keys.LeftCandidateDelegates -> n.leftCandidateDelegates),
+            CustomProperty(Keys.LeftCandidateVoteShare -> n.leftCandidateVoteShare),
+            CustomProperty(Keys.RightCandidateName -> n.rightCandidateName),
+            CustomProperty(Keys.RightCandidateColour -> n.rightCandidateColour),
+            CustomProperty(Keys.RightCandidateDelegates -> n.rightCandidateDelegates),
+            CustomProperty(Keys.RightCandidateVoteShare -> n.rightCandidateVoteShare),
+            CustomProperty(Keys.TotalDelegates -> n.totalDelegates),
+            CustomProperty(Keys.ExpandedMessage -> n.expandedMessage),
+            CustomProperty(Keys.Button1Text -> n.button1Text),
+            CustomProperty(Keys.Button1Url -> n.button1Url),
+            CustomProperty(Keys.Button2Text -> n.button2Text),
+            CustomProperty(Keys.Button2Url -> n.button2Url),
           )
         )
       )
     ).payload
-    ApnsPayload(payLoad, Some(FootballMatchStatusTtl), Some("us-election-2020-collapse"), PushType.ALERT)
+    ApnsPayload(payLoad, Some(BreakingNewsTtl), Some("us-election-2020-collapse"), PushType.ALERT)
   }
 
   private def toPlatformLink(link: Link) = link match {

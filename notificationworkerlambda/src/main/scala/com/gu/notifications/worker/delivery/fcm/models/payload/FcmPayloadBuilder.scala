@@ -143,19 +143,27 @@ object FcmPayloadBuilder {
   private def us2020ResultsNotification(notification: Us2020ResultsNotification): FirebaseAndroidNotification =
     FirebaseAndroidNotification(
       notificationId = notification.id,
-      data = Map (
+      data = Map(
         Keys.Type -> MessageTypes.Us2020Results,
-
-        // Copied these key/value pairs from editionsAndroidNotification above, may need changes:
-        Keys.NotificationType -> notification.`type`.value,
-        Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
         Keys.Importance -> notification.importance.toString,
-
-        // US results specific keys:
+        Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
+        Keys.ExpandedTitle -> notification.expandedTitle,
         Keys.LeftCandidateName -> notification.leftCandidateName,
-        Keys.RightCandidateName -> notification.rightCandidateName
-        // More to be added here...
-      )
+        Keys.LeftCandidateColour -> notification.leftCandidateColour,
+        Keys.LeftCandidateDelegates -> notification.leftCandidateDelegates.toString,
+        Keys.LeftCandidateVoteShare -> notification.leftCandidateVoteShare.toString,
+        Keys.RightCandidateName -> notification.rightCandidateName,
+        Keys.RightCandidateColour -> notification.rightCandidateColour,
+        Keys.RightCandidateDelegates -> notification.rightCandidateDelegates.toString,
+        Keys.RightCandidateVoteShare -> notification.rightCandidateVoteShare.toString,
+        Keys.TotalDelegates -> notification.totalDelegates.toString,
+        Keys.ExpandedMessage-> notification.expandedMessage,
+        Keys.Button1Text -> notification.button1Text,
+        Keys.Button1Url -> notification.button1Url,
+        Keys.Button2Text -> notification.button2Text,
+        Keys.Button2Url -> notification.button2Url
+      ),
+      ttl = BreakingNewsTtl
     )
 
   private case class PlatformUri(uri: String, `type`: String)

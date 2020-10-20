@@ -212,16 +212,25 @@ case class Us2020ResultsNotification (
   `type`: NotificationType = Us2020Results,
   sender: String,
   title: Option[String],
+  expandedTitle: String,
+  leftCandidateName: String,
+  leftCandidateColour: String,
+  leftCandidateDelegates: Int,
+  leftCandidateVoteShare: Int,
+  rightCandidateName: String,
+  rightCandidateColour: String,
+  rightCandidateDelegates: String,
+  rightCandidateVoteShare: Int,
+  totalDelegates: Int,
   message: Option[String],
+  expandedMessage: String,
+  button1Text: String,
+  button1Url: String,
+  button2Text: String,
+  button2Url: String,
   importance: Importance,
   topic: List[Topic],
   dryRun: Option[Boolean],
-
-  // Stuff specific to these notifications:
-  leftCandidateName: String,
-  rightCandidateName: String,
-  // will add others later...
-
 ) extends Notification
 
 object Us2020ResultsNotification {
