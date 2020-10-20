@@ -219,7 +219,7 @@ case class Us2020ResultsNotification (
   leftCandidateVoteShare: Int,
   rightCandidateName: String,
   rightCandidateColour: String,
-  rightCandidateDelegates: String,
+  rightCandidateDelegates: Int,
   rightCandidateVoteShare: Int,
   totalDelegates: Int,
   message: Option[String],
