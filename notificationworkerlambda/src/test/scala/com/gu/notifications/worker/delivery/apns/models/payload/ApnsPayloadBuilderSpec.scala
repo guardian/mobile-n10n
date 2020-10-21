@@ -448,10 +448,9 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |      "mutable-content":1
         |   },
         |   "provider":"Guardian",
-        |   "topic":"breaking/us-election-2020-live",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "notificationType":"us-2020-results",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
-        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
         |   "usElection2020":{
         |      "expandedTitle":"US elections 2020: Live results",
         |      "leftCandidateName":"Biden",
