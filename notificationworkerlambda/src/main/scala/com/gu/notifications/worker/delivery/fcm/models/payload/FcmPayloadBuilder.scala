@@ -3,13 +3,14 @@ package com.gu.notifications.worker.delivery.fcm.models.payload
 import java.net.URI
 import java.util.UUID
 
-import scala.PartialFunction._
-import scala.jdk.CollectionConverters._
 import com.google.firebase.messaging.AndroidConfig
 import com.gu.notifications.worker.delivery.FcmPayload
 import com.gu.notifications.worker.delivery.fcm.models.payload.Editions.Edition
 import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import models._
+
+import scala.PartialFunction._
+import scala.jdk.CollectionConverters._
 
 object FcmPayloadBuilder {
 
@@ -145,6 +146,7 @@ object FcmPayloadBuilder {
       notificationId = notification.id,
       data = Map(
         Keys.Type -> MessageTypes.Us2020Results,
+        Keys.Title -> notification.title.toString,
         Keys.Importance -> notification.importance.toString,
         Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
         Keys.ExpandedTitle -> notification.expandedTitle,
