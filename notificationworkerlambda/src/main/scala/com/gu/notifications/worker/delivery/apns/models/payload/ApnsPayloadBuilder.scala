@@ -191,6 +191,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
             CustomProperty(Keys.RightCandidateName -> n.rightCandidateName),
             CustomProperty(Keys.RightCandidateColour -> n.rightCandidateColour),
             CustomProperty(Keys.RightCandidateDelegates -> n.rightCandidateDelegates),
+            CustomProperty(Keys.DelegatesToWin -> n.delegatesToWin),
             CustomProperty(Keys.RightCandidateVoteShare -> n.rightCandidateVoteShare),
             CustomProperty(Keys.TotalDelegates -> n.totalDelegates),
             CustomProperty(Keys.ExpandedMessage -> n.expandedMessage),
@@ -198,6 +199,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
             CustomProperty(Keys.Button1Url -> n.button1Url),
             CustomProperty(Keys.Button2Text -> n.button2Text),
             CustomProperty(Keys.Button2Url -> n.button2Url),
+            CustomProperty(Keys.StopButtonText -> n.stopButtonText)
           )
         )
       )

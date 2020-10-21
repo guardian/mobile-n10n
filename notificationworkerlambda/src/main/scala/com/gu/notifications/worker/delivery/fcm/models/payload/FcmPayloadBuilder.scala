@@ -162,12 +162,14 @@ object FcmPayloadBuilder {
         Keys.RightCandidateDelegates -> notification.rightCandidateDelegates.toString,
         Keys.RightCandidateVoteShare -> notification.rightCandidateVoteShare,
         Keys.TotalDelegates -> notification.totalDelegates.toString,
+        Keys.DelegatesToWin -> notification.delegatesToWin,
         Keys.Message -> message,
         Keys.ExpandedMessage-> notification.expandedMessage,
         Keys.Button1Text -> notification.button1Text,
         Keys.Button1Url -> notification.button1Url,
         Keys.Button2Text -> notification.button2Text,
-        Keys.Button2Url -> notification.button2Url
+        Keys.Button2Url -> notification.button2Url,
+        Keys.StopButtonText -> notification.stopButtonText
       ),
       ttl = BreakingNewsTtl
     )

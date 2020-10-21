@@ -57,11 +57,13 @@ object CustomProperty {
     final val RightCandidateDelegates = "rightCandidateDelegates"
     final val RightCandidateVoteShare = "rightCandidateVoteShare"
     final val TotalDelegates = "totalDelegates"
+    final val DelegatesToWin = "delegatesToWin"
     final val ExpandedMessage = "expandedMessage"
     final val Button1Text = "button1Text"
     final val Button1Url = "button1Url"
     final val Button2Text = "button2Text"
     final val Button2Url = "button2Url"
+    final val StopButtonText = "stopButtonText"
 
     final val EditionsDate = "date"
     final val EditionsKey = "key"
