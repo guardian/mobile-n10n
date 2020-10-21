@@ -141,14 +141,17 @@ object FcmPayloadBuilder {
       ) ++ editionsShardNotification.message.map(Keys.Message -> _.toString).toMap
     )
 
-  private def us2020ResultsNotification(notification: Us2020ResultsNotification): FirebaseAndroidNotification =
+  private def us2020ResultsNotification(notification: Us2020ResultsNotification): FirebaseAndroidNotification = {
+    val title = notification.title.getOrElse("US elections 2020: Live results")
+    val message = notification.message.getOrElse("")
+
     FirebaseAndroidNotification(
       notificationId = notification.id,
       data = Map(
         Keys.Type -> MessageTypes.Us2020Results,
         Keys.Importance -> notification.importance.toString,
         Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
-        Keys.Title -> notification.title.toString,
+        Keys.Title -> title,
         Keys.ExpandedTitle -> notification.expandedTitle,
         Keys.LeftCandidateName -> notification.leftCandidateName,
         Keys.LeftCandidateColour -> notification.leftCandidateColour,
@@ -159,7 +162,7 @@ object FcmPayloadBuilder {
         Keys.RightCandidateDelegates -> notification.rightCandidateDelegates.toString,
         Keys.RightCandidateVoteShare -> notification.rightCandidateVoteShare.toString,
         Keys.TotalDelegates -> notification.totalDelegates.toString,
-        Keys.Message -> notification.message.toString,
+        Keys.Message -> message,
         Keys.ExpandedMessage-> notification.expandedMessage,
         Keys.Button1Text -> notification.button1Text,
         Keys.Button1Url -> notification.button1Url,
@@ -168,6 +171,7 @@ object FcmPayloadBuilder {
       ),
       ttl = BreakingNewsTtl
     )
+  }
 
   private case class PlatformUri(uri: String, `type`: String)
 
