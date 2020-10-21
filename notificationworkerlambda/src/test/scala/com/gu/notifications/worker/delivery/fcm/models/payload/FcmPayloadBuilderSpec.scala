@@ -4,14 +4,14 @@ import java.net.URI
 import java.util.UUID
 
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder.FirebaseAndroidNotification
-import models.Importance.{Major, Minor}
+import com.gu.notifications.worker.delivery.utils.TimeToLive
+import models.Importance.Major
 import models.Link.Internal
 import models.TopicTypes.Breaking
 import models.{GITContent, Notification, Topic, TopicTypes}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import com.gu.notifications.worker.delivery.utils.TimeToLive
 
 class FcmPayloadBuilderSpec extends Specification with Matchers {
 
@@ -29,6 +29,9 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       check()
     }
     "generate correct data for Editions notification" in new EditionsScope {
+      check()
+    }
+    "generate correct data for US Elections notification" in new UsElectionNotificationScope {
       check()
     }
   }
@@ -263,5 +266,61 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       )
     )
 
+  }
+
+  trait UsElectionNotificationScope extends NotificationScope {
+    val notification = models.Us2020ResultsNotification(
+      id = UUID.fromString("3e0bc788-a27c-4864-bb71-77a80aadcce4"),
+      sender =  "test",
+      title = Some("US elections 2020: Live results"),
+      expandedTitle =  "US elections 2020: Live results",
+      leftCandidateName = "Biden",
+      leftCandidateColour = "Blue",
+      leftCandidateDelegates = 51,
+      leftCandidateVoteShare = "51",
+      rightCandidateName = "Trump",
+      rightCandidateColour = "Red",
+      rightCandidateDelegates = 49,
+      rightCandidateVoteShare = "49",
+      totalDelegates = 100,
+      message = Some(""),
+      expandedMessage = "",
+      button1Text = "",
+      button1Url = "",
+      button2Text = "",
+      button2Url = "",
+      importance = Major,
+      topic = List(Topic(Breaking, "us-election-2020-live")),
+      dryRun = None
+    )
+
+    val expected = Some(
+      FirebaseAndroidNotification(
+        notificationId = UUID.fromString("3e0bc788-a27c-4864-bb71-77a80aadcce4"),
+        data = Map(
+          "type" -> "us2020Results",
+          "importance" -> "Major",
+          "topics" -> "breaking//us-election-2020-live",
+          "title" -> "US elections 2020: Live results",
+          "expandedTitle" -> "US elections 2020: Live results",
+          "leftCandidateName" -> "Biden",
+          "leftCandidateColour" -> "Blue",
+          "leftCandidateDelegates" -> "51",
+          "leftCandidateVoteShare" -> "51",
+          "rightCandidateName" -> "Trump",
+          "rightCandidateColour" -> "Red",
+          "rightCandidateDelegates" -> "49",
+          "rightCandidateVoteShare" -> "49",
+          "totalDelegates" -> "100",
+          "message" -> "",
+          "expandedMessage"-> "",
+          "button1Text" -> "",
+          "button1Url" -> "",
+          "button2Text" -> "",
+          "button2Url"-> ""
+        ),
+        ttl = TimeToLive.BreakingNewsTtl
+      )
+    )
   }
 }

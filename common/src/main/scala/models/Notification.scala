@@ -216,11 +216,11 @@ case class Us2020ResultsNotification (
   leftCandidateName: String,
   leftCandidateColour: String,
   leftCandidateDelegates: Int,
-  leftCandidateVoteShare: Float,
+  leftCandidateVoteShare: String,
   rightCandidateName: String,
   rightCandidateColour: String,
   rightCandidateDelegates: Int,
-  rightCandidateVoteShare: Float,
+  rightCandidateVoteShare: String,
   totalDelegates: Int,
   message: Option[String],
   expandedMessage: String,
@@ -230,7 +230,7 @@ case class Us2020ResultsNotification (
   button2Url: String,
   importance: Importance,
   topic: List[Topic],
-  dryRun: Option[Boolean],
+  dryRun: Option[Boolean]
 ) extends Notification
 
 object Us2020ResultsNotification {
