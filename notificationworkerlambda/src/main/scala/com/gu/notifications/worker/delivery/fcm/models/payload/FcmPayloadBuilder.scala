@@ -152,6 +152,7 @@ object FcmPayloadBuilder {
         Keys.Importance -> notification.importance.toString,
         Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
         Keys.Title -> title,
+        Keys.Link -> toAndroidLink(notification.link).toString,
         Keys.ExpandedTitle -> notification.expandedTitle,
         Keys.LeftCandidateName -> notification.leftCandidateName,
         Keys.LeftCandidateColour -> notification.leftCandidateColour,

@@ -212,6 +212,7 @@ case class Us2020ResultsNotification (
   `type`: NotificationType = Us2020Results,
   sender: String,
   title: Option[String],
+  link: Link,
   expandedTitle: String,
   leftCandidateName: String,
   leftCandidateColour: String,
