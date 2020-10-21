@@ -44,9 +44,9 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     "generate correct payload for Edition notification" in new EditionsNotificationScope {
       checkPayload()
     }
-//    "generate correct payload for US Election notification" in new UsElectionNotificationScope {
-//      checkPayload()
-//    }
+    "generate correct payload for US Election notification" in new UsElectionNotificationScope {
+      checkPayload()
+    }
   }
 
   trait NotificationScope extends Scope {
@@ -406,65 +406,72 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     )
   }
 
-//  trait UsElectionNotificationScope extends NotificationScope {
-//    val notification = models.Us2020ResultsNotification(
-//      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-//      sender = "test",
-//      title = Some("US elections 2020: Live results"),
-//      expandedTitle = "US elections 2020: Live results",
-//      leftCandidateName = "Biden",
-//      leftCandidateColour = "Blue",
-//      leftCandidateDelegates = 51,
-//      leftCandidateVoteShare = "51",
-//      rightCandidateName = "Trump",
-//      rightCandidateColour = "Red",
-//      rightCandidateDelegates = 49,
-//      rightCandidateVoteShare = "49",
-//      totalDelegates = 100,
-//      message = Some(""),
-//      expandedMessage = "",
-//      button1Text = "",
-//      button1Url = "",
-//      button2Text = "",
-//      button2Url = "",
-//      importance = Major,
-//      topic = List(Topic(Breaking, "us-election-2020-live")),
-//      dryRun = None
-//    )
-//
-//    val expected = Some(
-//      """{
-//        |   "t":"us-election-2020",
-//        |   "aps":{
-//        |      "alert":{
-//        |         "body":"",
-//        |         "title":"US elections 2020: Live results"
-//        |      },
-//        |      "sound":"default",
-//        |      "category":"us-election-2020",
-//        |      "mutable-content":1
-//        |   },
-//        |   "provider":"Guardian",
-//        |   "notificationType":"us-2020-results",
-//        |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
-//        |   "usElection2020":{
-//        |      "expandedTitle":"US elections 2020: Live results",
-//        |      "leftCandidateName":"Biden",
-//        |      "leftCandidateColour":"Blue",
-//        |      "leftCandidateDelegates":"51",
-//        |      "leftCandidateVoteShare":"51",
-//        |      "rightCandidateName":"Trump",
-//        |      "rightCandidateColour":"Red",
-//        |      "rightCandidateDelegates":"49",
-//        |      "rightCandidateVoteShare":"49",
-//        |      "totalDelegates":"100",
-//        |      "expandedMessage":"",
-//        |      "button1Text":"",
-//        |      "button1Url":"",
-//        |      "button2Text":"",
-//        |      "button2Url":""
-//        |   }
-//        |}""".stripMargin
-//    )
-//  }
+  trait UsElectionNotificationScope extends NotificationScope {
+    val notification = models.Us2020ResultsNotification(
+      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+      sender = "test",
+      title = Some("US elections 2020: Live results"),
+      message = Some("normal message"),
+      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
+      expandedTitle = "US elections 2020: Live results",
+      leftCandidateName = "Biden",
+      leftCandidateColour = "Blue",
+      leftCandidateDelegates = 51,
+      leftCandidateVoteShare = "51",
+      rightCandidateName = "Trump",
+      rightCandidateColour = "Red",
+      rightCandidateDelegates = 49,
+      rightCandidateVoteShare = "49",
+      totalDelegates = 100,
+      delegatesToWin = "",
+      expandedMessage = "",
+      button1Text = "",
+      button1Url = "",
+      button2Text = "",
+      button2Url = "",
+      stopButtonText = "",
+      importance = Major,
+      topic = List(Topic(Breaking, "us-election-2020-live")),
+      dryRun = None
+    )
+
+    val expected = Some(
+      """{
+        |   "t":"us-election-2020",
+        |   "aps":{
+        |      "alert":{
+        |         "body":"normal message",
+        |         "title":"US elections 2020: Live results"
+        |      },
+        |      "sound":"default",
+        |      "category":"us-election-2020",
+        |      "mutable-content":1
+        |   },
+        |   "provider":"Guardian",
+        |   "topic":"breaking/us-election-2020-live",
+        |   "notificationType":"us-2020-results",
+        |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
+        |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
+        |   "usElection2020":{
+        |      "expandedTitle":"US elections 2020: Live results",
+        |      "leftCandidateName":"Biden",
+        |      "leftCandidateColour":"Blue",
+        |      "leftCandidateDelegates":"51",
+        |      "leftCandidateVoteShare":"51",
+        |      "rightCandidateName":"Trump",
+        |      "rightCandidateColour":"Red",
+        |      "rightCandidateDelegates":"49",
+        |      "rightCandidateVoteShare":"49",
+        |      "totalDelegates":"100",
+        |      "delegatesToWin":"",
+        |      "expandedMessage":"",
+        |      "button1Text":"",
+        |      "button1Url":"",
+        |      "button2Text":"",
+        |      "button2Url":"",
+        |      "stopButtonText":""
+        |   }
+        |}""".stripMargin
+    )
+  }
 }
