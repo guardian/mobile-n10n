@@ -274,6 +274,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       sender =  "test",
       title = Some("US elections 2020: Live results"),
       expandedTitle =  "US elections 2020: Live results",
+      link = Internal("some/capi/id", None, GITContent, None),
       leftCandidateName = "Biden",
       leftCandidateColour = "Blue",
       leftCandidateDelegates = 51,
@@ -283,12 +284,14 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       rightCandidateDelegates = 49,
       rightCandidateVoteShare = "49",
       totalDelegates = 100,
+      delegatesToWin = "",
       message = Some(""),
       expandedMessage = "",
       button1Text = "",
       button1Url = "",
       button2Text = "",
       button2Url = "",
+      stopButtonText = "",
       importance = Major,
       topic = List(Topic(Breaking, "us-election-2020-live")),
       dryRun = None
@@ -303,6 +306,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
           "topics" -> "breaking//us-election-2020-live",
           "title" -> "US elections 2020: Live results",
           "expandedTitle" -> "US elections 2020: Live results",
+          "link" -> "x-gu://www.guardian.co.uk/some/capi/id",
           "leftCandidateName" -> "Biden",
           "leftCandidateColour" -> "Blue",
           "leftCandidateDelegates" -> "51",
@@ -312,12 +316,14 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
           "rightCandidateDelegates" -> "49",
           "rightCandidateVoteShare" -> "49",
           "totalDelegates" -> "100",
+          "delegatesToWin" -> "",
           "message" -> "",
           "expandedMessage"-> "",
           "button1Text" -> "",
           "button1Url" -> "",
           "button2Text" -> "",
-          "button2Url"-> ""
+          "button2Url"-> "",
+          "stopButtonText" -> ""
         ),
         ttl = TimeToLive.BreakingNewsTtl
       )
