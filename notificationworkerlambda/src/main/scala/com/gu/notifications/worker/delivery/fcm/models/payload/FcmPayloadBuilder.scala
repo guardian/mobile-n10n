@@ -146,9 +146,9 @@ object FcmPayloadBuilder {
       notificationId = notification.id,
       data = Map(
         Keys.Type -> MessageTypes.Us2020Results,
-        Keys.Title -> notification.title.toString,
         Keys.Importance -> notification.importance.toString,
         Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
+        Keys.Title -> notification.title.toString,
         Keys.ExpandedTitle -> notification.expandedTitle,
         Keys.LeftCandidateName -> notification.leftCandidateName,
         Keys.LeftCandidateColour -> notification.leftCandidateColour,
@@ -159,6 +159,7 @@ object FcmPayloadBuilder {
         Keys.RightCandidateDelegates -> notification.rightCandidateDelegates.toString,
         Keys.RightCandidateVoteShare -> notification.rightCandidateVoteShare.toString,
         Keys.TotalDelegates -> notification.totalDelegates.toString,
+        Keys.Message -> notification.message.toString,
         Keys.ExpandedMessage-> notification.expandedMessage,
         Keys.Button1Text -> notification.button1Text,
         Keys.Button1Url -> notification.button1Url,
