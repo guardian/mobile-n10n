@@ -454,7 +454,6 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   "notificationType":"us-2020-results",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
         |   "usElection2020":{
-        |     "leftCandidateColourDark":"Blue",
         |     "stopButtonText":"",
         |     "button1Url":"",
         |     "button2Url":"",
