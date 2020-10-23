@@ -463,7 +463,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |     "delegatesToWin":"",
         |     "leftCandidateDelegates":51,
         |     "rightCandidateName":"Trump",
-        |     "leftCandidateColourDark: "Blue",
+        |     "leftCandidateColourDark": "Blue",
         |     "rightCandidateColourDark": "Red",
         |     "button1Text":"",
         |     "expandedTitle":"US elections 2020: Live results",
