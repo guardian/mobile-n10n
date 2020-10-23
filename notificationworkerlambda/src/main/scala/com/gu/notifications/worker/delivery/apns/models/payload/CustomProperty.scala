@@ -50,7 +50,7 @@ object CustomProperty {
     final val ExpandedTitle = "expandedTitle"
     final val LeftCandidateName = "leftCandidateName"
     final val LeftCandidateColour = "leftCandidateColour"
-    final val LeftCandidateColourDark = "leftCandidateColour"
+    final val LeftCandidateColourDark = "leftCandidateColourDark"
     final val LeftCandidateDelegates = "leftCandidateDelegates"
     final val LeftCandidateVoteShare = "leftCandidateVoteShare"
     final val RightCandidateName = "rightCandidateName"
