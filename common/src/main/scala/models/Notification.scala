@@ -41,6 +41,7 @@ object Notification {
         case FootballMatchStatus => FootballMatchStatusNotification.jf.reads(json)
         case NewsstandShard => NewsstandShardNotification.jf.reads(json)
         case Editions => EditionsNotification.jf.reads(json)
+        case Us2020Results => Us2020ResultsNotification.jf.reads(json)
       }
     }
   }
@@ -208,7 +209,7 @@ object LiveEventNotification {
 
 case class Us2020ResultsNotification (
   id: UUID,
-  `type`: NotificationType = Content,
+  `type`: NotificationType = Us2020Results,
   sender: String,
   title: Option[String],
   link: Link,
