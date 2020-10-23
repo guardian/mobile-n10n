@@ -309,6 +309,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
           "title" -> "US elections 2020: Live results",
           "expandedTitle" -> "US elections 2020: Live results",
           "link" -> "x-gu://www.guardian.co.uk/some/capi/id",
+          "uri" -> "x-gu:///items/some/capi/id",
           "leftCandidateName" -> "Biden",
           "leftCandidateColour" -> "Blue",
           "leftCandidateColourDark" -> "Blue",

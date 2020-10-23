@@ -144,6 +144,7 @@ object FcmPayloadBuilder {
   private def us2020ResultsNotification(notification: Us2020ResultsNotification): FirebaseAndroidNotification = {
     val title = notification.title.getOrElse("US elections 2020: Live results")
     val message = notification.message.getOrElse("")
+    val link = toPlatformLink(notification.link)
 
     FirebaseAndroidNotification(
       notificationId = notification.id,
@@ -153,6 +154,7 @@ object FcmPayloadBuilder {
         Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
         Keys.Title -> title,
         Keys.Link -> toAndroidLink(notification.link).toString,
+        Keys.Uri -> new URI(link.uri).toString,
         Keys.ExpandedTitle -> notification.expandedTitle,
         Keys.LeftCandidateName -> notification.leftCandidateName,
         Keys.LeftCandidateColour -> notification.leftCandidateColour,
