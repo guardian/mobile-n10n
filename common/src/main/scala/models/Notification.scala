@@ -41,7 +41,6 @@ object Notification {
         case FootballMatchStatus => FootballMatchStatusNotification.jf.reads(json)
         case NewsstandShard => NewsstandShardNotification.jf.reads(json)
         case Editions => EditionsNotification.jf.reads(json)
-        case Us2020Results => Us2020ResultsNotification.jf.reads(json)
       }
     }
   }
