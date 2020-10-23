@@ -451,7 +451,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |   },
         |   "provider":"Guardian",
         |   "link":"https://mobile.guardianapis.com/items/world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray",
-        |   "notificationType":"us-2020-results",
+        |   "notificationType":"content",
         |   "uniqueIdentifier":"068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7",
         |   "usElection2020":{
         |     "stopButtonText":"",

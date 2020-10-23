@@ -181,7 +181,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         CustomProperty(Keys.Provider -> Provider.Guardian.value),
         CustomProperty(Keys.MessageType -> MessageTypes.UsElection2020),
         CustomProperty(Keys.Link -> toIosLink(n.link).toString),
-        CustomProperty(Keys.NotificationType -> Us2020Results.value),
+        CustomProperty(Keys.NotificationType -> Content.value),
         CustomProperty(Keys.UsElection2020 ->
           Seq(
             CustomProperty(Keys.ExpandedTitle -> n.expandedTitle),

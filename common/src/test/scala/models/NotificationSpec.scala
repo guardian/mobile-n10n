@@ -212,7 +212,7 @@ class NotificationSpec extends Specification {
       """
         |{
         |  "id" : "3e0bc788-a27c-4864-bb71-77a80aadcce4",
-        |  "type": "us-2020-results",
+        |  "type": "content",
         |  "sender" : "test",
         |  "title" : "US elections 2020: Live results",
         |  "link" : {

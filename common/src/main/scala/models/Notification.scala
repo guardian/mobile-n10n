@@ -209,7 +209,7 @@ object LiveEventNotification {
 
 case class Us2020ResultsNotification (
   id: UUID,
-  `type`: NotificationType = Us2020Results,
+  `type`: NotificationType = Content,
   sender: String,
   title: Option[String],
   link: Link,
