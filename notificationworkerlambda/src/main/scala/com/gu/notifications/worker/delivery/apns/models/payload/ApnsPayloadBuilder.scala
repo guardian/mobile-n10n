@@ -170,6 +170,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
     )
 
   private def us2020ResultsPayload(n: Us2020ResultsNotification): ApnsPayload = {
+    val link = toPlatformLink(n.link)
     val payLoad = PushyPayload(
       alertTitle = n.title,
       alertBody = n.message,
@@ -181,6 +182,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         CustomProperty(Keys.Provider -> Provider.Guardian.value),
         CustomProperty(Keys.MessageType -> MessageTypes.UsElection2020),
         CustomProperty(Keys.Link -> toIosLink(n.link).toString),
+        CustomProperty(Keys.Uri -> new URI(link.uri).toString),
         CustomProperty(Keys.NotificationType -> Content.value),
         CustomProperty(Keys.UsElection2020 ->
           Seq(
