@@ -31,6 +31,12 @@ class NotificationSpec extends Specification {
      }
    }
 
+  "A US election alert notification" should {
+    "serialize / deserialize to json" in new UsElectionNotificationScope {
+      Json.toJson(notification) shouldEqual Json.parse(expected)
+    }
+  }
+
    trait NotificationScope extends Scope {
      def notification: Notification
      def expected: String
@@ -171,4 +177,75 @@ class NotificationSpec extends Specification {
        """.stripMargin
    }
 
+  trait UsElectionNotificationScope extends NotificationScope {
+    val notification = Us2020ResultsNotification(
+      id = UUID.fromString("3e0bc788-a27c-4864-bb71-77a80aadcce4"),
+      sender =  "test",
+      title = Some("US elections 2020: Live results"),
+      link = Internal("world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates", None, GITContent, None),
+      expandedTitle =  "US elections 2020: Live results",
+      leftCandidateName = "Biden",
+      leftCandidateColour = "Blue",
+      leftCandidateColourDark = "Blue",
+      leftCandidateDelegates = 51,
+      leftCandidateVoteShare = "51",
+      rightCandidateName = "Trump",
+      rightCandidateColour = "Red",
+      rightCandidateColourDark = "Red",
+      rightCandidateDelegates = 49,
+      rightCandidateVoteShare = "49",
+      totalDelegates = 100,
+      delegatesToWin = "",
+      message = Some(""),
+      expandedMessage = "",
+      button1Text = "",
+      button1Url = "",
+      button2Text = "",
+      button2Url = "",
+      stopButtonText = "",
+      importance = Major,
+      topic = List(Topic(Breaking, "us-election-2020-live")),
+      dryRun = None
+    )
+
+    val expected =
+      """
+        |{
+        |  "id" : "3e0bc788-a27c-4864-bb71-77a80aadcce4",
+        |  "type": "us-2020-results",
+        |  "sender" : "test",
+        |  "title" : "US elections 2020: Live results",
+        |  "link" : {
+        |    "contentApiId": "world/live/2015/nov/20/mali-hotel-attack-gunmen-take-hostages-in-bamako-live-updates",
+        |    "git":{"mobileAggregatorPrefix":"item-trimmed"}
+        |  },
+        |  "expandedTitle" : "US elections 2020: Live results",
+        |  "message" : "",
+        |  "leftCandidateName" : "Biden",
+        |  "leftCandidateColour" : "Blue",
+        |  "leftCandidateColourDark" : "Blue",
+        |  "leftCandidateDelegates": 51,
+        |  "leftCandidateVoteShare": "51",
+        |  "rightCandidateName": "Trump",
+        |  "rightCandidateColour": "Red",
+        |  "rightCandidateColourDark": "Red",
+        |  "rightCandidateDelegates": 49,
+        |  "rightCandidateVoteShare": "49",
+        |  "totalDelegates": 100,
+        |  "delegatesToWin": "",
+        |  "message": "",
+        |  "expandedMessage": "",
+        |  "button1Text": "",
+        |  "button1Url": "",
+        |  "button2Text": "",
+        |  "button2Url": "",
+        |  "stopButtonText": "",
+        |  "importance" : "Major",
+        |  "topic" : [ {
+        |    "type" : "breaking",
+        |    "name" : "us-election-2020-live"
+        |  } ]
+        |}
+       """.stripMargin
+  }
  }

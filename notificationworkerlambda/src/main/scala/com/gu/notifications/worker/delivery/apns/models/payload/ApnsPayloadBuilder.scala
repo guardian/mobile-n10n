@@ -21,6 +21,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       case n: FootballMatchStatusNotification => Some(footballMatchStatusPayload(n))
       case n: NewsstandShardNotification => Some(newsstandPayload(n))
       case n: EditionsNotification => Some(editionsPayload(n))
+      case n: Us2020ResultsNotification => Some(us2020ResultsPayload(n))
       case _ => None
   }
 
@@ -167,6 +168,49 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       pushType = PushType.BACKGROUND,
       deliveryPriority = DeliveryPriority.CONSERVE_POWER
     )
+
+  private def us2020ResultsPayload(n: Us2020ResultsNotification): ApnsPayload = {
+    val link = toPlatformLink(n.link)
+    val payLoad = PushyPayload(
+      alertTitle = n.title,
+      alertBody = n.message,
+      categoryName = Some("us-election-2020"),
+      mutableContent = true,
+      sound = if (n.importance == Importance.Major) Some("default") else None,
+      customProperties = Seq(
+        CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
+        CustomProperty(Keys.Provider -> Provider.Guardian.value),
+        CustomProperty(Keys.MessageType -> MessageTypes.UsElection2020),
+        CustomProperty(Keys.Link -> toIosLink(n.link).toString),
+        CustomProperty(Keys.Uri -> new URI(link.uri).toString),
+        CustomProperty(Keys.NotificationType -> Content.value),
+        CustomProperty(Keys.UsElection2020 ->
+          Seq(
+            CustomProperty(Keys.ExpandedTitle -> n.expandedTitle),
+            CustomProperty(Keys.LeftCandidateName -> n.leftCandidateName),
+            CustomProperty(Keys.LeftCandidateColour -> n.leftCandidateColour),
+            CustomProperty(Keys.LeftCandidateColourDark -> n.leftCandidateColourDark),
+            CustomProperty(Keys.LeftCandidateDelegates -> n.leftCandidateDelegates),
+            CustomProperty(Keys.LeftCandidateVoteShare -> n.leftCandidateVoteShare),
+            CustomProperty(Keys.RightCandidateName -> n.rightCandidateName),
+            CustomProperty(Keys.RightCandidateColour -> n.rightCandidateColour),
+            CustomProperty(Keys.RightCandidateColourDark -> n.rightCandidateColourDark),
+            CustomProperty(Keys.RightCandidateDelegates -> n.rightCandidateDelegates),
+            CustomProperty(Keys.DelegatesToWin -> n.delegatesToWin),
+            CustomProperty(Keys.RightCandidateVoteShare -> n.rightCandidateVoteShare),
+            CustomProperty(Keys.TotalDelegates -> n.totalDelegates),
+            CustomProperty(Keys.ExpandedMessage -> n.expandedMessage),
+            CustomProperty(Keys.Button1Text -> n.button1Text),
+            CustomProperty(Keys.Button1Url -> n.button1Url),
+            CustomProperty(Keys.Button2Text -> n.button2Text),
+            CustomProperty(Keys.Button2Url -> n.button2Url),
+            CustomProperty(Keys.StopButtonText -> n.stopButtonText)
+          )
+        )
+      )
+    ).payload
+    ApnsPayload(payLoad, Some(BreakingNewsTtl), Some("us-election-2020-collapse"), PushType.ALERT)
+  }
 
   private def toPlatformLink(link: Link) = link match {
     case Link.Internal(contentApiId, _, _, Some(blockId)) => PlatformUri(s"https://www.theguardian.com/$contentApiId?page=with:block-$blockId#block-$blockId", Item)

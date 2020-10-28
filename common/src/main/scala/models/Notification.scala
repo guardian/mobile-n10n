@@ -1,13 +1,12 @@
 package models
 
+import java.net.URI
 import java.util.UUID
 
+import ai.x.play.json.Encoders.encoder
+import ai.x.play.json.Jsonx
 import models.NotificationType._
 import play.api.libs.json._
-import java.net.URI
-
-import ai.x.play.json.Jsonx
-import ai.x.play.json.Encoders.encoder
 
 sealed trait Notification {
   def id: UUID
@@ -31,6 +30,7 @@ object Notification {
       case n: FootballMatchStatusNotification => FootballMatchStatusNotification.jf.writes(n)
       case n: NewsstandShardNotification => NewsstandShardNotification.jf.writes(n)
       case n: EditionsNotification => EditionsNotification.jf.writes(n)
+      case n: Us2020ResultsNotification => Us2020ResultsNotification.jf.writes(n)
     }
     override def reads(json: JsValue): JsResult[Notification] = {
       (json \ "type").validate[NotificationType].flatMap {
@@ -41,6 +41,7 @@ object Notification {
         case FootballMatchStatus => FootballMatchStatusNotification.jf.reads(json)
         case NewsstandShard => NewsstandShardNotification.jf.reads(json)
         case Editions => EditionsNotification.jf.reads(json)
+        case Us2020Results => Us2020ResultsNotification.jf.reads(json)
       }
     }
   }
@@ -66,7 +67,6 @@ case class BreakingNewsNotification(
 ) extends Notification
 
 object BreakingNewsNotification {
-  import JsonUtils._
   implicit val jf = Json.format[BreakingNewsNotification]
 }
 
@@ -121,7 +121,6 @@ case class ContentNotification(
 ) extends Notification with NotificationWithLink
 
 object ContentNotification {
-  import JsonUtils._
   implicit val jf = Json.format[ContentNotification]
 }
 
@@ -155,7 +154,6 @@ case class FootballMatchStatusNotification(
 ) extends Notification
 
 object FootballMatchStatusNotification {
-  import JsonUtils._
 
   implicit val jf: Format[FootballMatchStatusNotification] = Jsonx.formatCaseClass[FootballMatchStatusNotification]
 }
@@ -185,7 +183,6 @@ case class GoalAlertNotification(
 ) extends Notification
 
 object GoalAlertNotification {
-  import JsonUtils._
   implicit val jf = Json.format[GoalAlertNotification]
 }
 
@@ -207,6 +204,40 @@ case class LiveEventNotification(
 ) extends Notification
 
 object LiveEventNotification {
-  import JsonUtils._
   implicit val jf = Json.format[LiveEventNotification]
+}
+
+case class Us2020ResultsNotification (
+  id: UUID,
+  `type`: NotificationType = Us2020Results,
+  sender: String,
+  title: Option[String],
+  link: Link,
+  expandedTitle: String,
+  leftCandidateName: String,
+  leftCandidateColour: String,
+  leftCandidateColourDark: String,
+  leftCandidateDelegates: Int,
+  leftCandidateVoteShare: String,
+  rightCandidateName: String,
+  rightCandidateColour: String,
+  rightCandidateColourDark: String,
+  rightCandidateDelegates: Int,
+  rightCandidateVoteShare: String,
+  totalDelegates: Int,
+  delegatesToWin: String,
+  message: Option[String],
+  expandedMessage: String,
+  button1Text: String,
+  button1Url: String,
+  button2Text: String,
+  button2Url: String,
+  stopButtonText: String,
+  importance: Importance,
+  topic: List[Topic],
+  dryRun: Option[Boolean]
+) extends Notification
+
+object Us2020ResultsNotification {
+  implicit val jf: Format[Us2020ResultsNotification] = Jsonx.formatCaseClass[Us2020ResultsNotification]
 }

@@ -3,13 +3,14 @@ package com.gu.notifications.worker.delivery.fcm.models.payload
 import java.net.URI
 import java.util.UUID
 
-import scala.PartialFunction._
-import scala.jdk.CollectionConverters._
 import com.google.firebase.messaging.AndroidConfig
 import com.gu.notifications.worker.delivery.FcmPayload
 import com.gu.notifications.worker.delivery.fcm.models.payload.Editions.Edition
 import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import models._
+
+import scala.PartialFunction._
+import scala.jdk.CollectionConverters._
 
 object FcmPayloadBuilder {
 
@@ -36,6 +37,7 @@ object FcmPayloadBuilder {
       case n: ContentNotification => Some(contentAndroidNotification(n, debug))
       case n: FootballMatchStatusNotification => Some(footballMatchStatusAndroidNotification(n))
       case n: EditionsNotification => Some(editionsAndroidNotification(n))
+      case n: Us2020ResultsNotification => Some(us2020ResultsNotification(n))
       case _ => None
     }
   }
@@ -138,6 +140,45 @@ object FcmPayloadBuilder {
         Keys.EditionsName -> editionsShardNotification.name
       ) ++ editionsShardNotification.message.map(Keys.Message -> _.toString).toMap
     )
+
+  private def us2020ResultsNotification(notification: Us2020ResultsNotification): FirebaseAndroidNotification = {
+    val title = notification.title.getOrElse("US elections 2020: Live results")
+    val message = notification.message.getOrElse("")
+    val link = toPlatformLink(notification.link)
+
+    FirebaseAndroidNotification(
+      notificationId = notification.id,
+      data = Map(
+        Keys.Type -> MessageTypes.Us2020Results,
+        Keys.Importance -> notification.importance.toString,
+        Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
+        Keys.Title -> title,
+        Keys.Link -> toAndroidLink(notification.link).toString,
+        Keys.Uri -> new URI(link.uri).toString,
+        Keys.ExpandedTitle -> notification.expandedTitle,
+        Keys.LeftCandidateName -> notification.leftCandidateName,
+        Keys.LeftCandidateColour -> notification.leftCandidateColour,
+        Keys.LeftCandidateColourDark -> notification.leftCandidateColourDark,
+        Keys.LeftCandidateDelegates -> notification.leftCandidateDelegates.toString,
+        Keys.LeftCandidateVoteShare -> notification.leftCandidateVoteShare,
+        Keys.RightCandidateName -> notification.rightCandidateName,
+        Keys.RightCandidateColour -> notification.rightCandidateColour,
+        Keys.RightCandidateColourDark -> notification.rightCandidateColourDark,
+        Keys.RightCandidateDelegates -> notification.rightCandidateDelegates.toString,
+        Keys.RightCandidateVoteShare -> notification.rightCandidateVoteShare,
+        Keys.TotalDelegates -> notification.totalDelegates.toString,
+        Keys.DelegatesToWin -> notification.delegatesToWin,
+        Keys.Message -> message,
+        Keys.ExpandedMessage-> notification.expandedMessage,
+        Keys.Button1Text -> notification.button1Text,
+        Keys.Button1Url -> notification.button1Url,
+        Keys.Button2Text -> notification.button2Text,
+        Keys.Button2Url -> notification.button2Url,
+        Keys.StopButtonText -> notification.stopButtonText
+      ),
+      ttl = BreakingNewsTtl
+    )
+  }
 
   private case class PlatformUri(uri: String, `type`: String)
 
