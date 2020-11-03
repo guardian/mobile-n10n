@@ -7,6 +7,7 @@ import com.google.firebase.messaging.AndroidConfig
 import com.gu.notifications.worker.delivery.FcmPayload
 import com.gu.notifications.worker.delivery.fcm.models.payload.Editions.Edition
 import com.gu.notifications.worker.delivery.utils.TimeToLive._
+import models.Importance.Minor
 import models._
 
 import scala.PartialFunction._
@@ -150,7 +151,7 @@ object FcmPayloadBuilder {
       notificationId = notification.id,
       data = Map(
         Keys.Type -> MessageTypes.Us2020Results,
-        Keys.Importance -> notification.importance.toString,
+        Keys.Importance -> Minor.toString,
         Keys.Topics -> notification.topic.map(toAndroidTopic).mkString(","),
         Keys.Title -> title,
         Keys.Link -> toAndroidLink(notification.link).toString,

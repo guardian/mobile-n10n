@@ -176,7 +176,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       alertBody = n.message,
       categoryName = Some("us-election-2020"),
       mutableContent = true,
-      sound = if (n.importance == Importance.Major) Some("default") else None,
+      sound = None,
       customProperties = Seq(
         CustomProperty(Keys.UniqueIdentifier -> n.id.toString),
         CustomProperty(Keys.Provider -> Provider.Guardian.value),
