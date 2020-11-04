@@ -5,7 +5,7 @@ import java.util.UUID
 
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder.FirebaseAndroidNotification
 import com.gu.notifications.worker.delivery.utils.TimeToLive
-import models.Importance.Major
+import models.Importance.{Major, Minor}
 import models.Link.Internal
 import models.TopicTypes.Breaking
 import models.{GITContent, Notification, Topic, TopicTypes}
@@ -304,7 +304,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
         notificationId = UUID.fromString("3e0bc788-a27c-4864-bb71-77a80aadcce4"),
         data = Map(
           "type" -> "us2020Results",
-          "importance" -> "Major",
+          "importance" -> "Minor",
           "topics" -> "breaking//us-election-2020-live",
           "title" -> "US elections 2020: Live results",
           "expandedTitle" -> "US elections 2020: Live results",

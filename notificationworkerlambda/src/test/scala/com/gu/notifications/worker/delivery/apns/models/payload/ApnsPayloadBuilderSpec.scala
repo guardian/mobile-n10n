@@ -445,7 +445,6 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         |         "body":"normal message",
         |         "title":"US elections 2020: Live results"
         |      },
-        |      "sound":"default",
         |      "category":"us-election-2020",
         |      "mutable-content":1
         |   },
