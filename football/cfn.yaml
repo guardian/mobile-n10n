@@ -81,7 +81,7 @@ Resources:
           App: !Ref App
           Stack: !Ref Stack
           Stage: !Ref Stage
-          
+
       Description: Send Goal Alert notifications
       Handler: com.gu.mobile.notifications.football.Lambda::handler
       MemorySize: 512
@@ -158,6 +158,7 @@ Resources:
       Period: 300
       EvaluationPeriods: 1
       AlarmActions: [ !Ref DynamoNotificationTopic ]
+      TreatMissingData: notBreaching
 
   MobileNotificationsFootballConsumedWriteThrottleEvents:
     Type: AWS::CloudWatch::Alarm
@@ -174,3 +175,4 @@ Resources:
       Period: 300
       EvaluationPeriods: 1
       AlarmActions: [ !Ref DynamoNotificationTopic ]
+      TreatMissingData: notBreaching
