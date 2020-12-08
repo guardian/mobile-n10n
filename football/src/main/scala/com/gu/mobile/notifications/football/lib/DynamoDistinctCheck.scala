@@ -50,8 +50,8 @@ class DynamoDistinctCheck(client: AmazonDynamoDBAsync, tableName: String) extend
       case Right(_) =>
         logger.info(s"Distinct notification ${notification.id} written to dynamodb")
         Distinct
-      case Left(_) =>
-        logger.debug(s"Notification ${notification.id} already exists in dynamodb - discarding")
+      case Left(error) =>
+        logger.info(s"Received $error when attempting to write ${notification.id} to dynamo, assuming it's a duplicate")
         Duplicate
     } recover {
       case e =>
