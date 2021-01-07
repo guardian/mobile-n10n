@@ -13,7 +13,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, TokenService}
 import com.gu.notifications.worker.utils.Cloudwatch
-import db.HarvestedToken
+import db.{HarvestedToken, JdbcConfig}
 import fs2.{Pipe, Stream}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
@@ -26,7 +26,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
     "Queue one multi platform breaking news notification" in new WRHSScope {
-      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification), null)
+      workerRequestHandler.doTheWork(sqsEventShardNotification(breakingNewsNotification), tokenService)
       tokenStreamCount.get() shouldEqual 0
       tokenPlatformStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 3
@@ -93,14 +93,17 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
     var apnsSqsDeliveriesTotal = new AtomicInteger()
     var firebaseSqsDeliveriesTotal = new AtomicInteger()
 
+    val tokenService = new TokenService[IO] {
+      override def tokens(notification: Notification, shardRange: ShardRange): Stream[IO, HarvestedToken] = {
+        tokenPlatformStreamCount.incrementAndGet()
+        tokenPlatformStream
+      }
+    }
+
     val workerRequestHandler = new HarvesterRequestHandler {
 
-      override val tokenService: TokenService[IO] = new TokenService[IO] {
-        override def tokens(notification: Notification, shardRange: ShardRange): Stream[IO, HarvestedToken] = {
-          tokenPlatformStreamCount.incrementAndGet()
-          tokenPlatformStream
-        }
-      }
+      override val jdbcConfig: JdbcConfig = null
+
       override val iosLiveDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
         apnsSqsDeliveriesCount.incrementAndGet()
         apnsSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)

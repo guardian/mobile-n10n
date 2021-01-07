@@ -6,10 +6,12 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, SqsDeliveryServiceImpl, TokenService, TokenServiceImpl}
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, Logging, NotificationParser}
+import com.zaxxer.hikari.HikariDataSource
 import db.BuildTier.BuildTier
-import db.{BuildTier, DatabaseConfig, HarvestedToken, RegistrationService}
+import db.{BuildTier, DatabaseConfig, HarvestedToken, JdbcConfig, RegistrationService}
 import doobie.util.transactor.Transactor
 import fs2.{Pipe, Sink, Stream}
+import javax.sql.DataSource
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.jdk.CollectionConverters._
@@ -37,7 +39,7 @@ trait HarvesterRequestHandler extends Logging {
   val androidEditionDeliveryService: SqsDeliveryService[IO]
   val androidBetaDeliveryService: SqsDeliveryService[IO]
 
-  val tokenService: TokenService[IO]
+  val jdbcConfig: JdbcConfig
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
   val supportedPlatforms = List(Ios, Android, IosEdition, AndroidEdition)
@@ -76,7 +78,7 @@ trait HarvesterRequestHandler extends Logging {
     case token @ HarvestedToken(_, AndroidEdition, _) => (WorkerSqs.AndroidEditionWorkerSqs, token)
   }
 
-  def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification]): Stream[IO, Unit] = {
+  def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
     for {
       shardedNotification <- shardedNotifications
       androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, androidLiveDeliveryService)
@@ -93,24 +95,40 @@ trait HarvesterRequestHandler extends Logging {
     } yield resp
   }
 
-  def handleHarvesting(event: SQSEvent, context: Context): Unit = {
+  def doTheWork(event: SQSEvent, tokenService: TokenService[IO]) = {
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
       .map(NotificationParser.parseShardNotificationEvent)
-    queueShardedNotification(shardNotificationStream)
+    queueShardedNotification(shardNotificationStream, tokenService)
       .compile
       .drain
       .unsafeRunSync()
+  }
+
+  def handleHarvesting(event: SQSEvent, context: Context): Unit = {
+    // open connection
+    val (transactor, datasource): (Transactor[IO], HikariDataSource) = DatabaseConfig.transactorAndDataSource[IO](jdbcConfig)
+    logger.info("SQL connection open")
+
+    // create services that rely on the connection
+    val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
+    val tokenService: TokenServiceImpl[IO] = new TokenServiceImpl[IO](registrationService)
+
+    doTheWork(event, tokenService)
+
+    // close connection
+    datasource.close()
+    logger.info("SQL connection closed")
   }
 }
 
 
 class Harvester extends HarvesterRequestHandler {
   val config: HarvesterConfiguration = Configuration.fetchHarvester()
-  val transactor: Transactor[IO] = DatabaseConfig.transactor[IO](config.jdbcConfig)
-  val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
+
+  override val jdbcConfig: JdbcConfig = config.jdbcConfig
+
   override val cloudwatch: Cloudwatch = new CloudwatchImpl
-  override val tokenService: TokenServiceImpl[IO] = new TokenServiceImpl[IO](registrationService)
   override val iosLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsUrl)
   override val androidLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsUrl)
   override val iosEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl)
