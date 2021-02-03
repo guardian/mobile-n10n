@@ -26,7 +26,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
     "Queue one multi platform breaking news notification" in new WRHSScope {
-      workerRequestHandler.doTheWork(sqsEventShardNotification(breakingNewsNotification), tokenService)
+      workerRequestHandler.processNotification(sqsEventShardNotification(breakingNewsNotification), tokenService)
       tokenStreamCount.get() shouldEqual 0
       tokenPlatformStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 3
