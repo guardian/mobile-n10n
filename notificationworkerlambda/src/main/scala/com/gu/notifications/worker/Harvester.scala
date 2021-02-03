@@ -1,21 +1,19 @@
 package com.gu.notifications.worker
 
-import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Newsstand, Platform, ShardedNotification}
+import _root_.models._
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
-import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, SqsDeliveryServiceImpl, TokenService, TokenServiceImpl}
+import com.gu.notifications.worker.tokens._
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, Logging, NotificationParser}
 import com.zaxxer.hikari.HikariDataSource
-import db.BuildTier.BuildTier
-import db.{BuildTier, DatabaseConfig, HarvestedToken, JdbcConfig, RegistrationService}
+import db._
 import doobie.util.transactor.Transactor
-import fs2.{Pipe, Sink, Stream}
-import javax.sql.DataSource
+import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
+import scala.jdk.CollectionConverters._
 
 sealed trait WorkerSqs
 object WorkerSqs {
@@ -95,7 +93,7 @@ trait HarvesterRequestHandler extends Logging {
     } yield resp
   }
 
-  def doTheWork(event: SQSEvent, tokenService: TokenService[IO]) = {
+  def processNotification(event: SQSEvent, tokenService: TokenService[IO]) = {
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
       .map(NotificationParser.parseShardNotificationEvent)
@@ -114,7 +112,7 @@ trait HarvesterRequestHandler extends Logging {
     val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
     val tokenService: TokenServiceImpl[IO] = new TokenServiceImpl[IO](registrationService)
 
-    doTheWork(event, tokenService)
+    processNotification(event, tokenService)
 
     // close connection
     datasource.close()
