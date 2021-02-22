@@ -190,22 +190,22 @@ lazy val apiModels = {
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
     ),
     organization := "com.gu",
-    bintrayOrganization := Some("guardian"),
-    bintrayRepository := "mobile",
-    description := "Scala models for the Guardian Push Notifications API",
+    publishTo := sonatypePublishToBundle.value,
+
     scmInfo := Some(ScmInfo(
       url("https://github.com/guardian/mobile-n10n"),
       "scm:git:git@github.com:guardian/mobile-n10n.git"
-    )), pomExtra in Global := {
-      <url>https://github.com/guardian/mobile-n10n</url>
-        <developers>
-          <developer>
-            <id>@guardian</id>
-            <name>The guardian</name>
-            <url>https://github.com/guardian</url>
-          </developer>
-        </developers>
-    },
+    )),
+
+    homepage := Some(url("https://github.com/guardian/mobile-n10n")),
+
+    developers := List(Developer(
+      id = "Guardian",
+      name = "Guardian",
+      email = null,
+      url = url("https://github.com/guardian")
+    )),
+    description := "Scala models for the Guardian Push Notifications API",
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseVersionFile := file("api-models/version.sbt"),
     licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -218,7 +218,7 @@ lazy val apiModels = {
       commitReleaseVersion,
       tagRelease,
       publishArtifacts,
-      releaseStepTask(bintrayRelease),
+      releaseStepCommand("sonatypeBundleRelease"),
       setNextVersion,
       commitNextVersion,
       pushChanges
