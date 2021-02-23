@@ -18,7 +18,8 @@ Mappings:
       NewsstandNotificationAlarmThreshold: 0
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
-      InstanceType: "t4g.micro"
+      InstanceType:
+        Value: "t4g.micro"
     PROD:
       CPUAlarmPeriodLower: 300
       CPUAlarmPeriodUpper: 60
@@ -30,7 +31,8 @@ Mappings:
       NewsstandNotificationAlarmThreshold: 1
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
-      InstanceType: "t4g.micro"
+      InstanceType:
+        Value: "t4g.micro"
 
 Outputs:
   LoadBalancerUrl:
@@ -328,7 +330,7 @@ Resources:
       AssociatePublicIpAddress: True
       IamInstanceProfile: !Ref NotificationInstanceProfile
       ImageId: !Ref AMI
-      InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType ]
+      InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType, Value]
       SecurityGroups:
       - !Ref InstanceSecurityGroup
       - !Ref GuardianAccessSecurityGroup
