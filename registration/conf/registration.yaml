@@ -13,12 +13,14 @@ Mappings:
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
       NotificationAlarmPeriod: 1200
+      InstanceType: "t4g.micro"
     PROD:
       CPUAlarmPeriodLower: 300
       CPUAlarmPeriodUpper: 60
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
       NotificationAlarmPeriod: 1200
+      InstanceType: "t4g.micro"
 Outputs:
   LoadBalancerUrl:
     Value:
@@ -48,9 +50,6 @@ Parameters:
   PrivateSubnets:
     Type: List<AWS::EC2::Subnet::Id>
     Description: The private subnets of the VPC for the autoscaling group
-  InstanceType:
-    Type: String
-    Description: The instance type
   CertArn:
     Type: String
     Description: ACM Certificate for app use
@@ -281,7 +280,7 @@ Resources:
       AssociatePublicIpAddress: True
       IamInstanceProfile: !Ref DistributionInstanceProfile
       ImageId: !Ref AMI
-      InstanceType: !Sub ${InstanceType}
+      InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType]
       SecurityGroups:
       - !Ref InstanceSecurityGroup
       - !Ref GuardianAccessSecurityGroup
