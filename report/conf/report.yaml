@@ -6,6 +6,8 @@ Mappings:
       Value: report
     Stack:
       Value: mobile-notifications
+    InstanceType:
+      Value: t4g.micro
 
  StageVariables:
     CODE:
@@ -46,9 +48,6 @@ Parameters:
   PrivateSubnets:
     Type: List<AWS::EC2::Subnet::Id>
     Description: The private subnets of the VPC for the autoscaling group
-  InstanceType:
-    Type: String
-    Description: The instance type
   ASGMinSize:
     Type: Number
     Description: Minimum size of the autoscaling group
@@ -276,7 +275,7 @@ Resources:
       AssociatePublicIpAddress: True
       IamInstanceProfile: !Ref NotificationsReportInstanceProfile
       ImageId: !Ref AMI
-      InstanceType: !Ref InstanceType
+      InstanceType: !FindInMap [Constants, InstanceType, Value]
       SecurityGroups:
       - !Ref InstanceSecurityGroup
       - !Ref GuardianAccessSecurityGroup
