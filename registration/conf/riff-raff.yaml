@@ -6,7 +6,7 @@ deployments:
     app: registration
     parameters:
       amiTags:
-        Recipe: xenial-mobile-ARM
+        Recipe: xenial-mobile
         AmigoStage: PROD
       templatePath: cfn.yaml
   registration:

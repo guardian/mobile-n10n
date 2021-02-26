@@ -13,14 +13,14 @@ Mappings:
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
       NotificationAlarmPeriod: 1200
-      InstanceType: "t4g.micro"
+      InstanceType: "t3a.micro"
     PROD:
       CPUAlarmPeriodLower: 300
       CPUAlarmPeriodUpper: 60
       CPUAlarmThresholdLower: 20
       CPUAlarmThresholdUpper: 50
       NotificationAlarmPeriod: 1200
-      InstanceType: "t4g.micro"
+      InstanceType: "t3a.micro"
 Outputs:
   LoadBalancerUrl:
     Value:
