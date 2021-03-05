@@ -97,10 +97,16 @@ trait HarvesterRequestHandler extends Logging {
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
       .map(NotificationParser.parseShardNotificationEvent)
-    queueShardedNotification(shardNotificationStream, tokenService)
-      .compile
-      .drain
-      .unsafeRunSync()
+    try {
+      queueShardedNotification(shardNotificationStream, tokenService)
+        .compile
+        .drain
+        .unsafeRunSync()
+    } catch {
+      case e: Exception => {
+        logger.error(s"Error occurred: ${e.getMessage}", e)
+      }
+    }
   }
 
   def handleHarvesting(event: SQSEvent, context: Context): Unit = {

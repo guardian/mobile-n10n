@@ -1,19 +1,16 @@
 package db
 
+import cats.data.NonEmptyList
 import cats.effect.Async
 import cats.implicits._
+import db.BuildTier.BuildTier
+import doobie.Fragments
+import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
-import cats.data.NonEmptyList
-import db.BuildTier.BuildTier
-import doobie.free.connection.ConnectionIO
-import doobie.Fragments
 import models.{Platform, TopicCount}
 import org.slf4j.{Logger, LoggerFactory}
-
-import Registration._
-import doobie.implicits.javatime.JavaTimeLocalDateTimeMeta
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
@@ -78,7 +75,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   }
 
   override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): Stream[F, HarvestedToken] = {
-    (sql"""
+    val queryStatement = (sql"""
         SELECT token, platform, buildTier
         FROM registrations
     """
@@ -89,14 +86,21 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       )
       ++ fr"GROUP BY token, platform, buildTier"
       )
+
+      logger.info(s"about to run query: $queryStatement")
+
+      val result = queryStatement
       .query[(String, String, Option[String])]
       .stream
       .transact(xa)
-      .map{ case (token, platformString, buildTierString) => {
-        val maybePlatform = Platform.fromString(platformString)
-        if(maybePlatform.isEmpty) {
-          logger.error(s"Unknown platform in db $platformString")
-        }
+
+      logger.info(s"Result: ${result.zipWithIndex}")
+
+      result.map{ case (token, platformString, buildTierString) => {
+      val maybePlatform = Platform.fromString(platformString)
+      if(maybePlatform.isEmpty) {
+        logger.error(s"Unknown platform in db $platformString")
+      }
         val maybeBuildTier: Option[BuildTier] = buildTierString.flatMap(BuildTier.fromString)
         (token, maybePlatform, maybeBuildTier)
       }}
