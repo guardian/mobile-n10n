@@ -105,6 +105,7 @@ trait HarvesterRequestHandler extends Logging {
     } catch {
       case e: Exception => {
         logger.error(s"Error occurred: ${e.getMessage}", e)
+        throw e
       }
     }
   }
