@@ -6,6 +6,9 @@ import sbtassembly.MergeStrategy
 
 val projectVersion = "1.0-latest"
 
+val scala12 = "2.12.2"
+val scala13 = "2.13.2"
+
 organization := "com.gu"
 scalaVersion in ThisBuild := "2.13.2"
 
@@ -189,6 +192,7 @@ lazy val apiModels = {
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
     ),
+    crossScalaVersions := List(scala12, scala13),
     organization := "com.gu",
     publishTo := sonatypePublishToBundle.value,
 
