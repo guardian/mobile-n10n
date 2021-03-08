@@ -8,9 +8,9 @@ val projectVersion = "1.0-latest"
 
 organization := "com.gu"
 scalaVersion in ThisBuild := scalaVersion13
-lazy val scalaVersion13 = "2.13.2"
-lazy val scalaVersion12 = "2.12.9"
-lazy val supportedScalaVersions = List(scalaVersion13, scalaVersion12)
+val scalaVersion13 = "2.13.2"
+val scalaVersion12 = "2.12.9"
+val supportedScalaVersions = List(scalaVersion13, scalaVersion12)
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -209,9 +209,7 @@ lazy val apiModels = {
       url = url("https://github.com/guardian")
     )),
     description := "Scala models for the Guardian Push Notifications API",
-    crossScalaVersions := Nil,
-    publish / skip := true,
-    releaseCrossBuild := false,
+    crossScalaVersions := List(scalaVersion12, scalaVersion13),
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseVersionFile := file("api-models/version.sbt"),
     licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
