@@ -103,7 +103,7 @@ trait HarvesterRequestHandler extends Logging {
         .drain
         .unsafeRunSync()
     }catch {
-      case e: Exception => {
+      case e: Throwable => {
         logger.error(s"Error occurred: ${e.getMessage}", e)
         throw e
       }
