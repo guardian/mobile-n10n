@@ -18,7 +18,7 @@ Mappings:
       NewsstandNotificationAlarmThreshold: 0
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
-      InstanceType: "t3a.micro"
+      InstanceType: "t4g.micro"
     PROD:
       CPUAlarmPeriodLower: 300
       CPUAlarmPeriodUpper: 60
@@ -30,7 +30,7 @@ Mappings:
       NewsstandNotificationAlarmThreshold: 1
       NotificationAlarmPeriod: 1200
       ScheduleApp: schedule
-      InstanceType: "t3a.micro"
+      InstanceType: "t4g.micro"
 
 Outputs:
   LoadBalancerUrl:
