@@ -37,7 +37,7 @@ object DatabaseConfig {
     hikariConfig.setJdbcUrl(config.url)
     hikariConfig.setUsername(config.user)
     hikariConfig.setPassword(config.password)
-    hikariConfig.addDataSourceProperty("socketTimeout", "30")
+    hikariConfig.addDataSourceProperty("socketTimeout", "45")
     val dataSource = new HikariDataSource(hikariConfig)
 
     (Transactor.fromDataSource.apply(dataSource, connectEC, Blocker.liftExecutionContext(transactEC)), dataSource)
