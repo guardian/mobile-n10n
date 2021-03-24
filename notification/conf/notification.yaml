@@ -329,6 +329,8 @@ Resources:
       IamInstanceProfile: !Ref NotificationInstanceProfile
       ImageId: !Ref AMI
       InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType]
+      MetadataOptions:
+        HttpTokens: required
       SecurityGroups:
       - !Ref InstanceSecurityGroup
       - !Ref GuardianAccessSecurityGroup
