@@ -28,6 +28,7 @@ val simpleConfigurationVersion: String = "1.5.2"
 val okHttpVersion: String = "3.14.8"
 val paClientVersion: String = "7.0.4"
 val apacheThrift: String = "0.13.0"
+val jacksonDatabind: String = "2.10.5.1"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -54,7 +55,7 @@ lazy val commoneventconsumer = project
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
-      "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.5.1"
+      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind
     ),
   ))
 
@@ -63,6 +64,7 @@ lazy val commontest = project
     libraryDependencies ++= Seq(
       specs2,
       playCore,
+      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind
     ),
   ))
 
@@ -107,6 +109,7 @@ lazy val commonscheduledynamodb = project
   .settings(List(
     libraryDependencies ++= List(
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
       specs2 % Test
 
     ),
@@ -190,7 +193,7 @@ lazy val apiModels = {
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
-      "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.5.1"
+      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind
     ),
     organization := "com.gu",
     publishTo := sonatypePublishToBundle.value,
@@ -308,7 +311,7 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
         "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.5.1"
+        "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind
       ),
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"mobile-notifications-eventconsumer-cfn/cfn.yaml")
     )
