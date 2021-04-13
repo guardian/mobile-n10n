@@ -27,6 +27,7 @@ val catsVersion: String = "2.1.1"
 val simpleConfigurationVersion: String = "1.5.2"
 val okHttpVersion: String = "3.14.8"
 val paClientVersion: String = "7.0.4"
+val apacheThrift: String = "0.13.0"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -286,6 +287,7 @@ lazy val football = lambda("football", "football")
       "org.scanamo" %% "scanamo" % "1.0.0-M12",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12" % "test",
       "com.gu" %% "content-api-client-default" % "15.9",
+      "org.apache.thrift" % "libthrift" % apacheThrift,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
