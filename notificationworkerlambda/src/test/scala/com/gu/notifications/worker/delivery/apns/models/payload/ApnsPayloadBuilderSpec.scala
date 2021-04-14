@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery.apns.models.payload
 import java.net.URI
 import java.util.UUID
 
-import com.google.gson.JsonParser
+import com.google.gson.{JsonElement, JsonParser}
 import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
 import models.Importance.Major
 import models.Link.Internal
@@ -53,7 +53,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     def notification: Notification
     def expected: Option[String]
 
-    private def expectedTrimmedJson = expected.map(s => new JsonParser().parse(s).toString)
+    private def expectedTrimmedJson = expected.map(s => JsonParser.parseString(s).toString)
     def checkPayload() = {
       val dummyConfig = new ApnsConfig(
         teamId = "",
