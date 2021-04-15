@@ -154,7 +154,7 @@ lazy val notification = project
     ),
     libraryDependencies ++= Seq(
       logback,
-      "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
+      "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     riffRaffPackageType := (packageBin in Debian).value,
     riffRaffArtifactResources += (file(s"notification/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
@@ -310,8 +310,7 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
-        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
-        "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind
+        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1"
       ),
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"mobile-notifications-eventconsumer-cfn/cfn.yaml")
     )
