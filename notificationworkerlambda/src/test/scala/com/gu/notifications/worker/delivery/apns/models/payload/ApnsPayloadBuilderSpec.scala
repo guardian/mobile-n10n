@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery.apns.models.payload
 import java.net.URI
 import java.util.UUID
 
-import com.google.gson.{JsonParser}
+import com.google.gson.JsonParser
 import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
 import models.Importance.Major
 import models.Link.Internal
