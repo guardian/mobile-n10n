@@ -29,6 +29,8 @@ val okHttpVersion: String = "3.14.8"
 val paClientVersion: String = "7.0.4"
 val apacheThrift: String = "0.13.0"
 val jacksonDatabind: String = "2.10.5.1"
+val jacksonCbor: String = "2.12.1"
+val jacksonScalaModule: String = "2.12.3"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -55,7 +57,9 @@ lazy val commoneventconsumer = project
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
-      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind
+      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
+      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
+      "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
     ),
   ))
 
@@ -64,7 +68,9 @@ lazy val commontest = project
     libraryDependencies ++= Seq(
       specs2,
       playCore,
-      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind
+      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
+      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
+      "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
     ),
   ))
 
@@ -110,6 +116,8 @@ lazy val commonscheduledynamodb = project
     libraryDependencies ++= List(
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
+      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
+      "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule,
       specs2 % Test
 
     ),
@@ -193,7 +201,9 @@ lazy val apiModels = {
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
-      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind
+      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
+      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
+      "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
     ),
     organization := "com.gu",
     publishTo := sonatypePublishToBundle.value,
