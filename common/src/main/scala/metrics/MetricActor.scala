@@ -3,11 +3,11 @@ package metrics
 import akka.actor.Actor
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient
 import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest, StandardUnit, StatisticSet}
-import com.gu.{AppIdentity, AwsIdentity}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.jdk.CollectionConverters._
 import play.api.{Environment, Mode}
+import com.gu.{AppIdentity, AwsIdentity}
 
 trait MetricActorLogic {
 

@@ -3,8 +3,6 @@ package notification.services
 import com.gu.{AppIdentity, AwsIdentity}
 import play.api.{Configuration => PlayConfig}
 
-import scala.concurrent.duration._
-
 class Configuration(conf: PlayConfig, identity: AppIdentity) {
 
   lazy val apiKeys: Set[String] = conf.get[Seq[String]]("notifications.api.secretKeys").toSet

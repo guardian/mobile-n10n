@@ -1,14 +1,14 @@
 package com.gu.notifications.extractor
 
-import java.io.{BufferedInputStream, ByteArrayInputStream}
-import java.time.temporal.ChronoUnit
+import java.io.ByteArrayInputStream
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 import aws.AsyncDynamo.{keyBetween, keyEquals}
 import aws.DynamoJsonConversions
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
+import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.{CannedAccessControlList, ObjectMetadata, PutObjectRequest}
@@ -38,7 +38,7 @@ class Lambda extends RequestHandler[DateRange, Unit] {
 
   val credentials = new MobileAwsCredentialsProvider()
 
-  val identity: AppIdentity = AppIdentity.whoAmI(defaultAppName = "report-extractor", credentials = credentials)
+  val identity: AppIdentity = AppIdentity.whoAmI(defaultAppName = "report-extractor", credentials = MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
 
   val region: Regions = identity match {
     case AwsIdentity(_, _, _, region) => Regions.fromName(region)

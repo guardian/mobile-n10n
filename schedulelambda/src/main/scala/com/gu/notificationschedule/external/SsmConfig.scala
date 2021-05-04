@@ -1,7 +1,7 @@
 package com.gu.notificationschedule.external
 
-import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.gu.{AppIdentity, AwsIdentity}
+import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.typesafe.config.Config
 import org.apache.logging.log4j.LogManager
 

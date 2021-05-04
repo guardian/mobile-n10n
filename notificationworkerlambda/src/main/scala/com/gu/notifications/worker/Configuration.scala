@@ -1,12 +1,12 @@
 package com.gu.notifications.worker
 
 import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
-import com.gu.{AppIdentity, AwsIdentity}
-import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.typesafe.config.Config
 import db.JdbcConfig
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
-import _root_.models.{Android, AndroidEdition, AndroidBeta, Ios, IosEdition, Platform}
+import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Platform}
+import com.gu.{AppIdentity, AwsIdentity}
+import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 
 case class HarvesterConfiguration(
   jdbcConfig: JdbcConfig,
