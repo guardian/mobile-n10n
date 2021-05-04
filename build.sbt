@@ -24,9 +24,9 @@ val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.772"
 val doobieVersion: String = "0.9.2"
 val catsVersion: String = "2.1.1"
-val simpleConfigurationVersion: String = "1.5.2"
+val simpleConfigurationVersion: String = "1.5.6"
 val okHttpVersion: String = "3.14.8"
-val paClientVersion: String = "7.0.4"
+val paClientVersion: String = "7.0.5"
 val apacheThrift: String = "0.13.0"
 val jacksonDatabind: String = "2.10.5.1"
 val jacksonCbor: String = "2.12.1"
@@ -35,9 +35,7 @@ val jacksonScalaModule: String = "2.12.3"
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
     "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
-    "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots",
-    "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
-    "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
+    "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
   ),
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
@@ -98,7 +96,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
-      "com.gu" %% "mobile-logstash-encoder" % "1.1.0"
+      "com.gu" %% "mobile-logstash-encoder" % "1.1.2"
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
@@ -247,7 +245,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
   .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
   .settings(
     organization := "com.gu",
-    resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
+    resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.2.0",
@@ -293,7 +291,7 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
 lazy val football = lambda("football", "football")
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(
-    resolvers += "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend",
+    resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-simple" % "1.7.25",
       "com.typesafe" % "config" % "1.3.2",
