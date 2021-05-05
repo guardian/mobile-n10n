@@ -245,7 +245,10 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
   .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
   .settings(
     organization := "com.gu",
-    resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
+    resolvers ++= Seq(
+      "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
+      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+    ),
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.2.0",
