@@ -77,7 +77,7 @@ Resources:
           App: !Ref App
       FunctionName: !Sub ${Stack}-${App}-${Stage}
       Handler: com.gu.notifications.extractor.Lambda
-      MemorySize: 384
+      MemorySize: 1024
       ReservedConcurrentExecutions: 1
       Role: !GetAtt Role.Arn
       Runtime: java8

@@ -73,8 +73,7 @@ Resources:
           App: !Ref App
       FunctionName: !Sub ${Stack}-${App}-${Stage}
       Handler: com.gu.notificationschedule.ProcessNotificationScheduleLambda::apply
-
-      MemorySize: 384
+      MemorySize: 1024
       ReservedConcurrentExecutions: 1
       Role: !GetAtt MobileNotificationsScheduleRole.Arn
       Runtime: java8
