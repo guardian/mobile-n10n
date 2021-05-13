@@ -3,9 +3,9 @@ package metrics
 import akka.actor.{ActorSystem, Props}
 import com.amazonaws.regions.{Region, Regions}
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
-import com.gu.AppIdentity
 import play.api.Environment
 import play.api.inject.ApplicationLifecycle
+import com.gu.AppIdentity
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._

@@ -84,7 +84,7 @@ Resources:
 
       Description: Send Goal Alert notifications
       Handler: com.gu.mobile.notifications.football.Lambda::handler
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 60

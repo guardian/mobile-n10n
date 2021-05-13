@@ -85,7 +85,7 @@ Resources:
           App: !Ref App
       Description: Cleans the database of outdated tokens regularly
       Handler: com.gu.notifications.worker.ExpiredRegistrationCleanerLambda::handleRequest
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 60
