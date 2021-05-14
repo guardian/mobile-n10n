@@ -6,7 +6,7 @@ deployments:
     app: notification
     parameters:
       amiTags:
-        Recipe: xenial-mobile-ARM
+        Recipe: bionic-mobile-ARM
         AmigoStage: PROD
       templatePath: cfn.yaml
   notification:
