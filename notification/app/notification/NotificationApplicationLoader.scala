@@ -1,37 +1,32 @@
 package notification
 
-import java.net.URI
-
 import _root_.controllers.AssetsComponents
+import _root_.models.{NewsstandShardConfig, TopicCount}
 import akka.actor.ActorSystem
 import aws.{AsyncDynamo, TopicCountsS3}
 import com.amazonaws.regions.Regions.EU_WEST_1
-import com.softwaremill.macwire._
-import controllers.{Main, Schedule}
-import _root_.models.NewsstandShardConfig
-import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
-import com.gu.{AppIdentity, AwsIdentity}
-import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceAsync, NotificationSchedulePersistenceImpl}
-import _root_.models.{Android, Ios, Newsstand}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
+import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
+import com.gu.AppIdentity
+import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceAsync, NotificationSchedulePersistenceImpl}
+import com.softwaremill.macwire._
 import metrics.CloudWatchMetrics
-import _root_.models.TopicCount
 import notification.authentication.NotificationAuthAction
+import notification.controllers.{Main, Schedule}
 import notification.data.{CachingDataStore, S3DataStore}
-import notification.services.frontend.{FrontendAlerts, FrontendAlertsConfig}
-import notification.services.{NewsstandSender, _}
 import notification.services.guardian.{GuardianNotificationSender, ReportTopicRegistrationCounter, TopicRegistrationCounter}
+import notification.services.{NewsstandSender, _}
+import play.api.ApplicationLoader.Context
 import play.api.libs.ws.ahc.AhcWSComponents
+import play.api.mvc.EssentialFilter
 import play.api.routing.Router
 import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
-import play.api.ApplicationLoader.Context
-import play.api.mvc.EssentialFilter
 import play.filters.HttpFiltersComponents
 import play.filters.gzip.GzipFilter
 import play.filters.hosts.AllowedHostsFilter
-import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import router.Routes
 import tracking.NotificationReportRepository
+import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new NotificationApplicationComponents(identity, context)
@@ -76,7 +71,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
   }
 
   lazy val topicCountsS3 = new TopicCountsS3(s3Client, configuration.get[String]("notifications.topicCounts.bucket"), s"${appConfig.stage}/${configuration.get[String]("notifications.topicCounts.fileName")}")
-  
+
   lazy val topicCountCacheingDataStore: CachingDataStore[TopicCount] = new CachingDataStore[TopicCount](
     new S3DataStore[TopicCount](topicCountsS3)
   )

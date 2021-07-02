@@ -128,7 +128,7 @@ Resources:
           AthenaDatabase: !Ref AthenaDatabase
       Description: Queries Athena to update Notification reports in Dynamodb
       Handler: com.gu.notifications.events.AthenaLambda::handleRequest
-      MemorySize: 384
+      MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 120

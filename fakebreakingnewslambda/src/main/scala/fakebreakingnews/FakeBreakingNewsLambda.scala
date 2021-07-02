@@ -3,13 +3,12 @@ package fakebreakingnews
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
-import com.gu.{AppIdentity, AwsIdentity}
 import com.typesafe.config.Config
 import models.{Android, Ios}
 import okhttp3.OkHttpClient
 import org.slf4j.{Logger, LoggerFactory}
-
+import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
+import com.gu.{AppIdentity, AwsIdentity}
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 

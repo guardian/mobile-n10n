@@ -1,28 +1,27 @@
 package registration
 
 import _root_.controllers.AssetsComponents
+import _root_.models.NewsstandShardConfig
 import akka.actor.ActorSystem
-import auditor.{AuditorGroup, FootballMatchAuditor, LiveblogAuditor, TimeExpiringAuditor}
-import play.api.libs.ws.ahc.AhcWSComponents
-import play.api.routing.Router
-import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
-import play.api.ApplicationLoader.Context
-import com.softwaremill.macwire._
-import _root_.models.{NewsstandShardConfig, Topic}
-import org.joda.time.DateTime
-import controllers.Main
-import play.api.mvc.EssentialFilter
-import play.filters.HttpFiltersComponents
-import play.filters.hosts.AllowedHostsFilter
-import registration.services.topic.{AuditorTopicValidator, TopicValidator}
-import registration.services._
-import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
-import router.Routes
 import cats.effect.IO
 import com.gu.AppIdentity
+import com.softwaremill.macwire._
 import metrics.{CloudWatchMetrics, Metrics}
+import play.api.ApplicationLoader.Context
 import play.api.http.HttpErrorHandler
+import play.api.libs.ws.ahc.AhcWSComponents
+import play.api.mvc.EssentialFilter
+import play.api.routing.Router
+import play.api.{BuiltInComponents, BuiltInComponentsFromContext}
+import play.filters.HttpFiltersComponents
 import play.filters.gzip.GzipFilter
+import play.filters.hosts.AllowedHostsFilter
+import registration.auditor.{AuditorGroup, FootballMatchAuditor, LiveblogAuditor}
+import registration.controllers.Main
+import registration.services._
+import registration.services.topic.{AuditorTopicValidator, TopicValidator}
+import router.Routes
+import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 
 class RegistrationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new RegistrationApplicationComponents(identity, context)

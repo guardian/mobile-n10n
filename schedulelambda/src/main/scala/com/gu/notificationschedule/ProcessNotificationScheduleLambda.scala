@@ -5,12 +5,12 @@ import java.time.{Clock, Instant}
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClientBuilder
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
+import com.gu.{AppIdentity, AwsIdentity}
 import com.gu.notificationschedule.ProcessNotificationScheduleLambda.{lambdaClock, lambdaCloudWatch, lambdaConfig, lambdaOkHttpClient}
 import com.gu.notificationschedule.cloudwatch.{CloudWatch, CloudWatchImpl}
 import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, NotificationSchedulePersistenceSync, NotificationsScheduleEntry}
 import com.gu.notificationschedule.external.{SsmConfig, SsmConfigLoader}
 import com.gu.notificationschedule.notifications.{RequestNotification, RequestNotificationImpl}
-import com.gu.{AppIdentity, AwsIdentity}
 import okhttp3.OkHttpClient
 import org.apache.logging.log4j.{LogManager, Logger}
 

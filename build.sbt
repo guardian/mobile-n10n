@@ -24,20 +24,18 @@ val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.772"
 val doobieVersion: String = "0.9.2"
 val catsVersion: String = "2.1.1"
-val simpleConfigurationVersion: String = "1.5.2"
 val okHttpVersion: String = "3.14.8"
-val paClientVersion: String = "7.0.4"
-val apacheThrift: String = "0.13.0"
+val paClientVersion: String = "7.0.5"
+val apacheThrift: String = "0.14.0"
 val jacksonDatabind: String = "2.10.5.1"
 val jacksonCbor: String = "2.12.1"
 val jacksonScalaModule: String = "2.12.3"
+val simpleConfigurationVersion: String = "1.5.6"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
     "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
-    "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots",
-    "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
-    "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend"
+    "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
   ),
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
@@ -87,7 +85,6 @@ lazy val common = project
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
-      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
@@ -98,7 +95,8 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
-      "com.gu" %% "mobile-logstash-encoder" % "1.1.0"
+      "com.gu" %% "mobile-logstash-encoder" % "1.1.2",
+      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
@@ -247,7 +245,10 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
   .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
   .settings(
     organization := "com.gu",
-    resolvers += "Guardian Platform Bintray" at "https://dl.bintray.com/guardian/platforms",
+    resolvers ++= Seq(
+      "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
+      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+    ),
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.2.0",
@@ -286,6 +287,9 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
         "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
         "org.specs2" %% "specs2-mock" % specsVersion % "test"
       ),
+      excludeDependencies ++= Seq(
+        ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
+      ),
       riffRaffArtifactResources += (file(s"schedulelambda/cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
     )
   }
@@ -293,7 +297,7 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
 lazy val football = lambda("football", "football")
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(
-    resolvers += "Guardian Frontend Bintray" at "https://dl.bintray.com/guardian/frontend",
+    resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-simple" % "1.7.25",
       "com.typesafe" % "config" % "1.3.2",
@@ -307,6 +311,9 @@ lazy val football = lambda("football", "football")
       "com.google.code.findbugs" % "jsr305" % "3.0.2",
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test"
+    ),
+    excludeDependencies ++= Seq(
+      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
     ),
     riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "mobile-notifications-football-cfn/cfn.yaml")
   )
@@ -333,10 +340,15 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "6.16.0",
       "io.netty" % "netty-codec" % "4.1.46.Final",
+      "io.netty" % "netty-codec-http" % "4.1.44.Final",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
-      "com.squareup.okhttp3" % "okhttp" % okHttpVersion
+      "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
+      "com.typesafe.play" %% "play-json" % playJsonVersion
+    ),
+    excludeDependencies ++= Seq(
+      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
     ),
     riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"mobile-notifications-harvester-cfn/harvester-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-ios-worker-cfn/sender-worker-cfn.yaml"),
@@ -356,11 +368,17 @@ lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreaking
     libraryDependencies ++= Seq(
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
     ),
+    excludeDependencies ++= Seq(
+      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
+    ),
     riffRaffArtifactResources += (baseDirectory.value / "fakebreakingnewslambda-cfn.yaml", "fakebreakingnewslambda-cfn/fakebreakingnewslambda-cfn.yaml")
   )
 
 lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("com.gu.notifications.extractor.LocalRun"))
   .dependsOn(common)
   .settings(
-    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "reportextractor-cfn/cfn.yaml")
+    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "reportextractor-cfn/cfn.yaml"),
+    excludeDependencies ++= Seq(
+      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
+    )
   )
