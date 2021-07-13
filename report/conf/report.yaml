@@ -272,7 +272,7 @@ Resources:
   ReportLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
-      AssociatePublicIpAddress: True
+      AssociatePublicIpAddress: false
       IamInstanceProfile: !Ref NotificationsReportInstanceProfile
       ImageId: !Ref AMI
       InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType]
