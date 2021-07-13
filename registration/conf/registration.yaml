@@ -277,7 +277,7 @@ Resources:
   RegistrationLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
-      AssociatePublicIpAddress: True
+      AssociatePublicIpAddress: false
       IamInstanceProfile: !Ref DistributionInstanceProfile
       ImageId: !Ref AMI
       InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType]
