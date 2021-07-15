@@ -53,7 +53,7 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
     def notification: Notification
     def expected: Option[String]
 
-    private def expectedTrimmedJson = expected.map(s => JsonParser.parseString(s).toString)
+    private def expectedTrimmedJson = expected.map(s => new JsonParser().parse(s).toString)
     def checkPayload() = {
       val dummyConfig = new ApnsConfig(
         teamId = "",
