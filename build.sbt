@@ -339,8 +339,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
-      "io.netty" % "netty-codec" % "4.1.46.Final",
-      "io.netty" % "netty-codec-http" % "4.1.44.Final",
+//      "io.netty" % "netty-codec" % "4.1.46.Final",
+//      "io.netty" % "netty-codec-http" % "4.1.44.Final",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
