@@ -2,33 +2,6 @@ stacks: [mobile-notifications]
 regions: [eu-west-1]
 
 deployments:
-  notificationworkerlambda:
-    type: aws-lambda
-    app: notificationworkerlambda
-    parameters:
-      bucket: mobile-notifications-dist
-      functionNames:
-        - mobile-notifications-ios-worker-sender-
-        - mobile-notifications-android-worker-sender-
-        - mobile-notifications-ios-edition-worker-sender-
-        - mobile-notifications-android-beta-worker-sender-
-        - mobile-notifications-android-edition-worker-sender-
-        - mobile-notifications-registration-cleaning-worker-
-        - mobile-notifications-topic-counter-
-        - mobile-notifications-harvester-
-        - mobile-notifications-expired-registration-cleaner-
-      fileName: notificationworkerlambda.jar
-      prefixStack: false
-    dependencies:
-      - mobile-notifications-ios-worker-cfn
-      - mobile-notifications-android-worker-cfn
-      - mobile-notifications-ios-edition-worker-cfn
-      - mobile-notifications-android-beta-worker-cfn
-      - mobile-notifications-android-edition-worker-cfn
-      - mobile-notifications-registration-cleaning-worker-cfn
-      - mobile-notifications-topic-counter-cfn
-      - mobile-notifications-harvester-cfn
-      - mobile-notifications-expired-registration-cleaner-cfn
   mobile-notifications-harvester-cfn:
     type: cloud-formation
     app: harvester

@@ -15,6 +15,14 @@ Parameters:
     - CODE
     - PROD
     Default: CODE
+  CodeImage:
+    Description: The container image URL from the ECR repository
+    Type: String
+    Default: 201359054765.dkr.ecr.eu-west-1.amazonaws.com/notificationworkerlambda-image
+  BuildId:
+    Description: Tag to be used for the image URL, e.g. riff raff build id
+    Type: String
+    Default: dev
   DeployBucket:
     Description: Bucket where RiffRaff uploads artifacts on deploy
     Type: String
@@ -136,21 +144,20 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub ${Stack}-${App}-sender-${Stage}
+      PackageType: Image
       Code:
-        S3Bucket:
-          Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
+        ImageUri: !Join [':', [!Ref CodeImage, !Ref BuildId]]
+      ImageConfig:
+        Command: [!Ref SenderFullyQualifiedHandler]
       Environment:
         Variables:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
           Platform: !Ref Platform
-      Description: Sends notifications
-      Handler: !Ref SenderFullyQualifiedHandler
       MemorySize: 3008
+      Description: Sends notifications
       Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
       Timeout: 90
       ReservedConcurrentExecutions: !Ref ReservedConcurrency
       Tags:

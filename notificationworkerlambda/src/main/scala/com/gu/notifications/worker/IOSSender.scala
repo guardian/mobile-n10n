@@ -15,4 +15,3 @@ class IOSSender extends SenderRequestHandler[ApnsClient] {
   override val maxConcurrency = 100
 
 }
-

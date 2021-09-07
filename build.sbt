@@ -3,6 +3,7 @@ import play.sbt.PlayImport.specs2
 import sbt.Keys.{libraryDependencies, mainClass}
 import sbtassembly.AssemblyPlugin.autoImport.{assemblyJarName, assemblyMergeStrategy}
 import sbtassembly.MergeStrategy
+import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 
 val projectVersion = "1.0-latest"
 
@@ -333,9 +334,26 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
     )
   })
 
+lazy val lambdaDockerCommands = dockerCommands := Seq(
+  Cmd    ( "FROM",   "public.ecr.aws/lambda/java:latest"),
+  ExecCmd( "COPY",   "1/opt/docker/*", "${LAMBDA_TASK_ROOT}/lib/"),
+  ExecCmd( "COPY",   "2/opt/docker/*", "${LAMBDA_TASK_ROOT}/lib/"),
+  Cmd    ( "EXPOSE", "8080"), // this is the local lambda run time for testing
+  ExecCmd( "CMD",    "com.gu.notifications.worker.ContainerLambdaTest::handleRequest"),
+)
+
+lazy val buildNumber = sys.env.get("BUILD_NUMBER").orElse(Some("DEV"))
+
 lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notificationworkerlambda", Some("com.gu.notifications.worker.TopicCounterLocalRun"))
   .dependsOn(common)
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(JavaAppPackaging)
   .settings(
+    lambdaDockerCommands,
+    dockerRepository := Some("201359054765.dkr.ecr.eu-west-1.amazonaws.com"),
+    dockerExposedPorts := Seq(9000), // exposed by the lambda runtime api inside the image
+    packageName in Docker := "notificationworkerlambda-image",
+    dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = "notificationworkerlambda-image", tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "6.3.0",
