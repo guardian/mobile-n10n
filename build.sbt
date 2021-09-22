@@ -344,16 +344,26 @@ lazy val lambdaDockerCommands = dockerCommands := Seq(
 
 lazy val buildNumber = sys.env.get("BUILD_NUMBER").orElse(Some("DEV"))
 
+lazy val ecrRepositorySettings =
+  sys.env.get("NOTIFICATION_LAMBDA_REPOSITORY_URL") match {
+    case Some(url) =>
+      val Array(repo, name) = url.split("/", 2)
+      Seq(
+        dockerRepository := Some(repo),
+        packageName in Docker := name
+      )
+    case None => Nil
+  }
+
 lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notificationworkerlambda", Some("com.gu.notifications.worker.TopicCounterLocalRun"))
   .dependsOn(common)
   .enablePlugins(DockerPlugin)
   .enablePlugins(JavaAppPackaging)
+  .settings(ecrRepositorySettings: _*)
   .settings(
     lambdaDockerCommands,
-    dockerRepository := Some("201359054765.dkr.ecr.eu-west-1.amazonaws.com"),
     dockerExposedPorts := Seq(9000), // exposed by the lambda runtime api inside the image
-    packageName in Docker := "notificationworkerlambda-image",
-    dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = "notificationworkerlambda-image", tag = buildNumber),
+    dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (packageName in Docker).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "6.3.0",

@@ -15,10 +15,6 @@ Parameters:
     - CODE
     - PROD
     Default: CODE
-  CodeImage:
-    Description: The container image URL from the ECR repository
-    Type: String
-    Default: 201359054765.dkr.ecr.eu-west-1.amazonaws.com/notificationworkerlambda-image
   BuildId:
     Description: Tag to be used for the image URL, e.g. riff raff build id
     Type: String
@@ -146,7 +142,7 @@ Resources:
       FunctionName: !Sub ${Stack}-${App}-sender-${Stage}
       PackageType: Image
       Code:
-        ImageUri: !Join [':', [!Ref CodeImage, !Ref BuildId]]
+        ImageUri: !Join [':', [!ImportValue NotificationLambdaRepositoryUri, !Ref BuildId]]
       ImageConfig:
         Command: [!Ref SenderFullyQualifiedHandler]
       Environment:
