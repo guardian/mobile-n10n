@@ -53,12 +53,13 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
           token
       }
       .chunkN(1000)
+
       .through(cleaningClient.sendInvalidTokensToCleaning)
   }
 
   def deliverIndividualNotificationStream(individualNotificationStream: Stream[IO, IndividualNotification]): Stream[IO, Either[DeliveryException, C#Success]] = for {
     deliveryService <- Stream.eval(deliveryService)
-    resp <- individualNotificationStream.map(individualNotification => deliveryService.send(individualNotification.notification, individualNotification.token))
+    resp <- individualNotificationStream.map { individualNotification => Thread.sleep(15000); deliveryService.send(individualNotification.notification, individualNotification.token) }
       .parJoin(maxConcurrency)
       .evalTap(Reporting.log(s"Sending failure: "))
   } yield resp
