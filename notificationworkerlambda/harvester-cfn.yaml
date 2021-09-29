@@ -137,10 +137,10 @@ Resources:
             Action: cloudwatch:PutMetricData
             Resource: "*"
 
-  HarvesterLambda:
+  HarvesterLambdaCtr:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-ctr-${Stage}
       PackageType: Image
       Code:
         ImageUri: !Join [':', [!ImportValue NotificationLambdaRepositoryUri, !Ref BuildId]]
@@ -173,12 +173,12 @@ Resources:
     Type: AWS::Lambda::EventSourceMapping
     DependsOn:
     - Sqs
-    - HarvesterLambda
+    - HavesterLambdaCtr
     Properties:
       BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
-      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      FunctionName: !Ref HarvesterLambdaCtr
 
   ThrottleAlarm:
     Type: AWS::CloudWatch::Alarm

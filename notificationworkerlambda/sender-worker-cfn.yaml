@@ -135,11 +135,10 @@ Resources:
             Action: cloudwatch:PutMetricData
             Resource: "*"
 
-
-  SenderLambda:
+  SenderLambdaCtr:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${Stack}-${App}-sender-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-sender-ctr-${Stage}
       PackageType: Image
       Code:
         ImageUri: !Join [':', [!ImportValue NotificationLambdaRepositoryUri, !Ref BuildId]]
@@ -168,12 +167,12 @@ Resources:
     Type: AWS::Lambda::EventSourceMapping
     DependsOn:
       - SenderSqs
-      - SenderLambda
+      - SenderLambdaCtr
     Properties:
       BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt SenderSqs.Arn
-      FunctionName: !Ref SenderLambda
+      FunctionName: !Ref SenderLambdaCtr
 
   SenderThrottleAlarm:
     Type: AWS::CloudWatch::Alarm

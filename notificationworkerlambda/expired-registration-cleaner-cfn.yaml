@@ -77,7 +77,7 @@ Resources:
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-ctr-${Stage}
       PackageType: Image
       Code:
         ImageUri: !Join [':', [!ImportValue NotificationLambdaRepositoryUri, !Ref BuildId]]
