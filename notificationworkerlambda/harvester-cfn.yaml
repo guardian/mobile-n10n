@@ -173,7 +173,7 @@ Resources:
     Type: AWS::Lambda::EventSourceMapping
     DependsOn:
     - Sqs
-    - HavesterLambdaCtr
+    - HarvesterLambdaCtr
     Properties:
       BatchSize: 1
       Enabled: True
