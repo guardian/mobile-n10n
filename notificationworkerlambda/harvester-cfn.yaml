@@ -140,7 +140,7 @@ Resources:
   HarvesterLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${Stack}-${App}-jar-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-${Stage}
       Code:
         S3Bucket:
           Ref: DeployBucket

@@ -8,12 +8,12 @@ deployments:
     parameters:
       bucket: mobile-notifications-dist
       functionNames:
-        - mobile-notifications-ios-worker-sender-jar-
-        - mobile-notifications-android-worker-sender-jar-
-        - mobile-notifications-ios-edition-worker-sender-jar-
-        - mobile-notifications-android-beta-worker-sender-jar-
-        - mobile-notifications-android-edition-worker-sender-jar-
-        - mobile-notifications-harvester-jar-
+        - mobile-notifications-ios-worker-sender-
+        - mobile-notifications-android-worker-sender-
+        - mobile-notifications-ios-edition-worker-sender-
+        - mobile-notifications-android-beta-worker-sender-
+        - mobile-notifications-android-edition-worker-sender-
+        - mobile-notifications-harvester-
       fileName: notificationworkerlambda.jar
       prefixStack: false
     dependencies:

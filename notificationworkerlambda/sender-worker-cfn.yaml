@@ -138,7 +138,7 @@ Resources:
   SenderLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${Stack}-${App}-sender-jar-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-sender-${Stage}
       Code:
         S3Bucket:
           Ref: DeployBucket
