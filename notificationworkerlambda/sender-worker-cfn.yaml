@@ -135,35 +135,6 @@ Resources:
             Action: cloudwatch:PutMetricData
             Resource: "*"
 
-  SenderLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub ${Stack}-${App}-sender-${Stage}
-      Code:
-        S3Bucket:
-          Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
-      Environment:
-        Variables:
-          Stage: !Ref Stage
-          Stack: !Ref Stack
-          App: !Ref App
-          Platform: !Ref Platform
-      Description: Sends notifications
-      Handler: !Ref SenderFullyQualifiedHandler
-      MemorySize: 3008
-      Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
-      Timeout: 90
-      ReservedConcurrentExecutions: !Ref ReservedConcurrency
-      Tags:
-        - Key: Stage
-          Value: !Ref Stage
-        - Key: Stack
-          Value: !Ref Stack
-        - Key: App
-          Value: !Ref App
-
   SenderLambdaCtr:
     Type: AWS::Lambda::Function
     Properties:
