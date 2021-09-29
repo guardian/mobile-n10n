@@ -137,7 +137,7 @@ Resources:
             Action: cloudwatch:PutMetricData
             Resource: "*"
 
-  HarvesterLambda:
+  HavesterLambda:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub ${Stack}-${App}-${Stage}
@@ -205,12 +205,12 @@ Resources:
     Type: AWS::Lambda::EventSourceMapping
     DependsOn:
     - Sqs
-    - HarvesterLambda
+    - HavesterLambda
     Properties:
       BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
-      FunctionName: !Ref HarvesterLambda
+      FunctionName: !Ref HavesterLambda
 
   ThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
