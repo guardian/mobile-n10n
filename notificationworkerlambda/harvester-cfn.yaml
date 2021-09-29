@@ -210,7 +210,7 @@ Resources:
       BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
-      FunctionName: !Ref HavesterLambda
+      FunctionName: !Ref HarvesterLambdaCtr
 
   ThrottleAlarm:
     Type: AWS::CloudWatch::Alarm
