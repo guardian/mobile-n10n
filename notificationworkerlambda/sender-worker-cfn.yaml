@@ -107,7 +107,7 @@ Resources:
             - logs:CreateLogStream
             - logs:PutLogEvents
             Resource:
-            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${Stack}-${App}-sender-${Stage}:*"
+            - !Sub "arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/*:*"
       - PolicyName: SQSInput
         PolicyDocument:
           Statement:
