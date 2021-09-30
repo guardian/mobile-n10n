@@ -14,4 +14,3 @@ class AndroidSender extends SenderRequestHandler[FcmClient] {
     FcmClient(config.fcmConfig).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
   override val maxConcurrency = 100
 }
-

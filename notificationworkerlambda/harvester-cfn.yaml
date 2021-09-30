@@ -18,6 +18,10 @@ Parameters:
     - CODE
     - PROD
     Default: CODE
+  BuildId:
+    Description: Tag to be used for the image URL, e.g. riff raff build id
+    Type: String
+    Default: dev
   DeployBucket:
     Description: Bucket where RiffRaff uploads artifacts on deploy
     Type: String
@@ -133,24 +137,24 @@ Resources:
             Action: cloudwatch:PutMetricData
             Resource: "*"
 
-  HavesterLambda:
+  HarvesterLambdaCtr:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-ctr-${Stage}
+      PackageType: Image
       Code:
-        S3Bucket:
-          Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
+        ImageUri: !Join [':', [!ImportValue NotificationLambdaRepositoryUri, !Ref BuildId]]
+      ImageConfig:
+        Command:
+          - com.gu.notifications.worker.Harvester::handleHarvesting
       Environment:
         Variables:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
       Description: Consumes events produced by the notification service and fetches batches of tokens for senders to send
-      Handler: com.gu.notifications.worker.Harvester::handleHarvesting
       MemorySize: 3008
       Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
       Timeout: 60
       ReservedConcurrentExecutions: 200
       VpcConfig:
@@ -169,12 +173,12 @@ Resources:
     Type: AWS::Lambda::EventSourceMapping
     DependsOn:
     - Sqs
-    - HavesterLambda
+    - HarvesterLambdaCtr
     Properties:
       BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
-      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      FunctionName: !Ref HarvesterLambdaCtr
 
   ThrottleAlarm:
     Type: AWS::CloudWatch::Alarm

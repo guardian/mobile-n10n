@@ -15,6 +15,10 @@ Parameters:
       - CODE
       - PROD
     Default: CODE
+  BuildId:
+    Description: Tag to be used for the image URL, e.g. riff raff build id
+    Type: String
+    Default: dev
   DeployBucket:
     Description: Bucket where RiffRaff uploads artifacts on deploy
     Type: String
@@ -73,21 +77,20 @@ Resources:
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-ctr-${Stage}
+      PackageType: Image
       Code:
-        S3Bucket:
-          Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
+        ImageUri: !Join [':', [!ImportValue NotificationLambdaRepositoryUri, !Ref BuildId]]
       Environment:
         Variables:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
       Description: Cleans the database of outdated tokens regularly
-      Handler: com.gu.notifications.worker.ExpiredRegistrationCleanerLambda::handleRequest
+      ImageConfig:
+        Command: [com.gu.notifications.worker.ExpiredRegistrationCleanerLambda::handleRequest]
       MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
       Timeout: 60
       VpcConfig:
         SecurityGroupIds:

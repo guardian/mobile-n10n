@@ -15,6 +15,10 @@ Parameters:
     - CODE
     - PROD
     Default: CODE
+  BuildId:
+    Description: Tag to be used for the image URL, e.g. riff raff build id
+    Type: String
+    Default: dev
   DeployBucket:
     Description: Bucket where RiffRaff uploads artifacts on deploy
     Type: String
@@ -131,26 +135,24 @@ Resources:
             Action: cloudwatch:PutMetricData
             Resource: "*"
 
-
-  SenderLambda:
+  SenderLambdaCtr:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${Stack}-${App}-sender-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-sender-ctr-${Stage}
+      PackageType: Image
       Code:
-        S3Bucket:
-          Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/notificationworkerlambda/notificationworkerlambda.jar
+        ImageUri: !Join [':', [!ImportValue NotificationLambdaRepositoryUri, !Ref BuildId]]
+      ImageConfig:
+        Command: [!Ref SenderFullyQualifiedHandler]
       Environment:
         Variables:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
           Platform: !Ref Platform
-      Description: Sends notifications
-      Handler: !Ref SenderFullyQualifiedHandler
       MemorySize: 3008
+      Description: Sends notifications
       Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
       Timeout: 90
       ReservedConcurrentExecutions: !Ref ReservedConcurrency
       Tags:
@@ -165,12 +167,12 @@ Resources:
     Type: AWS::Lambda::EventSourceMapping
     DependsOn:
       - SenderSqs
-      - SenderLambda
+      - SenderLambdaCtr
     Properties:
       BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt SenderSqs.Arn
-      FunctionName: !Sub ${Stack}-${App}-sender-${Stage}
+      FunctionName: !Ref SenderLambdaCtr
 
   SenderThrottleAlarm:
     Type: AWS::CloudWatch::Alarm

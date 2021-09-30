@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ECR repositories for MSS notification worker lambdas
+Resources:
+  NotificationLambdaRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: notificationworker-lambda-images
+      RepositoryPolicyText:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              # this is the developer tools account which allows
+              # teamcity to upload the images that it builds
+              AWS: "arn:aws:iam::095768028460:root"
+            Action:
+              - "ecr:GetAuthorizationToken"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:GetRepositoryPolicy"
+              - "ecr:SetRepositoryPolicy"              
+              - "ecr:DescribeRepositories"
+              - "ecr:ListImages"
+              - "ecr:DescribeImages"
+              - "ecr:BatchGetImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
+              - "ecr:PutImage"
+
+Outputs:
+  NotificationLambdaRepositoryUri:
+    Description: >
+      URI for the notification lambda image repository, which should
+      be inserted into the CodeImage configuration to use an image
+      from this repository as the basis for a Lambda
+    Value: !GetAtt NotificationLambdaRepository.RepositoryUri
+    Export:
+      Name: NotificationLambdaRepositoryUri
