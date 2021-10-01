@@ -183,7 +183,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${Stack}-${App}-sender-${Stage}
+          Value: !Ref SenderLambdaCtr
       EvaluationPeriods: 1
       MetricName: Throttles
       Namespace: AWS/Lambda
@@ -201,7 +201,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${Stack}-${App}-sender-${Stage}
+          Value: !Ref SenderLambdaCtr
       EvaluationPeriods: 1
       MetricName: Errors
       Namespace: AWS/Lambda
@@ -220,7 +220,7 @@ Resources:
       ComparisonOperator: LessThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${Stack}-${App}-sender-${Stage}
+          Value: !Ref SenderLambdaCtr
       EvaluationPeriods: 1
       MetricName: Invocations
       Namespace: AWS/Lambda

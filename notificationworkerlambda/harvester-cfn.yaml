@@ -189,7 +189,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
       - Name: FunctionName
-        Value: !Sub ${Stack}-${App}-${Stage}
+        Value: !Ref HarvesterLambdaCtr
       EvaluationPeriods: 1
       MetricName: Throttles
       Namespace: AWS/Lambda
@@ -226,7 +226,7 @@ Resources:
       ComparisonOperator: LessThanOrEqualToThreshold
       Dimensions:
         - Name: FunctionName
-          Value: !Sub ${Stack}-${App}-${Stage}
+          Value: !Ref HarvesterLambdaCtr
       EvaluationPeriods: 1
       MetricName: Invocations
       Namespace: AWS/Lambda
