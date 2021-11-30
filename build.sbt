@@ -346,6 +346,8 @@ lazy val latestVersionOfLambdaSDK = {
     .build();
   val docker = DockerClientImpl.getInstance(dockerCfg, dockerHttp)
 
+  docker.pullImageCmd(imageName).start().awaitCompletion()
+
   val image = docker.inspectImageCmd(imageName).exec()
 
   image.getRepoDigests().asScala.head
