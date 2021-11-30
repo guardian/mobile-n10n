@@ -332,30 +332,27 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
   })
 
 lazy val latestVersionOfLambdaSDK = {
+  import scala.jdk.CollectionConverters._
   import com.github.dockerjava.core.DefaultDockerClientConfig
   import com.github.dockerjava.httpclient5.ApacheDockerHttpClient
   import com.github.dockerjava.core.DockerClientImpl
 
+  val imageName = "public.ecr.aws/lambda/java:latest"
+
   val dockerCfg = DefaultDockerClientConfig.createDefaultConfigBuilder().build()
-  val dockerHttp = new ApacheDockerHttpClient.Builder().build()
-  val docker = DockerClientImpl.getInstance(dockerCfg, dockerHttp);
+  val dockerHttp = new ApacheDockerHttpClient.Builder()
+    .dockerHost(dockerCfg.getDockerHost())
+    .sslConfig(dockerCfg.getSSLConfig())
+    .build();
+  val docker = DockerClientImpl.getInstance(dockerCfg, dockerHttp)
 
-  //  import com.spotify.docker.client.{DefaultDockerClient, DockerClient}
-  // import scala.jdk.CollectionConverters._
-  // // val imageName = "aperturedevelopment/friendup:latest"
-  // val imageName = "public.ecr.aws/lambda/java:latest"
+  val image = docker.inspectImageCmd(imageName).exec()
 
-  // docker.pull(imageName)
-  // for(image <- docker.listImages(DockerClient.ListImagesParam.filter("reference", imageName)).asScala) {
-  //   println(image.repoDigests())
-  // }
-  // // val imageDetails = .filter(_.repoDigests.size() > 0).head.repoDigests().asScala.head //inspectImage(imageName)
-  // // println(s"[PMR 1704] ${imageDetails}")
-  "latest"
+  image.getRepoDigests().asScala.head
 }
 
 lazy val lambdaDockerCommands = dockerCommands := Seq(
-  Cmd    ( "FROM",   s"public.ecr.aws/lambda/java@${latestVersionOfLambdaSDK}"),
+  Cmd    ( "FROM",   latestVersionOfLambdaSDK),
   Cmd    ( "LABEL",  s"sdkBaseVersion=${latestVersionOfLambdaSDK}"),
   ExecCmd( "COPY",   "1/opt/docker/*", "${LAMBDA_TASK_ROOT}/lib/"),
   ExecCmd( "COPY",   "2/opt/docker/*", "${LAMBDA_TASK_ROOT}/lib/"),
