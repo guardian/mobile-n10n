@@ -9,8 +9,8 @@ deployments:
       templatePath: harvester-cfn.yaml
   mobile-notifications-workers-nested-cfn:
     type: cloud-formation
+    app: sender-workers
     parameters:
-      app: sender-workers
       templatePath: sender-workers-cfn.yaml
   # mobile-notifications-ios-worker-cfn:
   #   type: cloud-formation
