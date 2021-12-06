@@ -138,7 +138,7 @@ Resources:
   SenderLambdaCtr:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${Stack}-${App}-sender-ctr-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-sender-ctr-nested-${Stage}
       PackageType: Image
       Code:
         ImageUri: !Join [':', [!ImportValue NotificationLambdaRepositoryUri, !Ref BuildId]]

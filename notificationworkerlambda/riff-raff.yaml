@@ -7,41 +7,47 @@ deployments:
     app: harvester
     parameters:
       templatePath: harvester-cfn.yaml
-  mobile-notifications-ios-worker-cfn:
+  mobile-notifications-workers-nested-cfn:
     type: cloud-formation
-    app: ios-worker
     parameters:
       prependStackToCloudFormationStackName: false
-      cloudFormationStackName: ios-worker-cfn
-      templatePath: sender-worker-cfn.yaml
-  mobile-notifications-android-worker-cfn:
-    type: cloud-formation
-    app: android-worker
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: android-worker-cfn
-      templatePath: sender-worker-cfn.yaml
-  mobile-notifications-ios-edition-worker-cfn:
-    type: cloud-formation
-    app: ios-edition-worker
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: ios-edition-worker-cfn
-      templatePath: sender-worker-cfn.yaml
-  mobile-notifications-android-edition-worker-cfn:
-    type: cloud-formation
-    app: android-edition-worker
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: android-edition-worker-cfn
-      templatePath: sender-worker-cfn.yaml
-  mobile-notifications-android-beta-worker-cfn:
-    type: cloud-formation
-    app: android-beta-worker
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: android-beta-worker-cfn
-      templatePath: sender-worker-cfn.yaml
+      cloudFormationStackName: mobile-notifications-workers-nested-cfn
+      templatePath: sender-workers-nested-cfn.yaml
+  # mobile-notifications-ios-worker-cfn:
+  #   type: cloud-formation
+  #   app: ios-worker
+  #   parameters:
+  #     prependStackToCloudFormationStackName: false
+  #     cloudFormationStackName: ios-worker-cfn
+  #     templatePath: sender-worker-cfn.yaml
+  # mobile-notifications-android-worker-cfn:
+  #   type: cloud-formation
+  #   app: android-worker
+  #   parameters:
+  #     prependStackToCloudFormationStackName: false
+  #     cloudFormationStackName: android-worker-cfn
+  #     templatePath: sender-worker-cfn.yaml
+  # mobile-notifications-ios-edition-worker-cfn:
+  #   type: cloud-formation
+  #   app: ios-edition-worker
+  #   parameters:
+  #     prependStackToCloudFormationStackName: false
+  #     cloudFormationStackName: ios-edition-worker-cfn
+  #     templatePath: sender-worker-cfn.yaml
+  # mobile-notifications-android-edition-worker-cfn:
+  #   type: cloud-formation
+  #   app: android-edition-worker
+  #   parameters:
+  #     prependStackToCloudFormationStackName: false
+  #     cloudFormationStackName: android-edition-worker-cfn
+  #     templatePath: sender-worker-cfn.yaml
+  # mobile-notifications-android-beta-worker-cfn:
+  #   type: cloud-formation
+  #   app: android-beta-worker
+  #   parameters:
+  #     prependStackToCloudFormationStackName: false
+  #     cloudFormationStackName: android-beta-worker-cfn
+  #     templatePath: sender-worker-cfn.yaml
   mobile-notifications-registration-cleaning-worker-cfn:
     type: cloud-formation
     app: registration-cleaning-worker
