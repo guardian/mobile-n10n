@@ -12,7 +12,7 @@ deployments:
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: mobile-notifications-workers-nested-cfn
-      templatePath: sender-workers-nested-cfn.yaml
+      templatePath: sender-workers-cfn.yaml
   # mobile-notifications-ios-worker-cfn:
   #   type: cloud-formation
   #   app: ios-worker
