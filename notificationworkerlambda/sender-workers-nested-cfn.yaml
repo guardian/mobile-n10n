@@ -56,6 +56,9 @@ Resources:
         SenderTooFewInvocationsAlarmPeriod: !Ref SenderTooFewInvocationsAlarmPeriod
         ReservedConcurrency: !Ref ReservedConcurrency
         RunbookCopy: !Ref RunbookCopy
+      Tags:
+        - Key: App
+          Value: ios-worker
       TemplateURL: !Ref S3TemplateUrl
 
   MobileNotificationsAndroidWorker:
@@ -74,4 +77,7 @@ Resources:
         SenderTooFewInvocationsAlarmPeriod: !Ref SenderTooFewInvocationsAlarmPeriod
         ReservedConcurrency: !Ref ReservedConcurrency
         RunbookCopy: !Ref RunbookCopy
+      Tags:
+        - Key: App
+          Value: android-worker
       TemplateURL: !Ref S3TemplateUrl
