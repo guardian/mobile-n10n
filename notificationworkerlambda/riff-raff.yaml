@@ -7,11 +7,18 @@ deployments:
     app: harvester
     parameters:
       templatePath: harvester-cfn.yaml
-  mobile-notifications-workers-nested-cfn:
-    type: cloud-formation
-    app: sender-workers
+  mobile-notifications-worker-template:
+    type: aws-s3
     parameters:
-      templatePath: sender-workers-cfn.yaml
+      bucket: mobile-notifications-dist
+      prefixPackage: false
+      prefixStack: false
+      prefixStage: false
+  # mobile-notifications-workers-nested-cfn:
+  #   type: cloud-formation
+  #   app: sender-workers
+  #   parameters:
+  #     templatePath: sender-workers-cfn.yaml
   # mobile-notifications-ios-worker-cfn:
   #   type: cloud-formation
   #   app: ios-worker
