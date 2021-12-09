@@ -79,7 +79,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         CustomProperty(Keys.UriType -> link.`type`.toString)
       ) ++ imageUrl.map(u => CustomProperty(Keys.ImageUrl -> u.toString)).toSeq
     ).payload
-    ApnsPayload(payload, Some(BreakingNewsTtl), toCollapseId(n.link), PushType.ALERT)
+    ApnsPayload(payload, Some(BreakingNewsTtl), toCollapseId(n.link, n.topic), PushType.ALERT)
   }
 
   private def contentPayload(n: ContentNotification): ApnsPayload = {
@@ -101,7 +101,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         CustomProperty(Keys.UriType -> link.`type`.toString)
       )
     ).payload
-    ApnsPayload(payLoad, None, toCollapseId(n.link), PushType.ALERT)
+    ApnsPayload(payLoad, None, toCollapseId(n.link, n.topic), PushType.ALERT)
   }
 
   private def footballMatchStatusPayload(n: FootballMatchStatusNotification): ApnsPayload = {
@@ -224,10 +224,13 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
     case _ => link.webUri("http://www.theguardian.com/")
   }
 
-  private def toCollapseId(link: Link): Option[String] = link match {
-    case Link.Internal(contentApiId, _, _, _) => Some(UUID.nameUUIDFromBytes(contentApiId.getBytes).toString)
+  private def toCollapseId(link: Link, topics: List[Topic]): Option[String] = link match {
+    case Link.Internal(contentApiId, _, _, _) =>
+      val firstTopicFullName = topics.headOption.map(_.fullName).getOrElse("")
+      Some(UUID.nameUUIDFromBytes((contentApiId + firstTopicFullName).getBytes).toString )
     case _ => None
   }
+
 }
 
 
