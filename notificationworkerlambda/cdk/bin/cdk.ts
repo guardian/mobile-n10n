@@ -4,11 +4,11 @@ import * as cdk from '@aws-cdk/core';
 import { SenderWorkerStack } from '../lib/senderworker';
 
 const app = new cdk.App()
-new SenderWorkerStack(app, "SenderWorkerStack")
 
-// new SenderWorkerStack(app, 'SenderWorkerStack', {
-//   stack: "mobile-notifications-workers"
-// })
+new SenderWorkerStack(app, 'SenderWorkerStack', {
+  stack: "mobile-notifications-workers"
+})
+
 //
 //   /* If you don't specify 'env', this stack will be environment-agnostic.
 //    * Account/Region-dependent features and context lookups will not work,
