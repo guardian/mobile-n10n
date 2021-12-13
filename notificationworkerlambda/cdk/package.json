@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@guardian/cdk": "^31.4.1"
+  }
+}
