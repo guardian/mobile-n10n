@@ -1,10 +1,15 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: ECR repositories for MSS notification worker lambdas
+Parameters:
+  RepositoryName:
+    Description: Name of the ECR repository
+    Type: String
+    Default: notificationworker-lambda-images
 Resources:
   NotificationLambdaRepository:
     Type: AWS::ECR::Repository
     Properties:
-      RepositoryName: notificationworker-lambda-images
+      RepositoryName: !Ref RepositoryName
       RepositoryPolicyText:
         Version: 2012-10-17
         Statement:
@@ -38,3 +43,8 @@ Outputs:
     Value: !GetAtt NotificationLambdaRepository.RepositoryUri
     Export:
       Name: NotificationLambdaRepositoryUri
+  NotificationLambdaRepositoryArn:
+    Description: The ARN of the code image repository
+    Value: !GetAtt NotificationLambdaRepository.Arn
+  NotificationLambdaRepositoryName:
+    Value: !Ref RepositoryName
