@@ -8,7 +8,7 @@ import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 val projectVersion = "1.0-latest"
 
 organization := "com.gu"
-scalaVersion in ThisBuild := "2.13.2"
+ThisBuild / scalaVersion := "2.13.2"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -18,7 +18,7 @@ val compilerOptions = Seq(
   "-language:implicitConversions"
 )
 
-scalacOptions in ThisBuild ++= compilerOptions
+ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "2.8.1"
 val specsVersion: String = "4.5.1"
@@ -38,9 +38,6 @@ val standardSettings = Seq[Setting[_]](
     "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
   ),
-  riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
-  riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
-  riffRaffUploadManifestBucket := Option("riffraff-builds"),
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.24.0",
     "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided",
@@ -48,7 +45,7 @@ val standardSettings = Seq[Setting[_]](
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
   // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
-  parallelExecution in Test := false
+  Test / parallelExecution := false
 )
 
 lazy val commoneventconsumer = project
@@ -100,13 +97,13 @@ lazy val common = project
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion
     ),
     fork := true,
-    startDynamoDBLocal := startDynamoDBLocal.dependsOn(compile in Test).value,
-    test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
-    testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
-    testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
-    testOptions in Test += dynamoDBLocalTestCleanup.value,
+    startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
+    Test / test := (Test / test).dependsOn(startDynamoDBLocal).value,
+    Test / testOnly := (Test / testOnly).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testQuick := (Test / testQuick).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testOptions += dynamoDBLocalTestCleanup.value,
     // the following option is to allow tests using wsClient such as NotificationHubClientSpec
-    testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "sequential", "true")
+    Test / testOptions += Tests.Argument(TestFrameworks.Specs2, "sequential", "true")
   )
 
 lazy val commonscheduledynamodb = project
@@ -120,10 +117,10 @@ lazy val commonscheduledynamodb = project
       specs2 % Test
 
     ),
-    test in Test := (test in Test).dependsOn(startDynamoDBLocal).value,
-    testOnly in Test := (testOnly in Test).dependsOn(startDynamoDBLocal).evaluated,
-    testQuick in Test := (testQuick in Test).dependsOn(startDynamoDBLocal).evaluated,
-    testOptions in Test += dynamoDBLocalTestCleanup.value
+    Test / test := (Test / test).dependsOn(startDynamoDBLocal).value,
+    Test / testOnly := (Test / testOnly).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testQuick := (Test / testQuick).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testOptions += dynamoDBLocalTestCleanup.value
   ))
 
 lazy val registration = project
@@ -141,9 +138,9 @@ lazy val registration = project
       logback,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
-    riffRaffPackageType := (packageBin in Debian).value,
+    riffRaffPackageType := (Debian / packageBin).value,
     riffRaffArtifactResources += (file(s"registration/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
-    packageName in Debian := name.value,
+    Debian / packageName := name.value,
     version := projectVersion
   )
 
@@ -163,9 +160,9 @@ lazy val notification = project
       logback,
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
-    riffRaffPackageType := (packageBin in Debian).value,
+    riffRaffPackageType := (Debian / packageBin).value,
     riffRaffArtifactResources += (file(s"notification/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
-    packageName in Debian := name.value,
+    Debian / packageName := name.value,
     version := projectVersion
   )
 
@@ -184,9 +181,9 @@ lazy val report = project
     libraryDependencies ++= Seq(
       logback
     ),
-    riffRaffPackageType := (packageBin in Debian).value,
+    riffRaffPackageType := (Debian / packageBin).value,
     riffRaffArtifactResources += (file(s"report/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
-    packageName in Debian := name.value,
+    Debian / packageName := name.value,
     version := projectVersion
   )
 
@@ -254,18 +251,18 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.3.0",
       "org.slf4j" % "slf4j-api" % "1.7.30",
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.15.0",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.16.0",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
-    assemblyMergeStrategy in assembly := {
+    assembly / assemblyMergeStrategy := {
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
       case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
       case _ => MergeStrategy.first
     },
-    fork in (Test, run) := true,
+    Test / run / fork := true,
     scalacOptions := compilerOptions,
     riffRaffPackageType := assembly.value,
     riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
@@ -273,7 +270,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     riffRaffManifestProjectName := s"mobile-n10n:$projectName",
     mainClass := mainClassName,
     // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
-    parallelExecution in Test := false
+    Test / parallelExecution := false
   )
 
 lazy val schedulelambda = lambda("schedule", "schedulelambda")
@@ -350,7 +347,7 @@ lazy val ecrRepositorySettings =
       val Array(repo, name) = url.split("/", 2)
       Seq(
         dockerRepository := Some(repo),
-        packageName in Docker := name
+        Docker / packageName := name
       )
     case None => Nil
   }
@@ -363,7 +360,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
   .settings(
     lambdaDockerCommands,
     dockerExposedPorts := Seq(9000), // exposed by the lambda runtime api inside the image
-    dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (packageName in Docker).value, tag = buildNumber),
+    dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "6.16.0",

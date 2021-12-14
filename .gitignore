@@ -22,3 +22,10 @@ dynamodb-local-schedule-lambda/
 .scala_dependencies
 .worksheet
 **.DS_Store
+
+.metals/
+.vscode/
+.bloop/
+project/.bloop/
+project/metals.sbt
+.bsp/
