@@ -15,7 +15,9 @@ type SenderWorkerOpts = {
   imageRepo: ecr.IRepository,
   buildId: string,
   reservedConcurrency: number,
-  alarmTopic: sns.ITopic
+  alarmTopic: sns.ITopic,
+  tooFewInvocationsAlarmPeriod: cdk.Duration,
+  tooFewInvocationsEnabled: boolean
 }
 
 class SenderWorker extends cdk.Construct {
@@ -128,7 +130,7 @@ class SenderWorker extends cdk.Construct {
     senderSqsEventSourceMapping.node.addDependency(senderSqs)
     senderSqsEventSourceMapping.node.addDependency(senderLambdaCtr)
 
-    const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderErrorAlarm', {
+    const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
       alarmDescription: `Triggers if the ${id} sender lambda is throttled in ${scope.stage}.`,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       evaluationPeriods: 1,
@@ -139,6 +141,31 @@ class SenderWorker extends cdk.Construct {
     })
     senderThrottleAlarm.addAlarmAction(snsTopicAction)
     senderThrottleAlarm.addOkAction(snsTopicAction)
+
+    const senderErrorAlarm = new cloudwatch.Alarm(this, 'SenderErrorAlarm', {
+      alarmDescription: `Triggers if the ${id} sender lambda errors in ${scope.stage}.`,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      evaluationPeriods: 1,
+      threshold: 0,
+      metric: senderLambdaCtr.metricErrors({period: cdk.Duration.seconds(360)}),
+      statistic: "Sum",
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING
+    })
+    senderErrorAlarm.addAlarmAction(snsTopicAction)
+    senderErrorAlarm.addOkAction(snsTopicAction)
+
+    const senderTooFewInvocationsAlarm = new cloudwatch.Alarm(this, 'SenderTooFewInvocationsAlarm', {
+      alarmDescription: `Triggers if the ${id} sender lambda is not frequently invoked in ${scope.stage}.`,
+      comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
+      evaluationPeriods: 1,
+      threshold: 0,
+      metric: senderLambdaCtr.metricInvocations({period: cdk.Duration.seconds(360)}),
+      statistic: "Sum",
+      treatMissingData: cloudwatch.TreatMissingData.BREACHING,
+      actionsEnabled: false // isEnabled
+    })
+    senderTooFewInvocationsAlarm.addAlarmAction(snsTopicAction)
+    senderTooFewInvocationsAlarm.addOkAction(snsTopicAction)
   }
 }
 
@@ -146,20 +173,25 @@ export class SenderWorkerStack extends GuStack {
   constructor(scope: App, id: string, props: GuStackProps) {
     super(scope, id, props)
 
+    const senderTooFewInvocationsAlarmPeriodParam = new cdk.CfnParameter(this, "SenderTooFewInvocationsAlarmPeriodParam", {
+      type: "Number",
+      description: "How long until no execution is suspicious, in seconds"
+    })
+
     const reservedConcurrencyParam = new cdk.CfnParameter(this, "ReservedConcurrency", {
       type: "Number",
       description: "How many concurrent execution to provision the lamdba with"
-    });
+    })
 
     const buildIdParam = new cdk.CfnParameter(this, "BuildId", {
       type: "String",
       description: "build id from teamcity, the image should be tagged with this"
-    });
+    })
 
     const alarmTopicArnParam = new cdk.CfnParameter(this, "AlarmTopicArn", {
       type: "String",
       description: "The ARN of the SNS topic to send all the cloudwatch alarms to"
-    });
+    })
 
     const notificationEcrRepo =
       ecr.Repository.fromRepositoryAttributes(this, "NotificationLambdaRepository", {
@@ -167,19 +199,34 @@ export class SenderWorkerStack extends GuStack {
         repositoryName: cdk.Fn.importValue("NotificationLambdaRepositoryName")
       })
 
+    const isEnabled = this.withStageDependentValue({
+      app: id,
+      variableName: "actionsEnabled",
+      stageValues: {
+        CODE: false,
+        PROD: true
+      }
+    })
+
     let sharedOpts = {
       imageRepo: notificationEcrRepo,
       buildId: buildIdParam.valueAsString,
       reservedConcurrency: reservedConcurrencyParam.valueAsNumber,
-      alarmTopic: sns.Topic.fromTopicArn(this, 'AlarmTopic', alarmTopicArnParam.valueAsString)
+      alarmTopic: sns.Topic.fromTopicArn(this, 'AlarmTopic', alarmTopicArnParam.valueAsString),
+      tooFewInvocationsAlarmPeriod: cdk.Duration.seconds(senderTooFewInvocationsAlarmPeriodParam.valueAsNumber),
+      tooFewInvocationsEnabled: isEnabled
     }
 
-    new SenderWorker(this, "ios-worker", {
-      handler: "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
-      ...sharedOpts
-    })
+    let senderWorkers: Record<string, string> = {
+      "ios-worker": "com.gu.notifications.worker.IOSSender::handleChunkTokens",
+      "android-workd": "com.gu.notifications.worker.AndroidSender::handleChunkTokens"
+    }
 
-    // new SenderWorker(this, "android-worker")
-
+    for(let workerName in senderWorkers) {
+      new SenderWorker(this, workerName, {
+        handler: senderWorkers[workerName],
+        ...sharedOpts
+      })
+    }
   }
 }
