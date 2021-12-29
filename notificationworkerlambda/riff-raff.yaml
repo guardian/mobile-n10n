@@ -12,7 +12,7 @@ deployments:
     app: n10n-workers
     parameters:
       prependStackToCloudFormationStackName: false
-      cloudFormationStackName: n10n-workers-cfn
+      cloudFormationStackName: mobile-notifications-cdk-workers
       templatePath: sender-workers-cfn/sender-workers.cfn.yaml
   mobile-notifications-topic-counter-cfn:
     type: cloud-formation
