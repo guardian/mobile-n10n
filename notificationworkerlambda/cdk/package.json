@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "@guardian/cdk": "^31.4.1"
+  },
+  "scripts": {
+    "synth": "cdk synth"
   }
 }
