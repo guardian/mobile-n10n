@@ -17,7 +17,9 @@ type SenderWorkerOpts = {
   reservedConcurrency: number,
   alarmTopic: sns.ITopic,
   tooFewInvocationsAlarmPeriod: cdk.Duration,
-  tooFewInvocationsEnabled: boolean
+  tooFewInvocationsEnabled: boolean,
+  cleanerQueueArn: string,
+  platform: string
 }
 
 class SenderWorker extends cdk.Construct {
@@ -38,22 +40,6 @@ class SenderWorker extends cdk.Construct {
       }
     })
 
-    const cleanerQueueArnParam = new cdk.CfnParameter(this, "CleanerQueueArnParam", {
-      type: "String",
-      description: "The ARN of the cleaner SQS queue"
-    });
-
-    const platformParam = new cdk.CfnParameter(this, "Platform", {
-      type: "String",
-      description: "The platform handled by this worker",
-      allowedValues: [
-        "android",
-        "android-beta",
-        "ios",
-        "android-edition",
-        "ios-edition"
-      ]
-    });
 
     const executionRole = new iam.Role(this, 'ExecutionRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
@@ -81,14 +67,14 @@ class SenderWorker extends cdk.Construct {
           statements: [
             new iam.PolicyStatement({
               actions: [ 'sqs:SendMessage' ],
-              resources: [ cleanerQueueArnParam.valueAsString ]
+              resources: [ opts.cleanerQueueArn ]
             })
           ] }),
         Conf: new iam.PolicyDocument({
           statements: [
             new iam.PolicyStatement({
               actions: [ 'ssm:GetParametersByPath' ],
-              resources: [ `arn:aws:ssm:${scope.region}:${scope.account}:parameter/notifications/${scope.stage}/workers/${platformParam.valueAsString}` ]
+              resources: [ `arn:aws:ssm:${scope.region}:${scope.account}:parameter/notifications/${scope.stage}/workers/${opts.platform}` ]
             })
           ] }),
         Cloudwatch: new iam.PolicyDocument({
@@ -193,6 +179,11 @@ export class SenderWorkerStack extends GuStack {
       description: "The ARN of the SNS topic to send all the cloudwatch alarms to"
     })
 
+    const cleanerQueueArnParam = new cdk.CfnParameter(this, "CleanerQueueArnParam", {
+      type: "String",
+      description: "The ARN of the cleaner SQS queue"
+    });
+
     const notificationEcrRepo =
       ecr.Repository.fromRepositoryAttributes(this, "NotificationLambdaRepository", {
         repositoryArn: cdk.Fn.importValue("NotificationLambdaRepositoryArn"),
@@ -214,16 +205,18 @@ export class SenderWorkerStack extends GuStack {
       reservedConcurrency: reservedConcurrencyParam.valueAsNumber,
       alarmTopic: sns.Topic.fromTopicArn(this, 'AlarmTopic', alarmTopicArnParam.valueAsString),
       tooFewInvocationsAlarmPeriod: cdk.Duration.seconds(senderTooFewInvocationsAlarmPeriodParam.valueAsNumber),
-      tooFewInvocationsEnabled: isEnabled
+      tooFewInvocationsEnabled: isEnabled,
+      cleanerQueueArn: cleanerQueueArnParam.valueAsString
     }
 
     let senderWorkers: Record<string, string> = {
-      "ios-worker": "com.gu.notifications.worker.IOSSender::handleChunkTokens",
-      "android-workd": "com.gu.notifications.worker.AndroidSender::handleChunkTokens"
+      "ios": "com.gu.notifications.worker.IOSSender::handleChunkTokens",
+      "android": "com.gu.notifications.worker.AndroidSender::handleChunkTokens"
     }
 
     for(let workerName in senderWorkers) {
       new SenderWorker(this, workerName, {
+        platform: workerName,
         handler: senderWorkers[workerName],
         ...sharedOpts
       })
