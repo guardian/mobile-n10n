@@ -380,7 +380,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     ),
     riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"mobile-notifications-harvester-cfn/harvester-cfn.yaml"),
     // cdk synthesised cloudformation template
-    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack.template.json", "sender-workers-cfn/sender-workers.cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack.template.json", "mobile-notifications-workers-cfn/sender-workers.cfn.yaml"),
     // riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-ios-worker-cfn/sender-worker-cfn.yaml"),
     // riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-android-worker-cfn/sender-worker-cfn.yaml"),
     // riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-ios-edition-worker-cfn/sender-worker-cfn.yaml"),
