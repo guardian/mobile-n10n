@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@guardian/cdk": "^31.4.1"
+    "@guardian/cdk": "^31.4.1",
+    "aws-cdk": "^2.3.0"
   },
   "scripts": {
     "synth": "cdk synth"
