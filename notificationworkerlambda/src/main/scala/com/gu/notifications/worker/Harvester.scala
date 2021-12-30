@@ -42,12 +42,12 @@ trait HarvesterRequestHandler extends Logging {
   val maxConcurrency: Int = 100
   val supportedPlatforms = List(Ios, Android, IosEdition, AndroidEdition)
 
-  val logErrors: Pipe[IO, Throwable, Unit] = throwables => {
-    throwables.map(throwable => logger.warn("Error queueing", throwable))
+  def logErrors(prefix: String = ""): Pipe[IO, Throwable, Unit] = throwables => {
+    throwables.map(throwable => logger.warn(s"${prefix}Error queueing", throwable))
   }
 
   def sinkErrors(platform: Platform): Pipe[IO, Throwable, Unit] = throwables => {
-    throwables.broadcastTo(logErrors, cloudwatch.sendFailures(env.stage, platform))
+    throwables.broadcastTo(logErrors(s"platform:[${platform}] "), cloudwatch.sendFailures(env.stage, platform))
   }
 
   def platformSink(shardedNotification: ShardedNotification, platform: Platform, workerSqs: WorkerSqs, deliveryService: SqsDeliveryService[IO]): Pipe[IO, (WorkerSqs, HarvestedToken), Unit] = {
