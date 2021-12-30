@@ -100,7 +100,8 @@ class SenderWorker extends cdk.Construct {
       environment: {
         Stage: scope.stage,
         Stack: scope.stack,
-        App: id
+        App: id,
+        Platform: opts.platform
       },
       memorySize: 3008,
       description: `sends notifications for ${id}`,
