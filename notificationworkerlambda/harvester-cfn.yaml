@@ -35,9 +35,6 @@ Parameters:
   VPCSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: The default security group of the VPC
-  # WorkerSqsArns:
-  #   Type: List<String>
-  #   Description: The ARNs of all the worker's queues
   AlarmTopic:
     Type: String
     Description: The ARN of the SNS topic to send all the cloudwatch alarms to
