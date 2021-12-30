@@ -227,6 +227,6 @@ export class SenderWorkerStack extends GuStack {
       workerQueueArns.push(worker.senderSqs.queueArn)
     }
 
-    this.exportValue(workerQueueArns, { name: "NotificationSenderWorkerQueueArns" })
+    this.exportValue(cdk.Fn.join(",", workerQueueArns), { name: "NotificationSenderWorkerQueueArns" })
   }
 }
