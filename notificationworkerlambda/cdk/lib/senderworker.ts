@@ -23,6 +23,9 @@ type SenderWorkerOpts = {
 }
 
 class SenderWorker extends cdk.Construct {
+
+  readonly senderSqs: sqs.Queue
+
   constructor(scope: GuStack, id: string, opts: SenderWorkerOpts) {
     super(scope, id)
 
@@ -31,7 +34,7 @@ class SenderWorker extends cdk.Construct {
     const snsTopicAction = new SnsAction(opts.alarmTopic)
 
     const senderDlq = new sqs.Queue(this, 'SenderDlq')
-    const senderSqs = new sqs.Queue(this, 'SenderSqs', {
+    this.senderSqs = new sqs.Queue(this, 'SenderSqs', {
       visibilityTimeout: cdk.Duration.seconds(100),
       retentionPeriod: cdk.Duration.hours(1),
       deadLetterQueue: {
@@ -39,7 +42,6 @@ class SenderWorker extends cdk.Construct {
         maxReceiveCount: 5
       }
     })
-
 
     const executionRole = new iam.Role(this, 'ExecutionRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
@@ -60,7 +62,7 @@ class SenderWorker extends cdk.Construct {
           statements: [
             new iam.PolicyStatement({
               actions: [ 'sqs:*' ],
-              resources: [ senderSqs.queueArn ]
+              resources: [ this.senderSqs.queueArn ]
             })
           ] }),
         SQSInput: new iam.PolicyDocument({
@@ -110,10 +112,10 @@ class SenderWorker extends cdk.Construct {
     const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
       batchSize: 1,
       enabled: true,
-      eventSourceArn: senderSqs.queueArn,
+      eventSourceArn: this.senderSqs.queueArn,
       target: senderLambdaCtr
     })
-    senderSqsEventSourceMapping.node.addDependency(senderSqs)
+    senderSqsEventSourceMapping.node.addDependency(this.senderSqs)
     senderSqsEventSourceMapping.node.addDependency(senderLambdaCtr)
 
     const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
@@ -214,12 +216,17 @@ export class SenderWorkerStack extends GuStack {
       "android": "com.gu.notifications.worker.AndroidSender::handleChunkTokens"
     }
 
+    let workerQueueArns: string[] = []
+
     for(let workerName in senderWorkers) {
-      new SenderWorker(this, workerName, {
+      let worker = new SenderWorker(this, workerName, {
         platform: workerName,
         handler: senderWorkers[workerName],
         ...sharedOpts
       })
+      workerQueueArns.push(worker.senderSqs.queueArn)
     }
+
+    this.exportValue(workerQueueArns, { name: "NotificationSenderWorkerQueueArns" })
   }
 }
