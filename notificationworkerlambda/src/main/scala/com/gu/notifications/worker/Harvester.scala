@@ -43,7 +43,7 @@ trait HarvesterRequestHandler extends Logging {
   val supportedPlatforms = List(Ios, Android, IosEdition, AndroidEdition)
 
   val logErrors: Pipe[IO, Throwable, Unit] = throwables => {
-    throwables.map(throwable => logger.warn(s"Error queueing: ${throwable.getMessage()}", throwable))
+    throwables.map(throwable => logger.warn("Error queueing", throwable))
   }
 
   def sinkErrors(platform: Platform): Pipe[IO, Throwable, Unit] = throwables => {
