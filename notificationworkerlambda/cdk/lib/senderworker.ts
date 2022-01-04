@@ -162,7 +162,9 @@ class SenderWorker extends cdk.Construct {
     new ssm.StringParameter(this, 'SenderQueueSSMParameter', {
       parameterName: `/notifications/${scope.stage}/workers/harvester/${id}LiveSqsUrl`,
       simpleName: false,
-      stringValue: this.senderSqs.queueUrl + "-foo"
+      stringValue: this.senderSqs.queueUrl,
+      tier: ssm.ParameterTier.STANDARD,
+      dataType: ssm.ParameterDataType.TEXT
     })
   }
 }
