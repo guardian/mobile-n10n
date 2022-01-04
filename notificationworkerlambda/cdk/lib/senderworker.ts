@@ -5,6 +5,8 @@ import * as sns from '@aws-cdk/aws-sns'
 import * as iam from '@aws-cdk/aws-iam'
 import * as lambda from '@aws-cdk/aws-lambda'
 import * as cloudwatch from '@aws-cdk/aws-cloudwatch'
+import * as ssm from '@aws-cdk/aws-ssm'
+
 import {SnsAction} from '@aws-cdk/aws-cloudwatch-actions'
 import { GuStack } from "@guardian/cdk/lib/constructs/core"
 import type { App } from "@aws-cdk/core"
@@ -155,6 +157,13 @@ class SenderWorker extends cdk.Construct {
     })
     senderTooFewInvocationsAlarm.addAlarmAction(snsTopicAction)
     senderTooFewInvocationsAlarm.addOkAction(snsTopicAction)
+
+    // this advertises the name of the sender queue to the harvester app
+    new ssm.StringParameter(this, 'SenderQueueSSMParameter', {
+      parameterName: `/notifications/${scope.stage}/workers/harvester/${id}LiveSqsUrl`,
+      simpleName: false,
+      stringValue: this.senderSqs.queueUrl + "-foo"
+    })
   }
 }
 
