@@ -68,9 +68,9 @@ object Configuration {
     val config = fetchConfiguration("harvester")
     HarvesterConfiguration(
       jdbcConfig = jdbcConfig(config),
-      iosLiveSqsUrl = config.getString("iosLiveSqsUrl"),
+      iosLiveSqsUrl = config.getString("iosLiveSqsCdkUrl"),
       iosEditionSqsUrl = config.getString("iosEditionSqsUrl"),
-      androidLiveSqsUrl = config.getString("androidLiveSqsUrl"),
+      androidLiveSqsUrl = config.getString("androidLiveSqsCdkUrl"),
       androidEditionSqsUrl = config.getString("androidEditionSqsUrl"),
       androidBetaSqsUrl = config.getString("androidBetaSqsUrl")
     )
