@@ -5,8 +5,12 @@ deployments:
   mobile-notifications-harvester-cfn:
     type: cloud-formation
     app: harvester
+    dependencies:
+      - mobile-notifications-workers-cfn
     parameters:
       templatePath: harvester-cfn.yaml
+      templateParameters:
+        ShouldUseImport: true
   mobile-notifications-workers-cfn:
     type: cloud-formation
     app: n10n-workers
