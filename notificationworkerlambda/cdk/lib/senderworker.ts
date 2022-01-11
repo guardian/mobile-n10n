@@ -242,8 +242,10 @@ export class SenderWorkerStack extends GuStack {
      */
 
     addWorker("ios", "ios", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("ios-edition", "iosEditions", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
     addWorker("android", "android", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+    addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
+    addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+    addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
 
     /*
      * each worker has been assigned an SQS queue which, when written to, will
