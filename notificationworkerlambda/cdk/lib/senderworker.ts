@@ -21,7 +21,8 @@ type SenderWorkerOpts = {
   tooFewInvocationsAlarmPeriod: cdk.Duration,
   tooFewInvocationsEnabled: boolean,
   cleanerQueueArn: string,
-  platform: string
+  platform: string,
+  paramPrefix: string
 }
 
 class SenderWorker extends cdk.Construct {
@@ -160,7 +161,7 @@ class SenderWorker extends cdk.Construct {
 
     // this advertises the name of the sender queue to the harvester app
     new ssm.StringParameter(this, 'SenderQueueSSMParameter', {
-      parameterName: `/notifications/${scope.stage}/workers/harvester/${id}LiveSqsCdkUrl`,
+      parameterName: `/notifications/${scope.stage}/workers/harvester/${opts.paramPrefix}LiveSqsCdkUrl`,
       simpleName: false,
       stringValue: this.senderSqs.queueUrl,
       tier: ssm.ParameterTier.STANDARD,
@@ -223,21 +224,33 @@ export class SenderWorkerStack extends GuStack {
       cleanerQueueArn: cleanerQueueArnParam.valueAsString
     }
 
-    let senderWorkers: Record<string, string> = {
-      "ios": "com.gu.notifications.worker.IOSSender::handleChunkTokens",
-      "android": "com.gu.notifications.worker.AndroidSender::handleChunkTokens"
-    }
-
     let workerQueueArns: string[] = []
 
-    for(let workerName in senderWorkers) {
+    const addWorker = (workerName: string, paramPrefix: string, handler: string) => {
       let worker = new SenderWorker(this, workerName, {
         platform: workerName,
-        handler: senderWorkers[workerName],
+        paramPrefix: paramPrefix,
+        handler: handler,
         ...sharedOpts
       })
       workerQueueArns.push(worker.senderSqs.queueArn)
     }
+
+    /*
+     * add each of the worker lambdas, where each one handles a different
+     * platform or app by talking to a different lambda handler function
+     */
+
+    addWorker("ios", "ios", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
+    addWorker("ios-edition", "iosEditions", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
+    addWorker("android", "android", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+
+    /*
+     * each worker has been assigned an SQS queue which, when written to, will
+     * trigger it to send its notifications. Here, we export the list of worker
+     * queue ARNs so that it can be used in other stacks, for example, Harvester
+     * needs to give itself permission to write to these queues.
+     */
 
     this.exportValue(cdk.Fn.join(",", workerQueueArns), { name: "NotificationSenderWorkerQueueArns" })
   }
