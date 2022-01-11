@@ -253,7 +253,9 @@ export class SenderWorkerStack extends GuStack {
      * queue ARNs so that it can be used in other stacks, for example, Harvester
      * needs to give itself permission to write to these queues.
      */
-
-    this.exportValue(cdk.Fn.join(",", workerQueueArns), { name: "NotificationSenderWorkerQueueArns" })
+    new cdk.CfnOutput(this, "NotificationSenderWorkerQueueArns", {
+      exportName: "NotificationSenderWorkerQueueArns-" + this.stage,
+      value: cdk.Fn.join(",", workerQueueArns)
+    })
   }
 }

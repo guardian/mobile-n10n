@@ -121,7 +121,13 @@ Resources:
           Statement:
             Effect: !If [ IsImportAvailable, Allow, Deny ]
             Action: sqs:*
-            Resource: !If [ IsImportAvailable, !Split [ ",", !ImportValue NotificationSenderWorkerQueueArns ], "*" ]
+            Resource: !If
+              - IsImportAvailable
+              - !Split
+                - ","
+                - !ImportValue
+                    'Fn::Sub': 'NotificationSenderWorkerQueueArns-${Stage}'
+              - "*"
       - PolicyName: VPC
         PolicyDocument:
           Statement:
