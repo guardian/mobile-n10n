@@ -35,26 +35,15 @@ Parameters:
   VPCSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: The default security group of the VPC
-  WorkerSqsArns:
-    Type: List<String>
-    Description: The ARNs of all the worker's queues
   AlarmTopic:
     Type: String
     Description: The ARN of the SNS topic to send all the cloudwatch alarms to
   RunbookCopy:
     Type: String
     Default: <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>
-  ShouldUseImport:
-    Type: String
-    Description: We might need to unhook the imported values so we can update them
-    AllowedValues:
-      - TRUE
-      - FALSE
-    Default: FALSE
 
 Conditions:
   IsProdStage: !Equals [!Ref Stage, PROD]
-  IsImportAvailable: !Equals [!Ref ShouldUseImport, TRUE]
 
 Resources:
   Dlq:
@@ -119,15 +108,12 @@ Resources:
       - PolicyName: SQSOutput
         PolicyDocument:
           Statement:
-            Effect: !If [ IsImportAvailable, Allow, Deny ]
+            Effect: Allow
             Action: sqs:*
-            Resource: !If
-              - IsImportAvailable
-              - !Split
-                - ","
-                - !ImportValue
-                    'Fn::Sub': 'NotificationSenderWorkerQueueArns-${Stage}'
-              - "*"
+            Resource: !Split
+              - ","
+              - !ImportValue
+                'Fn::Sub': 'NotificationSenderWorkerQueueArns-${Stage}'
       - PolicyName: VPC
         PolicyDocument:
           Statement:
