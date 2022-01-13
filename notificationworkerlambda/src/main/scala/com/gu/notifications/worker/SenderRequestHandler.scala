@@ -73,7 +73,6 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   }
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
-    logger.info(s"[PMR 11.03] cdk lambda: $env") // XXX DELETE ME
     val chunkedTokenStream: Stream[IO, ChunkedTokens] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
       .map(NotificationParser.parseChunkedTokenEvent)
