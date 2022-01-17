@@ -115,10 +115,15 @@ Resources:
           Statement:
             Effect: Allow
             Action: sqs:*
-            Resource: !Split
-              - ","
-              - !ImportValue
-                'Fn::Sub': 'NotificationSenderWorkerQueueArns-${Stage}'
+            Resource:
+              "Fn::Split":
+                - ","
+                - "Fn::Sub":
+                    - "${CfnParam},${ImportedValue}"
+                    - CfnParam: !Join [ ",", !Ref WorkerSqsArns ]
+                      ImportedValue:
+                        "Fn::ImportValue":
+                          "Fn::Sub": 'NotificationSenderWorkerQueueArns-${Stage}'
       - PolicyName: VPC
         PolicyDocument:
           Statement:
