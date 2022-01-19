@@ -161,7 +161,7 @@ class SenderWorker extends cdk.Construct {
 
     // this advertises the name of the sender queue to the harvester app
     new ssm.StringParameter(this, 'SenderQueueSSMParameter', {
-      parameterName: `/notifications/${scope.stage}/workers/harvester/${opts.paramPrefix}LiveSqsCdkUrl`,
+      parameterName: `/notifications/${scope.stage}/workers/harvester/${opts.paramPrefix}SqsCdkUrl`,
       simpleName: false,
       stringValue: this.senderSqs.queueUrl,
       tier: ssm.ParameterTier.STANDARD,
@@ -241,8 +241,8 @@ export class SenderWorkerStack extends GuStack {
      * platform or app by talking to a different lambda handler function
      */
 
-    addWorker("ios", "ios", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android", "android", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
+    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
     addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
     addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
     addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
