@@ -5,50 +5,17 @@ deployments:
   mobile-notifications-harvester-cfn:
     type: cloud-formation
     app: harvester
+    dependencies:
+      - mobile-notifications-workers-cfn
     parameters:
       templatePath: harvester-cfn.yaml
-  mobile-notifications-ios-worker-cfn:
+  mobile-notifications-workers-cfn:
     type: cloud-formation
-    app: ios-worker
+    app: n10n-workers
     parameters:
       prependStackToCloudFormationStackName: false
-      cloudFormationStackName: ios-worker-cfn
-      templatePath: sender-worker-cfn.yaml
-  mobile-notifications-android-worker-cfn:
-    type: cloud-formation
-    app: android-worker
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: android-worker-cfn
-      templatePath: sender-worker-cfn.yaml
-  mobile-notifications-ios-edition-worker-cfn:
-    type: cloud-formation
-    app: ios-edition-worker
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: ios-edition-worker-cfn
-      templatePath: sender-worker-cfn.yaml
-  mobile-notifications-android-edition-worker-cfn:
-    type: cloud-formation
-    app: android-edition-worker
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: android-edition-worker-cfn
-      templatePath: sender-worker-cfn.yaml
-  mobile-notifications-android-beta-worker-cfn:
-    type: cloud-formation
-    app: android-beta-worker
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: android-beta-worker-cfn
-      templatePath: sender-worker-cfn.yaml
-  mobile-notifications-registration-cleaning-worker-cfn:
-    type: cloud-formation
-    app: registration-cleaning-worker
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: registration-cleaning-worker-cfn
-      templatePath: registration-cleaning-worker-cfn.yaml
+      cloudFormationStackName: mobile-notifications-cdk-workers
+      templatePath: sender-workers.cfn.yaml
   mobile-notifications-topic-counter-cfn:
     type: cloud-formation
     app: topic-counter

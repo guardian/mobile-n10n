@@ -376,11 +376,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
     ),
     riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"mobile-notifications-harvester-cfn/harvester-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-ios-worker-cfn/sender-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-android-worker-cfn/sender-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-ios-edition-worker-cfn/sender-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-android-edition-worker-cfn/sender-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "sender-worker-cfn.yaml", s"mobile-notifications-android-beta-worker-cfn/sender-worker-cfn.yaml"),
+    // cdk synthesised cloudformation template
+    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack.template.json", "mobile-notifications-workers-cfn/sender-workers.cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"mobile-notifications-registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"mobile-notifications-topic-counter-cfn/topic-counter-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"mobile-notifications-expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml")
