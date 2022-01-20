@@ -68,18 +68,11 @@ object Configuration {
     val config = fetchConfiguration("harvester")
     HarvesterConfiguration(
       jdbcConfig = jdbcConfig(config),
-      // currently this will ignore the CDK stack. To change to CDK, we should
-      // comment the next 5 lines, and uncomment the 5 lines following them.
-      iosLiveSqsUrl = config.getString("iosLiveSqsUrl"),
-      iosEditionSqsUrl = config.getString("iosEditionSqsUrl"),
-      androidLiveSqsUrl = config.getString("androidLiveSqsUrl"),
-      androidEditionSqsUrl = config.getString("androidEditionSqsUrl"),
-      androidBetaSqsUrl = config.getString("androidBetaSqsUrl")
-      // iosLiveSqsUrl = config.getString("iosLiveSqsCdkUrl"),
-      // iosEditionSqsUrl = config.getString("iosEditionSqsUrl"),
-      // androidLiveSqsUrl = config.getString("androidLiveSqsCdkUrl"),
-      // androidEditionSqsUrl = config.getString("androidEditionSqsUrl"),
-      // androidBetaSqsUrl = config.getString("androidBetaSqsUrl")
+      iosLiveSqsUrl = config.getString("iosLiveSqsCdkUrl"),
+      iosEditionSqsUrl = config.getString("iosEditionSqsCdkUrl"),
+      androidLiveSqsUrl = config.getString("androidLiveSqsCdkUrl"),
+      androidEditionSqsUrl = config.getString("androidEditionSqsCdkUrl"),
+      androidBetaSqsUrl = config.getString("androidBetaSqsCdkUrl")
     )
   }
 
