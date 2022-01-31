@@ -23,6 +23,13 @@ deployments:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: topic-counter-cfn
       templatePath: topic-counter-cfn.yaml
+  mobile-notifications-registration-cleaning-worker-cfn:
+    type: cloud-formation
+    app: registration-cleaning-worker
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: registration-cleaning-worker-cfn
+      templatePath: registration-cleaning-worker-cfn.yaml
   mobile-notifications-expired-registration-cleaner-cfn:
     type: cloud-formation
     app: expired-registration-cleaner
