@@ -135,7 +135,7 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
-      Description: Consumes queue events and sends notifications
+      Description: Pick tokens that have been marked for deletion from an SQS queue, and deletes them from the database
       ImageConfig:
         Command: [!Ref FullyQualifiedHandler]
       MemorySize: 1024
