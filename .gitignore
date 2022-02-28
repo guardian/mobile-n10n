@@ -29,3 +29,5 @@ dynamodb-local-schedule-lambda/
 project/.bloop/
 project/metals.sbt
 .bsp/
+
+.vagrant
