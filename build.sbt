@@ -331,8 +331,31 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
     )
   })
 
+lazy val latestVersionOfLambdaSDK = {
+  import scala.jdk.CollectionConverters._
+  import com.github.dockerjava.core.DefaultDockerClientConfig
+  import com.github.dockerjava.httpclient5.ApacheDockerHttpClient
+  import com.github.dockerjava.core.DockerClientImpl
+
+  val imageName = "public.ecr.aws/lambda/java:latest"
+
+  val dockerCfg = DefaultDockerClientConfig.createDefaultConfigBuilder().build()
+  val dockerHttp = new ApacheDockerHttpClient.Builder()
+    .dockerHost(dockerCfg.getDockerHost())
+    .sslConfig(dockerCfg.getSSLConfig())
+    .build();
+  val docker = DockerClientImpl.getInstance(dockerCfg, dockerHttp)
+
+  docker.pullImageCmd(imageName).start().awaitCompletion()
+
+  val image = docker.inspectImageCmd(imageName).exec()
+
+  image.getRepoDigests().asScala.head
+}
+
 lazy val lambdaDockerCommands = dockerCommands := Seq(
-  Cmd    ( "FROM",   "public.ecr.aws/lambda/java:latest"),
+  Cmd    ( "FROM",   latestVersionOfLambdaSDK),
+  Cmd    ( "LABEL",  s"sdkBaseVersion=${latestVersionOfLambdaSDK}"),
   ExecCmd( "COPY",   "1/opt/docker/*", "${LAMBDA_TASK_ROOT}/lib/"),
   ExecCmd( "COPY",   "2/opt/docker/*", "${LAMBDA_TASK_ROOT}/lib/"),
   Cmd    ( "EXPOSE", "8080"), // this is the local lambda run time for testing
