@@ -11,6 +11,12 @@ on:
     paths:
       - "notificationworkerlambda/cdk/**"
 
+  push:
+    branches:
+      - master
+    paths:
+      - "notificationworkerlambda/cdk/**"
+
 jobs:
   cdk-test:
     runs-on: ubuntu-latest
