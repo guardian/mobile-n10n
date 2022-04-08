@@ -10,7 +10,7 @@
     "@aws-cdk/aws-ssm": "1.132.0",
     "@aws-cdk/core": "1.132.0",
     "@guardian/cdk": "^31.4.1",
-    "aws-cdk": "1.132.0",
+    "aws-cdk": "2.20.0",
     "typescript": "^4.6.3"
   },
   "scripts": {
