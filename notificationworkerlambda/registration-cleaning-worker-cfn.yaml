@@ -165,7 +165,7 @@ Resources:
       BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
-      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      FunctionName: !Sub ${Stack}-${App}-ctr-${Stage}
 
 Outputs:
   SQSArn:
