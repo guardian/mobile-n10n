@@ -8,14 +8,12 @@ on:
   pull_request:
     branches:
       - master
-    paths:
-      - "notificationworkerlambda/cdk/**"
 
   push:
     branches:
       - master
-    paths:
-      - "notificationworkerlambda/cdk/**"
+
+  workflow_dispatch:   
 
 jobs:
   cdk-test:
