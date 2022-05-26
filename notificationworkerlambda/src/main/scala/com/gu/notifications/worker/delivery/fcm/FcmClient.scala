@@ -1,21 +1,20 @@
 package com.gu.notifications.worker.delivery.fcm
 
+import _root_.models.Notification
+import com.google.api.core.ApiFuture
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, Message, MessagingErrorCode}
+import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken}
+import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
+import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
+import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
+import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
+import com.gu.notifications.worker.utils.UnwrappingExecutionException
+
 import java.io.ByteArrayInputStream
 import java.util.UUID
 import java.util.concurrent.Executor
-
-import com.google.api.core.ApiFuture
-import com.google.auth.oauth2.GoogleCredentials
-import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, Message}
-import com.google.firebase.{FirebaseApp, FirebaseOptions}
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken}
-import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
-import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
-import models.FcmConfig
-import _root_.models.{Android, Notification, Platform}
-import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
-import com.gu.notifications.worker.utils.UnwrappingExecutionException
-
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -28,9 +27,10 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
   val dryRun = config.dryRun
 
   private val invalidTokenErrorCodes = Set(
-    "invalid-registration-token",
-    "registration-token-not-registered",
-    "mismatched-credential"
+    MessagingErrorCode.INVALID_ARGUMENT,
+    MessagingErrorCode.UNREGISTERED,
+    MessagingErrorCode.SENDER_ID_MISMATCH,
+    ErrorCode.PERMISSION_DENIED
   )
 
   def close(): Unit = firebaseApp.delete()
@@ -61,7 +61,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
           case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
             onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
           case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
-            onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode))))
+            onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString))))
           case Failure(NonFatal(t)) =>
             onComplete(Left(FailedRequest(notificationId, token, t)))
         }
@@ -73,7 +73,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 object FcmClient {
   def apply(config: FcmConfig): Try[FcmClient] = {
     Try {
-      val firebaseOptions: FirebaseOptions = new FirebaseOptions.Builder()
+      val firebaseOptions: FirebaseOptions = FirebaseOptions.builder()
           .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(config.serviceAccountKey.getBytes)))
           .setHttpTransport(new OkGoogleHttpTransport)
           .setConnectTimeout(10000) // 10 seconds
