@@ -32,6 +32,7 @@ val jacksonDatabind: String = "2.13.3"
 val jacksonCbor: String = "2.13.3"
 val jacksonScalaModule: String = "2.13.3"
 val simpleConfigurationVersion: String = "1.5.6"
+val googleOAuthClient: String = "1.33.3"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -386,14 +387,15 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
-      "com.google.firebase" % "firebase-admin" % "6.16.0",
+      "com.google.firebase" % "firebase-admin" % "8.1.0",
       "io.netty" % "netty-codec" % "4.1.46.Final",
       "io.netty" % "netty-codec-http" % "4.1.44.Final",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
-      "com.typesafe.play" %% "play-json" % playJsonVersion
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
