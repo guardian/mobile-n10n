@@ -33,6 +33,7 @@ val jacksonCbor: String = "2.13.3"
 val jacksonScalaModule: String = "2.13.3"
 val simpleConfigurationVersion: String = "1.5.6"
 val googleOAuthClient: String = "1.33.3"
+val nettyVersion: String = "4.1.77.Final"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -284,7 +285,11 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
         "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
         "org.specs2" %% "specs2-core" % specsVersion % "test",
         "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
-        "org.specs2" %% "specs2-mock" % specsVersion % "test"
+        "org.specs2" %% "specs2-mock" % specsVersion % "test",
+        "io.netty" % "netty-common" % nettyVersion,
+        "io.netty" % "netty-codec" % nettyVersion,
+        "io.netty" % "netty-codec-http" % nettyVersion,
+        "io.netty" % "netty-codec-http2" % nettyVersion
       ),
       excludeDependencies ++= Seq(
         ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
@@ -309,7 +314,8 @@ lazy val football = lambda("football", "football")
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "com.google.code.findbugs" % "jsr305" % "3.0.2",
       "org.specs2" %% "specs2-core" % specsVersion % "test",
-      "org.specs2" %% "specs2-mock" % specsVersion % "test"
+      "org.specs2" %% "specs2-mock" % specsVersion % "test",
+      "io.netty" % "netty-codec-http2" % nettyVersion
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
@@ -326,7 +332,8 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
-        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1"
+        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
+        "io.netty" % "netty-codec-http2" % nettyVersion
       ),
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"mobile-notifications-eventconsumer-cfn/cfn.yaml")
     )
@@ -388,8 +395,10 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "8.1.0",
-      "io.netty" % "netty-codec" % "4.1.46.Final",
-      "io.netty" % "netty-codec-http" % "4.1.44.Final",
+      "io.netty" % "netty-codec" % nettyVersion,
+      "io.netty" % "netty-codec-http" % nettyVersion,
+      "io.netty" % "netty-codec-http2" % nettyVersion,
+      "io.netty" % "netty-handler" % nettyVersion,
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
