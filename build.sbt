@@ -258,7 +258,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.5.0",
       "org.slf4j" % "slf4j-api" % "1.7.30",
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.1",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.2",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       specs2 % Test
