@@ -11,7 +11,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.7.0")
 
 addSbtPlugin("com.gu" % "sbt-riffraff-artifact" % "1.1.8")
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.10")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.15.0")
 
 addSbtPlugin("com.localytics" % "sbt-dynamodb" % "2.0.3")
 
