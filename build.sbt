@@ -41,7 +41,7 @@ val standardSettings = Seq[Setting[_]](
     "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
   ),
   libraryDependencies ++= Seq(
-    "com.github.nscala-time" %% "nscala-time" % "2.24.0",
+    "com.github.nscala-time" %% "nscala-time" % "2.30.0",
     "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
