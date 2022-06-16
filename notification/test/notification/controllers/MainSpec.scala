@@ -16,7 +16,6 @@ import tracking.InMemoryNotificationReportRepository
 import scala.concurrent.Future
 import notification.authentication.NotificationAuthAction
 import play.api.test.Helpers.stubControllerComponents
-import cats.instances.future._
 import cats.syntax.either._
 import metrics.CloudWatchMetrics
 import org.joda.time.DateTime
