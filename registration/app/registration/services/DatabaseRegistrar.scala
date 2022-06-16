@@ -5,7 +5,6 @@ import db.RegistrationService
 import models._
 import registration.services.NotificationRegistrar.RegistrarResponse
 import fs2.Stream
-import cats.implicits._
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{MetricDataPoint, Metrics}
 
