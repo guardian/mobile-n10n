@@ -7,7 +7,6 @@ import play.api.test.{FakeRequest, PlaySpecification}
 import registration.services.topic.TopicValidator
 
 import scala.concurrent.Future
-import cats.implicits._
 import play.api.libs.ws.WSClient
 import play.api.mvc.AnyContentAsJson
 

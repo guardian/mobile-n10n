@@ -12,7 +12,6 @@ import tracking.SentNotificationReportRepository
 
 import scala.concurrent.ExecutionContext
 import cats.data.EitherT
-import cats.implicits._
 
 final class Report(
   configuration: Configuration,
