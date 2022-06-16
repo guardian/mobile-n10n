@@ -10,7 +10,7 @@ import models.{Platform, ShardRange, TopicCount}
 import play.api.Configuration
 import play.api.inject.ApplicationLifecycle
 
-import cats.implicits._
+import cats.syntax.all._
 import doobie.implicits._
 
 import scala.concurrent.ExecutionContext
