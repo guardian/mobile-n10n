@@ -4,7 +4,7 @@ import error.{MalformattedRegistration, NotificationsError, UnsupportedPlatform}
 import registration.models.LegacyTopic
 import models._
 import registration.models.LegacyRegistration
-import cats.implicits._
+import cats.syntax.all._
 
 class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistration] {
 

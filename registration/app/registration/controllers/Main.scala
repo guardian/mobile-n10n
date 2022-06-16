@@ -14,7 +14,6 @@ import registration.services._
 import registration.services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
-import cats.implicits._
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.http.HttpEntity
 import providers.ProviderError
