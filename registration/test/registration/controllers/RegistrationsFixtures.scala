@@ -3,7 +3,7 @@ package registration.controllers
 import application.WithPlayApp
 import doobie.implicits._
 import cats.effect.IO
-import cats.implicits._
+import cats.syntax.all._
 import com.gu.DevIdentity
 import db.{DatabaseConfig, JdbcConfig, RegistrationService}
 import doobie.util.transactor.Transactor
