@@ -23,8 +23,8 @@ ThisBuild / scalacOptions ++= compilerOptions
 val playJsonVersion = "2.8.1"
 val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.772"
-val doobieVersion: String = "0.9.2"
-val catsVersion: String = "2.1.1"
+val doobieVersion: String = "0.9.4"
+val catsVersion: String = "2.7.0"
 val okHttpVersion: String = "3.14.8"
 val paClientVersion: String = "7.0.5"
 val apacheThrift: String = "0.15.0"
@@ -33,7 +33,7 @@ val jacksonCbor: String = "2.13.3"
 val jacksonScalaModule: String = "2.13.3"
 val simpleConfigurationVersion: String = "1.5.6"
 val googleOAuthClient: String = "1.33.3"
-val nettyVersion: String = "4.1.77.Final"
+val nettyVersion: String = "4.1.78.Final"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -308,7 +308,7 @@ lazy val football = lambda("football", "football")
   .settings(
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-simple" % "1.7.25",
+      "org.slf4j" % "slf4j-simple" % "1.7.36",
       "com.typesafe" % "config" % "1.3.2",
       "org.scanamo" %% "scanamo" % "1.0.0-M12",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12" % "test",

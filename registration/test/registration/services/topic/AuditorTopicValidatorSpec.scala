@@ -12,7 +12,6 @@ import play.api.{Configuration => PlayConfig}
 
 import scala.concurrent.Future.successful
 import scala.concurrent.ExecutionContext
-import cats.implicits._
 import registration.auditor.{Auditor, AuditorApiConfig, AuditorGroup, AuditorGroupConfig}
 
 class AuditorTopicValidatorSpec(implicit ee: ExecutionEnv) extends Specification with Mockito with EitherMatchers {
