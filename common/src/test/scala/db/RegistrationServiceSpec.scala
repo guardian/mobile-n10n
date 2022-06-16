@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import org.specs2.mutable.Specification
 import doobie.implicits._
 import cats.effect.IO
-import cats.implicits._
+import cats.syntax.all._
 import doobie.util.transactor.Transactor
 import models.{Android, ShardRange, Ios}
 import org.specs2.specification.BeforeEach
