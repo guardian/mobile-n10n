@@ -22,8 +22,8 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "2.8.1"
 val specsVersion: String = "4.5.1"
-val awsSdkVersion: String = "1.11.1034"
-val doobieVersion: String = "0.9.4"
+val awsSdkVersion: String = "1.11.772"
+val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.7.0"
 val okHttpVersion: String = "3.14.8"
 val paClientVersion: String = "7.0.5"
@@ -257,7 +257,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
       "com.amazonaws" % "aws-lambda-java-log4j2" % "1.5.0",
-      "org.slf4j" % "slf4j-api" % "1.7.30",
+      "org.slf4j" % "slf4j-api" % "1.7.36",
       "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.1",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
