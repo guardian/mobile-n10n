@@ -70,7 +70,10 @@ final class Main(
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
       case _ =>
         val result = pushWithDuplicateProtection(notification)
-        result.foreach(_ => logger.info(s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}"))
+        result.foreach(_ => logger.info(
+          s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}",
+          Map("notificationId" -> notification.id, "notificationAppProcessingTime" -> (System.currentTimeMillis() - startTime))
+        ))
         result
     }) recoverWith {
       case NonFatal(exception) => {
