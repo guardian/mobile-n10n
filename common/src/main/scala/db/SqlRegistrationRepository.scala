@@ -3,6 +3,7 @@ package db
 import cats.effect.Async
 import cats.implicits._
 import doobie.implicits._
+import doobie.postgres.implicits._
 import doobie.util.transactor.Transactor
 import fs2.Stream
 import cats.data.NonEmptyList
@@ -13,7 +14,6 @@ import models.{Platform, TopicCount}
 import org.slf4j.{Logger, LoggerFactory}
 
 import Registration._
-import doobie.implicits.javatime.JavaTimeLocalDateTimeMeta
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
   extends RegistrationRepository[F, Stream] {
