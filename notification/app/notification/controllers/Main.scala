@@ -81,7 +81,7 @@ final class Main(
           customFieldMarkers(Map(
             "notificationId" -> notification.id,
             "processingTime" -> (System.currentTimeMillis() - startTime),
-            "notificationType" -> notification.`type`,
+            "notificationType" -> notification.`type`.toString,
             "notificationTitle" -> notification.title.getOrElse("Unknown"),
           )),
           s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}",
