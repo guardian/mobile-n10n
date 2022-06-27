@@ -1,7 +1,6 @@
 package notification.controllers
 
 import java.util.UUID
-
 import authentication.AuthAction
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
@@ -15,9 +14,12 @@ import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import tracking.Repository.RepositoryResult
 import tracking.SentNotificationReportRepository
+import net.logstash.logback.marker.LogstashMarker
+import net.logstash.logback.marker.Markers._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import scala.jdk.CollectionConverters.MapHasAsJava
 
 final class Main(
   configuration: Configuration,
@@ -58,6 +60,11 @@ final class Main(
     }
   }
 
+  def customFieldMarkers(fields: Map[String, Any]): LogstashMarker = {
+    val fieldsMap = fields.asJava
+    appendEntries(fieldsMap)
+  }
+
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
     val startTime = System.currentTimeMillis()
     val notification = request.body
@@ -71,8 +78,8 @@ final class Main(
       case _ =>
         val result = pushWithDuplicateProtection(notification)
         result.foreach(_ => logger.info(
+          customFieldMarkers(Map("notificationId" -> notification.id)),
           s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}",
-          Map("notificationId" -> notification.id, "notificationAppProcessingTime" -> (System.currentTimeMillis() - startTime))
         ))
         result
     }) recoverWith {
