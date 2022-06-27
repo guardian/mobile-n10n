@@ -78,7 +78,7 @@ final class Main(
       case _ =>
         val result = pushWithDuplicateProtection(notification)
         result.foreach(_ => logger.info(
-          customFieldMarkers(Map("notificationId" -> notification.id)),
+          customFieldMarkers(Map("notificationId" -> notification.id, "processingTime" -> (System.currentTimeMillis() - startTime))),
           s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}",
         ))
         result
