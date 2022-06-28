@@ -77,6 +77,7 @@ final class Main(
               ProcessingTimeField(System.currentTimeMillis() - startTime),
               NotificationTypeField(notification.`type`.toString),
               NotificationTitleField(notification.title.getOrElse("Unknown")),
+              NotificationStartTimeField(startTime)
         )))
         result
     }) recoverWith {

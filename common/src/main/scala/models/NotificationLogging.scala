@@ -16,6 +16,7 @@ case class NotificationIdField(value: UUID, name: String = "notificationId") ext
 case class NotificationTypeField(value: String, name: String = "notificationType") extends LoggingField
 case class NotificationTitleField(value: String, name: String = "notificationTitle") extends LoggingField
 case class ProcessingTimeField(value: Long, name: String = "processingTime") extends LoggingField
+case class NotificationStartTimeField(value: Long, name: String = "notificationStartTime") extends LoggingField
 
 trait NotificationLogging {
   private def customLogstashFields(fields: List[LoggingField]): LogstashMarker = {
