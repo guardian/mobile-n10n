@@ -73,10 +73,10 @@ final class Main(
         result.foreach(_ => logInfoWithCustomMarkers(
             s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}",
             List(
-              NotificationIdMarker(notification.id),
-              ProcessingTimeMarker(System.currentTimeMillis() - startTime),
-              NotificationTypeMarker(notification.`type`.toString),
-              NotificationTitleMarker(notification.title.getOrElse("Unknown")),
+              NotificationIdField(notification.id),
+              ProcessingTimeField(System.currentTimeMillis() - startTime),
+              NotificationTypeField(notification.`type`.toString),
+              NotificationTitleField(notification.title.getOrElse("Unknown")),
         )))
         result
     }) recoverWith {

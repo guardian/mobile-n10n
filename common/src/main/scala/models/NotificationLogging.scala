@@ -12,19 +12,19 @@ sealed trait LoggingField {
   val name: String
   val value: Any
 }
-case class NotificationIdMarker(value: UUID, name: String = "notificationId") extends LoggingField
-case class NotificationTypeMarker(value: String, name: String = "notificationType") extends LoggingField
-case class NotificationTitleMarker(value: String, name: String = "notificationTitle") extends LoggingField
-case class ProcessingTimeMarker(value: Long, name: String = "processingTime") extends LoggingField
+case class NotificationIdField(value: UUID, name: String = "notificationId") extends LoggingField
+case class NotificationTypeField(value: String, name: String = "notificationType") extends LoggingField
+case class NotificationTitleField(value: String, name: String = "notificationTitle") extends LoggingField
+case class ProcessingTimeField(value: Long, name: String = "processingTime") extends LoggingField
 
 trait NotificationLogging {
-  private def customLogstashMarkers(fields: List[LoggingField]): LogstashMarker = {
-    val customLogstashMarkers = fields.map(field => (field.name, field.value)).toMap.asJava
-    appendEntries(customLogstashMarkers)
+  private def customLogstashFields(fields: List[LoggingField]): LogstashMarker = {
+    val customFields = fields.map(field => (field.name, field.value)).toMap.asJava
+    appendEntries(customFields)
   }
 
   def logInfoWithCustomMarkers(message: String, fields: List[LoggingField])(implicit logger: Logger): Unit =
-    logger.info(customLogstashMarkers(fields), message)
+    logger.info(customLogstashFields(fields), message)
 }
 
 object NotificationLogging extends NotificationLogging
