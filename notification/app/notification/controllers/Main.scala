@@ -1,11 +1,11 @@
 package notification.controllers
 
 import java.util.UUID
-
 import authentication.AuthAction
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
 import models.{TopicTypes, _}
+import models.NotificationLogging._
 import notification.models.PushResult
 import notification.services
 import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender}
@@ -31,7 +31,7 @@ final class Main(
 )(implicit executionContext: ExecutionContext)
   extends AbstractController(controllerComponents) {
 
-  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  implicit private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   val weekendReadingTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-reading")
   val weekendRoundUpTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-round-up")
 
@@ -70,7 +70,15 @@ final class Main(
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
       case _ =>
         val result = pushWithDuplicateProtection(notification)
-        result.foreach(_ => logger.info(s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}"))
+        result.foreach(_ => logInfoWithCustomMarkers(
+            s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}",
+            List(
+              NotificationIdField(notification.id),
+              ProcessingTimeField(System.currentTimeMillis() - startTime),
+              NotificationTypeField(notification.`type`.toString),
+              NotificationTitleField(notification.title.getOrElse("Unknown")),
+              NotificationStartTimeField(startTime)
+        )))
         result
     }) recoverWith {
       case NonFatal(exception) => {
