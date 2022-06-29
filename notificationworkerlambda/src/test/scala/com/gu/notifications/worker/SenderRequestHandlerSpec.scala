@@ -7,6 +7,7 @@ import _root_.models.Link._
 import _root_.models.TopicTypes._
 import _root_.models._
 import cats.effect.IO
+import com.amazonaws.services.lambda.runtime.{Client, ClientContext, CognitoIdentity, Context, LambdaLogger}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.cleaning.CleaningClient
@@ -23,13 +24,52 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.libs.json.Json
 
+import java.util
 import scala.jdk.CollectionConverters._
 
 class SenderRequestHandlerSpec extends Specification with Matchers {
 
+  object fakeCognitoIdentity extends CognitoIdentity {
+    def getIdentityId: String = "identity id"
+    def getIdentityPoolId: String = "identity pool id"
+  }
+
+  object fakeLambdaLogger extends LambdaLogger {
+    def log(message: String): Unit = println(message)
+    def log(message: Array[Byte]): Unit = println(s"$message")
+  }
+
+  object fakeClient extends Client {
+    def getInstallationId: String = "installationId"
+    def getAppTitle: String = "app title"
+    def getAppVersionName: String = "app version name"
+    def getAppVersionCode: String = "app version code"
+    def getAppPackageName: String = "app package name"
+  }
+
+  object fakeClientContext extends ClientContext {
+    def getClient: Client = fakeClient
+    def getCustom: java.util.Map[String, String] = Map("thing" -> "thing").asJava
+    def getEnvironment: java.util.Map[String, String] = Map("thing" -> "thing").asJava
+  }
+
+  object fakeContext extends Context {
+    def getAwsRequestId = "1234"
+    def getLogGroupName: String = "logGroupName"
+    def getLogStreamName: String = "logStreamName"
+    def getFunctionName: String = "functionName"
+    def getFunctionVersion: String = "functionVersion"
+    def getInvokedFunctionArn: String = "functionArn"
+    def getIdentity: CognitoIdentity = fakeCognitoIdentity
+    def getClientContext: ClientContext = fakeClientContext
+    def getRemainingTimeInMillis: Int = 1
+    def getMemoryLimitInMB: Int = 10
+    def getLogger: LambdaLogger = fakeLambdaLogger
+  }
+
   "the SenderRequestHandler" should {
     "Send one notification" in new WRHSScope {
-      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
+      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, fakeContext)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -44,7 +84,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
         )
 
-      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
+      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, fakeContext)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -59,7 +99,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           Right(ApnsDeliverySuccess("token", dryRun = true))
         )
 
-      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
+      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, fakeContext)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
