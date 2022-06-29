@@ -19,7 +19,7 @@ case class ProcessingTimeField(value: Long, name: String = "processingTime") ext
 case class NotificationStartTimeField(value: Long, name: String = "notificationStartTime") extends LoggingField
 
 trait NotificationLogging {
-  private def customLogstashFields(fields: List[LoggingField]): LogstashMarker = {
+  def customLogstashFields(fields: List[LoggingField]): LogstashMarker = {
     val customFields = fields.map(field => (field.name, field.value)).toMap.asJava
     appendEntries(customFields)
   }
