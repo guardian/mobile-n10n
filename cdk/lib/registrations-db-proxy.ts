@@ -1,8 +1,7 @@
-import { join } from 'path';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { AppIdentity, GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuVpc, SubnetType } from "@guardian/cdk/lib/constructs/ec2";
-import { App, CfnOutput, SecretValue } from 'aws-cdk-lib';
+import { App, Arn, ArnFormat, CfnOutput, Names, SecretValue } from 'aws-cdk-lib';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { DatabaseInstance, DatabaseInstanceEngine, DatabaseProxy, DatabaseSecret, ProxyTarget } from 'aws-cdk-lib/aws-rds';
@@ -83,10 +82,14 @@ export class RegistrationsDbProxy extends GuStack {
 			},
 		});
 
-		new CfnOutput(this, 'RegistrationsDbProxyArn', { 
-			value: proxy.dbProxyArn,
-			description: "RDS proxy to registrations database",
-			exportName: `RegistrationsDbProxyArn-${props.stage}`,
-		});
+		const proxyResourceId = Arn.split(proxy.dbProxyArn, ArnFormat.COLON_RESOURCE_NAME).resourceName;
+		if (proxyResourceId != undefined) {
+			const grantId = `arn:aws:rds-db:${this.region}:${this.account}:dbuser:${proxyResourceId}/*`;
+			new CfnOutput(this, 'RegistrationsDbProxyId', { 
+				value: grantId,
+				description: "ID of RDS proxy to registrations database",
+				exportName: `RegistrationsDbProxyId-${props.stage}`,
+			});
+		}
 	}
 }

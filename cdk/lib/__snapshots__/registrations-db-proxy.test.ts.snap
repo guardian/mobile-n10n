@@ -3,15 +3,42 @@
 exports[`The RegistrationDbProxy stack matches the snapshot on CODE 1`] = `
 Object {
   "Outputs": Object {
-    "RegistrationsDbProxyArn": Object {
-      "Description": "RDS proxy to registrations database",
+    "RegistrationsDbProxyId": Object {
+      "Description": "ID of RDS proxy to registrations database",
       "Export": Object {
-        "Name": "RegistrationsDbProxyArn-CODE",
+        "Name": "RegistrationsDbProxyId-CODE",
       },
       "Value": Object {
-        "Fn::GetAtt": Array [
-          "RegistrationsDbProxyBAD96AA8",
-          "DBProxyArn",
+        "Fn::Join": Array [
+          "",
+          Array [
+            "arn:aws:rds-db:",
+            Object {
+              "Ref": "AWS::Region",
+            },
+            ":",
+            Object {
+              "Ref": "AWS::AccountId",
+            },
+            ":dbuser:",
+            Object {
+              "Fn::Select": Array [
+                6,
+                Object {
+                  "Fn::Split": Array [
+                    ":",
+                    Object {
+                      "Fn::GetAtt": Array [
+                        "RegistrationsDbProxyBAD96AA8",
+                        "DBProxyArn",
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            "/*",
+          ],
         ],
       },
     },
@@ -231,15 +258,42 @@ Object {
 exports[`The RegistrationDbProxy stack matches the snapshot on PROD 1`] = `
 Object {
   "Outputs": Object {
-    "RegistrationsDbProxyArn": Object {
-      "Description": "RDS proxy to registrations database",
+    "RegistrationsDbProxyId": Object {
+      "Description": "ID of RDS proxy to registrations database",
       "Export": Object {
-        "Name": "RegistrationsDbProxyArn-PROD",
+        "Name": "RegistrationsDbProxyId-PROD",
       },
       "Value": Object {
-        "Fn::GetAtt": Array [
-          "RegistrationsDbProxyBAD96AA8",
-          "DBProxyArn",
+        "Fn::Join": Array [
+          "",
+          Array [
+            "arn:aws:rds-db:",
+            Object {
+              "Ref": "AWS::Region",
+            },
+            ":",
+            Object {
+              "Ref": "AWS::AccountId",
+            },
+            ":dbuser:",
+            Object {
+              "Fn::Select": Array [
+                6,
+                Object {
+                  "Fn::Split": Array [
+                    ":",
+                    Object {
+                      "Fn::GetAtt": Array [
+                        "RegistrationsDbProxyBAD96AA8",
+                        "DBProxyArn",
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            "/*",
+          ],
         ],
       },
     },
