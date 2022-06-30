@@ -2,6 +2,7 @@ package models
 
 import net.logstash.logback.marker.LogstashMarker
 import net.logstash.logback.marker.Markers.appendEntries
+import play.api.libs.json._
 import org.slf4j.Logger
 
 import java.util.UUID
@@ -26,6 +27,12 @@ trait NotificationLogging {
 
   def logInfoWithCustomMarkers(message: String, fields: List[LoggingField])(implicit logger: Logger): Unit =
     logger.info(customLogstashFields(fields), message)
+
+  def customLogsAsJsString(message: String, fields: List[LoggingField]): String = {
+    val jsLoggingFields: List[JsObject] = fields.map(field => Json.obj(s"${field.name}" -> field.value.toString))
+    val jsMessage: JsObject = Json.obj("message" -> JsString(message))
+    jsLoggingFields.fold(jsMessage)((obj, field) => obj++field).toString
+  }
 }
 
 object NotificationLogging extends NotificationLogging
