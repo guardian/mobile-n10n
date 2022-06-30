@@ -39,7 +39,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     val customFields = List(NotificationIdField(notificationId), NotificationTypeField(context.getAwsRequestId()))
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
       .evalTap(logInfoWithCustomFields(prefix = s"Results $notificationLog: ", customFields))
-      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform, notificationId))
+      .through(cloudwatch.sendMetricsWithNotifId(env.stage, Configuration.platform, notificationId))
   }
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>

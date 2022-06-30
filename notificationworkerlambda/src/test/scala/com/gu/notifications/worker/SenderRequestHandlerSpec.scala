@@ -180,6 +180,14 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           }
         }
 
+        override def sendMetricsWithNotifId(stage: String, platform: Option[Platform], notifId: UUID): Pipe[IO, SendingResults, Unit] = { stream =>
+          cloudwatchCallsCount += 1
+          stream.map { results =>
+            sendingResults = Some(results)
+            ()
+          }
+        }
+
         override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = throw new RuntimeException()
       }
     }
