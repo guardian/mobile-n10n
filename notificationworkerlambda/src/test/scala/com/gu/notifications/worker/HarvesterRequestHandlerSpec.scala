@@ -128,7 +128,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
         override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
-        override def sendMetricsWithNotifId(stage: String, platform: Option[Platform], notifId: UUID): Pipe[IO, SendingResults, Unit] = ???
+
         override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = {
           cloudwatchFailures.incrementAndGet()
           _.map(_ => ())
