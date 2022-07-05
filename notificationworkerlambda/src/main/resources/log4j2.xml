@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
+<Configuration>
     <Appenders>
         <Lambda name="Lambda">
-            <PatternLayout>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%t] %X{AWSRequestId} %-5p %c{1}:%L - %m%n</pattern>
-            </PatternLayout>
-            <JsonLayout>
-                <KeyValuePair key="lambdaRequestId" value="%X{AWSRequestId}" />
-            </JsonLayout>
+            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json"/>
         </Lambda>
     </Appenders>
     <Loggers>
