@@ -262,7 +262,6 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.1",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "net.logstash.log4j" % "jsonevent-layout" % "1.7",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
