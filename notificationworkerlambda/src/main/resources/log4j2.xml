@@ -5,10 +5,10 @@
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss} [%t] %X{AWSRequestId} %-5p %c{1}:%L - %m%n</pattern>
             </PatternLayout>
+            <JsonLayout>
+                <KeyValuePair key="lambdaRequestId" value="%X{AWSRequestId}" />
+            </JsonLayout>
         </Lambda>
-        <Encoder class="com.gu.mobile.logback.MobileLogstashEncoder">
-            <DefaultAppName>notificationworkerlambda</DefaultAppName>
-        </Encoder>
     </Appenders>
     <Loggers>
         <Logger name="com.turo.pushy.apns.ApnsClientHandler" level="TRACE">
