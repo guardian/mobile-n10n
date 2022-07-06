@@ -15,6 +15,7 @@ trait Logging {
     a => IO.delay({
       LoggingUtils.appendKey("notificationId", notificationId)
       LoggingUtils.appendKey("processingTime", s"${System.currentTimeMillis() - startTime}")
+      LoggingUtils.appendKey("notificationEndTime", s"${System.currentTimeMillis()}")
       logging(s"$prefix: ${a.toString}")
     })
   def logInfo[A](prefix: String = ""): A => IO[Unit] = log(prefix, logger.info)
