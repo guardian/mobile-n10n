@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration>
+<Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
     <Appenders>
         <Lambda name="Lambda">
-            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json"/>
+            <Layout class="net.logstash.log4j.JSONEventLayoutV1" />
         </Lambda>
     </Appenders>
     <Loggers>
