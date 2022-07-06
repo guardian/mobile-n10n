@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
+<Configuration>
     <Appenders>
-        <Lambda name="Lambda">
-            <Layout class="net.logstash.log4j.JSONEventLayoutV1" />
-        </Lambda>
+        <Console name="JsonAppender" target="SYSTEM_OUT">
+            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
+        </Console>
     </Appenders>
     <Loggers>
-        <Logger name="com.turo.pushy.apns.ApnsClientHandler" level="TRACE">
-            <RegexFilter regex=".*Failed to write push notification on stream.*" onMatch="ACCEPT" onMismatch="DENY"/>
+        <Logger name="JsonLogger" level="INFO" additivity="false">
+            <AppenderRef ref="JsonAppender"/>
         </Logger>
-        <Root level="INFO">
-            <AppenderRef ref="Lambda"/>
+        <Root level="info">
+            <AppenderRef ref="JsonAppender"/>
         </Root>
     </Loggers>
 </Configuration>

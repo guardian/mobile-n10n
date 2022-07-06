@@ -263,6 +263,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "net.logstash.log4j" % "jsonevent-layout" % "1.7",
+      "software.amazon.lambda" % "powertools-logging" % "1.12.2",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
