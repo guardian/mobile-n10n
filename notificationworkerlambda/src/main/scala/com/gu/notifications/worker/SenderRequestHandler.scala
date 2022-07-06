@@ -36,11 +36,15 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, context: Context): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${notificationId} ${range})"
-    val customFields = List(NotificationIdField(notificationId), NotificationTypeField(context.getAwsRequestId()))
+//    val customFields = List(NotificationIdField(notificationId), NotificationTypeField(context.getAwsRequestId()))
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
-      .evalTap(logInfoWithCustomFields(prefix = s"Results $notificationLog: ", customFields))
+      .evalTap(logInfoWithCustomFields(prefix = s"Results $notificationLog: ", notificationId.toString))
       .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
   }
+
+  // does notificationid persist across invocations
+  // how to return map of keys for custom fields
+  // where best to use loggingutils
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     input.chunkN(100).evalMap(chunk => IO.delay(logger.info(s"Processed ${chunk.size} individual notification")))
