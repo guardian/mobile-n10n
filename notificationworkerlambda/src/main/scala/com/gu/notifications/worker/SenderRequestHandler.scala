@@ -34,11 +34,11 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, context: Context): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+  def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, context: Context, startTime: Long): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${notificationId} ${range})"
 //    val customFields = List(NotificationIdField(notificationId), NotificationTypeField(context.getAwsRequestId()))
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
-      .evalTap(logInfoWithCustomFields(prefix = s"Results $notificationLog: ", notificationId.toString))
+      .evalTap(logInfoWithCustomFields(prefix = s"Results $notificationLog: ", notificationId.toString, startTime))
       .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
   }
 
@@ -68,12 +68,12 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .evalTap(Reporting.log(s"Sending failure: "))
   } yield resp
 
-  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, ChunkedTokens], context: Context): Stream[IO, Unit] = {
+  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, ChunkedTokens], context: Context, startTime: Long): Stream[IO, Unit] = {
     for {
       chunkedTokens <- chunkedTokenStream
       individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
       resp <- deliverIndividualNotificationStream(individualNotifications)
-        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range, context), cleanupFailures, trackProgress(chunkedTokens.notification.id))
+        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range, context, startTime), cleanupFailures, trackProgress(chunkedTokens.notification.id))
     } yield resp
   }
 
@@ -83,7 +83,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .map(r => r.getBody)
       .map(NotificationParser.parseChunkedTokenEvent)
 
-    deliverChunkedTokens(chunkedTokenStream, context)
+    deliverChunkedTokens(chunkedTokenStream, context, startTime)
       .compile
       .drain
       .unsafeRunSync()
