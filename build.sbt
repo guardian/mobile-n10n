@@ -314,7 +314,7 @@ lazy val football = lambda("football", "football")
       "com.typesafe" % "config" % "1.3.2",
       "org.scanamo" %% "scanamo" % "1.0.0-M12",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12" % "test",
-      "com.gu" %% "content-api-client-default" % "15.9",
+      "com.gu" %% "content-api-client-default" % "19.0.3",
       "org.apache.thrift" % "libthrift" % apacheThrift,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
