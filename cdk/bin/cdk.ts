@@ -9,9 +9,9 @@ export const dbProxyCodeProps = {
 	stage: 'CODE',
 	appName: 'registrations-db-proxy',
 	dbHost:
-		'notifications-registrations-db-private-code.crwidilr2ofx.eu-west-1.rds.amazonaws.com',
+		'notifications-registrations-db-private-testrig.crwidilr2ofx.eu-west-1.rds.amazonaws.com',
 	dbName: 'registrationsCODE',
-	dbInstanceId: 'notifications-registrations-db-private-code',
+	dbInstanceId: 'notifications-registrations-db-private-testrig',
 	dbSecurityGroupId: 'sg-0a228b61bbf4a0e6a',
 };
 export const dbProxyProdProps = {
