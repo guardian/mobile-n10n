@@ -21,8 +21,8 @@ Current ideas and initiatives for the fine-tuning phase:
 - [Increasing shard size](../architecture/01-shard-size.md)
 - [RDS proxy](./01-rds-proxy.md)
 - Aurora and postgres 14
-- Lambda scaling
-- Lambda CPU/memory
+- Query performance improvements 
+- Handling DB connection errors more gracefully
 
 ## Productive improvements
 

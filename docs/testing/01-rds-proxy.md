@@ -4,12 +4,16 @@ This document defines the test results for the RDS proxy in the CODE environment
 
 ## Summary
 
-The RDS proxy does not significantly degrade performance of the harvester worker. It could be considered as a good mechanism for allowing us to switch out what DB is used in production (minimising downtime).
+The RDS proxy introduces a slight degradation in performance of the harvester workers. It could be considered as a good mechanism for allowing us to switch out what DB is used in production (minimising downtime). The main benefit would be other performance factors:
+- Protecting the DB when managing many connection requests
+- Speeding up failover time
 
 | |Average total duration of harvester (ms)|No. harvester invocations|Harvester DB connection errors|
 |:----|:----|:----|:----|
 |Without RDS proxy|141.5|104|22.6|
 |With RDS proxy|149.5|114|32.2|
+
+For now we agreed not to push this change into production.
 
 ## Background
 
