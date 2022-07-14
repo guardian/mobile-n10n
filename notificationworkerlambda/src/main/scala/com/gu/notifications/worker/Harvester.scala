@@ -112,8 +112,13 @@ trait HarvesterRequestHandler extends Logging {
 
   def handleHarvesting(event: SQSEvent, context: Context): Unit = {
     // open connection
+
+    val lambdaLogger = context.getLogger
+
     val (transactor, datasource): (Transactor[IO], HikariDataSource) = DatabaseConfig.transactorAndDataSource[IO](jdbcConfig)
     logger.info("SQL connection open")
+    lambdaLogger.log("SQL connection open - lambda logger")
+    lambdaLogger.log("""{"notificationId":"1234-adsgf-5678"}""")
 
     // create services that rely on the connection
     val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
