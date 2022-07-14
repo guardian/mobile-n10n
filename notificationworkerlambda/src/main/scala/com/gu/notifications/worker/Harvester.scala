@@ -116,9 +116,7 @@ trait HarvesterRequestHandler extends Logging {
     val lambdaLogger = context.getLogger
 
     val (transactor, datasource): (Transactor[IO], HikariDataSource) = DatabaseConfig.transactorAndDataSource[IO](jdbcConfig)
-    logger.info("SQL connection open")
-    lambdaLogger.log("SQL connection open - lambda logger")
-    lambdaLogger.log("""{"notificationId":"1234-adsgf-5678"}""")
+    NotificationLogging.logInfoWithCustomMarkers("SQL connection open", List(NotificationTypeField("test")))
 
     // create services that rely on the connection
     val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
