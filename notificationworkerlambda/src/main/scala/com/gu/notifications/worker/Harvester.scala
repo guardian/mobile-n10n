@@ -79,7 +79,7 @@ trait HarvesterRequestHandler extends Logging {
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
     for {
       shardedNotification <- shardedNotifications
-      _ = NotificationLogging.logInfoWithCustomMarkers("Processing notification", List(NotificationIdField(shardedNotification.notification.id), ProcessingTimeField(1234)))
+      _ = NotificationLogging.logInfoWithCustomMarkers("Processing notification", List(NotificationIdField(shardedNotification.notification.id)))
       androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, androidLiveDeliveryService)
       androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, androidBetaDeliveryService)
       androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, androidEditionDeliveryService)
