@@ -78,7 +78,7 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
-    val start = new Instant
+    val start = Instant.now
     for {
       shardedNotification <- shardedNotifications
       notificationId = shardedNotification.notification.id
@@ -94,7 +94,7 @@ trait HarvesterRequestHandler extends Logging {
         .collect(routeToSqs)
         .broadcastTo(androidSink, androidBetaSink, androidEditionSink, iosSink, iosEditionSink)
     } yield {
-      val end = new Instant
+      val end = Instant.now
       logger.info(Map(
         "notificationId" -> notificationId,
         "harvester.processingTime" -> Duration.between(start, end).toMillis,
