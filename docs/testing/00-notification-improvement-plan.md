@@ -18,8 +18,8 @@ The fine-tuning phase will involve a test and evaluation cycle in CODE for each 
 
 Current ideas and initiatives for the fine-tuning phase:
 
-- [Increasing shard size](../architecture/01-shard-size.md)
-- [RDS proxy](./01-rds-proxy.md)
+- [Increasing shard size](./01-shard-size.md)
+- [RDS proxy](./02-rds-proxy.md)
 - Aurora and postgres 14
 - Query performance improvements 
 - Handling DB connection errors more gracefully

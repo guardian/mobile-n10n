@@ -4,16 +4,18 @@ This document defines the test results for the RDS proxy in the CODE environment
 
 ## Summary
 
-The RDS proxy introduces a slight degradation in performance of the harvester workers. It could be considered as a good mechanism for allowing us to switch out what DB is used in production (minimising downtime). The main benefit would be other performance factors:
+The RDS proxy introduces a slight improvement in performance of the harvester workers, notably by reducing the number of "marked as broken" connection errors meaning fewer SQS messages are replayed.
+
+| |Aggregated duration of harvester (ms)|No. harvester invocations|Harvester DB connection errors|
+|:----|:----|:----|:----|
+|Without RDS Proxy|123.4|168|20.6|
+|With RDS Proxy|102.8|168.2|15.6|
+
+As well as improving performance the RDS proxy has other benefits:
 - Protecting the DB when managing many connection requests
 - Speeding up failover time
 
-| |Average total duration of harvester (ms)|No. harvester invocations|Harvester DB connection errors|
-|:----|:----|:----|:----|
-|Without RDS proxy|141.5|104|22.6|
-|With RDS proxy|149.5|114|32.2|
-
-For now we agreed not to push this change into production.
+We agreed to push this change into production.
 
 ## Background
 
@@ -77,9 +79,9 @@ We can query the testRig db to check the number of subscribers to the `breaking/
 SELECT COUNT(topic), topic FROM registrations.registrations;
 ```
 
-Topic `breaking/uk` had 1,619,036 subscribers. At the time of testing the worker batch size was 20,000 meaning:
-- Shard size ~810
-- Expected number of SQS messages to be processed by the worker lambdas ~81
+Topic `breaking/uk` had 1,619,036 subscribers. At the time of testing the worker batch size was 10,000 meaning:
+- Shard size ~410
+- Expected number of SQS messages to be processed by the worker lambdas ~162
 
 ## Full Test Results
 
@@ -89,65 +91,63 @@ For each test run only the harvester app was analysed as this is where we notice
 
 DB url:	`jdbc:postgresql://notifications-registrations-db-private-testrig.crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsCODE?currentSchema=registrations`				
 
-|#|Total harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|
-|:----|:----|:----|:----|:----|:----|
-|1|130|100|100|49|19|
-|2|195|126|126|60|45|
-|3|180|119|119|58|38|
-|4|140|104|104|81|23|
-|5|112|91|91|60|10|
-|6|122|85|85|80|4|
-|7|151|113|113|70|32|
-|8|150|103|103|81|22|
-|9|130|101|101|81|20|
-|10|105|94|94|81|13|
-|AVG|141.5|103.6|103.6|70.1|22.6|
+When sending only 1 breaking news notification:
+
+|#|Aggregated harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
+|:----|:----|:----|:----|:----|:----|:----|
+|1|101|162|162|116|0|0|
+|2|88|162|162|110|0|0|
+|3|171|194|187|81|52|260|
+|4|147|213|213|162|51|255|
+|5|110|113|115|82|0|0|
+|AVG|123.4|168.8|167.8|110.2|20.6|103|
+
+When sending 3 breaking news notifications at the same time:
+
+|#|Aggregated harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
+|:----|:----|:----|:----|:----|:----|:----|
+|1|458|655|655|486|169|845|
+|2|438|650|650|486|164|820|
+|AVG|448|652.5|652.5|486|166.5|832.5|
 
 ### With RDS Proxy
 
 DB url: `jdbc:postgresql://registrations-db-proxy-cdk-code.proxy-crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsCODE?currentSchema=registrations`
 
-|#|Total harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|
-|:----|:----|:----|:----|:----|:----|
-|1|150|121|121| | |
-|2|155|113|113|82| |
-|3|141|129|129|82| |
-|4|127|96|96|82| |
-|5|135|93|92|66|16|
-|6|207|129|129|81|48|
-|7|165|118|118|81|37|
-|8|125|108|108|59|27|
-|9|150|115|115|81|34|
-|10|140|118|70|55|31|
-|AVG|149.5|114|109.1|74.3|32.17|
+|#|Aggregated harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
+|:----|:----|:----|:----|:----|:----|:----|
+|1|118|162|162|162|0|0|
+|2|68|162|162|110|0|0|
+|3|141|193|193|85|78|390|
+|4|103|162|162|162|0|0|
+|5|84|162|162|119|0|0|
+|AVG|102.8|168.2|168.2|127.6|15.6|78|
 
-^ some missing data points as these tests were run first and we were still working out what data would be useful for analysis/comparison.
+When sending 3 breaking news notifications at the same time:
+
+|#|Total harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
+|:----|:----|:----|:----|:----|:----|:----|
+|1|445|647|647|486|161|805|
+|2|391|609|609|486|123|615|
+|AVG|418|628|628|486|142|710|
 
 ### Analysis
 
 #### Harvester duration
 
-There's a slight increase in the total average duration of the harvester. The total duration was taken between when the first lambda logged `START RequestId: xyz` and the last lambda logged `END RequestId: zyx`.
+With the RDS proxy there is a descrease in the aggregated harvester duration. The total duration was taken between when the first lambda logged `START RequestId: xyz` and the last lambda logged `END RequestId: zyx`.
 
-The increase in total average duration is likely a side effect of the total number of lambdas executed.
+The decrease in aggregated duration is likely a side effect of the total number of lambdas executed.
 
 #### Number of harvester lambda invocations and connections "marked as broken"
 
-The minimum number of harvester lambda invocations we would expect to see should be the shard range divided by the shard size. In our tests the shard space is from -32,768 to 32,767 and the shard size is 810. This means the notification app should put 81 SQS messages on the queue (where each SQS message corresponds to a given shard range).
+The minimum number of harvester lambda invocations we would expect to see should be the shard range divided by the shard size. In our tests the shard space is from -32,768 to 32,767 and the shard size is 410. This means the notification app should put 162 SQS messages on the queue (where each SQS message corresponds to a given shard range).
 
-We can see that the number of lambda invocations is never this minimum number. The likely cause is because of errors, meaning the SQS message processing is not successful and is (after a given timeout) visible on the queue for another lambda to process.
-
-There is a strong correlation between the number of lambda invocations and the total duration. We can also see that, in general:
-
-`Number of lambda invocations ~= (minimum expected invocations) + (number of invocations ending with a "marked as broken" error)`
+We can see that the number of lambda invocations is closer to this minimum number when using the RDS proxy. Without the proxy we see high DB connection errors meaning the SQS message processing is not successful and is (after a given timeout) visible on the queue for another lambda to process.
 
 #### Number of DB connections opened
 
 It's not surprising that the number of DB connections opened (should) be the same as the number of lambdas invoked - this is almost always the case as every lambda invoked needs a connection to the database.
-
-#### Number of DB connections closed
-
-We'd (expect?) the number of DB connections closed to equal the number of lambdas invoked. However, testing showed a number of connections ended due to an error, in these cases the connection was not terminated gracefully. Taking into account errors, we can see that connections closed did not always equal the number of expected invocations (81).
 
 ### Conclusions
 
