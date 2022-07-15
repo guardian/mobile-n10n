@@ -79,6 +79,7 @@ trait HarvesterRequestHandler extends Logging {
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
     for {
       shardedNotification <- shardedNotifications
+      _ = NotificationLogging.logInfoWithCustomMarkers("Processing notification", List(NotificationIdField(shardedNotification.notification.id)))
       androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, androidLiveDeliveryService)
       androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, androidBetaDeliveryService)
       androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, androidEditionDeliveryService)
@@ -112,11 +113,8 @@ trait HarvesterRequestHandler extends Logging {
 
   def handleHarvesting(event: SQSEvent, context: Context): Unit = {
     // open connection
-
-    val lambdaLogger = context.getLogger
-
     val (transactor, datasource): (Transactor[IO], HikariDataSource) = DatabaseConfig.transactorAndDataSource[IO](jdbcConfig)
-    NotificationLogging.logInfoWithCustomMarkers("SQL connection open", List(NotificationTypeField("test")))
+    logger.info("SQL connection open")
 
     // create services that rely on the connection
     val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
