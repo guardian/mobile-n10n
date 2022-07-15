@@ -93,14 +93,11 @@ trait HarvesterRequestHandler extends Logging {
       resp <- tokens
         .collect(routeToSqs)
         .broadcastTo(androidSink, androidBetaSink, androidEditionSink, iosSink, iosEditionSink)
-    } yield {
-      val end = Instant.now
-      logger.info(Map(
+      _ = logger.info(Map(
         "notificationId" -> notificationId,
-        "harvester.processingTime" -> Duration.between(start, end).toMillis,
+        "harvester.processingTime" -> Duration.between(start, Instant.now).toMillis
       ), s"Finished processing notificationId $notificationId")
-      resp
-    }
+    } yield resp
   }
 
   def processNotification(event: SQSEvent, tokenService: TokenService[IO]) = {
