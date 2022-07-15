@@ -12,6 +12,7 @@ import doobie.util.transactor.Transactor
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.time.{Duration, Instant}
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.jdk.CollectionConverters._
 
@@ -77,21 +78,29 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
+    val start = new Instant
     for {
       shardedNotification <- shardedNotifications
-      _ = NotificationLogging.logInfoWithCustomMarkers("Processing notification", List(NotificationIdField(shardedNotification.notification.id)))
+      notificationId = shardedNotification.notification.id
       androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, androidLiveDeliveryService)
       androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, androidBetaDeliveryService)
       androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, androidEditionDeliveryService)
       iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, iosLiveDeliveryService)
       iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, iosEditionDeliveryService)
-      notificationLog = s"(notification: ${shardedNotification.notification.id} ${shardedNotification.range})"
-      _ = logger.info(s"Queuing notification $notificationLog...")
+      notificationLog = s"(notification: $notificationId ${shardedNotification.range})"
+      _ = logger.info(Map("notificationId" -> notificationId), s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
       resp <- tokens
         .collect(routeToSqs)
         .broadcastTo(androidSink, androidBetaSink, androidEditionSink, iosSink, iosEditionSink)
-    } yield resp
+    } yield {
+      val end = new Instant
+      logger.info(Map(
+        "notificationId" -> notificationId,
+        "harvester.processingTime" -> Duration.between(start, end).toMillis,
+      ), s"Finished processing notificationId $notificationId")
+      resp
+    }
   }
 
   def processNotification(event: SQSEvent, tokenService: TokenService[IO]) = {
