@@ -6,6 +6,7 @@ deployments:
     type: cloud-formation
     app: harvester
     dependencies:
+      - registrations-db-proxy-cfn
       - mobile-notifications-workers-cfn
     parameters:
       templatePath: harvester-cfn.yaml
@@ -19,6 +20,8 @@ deployments:
   mobile-notifications-topic-counter-cfn:
     type: cloud-formation
     app: topic-counter
+    dependencies:
+      - registrations-db-proxy-cfn
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: topic-counter-cfn
@@ -26,6 +29,8 @@ deployments:
   mobile-notifications-registration-cleaning-worker-cfn:
     type: cloud-formation
     app: registration-cleaning-worker
+    dependencies:
+      - registrations-db-proxy-cfn
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: registration-cleaning-worker-cfn
@@ -33,8 +38,17 @@ deployments:
   mobile-notifications-expired-registration-cleaner-cfn:
     type: cloud-formation
     app: expired-registration-cleaner
+    dependencies:
+      - registrations-db-proxy-cfn
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: expired-registration-cleaner-cfn
       templatePath: expired-registration-cleaner-cfn.yaml
-
+  registrations-db-proxy-cfn:
+    type: cloud-formation
+    app: registrations-db-proxy
+    parameters:
+      prependStackToCloudFormationStackName: false
+      templateStagePaths: 
+        CODE: RegistrationsDbProxy-CODE.template.json
+        PROD: RegistrationsDbProxy-PROD.template.json
