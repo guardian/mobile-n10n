@@ -100,7 +100,9 @@ trait HarvesterRequestHandler extends Logging {
     val records = event.getRecords.asScala.toList.map(r => r.getBody).map(NotificationParser.parseShardNotificationEvent)
     records.foreach(record =>
       logger.info(Map(
-        "notificationId" -> record.notification.id
+        "notificationId" -> record.notification.id,
+        "harvester.notificationStartTime.millis" -> start.toEpochMilli,
+        "harvester.notificationStartTime.string" -> start.toString,
       ), "Parsed notification event")
     )
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
