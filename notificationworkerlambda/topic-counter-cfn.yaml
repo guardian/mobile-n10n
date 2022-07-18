@@ -91,6 +91,14 @@ Resources:
           - Action:  s3:ListBucket
             Effect: Allow
             Resource: arn:aws:s3:::mobile-notifications-topics
+      - PolicyName: connectRdsProxy
+        PolicyDocument:
+          Statement:
+          - Action:
+            - rds-db:connect
+            Effect: Allow
+            Resource: 
+              Fn::ImportValue: !Sub RegistrationsDbProxyId-${Stage}
 
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup

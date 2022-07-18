@@ -1,0 +1,511 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`The RegistrationDbProxy stack matches the snapshot on CODE 1`] = `
+Object {
+  "Outputs": Object {
+    "RegistrationsDbProxyId": Object {
+      "Description": "ID of RDS proxy to registrations database",
+      "Export": Object {
+        "Name": "RegistrationsDbProxyId-CODE",
+      },
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "arn:aws:rds-db:",
+            Object {
+              "Ref": "AWS::Region",
+            },
+            ":",
+            Object {
+              "Ref": "AWS::AccountId",
+            },
+            ":dbuser:",
+            Object {
+              "Fn::Select": Array [
+                6,
+                Object {
+                  "Fn::Split": Array [
+                    ":",
+                    Object {
+                      "Fn::GetAtt": Array [
+                        "RegistrationsDbProxyBAD96AA8",
+                        "DBProxyArn",
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            "/*",
+          ],
+        ],
+      },
+    },
+  },
+  "Parameters": Object {
+    "VpcId": Object {
+      "Default": "/account/vpc/primary/id",
+      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
+    },
+    "registrationsdbproxyPrivateSubnets": Object {
+      "Default": "/account/vpc/primary/subnets/private",
+      "Description": "A list of private subnets",
+      "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
+    },
+  },
+  "Resources": Object {
+    "RegistrationDbCleanerSecretD579A6EA": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Description": "Secrets for accessing registration database from cleaner lambdas",
+        "GenerateSecretString": Object {
+          "GenerateStringKey": "password",
+          "SecretStringTemplate": "{\\"username\\":\\"cleaner_user\\",\\"engine\\":\\"postgres\\",\\"host\\":\\"notifications-registrations-db-private-code.crwidilr2ofx.eu-west-1.rds.amazonaws.com\\",\\"port\\":5432,\\"dbname\\":\\"registrationsCODE\\",\\"dbInstanceIdentifier\\":\\"notifications-registrations-db-private-code\\"}",
+        },
+        "Name": "registrations-db-cleaner-secret-CODE",
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::SecretsManager::Secret",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RegistrationDbWorkerSecretD41732AB": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Description": "Secrets for accessing registration database from worker lambdas",
+        "GenerateSecretString": Object {
+          "GenerateStringKey": "password",
+          "SecretStringTemplate": "{\\"username\\":\\"worker_user\\",\\"engine\\":\\"postgres\\",\\"host\\":\\"notifications-registrations-db-private-code.crwidilr2ofx.eu-west-1.rds.amazonaws.com\\",\\"port\\":5432,\\"dbname\\":\\"registrationsCODE\\",\\"dbInstanceIdentifier\\":\\"notifications-registrations-db-private-code\\"}",
+        },
+        "Name": "registrations-db-worker-secret-CODE",
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::SecretsManager::Secret",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RegistrationsDbProxyBAD96AA8": Object {
+      "Properties": Object {
+        "Auth": Array [
+          Object {
+            "AuthScheme": "SECRETS",
+            "IAMAuth": "DISABLED",
+            "SecretArn": Object {
+              "Ref": "RegistrationDbWorkerSecretD41732AB",
+            },
+          },
+          Object {
+            "AuthScheme": "SECRETS",
+            "IAMAuth": "DISABLED",
+            "SecretArn": Object {
+              "Ref": "RegistrationDbCleanerSecretD579A6EA",
+            },
+          },
+        ],
+        "DBProxyName": "registrations-db-proxy-cdk-CODE",
+        "EngineFamily": "POSTGRESQL",
+        "RequireTLS": false,
+        "RoleArn": Object {
+          "Fn::GetAtt": Array [
+            "RegistrationsDbProxyIAMRoleF3BC5484",
+            "Arn",
+          ],
+        },
+        "VpcSecurityGroupIds": Array [
+          "sg-0a228b61bbf4a0e6a",
+        ],
+        "VpcSubnetIds": Object {
+          "Ref": "registrationsdbproxyPrivateSubnets",
+        },
+      },
+      "Type": "AWS::RDS::DBProxy",
+    },
+    "RegistrationsDbProxyIAMRoleDefaultPolicyCE03926E": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Ref": "RegistrationDbWorkerSecretD41732AB",
+              },
+            },
+            Object {
+              "Action": Array [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Ref": "RegistrationDbCleanerSecretD579A6EA",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RegistrationsDbProxyIAMRoleDefaultPolicyCE03926E",
+        "Roles": Array [
+          Object {
+            "Ref": "RegistrationsDbProxyIAMRoleF3BC5484",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RegistrationsDbProxyIAMRoleF3BC5484": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "rds.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RegistrationsDbProxyProxyTargetGroupDDA34D50": Object {
+      "Properties": Object {
+        "ConnectionPoolConfigurationInfo": Object {
+          "MaxConnectionsPercent": 90,
+        },
+        "DBInstanceIdentifiers": Array [
+          "notifications-registrations-db-private-code",
+        ],
+        "DBProxyName": Object {
+          "Ref": "RegistrationsDbProxyBAD96AA8",
+        },
+        "TargetGroupName": "default",
+      },
+      "Type": "AWS::RDS::DBProxyTargetGroup",
+    },
+    "registrationsdbsecuritygroupfromRegistrationDbProxyCODEregistrationsdbsecuritygroup14CF94DB54323FFA1BF5": Object {
+      "Properties": Object {
+        "Description": "Allow connections to the database Instance from the Proxy",
+        "FromPort": 5432,
+        "GroupId": "sg-0a228b61bbf4a0e6a",
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": "sg-0a228b61bbf4a0e6a",
+        "ToPort": 5432,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+  },
+}
+`;
+
+exports[`The RegistrationDbProxy stack matches the snapshot on PROD 1`] = `
+Object {
+  "Outputs": Object {
+    "RegistrationsDbProxyId": Object {
+      "Description": "ID of RDS proxy to registrations database",
+      "Export": Object {
+        "Name": "RegistrationsDbProxyId-PROD",
+      },
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "arn:aws:rds-db:",
+            Object {
+              "Ref": "AWS::Region",
+            },
+            ":",
+            Object {
+              "Ref": "AWS::AccountId",
+            },
+            ":dbuser:",
+            Object {
+              "Fn::Select": Array [
+                6,
+                Object {
+                  "Fn::Split": Array [
+                    ":",
+                    Object {
+                      "Fn::GetAtt": Array [
+                        "RegistrationsDbProxyBAD96AA8",
+                        "DBProxyArn",
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            "/*",
+          ],
+        ],
+      },
+    },
+  },
+  "Parameters": Object {
+    "VpcId": Object {
+      "Default": "/account/vpc/primary/id",
+      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
+    },
+    "registrationsdbproxyPrivateSubnets": Object {
+      "Default": "/account/vpc/primary/subnets/private",
+      "Description": "A list of private subnets",
+      "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
+    },
+  },
+  "Resources": Object {
+    "RegistrationDbCleanerSecretD579A6EA": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Description": "Secrets for accessing registration database from cleaner lambdas",
+        "GenerateSecretString": Object {
+          "GenerateStringKey": "password",
+          "SecretStringTemplate": "{\\"username\\":\\"cleaner_user\\",\\"engine\\":\\"postgres\\",\\"host\\":\\"notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com\\",\\"port\\":5432,\\"dbname\\":\\"registrationsPROD\\",\\"dbInstanceIdentifier\\":\\"notifications-registrations-db-private-prod\\"}",
+        },
+        "Name": "registrations-db-cleaner-secret-PROD",
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::SecretsManager::Secret",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RegistrationDbWorkerSecretD41732AB": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Description": "Secrets for accessing registration database from worker lambdas",
+        "GenerateSecretString": Object {
+          "GenerateStringKey": "password",
+          "SecretStringTemplate": "{\\"username\\":\\"worker_user\\",\\"engine\\":\\"postgres\\",\\"host\\":\\"notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com\\",\\"port\\":5432,\\"dbname\\":\\"registrationsPROD\\",\\"dbInstanceIdentifier\\":\\"notifications-registrations-db-private-prod\\"}",
+        },
+        "Name": "registrations-db-worker-secret-PROD",
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::SecretsManager::Secret",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RegistrationsDbProxyBAD96AA8": Object {
+      "Properties": Object {
+        "Auth": Array [
+          Object {
+            "AuthScheme": "SECRETS",
+            "IAMAuth": "DISABLED",
+            "SecretArn": Object {
+              "Ref": "RegistrationDbWorkerSecretD41732AB",
+            },
+          },
+          Object {
+            "AuthScheme": "SECRETS",
+            "IAMAuth": "DISABLED",
+            "SecretArn": Object {
+              "Ref": "RegistrationDbCleanerSecretD579A6EA",
+            },
+          },
+        ],
+        "DBProxyName": "registrations-db-proxy-cdk-PROD",
+        "EngineFamily": "POSTGRESQL",
+        "RequireTLS": false,
+        "RoleArn": Object {
+          "Fn::GetAtt": Array [
+            "RegistrationsDbProxyIAMRoleF3BC5484",
+            "Arn",
+          ],
+        },
+        "VpcSecurityGroupIds": Array [
+          "sg-01ee0bddb42ead7e5",
+        ],
+        "VpcSubnetIds": Object {
+          "Ref": "registrationsdbproxyPrivateSubnets",
+        },
+      },
+      "Type": "AWS::RDS::DBProxy",
+    },
+    "RegistrationsDbProxyIAMRoleDefaultPolicyCE03926E": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Ref": "RegistrationDbWorkerSecretD41732AB",
+              },
+            },
+            Object {
+              "Action": Array [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Ref": "RegistrationDbCleanerSecretD579A6EA",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "RegistrationsDbProxyIAMRoleDefaultPolicyCE03926E",
+        "Roles": Array [
+          Object {
+            "Ref": "RegistrationsDbProxyIAMRoleF3BC5484",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "RegistrationsDbProxyIAMRoleF3BC5484": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "rds.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "RegistrationsDbProxyProxyTargetGroupDDA34D50": Object {
+      "Properties": Object {
+        "ConnectionPoolConfigurationInfo": Object {
+          "MaxConnectionsPercent": 90,
+        },
+        "DBInstanceIdentifiers": Array [
+          "notifications-registrations-db-private-prod",
+        ],
+        "DBProxyName": Object {
+          "Ref": "RegistrationsDbProxyBAD96AA8",
+        },
+        "TargetGroupName": "default",
+      },
+      "Type": "AWS::RDS::DBProxyTargetGroup",
+    },
+    "registrationsdbsecuritygroupfromRegistrationDbProxyPRODregistrationsdbsecuritygroup8D9DEF405432C98C6D17": Object {
+      "Properties": Object {
+        "Description": "Allow connections to the database Instance from the Proxy",
+        "FromPort": 5432,
+        "GroupId": "sg-01ee0bddb42ead7e5",
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": "sg-01ee0bddb42ead7e5",
+        "ToPort": 5432,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+  },
+}
+`;
