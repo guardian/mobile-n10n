@@ -118,7 +118,7 @@ trait HarvesterRequestHandler extends Logging {
         records.foreach(record =>
           logger.error(Map(
             "notificationId" -> record.notification.id,
-            "notificationType" -> record.notification.`type`,
+            "notificationType" -> record.notification.`type`.toString,
           ), s"Error occurred: ${e.getMessage}", e)
         )
         throw e
@@ -128,7 +128,7 @@ trait HarvesterRequestHandler extends Logging {
       records.foreach(record =>
         logger.info(Map(
           "notificationId" -> record.notification.id,
-          "notificationType" -> record.notification.`type`,
+          "notificationType" -> record.notification.`type`.toString,
           "harvester.notificationProcessingTime" -> Duration.between(start, end).toMillis,
           "harvester.notificationProcessingEndTime.millis" -> end.toEpochMilli,
           "harvester.notificationProcessingEndTime.string" -> end.toString,
