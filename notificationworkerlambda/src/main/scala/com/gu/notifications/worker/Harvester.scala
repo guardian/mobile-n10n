@@ -115,7 +115,12 @@ trait HarvesterRequestHandler extends Logging {
         .unsafeRunSync()
     }catch {
       case e: Throwable => {
-        logger.error(s"Error occurred: ${e.getMessage}", e)
+        records.foreach(record =>
+          logger.error(Map(
+            "notificationId" -> record.notification.id,
+            "notificationType" -> record.notification.`type`,
+          ), s"Error occurred: ${e.getMessage}", e)
+        )
         throw e
       }
     }finally {
@@ -123,6 +128,7 @@ trait HarvesterRequestHandler extends Logging {
       records.foreach(record =>
         logger.info(Map(
           "notificationId" -> record.notification.id,
+          "notificationType" -> record.notification.`type`,
           "harvester.notificationProcessingTime" -> Duration.between(start, end).toMillis,
           "harvester.notificationProcessingEndTime.millis" -> end.toEpochMilli,
           "harvester.notificationProcessingEndTime.string" -> end.toString,
