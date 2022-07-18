@@ -11,21 +11,12 @@ import db.BuildTier.BuildTier
 import doobie.free.connection.ConnectionIO
 import doobie.Fragments
 import models.{Platform, TopicCount}
-import net.logstash.logback.marker.LogstashMarker
-import net.logstash.logback.marker.Markers.appendEntries
 import org.slf4j.{Logger, LoggerFactory}
 
 import Registration._
-import scala.jdk.CollectionConverters.MapHasAsJava
-import java.time.{Duration, Instant}
-
-trait Logging {
-  implicit def mapToContext(c: Map[String, _]): LogstashMarker = appendEntries(c.asJava)
-}
 
 class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
-  extends RegistrationRepository[F, Stream]
-  with Logging {
+  extends RegistrationRepository[F, Stream] {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def findByToken(token: String): Stream[F, Registration] = {
@@ -100,15 +91,11 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       )
 
     logger.info("About to run query: " + queryStatement);
-    val start = Instant.now
     val result = queryStatement
       .query[(String, String, Option[String])]
       .stream
       .transact(xa)
 
-    logger.info(Map(
-      "harvester.queryProcessingTime" -> Duration.between(start, Instant.now).toMillis
-    ), "Finished executing query")
     logger.info("Result: " + result.zipWithIndex)
 
     result.map{ case (token, platformString, buildTierString) => {

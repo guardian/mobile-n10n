@@ -12,7 +12,6 @@ import doobie.util.transactor.Transactor
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.time.{Duration, Instant}
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.jdk.CollectionConverters._
 
@@ -78,7 +77,6 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
-    val start = Instant.now
     for {
       shardedNotification <- shardedNotifications
       notificationId = shardedNotification.notification.id
@@ -93,14 +91,16 @@ trait HarvesterRequestHandler extends Logging {
       resp <- tokens
         .collect(routeToSqs)
         .broadcastTo(androidSink, androidBetaSink, androidEditionSink, iosSink, iosEditionSink)
-      _ = logger.info(Map(
-        "notificationId" -> notificationId,
-        "harvester.processingTime" -> Duration.between(start, Instant.now).toMillis
-      ), s"Finished processing notificationId $notificationId")
     } yield resp
   }
 
   def processNotification(event: SQSEvent, tokenService: TokenService[IO]) = {
+    val records = event.getRecords.asScala.toList.map(r => r.getBody).map(NotificationParser.parseShardNotificationEvent)
+    records.foreach(record =>
+      logger.info(Map(
+        "notificationId" -> record.notification.id
+      ), "Parsed notification event")
+    )
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
       .map(NotificationParser.parseShardNotificationEvent)
@@ -114,6 +114,8 @@ trait HarvesterRequestHandler extends Logging {
         logger.error(s"Error occurred: ${e.getMessage}", e)
         throw e
       }
+    }finally {
+      logger.info("Finished processing notification")
     }
   }
 
