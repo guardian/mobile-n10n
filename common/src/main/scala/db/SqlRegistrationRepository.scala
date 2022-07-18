@@ -91,6 +91,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
       )
 
     logger.info("About to run query: " + queryStatement);
+
     val result = queryStatement
       .query[(String, String, Option[String])]
       .stream
