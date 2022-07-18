@@ -14,6 +14,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.jdk.CollectionConverters._
+import java.time.{Duration, Instant}
 
 sealed trait WorkerSqs
 object WorkerSqs {
@@ -95,6 +96,7 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def processNotification(event: SQSEvent, tokenService: TokenService[IO]) = {
+    val start = Instant.now
     val records = event.getRecords.asScala.toList.map(r => r.getBody).map(NotificationParser.parseShardNotificationEvent)
     records.foreach(record =>
       logger.info(Map(
@@ -115,7 +117,13 @@ trait HarvesterRequestHandler extends Logging {
         throw e
       }
     }finally {
-      logger.info("Finished processing notification")
+      val end = Instant.now
+      records.foreach(record =>
+        logger.info(Map(
+          "notificationId" -> record.notification.id,
+          "harvester.notificationProcessingTime" -> Duration.between(start, end).toMillis
+        ), "Finished processing notification event")
+      )
     }
   }
 
