@@ -74,6 +74,15 @@ Resources:
                 - ec2:DescribeNetworkInterfaces
                 - ec2:DeleteNetworkInterface
               Resource: "*"
+        - PolicyName: connectRdsProxy
+          PolicyDocument:
+            Statement:
+            - Action:
+              - rds-db:connect
+              Effect: Allow
+              Resource: 
+                Fn::ImportValue: !Sub RegistrationsDbProxyId-${Stage}
+
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
