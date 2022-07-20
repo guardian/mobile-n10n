@@ -7,22 +7,26 @@ import _root_.models.Importance._
 import _root_.models.Link._
 import _root_.models.TopicTypes._
 import _root_.models._
-import cats.effect.IO
+import cats.effect.{Async, ContextShift, IO}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, TokenService}
 import com.gu.notifications.worker.utils.Cloudwatch
-import db.{HarvestedToken, JdbcConfig}
+import com.zaxxer.hikari.HikariDataSource
+import db.{DatabaseConfig, HarvestedToken, JdbcConfig}
+import doobie.util.transactor.Transactor
 import fs2.{Pipe, Stream}
 import org.specs2.matcher.Matchers
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.libs.json.Json
 
+import scala.language.reflectiveCalls
 import scala.jdk.CollectionConverters._
 
-class HarvesterRequestHandlerSpec extends Specification with Matchers {
+class HarvesterRequestHandlerSpec extends Specification with Matchers with Mockito {
 
   "the WorkerRequestHandler" should {
     "Queue one multi platform breaking news notification" in new WRHSScope {
@@ -33,6 +37,16 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       apnsSqsDeliveriesCount.get() shouldEqual 3
       firebaseSqsDeliveriesTotal.get() shouldEqual 2002
       apnsSqsDeliveriesTotal.get() shouldEqual 2002
+    }
+  }
+
+  "the harvester handler" should {
+    "close the connection if an unhandled exception is thrown" in new HarvesterRequestHandlerScope {
+        try {
+          harvesterHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification) ,null)
+        } finally {
+          there was one(harvesterHandler.datasource).close()
+        }
     }
   }
 
@@ -134,7 +148,31 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
           _.map(_ => ())
         }
       }
+
+      override val databaseConfig: DatabaseConfig = mock[DatabaseConfig]
     }
   }
 
+  trait HarvesterRequestHandlerScope extends WRHSScope {
+    val harvesterHandler = new HarvesterRequestHandler {
+
+      val jdbcConfig = null
+      val iosLiveDeliveryService: SqsDeliveryService[IO] = mock[SqsDeliveryService[IO]]
+      val androidLiveDeliveryService: SqsDeliveryService[IO] = mock[SqsDeliveryService[IO]]
+      val androidBetaDeliveryService: SqsDeliveryService[IO] = mock[SqsDeliveryService[IO]]
+      val iosEditionDeliveryService: SqsDeliveryService[IO] = mock[SqsDeliveryService[IO]]
+      val androidEditionDeliveryService: SqsDeliveryService[IO] = mock[SqsDeliveryService[IO]]
+      val cloudwatch: Cloudwatch = mock[Cloudwatch]
+      val datasource: HikariDataSource = mock[HikariDataSource]
+
+      object FakeDatabaseConfig extends DatabaseConfig {
+        def transactorAndDataSource[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): (Transactor[F], HikariDataSource) = {
+          (mock[Transactor[F]], datasource)
+        }
+      }
+
+      val databaseConfig: DatabaseConfig = FakeDatabaseConfig
+      override def processNotification(event: SQSEvent, tokenService: TokenService[IO]): Unit = throw new Exception("exception")
+    }
+  }
 }

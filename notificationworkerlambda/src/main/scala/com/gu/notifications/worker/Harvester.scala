@@ -38,6 +38,8 @@ trait HarvesterRequestHandler extends Logging {
   val androidEditionDeliveryService: SqsDeliveryService[IO]
   val androidBetaDeliveryService: SqsDeliveryService[IO]
 
+  val databaseConfig: DatabaseConfig
+
   val jdbcConfig: JdbcConfig
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
@@ -139,18 +141,22 @@ trait HarvesterRequestHandler extends Logging {
 
   def handleHarvesting(event: SQSEvent, context: Context): Unit = {
     // open connection
-    val (transactor, datasource): (Transactor[IO], HikariDataSource) = DatabaseConfig.transactorAndDataSource[IO](jdbcConfig)
+    val (transactor, datasource): (Transactor[IO], HikariDataSource) = databaseConfig.transactorAndDataSource[IO](jdbcConfig)
     logger.info("SQL connection open")
 
     // create services that rely on the connection
     val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
     val tokenService: TokenServiceImpl[IO] = new TokenServiceImpl[IO](registrationService)
 
-    processNotification(event, tokenService)
-
-    // close connection
-    datasource.close()
-    logger.info("SQL connection closed")
+    try {
+      processNotification(event, tokenService)
+    } catch {
+      case _ : Throwable => logger.error("Unhandled error from processNotification")
+    } finally {
+      // close connection
+      datasource.close()
+      logger.info("SQL connection closed")
+    }
   }
 }
 
@@ -166,4 +172,6 @@ class Harvester extends HarvesterRequestHandler {
   override val iosEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl)
   override val androidEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl)
   override val androidBetaDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
+
+  override val databaseConfig: DatabaseConfig = DatabaseConfig
 }

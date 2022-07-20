@@ -17,7 +17,11 @@ case class JdbcConfig(
   maxConnectionPoolSize: Int = 10
 )
 
-object DatabaseConfig {
+trait DatabaseConfig {
+  def transactorAndDataSource[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): (Transactor[F], HikariDataSource)
+}
+
+object DatabaseConfig extends DatabaseConfig {
 
   def simpleTransactor(config: JdbcConfig)(implicit ec: ExecutionContext) = {
     implicit val cs: ContextShift[IO] = IO.contextShift(ec)
