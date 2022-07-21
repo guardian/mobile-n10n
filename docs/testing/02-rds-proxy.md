@@ -6,7 +6,7 @@ This document defines the test results for the RDS proxy in the CODE environment
 
 The RDS proxy introduces a slight improvement in performance of the harvester workers, notably by reducing the number of "marked as broken" connection errors meaning fewer SQS messages are replayed.
 
-| |Aggregated duration of harvester (ms)|No. harvester invocations|Harvester DB connection errors|
+| |Aggregated duration of harvester (s)|No. harvester invocations|Harvester DB connection errors|
 |:----|:----|:----|:----|
 |Without RDS Proxy|123.4|168|20.6|
 |With RDS Proxy|102.8|168.2|15.6|
@@ -93,7 +93,7 @@ DB url:	`jdbc:postgresql://notifications-registrations-db-private-testrig.crwidi
 
 When sending only 1 breaking news notification:
 
-|#|Aggregated harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
+|#|Aggregated harvester duration (s)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
 |:----|:----|:----|:----|:----|:----|:----|
 |1|101|162|162|116|0|0|
 |2|88|162|162|110|0|0|
@@ -104,7 +104,7 @@ When sending only 1 breaking news notification:
 
 When sending 3 breaking news notifications at the same time:
 
-|#|Aggregated harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
+|#|Aggregated harvester duration (s)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
 |:----|:----|:----|:----|:----|:----|:----|
 |1|458|655|655|486|169|845|
 |2|438|650|650|486|164|820|
@@ -114,7 +114,7 @@ When sending 3 breaking news notifications at the same time:
 
 DB url: `jdbc:postgresql://registrations-db-proxy-cdk-code.proxy-crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsCODE?currentSchema=registrations`
 
-|#|Aggregated harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
+|#|Aggregated harvester duration (s)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
 |:----|:----|:----|:----|:----|:----|:----|
 |1|118|162|162|162|0|0|
 |2|68|162|162|110|0|0|
@@ -125,7 +125,7 @@ DB url: `jdbc:postgresql://registrations-db-proxy-cdk-code.proxy-crwidilr2ofx.eu
 
 When sending 3 breaking news notifications at the same time:
 
-|#|Total harvester duration (ms)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
+|#|Total harvester duration (s)|No. harvester invocations|Harvester DB connections opened|Harvester DB connections closed|Harvester error "marked as broken"|DB connection errors (hits in kibana)|
 |:----|:----|:----|:----|:----|:----|:----|
 |1|445|647|647|486|161|805|
 |2|391|609|609|486|123|615|
