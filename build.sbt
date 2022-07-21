@@ -423,6 +423,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
 
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
+  .dependsOn(common)
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(
     libraryDependencies ++= Seq(
