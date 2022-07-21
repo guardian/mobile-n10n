@@ -1,6 +1,6 @@
 # Reducing Lambda Duration
 
-This document summarises the research and initial conclusions for reducing lambda init duration.
+This document summarises the research and initial conclusions for reducing lambda duration.
 
 ## Summary
 
@@ -21,7 +21,7 @@ One of the factors impacting the throughput of notifications is the duration of 
 
 We [migrated](https://github.com/guardian/mobile-n10n/pull/565) the harvester and worker lambdas to ecr because the image size was getting close to the limit available to s3 lambdas. At the time of the migration, I don't believe we collected data about how this impacted speed of delivery, but the team believed that since this change the speed of delivery has worsened.
 
-## Results
+## Memory
 
 ### Worker lambdas
 
@@ -69,7 +69,39 @@ However, when varying the memory allocated to the lambda we can see that the ini
 
 It's also worth noting that this s3 lambda did not get billed for the init duration.
 
-### Conclusions
+## Provisioned concurrency
+
+For a UK breaking news notification we expect about 160 lambdas to be invoked, about ~20 of which will be from a cold start (the execution environment is maintained for a period of time after a lambda has terminated).
+
+Therefore, thinking about where to direct our focus, reducing init duration may not have the biggest impact.
+
+One of the frustrations is the total duration of time for all lambdas to finish executing a particular batch - at the moment this is around 35-40s, where each lambda is processing for 0.75s. It would be nice to compress the total time and have as many lambdas executing in parallel as possible.
+
+We can [manage](https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html?icmpid=docs_lambda_console) the concurrency of lambdas in 2 ways:
+1. Reserved concurrency: guarantees the max number of lambdas that can be invoked concurrently.
+2. Provisioned concurrency: initialises a pre-defined number of execution environments ready for lambda invocations.
+
+At the moment we define a reserved concurrency (200) which we can assume to be sufficient because we don't see any throttle alarms in PROD for the harvester or worker lambdas.
+
+Thinking about [provisioned concurrency](https://aws.amazon.com/blogs/compute/operating-lambda-performance-optimization-part-1/):
+- Provisioned concurrency means we define a pool of lambdas that have been initialised ready to respond to function invocations.
+- The pool of lambdas download code, start a new execution environment and execute initialisation code.
+- When a lambda is executed we avoid any potential cold starts as well as the execution of initialisation code.
+  (NB: Initialisation code is any code that lives outside the handler, for example library imports).
+
+We tested the impact of defining provisioned concurrency for the harvester lambda in CODE:
+
+|Provisioned Concurrency|Time from first harvester start to last harvester end (ms)|Average processing time per lambda (ms)|No. cold starts|
+|:----|:----|:----|:----|
+|0|35000|810|19|
+|50|32000|650|11|
+|150|17500|400|8|
+
+The overall time was reduced:
+- The number of cold starts were reduced as provisioned concurrency increased, this gives us a time saving of ~4s for each cold start avoided.
+- The lambda execution time reduced as provisioned concurrency increased.
+
+## Conclusions
 
 We can impact lambda duration by adjusting the memory allocated, but this comes at a cost.
 
