@@ -4,7 +4,6 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.Config
-import models.{Android, Ios}
 import okhttp3.OkHttpClient
 import org.slf4j.{Logger, LoggerFactory}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}

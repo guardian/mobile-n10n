@@ -2,7 +2,6 @@ package fakebreakingnews
 
 import java.util.UUID
 
-import models.{Android, Platform, Ios}
 import okhttp3.{MediaType, OkHttpClient, Request, RequestBody}
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
