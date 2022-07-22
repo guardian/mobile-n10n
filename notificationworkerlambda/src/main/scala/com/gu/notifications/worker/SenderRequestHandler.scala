@@ -39,7 +39,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     val end = Instant.now
     val logFields = Map(
       "notificationId" -> notificationId,
-      "worker.notificationProcessingTime" -> Duration.between(end, start).toMillis,
+      "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> start.toEpochMilli,
       "worker.notificationProcessingStartTime.string" -> start.toString,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
