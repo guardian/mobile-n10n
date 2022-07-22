@@ -75,7 +75,7 @@ final class Main(
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
       case _ =>
         val result = pushWithDuplicateProtection(notification)
-        val durationMillis = Duration.between(Instant.now, notificationReceivedTime).toMillis
+        val durationMillis = Duration.between(notificationReceivedTime, Instant.now).toMillis
         result.foreach(_ => logger.info(
           Map(
             "notificationId" -> notification.id,
