@@ -22,11 +22,12 @@ Current ideas and initiatives for the fine-tuning phase:
 - [RDS proxy](./02-rds-proxy.md)
 - Aurora and postgres 14
 - Query performance improvements 
-- Handling DB connection errors more gracefully
+- ~~Handling DB connection errors more gracefully~~ parked for now since errors reduced after DB vacuum (including re-indexing) 
+- Lambda concurrency
 
-## Productive improvements
+## Product improvements
 
-Ideas for potential product improvements that woulld like require some integration with the breaking news tool:
+Ideas for potential product improvements that would likely require some integration with the breaking news tool:
 
 - VIP lanes: rather than have one system servicing all our alerts, have four dedicated stacks for all high volume alerts, one for each edition.
 - Pre-warmer: warm up the stacks and get them ready for launch. Sync with tools and send a pre-cache signal to ensure the n10n stack is ready and primed for her-maj-dies like alerts.
