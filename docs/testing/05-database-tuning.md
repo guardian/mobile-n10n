@@ -14,7 +14,7 @@ Under each scenario, I sent five rounds of breaking news notification.
 ### Before Changes
 
 | # | Total harvester duration (s) | No. harvester invocations | Harvester error "marked as broken" |
-| ----------- | ----------- | ----------- |
+| ----------- | ----------- | ----------- | ----------- |
 | 1	| 120.57 | 161 | 0 |
 | 2	| 100.03 | 161 | 0 |
 | 3	| 106.8 | 161 | 0 |
@@ -29,7 +29,7 @@ This operation took around one minute.
 ```REINDEX INDEX registrations.idx_registration_shard_topic;```
 
 | # | Total harvester duration (s) | No. harvester invocations | Harvester error "marked as broken" |
-| ----------- | ----------- | ----------- |
+| ----------- | ----------- | ----------- | ----------- |
 | 1 | 49.99 | 161 | 0 |
 | 2 | 46.79 | 161 | 0 |
 | 3 | 15.02 | 161 | 0 |
@@ -44,7 +44,7 @@ This operation took around three minutes.
 ```VACUUM (VERBOSE, ANALYZE, FULL) registrations.registrations;```
 
 | # | Total harvester duration (s) | No. harvester invocations | Harvester error "marked as broken" |
-| ----------- | ----------- | ----------- |
+| ----------- | ----------- | ----------- | ----------- |
 1 | 33.41| 161 | 0 |
 2 | 14.52| 161 | 0 |
 3 | 17.94| 161 | 0 |

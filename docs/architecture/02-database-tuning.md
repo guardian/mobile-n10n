@@ -40,7 +40,7 @@ I experimented with these operations on the test rig database.
 
 The following shows the original table size.
 
-```
+```sql
 registrationsCODE=> SELECT c.oid, relname AS table_name, c.reltuples,
 registrationsCODE->        pg_size_pretty(pg_relation_size(c.oid)) AS table_size,
 registrationsCODE->        pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size,
@@ -57,7 +57,7 @@ registrationsCODE-> WHERE relnamespace =  16406;
 
 I first executed the standard vacuum operation, and the table size did not change noticeably.  It was expected as this operation did not compact the table.
 
-```
+```sql
 registrationsCODE=> VACUUM (VERBOSE, ANALYZE) registrations.registrations;
 VACUUM
 
@@ -78,7 +78,7 @@ registrationsCODE=> SELECT c.oid, relname AS table_name, c.reltuples,
 
 Next I executed the reindexing operation on the index *idx_registration_shard_topic*.  Its size was reduced from 1190MB to 355MB.
 
-```
+```sql
 registrationsCODE=> REINDEX INDEX registrations.idx_registration_shard_topic;
 REINDEX
 Time: 54545.778 ms (00:54.546)
@@ -92,7 +92,7 @@ Time: 54545.778 ms (00:54.546)
 
 Finally I executed the full vacuum operation, which actually covered reindexing.  The table and its indexes were substantially reduced in size from 6872MB (original) to 1750MB.
 
-```
+```sql
 registrationsCODE=> VACUUM (VERBOSE, ANALYZE, FULL) registrations.registrations;
 VACUUM
 
@@ -116,21 +116,19 @@ According to the query plan, the database takes three steps to execute the query
 | ----------- | ----------- |
 | 1 | Bitmap index scan on *idx_registration_shard_topic* (cost 4468) |
 |  | produce a bitmap which tells the next step which pages to fetch (so it can skip pages which does not contain the row it wants) |
-| ----------- | ----------- |
 | 2 | Bitmap heap scan on *registrations* table (cost 35000) |
-|  | read the relevant pages and fetch the data row that satisfies its WHERE clause |
-| ----------- | ----------- |
+|  | read the relevant pages and fetch the data row that satisfies its *WHERE* clause |
 | 3 | HashAggregate (cost 100) |
 |  | remove duplicated rows (those having the same *token*, *platform* and *buildtier*) |
 
 This query plan is sensible.  The index *idx_registration_shard_topic* is scanned first to find out which pages contain the records that meet the *WHERE* clause.  These pages are then scanned to select these records.  (A page is the basic unit used by the database to do I/O.  It reads the whole page even if it just need a bit of data on it).
 
-So, most of the time is spent the second step.  It is possible that it reads a lot of pages but only a small part of the data really satisfies the WHERE clause because the physical locations of data rows have nothing to do with their content.  Data rows of the same topic and the shard range is likely to be scattered throughout the pages.
+So, most of the time is spent the second step.  It is possible that it reads a lot of pages but only a small part of the data really satisfies the *WHERE* clause because the physical locations of data rows have nothing to do with their content.  Data rows of the same topic and the shard range is likely to be scattered throughout the pages.
 
 ### Materialized view
 One option I have considered is to use materialized views.
 
-A materialized view differs from a view in that a materialized view persists the result set of its query in the storage upon creation.  So it returns the result set without executing the query again, but it requires manual “REFRESH” to update the result set.
+A materialized view differs from a view in that a materialized view persists the result set of its query in the storage upon creation.  So it returns the result set without executing the query again, but it requires manual **REFRESH** to update the result set.
 
 One idea is to prepare a number of materialized views to cluster related data rows (from the same topic and the same range of shard) so that we can query the much smaller materialized views instead of the whole table.  However it has two major drawbacks.
 
@@ -203,7 +201,7 @@ CREATE INDEX idx_regpart_shard8_topic
 
 The following shows the query plan on the `registrations` table (after full vacuum operation):
 
-```
+```sql
 registrationsCODE=> EXPLAIN SELECT token, platform, buildTier FROM registrations.registrations
 registrationsCODE-> WHERE (topic IN ('breaking/uk') ) AND ((shard >= -25967 ) AND (shard <= -25568 ))
 registrationsCODE-> GROUP BY token, platform, buildTier;
@@ -220,7 +218,7 @@ registrationsCODE-> GROUP BY token, platform, buildTier;
 
 The following shows the query plan on the partitioned `registrations_partitioned` table.  The estimated cost is reduced from 30907 to 19410. 
 
-```
+```sql
 registrationsCODE=> EXPLAIN SELECT token, platform, buildTier FROM registrations.registrations_partitioned 
 WHERE (topic IN ('breaking/uk') ) AND ((shard >= -25967 ) AND (shard <= -25568 )) 
 GROUP BY token, platform, buildTier;
