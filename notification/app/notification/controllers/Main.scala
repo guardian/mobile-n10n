@@ -1,11 +1,13 @@
 package notification.controllers
 
 import java.util.UUID
+import java.time.{Duration, Instant}
 import authentication.AuthAction
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
 import models.{TopicTypes, _}
-import models.NotificationLogging._
+import net.logstash.logback.marker.LogstashMarker
+import net.logstash.logback.marker.Markers.appendEntries
 import notification.models.PushResult
 import notification.services
 import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender}
@@ -18,6 +20,7 @@ import tracking.SentNotificationReportRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import scala.jdk.CollectionConverters.MapHasAsJava
 
 final class Main(
   configuration: Configuration,
@@ -32,6 +35,8 @@ final class Main(
   extends AbstractController(controllerComponents) {
 
   implicit private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  implicit def mapToContext(c: Map[String, _]): LogstashMarker = appendEntries(c.asJava)
+
   val weekendReadingTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-reading")
   val weekendRoundUpTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-round-up")
 
@@ -59,7 +64,7 @@ final class Main(
   }
 
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
-    val startTime = System.currentTimeMillis()
+    val notificationReceivedTime = Instant.now
     val notification = request.body
     val topics = notification.topic
     val MaxTopics = 20
@@ -70,15 +75,17 @@ final class Main(
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
       case _ =>
         val result = pushWithDuplicateProtection(notification)
-        result.foreach(_ => logInfoWithCustomMarkers(
-            s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}",
-            List(
-              NotificationIdField(notification.id),
-              ProcessingTimeField(System.currentTimeMillis() - startTime),
-              NotificationTypeField(notification.`type`.toString),
-              NotificationTitleField(notification.title.getOrElse("Unknown")),
-              NotificationStartTimeField(startTime)
-        )))
+        val durationMillis = Duration.between(notificationReceivedTime, Instant.now).toMillis
+        result.foreach(_ => logger.info(
+          Map(
+            "notificationId" -> notification.id,
+            "notificationType" -> notification.`type`.toString,
+            "notificationTitle" -> notification.title.getOrElse("Unknown"),
+            "notificationApp.notificationProcessingTime" -> durationMillis,
+            "notificationApp.notificationReceivedTime.millis" -> notificationReceivedTime.toEpochMilli,
+            "notificationApp.notificationReceivedTime.string" -> notificationReceivedTime.toString,
+          ),
+        s"Spent $durationMillis milliseconds processing notification ${notification.id}"))
         result
     }) recoverWith {
       case NonFatal(exception) => {
