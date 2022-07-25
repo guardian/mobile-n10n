@@ -94,7 +94,7 @@ trait HarvesterRequestHandler extends Logging {
     } yield resp
   }
 
-  def processNotification(event: SQSEvent, tokenService: TokenService[IO]) = {
+  def handleHarvesting(event: SQSEvent, context: Context): Unit  = {
     val start = Instant.now
     val records = event.getRecords.asScala.toList.map(r => r.getBody).map(NotificationParser.parseShardNotificationEvent)
     records.foreach(record =>
@@ -105,8 +105,7 @@ trait HarvesterRequestHandler extends Logging {
       ), "Parsed notification event")
     )
 
-    def handleHarvesting(event: SQSEvent, context: Context): Unit = {
-      val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
+    val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
         .map(r => r.getBody)
         .map(NotificationParser.parseShardNotificationEvent)
       try {
@@ -154,7 +153,6 @@ trait HarvesterRequestHandler extends Logging {
     //    logger.info("SQL connection closed")
     //  }
     //}
-  }
 }
 
 
