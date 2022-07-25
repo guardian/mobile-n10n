@@ -13,7 +13,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, TokenService}
 import com.gu.notifications.worker.utils.Cloudwatch
-import db.{HarvestedToken, JdbcConfig}
+import db.HarvestedToken
 import fs2.{Pipe, Stream}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
@@ -26,7 +26,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
     "Queue one multi platform breaking news notification" in new WRHSScope {
-      workerRequestHandler.processNotification(sqsEventShardNotification(breakingNewsNotification), tokenService)
+      workerRequestHandler.handleHarvesting(sqsEventShardNotification(breakingNewsNotification), null)
       tokenStreamCount.get() shouldEqual 0
       tokenPlatformStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 3
@@ -78,8 +78,10 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       event
     }
 
-    val twoThousandTwoTokens: List[String] = Range(0,2002).map(num => s"token-$num").toList
+    val twoThousandTwoTokens: List[String] = Range(0, 2002).map(num => s"token-$num").toList
+
     def tokenStream: Stream[IO, String] = Stream.emits(twoThousandTwoTokens)
+
     def tokenPlatformStream: Stream[IO, HarvestedToken] = Stream.emits(twoThousandTwoTokens.map(HarvestedToken(_, Android, None)) ::: twoThousandTwoTokens.map(HarvestedToken(_, Ios, None)))
 
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
@@ -93,16 +95,13 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
     var apnsSqsDeliveriesTotal = new AtomicInteger()
     var firebaseSqsDeliveriesTotal = new AtomicInteger()
 
-    val tokenService = new TokenService[IO] {
-      override def tokens(notification: Notification, shardRange: ShardRange): Stream[IO, HarvestedToken] = {
-        tokenPlatformStreamCount.incrementAndGet()
-        tokenPlatformStream
-      }
-    }
-
     val workerRequestHandler = new HarvesterRequestHandler {
-
-      override val jdbcConfig: JdbcConfig = null
+      override val tokenService: TokenService[IO] = new TokenService[IO] {
+        override def tokens(notification: Notification, shardRange: ShardRange): Stream[IO, HarvestedToken] = {
+          tokenPlatformStreamCount.incrementAndGet()
+          tokenPlatformStream
+        }
+      }
 
       override val iosLiveDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
         apnsSqsDeliveriesCount.incrementAndGet()
@@ -117,9 +116,9 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       }
 
       override val androidBetaDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
-       firebaseSqsDeliveriesCount.incrementAndGet()
-       firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
-       sqsDeliveries
+        firebaseSqsDeliveriesCount.incrementAndGet()
+        firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+        sqsDeliveries
       }
 
       override val iosEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
@@ -136,5 +135,5 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       }
     }
   }
-
 }
+

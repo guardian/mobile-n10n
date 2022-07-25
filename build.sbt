@@ -23,6 +23,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 val playJsonVersion = "2.8.1"
 val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.772"
+val awsSdkVersion2: String = "2.4.1"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.7.0"
 val okHttpVersion: String = "3.14.8"
@@ -167,7 +168,8 @@ lazy val notification = project
     ),
     libraryDependencies ++= Seq(
       logback,
-      "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
+      "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
+      "software.amazon.kinesis" % "amazon-kinesis-client" % awsSdkVersion2
     ),
     riffRaffPackageType := (Debian / packageBin).value,
     riffRaffArtifactResources += (file(s"notification/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),

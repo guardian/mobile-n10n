@@ -28,7 +28,7 @@ object DatabaseConfig {
       config.password
     )
   }
-  def transactorAndDataSource[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): (Transactor[F], HikariDataSource) = {
+  private def transactorAndDataSource[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): (Transactor[F], HikariDataSource) = {
     val connectEC = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10))
     val transactEC = ExecutionContext.fromExecutor(Executors.newCachedThreadPool)
     val hikariConfig = new HikariConfig()
