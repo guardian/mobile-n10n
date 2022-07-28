@@ -21,9 +21,11 @@ Current ideas and initiatives for the fine-tuning phase:
 - [Increasing shard size](./01-shard-size.md)
 - [RDS proxy](./02-rds-proxy.md)
 - Aurora and postgres 14
-- Query performance improvements 
-- ~~Handling DB connection errors more gracefully~~ parked for now since errors reduced after DB vacuum (including re-indexing) 
-- Lambda concurrency
+- [Query performance improvements ](../architecture/02-database-tuning.md)
+- ~~Handling DB connection errors more gracefully~~ parked for now since errors reduced after DB vacuum (including re-indexing)
+- [Lambda concurrency](./04-reducing-lambda-duration.md)
+- [Reducing lambda execution time](./06-reducing-lambda-cold-start-times.md)
+- Change batch size for sender lambdas (increase throughput to apns/fcm)
 
 ## Product improvements
 
@@ -36,6 +38,8 @@ Ideas for potential product improvements that would likely require some integrat
 
 Current ideas for re-architecting:
 
-- [Microsplinters](https://github.com/itsibitzi/n10n-poc/blob/main/n10n-broker/src/main.rs): preshard the DB and use these for querying 
+- [Microsplinters](https://github.com/itsibitzi/n10n-poc/blob/main/n10n-broker/src/main.rs): preshard the DB and use these for querying
 - Using Go to handle concurrency
 - Using ZIO to handle concurrency
+- Change lambda runtime: there are [studies](https://filia-aleks.medium.com/aws-lambda-battle-2021-performance-comparison-for-all-languages-c1b441005fd1) demonstrating that jvm-based lambdas are the worst performing, we could get benefits from migrating to typescript lambdas (or go, rust)
+- Pre-cache breaking news tokens: create a cron job that queries db to grab tokens for our breaking news topics to avoid these queries being executed as part of our send flow. Different flow for breaking news notifications: when requested we skip the harvester and immediately populate the sender queues with tokens to send.
