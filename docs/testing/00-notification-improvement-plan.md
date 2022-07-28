@@ -21,14 +21,18 @@ Current ideas and initiatives for the fine-tuning phase:
 - [Increasing shard size](./01-shard-size.md)
 - [RDS proxy](./02-rds-proxy.md)
 - Aurora and postgres 14
-- Query performance improvements 
+- [Query performance improvements ](../architecture/02-database-tuning.md)
 - ~~Handling DB connection errors more gracefully~~ parked for now since errors reduced after DB vacuum (including re-indexing) 
-- Lambda concurrency
+- [Lambda concurrency](./04-reducing-lambda-duration.md)
+- [Reducing lambda execution time](./06-reducing-lambda-cold-start-times.md)
+- Change batch size for sender lambdas (increase throughput to apns/fcm)
 
 ## Product improvements
 
 Ideas for potential product improvements that would likely require some integration with the breaking news tool:
 
+- Change lambda runtime: there are [studies](https://filia-aleks.medium.com/aws-lambda-battle-2021-performance-comparison-for-all-languages-c1b441005fd1) demonstrating that jvm-based lambdas are the worst performing, we could get benefits from migrating to typescript lambdas (or go, rust)
+- Pre-cache breaking news tokens: create a cron job that queries db to grab tokens for our breaking news topics to avoid these queries being executed as part of our send flow. Different flow for breaking news notifications: when requested we skip the harvester and immediately populate the sender queues with tokens to send.
 - VIP lanes: rather than have one system servicing all our alerts, have four dedicated stacks for all high volume alerts, one for each edition.
 - Pre-warmer: warm up the stacks and get them ready for launch. Sync with tools and send a pre-cache signal to ensure the n10n stack is ready and primed for her-maj-dies like alerts.
 

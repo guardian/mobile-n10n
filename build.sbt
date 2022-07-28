@@ -257,7 +257,6 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
       "org.slf4j" % "slf4j-api" % "1.7.36",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
@@ -421,7 +420,6 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-PROD.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-PROD.template.json")
 )
 
-
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
   .dependsOn(common)
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
@@ -433,6 +431,28 @@ lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreaking
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
     ),
     riffRaffArtifactResources += (baseDirectory.value / "fakebreakingnewslambda-cfn.yaml", "fakebreakingnewslambda-cfn/fakebreakingnewslambda-cfn.yaml")
+  )
+
+lazy val workerlambda = lambda("workerlambda", "workerlambda", None)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
+      "ai.x" %% "play-json-extensions" % "0.42.0",
+      "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
+      "software.amazon.awssdk" % "lambda" % "2.17.239",
+      "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
+      "software.amazon.awssdk" % "cloudwatch" % "2.17.239",
+      "com.google.firebase" % "firebase-admin" % "8.1.0",
+      "com.turo" % "pushy" % "0.13.10",
+      "software.amazon.awssdk" % "sqs" % "2.17.239",
+      "org.typelevel" %% "cats-effect" % "2.5.1",
+      "co.fs2" %% "fs2-core" % "2.5.6",
+    ),
+    excludeDependencies ++= Seq(
+      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
+    ),
+    riffRaffArtifactResources += (baseDirectory.value / "workerlambda-cfn.yaml", "workerlambda-cfn/workerlambda-cfn.yaml")
   )
 
 lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("com.gu.notifications.extractor.LocalRun"))

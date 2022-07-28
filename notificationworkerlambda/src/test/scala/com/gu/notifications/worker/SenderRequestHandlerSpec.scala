@@ -43,6 +43,8 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
         Stream(
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
         )
+      println("HERE")
+      println(chunkedTokensNotification)
 
       workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
 
@@ -96,6 +98,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       val sqsMessage = new SQSMessage()
       sqsMessage.setBody(Json.stringify(Json.toJson(chunkedTokens)))
       event.setRecords(List(sqsMessage).asJava)
+      println(Json.stringify(Json.toJson(chunkedTokens)))
       event
     }
 
