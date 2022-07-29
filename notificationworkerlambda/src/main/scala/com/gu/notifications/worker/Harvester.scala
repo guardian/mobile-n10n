@@ -127,6 +127,15 @@ trait HarvesterRequestHandler extends Logging {
       val end = Instant.now
       records.foreach(record =>
         logger.info(Map(
+          "_aws" -> Map("Timestamp" -> end.toEpochMilli,
+          "CloudWatchMetrics" -> List(Map(
+            "Namespace" -> s"Notifications/${env.stage}/harvester",
+            "Dimensions" -> List()),
+            "Metrics" -> List(Map(
+              "Name" -> "harvester.notificationProcessingTime",
+              "Unit" -> "Milliseconds"
+            ))
+          )),
           "notificationId" -> record.notification.id,
           "notificationType" -> record.notification.`type`.toString,
           "harvester.notificationProcessingTime" -> Duration.between(start, end).toMillis,
