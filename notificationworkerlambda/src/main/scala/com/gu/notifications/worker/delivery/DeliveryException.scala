@@ -2,8 +2,9 @@ package com.gu.notifications.worker.delivery
 
 import java.time.LocalDateTime
 import java.util.UUID
+import scala.util.control.NoStackTrace
 
-sealed trait DeliveryException extends RuntimeException {
+sealed trait DeliveryException extends NoStackTrace {
   def notificationId: UUID
 }
 
