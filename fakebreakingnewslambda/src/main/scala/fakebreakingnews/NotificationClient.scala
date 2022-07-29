@@ -14,7 +14,7 @@ import scala.util.{Failure, Try}
 object RequestToPromise {
 
   def requestToFuture[T](okHttpClient: OkHttpClient, request: Request, transform: (Int, Option[Array[Byte]]) => T): Future[T] = {
-    val promise = Promise[T]
+    val promise = Promise[T]()
     val url = request.url()
     val method = request.method()
     okHttpClient.newCall(request).enqueue(new Callback {

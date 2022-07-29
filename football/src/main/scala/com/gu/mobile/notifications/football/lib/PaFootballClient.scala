@@ -19,7 +19,7 @@ trait OkHttp extends pa.Http with Logging {
 
   def GET(urlString: String): Future[Response] = {
 
-    val promise = Promise[Response]
+    val promise = Promise[Response]()
 
     logger.info("Http GET " + urlString.replaceAll(apiKey, "<api-key>"))
     val httpRequest = new Request.Builder().url(urlString).build()

@@ -40,6 +40,11 @@ object DeliveryException {
     override def getMessage = s"Request failed (Notification: $notificationId, Token: $token). Cause: ${cause.getMessage}. ErrorCode: $errorCode}."
   }
 
+  case class UnknownReasonFailedRequest(notificationId: UUID, token: String) extends DeliveryException {
+    override def getMessage = s"Request failed (Notification: $notificationId, Token: $token)"
+  }
+
+
   case class InvalidPayload(notificationId: UUID) extends DeliveryException {
     override def getMessage = s"Cannot generate payload (Notification: $notificationId)"
   }

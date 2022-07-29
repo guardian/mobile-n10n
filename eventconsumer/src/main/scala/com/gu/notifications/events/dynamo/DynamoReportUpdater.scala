@@ -33,7 +33,7 @@ class DynamoReportUpdater(stage: String) {
       .withExpressionAttributeValues(Map(
         newEventsKey -> DynamoConversion.toAttributeValue(notificationReportEvent.eventAggregation)
       ).asJava)
-    val promise = Promise[Unit]
+    val promise = Promise[Unit]()
     val handler = new AsyncHandler[UpdateItemRequest, UpdateItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(updateItemRequest.toString, exception))
 
@@ -47,7 +47,7 @@ class DynamoReportUpdater(stage: String) {
     val getItemRequest = new GetItemRequest()
       .withTableName(tableName)
       .withKey(Map("id" -> new AttributeValue("id").withS(notificationId)).asJava)
-    val promise = Promise[Option[ZonedDateTime]]
+    val promise = Promise[Option[ZonedDateTime]]()
     val handler = new AsyncHandler[GetItemRequest, GetItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(new Exception(getItemRequest.toString, exception))
 
