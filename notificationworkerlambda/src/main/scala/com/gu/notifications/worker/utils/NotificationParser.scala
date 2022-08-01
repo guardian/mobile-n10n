@@ -2,6 +2,7 @@ package com.gu.notifications.worker.utils
 
 import com.gu.notifications.worker.tokens.ChunkedTokens
 import models.{ShardRange, ShardedNotification}
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.{Format, JsError, JsSuccess, JsValue, Json}
 
 case class Event(
@@ -13,7 +14,8 @@ object Event {
   implicit val eventJf: Format[Event] = Json.format[Event]
 }
 
-object NotificationParser {
+object NotificationParser extends Logging {
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   def parseEventNotification(input: String): Either[ShardedNotification, ChunkedTokens] = {
     val json: JsValue = Json.parse(input)
     json.validate[Event] match {
@@ -37,7 +39,13 @@ object NotificationParser {
 
   private def parseChunkedTokens(json: JsValue): ChunkedTokens = {
     json.validate[ChunkedTokens] match {
-      case JsSuccess(chunkedTokens, _) => chunkedTokens
+      case JsSuccess(chunkedTokens, _) => {
+        logger.info(Map(
+          "worker.chunkTokenSize" -> chunkedTokens.tokens.size,
+          "notificationId" -> chunkedTokens.notification.id
+        ), "Parsed chunk tokens")
+        chunkedTokens
+      }
       case JsError(errors) => throw new RuntimeException(s"Unable to parse message $errors")
     }
   }
