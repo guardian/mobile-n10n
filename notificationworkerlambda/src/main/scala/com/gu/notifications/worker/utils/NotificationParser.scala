@@ -15,7 +15,7 @@ object Event {
 }
 
 object NotificationParser extends Logging {
-  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
   def parseEventNotification(input: String): Either[ShardedNotification, ChunkedTokens] = {
     val json: JsValue = Json.parse(input)
     json.validate[Event] match {
