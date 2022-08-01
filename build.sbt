@@ -8,7 +8,7 @@ import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 val projectVersion = "1.0-latest"
 
 organization := "com.gu"
-ThisBuild / scalaVersion := "2.13.2"
+ThisBuild / scalaVersion := "2.13.8"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -43,7 +43,7 @@ val standardSettings = Seq[Setting[_]](
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.24.0",
-    "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided",
+    "com.softwaremill.macwire" %% "macros" % "2.5.7" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),

@@ -36,10 +36,10 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
         """
         .update.run
 
-    (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync
+    (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync()
   }
 
-  override def before() = {
+  override def before = {
     initializeDatabase()
     registrations.map(service.insert).foreach(io => run(io))
   }
