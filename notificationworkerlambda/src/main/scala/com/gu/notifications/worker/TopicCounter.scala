@@ -19,7 +19,7 @@ class TopicCounter(registrationService: RegistrationService[IO, Stream], topicCo
   def handleRequest()(implicit format: Format[TopicCount], executionContext: ExecutionContext): Unit = {
 
     val topicCountStream = registrationService.topicCounts(countsThreshold)
-    val ioTopicListF = topicCountStream.compile.toList.unsafeToFuture
+    val ioTopicListF = topicCountStream.compile.toList.unsafeToFuture()
 
     val ioTopicList = Await.result(ioTopicListF, Duration.Inf)
     logger.info(s"Retrieved ${ioTopicList.length} topic counts of over 1000")

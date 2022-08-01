@@ -42,6 +42,8 @@ object DynamoJsonConversions {
       case JsNull => att.setNULL(true)
       case JsArray(a) => att.setL(a.map(toAttributeValue).asJava)
       case JsObject(o) => att.setM(o.view.mapValues(toAttributeValue).toMap.asJava)
+      case JsFalse => att.setBOOL(false)
+      case JsTrue => att.setBOOL(true)
     }
     att
   }
