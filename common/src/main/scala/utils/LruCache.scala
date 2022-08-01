@@ -12,7 +12,7 @@ class LruCache[V](
 ) {
 
   private class Entry[T](val promise: Promise[T], val deadline: Deadline) {
-    def isAlive() : Boolean = deadline.hasTimeLeft
+    def isAlive: Boolean = deadline.hasTimeLeft()
 
     def future = promise.future
   }
@@ -65,7 +65,7 @@ class LruCache[V](
 
   def remove(key: Any) = store.remove(key) match {
     case null => None
-    case entry if entry.isAlive() => Some(entry.future)
+    case entry if entry.isAlive => Some(entry.future)
     case entry => None
   }
 }

@@ -60,7 +60,7 @@ class NotificationSchedulePersistenceImpl(tableName: String, client: AmazonDynam
 
   def writeAsync(notificationsScheduleEntry: NotificationsScheduleEntry, maybeEpochSentS: Option[Long]): Promise[Unit] = {
     val request = makePutItemRequest(notificationsScheduleEntry, maybeEpochSentS)
-    val promise = Promise[Unit]
+    val promise = Promise[Unit]()
     client.putItemAsync(request, new AsyncHandler[PutItemRequest, PutItemResult] {
       override def onError(exception: Exception): Unit = promise.failure(exception)
 

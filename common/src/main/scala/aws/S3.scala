@@ -30,7 +30,7 @@ trait S3[T]  {
   }
 
   def fetch()(implicit format: Format[T], executionException: ExecutionContext) : Future[List[T]] = {
-    Try(parseS3Object) match {
+    Try(parseS3Object()) match {
       case Success(list) => Future.successful(list)
       case Failure(ex) =>
         logger.error(s"Error retrieving topic registration counts from s3. Bucket: ${bucketName}, Path: ${path}")

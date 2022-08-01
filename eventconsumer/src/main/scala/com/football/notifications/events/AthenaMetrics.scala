@@ -38,7 +38,7 @@ class AthenaMetrics {
   val dynamoReportUpdater = new DynamoReportUpdater(stage)
 
   private def asyncHandle[REQ <: AmazonWebServiceRequest, RES](asyncHandlerConsumer: AsyncHandler[REQ, RES] => Any): Future[RES] = {
-    val promise = Promise[RES]
+    val promise = Promise[RES]()
     asyncHandlerConsumer(new AsyncHandler[REQ, RES] {
       override def onError(exception: Exception): Unit = promise.failure(exception)
 
@@ -59,7 +59,7 @@ class AthenaMetrics {
         .withResultConfiguration(new ResultConfiguration().withOutputLocation(query.outputLocation)), asyncHandler))
 
     def waitUntilQueryCompletes(id: String): Future[Unit] = {
-      val promiseInASecond = Promise[Unit]
+      val promiseInASecond = Promise[Unit]()
       val runnable: Runnable = () => promiseInASecond.success(())
       scheduledExecutorService.schedule(runnable, 1, TimeUnit.SECONDS)
       promiseInASecond.future.flatMap { _ =>
