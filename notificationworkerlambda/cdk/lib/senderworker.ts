@@ -38,7 +38,7 @@ class SenderWorker extends cdk.Construct {
 
     const senderDlq = new sqs.Queue(this, 'SenderDlq')
     this.senderSqs = new sqs.Queue(this, 'SenderSqs', {
-      visibilityTimeout: cdk.Duration.seconds(100),
+      visibilityTimeout: cdk.Duration.seconds(200),
       retentionPeriod: cdk.Duration.hours(1),
       deadLetterQueue: {
         queue: senderDlq,
@@ -109,7 +109,7 @@ class SenderWorker extends cdk.Construct {
       memorySize: 3008,
       description: `sends notifications for ${id}`,
       role: executionRole,
-      timeout: cdk.Duration.seconds(90),
+      timeout: cdk.Duration.seconds(180),
       reservedConcurrentExecutions: opts.reservedConcurrency
     })
 
