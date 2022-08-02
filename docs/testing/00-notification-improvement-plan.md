@@ -26,6 +26,7 @@ Current ideas and initiatives for the fine-tuning phase:
 - [Lambda concurrency](./04-reducing-lambda-duration.md)
 - [Reducing lambda execution time](./06-reducing-lambda-cold-start-times.md)
 - Change batch size for sender lambdas (increase throughput to apns/fcm)
+- Increase sqs throughput: use multiple threads, validate we're using batch requests
 
 ## Product improvements
 

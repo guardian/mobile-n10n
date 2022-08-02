@@ -3,7 +3,7 @@ package com.gu.notifications.worker.utils
 import com.gu.notifications.worker.tokens.ChunkedTokens
 import models.{ShardRange, ShardedNotification}
 import org.slf4j.{Logger, LoggerFactory}
-import play.api.libs.json.{Format, JsError, JsSuccess, JsValue, Json}
+import play.api.libs.json._
 
 case class Event(
   range: Option[ShardRange],
