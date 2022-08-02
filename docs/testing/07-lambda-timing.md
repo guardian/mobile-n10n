@@ -12,10 +12,10 @@ We collected data for notifications with different ranges of registration count.
 - The harvester scales reasonably well with increasing registration count
 - The sender lambdas appear to be our current bottleneck
 
-| Registration Count                   | % delivered within 2 mins | Time between notification request received and last sender finished (s) | Harvester Total Duration (s) | Senders Total Duration (s) |
-|:-------------------------------------|:--------------------------|:------------------------------------------------------------------------|:-----------------------------|:---------------------------|
-| > 200000                             | 58                        | 230                                                                     | 51                           | 224                        |
-| 100000 < x > 200000                  | 94                        | 94                                                                      | 35                           | 86                         |
+| Registration Count     | % delivered within 2 mins | Time between notification request received and last sender finished (s) | Harvester Total Duration (s) | Senders Total Duration (s) |
+|:-----------------------|:--------------------------|:------------------------------------------------------------------------|:-----------------------------|:---------------------------|
+| r.c. > 200000          | 58                        | 230                                                                     | 51                           | 224                        |
+| 100000 < r.c. > 200000 | 94                        | 94                                                                      | 35                           | 86                         |
 
 
 ## Registration Count > 200000
