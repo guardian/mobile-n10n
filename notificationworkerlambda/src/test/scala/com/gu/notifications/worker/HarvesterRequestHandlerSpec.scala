@@ -31,8 +31,8 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       tokenPlatformStreamCount.get() shouldEqual 1
       firebaseSqsDeliveriesCount.get() shouldEqual 3
       apnsSqsDeliveriesCount.get() shouldEqual 3
-      firebaseSqsDeliveriesTotal.get() shouldEqual 10002
-      apnsSqsDeliveriesTotal.get() shouldEqual 10002
+      firebaseSqsDeliveriesTotal.get() shouldEqual 4002
+      apnsSqsDeliveriesTotal.get() shouldEqual 4002
     }
   }
 
@@ -78,7 +78,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       event
     }
 
-    val twoThousandTwoTokens: List[String] = Range(0,10002).map(num => s"token-$num").toList
+    val twoThousandTwoTokens: List[String] = Range(0,4002).map(num => s"token-$num").toList
     def tokenStream: Stream[IO, String] = Stream.emits(twoThousandTwoTokens)
     def tokenPlatformStream: Stream[IO, HarvestedToken] = Stream.emits(twoThousandTwoTokens.map(HarvestedToken(_, Android, None)) ::: twoThousandTwoTokens.map(HarvestedToken(_, Ios, None)))
 
