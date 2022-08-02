@@ -8,7 +8,7 @@ import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 val projectVersion = "1.0-latest"
 
 organization := "com.gu"
-ThisBuild / scalaVersion := "2.13.2"
+ThisBuild / scalaVersion := "2.13.8"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -43,7 +43,7 @@ val standardSettings = Seq[Setting[_]](
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.24.0",
-    "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided",
+    "com.softwaremill.macwire" %% "macros" % "2.5.7" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
@@ -258,17 +258,16 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     ),
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
-      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.5.0",
       "org.slf4j" % "slf4j-api" % "1.7.36",
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.1",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+      "ch.qos.logback" % "logback-classic" % "1.2.11",
+      "net.logstash.logback" % "logstash-logback-encoder" % "7.2",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
     assembly / assemblyMergeStrategy := {
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
       case _ => MergeStrategy.first
     },
     Test / run / fork := true,

@@ -1,7 +1,6 @@
 package com.gu.notificationschedule
 
 import java.time.{Clock, Instant}
-
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClientBuilder
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
@@ -12,7 +11,7 @@ import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, 
 import com.gu.notificationschedule.external.{SsmConfig, SsmConfigLoader}
 import com.gu.notificationschedule.notifications.{RequestNotification, RequestNotificationImpl}
 import okhttp3.OkHttpClient
-import org.apache.logging.log4j.{LogManager, Logger}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -47,7 +46,7 @@ class ProcessNotificationScheduleLambda(
                                          clock: Clock
                                        ) {
 
-  val logger: Logger = LogManager.getLogger(classOf[ProcessNotificationScheduleLambda])
+  val logger: Logger = LoggerFactory.getLogger(classOf[ProcessNotificationScheduleLambda])
 
   def this() = this(
     lambdaConfig,

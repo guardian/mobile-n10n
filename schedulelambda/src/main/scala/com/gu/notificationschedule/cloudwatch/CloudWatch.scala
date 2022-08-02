@@ -4,11 +4,10 @@ import java.time.{Duration, Instant}
 import java.util
 import java.util.Date
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
-
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsync
 import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest, PutMetricDataResult, StandardUnit}
-import org.apache.logging.log4j.{LogManager, Logger}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.annotation.tailrec
 import scala.concurrent.{Await, ExecutionContext, Future, Promise, duration}
@@ -43,7 +42,7 @@ sealed class Timer(metricName: String, cloudWatch: CloudWatchMetrics, start: Ins
 
 class CloudWatchImpl(stage: String, lambdaname: String, cw: AmazonCloudWatchAsync)(implicit executionContext: ExecutionContext) extends CloudWatch {
 
-  private val logger: Logger = LogManager.getLogger(classOf[CloudWatchImpl])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[CloudWatchImpl])
   private val queue: ConcurrentLinkedQueue[MetricDatum] = new ConcurrentLinkedQueue[MetricDatum]()
 
   def queueMetric(metricName: String, value: Double, standardUnit: StandardUnit, instant: Instant): Boolean = {
@@ -61,7 +60,7 @@ class CloudWatchImpl(stage: String, lambdaname: String, cw: AmazonCloudWatchAsyn
       val request: PutMetricDataRequest = new PutMetricDataRequest()
         .withNamespace(s"mobile-notifications-schedule/$stage/$lambdaname")
         .withMetricData(bufferOfMetrics)
-      val promise: Promise[PutMetricDataResult] = Promise[PutMetricDataResult]
+      val promise: Promise[PutMetricDataResult] = Promise[PutMetricDataResult]()
       val value: AsyncHandler[PutMetricDataRequest, PutMetricDataResult] = new AsyncHandler[PutMetricDataRequest, PutMetricDataResult] {
         override def onError(exception: Exception): Unit = promise.failure(exception)
         override def onSuccess(request: PutMetricDataRequest, result: PutMetricDataResult): Unit = {

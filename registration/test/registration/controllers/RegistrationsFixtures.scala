@@ -100,7 +100,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
           PRIMARY KEY (token, topic)
         )""".update.run
 
-        (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync
+        (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync()
         RegistrationService(transactor)
       }
     }
