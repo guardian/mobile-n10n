@@ -2,30 +2,10 @@
 
 exports[`The MobileAppsRendering stack matches the snapshot 1`] = `
 Object {
-  "Mappings": Object {
-    "SenderWorkerStack": Object {
-      "CODE": Object {
-        "actionsEnabled": false,
-      },
-      "PROD": Object {
-        "actionsEnabled": true,
-      },
-    },
-  },
   "Outputs": Object {
     "NotificationSenderWorkerQueueArns": Object {
       "Export": Object {
-        "Name": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "NotificationSenderWorkerQueueArns-",
-              Object {
-                "Ref": "Stage",
-              },
-            ],
-          ],
-        },
+        "Name": "NotificationSenderWorkerQueueArns-PROD",
       },
       "Value": Object {
         "Fn::Join": Array [
@@ -80,21 +60,12 @@ Object {
       "Type": "String",
     },
     "ReservedConcurrency": Object {
-      "Description": "How many concurrent execution to provision the lamdba with",
+      "Description": "How many concurrent execution to provision the lambda with",
       "Type": "Number",
     },
     "SenderTooFewInvocationsAlarmPeriodParam": Object {
       "Description": "How long until no execution is suspicious, in seconds",
       "Type": "Number",
-    },
-    "Stage": Object {
-      "AllowedValues": Array [
-        "CODE",
-        "PROD",
-      ],
-      "Default": "CODE",
-      "Description": "Stage name",
-      "Type": "String",
     },
   },
   "Resources": Object {
@@ -208,11 +179,7 @@ Object {
                         Object {
                           "Ref": "AWS::AccountId",
                         },
-                        ":parameter/notifications/",
-                        Object {
-                          "Ref": "Stage",
-                        },
-                        "/workers/android",
+                        ":parameter/notifications/PROD/workers/android",
                       ],
                     ],
                   },
@@ -243,7 +210,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -255,9 +222,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -273,7 +238,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -285,9 +250,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -301,24 +264,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the android sender lambda errors in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the android sender lambda errors in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androidSenderLambdaCtr85CB623B",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "androidSenderLambdaCtr85CB623B",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -396,22 +362,10 @@ Object {
             "App": "android",
             "Platform": "android",
             "Stack": "mobile-notifications-workers",
-            "Stage": Object {
-              "Ref": "Stage",
-            },
+            "Stage": "PROD",
           },
         },
-        "FunctionName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "mobile-notifications-workers-android-sender-ctr-",
-              Object {
-                "Ref": "Stage",
-              },
-            ],
-          ],
-        },
+        "FunctionName": "mobile-notifications-workers-android-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
             "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
@@ -435,7 +389,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -447,37 +401,48 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "Timeout": 90,
       },
       "Type": "AWS::Lambda::Function",
     },
+    "androidSenderLambdaCtrAlias9D2515A7": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "androidSenderLambdaCtr85CB623B",
+        },
+        "FunctionVersion": Object {
+          "Fn::GetAtt": Array [
+            "androidSenderLambdaCtrCurrentVersion2D1B9E3C8facb16a15959d6a65799b1ef820f765",
+            "Version",
+          ],
+        },
+        "Name": "Live",
+        "ProvisionedConcurrencyConfig": Object {
+          "ProvisionedConcurrentExecutions": 50,
+        },
+      },
+      "Type": "AWS::Lambda::Alias",
+    },
+    "androidSenderLambdaCtrCurrentVersion2D1B9E3C8facb16a15959d6a65799b1ef820f765": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "androidSenderLambdaCtr85CB623B",
+        },
+      },
+      "Type": "AWS::Lambda::Version",
+    },
     "androidSenderQueueSSMParameter88F729D1": Object {
       "Properties": Object {
         "DataType": "text",
-        "Name": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "/notifications/",
-              Object {
-                "Ref": "Stage",
-              },
-              "/workers/harvester/androidLiveSqsCdkUrl",
-            ],
-          ],
-        },
+        "Name": "/notifications/PROD/workers/harvester/androidLiveSqsCdkUrl",
         "Tags": Object {
           "App": "android",
           "Stack": "mobile-notifications-workers",
-          "Stage": Object {
-            "Ref": "Stage",
-          },
-          "gu:cdk:version": "31.4.1",
+          "Stage": "PROD",
+          "gu:cdk:version": "47.0.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -508,7 +473,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -520,9 +485,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "VisibilityTimeout": 100,
@@ -532,7 +495,7 @@ Object {
     },
     "androidSenderSqsEventSourceMapping29E8124B": Object {
       "DependsOn": Array [
-        "androidSenderLambdaCtr85CB623B",
+        "androidSenderLambdaCtrAlias9D2515A7",
         "androidSenderSqsCF269D3F",
       ],
       "Properties": Object {
@@ -545,7 +508,25 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "androidSenderLambdaCtr85CB623B",
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Fn::Select": Array [
+                  6,
+                  Object {
+                    "Fn::Split": Array [
+                      ":",
+                      Object {
+                        "Ref": "androidSenderLambdaCtrAlias9D2515A7",
+                      },
+                    ],
+                  },
+                ],
+              },
+              ":Live",
+            ],
+          ],
         },
       },
       "Type": "AWS::Lambda::EventSourceMapping",
@@ -557,24 +538,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the android sender lambda is throttled in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the android sender lambda is throttled in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androidSenderLambdaCtr85CB623B",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "androidSenderLambdaCtr85CB623B",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -601,24 +585,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the android sender lambda is not frequently invoked in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the android sender lambda is not frequently invoked in PROD.",
         "ComparisonOperator": "LessThanOrEqualToThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androidSenderLambdaCtr85CB623B",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "androidSenderLambdaCtr85CB623B",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -747,11 +734,7 @@ Object {
                         Object {
                           "Ref": "AWS::AccountId",
                         },
-                        ":parameter/notifications/",
-                        Object {
-                          "Ref": "Stage",
-                        },
-                        "/workers/android-beta",
+                        ":parameter/notifications/PROD/workers/android-beta",
                       ],
                     ],
                   },
@@ -782,7 +765,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -794,9 +777,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -812,7 +793,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -824,9 +805,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -840,24 +819,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the android-beta sender lambda errors in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the android-beta sender lambda errors in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -875,6 +857,24 @@ Object {
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androidbetaSenderLambdaCtrAlias16A3A7D2": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+        },
+        "FunctionVersion": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaSenderLambdaCtrCurrentVersion2989BBF586bd7c792e6666cc1ae6d9f877b7e508",
+            "Version",
+          ],
+        },
+        "Name": "Live",
+        "ProvisionedConcurrencyConfig": Object {
+          "ProvisionedConcurrentExecutions": 50,
+        },
+      },
+      "Type": "AWS::Lambda::Alias",
     },
     "androidbetaSenderLambdaCtrB3CF7FC4": Object {
       "DependsOn": Array [
@@ -935,22 +935,10 @@ Object {
             "App": "android-beta",
             "Platform": "android-beta",
             "Stack": "mobile-notifications-workers",
-            "Stage": Object {
-              "Ref": "Stage",
-            },
+            "Stage": "PROD",
           },
         },
-        "FunctionName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "mobile-notifications-workers-android-beta-sender-ctr-",
-              Object {
-                "Ref": "Stage",
-              },
-            ],
-          ],
-        },
+        "FunctionName": "mobile-notifications-workers-android-beta-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
             "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
@@ -974,7 +962,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -986,37 +974,30 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "Timeout": 90,
       },
       "Type": "AWS::Lambda::Function",
     },
+    "androidbetaSenderLambdaCtrCurrentVersion2989BBF586bd7c792e6666cc1ae6d9f877b7e508": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+        },
+      },
+      "Type": "AWS::Lambda::Version",
+    },
     "androidbetaSenderQueueSSMParameterCEB2EE8F": Object {
       "Properties": Object {
         "DataType": "text",
-        "Name": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "/notifications/",
-              Object {
-                "Ref": "Stage",
-              },
-              "/workers/harvester/androidBetaSqsCdkUrl",
-            ],
-          ],
-        },
+        "Name": "/notifications/PROD/workers/harvester/androidBetaSqsCdkUrl",
         "Tags": Object {
           "App": "android-beta",
           "Stack": "mobile-notifications-workers",
-          "Stage": Object {
-            "Ref": "Stage",
-          },
-          "gu:cdk:version": "31.4.1",
+          "Stage": "PROD",
+          "gu:cdk:version": "47.0.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -1047,7 +1028,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1059,9 +1040,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "VisibilityTimeout": 100,
@@ -1071,7 +1050,7 @@ Object {
     },
     "androidbetaSenderSqsEventSourceMappingA8FE78C9": Object {
       "DependsOn": Array [
-        "androidbetaSenderLambdaCtrB3CF7FC4",
+        "androidbetaSenderLambdaCtrAlias16A3A7D2",
         "androidbetaSenderSqs57513D18",
       ],
       "Properties": Object {
@@ -1084,7 +1063,25 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Fn::Select": Array [
+                  6,
+                  Object {
+                    "Fn::Split": Array [
+                      ":",
+                      Object {
+                        "Ref": "androidbetaSenderLambdaCtrAlias16A3A7D2",
+                      },
+                    ],
+                  },
+                ],
+              },
+              ":Live",
+            ],
+          ],
         },
       },
       "Type": "AWS::Lambda::EventSourceMapping",
@@ -1096,24 +1093,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the android-beta sender lambda is throttled in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the android-beta sender lambda is throttled in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -1140,24 +1140,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the android-beta sender lambda is not frequently invoked in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the android-beta sender lambda is not frequently invoked in PROD.",
         "ComparisonOperator": "LessThanOrEqualToThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -1286,11 +1289,7 @@ Object {
                         Object {
                           "Ref": "AWS::AccountId",
                         },
-                        ":parameter/notifications/",
-                        Object {
-                          "Ref": "Stage",
-                        },
-                        "/workers/android-edition",
+                        ":parameter/notifications/PROD/workers/android-edition",
                       ],
                     ],
                   },
@@ -1321,7 +1320,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1333,9 +1332,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -1351,7 +1348,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1363,9 +1360,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -1379,24 +1374,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the android-edition sender lambda errors in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the android-edition sender lambda errors in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androideditionSenderLambdaCtrF0169D16",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "androideditionSenderLambdaCtrF0169D16",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -1414,6 +1412,32 @@ Object {
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androideditionSenderLambdaCtrAliasA2D9AE21": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "androideditionSenderLambdaCtrF0169D16",
+        },
+        "FunctionVersion": Object {
+          "Fn::GetAtt": Array [
+            "androideditionSenderLambdaCtrCurrentVersion399B292B5b774b7952fa5788bdcb269893dc9d6f",
+            "Version",
+          ],
+        },
+        "Name": "Live",
+        "ProvisionedConcurrencyConfig": Object {
+          "ProvisionedConcurrentExecutions": 50,
+        },
+      },
+      "Type": "AWS::Lambda::Alias",
+    },
+    "androideditionSenderLambdaCtrCurrentVersion399B292B5b774b7952fa5788bdcb269893dc9d6f": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "androideditionSenderLambdaCtrF0169D16",
+        },
+      },
+      "Type": "AWS::Lambda::Version",
     },
     "androideditionSenderLambdaCtrF0169D16": Object {
       "DependsOn": Array [
@@ -1474,22 +1498,10 @@ Object {
             "App": "android-edition",
             "Platform": "android-edition",
             "Stack": "mobile-notifications-workers",
-            "Stage": Object {
-              "Ref": "Stage",
-            },
+            "Stage": "PROD",
           },
         },
-        "FunctionName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "mobile-notifications-workers-android-edition-sender-ctr-",
-              Object {
-                "Ref": "Stage",
-              },
-            ],
-          ],
-        },
+        "FunctionName": "mobile-notifications-workers-android-edition-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
             "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
@@ -1513,7 +1525,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1525,9 +1537,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "Timeout": 90,
@@ -1537,25 +1547,12 @@ Object {
     "androideditionSenderQueueSSMParameterEC513AB5": Object {
       "Properties": Object {
         "DataType": "text",
-        "Name": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "/notifications/",
-              Object {
-                "Ref": "Stage",
-              },
-              "/workers/harvester/androidEditionSqsCdkUrl",
-            ],
-          ],
-        },
+        "Name": "/notifications/PROD/workers/harvester/androidEditionSqsCdkUrl",
         "Tags": Object {
           "App": "android-edition",
           "Stack": "mobile-notifications-workers",
-          "Stage": Object {
-            "Ref": "Stage",
-          },
-          "gu:cdk:version": "31.4.1",
+          "Stage": "PROD",
+          "gu:cdk:version": "47.0.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -1586,7 +1583,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1598,9 +1595,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "VisibilityTimeout": 100,
@@ -1610,7 +1605,7 @@ Object {
     },
     "androideditionSenderSqsEventSourceMapping87D2DEDF": Object {
       "DependsOn": Array [
-        "androideditionSenderLambdaCtrF0169D16",
+        "androideditionSenderLambdaCtrAliasA2D9AE21",
         "androideditionSenderSqs400C0F3A",
       ],
       "Properties": Object {
@@ -1623,7 +1618,25 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "androideditionSenderLambdaCtrF0169D16",
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Fn::Select": Array [
+                  6,
+                  Object {
+                    "Fn::Split": Array [
+                      ":",
+                      Object {
+                        "Ref": "androideditionSenderLambdaCtrAliasA2D9AE21",
+                      },
+                    ],
+                  },
+                ],
+              },
+              ":Live",
+            ],
+          ],
         },
       },
       "Type": "AWS::Lambda::EventSourceMapping",
@@ -1635,24 +1648,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the android-edition sender lambda is throttled in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the android-edition sender lambda is throttled in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androideditionSenderLambdaCtrF0169D16",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "androideditionSenderLambdaCtrF0169D16",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -1679,24 +1695,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the android-edition sender lambda is not frequently invoked in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the android-edition sender lambda is not frequently invoked in PROD.",
         "ComparisonOperator": "LessThanOrEqualToThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androideditionSenderLambdaCtrF0169D16",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "androideditionSenderLambdaCtrF0169D16",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -1825,11 +1844,7 @@ Object {
                         Object {
                           "Ref": "AWS::AccountId",
                         },
-                        ":parameter/notifications/",
-                        Object {
-                          "Ref": "Stage",
-                        },
-                        "/workers/ios",
+                        ":parameter/notifications/PROD/workers/ios",
                       ],
                     ],
                   },
@@ -1860,7 +1875,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1872,9 +1887,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -1890,7 +1903,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1902,9 +1915,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -1918,24 +1929,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the ios sender lambda errors in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the ios sender lambda errors in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "iosSenderLambdaCtr6053C1F8",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "iosSenderLambdaCtr6053C1F8",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -2013,22 +2027,10 @@ Object {
             "App": "ios",
             "Platform": "ios",
             "Stack": "mobile-notifications-workers",
-            "Stage": Object {
-              "Ref": "Stage",
-            },
+            "Stage": "PROD",
           },
         },
-        "FunctionName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "mobile-notifications-workers-ios-sender-ctr-",
-              Object {
-                "Ref": "Stage",
-              },
-            ],
-          ],
-        },
+        "FunctionName": "mobile-notifications-workers-ios-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
             "com.gu.notifications.worker.IOSSender::handleChunkTokens",
@@ -2052,7 +2054,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -2064,37 +2066,48 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "Timeout": 90,
       },
       "Type": "AWS::Lambda::Function",
     },
+    "iosSenderLambdaCtrAliasF0CB0312": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "iosSenderLambdaCtr6053C1F8",
+        },
+        "FunctionVersion": Object {
+          "Fn::GetAtt": Array [
+            "iosSenderLambdaCtrCurrentVersionDC41594F55c4be4ed1551b7584f9407852e15a76",
+            "Version",
+          ],
+        },
+        "Name": "Live",
+        "ProvisionedConcurrencyConfig": Object {
+          "ProvisionedConcurrentExecutions": 50,
+        },
+      },
+      "Type": "AWS::Lambda::Alias",
+    },
+    "iosSenderLambdaCtrCurrentVersionDC41594F55c4be4ed1551b7584f9407852e15a76": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "iosSenderLambdaCtr6053C1F8",
+        },
+      },
+      "Type": "AWS::Lambda::Version",
+    },
     "iosSenderQueueSSMParameter921EF0C9": Object {
       "Properties": Object {
         "DataType": "text",
-        "Name": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "/notifications/",
-              Object {
-                "Ref": "Stage",
-              },
-              "/workers/harvester/iosLiveSqsCdkUrl",
-            ],
-          ],
-        },
+        "Name": "/notifications/PROD/workers/harvester/iosLiveSqsCdkUrl",
         "Tags": Object {
           "App": "ios",
           "Stack": "mobile-notifications-workers",
-          "Stage": Object {
-            "Ref": "Stage",
-          },
-          "gu:cdk:version": "31.4.1",
+          "Stage": "PROD",
+          "gu:cdk:version": "47.0.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -2125,7 +2138,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -2137,9 +2150,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "VisibilityTimeout": 100,
@@ -2149,7 +2160,7 @@ Object {
     },
     "iosSenderSqsEventSourceMapping2E507F40": Object {
       "DependsOn": Array [
-        "iosSenderLambdaCtr6053C1F8",
+        "iosSenderLambdaCtrAliasF0CB0312",
         "iosSenderSqsA94CB0A0",
       ],
       "Properties": Object {
@@ -2162,7 +2173,25 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "iosSenderLambdaCtr6053C1F8",
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Fn::Select": Array [
+                  6,
+                  Object {
+                    "Fn::Split": Array [
+                      ":",
+                      Object {
+                        "Ref": "iosSenderLambdaCtrAliasF0CB0312",
+                      },
+                    ],
+                  },
+                ],
+              },
+              ":Live",
+            ],
+          ],
         },
       },
       "Type": "AWS::Lambda::EventSourceMapping",
@@ -2174,24 +2203,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the ios sender lambda is throttled in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the ios sender lambda is throttled in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "iosSenderLambdaCtr6053C1F8",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "iosSenderLambdaCtr6053C1F8",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -2218,24 +2250,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the ios sender lambda is not frequently invoked in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the ios sender lambda is not frequently invoked in PROD.",
         "ComparisonOperator": "LessThanOrEqualToThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "iosSenderLambdaCtr6053C1F8",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "iosSenderLambdaCtr6053C1F8",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -2364,11 +2399,7 @@ Object {
                         Object {
                           "Ref": "AWS::AccountId",
                         },
-                        ":parameter/notifications/",
-                        Object {
-                          "Ref": "Stage",
-                        },
-                        "/workers/ios-edition",
+                        ":parameter/notifications/PROD/workers/ios-edition",
                       ],
                     ],
                   },
@@ -2399,7 +2430,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -2411,9 +2442,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -2429,7 +2458,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -2441,9 +2470,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
       },
@@ -2457,24 +2484,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the ios-edition sender lambda errors in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the ios-edition sender lambda errors in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -2552,22 +2582,10 @@ Object {
             "App": "ios-edition",
             "Platform": "ios-edition",
             "Stack": "mobile-notifications-workers",
-            "Stage": Object {
-              "Ref": "Stage",
-            },
+            "Stage": "PROD",
           },
         },
-        "FunctionName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "mobile-notifications-workers-ios-edition-sender-ctr-",
-              Object {
-                "Ref": "Stage",
-              },
-            ],
-          ],
-        },
+        "FunctionName": "mobile-notifications-workers-ios-edition-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
             "com.gu.notifications.worker.IOSSender::handleChunkTokens",
@@ -2591,7 +2609,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -2603,37 +2621,48 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "Timeout": 90,
       },
       "Type": "AWS::Lambda::Function",
     },
+    "ioseditionSenderLambdaCtrAliasA1F68D17": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+        },
+        "FunctionVersion": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionSenderLambdaCtrCurrentVersionF7C271EC2af03e6ed5cdf1063230a36e3db5698e",
+            "Version",
+          ],
+        },
+        "Name": "Live",
+        "ProvisionedConcurrencyConfig": Object {
+          "ProvisionedConcurrentExecutions": 50,
+        },
+      },
+      "Type": "AWS::Lambda::Alias",
+    },
+    "ioseditionSenderLambdaCtrCurrentVersionF7C271EC2af03e6ed5cdf1063230a36e3db5698e": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+        },
+      },
+      "Type": "AWS::Lambda::Version",
+    },
     "ioseditionSenderQueueSSMParameter4EAB5876": Object {
       "Properties": Object {
         "DataType": "text",
-        "Name": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "/notifications/",
-              Object {
-                "Ref": "Stage",
-              },
-              "/workers/harvester/iosEditionSqsCdkUrl",
-            ],
-          ],
-        },
+        "Name": "/notifications/PROD/workers/harvester/iosEditionSqsCdkUrl",
         "Tags": Object {
           "App": "ios-edition",
           "Stack": "mobile-notifications-workers",
-          "Stage": Object {
-            "Ref": "Stage",
-          },
-          "gu:cdk:version": "31.4.1",
+          "Stage": "PROD",
+          "gu:cdk:version": "47.0.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -2646,7 +2675,7 @@ Object {
     },
     "ioseditionSenderSqsEventSourceMapping9B8EF143": Object {
       "DependsOn": Array [
-        "ioseditionSenderLambdaCtr2410D4D7",
+        "ioseditionSenderLambdaCtrAliasA1F68D17",
         "ioseditionSenderSqsFDE339AC",
       ],
       "Properties": Object {
@@ -2659,7 +2688,25 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Fn::Select": Array [
+                  6,
+                  Object {
+                    "Fn::Split": Array [
+                      ":",
+                      Object {
+                        "Ref": "ioseditionSenderLambdaCtrAliasA1F68D17",
+                      },
+                    ],
+                  },
+                ],
+              },
+              ":Live",
+            ],
+          ],
         },
       },
       "Type": "AWS::Lambda::EventSourceMapping",
@@ -2684,7 +2731,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "31.4.1",
+            "Value": "47.0.0",
           },
           Object {
             "Key": "gu:repo",
@@ -2696,9 +2743,7 @@ Object {
           },
           Object {
             "Key": "Stage",
-            "Value": Object {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "VisibilityTimeout": 100,
@@ -2713,24 +2758,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the ios-edition sender lambda is throttled in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the ios-edition sender lambda is throttled in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],
@@ -2757,24 +2805,27 @@ Object {
             "Ref": "AlarmTopicArn",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "Triggers if the ios-edition sender lambda is not frequently invoked in ",
-              Object {
-                "Ref": "Stage",
-              },
-              ".",
-            ],
-          ],
-        },
+        "AlarmDescription": "Triggers if the ios-edition sender lambda is not frequently invoked in PROD.",
         "ComparisonOperator": "LessThanOrEqualToThreshold",
         "Dimensions": Array [
           Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+            },
+          },
+          Object {
+            "Name": "Resource",
+            "Value": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  Object {
+                    "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+                  },
+                  ":Live",
+                ],
+              ],
             },
           },
         ],

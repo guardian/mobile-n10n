@@ -1,15 +1,16 @@
-import * as cdk from '@aws-cdk/core'
-import * as ecr from '@aws-cdk/aws-ecr'
-import * as sqs from '@aws-cdk/aws-sqs'
-import * as sns from '@aws-cdk/aws-sns'
-import * as iam from '@aws-cdk/aws-iam'
-import * as lambda from '@aws-cdk/aws-lambda'
-import * as cloudwatch from '@aws-cdk/aws-cloudwatch'
-import * as ssm from '@aws-cdk/aws-ssm'
+import * as cdk from 'aws-cdk-lib'
+import { Construct } from "constructs";
+import { aws_ecr as ecr } from 'aws-cdk-lib'
+import { aws_sqs as sqs } from 'aws-cdk-lib'
+import { aws_sns as sns } from 'aws-cdk-lib'
+import { aws_iam as iam } from 'aws-cdk-lib'
+import { aws_lambda as lambda } from 'aws-cdk-lib'
+import { aws_cloudwatch as cloudwatch } from 'aws-cdk-lib'
+import { aws_ssm as ssm } from 'aws-cdk-lib'
 
-import {SnsAction} from '@aws-cdk/aws-cloudwatch-actions'
+import {SnsAction} from 'aws-cdk-lib/aws-cloudwatch-actions'
 import { GuStack } from "@guardian/cdk/lib/constructs/core"
-import type { App } from "@aws-cdk/core"
+import type { App } from "aws-cdk-lib"
 import type { GuStackProps } from "@guardian/cdk/lib/constructs/core"
 
 type SenderWorkerOpts = {
@@ -25,7 +26,7 @@ type SenderWorkerOpts = {
   paramPrefix: string
 }
 
-class SenderWorker extends cdk.Construct {
+class SenderWorker extends Construct {
 
   readonly senderSqs: sqs.Queue
 
@@ -33,6 +34,8 @@ class SenderWorker extends cdk.Construct {
     super(scope, id)
 
     cdk.Tags.of(this).add("App", id)
+
+    const provisionedConcurrency = 50
 
     const snsTopicAction = new SnsAction(opts.alarmTopic)
 
@@ -113,22 +116,28 @@ class SenderWorker extends cdk.Construct {
       reservedConcurrentExecutions: opts.reservedConcurrency
     })
 
+    const version = senderLambdaCtr.currentVersion
+    const alias = new lambda.Alias(this,'SenderLambdaCtrAlias', {
+      aliasName: 'Live',
+      version,
+      provisionedConcurrentExecutions: provisionedConcurrency
+    })
+
     const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
       batchSize: 1,
       enabled: true,
       eventSourceArn: this.senderSqs.queueArn,
-      target: senderLambdaCtr
+      target: alias
     })
     senderSqsEventSourceMapping.node.addDependency(this.senderSqs)
-    senderSqsEventSourceMapping.node.addDependency(senderLambdaCtr)
+    senderSqsEventSourceMapping.node.addDependency(alias)
 
     const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
       alarmDescription: `Triggers if the ${id} sender lambda is throttled in ${scope.stage}.`,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
-      metric: senderLambdaCtr.metricThrottles({period: cdk.Duration.seconds(360)}),
-      statistic: "Sum",
+      metric: alias.metricThrottles({period: cdk.Duration.seconds(360)}),
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING
     })
     senderThrottleAlarm.addAlarmAction(snsTopicAction)
@@ -139,8 +148,7 @@ class SenderWorker extends cdk.Construct {
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
-      metric: senderLambdaCtr.metricErrors({period: cdk.Duration.seconds(360)}),
-      statistic: "Sum",
+      metric: alias.metricErrors({period: cdk.Duration.seconds(360)}),
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING
     })
     senderErrorAlarm.addAlarmAction(snsTopicAction)
@@ -151,8 +159,7 @@ class SenderWorker extends cdk.Construct {
       comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
-      metric: senderLambdaCtr.metricInvocations({period: cdk.Duration.seconds(360)}),
-      statistic: "Sum",
+      metric: alias.metricInvocations({period: cdk.Duration.seconds(360)}),
       treatMissingData: cloudwatch.TreatMissingData.BREACHING,
       actionsEnabled: false // isEnabled
     })
@@ -181,7 +188,7 @@ export class SenderWorkerStack extends GuStack {
 
     const reservedConcurrencyParam = new cdk.CfnParameter(this, "ReservedConcurrency", {
       type: "Number",
-      description: "How many concurrent execution to provision the lamdba with"
+      description: "How many concurrent execution to provision the lambda with"
     })
 
     const buildIdParam = new cdk.CfnParameter(this, "BuildId", {
@@ -205,22 +212,13 @@ export class SenderWorkerStack extends GuStack {
         repositoryName: cdk.Fn.importValue("NotificationLambdaRepositoryName")
       })
 
-    const isEnabled = this.withStageDependentValue({
-      app: id,
-      variableName: "actionsEnabled",
-      stageValues: {
-        CODE: false,
-        PROD: true
-      }
-    })
-
     let sharedOpts = {
       imageRepo: notificationEcrRepo,
       buildId: buildIdParam.valueAsString,
       reservedConcurrency: reservedConcurrencyParam.valueAsNumber,
       alarmTopic: sns.Topic.fromTopicArn(this, 'AlarmTopic', alarmTopicArnParam.valueAsString),
       tooFewInvocationsAlarmPeriod: cdk.Duration.seconds(senderTooFewInvocationsAlarmPeriodParam.valueAsNumber),
-      tooFewInvocationsEnabled: isEnabled,
+      tooFewInvocationsEnabled: props.stage != "CODE",
       cleanerQueueArn: cleanerQueueArnParam.valueAsString
     }
 

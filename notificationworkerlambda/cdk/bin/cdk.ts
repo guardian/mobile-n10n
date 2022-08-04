@@ -5,5 +5,11 @@ import { SenderWorkerStack } from '../lib/senderworker';
 const app = new cdk.App()
 
 new SenderWorkerStack(app, 'SenderWorkerStack', {
-  stack: "mobile-notifications-workers"
+  stack: "mobile-notifications-workers",
+  stage: "CODE"
+})
+
+new SenderWorkerStack(app, 'SenderWorkerStack', {
+  stack: "mobile-notifications-workers",
+  stage: "PROD"
 })

@@ -1,14 +1,14 @@
-import '@aws-cdk/assert/jest';
-import { SynthUtils } from '@aws-cdk/assert';
-import { App } from '@aws-cdk/core';
+import { Template } from 'aws-cdk-lib/assertions';
+import { App } from 'aws-cdk-lib';
 import {SenderWorkerStack} from "./senderworker";
 
 describe('The MobileAppsRendering stack', () => {
   it('matches the snapshot', () => {
     const app = new App();
     const stack = new SenderWorkerStack(app, 'SenderWorkerStack', {
-      stack: 'mobile-notifications-workers'
+      stack: 'mobile-notifications-workers',
+      stage: "PROD",
     });
-    expect(SynthUtils.toCloudFormation(stack)).toMatchSnapshot();
+    expect(Template.fromStack(stack).toJSON()).toMatchSnapshot();
   });
 });
