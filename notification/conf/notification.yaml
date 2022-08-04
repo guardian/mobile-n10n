@@ -255,6 +255,15 @@ Resources:
             - kinesis:PutRecords
             - kinesis:DescribeStream
             Resource: !Sub arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/mobile-log-aggregation-${Stage}
+      - PolicyName: telemetry
+        PolicyDocument:
+          Statement:
+          - Action:
+            - kinesis:PutRecord
+            - kinesis:PutRecords
+            - kinesis:DescribeStream
+            Effect: Allow
+            Resource: !Sub arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/telemetry-stream
       - PolicyName: dynamo
         PolicyDocument:
           Statement:
