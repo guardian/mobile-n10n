@@ -23,6 +23,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 val playJsonVersion = "2.8.1"
 val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.772"
+val awsSdk2Version: String = "2.17.246"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.7.0"
 val okHttpVersion: String = "3.14.8"
@@ -88,6 +89,7 @@ lazy val common = project
       "com.gu" %% "pa-client" % paClientVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
+      "software.amazon.awssdk" % "kinesis" % awsSdk2Version,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
       "ai.x" %% "play-json-extensions" % "0.42.0",
       "org.tpolecat" %% "doobie-core"      % doobieVersion,

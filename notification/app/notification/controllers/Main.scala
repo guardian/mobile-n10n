@@ -3,6 +3,7 @@ package notification.controllers
 import java.util.UUID
 import java.time.{Duration, Instant}
 import authentication.AuthAction
+import aws.KinesisTelemetry
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
 import models.{TopicTypes, _}
@@ -13,10 +14,12 @@ import notification.services
 import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.slf4j.{Logger, LoggerFactory}
+import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import tracking.Repository.RepositoryResult
 import tracking.SentNotificationReportRepository
+import PushTopicsEvent._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -68,6 +71,8 @@ final class Main(
     val notification = request.body
     val topics = notification.topic
     val MaxTopics = 20
+    val telemetryEvent = PushTopicsEvent(DateTime.now, "push topic", s"notification ${notification.id} received")
+    KinesisTelemetry.putRecord(Json.stringify(Json.toJson(telemetryEvent)))
     (topics.size match {
       case 0 => Future.successful(BadRequest("Empty topic list"))
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
