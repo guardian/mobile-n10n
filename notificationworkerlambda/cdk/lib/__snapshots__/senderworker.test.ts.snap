@@ -828,20 +828,6 @@ Object {
               "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
             },
           },
-          Object {
-            "Name": "Resource",
-            "Value": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
-                  },
-                  ":Live",
-                ],
-              ],
-            },
-          },
         ],
         "EvaluationPeriods": 1,
         "MetricName": "Errors",
@@ -1063,25 +1049,7 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              Object {
-                "Fn::Select": Array [
-                  6,
-                  Object {
-                    "Fn::Split": Array [
-                      ":",
-                      Object {
-                        "Ref": "androidbetaSenderLambdaCtrAlias16A3A7D2",
-                      },
-                    ],
-                  },
-                ],
-              },
-              ":Live",
-            ],
-          ],
+          "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
         },
       },
       "Type": "AWS::Lambda::EventSourceMapping",
@@ -1100,20 +1068,6 @@ Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
-            },
-          },
-          Object {
-            "Name": "Resource",
-            "Value": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
-                  },
-                  ":Live",
-                ],
-              ],
             },
           },
         ],
@@ -1147,20 +1101,6 @@ Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
-            },
-          },
-          Object {
-            "Name": "Resource",
-            "Value": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
-                  },
-                  ":Live",
-                ],
-              ],
             },
           },
         ],
@@ -1381,20 +1321,6 @@ Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androideditionSenderLambdaCtrF0169D16",
-            },
-          },
-          Object {
-            "Name": "Resource",
-            "Value": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "androideditionSenderLambdaCtrF0169D16",
-                  },
-                  ":Live",
-                ],
-              ],
             },
           },
         ],
@@ -1618,25 +1544,7 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              Object {
-                "Fn::Select": Array [
-                  6,
-                  Object {
-                    "Fn::Split": Array [
-                      ":",
-                      Object {
-                        "Ref": "androideditionSenderLambdaCtrAliasA2D9AE21",
-                      },
-                    ],
-                  },
-                ],
-              },
-              ":Live",
-            ],
-          ],
+          "Ref": "androideditionSenderLambdaCtrF0169D16",
         },
       },
       "Type": "AWS::Lambda::EventSourceMapping",
@@ -1655,20 +1563,6 @@ Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androideditionSenderLambdaCtrF0169D16",
-            },
-          },
-          Object {
-            "Name": "Resource",
-            "Value": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "androideditionSenderLambdaCtrF0169D16",
-                  },
-                  ":Live",
-                ],
-              ],
             },
           },
         ],
@@ -1702,20 +1596,6 @@ Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "androideditionSenderLambdaCtrF0169D16",
-            },
-          },
-          Object {
-            "Name": "Resource",
-            "Value": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "androideditionSenderLambdaCtrF0169D16",
-                  },
-                  ":Live",
-                ],
-              ],
             },
           },
         ],
@@ -2493,20 +2373,6 @@ Object {
               "Ref": "ioseditionSenderLambdaCtr2410D4D7",
             },
           },
-          Object {
-            "Name": "Resource",
-            "Value": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "ioseditionSenderLambdaCtr2410D4D7",
-                  },
-                  ":Live",
-                ],
-              ],
-            },
-          },
         ],
         "EvaluationPeriods": 1,
         "MetricName": "Errors",
@@ -2688,25 +2554,7 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              Object {
-                "Fn::Select": Array [
-                  6,
-                  Object {
-                    "Fn::Split": Array [
-                      ":",
-                      Object {
-                        "Ref": "ioseditionSenderLambdaCtrAliasA1F68D17",
-                      },
-                    ],
-                  },
-                ],
-              },
-              ":Live",
-            ],
-          ],
+          "Ref": "ioseditionSenderLambdaCtr2410D4D7",
         },
       },
       "Type": "AWS::Lambda::EventSourceMapping",
@@ -2767,20 +2615,6 @@ Object {
               "Ref": "ioseditionSenderLambdaCtr2410D4D7",
             },
           },
-          Object {
-            "Name": "Resource",
-            "Value": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "ioseditionSenderLambdaCtr2410D4D7",
-                  },
-                  ":Live",
-                ],
-              ],
-            },
-          },
         ],
         "EvaluationPeriods": 1,
         "MetricName": "Throttles",
@@ -2812,20 +2646,6 @@ Object {
             "Name": "FunctionName",
             "Value": Object {
               "Ref": "ioseditionSenderLambdaCtr2410D4D7",
-            },
-          },
-          Object {
-            "Name": "Resource",
-            "Value": Object {
-              "Fn::Join": Array [
-                "",
-                Array [
-                  Object {
-                    "Ref": "ioseditionSenderLambdaCtr2410D4D7",
-                  },
-                  ":Live",
-                ],
-              ],
             },
           },
         ],

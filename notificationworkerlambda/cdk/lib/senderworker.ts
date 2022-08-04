@@ -23,7 +23,8 @@ type SenderWorkerOpts = {
   tooFewInvocationsEnabled: boolean,
   cleanerQueueArn: string,
   platform: string,
-  paramPrefix: string
+  paramPrefix: string,
+  shouldDefineProvisionedConcurrency: boolean,
 }
 
 class SenderWorker extends Construct {
@@ -127,7 +128,7 @@ class SenderWorker extends Construct {
       batchSize: 1,
       enabled: true,
       eventSourceArn: this.senderSqs.queueArn,
-      target: alias
+      target: opts.shouldDefineProvisionedConcurrency ? alias : senderLambdaCtr
     })
     senderSqsEventSourceMapping.node.addDependency(this.senderSqs)
     senderSqsEventSourceMapping.node.addDependency(alias)
@@ -137,7 +138,7 @@ class SenderWorker extends Construct {
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
-      metric: alias.metricThrottles({period: cdk.Duration.seconds(360)}),
+      metric: (opts.shouldDefineProvisionedConcurrency ? alias : senderLambdaCtr).metricThrottles({period: cdk.Duration.seconds(360)}),
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING
     })
     senderThrottleAlarm.addAlarmAction(snsTopicAction)
@@ -148,7 +149,7 @@ class SenderWorker extends Construct {
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
-      metric: alias.metricErrors({period: cdk.Duration.seconds(360)}),
+      metric: (opts.shouldDefineProvisionedConcurrency ? alias : senderLambdaCtr).metricErrors({period: cdk.Duration.seconds(360)}),
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING
     })
     senderErrorAlarm.addAlarmAction(snsTopicAction)
@@ -159,7 +160,7 @@ class SenderWorker extends Construct {
       comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
-      metric: alias.metricInvocations({period: cdk.Duration.seconds(360)}),
+      metric: (opts.shouldDefineProvisionedConcurrency ? alias : senderLambdaCtr).metricInvocations({period: cdk.Duration.seconds(360)}),
       treatMissingData: cloudwatch.TreatMissingData.BREACHING,
       actionsEnabled: false // isEnabled
     })
@@ -224,11 +225,12 @@ export class SenderWorkerStack extends GuStack {
 
     let workerQueueArns: string[] = []
 
-    const addWorker = (workerName: string, paramPrefix: string, handler: string) => {
+    const addWorker = (workerName: string, paramPrefix: string, handler: string, shouldDefineProvisionedConcurrency: boolean = false) => {
       let worker = new SenderWorker(this, workerName, {
         platform: workerName,
         paramPrefix: paramPrefix,
         handler: handler,
+        shouldDefineProvisionedConcurrency,
         ...sharedOpts
       })
       workerQueueArns.push(worker.senderSqs.queueArn)
@@ -239,8 +241,8 @@ export class SenderWorkerStack extends GuStack {
      * platform or app by talking to a different lambda handler function
      */
 
-    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens", true)
+    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", true)
     addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
     addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
     addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
