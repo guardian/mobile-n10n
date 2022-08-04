@@ -214,16 +214,16 @@ gantt
     dateFormat  HH:mm:ss
     axisFormat  %H:%M:%S
     section PROD DB
-    Create database dump              :a1, 00:00:00, 15min
+    Create database dump              :a1, 00:00:00, 25min
     section PG13 DB
-    Restore from dump                 :b1, after a1, 15min
-    Reindexing and optimizer stats    :b2, after a1, 10min
+    Restore from dump                 :b1, after a1, 25min
+    Reindexing and optimizer stats    :b2, after b1, 10min
     Switchover                        :b3, after b2, 5min
-    Serving all                       :milestone, after b2, 0min
+    Serving all                       :milestone, after b3, 0min
     section Impact 
-    Registration lost                 :crit, c1a, 00:00:00, 45min
-    Notification available            :done, c1b, 00:00:00, 45min
-    Normal                            :done, c2, after b2, 5min
+    Registration lost                 :crit, c1a, 00:00:00, 65min
+    Notification available            :done, c1b, 00:00:00, 65min
+    Normal                            :done, c2, after b3, 5min
 ```
 
 Reference: https://www.postgresql.org/docs/10/backup-dump.html
