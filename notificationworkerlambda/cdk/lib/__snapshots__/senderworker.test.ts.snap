@@ -1036,7 +1036,8 @@ Object {
     },
     "androidbetaSenderSqsEventSourceMappingA8FE78C9": Object {
       "DependsOn": Array [
-        "androidbetaSenderLambdaCtrAlias16A3A7D2",
+        "androidbetaSenderLambdaCtrCurrentVersion2989BBF586bd7c792e6666cc1ae6d9f877b7e508",
+        "androidbetaSenderLambdaCtrB3CF7FC4",
         "androidbetaSenderSqs57513D18",
       ],
       "Properties": Object {
@@ -1531,7 +1532,8 @@ Object {
     },
     "androideditionSenderSqsEventSourceMapping87D2DEDF": Object {
       "DependsOn": Array [
-        "androideditionSenderLambdaCtrAliasA2D9AE21",
+        "androideditionSenderLambdaCtrCurrentVersion399B292B5b774b7952fa5788bdcb269893dc9d6f",
+        "androideditionSenderLambdaCtrF0169D16",
         "androideditionSenderSqs400C0F3A",
       ],
       "Properties": Object {
@@ -2541,7 +2543,8 @@ Object {
     },
     "ioseditionSenderSqsEventSourceMapping9B8EF143": Object {
       "DependsOn": Array [
-        "ioseditionSenderLambdaCtrAliasA1F68D17",
+        "ioseditionSenderLambdaCtrCurrentVersionF7C271EC2af03e6ed5cdf1063230a36e3db5698e",
+        "ioseditionSenderLambdaCtr2410D4D7",
         "ioseditionSenderSqsFDE339AC",
       ],
       "Properties": Object {

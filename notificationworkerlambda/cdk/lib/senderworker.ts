@@ -131,7 +131,7 @@ class SenderWorker extends Construct {
       target: opts.shouldDefineProvisionedConcurrency ? alias : senderLambdaCtr
     })
     senderSqsEventSourceMapping.node.addDependency(this.senderSqs)
-    senderSqsEventSourceMapping.node.addDependency(alias)
+    senderSqsEventSourceMapping.node.addDependency(opts.shouldDefineProvisionedConcurrency ? alias : senderLambdaCtr)
 
     const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
       alarmDescription: `Triggers if the ${id} sender lambda is throttled in ${scope.stage}.`,
