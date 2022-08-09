@@ -16,8 +16,8 @@ import scala.util.control.NonFatal
 
 trait DeliveryService[F[_], C <: DeliveryClient] {
   def send(
-    notification: Notification,
-    token: String
+    notification: List[Notification],
+    token: List[String]
   ): Stream[F, Either[DeliveryException, C#Success]]
 }
 
@@ -31,8 +31,8 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def send(
-    notification: Notification,
-    token: String
+    notification: List[Notification],
+    token: List[String]
   ): Stream[F, Either[DeliveryException, C#Success]] = {
 
     def sendAsync(client: C)(token: String, payload: client.Payload): F[C#Success] =

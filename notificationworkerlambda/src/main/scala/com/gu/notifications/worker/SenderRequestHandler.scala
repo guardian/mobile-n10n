@@ -65,9 +65,9 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .through(cleaningClient.sendInvalidTokensToCleaning)
   }
 
-  def deliverIndividualNotificationStream(individualNotificationStream: Stream[IO, IndividualNotification]): Stream[IO, Either[DeliveryException, C#Success]] = for {
+  def deliverIndividualNotificationStream(individualNotificationStream: Stream[IO, List[IndividualNotification]]): Stream[IO, Either[DeliveryException, C#Success]] = for {
     deliveryService <- Stream.eval(deliveryService)
-    resp <- individualNotificationStream.map(individualNotification => deliveryService.send(individualNotification.notification, individualNotification.token))
+    resp <- individualNotificationStream.map(individualNotification => deliveryService.send(individualNotification.map(_.notification), individualNotification.map(_.token)))
       .parJoin(maxConcurrency)
       .evalTap(Reporting.log(s"Sending failure: "))
   } yield resp
@@ -75,7 +75,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   def deliverChunkedTokens(chunkedTokenStream: Stream[IO, ChunkedTokens], start: Instant): Stream[IO, Unit] = {
     for {
       chunkedTokens <- chunkedTokenStream
-      individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
+      individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends.grouped(500).toList).covary[IO]
       resp <- deliverIndividualNotificationStream(individualNotifications)
         .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range, start), cleanupFailures, trackProgress(chunkedTokens.notification.id))
     } yield resp
