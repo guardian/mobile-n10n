@@ -2,22 +2,23 @@
 
 Given we [know](07-lambda-timing.md) the sender lambdas are a current bottleneck in achieving our 90in2 target we tested the result of defining [provisioned concurrency](https://aws.amazon.com/blogs/aws/new-provisioned-concurrency-for-lambda-functions/) for these lambdas.
 
-Defining provisioned concurrency for the ios and android sender lambdas dramatically increased our 90in2 statistics, proving that we do have a concurrency issue with this part of our notification architecture.
+Defining provisioned concurrency for the ios and android sender lambdas can increase our 90in2 percentage, indicating that it's likely we do have a concurrency issue with this part of our notification architecture.
 
-It also proves that, given a more optimised architecture/configuration, achieving the 90in2 SLO is possible.
+It demonstrates that, given a more optimised architecture/configuration, achieving our SLO is possible.
 
 There are some considerations to keep in mind:
-- Defining 100 provisioned execution environments for our 2 lambdas would increase our monthly cost by $3655.38/month/lambda
-- We could present this option to Editorial as a short-term way to ease the problem
+- Defining 100 provisioned execution environments for our 2 lambdas would increase our monthly cost by $3655.38/month/lambda.
+- We could present this option to Editorial as a short-term way to ease the problem while we work on more sustainable (lower-cost) solutions.
 - We can think about different solutions to achieving the same result, e.g. running ec2 instances instead of lambdas, increasing token batch size, increasing number of messages each lambda reads from queue (currently only 1).
 - We defined provisioned concurrency manually via the aws console, these changes should really be defined in CDK. We [attempted](https://github.com/guardian/mobile-n10n/pull/702) this, but it was quite complex. If we were to define provisioned concurrency (even as a short-term solution) some more dev work would be required.
 - We can see that the android sender lambda performs worse than the ios sender lambda so could consider [batching](https://firebase.google.com/docs/reference/admin/java/reference/com/google/firebase/messaging/FirebaseMessaging#public-batchresponse-sendall-listmessage-messages) requests to firebase.
+- We saw some unexpected results when testing with a provisioned capacity of 200, we will raise a support case with AWS to validate our setup and understand our results better.
 
 | Provisioned Concurrency | % delivered within 2 mins | Additional monthly cost |
 |:------------------------|:--------------------------|:------------------------|
 | None                    | 51                        | $0                      |
 | 100 per lambda          | 93                        | $7,310.76               |
-| 200 per lambda          | xx                        | $14,621.  52            |
+| 200 per lambda          | --                        | $14,621.52              |
 
 ## No provisioned concurrency
 
@@ -87,9 +88,12 @@ We attempted to improve performance further by increasing the provisioned concur
 - Initially we manually increased the concurrency to 250 (our maximum amount), however this resulted in throttling alarms, possibly a side effect of how lambda environments are scaled in vs our maximum number of available environments.
 - We successfully increased the concurrency to 200 instead.
 
-We collected notification send statistics during the testing period:
+We collected notification send statistics during the testing period but rolled back our changes quite quickly. We noticed that processing time had increased, not decreased, and we were receiving throttling alerts for our lambdas.
 
-| notificationId | topic | total sent | within 2mins | 90 in 2 % | time sent | total duration (ms) | title |
-|:---------------|:------|:-----------|:-------------|:----------|:----------|:--------------------|:------|
-|                |       |            |              |           |           |                     |       |
+We will raise a support case with aws to validate our setup and results.
 
+| notificationId                       | topic       | total sent | within 2mins | 90 in 2 % | time sent   | total duration (ms) | title                                                                                                                 |
+|:-------------------------------------|:------------|:-----------|:-------------|:----------|:------------|:--------------------|:----------------------------------------------------------------------------------------------------------------------|
+| 77d70574-67db-49da-9fad-82cbd892fc0a | breaking/au | 176,391    |              |           | 10/08 07:56 | 63,213              | China's ambassador has delivered a simple message to Australia - it's our way or the highway, writes Katharine Murphy |
+| a710a9e6-8ede-45bc-840a-a9c8934354ba | breaking/uk | 893,542    |              |           | 10/08 11:08 | 174,803             | Polio vaccine to be offered to 900,000 children aged one to nine in London after virus found in sewers                |
+| d5b3bde3-fa06-4777-a837-671efe4cff69 | breaking/us | 281,819    |              |           | 10/08 12:35 | 141,471             | US inflation falls to 8.5% in July but still close to multi-decade high                                               |
