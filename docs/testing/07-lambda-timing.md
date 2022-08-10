@@ -15,7 +15,7 @@ We collected data for notifications with different ranges of registration count.
 | Registration Count     | % delivered within 2 mins | Time between notification request received and last sender finished (s) | Harvester Total Duration (s) | Senders Total Duration (s) |
 |:-----------------------|:--------------------------|:------------------------------------------------------------------------|:-----------------------------|:---------------------------|
 | r.c. > 200000          | 58                        | 230                                                                     | 51                           | 224                        |
-| 100000 < r.c. > 200000 | 94                        | 94                                                                      | 35                           | 86                         |
+| 100000 < r.c. < 200000 | 94                        | 94                                                                      | 35                           | 86                         |
 
 
 ## Registration Count > 200000
@@ -30,7 +30,7 @@ We collected data for notifications with different ranges of registration count.
 | 068ae268-73e1-49bd-b555-d7131d88491c | 28/07 12:34   | 566373                   | 57.11                     | 250                                                                     | 57                           | 207                        |
 | 999dbcda-9adc-4e30-86a5-3312488ff0b2 | 28/07 08:19   | 913086                   | 58.84                     | 241                                                                     | 59                           | 240                        |
 
-## 100000 < Registration Count > 200000
+## 100000 < Registration Count < 200000
 
 | Notification ID                      | DateTime Sent | Total Registration Count | % delivered within 2 mins | Time between notification request received and last sender finished (s) | Harvester Total Duration (s) | Senders Total Duration (s) |
 |:-------------------------------------|:--------------|:-------------------------|:--------------------------|:------------------------------------------------------------------------|:-----------------------------|:---------------------------|
