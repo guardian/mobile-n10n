@@ -8,7 +8,7 @@ import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 val projectVersion = "1.0-latest"
 
 organization := "com.gu"
-ThisBuild / scalaVersion := "2.13.2"
+ThisBuild / scalaVersion := "2.13.8"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -24,8 +24,8 @@ val playJsonVersion = "2.8.1"
 val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.772"
 val doobieVersion: String = "0.13.4"
-val catsVersion: String = "2.8.0"
-val okHttpVersion: String = "3.14.8"
+val catsVersion: String = "2.7.0"
+val okHttpVersion: String = "4.9.3"
 val paClientVersion: String = "7.0.5"
 val apacheThrift: String = "0.15.0"
 val jacksonDatabind: String = "2.13.3"
@@ -40,9 +40,10 @@ val standardSettings = Seq[Setting[_]](
     "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
   ),
+  riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.24.0",
-    "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided",
+    "com.softwaremill.macwire" %% "macros" % "2.5.7" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
@@ -102,6 +103,7 @@ lazy val common = project
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
+      "org.postgresql" % "postgresql" % "42.4.1",
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
@@ -256,17 +258,16 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     ),
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
-      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.5.0",
       "org.slf4j" % "slf4j-api" % "1.7.36",
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.1",
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+      "ch.qos.logback" % "logback-classic" % "1.2.11",
+      "net.logstash.logback" % "logstash-logback-encoder" % "7.2",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
     assembly / assemblyMergeStrategy := {
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
       case _ => MergeStrategy.first
     },
     Test / run / fork := true,
@@ -415,8 +416,11 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack.template.json", "mobile-notifications-workers-cfn/sender-workers.cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"mobile-notifications-registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"mobile-notifications-topic-counter-cfn/topic-counter-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"mobile-notifications-expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml")
-  )
+    riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"mobile-notifications-expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml"),
+    riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-CODE.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-CODE.template.json"),
+    riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-PROD.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-PROD.template.json")
+)
+
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
   .dependsOn(common)

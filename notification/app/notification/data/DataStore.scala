@@ -13,7 +13,7 @@ trait DataStore[T] {
 }
 
 class S3DataStore[T](s3: S3[T]) extends DataStore[T] {
-  override def get()(implicit executionContext: ExecutionContext, format: Format[T]): Future[List[T]] = s3.fetch
+  override def get()(implicit executionContext: ExecutionContext, format: Format[T]): Future[List[T]] = s3.fetch()
 }
 
 class CachingDataStore[T](dataStore: DataStore[T]) extends DataStore[T] {
