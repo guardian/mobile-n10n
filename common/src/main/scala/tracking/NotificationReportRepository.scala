@@ -6,7 +6,7 @@ import java.util.UUID
 import aws.AsyncDynamo
 import aws.AsyncDynamo.{keyBetween, keyEquals}
 import aws.DynamoJsonConversions.{fromAttributeMap, toAttributeMap}
-import cats.implicits._
+import cats.syntax.all._
 import com.amazonaws.services.dynamodbv2.model._
 import models.{NotificationReport, NotificationType}
 import org.joda.time.{DateTime, Days}

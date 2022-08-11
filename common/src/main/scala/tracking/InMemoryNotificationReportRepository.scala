@@ -6,7 +6,7 @@ import org.joda.time.{DateTime, Interval}
 import tracking.Repository.RepositoryResult
 
 import scala.concurrent.Future
-import cats.implicits._
+import cats.syntax.all._
 
 class InMemoryNotificationReportRepository extends SentNotificationReportRepository {
 

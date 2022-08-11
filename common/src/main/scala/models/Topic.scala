@@ -2,7 +2,7 @@ package models
 
 import org.apache.commons.codec.digest.DigestUtils.md5Hex
 import play.api.libs.json._
-import cats.implicits._
+import cats.syntax.all._
 
 
 case class Topic(`type`: TopicType, name: String) {

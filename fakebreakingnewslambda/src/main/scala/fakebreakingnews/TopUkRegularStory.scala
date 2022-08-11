@@ -38,7 +38,7 @@ object UkRegularStories {
 class TopUkRegularStory(okHttpClient: OkHttpClient, ukRegularStoriesUrl: String) {
   def fetchTopFrontAsBreakingNews(): Future[BreakingNewsPayload] = {
 
-    val promise = Promise[BreakingNewsPayload]
+    val promise = Promise[BreakingNewsPayload]()
     val call = okHttpClient.newCall(new Request.Builder()
       .url(ukRegularStoriesUrl)
       .build())

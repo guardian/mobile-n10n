@@ -111,6 +111,14 @@ Resources:
             Effect: Allow
             Action: cloudwatch:PutMetricData
             Resource: "*"
+      - PolicyName: connectRdsProxy
+        PolicyDocument:
+          Statement:
+          - Action:
+            - rds-db:connect
+            Effect: Allow
+            Resource: 
+              Fn::ImportValue: !Sub RegistrationsDbProxyId-${Stage}
 
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
