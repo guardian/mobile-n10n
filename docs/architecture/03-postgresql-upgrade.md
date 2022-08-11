@@ -206,6 +206,7 @@ Rollback:
 Advantages:
 1. Minimal downtime
 2. Prepare an empty Postgresql 13 database beforehand
+3. The initial 5-min downtime on notification can be avoided by setting up a temporary database to serve breaking news tool
 
 Disadvantages:
 1. More sophisticated operations
