@@ -82,6 +82,6 @@ client.send(...).map { case Left(e: CompositeApiError) => ... }
 ## Releasing the library
 
 Because of the incompatibility of the play-json module between version 2.3 and 2.4, a different branch has been created.
-Each change that has been merged into ````master```` MUST be merged into the ````play-2.4```` branch
+Each change that has been merged into ````main```` MUST be merged into the ````play-2.4```` branch
 
 Once this is done, make sure to run ````sbt release```` on both branches

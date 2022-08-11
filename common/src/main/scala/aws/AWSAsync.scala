@@ -17,7 +17,7 @@ object AWSAsync {
     f: (Request, AsyncHandler[Request, Result]) => JFuture[Result],
     request: Request
   ): Future[Result] = {
-    val p = Promise[Result]
+    val p = Promise[Result]()
     f(request, promiseToAsyncHandler(p))
     p.future
   }

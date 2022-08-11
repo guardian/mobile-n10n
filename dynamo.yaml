@@ -35,3 +35,5 @@ Resources:
       TimeToLiveSpecification:
         Enabled: true
         AttributeName: ttl
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE

@@ -2,8 +2,9 @@ package com.gu.notifications.worker.delivery
 
 import java.time.LocalDateTime
 import java.util.UUID
+import scala.util.control.NoStackTrace
 
-sealed trait DeliveryException extends RuntimeException {
+sealed trait DeliveryException extends NoStackTrace {
   def notificationId: UUID
 }
 
@@ -39,6 +40,11 @@ object DeliveryException {
   case class FailedRequest(notificationId: UUID, token: String, cause: Throwable, errorCode: Option[String] = None) extends DeliveryException {
     override def getMessage = s"Request failed (Notification: $notificationId, Token: $token). Cause: ${cause.getMessage}. ErrorCode: $errorCode}."
   }
+
+  case class UnknownReasonFailedRequest(notificationId: UUID, token: String) extends DeliveryException {
+    override def getMessage = s"Request failed (Notification: $notificationId, Token: $token)"
+  }
+
 
   case class InvalidPayload(notificationId: UUID) extends DeliveryException {
     override def getMessage = s"Cannot generate payload (Notification: $notificationId)"

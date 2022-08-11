@@ -1,7 +1,6 @@
 package com.gu.notifications.worker
 
 import java.util.UUID
-
 import _root_.models.ShardRange
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
@@ -15,6 +14,7 @@ import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParse
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
@@ -34,15 +34,24 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+  def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, start: Instant): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${notificationId} ${range})"
+    val end = Instant.now
+    val logFields = Map(
+      "notificationId" -> notificationId,
+      "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
+      "worker.notificationProcessingStartTime.millis" -> start.toEpochMilli,
+      "worker.notificationProcessingStartTime.string" -> start.toString,
+      "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
+      "worker.notificationProcessingEndTime.string" -> end.toString,
+    )
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
-      .evalTap(logInfo(prefix = s"Results $notificationLog: "))
+      .evalTap(logInfoWithFields(logFields, prefix = s"Results $notificationLog: "))
       .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
   }
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
-    input.chunkN(100).evalMap(chunk => IO.delay(logger.info(s"Processed ${chunk.size} individual notification")))
+    input.chunkN(100).evalMap(chunk => IO.delay(logger.info(Map("notificationId" -> notificationId), s"Processed ${chunk.size} individual notification")))
   }
 
   def cleanupFailures[C <: DeliveryClient]: Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
@@ -63,21 +72,22 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .evalTap(Reporting.log(s"Sending failure: "))
   } yield resp
 
-  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, ChunkedTokens]): Stream[IO, Unit] = {
+  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, ChunkedTokens], start: Instant): Stream[IO, Unit] = {
     for {
       chunkedTokens <- chunkedTokenStream
       individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
       resp <- deliverIndividualNotificationStream(individualNotifications)
-        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range), cleanupFailures, trackProgress(chunkedTokens.notification.id))
+        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range, start), cleanupFailures, trackProgress(chunkedTokens.notification.id))
     } yield resp
   }
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
+    val start = Instant.now
     val chunkedTokenStream: Stream[IO, ChunkedTokens] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
       .map(NotificationParser.parseChunkedTokenEvent)
 
-    deliverChunkedTokens(chunkedTokenStream)
+    deliverChunkedTokens(chunkedTokenStream, start)
       .compile
       .drain
       .unsafeRunSync()

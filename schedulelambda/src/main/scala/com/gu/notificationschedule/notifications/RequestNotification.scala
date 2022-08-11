@@ -5,7 +5,7 @@ import com.gu.notificationschedule.cloudwatch.CloudWatchMetrics
 import com.gu.notificationschedule.dynamo.NotificationsScheduleEntry
 import okhttp3._
 import org.apache.http.client.utils.URIBuilder
-import org.apache.logging.log4j.{LogManager, Logger}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.{Failure, Success, Try}
 
@@ -20,7 +20,7 @@ class RequestNotificationImpl(
                                okHttpClient: OkHttpClient,
                                cloudWatchMetrics: CloudWatchMetrics
                              ) extends RequestNotification {
-  private val logger: Logger = LogManager.getLogger(classOf[RequestNotificationImpl])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[RequestNotificationImpl])
   private val url = new URIBuilder(config.pushTopicsUrl).build().toURL
   private val jsonMediaType = MediaType.parse("application/json; charset=utf-8")
   private val authHeaderValue = s"Bearer ${config.apiKey}"

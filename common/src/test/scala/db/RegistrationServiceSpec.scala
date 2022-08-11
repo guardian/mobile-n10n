@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import org.specs2.mutable.Specification
 import doobie.implicits._
 import cats.effect.IO
-import cats.implicits._
+import cats.syntax.all._
 import doobie.util.transactor.Transactor
 import models.{Android, ShardRange, Ios}
 import org.specs2.specification.BeforeEach
@@ -36,10 +36,10 @@ class RegistrationServiceSpec(implicit ee: ExecutionEnv) extends Specification w
         """
         .update.run
 
-    (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync
+    (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync()
   }
 
-  override def before() = {
+  override def before = {
     initializeDatabase()
     registrations.map(service.insert).foreach(io => run(io))
   }
