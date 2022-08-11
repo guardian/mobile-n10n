@@ -54,6 +54,7 @@ The latest major version of Postgreql which RDS proxy supports is [version 13](h
 The major enhancements of postgresl 14 which are relevant to our system are feature improvement but they are not critical to our DB tuning work.  Moreover, our previous performance test suggests that RDS proxy can help with the performance, probably because it manages a lot of short-lived database connections from harvester functions and move the workload away from the database instance.  So I recommend upgrading to Postgresql 13.  We always have the option of upgrading again from Postgresql 13 to 14.
 
 ## Performance test with Postgresql 13
+The test result can be found in this [document](../testing/06-postgresql-upgrade.md).  Apparently it does not have direct impact on the performance.  However, Postgresql 13 improves the way the index is maintained and the way it does the vacuum and index rebuilding operations, which are useful to our database in the long run.  In addition, it provides a much better support in table partitioning which potentailly helps us to fine tune the registrations table further.
 
 ## Upgrade procedure
 In addition to upgrading the database engine, we are going to execute the following operations:
@@ -85,9 +86,11 @@ gantt
 
 Rollback:
 1. Restore the latest snapshot
-Pro:
-1. Simplest way
-Con:
+
+Advantages:
+1. Simplest procedure
+
+Disadvantages:
 1. Service downtime throughout the upgrade
 
 
@@ -118,9 +121,11 @@ gantt
 Rollback:
 1. Before switchover, no action is needed
 2. After switchover, we have to switch back to roll back
-Pro:
+
+Advantages:
 1. No downtime to breaking news notification
-Con:
+
+Disadvantages:
 1. Changes to registrations database that happen during upgrade will be lost after switchover
 2. Readers may find our system unreliable (subscribing to a topic but later find that it is not on our database)
 
@@ -154,11 +159,14 @@ gantt
 Rollback:
 1. *Promote* the temporary database to be the primary registration database
 2. Switch all services to the temporary database
-Pro:
+
+Advantages:
 1. No downtime to breaking news notification
-2. Readers is not able to register for a topic (rather than able to register but later the registration is lost).  *Arguably* it is better for the system to give a predictable outcome.
-Con:
+2. Registrations API downtime is shorter than in the option 2
+
+Disadvantages:
 1. Downtime to registrations API
+2. Readers may find our system unreliable (subscribing to a topic but later find that it is not on our database)
 
 
 ### Option 4: Logical replication
@@ -185,7 +193,7 @@ gantt
     section Impact 
     No registration                   :crit, c1a, 00:00:00, 5min
     No notification                   :crit, c1b, 00:00:00, 5min
-    Normal                            :done, c2, after c1a c1b, 35min
+    Normal                            :done, c2, after c1a c1b, 45min
     Registration lost                 :crit, c3a, after b3, 5min
     Notification available            :done, c3b, after b3, 5min
     Normal                            :done, c4, after c3a c3b, 5min    
@@ -194,10 +202,12 @@ gantt
 Rollback:
 1. Before switchover, no action
 2. After switchover, switch back to the original PROD DB
-Pro:
+
+Advantages:
 1. Minimal downtime
 2. Prepare an empty Postgresql 13 database beforehand
-Con:
+
+Disadvantages:
 1. More sophisticated operations
 
 Procedure: https://aws.amazon.com/blogs/database/using-logical-replication-to-replicate-managed-amazon-rds-for-postgresql-and-amazon-aurora-to-self-managed-postgresql/
@@ -225,5 +235,16 @@ gantt
     Notification available            :done, c1b, 00:00:00, 55min
     Normal                            :done, c2, after b3, 5min
 ```
+
+Rollback:
+1. Before switchover, no action
+2. After switchover, switch back to the original PROD DB
+
+Advantages:
+1. Prepare an empty Postgresql 13 database beforehand
+
+Disadvantages:
+1. Changes to registrations database that happen during upgrade will be lost after switchover
+2. Readers may find our system unreliable (subscribing to a topic but later find that it is not on our database)
 
 Reference: https://www.postgresql.org/docs/10/backup-dump.html
