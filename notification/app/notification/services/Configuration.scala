@@ -19,6 +19,7 @@ class Configuration(conf: PlayConfig, identity: AppIdentity) {
   lazy val fastlyService: String = conf.get[String]("notifications.fastly.fastlyService")
 
   lazy val newsstandShards: Int = conf.get[Int]("newsstand.shards")
+  lazy val notificationSloQueueUrl: String = conf.get[String]("notifications.queues.sloMonitoring")
   lazy val stage = identity match {
     case AwsIdentity(_, _, stage, _) => stage
     case _ => "DEV"

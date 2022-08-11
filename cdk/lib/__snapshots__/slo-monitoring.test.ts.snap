@@ -36,6 +36,28 @@ Object {
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
     },
+    "SenderQueueSSMArnParameter4B75A98E": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Description": "Arn for the queue for SLO Monitoring service. N.B. this parameter is created via cdk",
+        "Name": "/notifications/PROD/mobile-notifications/notifications.queues.sloMonitoringArn",
+        "Tags": Object {
+          "Stack": "mobile-notifications",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "MessageQueue7A3BF959",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
     "SenderQueueSSMParameterD141981E": Object {
       "Properties": Object {
         "DataType": "text",

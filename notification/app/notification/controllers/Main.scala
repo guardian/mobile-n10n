@@ -5,12 +5,13 @@ import java.time.{Duration, Instant}
 import authentication.AuthAction
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
+import models.NotificationType.BreakingNews
 import models.{TopicTypes, _}
 import net.logstash.logback.marker.LogstashMarker
 import net.logstash.logback.marker.Markers.appendEntries
 import notification.models.PushResult
 import notification.services
-import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender}
+import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender, SloTrackingSender}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json.toJson
@@ -30,7 +31,8 @@ final class Main(
   articlePurge: ArticlePurge,
   metrics: CloudWatchMetrics,
   controllerComponents: ControllerComponents,
-  authAction: AuthAction
+  authAction: AuthAction,
+  sloTrackingSender: SloTrackingSender,
 )(implicit executionContext: ExecutionContext)
   extends AbstractController(controllerComponents) {
 
@@ -76,6 +78,11 @@ final class Main(
       case _ =>
         val result = pushWithDuplicateProtection(notification)
         val durationMillis = Duration.between(notificationReceivedTime, Instant.now).toMillis
+        // FIXME: If shipping to PROD we should add '&& !notification.dryRun.contains(true)'
+        if (notification.`type` == BreakingNews) {
+          logger.info("Sending SLO tracking message to SQS queue")
+          sloTrackingSender.sendTrackingMessage(notification.id)
+        }
         result.foreach(_ => logger.info(
           Map(
             "notificationId" -> notification.id,

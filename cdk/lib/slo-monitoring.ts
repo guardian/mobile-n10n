@@ -20,13 +20,24 @@ export class SloMonitoring extends GuStack {
 			queueName: `notifications-slo-monitoring-${props.stage}`,
 		});
 
-		// this advertises the name of the queue to the notifications app
+		// this advertises the url of the queue to the notifications app
 		new StringParameter(this, 'SenderQueueSSMParameter', {
 			parameterName: `/notifications/${props.stage}/mobile-notifications/notifications.queues.sloMonitoring`,
 			description:
 				'Queue for SLO Monitoring service. N.B. this parameter is created via cdk',
 			simpleName: false,
 			stringValue: queue.queueUrl,
+			tier: ParameterTier.STANDARD,
+			dataType: ParameterDataType.TEXT,
+		});
+
+		// this advertises the arn of the queue which can be used by the notifications app cloudformation
+		new StringParameter(this, 'SenderQueueSSMArnParameter', {
+			parameterName: `/notifications/${props.stage}/mobile-notifications/notifications.queues.sloMonitoringArn`,
+			description:
+				'Arn for the queue for SLO Monitoring service. N.B. this parameter is created via cdk',
+			simpleName: false,
+			stringValue: queue.queueArn,
 			tier: ParameterTier.STANDARD,
 			dataType: ParameterDataType.TEXT,
 		});

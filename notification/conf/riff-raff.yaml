@@ -9,6 +9,11 @@ deployments:
         Recipe: bionic-mobile-ARM
         AmigoStage: PROD
       templatePath: cfn.yaml
+      templateStageParameters:
+        CODE:
+          SloSqsQueueArn: /notifications/CODE/mobile-notifications/notifications.queues.sloMonitoringArn
+        PROD:
+          SloSqsQueueArn: /notifications/PROD/mobile-notifications/notifications.queues.sloMonitoringArn
   notification:
     type: autoscaling
     parameters:
