@@ -60,11 +60,8 @@ Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
         "Description": "Secrets for accessing registration database from cleaner lambdas",
-        "GenerateSecretString": Object {
-          "GenerateStringKey": "password",
-          "SecretStringTemplate": "{\\"username\\":\\"cleaner_user\\",\\"engine\\":\\"postgres\\",\\"host\\":\\"notifications-registrations-db-private-code.crwidilr2ofx.eu-west-1.rds.amazonaws.com\\",\\"port\\":5432,\\"dbname\\":\\"registrationsCODE\\",\\"dbInstanceIdentifier\\":\\"notifications-registrations-db-private-code\\"}",
-        },
         "Name": "registrations-db-cleaner-secret-CODE",
+        "SecretString": "{\\"username\\":\\"cleaner_user\\",\\"password\\":\\"{{resolve:ssm-secure:/notifications/CODE/workers/cleaner/registration.db.password}}\\"}",
         "Tags": Array [
           Object {
             "Key": "gu:cdk:version",
@@ -91,11 +88,8 @@ Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
         "Description": "Secrets for accessing registration database from worker lambdas",
-        "GenerateSecretString": Object {
-          "GenerateStringKey": "password",
-          "SecretStringTemplate": "{\\"username\\":\\"worker_user\\",\\"engine\\":\\"postgres\\",\\"host\\":\\"notifications-registrations-db-private-code.crwidilr2ofx.eu-west-1.rds.amazonaws.com\\",\\"port\\":5432,\\"dbname\\":\\"registrationsCODE\\",\\"dbInstanceIdentifier\\":\\"notifications-registrations-db-private-code\\"}",
-        },
         "Name": "registrations-db-worker-secret-CODE",
+        "SecretString": "{\\"username\\":\\"worker_user\\",\\"password\\":\\"{{resolve:ssm-secure:/notifications/CODE/workers/harvester/registration.db.password}}\\"}",
         "Tags": Array [
           Object {
             "Key": "gu:cdk:version",
@@ -315,11 +309,8 @@ Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
         "Description": "Secrets for accessing registration database from cleaner lambdas",
-        "GenerateSecretString": Object {
-          "GenerateStringKey": "password",
-          "SecretStringTemplate": "{\\"username\\":\\"cleaner_user\\",\\"engine\\":\\"postgres\\",\\"host\\":\\"notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com\\",\\"port\\":5432,\\"dbname\\":\\"registrationsPROD\\",\\"dbInstanceIdentifier\\":\\"notifications-registrations-db-private-prod\\"}",
-        },
         "Name": "registrations-db-cleaner-secret-PROD",
+        "SecretString": "{\\"username\\":\\"cleaner_user\\",\\"password\\":\\"{{resolve:ssm-secure:/notifications/PROD/workers/cleaner/registration.db.password}}\\"}",
         "Tags": Array [
           Object {
             "Key": "gu:cdk:version",
@@ -346,11 +337,8 @@ Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
         "Description": "Secrets for accessing registration database from worker lambdas",
-        "GenerateSecretString": Object {
-          "GenerateStringKey": "password",
-          "SecretStringTemplate": "{\\"username\\":\\"worker_user\\",\\"engine\\":\\"postgres\\",\\"host\\":\\"notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com\\",\\"port\\":5432,\\"dbname\\":\\"registrationsPROD\\",\\"dbInstanceIdentifier\\":\\"notifications-registrations-db-private-prod\\"}",
-        },
         "Name": "registrations-db-worker-secret-PROD",
+        "SecretString": "{\\"username\\":\\"worker_user\\",\\"password\\":\\"{{resolve:ssm-secure:/notifications/PROD/workers/harvester/registration.db.password}}\\"}",
         "Tags": Array [
           Object {
             "Key": "gu:cdk:version",

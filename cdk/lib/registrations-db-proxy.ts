@@ -2,7 +2,7 @@ import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { AppIdentity, GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuVpc, SubnetType } from '@guardian/cdk/lib/constructs/ec2';
 import type { App } from 'aws-cdk-lib';
-import { Arn, ArnFormat, CfnOutput } from 'aws-cdk-lib';
+import { Arn, ArnFormat, CfnOutput, SecretValue } from 'aws-cdk-lib';
 import { SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import {
 	DatabaseInstance,
@@ -37,28 +37,25 @@ export class RegistrationsDbProxy extends GuStack {
 			dbname: props.dbName,
 			dbInstanceIdentifier: props.dbInstanceId,
 		};
+
+		const workerPassword = SecretValue.ssmSecure(`/notifications/${props.stage}/workers/harvester/registration.db.password`);
 		const dbWorkerSecret = new Secret(this, 'RegistrationDbWorkerSecret', {
 			secretName: `registrations-db-worker-secret-${props.stage}`,
 			description:
 				'Secrets for accessing registration database from worker lambdas',
-			generateSecretString: {
-				secretStringTemplate: JSON.stringify({
-					username: 'worker_user',
-					...secretTemplate,
-				}),
-				generateStringKey: 'password',
+			secretObjectValue: {
+				username: SecretValue.unsafePlainText('worker_user'),
+				password: workerPassword,
 			},
 		});
+		const cleanerPassword = SecretValue.ssmSecure(`/notifications/${props.stage}/workers/cleaner/registration.db.password`);
 		const dbCleanerSecret = new Secret(this, 'RegistrationDbCleanerSecret', {
 			secretName: `registrations-db-cleaner-secret-${props.stage}`,
 			description:
 				'Secrets for accessing registration database from cleaner lambdas',
-			generateSecretString: {
-				secretStringTemplate: JSON.stringify({
-					username: 'cleaner_user',
-					...secretTemplate,
-				}),
-				generateStringKey: 'password',
+			secretObjectValue: {
+				username: SecretValue.unsafePlainText('cleaner_user'),
+				password: cleanerPassword,
 			},
 		});
 
