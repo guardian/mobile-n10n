@@ -257,7 +257,7 @@ Disadvantages:
 Reference: https://www.postgresql.org/docs/10/backup-dump.html
 
 ## Conclusion and Recommendation
-Since the option 4 has the shortest downtime and the logical replication have been tested on the test rig database, it is recommended to upgrade the database from Postgresql 10.18 to Postgresql 13.4 using this approach.
+Since the option 4 has the shortest downtime and the logical replication have been tested on the test rig database, it is recommended to upgrade the database from Postgresql 10.18 to Postgresql 13.6 using this approach.
 
 The detailed procedures have been prepared in this [document](./03-postresql-upgrade-procedure.md).
 

@@ -13,7 +13,7 @@
 - Enable auto minor version upgrade
 - Parameter group: `logical-replication-subscriber` (which sets `rds.logical_replication` to 1)
 
-2. With the same schemas and user accounts
+2. With the same schemas (without indexes) and user accounts
 
 3. No data
 
@@ -47,7 +47,7 @@
 
 ## Step 2: Enable logical replication
 
-Registrations will be affected during (1) and (2).
+==Registrations will be affected during (1) and (2).==
 
 1. in AWS console, modify the DB `notifications-registrations-db-private-prod` to use the parameter group `logical-replication-publisher`
 - The parameter group has the following specific parameter values
@@ -117,7 +117,7 @@ ORDER BY lastmodified;
 
 ## Step 5: Stop subscription and switch over
 
-Registrations data created between (1) and (3) will be lost.
+==Registrations data created between (1) and (3) will be lost.==
 
 1. Stop the subscription in the new Postgresql 13 database by running `DROP SUBSCRIPTION mysub;`
 
@@ -128,7 +128,7 @@ Registrations data created between (1) and (3) will be lost.
 
 3. Restart the registrations API by redeploying the main branch of `mobile-n10n:registration` via riffraff
 
-Registrations may be unstable during (4).
+==Registrations may be unstable during (4).==
 
 4. Disable Logical Replication in the parameter group
 - In AWS console, modify the DB `notifications-registrations-db-private-pg13-prod` to use the parameter group `default.postgres13`
