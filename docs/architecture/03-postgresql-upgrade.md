@@ -212,7 +212,9 @@ Disadvantages:
 1. More sophisticated operations
 
 Procedure: https://aws.amazon.com/blogs/database/using-logical-replication-to-replicate-managed-amazon-rds-for-postgresql-and-amazon-aurora-to-self-managed-postgresql/
+
 RDS Supports logical replication: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication
+
 Postgresql: https://www.postgresql.org/docs/10/logical-replication.html
 
 ### Option 5: Manual data copy
@@ -249,3 +251,9 @@ Disadvantages:
 2. Readers may find our system unreliable (subscribing to a topic but later find that it is not on our database)
 
 Reference: https://www.postgresql.org/docs/10/backup-dump.html
+
+## Conclusion and Recommendation
+Since the option 4 has the shortest downtime and the logical replication have been tested on the test rig database, it is recommended to upgrade the database from Postgresql 10.18 to Postgresql 13.4 using this approach.
+
+The detailed procedures have been prepared in this [document](./03-postresql-upgrade-procedure.md).
+
