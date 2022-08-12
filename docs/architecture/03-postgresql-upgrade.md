@@ -53,6 +53,8 @@ The latest major version of Postgreql which RDS proxy supports is [version 13](h
 
 The major enhancements of postgresl 14 which are relevant to our system are feature improvement but they are not critical to our DB tuning work.  Moreover, our previous performance test suggests that RDS proxy can help with the performance, probably because it manages a lot of short-lived database connections from harvester functions and move the workload away from the database instance.  So I recommend upgrading to Postgresql 13.  We always have the option of upgrading again from Postgresql 13 to 14.
 
+At this moment, if we use AWS in-place upgrade, the registrations database (version 10.18) can be upgraded to [version 13.4](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_UpgradeDBInstance.PostgreSQL.html#USER_UpgradeDBInstance.PostgreSQL.MajorVersion).  The database will be automatically upgraded to the latest "automatic upgrade version", which is version 13.6 at the moment, during maintenance window.
+
 ## Performance test with Postgresql 13
 The test result can be found in this [document](../testing/06-postgresql-upgrade.md).  Apparently it does not have direct impact on the performance.  However, Postgresql 13 improves the way the index is maintained and the way it does the vacuum and index rebuilding operations, which are useful to our database in the long run.  In addition, it provides a much better support in table partitioning which potentailly helps us to fine tune the registrations table further.
 
@@ -173,7 +175,7 @@ Disadvantages:
 
 We create an empty Postgresql 13 database and use logical replication to continuously replicate data from production database.
 
-Logical replication has some limitations, which however does not affect us in our case.
+Logical replication has [some restrictions](https://www.postgresql.org/docs/10/logical-replication-restrictions.html), but they do not affect the registrations database as the restricted features are not used.
 
 ```mermaid
 gantt
@@ -205,8 +207,9 @@ Rollback:
 
 Advantages:
 1. Minimal downtime
-2. Prepare an empty Postgresql 13 database beforehand
+2. Prepare an empty Postgresql 13.6 database beforehand
 3. The initial 5-min downtime on notification can be avoided by setting up a temporary database to serve breaking news tool
+4. Use Postgresql 13.6 directly (rather than 13.4)
 
 Disadvantages:
 1. More sophisticated operations
@@ -244,7 +247,8 @@ Rollback:
 2. After switchover, switch back to the original PROD DB
 
 Advantages:
-1. Prepare an empty Postgresql 13 database beforehand
+1. Prepare an empty Postgresql 13.6 database beforehand
+2. Use Postgresql 13.6 directly (rather than 13.4)
 
 Disadvantages:
 1. Changes to registrations database that happen during upgrade will be lost after switchover

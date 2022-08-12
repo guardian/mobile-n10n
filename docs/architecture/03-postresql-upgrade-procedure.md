@@ -46,6 +46,9 @@
 5. Trigger the lambda [mobile-notifications-fakebreakingnews-PROD](https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions/mobile-notifications-fakebreakingnews-PROD?tab=code) to check if the service is available
 
 ## Step 2: Enable logical replication
+
+Registrations will be affected during (1) and (2).
+
 1. in AWS console, modify the DB `notifications-registrations-db-private-prod` to use the parameter group `logical-replication-publisher`
 - The parameter group has the following specific parameter values
 - `rds.logical_replication` to 1 (which causes AWS to set `wal_level` to `logical`)
@@ -110,32 +113,35 @@ WHERE lastmodified >= TO_TIMESTAMP('2022-08-11 13:00', 'YYYY-MM-DD HH24:MI')
 ORDER BY lastmodified;
 ```
 
-7. When we are ready to switch over, update the optimizer statistics by running `ANALYZE VERBOSE`
+7. When we are ready to switch over, update the optimizer statistics by running `ANALYZE VERBOSE;`
 
-## Step 5: Stop subscription
+## Step 5: Stop subscription and switch over
+
+Registrations data created between (1) and (3) will be lost.
+
 1. Stop the subscription in the new Postgresql 13 database by running `DROP SUBSCRIPTION mysub;`
 
-2. In AWS console, modify the DB `notifications-registrations-db-private-pg13-prod` to use the parameter group `default.postgres13`
-
-3. Reboot the DB instance `notifications-registrations-db-private-pg13-prod`
-
-## Step 6: Switch over
-
-1. Switch the registrations API over to the new database by
+2. Switch the registrations API over to the new database by
 - changing the parameter in parameter store `/notifications/PROD/mobile-notifications/registration.db.url`
 - from: `jdbc:postgresql://notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsPROD?currentSchema=registrations`
 - to:   `jdbc:postgresql://notifications-registrations-db-private-pg13-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsPROD?currentSchema=registrations`
 
-2. Restart the registrations API by redeploying the main branch of `mobile-n10n:registration` via riffraff
+3. Restart the registrations API by redeploying the main branch of `mobile-n10n:registration` via riffraff
 
-3. Switch the worker lambda functions to the new database by
+Registrations may be unstable during (4).
+
+4. Disable Logical Replication in the parameter group
+- In AWS console, modify the DB `notifications-registrations-db-private-pg13-prod` to use the parameter group `default.postgres13`
+- Reboot the DB instance `notifications-registrations-db-private-pg13-prod`
+
+5. Switch the worker lambda functions to the new database by
 - Change the target group of the proxy `registrations-db-proxy-cdk-prod` to `notifications-registrations-db-private-pg13-prod`
 - Trigger the lambda [mobile-notifications-fakebreakingnews-PROD](https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions/mobile-notifications-fakebreakingnews-PROD?tab=code)
 
-## Step 7: Clean up
+## Step 6: Clean up
 1. Remove `<HOME>/.psql_history` file as the history contains the password in the `CREATE SUBSCRIPTION` statement
 
-2. Stop the publication in the old PROD database by running `DROP PUBLICATION alltables`
+2. Stop the publication in the old PROD database by running `DROP PUBLICATION alltables;`
 
 3. Delete the temporary database `notifications-registrations-db-private-prod-temp`
 
