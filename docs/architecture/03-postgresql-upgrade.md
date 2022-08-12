@@ -232,13 +232,13 @@ gantt
     section PROD DB
     Create database dump              :a1, 00:00:00, 25min
     section PG13 DB
-    Restore from dump                 :b1, after a1, 20min
-    Reindexing and optimizer stats    :b2, after b1, 5min
+    Restore from dump                 :b1, after a1, 25min
+    Reindexing and optimizer stats    :b2, after b1, 10min
     Switchover                        :b3, after b2, 5min
     Serving all                       :milestone, after b3, 0min
     section Impact 
-    Registration lost                 :crit, c1a, 00:00:00, 55min
-    Notification available            :done, c1b, 00:00:00, 55min
+    Registration lost                 :crit, c1a, 00:00:00, 65min
+    Notification available            :done, c1b, 00:00:00, 65min
     Normal                            :done, c2, after b3, 5min
 ```
 
