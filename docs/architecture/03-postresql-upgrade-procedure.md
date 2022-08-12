@@ -1,6 +1,23 @@
 # Detailed Database Upgrade Procedure
 
-## Setup up a temporary database to serve breaking news notifications
+## Preparation: Set up a new empty Postgresql 13 DB instance for registrations database
+1. Use the following settings:
+- DB instance name: `notifications-registrations-db-private-pg13-prod`
+- Instance class: m6g.large
+- Multi-AZ
+- VPC: notifications (vpc-5dddcb3f)
+- Subnet group: notifications-registrations-db-subnet-group-private-prod
+- VPC security groups: registrations-db-PROD, NO default
+- Storage type: SSD (gp2)
+- Password authentication
+- Enable auto minor version upgrade
+- Parameter group: `logical-replication-subscriber` (which sets `rds.logical_replication` to 1)
+
+2. With the same schemas and user accounts
+
+3. No data
+
+## Step 1: Set up a temporary database to serve breaking news notifications
 1. In AWS console, start `Take DB snapshot` action on the current PROD database
 - Name: registrations-PROD-upgrade-temp
 
@@ -28,7 +45,7 @@
 
 5. Trigger the lambda [mobile-notifications-fakebreakingnews-PROD](https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions/mobile-notifications-fakebreakingnews-PROD?tab=code) to check if the service is available
 
-## Enable logical replication
+## Step 2: Enable logical replication
 1. in AWS console, modify the DB `notifications-registrations-db-private-prod` to use the parameter group `logical-replication-publisher`
 - The parameter group has the following specific parameter values
 - `rds.logical_replication` to 1 (which causes AWS to set `wal_level` to `logical`)
@@ -40,7 +57,7 @@
 - Change the target group of the proxy `registrations-db-proxy-cdk-prod` to `notifications-registrations-db-private-prod`
 - Trigger the lambda [mobile-notifications-fakebreakingnews-PROD](https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions/mobile-notifications-fakebreakingnews-PROD?tab=code)
 
-## Set up publication in old PROD database
+## Step 3: Set up publication in old PROD database
 1. Open the SQL client to the old PROD database
 - At terminal 1, set up a SSH tunnel to the database with `eval $(ssm ssh --tags registration,mobile-notifications,PROD -p mobile --raw --newest) -L 5432:notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com:5432`
 - At terminal 2, get the password with `aws --profile=mobile --region=eu-west-1 ssm get-parameter --with-decryption --name /notifications/PROD/registrations-db-password | jq -r .Parameter.Value`
@@ -54,7 +71,7 @@
 - The `active` column should be `t`
 - We may run `SELECT * FROM pg_stat_replication;` to get some statistics
 
-## Set up subscription in Postgresql 13 database
+## Step 4: Set up subscription in Postgresql 13 database
 1. Open the SQL client to the old PROD database
 - At terminal 1, set up a SSH tunnel to the database with `eval $(ssm ssh --tags registration,mobile-notifications,PROD -p mobile --raw --newest) -L 5432:notifications-registrations-db-private-pg13-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com:5432`
 - At terminal 2, get the password with `aws --profile=mobile --region=eu-west-1 ssm get-parameter --with-decryption --name /notifications/PROD/registrations-db-password | jq -r .Parameter.Value`
@@ -95,27 +112,33 @@ ORDER BY lastmodified;
 
 7. When we are ready to switch over, update the optimizer statistics by running `ANALYZE VERBOSE`
 
-## Switch over
+## Step 5: Stop subscription
 1. Stop the subscription in the new Postgresql 13 database by running `DROP SUBSCRIPTION mysub;`
 
-2. Switch the registrations API over to the new database by
+2. In AWS console, modify the DB `notifications-registrations-db-private-pg13-prod` to use the parameter group `default.postgres13`
+
+3. Reboot the DB instance `notifications-registrations-db-private-pg13-prod`
+
+## Step 6: Switch over
+
+1. Switch the registrations API over to the new database by
 - changing the parameter in parameter store `/notifications/PROD/mobile-notifications/registration.db.url`
 - from: `jdbc:postgresql://notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsPROD?currentSchema=registrations`
 - to:   `jdbc:postgresql://notifications-registrations-db-private-pg13-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsPROD?currentSchema=registrations`
 
-3. Restart the registrations API by redeploying the main branch of `mobile-n10n:registration` via riffraff
+2. Restart the registrations API by redeploying the main branch of `mobile-n10n:registration` via riffraff
 
-4. Switch the worker lambda functions to the new database by
+3. Switch the worker lambda functions to the new database by
 - Change the target group of the proxy `registrations-db-proxy-cdk-prod` to `notifications-registrations-db-private-pg13-prod`
 - Trigger the lambda [mobile-notifications-fakebreakingnews-PROD](https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions/mobile-notifications-fakebreakingnews-PROD?tab=code)
 
-## Clean up
-1. Remove `<HOME>/.psql_history` file as it contains the password in the `CREATE SUBSCRIPTION` statement
+## Step 7: Clean up
+1. Remove `<HOME>/.psql_history` file as the history contains the password in the `CREATE SUBSCRIPTION` statement
 
 2. Stop the publication in the old PROD database by running `DROP PUBLICATION alltables`
 
 3. Delete the temporary database `notifications-registrations-db-private-prod-temp`
 
-3. When the notifications system has been running well with the new database, we may remove the old PROD database
+4. When the notifications system has been running well with the new database, we may remove the old PROD database
 - Enable `create final snapshot`
 
