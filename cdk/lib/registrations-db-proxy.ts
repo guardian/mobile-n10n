@@ -30,15 +30,9 @@ export class RegistrationsDbProxy extends GuStack {
 		);
 
 		const dbPort = 5432;
-		const secretTemplate = {
-			engine: 'postgres',
-			host: props.dbHost,
-			port: dbPort,
-			dbname: props.dbName,
-			dbInstanceIdentifier: props.dbInstanceId,
-		};
-
-		const workerPassword = SecretValue.ssmSecure(`/notifications/${props.stage}/workers/harvester/registration.db.password`);
+		const workerPassword = SecretValue.ssmSecure(
+			`/notifications/${props.stage}/workers/harvester/registration.db.password`,
+		);
 		const dbWorkerSecret = new Secret(this, 'RegistrationDbWorkerSecret', {
 			secretName: `registrations-db-worker-secret-${props.stage}`,
 			description:
@@ -48,7 +42,9 @@ export class RegistrationsDbProxy extends GuStack {
 				password: workerPassword,
 			},
 		});
-		const cleanerPassword = SecretValue.ssmSecure(`/notifications/${props.stage}/workers/cleaner/registration.db.password`);
+		const cleanerPassword = SecretValue.ssmSecure(
+			`/notifications/${props.stage}/workers/cleaner/registration.db.password`,
+		);
 		const dbCleanerSecret = new Secret(this, 'RegistrationDbCleanerSecret', {
 			secretName: `registrations-db-cleaner-secret-${props.stage}`,
 			description:
