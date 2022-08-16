@@ -348,12 +348,12 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
   })
 
 lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notifications.slos.SloMonitor"))
-  .dependsOn(common)
+  .dependsOn(commoneventconsumer)
   .settings({
     Seq(
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-events" % "3.11.0"
+        "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
       ),
       riffRaffArtifactResources +=(file("cdk/cdk.out/SloMonitor-CODE.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-CODE.template.json"),
       riffRaffArtifactResources += (file("cdk/cdk.out/SloMonitor-PROD.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-PROD.template.json")

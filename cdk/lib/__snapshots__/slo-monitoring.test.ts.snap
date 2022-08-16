@@ -10,10 +10,10 @@ Object {
     },
   },
   "Resources": Object {
-    "MessageQueue7A3BF959": Object {
+    "DeadLetterQueue9F481546": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
-        "QueueName": "notifications-slo-monitoring-PROD",
+        "QueueName": "notifications-slo-monitoring-dlq-PROD",
         "Tags": Array [
           Object {
             "Key": "gu:cdk:version",
@@ -32,6 +32,42 @@ Object {
             "Value": "PROD",
           },
         ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "MessageQueue7A3BF959": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "QueueName": "notifications-slo-monitoring-PROD",
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "DeadLetterQueue9F481546",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 1,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VisibilityTimeout": 360,
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
@@ -128,7 +164,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "Timeout": 30,
+        "Timeout": 300,
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -274,9 +310,106 @@ Object {
               },
             },
             Object {
-              "Action": "cloudwatch:PutMetricData",
+              "Action": Array [
+                "athena:StartQueryExecution",
+                "athena:GetQueryExecution",
+                "athena:GetQueryResults",
+              ],
               "Effect": "Allow",
               "Resource": "*",
+            },
+            Object {
+              "Action": Array [
+                "glue:GetDatabase",
+                "glue:GetTable",
+                "glue:GetPartitions",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:aws:glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":catalog",
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:aws:glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":database/default",
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:aws:glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":database/notifications",
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:aws:glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/notifications/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": Array [
+                "s3:Get*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                "arn:aws:s3:::aws-mobile-event-logs-prod",
+                "arn:aws:s3:::aws-mobile-event-logs-prod/*",
+              ],
+            },
+            Object {
+              "Action": Array [
+                "s3:AbortMultipartUpload",
+                "s3:PutObject",
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::aws-mobile-event-logs-prod/athena/slo-monitoring/*",
             },
             Object {
               "Action": Array [
