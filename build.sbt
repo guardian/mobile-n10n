@@ -42,7 +42,7 @@ val standardSettings = Seq[Setting[_]](
   ),
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   libraryDependencies ++= Seq(
-    "com.github.nscala-time" %% "nscala-time" % "2.24.0",
+    "com.github.nscala-time" %% "nscala-time" % "2.32.0",
     "com.softwaremill.macwire" %% "macros" % "2.5.7" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
