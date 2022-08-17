@@ -5,7 +5,7 @@ import com.google.api.core.ApiFuture
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, Message, MessagingErrorCode}
 import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken, UnknownReasonFailedRequest}
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
@@ -64,6 +64,8 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
             onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString))))
           case Failure(NonFatal(t)) =>
             onComplete(Left(FailedRequest(notificationId, token, t)))
+          case Failure(_) =>
+            onComplete(Left(UnknownReasonFailedRequest(notificationId, token)))
         }
     }
   }

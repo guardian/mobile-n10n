@@ -52,6 +52,9 @@ class NotificationsApiClient(config: Configuration) extends Logging {
       case Failure(NonFatal(e)) =>
         logger.error("Unable to send notification", e)
         Left(s"Unable to send notification: ${e.getMessage}")
+      case Failure(_) =>
+        logger.error("Unable to send notification")
+        Left(s"Unable to send notification")
     }
   }
 

@@ -60,7 +60,7 @@ class CloudWatchImpl(stage: String, lambdaname: String, cw: AmazonCloudWatchAsyn
       val request: PutMetricDataRequest = new PutMetricDataRequest()
         .withNamespace(s"mobile-notifications-schedule/$stage/$lambdaname")
         .withMetricData(bufferOfMetrics)
-      val promise: Promise[PutMetricDataResult] = Promise[PutMetricDataResult]
+      val promise: Promise[PutMetricDataResult] = Promise[PutMetricDataResult]()
       val value: AsyncHandler[PutMetricDataRequest, PutMetricDataResult] = new AsyncHandler[PutMetricDataRequest, PutMetricDataResult] {
         override def onError(exception: Exception): Unit = promise.failure(exception)
         override def onSuccess(request: PutMetricDataRequest, result: PutMetricDataResult): Unit = {
