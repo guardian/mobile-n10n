@@ -42,8 +42,7 @@ Under each scenario, I sent four rounds of breaking news notification.
 | AVG | 22.6175 | 158 | 0 |
 
 ## Conclusion
-
-
+From the test result, I do not notice any consistent changes in the performance.  It suggests that Postgresql 13 delivers similar performance to Postgresql 10 / Postgresql 14 in our test scenario.  According to the release notes, Postgresql 13 has quite a number of improvements over the management of its storage space and indexes, which should be beneficial to the registrations database in the long run.  In addition, Postgresql 13 provides some new features which we may explore to further improve the performance.
 
 
 
