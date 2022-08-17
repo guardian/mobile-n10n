@@ -49,6 +49,7 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
 
 
     if(dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
+      Thread.sleep(500)
       onComplete(Right(FcmDeliverySuccess(token, "dryrun", dryRun = true)))
     } else {
       import FirebaseHelpers._

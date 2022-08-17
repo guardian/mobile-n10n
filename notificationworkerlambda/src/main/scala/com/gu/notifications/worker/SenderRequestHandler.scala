@@ -30,7 +30,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def env = Env()
 
-  implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(200))
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(60))
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
