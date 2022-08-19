@@ -2,7 +2,7 @@ package com.gu.notifications.worker
 
 import java.util.UUID
 import _root_.models.ShardRange
-import cats.effect.{ContextShift, IO, Timer}
+import cats.effect.IO
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.cleaning.CleaningClient
@@ -15,10 +15,7 @@ import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.{Duration, Instant}
-import java.util.concurrent.Executors
 import scala.jdk.CollectionConverters._
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
-
 
 trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
@@ -29,10 +26,6 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   val maxConcurrency: Int
 
   def env = Env()
-
-  implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(200))
-  implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
-  implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, start: Instant): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>

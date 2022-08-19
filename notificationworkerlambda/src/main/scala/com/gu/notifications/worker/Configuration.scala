@@ -23,12 +23,14 @@ sealed trait WorkerConfiguration {
 
 case class ApnsWorkerConfiguration(
   cleaningSqsUrl: String,
-  apnsConfig: ApnsConfig
+  apnsConfig: ApnsConfig,
+  threadPoolSize: Int
 ) extends WorkerConfiguration
 
 case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
-  fcmConfig: FcmConfig
+  fcmConfig: FcmConfig,
+  threadPoolSize: Int
 ) extends WorkerConfiguration
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
@@ -88,7 +90,8 @@ object Configuration {
         mapiBaseUrl = config.getString("mapi.baseUrl"),
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
         dryRun = config.getBoolean("dryrun")
-      )
+      ),
+      config.getInt("threadPoolSize")
     )
   }
 
@@ -100,7 +103,8 @@ object Configuration {
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
-      )
+      ),
+      config.getInt("threadPoolSize")
     )
   }
 
