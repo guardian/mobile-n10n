@@ -87,7 +87,7 @@ final class Main(
             "notificationApp.notificationReceivedTime.string" -> notificationReceivedTime.toString,
           ),
           s"Spent $durationMillis milliseconds processing notification ${notification.id}")
-        metrics.send(MetricDataPoint(name = "NotificationProcessingTime", value = durationMillis.toDouble, unit = StandardUnit.Milliseconds))
+        metrics.send(MetricDataPoint(name = "NotificationAppProcessingTime", value = durationMillis.toDouble, unit = StandardUnit.Milliseconds))
         notification.`type` match {
           case BreakingNews => metrics.send(MetricDataPoint(name = "BreakingNewsNotificationCount", value = 1, unit = StandardUnit.Count))
           case _ => {}
