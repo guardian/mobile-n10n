@@ -90,6 +90,7 @@ final class Main(
         metrics.send(MetricDataPoint(name = "NotificationProcessingTime", value = durationMillis.toDouble, unit = StandardUnit.Milliseconds))
         notification.`type` match {
           case BreakingNews => metrics.send(MetricDataPoint(name = "BreakingNewsNotificationCount", value = 1, unit = StandardUnit.Count))
+          case _ => {}
         }
         send
       }
