@@ -22,7 +22,6 @@ import tracking.SentNotificationReportRepository
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import scala.jdk.CollectionConverters.MapHasAsJava
-import scala.util.{Failure, Success}
 
 final class Main(
   configuration: Configuration,
@@ -93,8 +92,7 @@ final class Main(
           case _ => {}
         }
         send
-      }
-      )
+      })
     }) recoverWith {
       case NonFatal(exception) => {
         logger.warn(s"Pushing notification failed: $notification", exception)
