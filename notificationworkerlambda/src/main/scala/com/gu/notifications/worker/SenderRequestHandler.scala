@@ -18,7 +18,6 @@ import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-
 trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def deliveryService: IO[DeliveryService[IO, C]]
@@ -34,16 +33,29 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, start: Instant): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+  def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, sentTime: Long): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${notificationId} ${range})"
+    val start = Instant.ofEpochMilli(sentTime)
     val end = Instant.now
     val logFields = Map(
+      "_aws" -> Map(
+        "Timestamp" -> end.toEpochMilli,
+        "CloudwatchMetrics" -> List(Map(
+          "Namespace" -> s"Notifications/${env.stage}/workers",
+          "Dimensions" -> List(List("platform")),
+          "Metrics" -> List(Map(
+            "Name" -> "worker.notificationProcessingTime",
+            "Unit" -> "Milliseconds"
+          ))
+        ))
+      ),
       "notificationId" -> notificationId,
+      "platform" -> Configuration.platform,
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> start.toEpochMilli,
       "worker.notificationProcessingStartTime.string" -> start.toString,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-      "worker.notificationProcessingEndTime.string" -> end.toString,
+      "worker.notificationProcessingEndTime.string" -> end.toString
     )
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
       .evalTap(logInfoWithFields(logFields, prefix = s"Results $notificationLog: "))
@@ -72,22 +84,21 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .evalTap(Reporting.log(s"Sending failure: "))
   } yield resp
 
-  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, ChunkedTokens], start: Instant): Stream[IO, Unit] = {
+  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long)]): Stream[IO, Unit] = {
     for {
-      chunkedTokens <- chunkedTokenStream
+      (chunkedTokens, sentTime) <- chunkedTokenStream
       individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
       resp <- deliverIndividualNotificationStream(individualNotifications)
-        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range, start), cleanupFailures, trackProgress(chunkedTokens.notification.id))
+        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range, sentTime), cleanupFailures, trackProgress(chunkedTokens.notification.id))
     } yield resp
   }
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
-    val start = Instant.now
-    val chunkedTokenStream: Stream[IO, ChunkedTokens] = Stream.emits(event.getRecords.asScala)
-      .map(r => r.getBody)
-      .map(NotificationParser.parseChunkedTokenEvent)
+    val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long)] = Stream.emits(event.getRecords.asScala)
+      .map(r => (r.getBody, r.getAttributes.asScala.toMap.getOrElse("SentTimestamp", "0").toLong))
+      .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp) }
 
-    deliverChunkedTokens(chunkedTokenStream, start)
+    deliverChunkedTokens(chunkedTokenStream)
       .compile
       .drain
       .unsafeRunSync()
