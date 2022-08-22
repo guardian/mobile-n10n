@@ -93,7 +93,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     }
 
     if(dryRun) {
-      Thread.sleep(300)
+      Thread.sleep(30)
       onComplete(Right(ApnsDeliverySuccess(token, dryRun = true)))
     } else {
       val futureResult = underlying.sendNotification(pushNotification)
