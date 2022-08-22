@@ -91,7 +91,7 @@ object Configuration {
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
         dryRun = config.getBoolean("dryrun")
       ),
-      config.getInt("threadPoolSize")
+      config.getInt("apns.threadPoolSize")
     )
   }
 
@@ -104,7 +104,7 @@ object Configuration {
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
       ),
-      config.getInt("threadPoolSize")
+      config.getInt("fcm.threadPoolSize")
     )
   }
 

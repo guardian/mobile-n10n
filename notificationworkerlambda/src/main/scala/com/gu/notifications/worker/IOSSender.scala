@@ -14,6 +14,9 @@ class IOSSender extends SenderRequestHandler[ApnsClient] {
   val cloudwatch: Cloudwatch = new CloudwatchImpl
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.threadPoolSize))
+
+  logger.info(s"Using thread pool size: ${config.threadPoolSize}")
+
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   implicit val timer: Timer[IO] = IO.timer(ec)
 
