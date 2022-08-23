@@ -18,6 +18,7 @@ import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
+
 trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def deliveryService: IO[DeliveryService[IO, C]]
