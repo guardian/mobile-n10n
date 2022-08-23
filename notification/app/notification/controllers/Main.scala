@@ -5,6 +5,7 @@ import java.time.{Duration, Instant}
 import authentication.AuthAction
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
+import models.NotificationType.BreakingNews
 import models.{TopicTypes, _}
 import net.logstash.logback.marker.LogstashMarker
 import net.logstash.logback.marker.Markers.appendEntries
@@ -73,10 +74,9 @@ final class Main(
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{topic => request.isPermittedTopicType(topic.`type`)} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
-      case _ =>
-        val result = pushWithDuplicateProtection(notification)
+      case _ => pushWithDuplicateProtection(notification).map(send => {
         val durationMillis = Duration.between(notificationReceivedTime, Instant.now).toMillis
-        result.foreach(_ => logger.info(
+        logger.info(
           Map(
             "notificationId" -> notification.id,
             "notificationType" -> notification.`type`.toString,
@@ -85,8 +85,14 @@ final class Main(
             "notificationApp.notificationReceivedTime.millis" -> notificationReceivedTime.toEpochMilli,
             "notificationApp.notificationReceivedTime.string" -> notificationReceivedTime.toString,
           ),
-        s"Spent $durationMillis milliseconds processing notification ${notification.id}"))
-        result
+          s"Spent $durationMillis milliseconds processing notification ${notification.id}")
+        metrics.send(MetricDataPoint(name = "NotificationAppProcessingTime", value = durationMillis.toDouble, unit = StandardUnit.Milliseconds))
+        notification.`type` match {
+          case BreakingNews => metrics.send(MetricDataPoint(name = "BreakingNewsNotificationCount", value = 1, unit = StandardUnit.Count))
+          case _ => {}
+        }
+        send
+      })
     }) recoverWith {
       case NonFatal(exception) => {
         logger.warn(s"Pushing notification failed: $notification", exception)
