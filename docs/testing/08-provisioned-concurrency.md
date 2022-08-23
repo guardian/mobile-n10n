@@ -1,24 +1,23 @@
 # Provisioned Concurrency
 
-Given we [know](07-lambda-timing.md) the sender lambdas are a current bottleneck in achieving our 90in2 target we tested the result of defining [provisioned concurrency](https://aws.amazon.com/blogs/aws/new-provisioned-concurrency-for-lambda-functions/) for these lambdas.
+We [know](07-lambda-timing.md) the sender lambdas are a bottleneck in achieving our 90in2 target. The sender lambdas have an SQS pull event source, meaing the lambda functions are invoked when messages arrive on a queue.
 
-Defining provisioned concurrency for the ios and android sender lambdas can increase our 90in2 percentage, indicating that it's likely we do have a concurrency issue with this part of our notification architecture.
+We raised a support case with AWS to understand how to improve the concurrency of these lambdas and they suggested the use of [provisioned concurrency](https://aws.amazon.com/blogs/aws/new-provisioned-concurrency-for-lambda-functions/), which we have tested over a number of days. We measured some key metrics to understand if any improvements were made:
+- The '90% in 2' statistics for breaking news notifications
+- The number of concurrent executions of our lambdas
+- The approximate age of messages on the associated queues (i.e. the time taken before messages were processed by the lambdas)
 
-It demonstrates that, given a more optimised architecture/configuration, achieving our SLO is possible.
+The results didn't show a consistent positive improvement, especially when multiple notifications were being sent at the same time (the scenario when we most need improved concurrency).
 
-There are some considerations to keep in mind:
-- Defining 100 provisioned execution environments for our 2 lambdas would increase our monthly cost by $3655.38/month/lambda.
-- We could present this option to Editorial as a short-term way to ease the problem while we work on more sustainable (lower-cost) solutions.
-- We can think about different solutions to achieving the same result, e.g. running ec2 instances instead of lambdas, increasing token batch size, increasing number of messages each lambda reads from queue (currently only 1).
-- We defined provisioned concurrency manually via the aws console, these changes should really be defined in CDK. We [attempted](https://github.com/guardian/mobile-n10n/pull/702) this, but it was quite complex. If we were to define provisioned concurrency (even as a short-term solution) some more dev work would be required.
-- We can see that the android sender lambda performs worse than the ios sender lambda so could consider [batching](https://firebase.google.com/docs/reference/admin/java/reference/com/google/firebase/messaging/FirebaseMessaging#public-batchresponse-sendall-listmessage-messages) requests to firebase.
-- We saw some unexpected results when testing with a provisioned capacity of 200, we will raise a support case with AWS to validate our setup and understand our results better.
+Given we didn't see the improvements in metrics that we expected we again contacted AWS. They suggested to try configuring different settings:
+- Increasing the batch size (i.e. the number of messages each lambda can stream from a queue).
+- Reviewing the metric `ApproximateNumberOfMessagesVisible` as part of our assessment and understanding of the situation.
+- Increasing the queue's visibility timeout.
 
-| Provisioned Concurrency | % delivered within 2 mins | Additional monthly cost |
-|:------------------------|:--------------------------|:------------------------|
-| None                    | 51                        | $0                      |
-| 100 per lambda          | 93                        | $7,310.76               |
-| 200 per lambda          | --                        | $14,621.52              |
+The recommendation for next steps is to follow the guidance provided by AWS. If we begin to see lambda scaling increasing further as a result then it may be worth revisiting provisioned concurrency again.
+
+Another recommendation is to advise editorial to wait 2 minutes between sending multiple alerts: we see significant improvement in delivery times if we delay 2 mins between sending notifications (compare the results of Serena Williams vs Olesksandr Usyk).
+
 
 ## No provisioned concurrency
 
@@ -56,8 +55,9 @@ Before changing the provisioned concurrency we collected some notification send 
 ## Provisioned concurrency (100 each for both the ios and android sender lambdas)
 
 We manually configured our sender lambdas:
-- defined a [version](https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html) for each of our lambdas
-- configured the provisioned concurrency for the version, which was set to 100 for this test
+- defined a [version](https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html) for each of our lambdas.
+- configured the provisioned concurrency for the version, which was set to 100 for this test.
+- set the SQS trigger for the versioned lambda and removed the trigger from our $LATEST lambda.
 
 NB: provisioned concurrency can only be defined for a version or alias of a lambda function.
 
@@ -76,24 +76,36 @@ The 90in2 percentage was significantly increased. The metrics confirm that we ha
 ![Concurrent executions](images/100-pc-concurrent-ex.png)
 ![Time spent on queue](images/100-pc-time-spent-on-queue.png)
 
-The number of invocations is smaller than the example presented before, however we can still draw some rough conclusions:
-- The concurrent executions are higher, and very close to the provisioned amount we specified, meaning we are successfully utilising more execution environments during message processing.
-- The time spent on the queue appears much lower, but it could possibly be reduced further by increasing our provisioned concurrency.
-- For notifications sent to our largest number of recipients (breaking/uk topic, 886k registered readers) we are now very close to meeting the 90in2 target
+However, when we received multiple notifications in quick succession we didn't see such positive improvements:
 
-## Provisioned concurrency (200 each for both the ios and android sender lambdas)
+| notificationId                       | topics                                  | total sent | within 2mins | 90 in 2 % | time sent   | total duration (ms) | title                                                                          |
+|:-------------------------------------|:----------------------------------------|:-----------|:-------------|:----------|:------------|:--------------------|:-------------------------------------------------------------------------------|
+| 79542376-ed97-3d75-9023-2904f2c0ed02 | liveblog update                         | 152        | 149          | 98        | 20/08 23:09 | 1,841               | Olesksandr Usyk beats Anthony Johusa to retain world heavyweight boxing titles |
+| 97a8c6a9-ea3e-45b7-ad43-0fd722ff8253 | breaking/international                  | 507,548    | 80,761       | 55        | 20/08 23:10 | 195,698             | Olesksandr Usyk beats Anthony Johusa to retain world heavyweight boxing titles |
+| 20fa9f7c-2e98-429d-8475-1af6f1c6dfb5 | breaking/uk                             | 853,832    | 762,137      | 89        | 20/08 23:10 | 132,682             | Olesksandr Usyk beats Anthony Johusa to retain world heavyweight boxing titles |
+| 161d9df8-540f-40bf-ad7e-b8bb286f14a7 | sport/uk, sport/us, sport/international | 17,358     | 6,463        | 37        | 20/08 23:10 | 147,521             | Olesksandr Usyk beats Anthony Johusa to retain world heavyweight boxing titles |
 
-We attempted to improve performance further by increasing the provisioned concurrency:
+We could also see that provisioned concurrency had not increased as we expected:
 
-- Initially we manually increased the concurrency to 250 (our maximum amount), however this resulted in throttling alarms, possibly a side effect of how lambda environments are scaled in vs our maximum number of available environments.
-- We successfully increased the concurrency to 200 instead.
+![Concurrent executions - quick succession](images/100-pc-concurrent-ex-quick-succession.png)
 
-We collected notification send statistics during the testing period but rolled back our changes quite quickly. We noticed that processing time had increased, not decreased, and we were receiving throttling alerts for our lambdas.
+## Conclusion
 
-We will raise a support case with aws to validate our setup and results.
+After our testing did not produce the results we expected we contacted AWS for advice. This is their full response:
 
-| notificationId                       | topic       | total sent | within 2mins | 90 in 2 % | time sent   | total duration (ms) | title                                                                                                                 |
-|:-------------------------------------|:------------|:-----------|:-------------|:----------|:------------|:--------------------|:----------------------------------------------------------------------------------------------------------------------|
-| 77d70574-67db-49da-9fad-82cbd892fc0a | breaking/au | 176,391    |              |           | 10/08 07:56 | 63,213              | China's ambassador has delivered a simple message to Australia - it's our way or the highway, writes Katharine Murphy |
-| a710a9e6-8ede-45bc-840a-a9c8934354ba | breaking/uk | 893,542    |              |           | 10/08 11:08 | 174,803             | Polio vaccine to be offered to 900,000 children aged one to nine in London after virus found in sewers                |
-| d5b3bde3-fa06-4777-a837-671efe4cff69 | breaking/us | 281,819    |              |           | 10/08 12:35 | 141,471             | US inflation falls to 8.5% in July but still close to multi-decade high                                               |
+```markdown
+I understand that you set provisioned concurrency for your Lambda function “mobile-notifications-workers-android-sender-ctr-PROD” which has an SQS Pull Event source and would like to know why its not scaling optimally and want reduced time that a message spends waiting in the queue before processing.
+
+To begin, allow me to explain that in a standard queue, Lambda will start long polling with 5 concurrent executions. If there are messages in the queue, the scaling increases by 60/min until reserved concurrency or account concurrency is reached. However, Lambda will not scale if there are errors or throttles. Having said this, during the given time period of 20th August at 23.10 UTC, I saw Lambda returned an error that might have prevented scaling. Though one error shouldn’t be an issue, If during that time the error happened when you had a lot of messages in the queue, then it could have prevented scaling at that time. Polling can continue until the batch window set time is reached, or the 10000 batch size reached or 6MB payload size is reached. If the average age of oldest message metric increases then you should consider increasing batch size and batch window-which is the amount of time taken to gather records. Having said this, I see your batch size is set to 1 which I believe needs to be increased.
+
+Also, its of vital importance to note that Lambda will scale invocations only if there are messages in the queue. If there are no messages to be polled the inflight messages will be less and the lambda will not scale up because Lambda will be successfully processing messages in the queue. Review your ApproximateNumberOfMessagesVisible metric. If the metric is low or at 0, your function can't scale. If the metric is high and there are no invocation errors, try increasing the batch size on your event notification. Increase the batch size until the duration metric increases faster than the batch size metric.
+
+Additionally, to allow your function time to process each batch of records, set the source queue's visibility timeout to at least six times the timeout that you configure on your function. In your case, the visibility time should be set to 540 seconds. Kindly refer to documentation on links [1][2] for more details.
+
+References:
+[1] https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#events-sqs-queueconfig
+[2] https://aws.amazon.com/premiumsupport/knowledge-center/lambda-sqs-scaling/
+
+```
+
+We should implement their suggestions before testing with provisioned concurrency again. Note the limitation on lambda scaling: 60/min. This could indicate that we can't scale up as quickly as we need during our peaks in traffic, but this will be validated during further experimentation and tests.
