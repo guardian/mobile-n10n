@@ -15,8 +15,8 @@ import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.{Duration, Instant}
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.jdk.CollectionConverters._
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
@@ -27,10 +27,11 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   val maxConcurrency: Int
 
   def env = Env()
-  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   implicit val timer: Timer[IO] = IO.timer(ec)
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, start: Instant): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${notificationId} ${range})"
