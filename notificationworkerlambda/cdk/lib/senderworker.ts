@@ -22,7 +22,8 @@ type SenderWorkerOpts = {
   tooFewInvocationsEnabled: boolean,
   cleanerQueueArn: string,
   platform: string,
-  paramPrefix: string
+  paramPrefix: string,
+  batchSize: number
 }
 
 class SenderWorker extends cdk.Construct {
@@ -114,7 +115,7 @@ class SenderWorker extends cdk.Construct {
     })
 
     const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
-      batchSize: 1,
+      batchSize: opts.batchSize,
       enabled: true,
       eventSourceArn: this.senderSqs.queueArn,
       target: senderLambdaCtr
@@ -226,11 +227,12 @@ export class SenderWorkerStack extends GuStack {
 
     let workerQueueArns: string[] = []
 
-    const addWorker = (workerName: string, paramPrefix: string, handler: string) => {
+    const addWorker = (workerName: string, paramPrefix: string, handler: string, batchSize: number = 1) => {
       let worker = new SenderWorker(this, workerName, {
         platform: workerName,
-        paramPrefix: paramPrefix,
-        handler: handler,
+        paramPrefix,
+        handler,
+        batchSize,
         ...sharedOpts
       })
       workerQueueArns.push(worker.senderSqs.queueArn)
@@ -241,8 +243,8 @@ export class SenderWorkerStack extends GuStack {
      * platform or app by talking to a different lambda handler function
      */
 
-    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens", 5)
+    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", 5)
     addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
     addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
     addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
