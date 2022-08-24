@@ -74,6 +74,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
       sqsMessage.setBody(Json.stringify(Json.toJson(shardedNotification)))
+      sqsMessage.setAttributes((Map("SentTimestamp" -> "10").asJava))
       event.setRecords(List(sqsMessage).asJava)
       event
     }
