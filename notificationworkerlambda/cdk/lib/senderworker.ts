@@ -243,8 +243,8 @@ export class SenderWorkerStack extends GuStack {
      * platform or app by talking to a different lambda handler function
      */
 
-    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens", 5)
-    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", 5)
+    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens", 10)
+    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", 10)
     addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
     addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
     addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")

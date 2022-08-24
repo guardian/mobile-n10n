@@ -536,7 +536,7 @@ Object {
         "androidSenderSqsCF269D3F",
       ],
       "Properties": Object {
-        "BatchSize": 5,
+        "BatchSize": 10,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -2153,7 +2153,7 @@ Object {
         "iosSenderSqsA94CB0A0",
       ],
       "Properties": Object {
-        "BatchSize": 5,
+        "BatchSize": 10,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
