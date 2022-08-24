@@ -13,7 +13,7 @@
 - Enable auto minor version upgrade
 - Parameter group: `logical-replication-subscriber` (which sets `rds.logical_replication` to 1)
 
-2. With the same schemas (without indexes) and user accounts
+2. With the same schemas and user accounts.  No index except the unique index for the primary key.
 
 3. No data
 
@@ -62,9 +62,9 @@
 
 ## Step 3: Set up publication in old PROD database
 1. Open the SQL client to the old PROD database
-- At terminal 1, set up a SSH tunnel to the database with `eval $(ssm ssh --tags registration,mobile-notifications,PROD -p mobile --raw --newest) -L 5432:notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com:5432`
+- At terminal 1, set up a SSH tunnel to the database with `eval $(ssm ssh --tags registration,mobile-notifications,PROD -p mobile --raw --newest) -L 15432:notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com:5432`
 - At terminal 2, get the password with `aws --profile=mobile --region=eu-west-1 ssm get-parameter --with-decryption --name /notifications/PROD/registrations-db-password | jq -r .Parameter.Value`
-- At terminal 3, open psql with `psql -h localhost -U root registrationsPROD`
+- At terminal 3, open psql with `psql -h localhost -U root registrationsPROD -p 15432`
 
 2. Create a publication by running `CREATE PUBLICATION alltables FOR ALL TABLES;` in the psql session
 - To check the publication, run `SELECT * FROM pg_publication;`
@@ -96,37 +96,33 @@ CREATE SUBSCRIPTION mysub
 
 4. When the state is changed to `r` (ready), make sure that the initial data copy has been completed by running `SELECT COUNT(1) FROM registrations.registrations;`
 
-5. After inital data copy, add primary constraint and an index by running:
+5. After inital data copy, add the index `idx_registration_shard_topic` by running:
 ```
-ALTER TABLE ONLY registrations.registrations
-    ADD CONSTRAINT registrations_pkey PRIMARY KEY (token, topic);
-
 CREATE INDEX idx_registration_shard_topic ON registrations.registrations USING btree (shard, topic);   
 ```
 
-6. To make sure that data are being synchronised continuously, we may run the queries in both database and compare.  (Change the timestamp)
+6. To make sure that data are being synchronised continuously, we may run the queries in both database and compare.
 ```
 SELECT COUNT(1) FROM registrations.registrations;
 
-SELECT token, topic, lastmodified FROM registrations.registrations
-WHERE lastmodified >= TO_TIMESTAMP('2022-08-11 13:00', 'YYYY-MM-DD HH24:MI') 
-ORDER BY lastmodified;
+SELECT COUNT(1) FROM registrations.registrations
+WHERE topic = 'breaking/uk';
 ```
 
 7. When we are ready to switch over, update the optimizer statistics by running `ANALYZE VERBOSE;`
 
 ## Step 5: Stop subscription and switch over
 
-***Registrations data created between (1) and (3) will be lost.***
+***Registrations data created between (1) and (3) may be lost.***
 
-1. Stop the subscription in the new Postgresql 13 database by running `DROP SUBSCRIPTION mysub;`
-
-2. Switch the registrations API over to the new database by
+1. Switch the registrations API over to the new database by
 - changing the parameter in parameter store `/notifications/PROD/mobile-notifications/registration.db.url`
 - from: `jdbc:postgresql://notifications-registrations-db-private-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsPROD?currentSchema=registrations`
 - to:   `jdbc:postgresql://notifications-registrations-db-private-pg13-prod.crwidilr2ofx.eu-west-1.rds.amazonaws.com/registrationsPROD?currentSchema=registrations`
 
-3. Restart the registrations API by redeploying the main branch of `mobile-n10n:registration` via riffraff
+2. Restart the registrations API by redeploying the main branch of `mobile-n10n:registration` via riffraff
+
+3. Stop the subscription in the new Postgresql 13 database by running `DROP SUBSCRIPTION mysub;`
 
 ***Registrations may be unstable during (4).***
 
@@ -139,7 +135,7 @@ ORDER BY lastmodified;
 - Trigger the lambda [mobile-notifications-fakebreakingnews-PROD](https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions/mobile-notifications-fakebreakingnews-PROD?tab=code)
 
 ## Step 6: Clean up
-1. Remove `<HOME>/.psql_history` file as the history contains the password in the `CREATE SUBSCRIPTION` statement
+1. Remove `<HOME>/.psql_history` file as the history may contain the password in the `CREATE SUBSCRIPTION` statement
 
 2. Stop the publication in the old PROD database by running `DROP PUBLICATION alltables;`
 
