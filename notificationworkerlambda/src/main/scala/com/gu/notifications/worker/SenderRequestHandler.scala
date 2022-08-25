@@ -18,6 +18,7 @@ import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
+
 trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def deliveryService: IO[DeliveryService[IO, C]]
@@ -38,24 +39,24 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     val start = Instant.ofEpochMilli(sentTime)
     val end = Instant.now
     val logFields = Map(
-      "_aws" -> Map(
-        "Timestamp" -> end.toEpochMilli,
-        "CloudwatchMetrics" -> List(Map(
-          "Namespace" -> s"Notifications/${env.stage}/workers",
-          "Dimensions" -> List(List("platform")),
-          "Metrics" -> List(Map(
-            "Name" -> "worker.notificationProcessingTime",
-            "Unit" -> "Milliseconds"
-          ))
-        ))
-      ),
+//      "_aws" -> Map(
+//        "Timestamp" -> end.toEpochMilli,
+//        "CloudwatchMetrics" -> List(Map(
+//          "Namespace" -> s"Notifications/${env.stage}/workers",
+//          "Dimensions" -> List(List("platform")),
+//          "Metrics" -> List(Map(
+//            "Name" -> "worker.notificationProcessingTime",
+//            "Unit" -> "Milliseconds"
+//          ))
+//        ))
+//      ),
       "notificationId" -> notificationId,
       "platform" -> Configuration.platform,
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> start.toEpochMilli,
       "worker.notificationProcessingStartTime.string" -> start.toString,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-      "worker.notificationProcessingEndTime.string" -> end.toString
+      "worker.notificationProcessingEndTime.string" -> end.toString,
     )
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
       .evalTap(logInfoWithFields(logFields, prefix = s"Results $notificationLog: "))

@@ -133,7 +133,7 @@ trait HarvesterRequestHandler extends Logging {
               "Timestamp" -> end.toEpochMilli,
               "CloudWatchMetrics" -> List(Map(
                 "Namespace" -> s"Notifications/${env.stage}/harvester",
-                "Dimensions" -> List(List("platform")),
+                "Dimensions" -> List(List("type")),
                 "Metrics" -> List(Map(
                   "Name" -> "harvester.notificationProcessingTime",
                   "Unit" -> "Milliseconds"
@@ -145,7 +145,11 @@ trait HarvesterRequestHandler extends Logging {
             "harvester.notificationProcessingStartTime.millis" -> sentTime.toEpochMilli,
             "notificationId" -> body.notification.id,
             "notificationType" -> body.notification.`type`.toString,
-            "platform" -> "harvester"
+            "type" -> { body.notification.`type` match {
+              case _root_.models.NotificationType.BreakingNews => "breakingNews"
+              case _ => "other"
+              }
+            }
           ), "Finished processing notification event")
         }
       }
