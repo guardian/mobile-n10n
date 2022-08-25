@@ -39,17 +39,17 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     val start = Instant.ofEpochMilli(sentTime)
     val end = Instant.now
     val logFields = Map(
-//      "_aws" -> Map(
-//        "Timestamp" -> end.toEpochMilli,
-//        "CloudwatchMetrics" -> List(Map(
-//          "Namespace" -> s"Notifications/${env.stage}/workers",
-//          "Dimensions" -> List(List("platform")),
-//          "Metrics" -> List(Map(
-//            "Name" -> "worker.notificationProcessingTime",
-//            "Unit" -> "Milliseconds"
-//          ))
-//        ))
-//      ),
+      "_aws" -> Map(
+        "Timestamp" -> end.toEpochMilli,
+        "CloudwatchMetrics" -> List(Map(
+          "Namespace" -> s"Notifications/${env.stage}/workers",
+          "Dimensions" -> List(List("platform")),
+          "Metrics" -> List(Map(
+            "Name" -> "worker.notificationProcessingTime",
+            "Unit" -> "Milliseconds"
+          ))
+        ))
+      ),
       "notificationId" -> notificationId,
       "platform" -> Configuration.platform,
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
@@ -96,7 +96,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
     val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long)] = Stream.emits(event.getRecords.asScala)
-      .map(r => (r.getBody, r.getAttributes.asScala.toMap.getOrElse("SentTimestamp", "0").toLong))
+      .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
       .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp) }
 
     deliverChunkedTokens(chunkedTokenStream)
