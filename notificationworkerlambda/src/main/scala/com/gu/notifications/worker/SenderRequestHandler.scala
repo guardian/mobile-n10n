@@ -40,7 +40,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     logger.info(s"sentTimestamp: $sentTime")
     val start = Instant.ofEpochMilli(sentTime)
     logger.info(s"start duration: $start")
-    logger.info(s"platform ${Configuration.platform}")
+    logger.info(s"platform ${Configuration.platform.map(_.toString).getOrElse("unknown")}")
     val end = Instant.now
     val logFields = Map(
       "_aws" -> Map(
