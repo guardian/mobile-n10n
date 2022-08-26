@@ -41,7 +41,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     val logFields = Map(
       "_aws" -> Map(
         "Timestamp" -> end.toEpochMilli,
-        "CloudwatchMetrics" -> List(Map(
+        "CloudWatchMetrics" -> List(Map(
           "Namespace" -> s"Notifications/${env.stage}/workers",
           "Dimensions" -> List(List("platform")),
           "Metrics" -> List(Map(
