@@ -36,11 +36,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, sentTime: Long): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: $notificationId $range)"
-    logger.info(s"notificationLog: $notificationLog")
-    logger.info(s"sentTimestamp: $sentTime")
     val start = Instant.ofEpochMilli(sentTime)
-    logger.info(s"start duration: $start")
-    logger.info(s"platform ${Configuration.platform.map(_.toString).getOrElse("unknown")}")
     val end = Instant.now
     val logFields = Map(
       "_aws" -> Map(
@@ -57,11 +53,10 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       "notificationId" -> notificationId,
       "platform" -> Configuration.platform.map(_.toString).getOrElse("unknown"),
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
-      "worker.notificationProcessingStartTime.millis" -> start.toEpochMilli,
-      "worker.notificationProcessingStartTime.string" -> start.toString,
+      "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-      "worker.notificationProcessingEndTime.string" -> end.toString,
     )
+    logger.info(s"logFields: $logFields")
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
       .evalTap(logInfoWithFields(logFields, prefix = s"Results $notificationLog: "))
       .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
