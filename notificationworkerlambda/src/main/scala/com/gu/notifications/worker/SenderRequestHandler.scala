@@ -55,7 +55,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
         ))
       ),
       "notificationId" -> notificationId,
-      "platform" -> Configuration.platform,
+      "platform" -> Configuration.platform.map(_.toString).getOrElse("unknown"),
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> start.toEpochMilli,
       "worker.notificationProcessingStartTime.string" -> start.toString,
