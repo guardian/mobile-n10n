@@ -56,7 +56,6 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
     )
-    logger.info(logFields, "Result")
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
       .evalTap(logInfoWithFields(logFields, prefix = s"Results $notificationLog: "))
       .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
