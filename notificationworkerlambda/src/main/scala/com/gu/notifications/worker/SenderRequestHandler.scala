@@ -35,8 +35,12 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, sentTime: Long): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
-    val notificationLog = s"(notification: ${notificationId} ${range})"
+    val notificationLog = s"(notification: $notificationId $range)"
+    logger.info(s"notificationLog: $notificationLog")
+    logger.info(s"sentTimestamp: $sentTime")
     val start = Instant.ofEpochMilli(sentTime)
+    logger.info(s"start duration: $start")
+    logger.info(s"platform ${Configuration.platform}")
     val end = Instant.now
     val logFields = Map(
       "_aws" -> Map(
