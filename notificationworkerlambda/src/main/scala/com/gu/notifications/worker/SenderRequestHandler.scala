@@ -100,11 +100,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
     val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long)] = Stream.emits(event.getRecords.asScala)
-      .map(r => {
-        val sentTimestamp = r.getAttributes.getOrDefault("SentTimestamp", "0").toLong
-        logger.info(s"sent timestamp of message: $sentTimestamp")
-        (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong)
-      })
+      .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
       .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp) }
 
     deliverChunkedTokens(chunkedTokenStream)
