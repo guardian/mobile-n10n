@@ -1,14 +1,14 @@
 package com.gu.notifications.worker
 
 import java.util.UUID
-import _root_.models.ShardRange
+import _root_.models.{Notification, NotificationType, ShardRange}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery._
-import com.gu.notifications.worker.models.SendingResults
+import models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, IndividualNotification}
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
 import fs2.{Pipe, Stream}
@@ -34,8 +34,8 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def reportSuccesses[C <: DeliveryClient](notificationId: UUID, range: ShardRange, sentTime: Long): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
-    val notificationLog = s"(notification: $notificationId $range)"
+  def reportSuccesses[C <: DeliveryClient](notification: Notification, range: ShardRange, sentTime: Long): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+    val notificationLog = s"(notification: ${notification.id} $range)"
     val start = Instant.ofEpochMilli(sentTime)
     val end = Instant.now
     val logFields = Map(
@@ -43,15 +43,21 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
         "Timestamp" -> end.toEpochMilli,
         "CloudWatchMetrics" -> List(Map(
           "Namespace" -> s"Notifications/${env.stage}/workers",
-          "Dimensions" -> List(List("platform")),
+          "Dimensions" -> List(List("platform", "type")),
           "Metrics" -> List(Map(
             "Name" -> "worker.notificationProcessingTime",
             "Unit" -> "Milliseconds"
           ))
         ))
       ),
-      "notificationId" -> notificationId,
+      "notificationId" -> notification.id,
       "platform" -> Configuration.platform.map(_.toString).getOrElse("unknown"),
+      "type" -> {
+        notification.`type` match {
+          case NotificationType.BreakingNews => "breakingNews"
+          case _ => "other"
+        }
+      },
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
@@ -88,7 +94,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       (chunkedTokens, sentTime) <- chunkedTokenStream
       individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
       resp <- deliverIndividualNotificationStream(individualNotifications)
-        .broadcastTo(reportSuccesses(chunkedTokens.notification.id, chunkedTokens.range, sentTime), cleanupFailures, trackProgress(chunkedTokens.notification.id))
+        .broadcastTo(reportSuccesses(chunkedTokens.notification, chunkedTokens.range, sentTime), cleanupFailures, trackProgress(chunkedTokens.notification.id))
     } yield resp
   }
 

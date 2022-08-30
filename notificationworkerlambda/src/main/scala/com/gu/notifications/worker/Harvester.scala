@@ -145,9 +145,10 @@ trait HarvesterRequestHandler extends Logging {
             "harvester.notificationProcessingStartTime.millis" -> sentTime.toEpochMilli,
             "notificationId" -> body.notification.id,
             "notificationType" -> body.notification.`type`.toString,
-            "type" -> { body.notification.`type` match {
-              case _root_.models.NotificationType.BreakingNews => "breakingNews"
-              case _ => "other"
+            "type" -> {
+              body.notification.`type` match {
+                case _root_.models.NotificationType.BreakingNews => "breakingNews"
+                case _ => "other"
               }
             }
           ), "Finished processing notification event")
