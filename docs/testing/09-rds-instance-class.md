@@ -49,6 +49,8 @@ We used the figures from the last notification (with 3358659 subscribers) for ev
 
 ## Test Results
 
+We executed four rounds of tests for each instance class and collected the performance figures of the harvester working on the last notification as the end result.  They are listed below.
+
 ### Instance class `t4g.medium`
 | # | No. harvester invocations | Avg. processing (s) | Total harvester duration (s) | Error "marked as broken" |
 | ----------- | ----------- | ----------- | ----------- | ----------- |
