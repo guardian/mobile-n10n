@@ -7,8 +7,6 @@ We are exploring whether changing the RDS instance class to a more powerful one 
 
 We performed the performance test with `t4g.medium` (which we are using), `t4g.large` and `m6g.large`.  Their specs are summarised in the table below:
 
-Cost, on-demand, monthly, MZ deployment
-
 | Instance class | vCPU | Memory | EBS burst bandwidth | Cost[^1] |
 | -------------- | -----| ------ | ------------------- | ---- | 
 | t4g.medium | 2 | 4 GB | 2,085 Mbps | 100.7400 USD |
