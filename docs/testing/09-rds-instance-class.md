@@ -53,7 +53,7 @@ We used the figures from the last notification (with 3358659 subscribers) for ev
 
 ### Instance class `t4g.medium`
 | # | No. harvester invocations | Avg. processing (s) | Total harvester duration (s) | Error "marked as broken" |
-| ----------- | ----------- | ----------- | ----------- |
+| ----------- | ----------- | ----------- | ----------- | ----------- |
 | 1	| 335 | 63.61 | 73.29 | 0 |
 | 2	| 335 | 28.93 | 39.53 | 0 |
 | 3	| 335 | 39.85 | 52.11 | 0 |
@@ -62,7 +62,7 @@ We used the figures from the last notification (with 3358659 subscribers) for ev
 
 ### Instance class `t4g.large`
 | # | No. harvester invocations | Avg. processing (s) | Total harvester duration (s) | Error "marked as broken" |
-| ----------- | ----------- | ----------- | ----------- |
+| ----------- | ----------- | ----------- | ----------- | ----------- |
 | 1	| 335 | 54.26 | 62.26 | 0 |
 | 2	| 335 | 57.97 | 65.37 | 0 |
 | 3	| 335 | 38.04 | 47.15 | 0 |
@@ -71,7 +71,7 @@ We used the figures from the last notification (with 3358659 subscribers) for ev
 
 ### Instance class `m6g.large`
 | # | No. harvester invocations | Avg. processing (s) | Total harvester duration (s) | Error "marked as broken" |
-| ----------- | ----------- | ----------- | ----------- |
+| ----------- | ----------- | ----------- | ----------- | ----------- |
 | 1	| 335 | 40.18 | 53.38 | 0 |
 | 2	| 335 | 40.34 | 50.03 | 0 |
 | 3	| 335 | 38.29 | 43.01 | 0 |
