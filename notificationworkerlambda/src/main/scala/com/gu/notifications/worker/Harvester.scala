@@ -16,6 +16,7 @@ import org.threeten.bp.ZoneOffset
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.jdk.CollectionConverters._
 import java.time.{Duration, Instant, LocalDateTime, ZoneId}
+import org.slf4j.Marker
 
 sealed trait WorkerSqs
 object WorkerSqs {
@@ -159,18 +160,26 @@ trait HarvesterRequestHandler extends Logging {
 
   def handleHarvesting(event: SQSEvent, context: Context): Unit = {
     // open connection
+    val requestId = context.getAwsRequestId();
+    logger.info(Map("lambdaRequestId" -> requestId), "SQL connection opening")
     val (transactor, datasource): (Transactor[IO], HikariDataSource) = DatabaseConfig.transactorAndDataSource[IO](jdbcConfig)
-    logger.info("SQL connection open")
+    logger.info(Map("lambdaRequestId" -> requestId), "SQL connection opened")
+
+    
 
     // create services that rely on the connection
     val registrationService: RegistrationService[IO, Stream] = RegistrationService(transactor)
+    logger.info(Map("lambdaRequestId" -> requestId), "Registration service ready")
+
     val tokenService: TokenServiceImpl[IO] = new TokenServiceImpl[IO](registrationService)
+    logger.info(Map("lambdaRequestId" -> requestId), "Token service ready")
 
     processNotification(event, tokenService)
+    logger.info(Map("lambdaRequestId" -> requestId), "Notification processed")
 
     // close connection
     datasource.close()
-    logger.info("SQL connection closed")
+    logger.info(Map("lambdaRequestId" -> requestId), "SQL connection closed")
   }
 }
 
