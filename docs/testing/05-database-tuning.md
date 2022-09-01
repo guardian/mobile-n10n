@@ -1,6 +1,6 @@
 # Database tuning - reducing table size
 
-This document summarises the test result and conclusiong for reducing table size.  The corresponding background and research work can be found in [the document](../architecture/02-database-tuning.md).
+This document summarises the test result and conclusion for reducing table size.  The corresponding background and research work can be found in [the document](../architecture/02-database-tuning.md).
 
 ## Results
 

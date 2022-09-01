@@ -25,7 +25,7 @@ val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.772"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.7.0"
-val okHttpVersion: String = "3.14.8"
+val okHttpVersion: String = "4.9.3"
 val paClientVersion: String = "7.0.5"
 val apacheThrift: String = "0.15.0"
 val jacksonDatabind: String = "2.13.3"
@@ -106,7 +106,7 @@ lazy val common = project
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
-      "org.postgresql" % "postgresql" % "42.3.3",
+      "org.postgresql" % "postgresql" % "42.4.1",
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
@@ -416,6 +416,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "8.1.0",
+      "com.google.protobuf" % "protobuf-java" % "3.19.2",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
