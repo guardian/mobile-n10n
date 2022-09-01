@@ -97,11 +97,13 @@ trait HarvesterRequestHandler extends Logging {
     } yield resp
   }
 
-  def processNotification(event: SQSEvent, tokenService: TokenService[IO]) = {
+  def processNotification(event: SQSEvent, tokenService: TokenService[IO], requestId: String) = {
+    val processingStart = Instant.now
     val records = event.getRecords.asScala.toList.map(r => (NotificationParser.parseShardNotificationEvent(r.getBody), r.getAttributes))
     records.foreach {
       case (body, _) => logger.info(Map(
         "notificationId" -> body.notification.id,
+        "lambdaRequestId" -> requestId,
       ), "Parsed notification event")
     }
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
@@ -119,6 +121,7 @@ trait HarvesterRequestHandler extends Logging {
             logger.error(Map(
               "notificationId" -> body.notification.id,
               "notificationType" -> body.notification.`type`.toString,
+              "lambdaRequestId" -> requestId,
             ), s"Error occurred: ${e.getMessage}", e)
         }
         throw e
@@ -144,8 +147,11 @@ trait HarvesterRequestHandler extends Logging {
             "harvester.notificationProcessingTime" -> Duration.between(sentTime, end).toMillis,
             "harvester.notificationProcessingEndTime.millis" -> end.toEpochMilli,
             "harvester.notificationProcessingStartTime.millis" -> sentTime.toEpochMilli,
+            "harvester.functionStart" -> processingStart.toEpochMilli(),
+            "harvester.functionProcessingTime" -> Duration.between(processingStart, end).toMillis(),
             "notificationId" -> body.notification.id,
             "notificationType" -> body.notification.`type`.toString,
+            "lambdaRequestId" -> requestId,
             "type" -> {
               body.notification.`type` match {
                 case _root_.models.NotificationType.BreakingNews => "breakingNews"
@@ -174,7 +180,7 @@ trait HarvesterRequestHandler extends Logging {
     val tokenService: TokenServiceImpl[IO] = new TokenServiceImpl[IO](registrationService)
     logger.info(Map("lambdaRequestId" -> requestId), "Token service ready")
 
-    processNotification(event, tokenService)
+    processNotification(event, tokenService, requestId)
     logger.info(Map("lambdaRequestId" -> requestId), "Notification processed")
 
     // close connection
