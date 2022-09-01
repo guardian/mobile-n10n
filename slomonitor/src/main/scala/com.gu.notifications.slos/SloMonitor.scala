@@ -6,16 +6,21 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.athena.AmazonAthenaAsyncClient
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.athena.{Athena, Query}
+import net.logstash.logback.marker.LogstashMarker
+import net.logstash.logback.marker.Markers.appendEntries
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 import scala.concurrent.{Await, ExecutionContext, duration}
+import scala.jdk.CollectionConverters.MapHasAsJava
+
 object SloMonitor {
 
   import ExecutionContext.Implicits.global
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  implicit def mapToContext(c: Map[String, _]): LogstashMarker = appendEntries(c.asJava)
 
   val stage: String = System.getenv("STAGE")
 
@@ -57,9 +62,16 @@ object SloMonitor {
     val result = Athena.startQuery(Query("notifications", query, s"s3://aws-mobile-event-logs-${this.stage.toLowerCase()}/athena/slo-monitoring"))
       .flatMap(Athena.fetchQueryResponse(_, rows => rows.head.head)
         .map(actualDeliveries => {
-          val percentage = calculatePercentage(actualDeliveries.toDouble, expectedDeliveries.toDouble)
+          // val percentage = calculatePercentage(actualDeliveries.toDouble, expectedDeliveries.toDouble)
           // In the future we could log structured data (for visualisation in Kibana) & send this as a CloudWatch metric here
-          logger.info(s"Percentage of notifications delivered within 120 seconds was $percentage%")
+
+          // For the purposes of validating the approach we decided to log only the actual deliveries
+          // We will compare the actual deliveries logged against the data we see in bigquery as a way to validate accuracy of the solution/setup
+          logger.info(Map(
+            "notificationId" -> notificationId,
+            "deliveriesWithin2mins" -> actualDeliveries
+          ),
+          s"Notifications delivered within 120 seconds was $actualDeliveries%")
         })
       )
     Await.result(result, duration.Duration(4, TimeUnit.MINUTES))
