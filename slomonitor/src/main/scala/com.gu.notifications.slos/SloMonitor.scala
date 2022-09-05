@@ -71,7 +71,7 @@ object SloMonitor {
             "notificationId" -> notificationId,
             "deliveriesWithin2mins" -> actualDeliveries
           ),
-          s"Notifications delivered within 120 seconds was $actualDeliveries%")
+          s"Notifications delivered within 120 seconds was $actualDeliveries")
         })
       )
     Await.result(result, duration.Duration(4, TimeUnit.MINUTES))
