@@ -169,7 +169,8 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       notificationReportRepository = reportRepository,
       articlePurge = articlePurge,
       controllerComponents = controllerComponents,
-      authAction = authAction
+      authAction = authAction,
+      sloTrackingSender = sloTrackingSender
     )
   }
 
