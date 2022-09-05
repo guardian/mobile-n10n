@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery.fcm
 import _root_.models.Notification
 import com.google.api.core.ApiFuture
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, Message, MessagingErrorCode}
+import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, Message, MessagingErrorCode, MulticastMessage}
 import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken, UnknownReasonFailedRequest}
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
@@ -18,8 +18,9 @@ import java.util.concurrent.Executor
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
+import scala.jdk.CollectionConverters._
 
-class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
+class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
   extends DeliveryClient {
 
   type Success = FcmDeliverySuccess
@@ -58,6 +59,39 @@ class FcmClient private (firebaseMessaging: FirebaseMessaging, firebaseApp: Fire
         .onComplete {
           case Success(messageId) =>
             onComplete(Right(FcmDeliverySuccess(token, messageId)))
+          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
+            onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
+          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
+            onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString))))
+          case Failure(NonFatal(t)) =>
+            onComplete(Left(FailedRequest(notificationId, token, t)))
+          case Failure(_) =>
+            onComplete(Left(UnknownReasonFailedRequest(notificationId, token)))
+        }
+    }
+  }
+
+  def sendBatchNotification(notificationId: UUID, token: List[String], payload: Payload, dryRun: Boolean)
+    (onComplete: Either[Throwable, Success] => Unit)
+    (implicit executionContext: ExecutionContextExecutor): Unit = {
+
+    val message = MulticastMessage
+      .builder
+      .addAllTokens(token.asJava)
+      .setAndroidConfig(payload.androidConfig)
+      .build
+
+
+    if (dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
+      onComplete(Right(FcmDeliverySuccess(token.head, "dryrun", dryRun = true)))
+    } else {
+      import FirebaseHelpers._
+      firebaseMessaging
+        .sendMulticastAsync(message)
+        .asScala
+        .onComplete {
+          case Success(messageId) =>
+            onComplete(Right(FcmDeliverySuccess(token.head, messageId)))
           case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
             onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
           case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
