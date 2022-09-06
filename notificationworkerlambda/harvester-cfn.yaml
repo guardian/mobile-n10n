@@ -162,7 +162,7 @@ Resources:
           Stack: !Ref Stack
           App: !Ref App
       Description: Consumes events produced by the notification service and fetches batches of tokens for senders to send
-      MemorySize: 3008
+      MemorySize: 10240
       Role: !GetAtt ExecutionRole.Arn
       Timeout: 60
       ReservedConcurrentExecutions: 200
