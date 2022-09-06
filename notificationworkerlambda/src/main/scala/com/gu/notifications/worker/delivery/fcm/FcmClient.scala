@@ -10,6 +10,7 @@ import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
 import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
+import com.gu.notifications.worker.utils.NotificationParser.logger
 import com.gu.notifications.worker.utils.UnwrappingExecutionException
 
 import java.io.ByteArrayInputStream
@@ -91,15 +92,17 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
         .asScala
         .onComplete {
           case Success(messageId) =>
-            onComplete(Right(FcmDeliverySuccess(token.head, messageId)))
-          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
-            onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
-          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
-            onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString))))
-          case Failure(NonFatal(t)) =>
-            onComplete(Left(FailedRequest(notificationId, token, t)))
-          case Failure(_) =>
-            onComplete(Left(UnknownReasonFailedRequest(notificationId, token)))
+              logger.info(s"response successful: $messageId")
+//            onComplete(Right(FcmDeliverySuccess(token.head, messageId.toString)))
+//          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
+//            onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
+//          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
+//            onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString))))
+//          case Failure(NonFatal(t)) =>
+//            onComplete(Left(FailedRequest(notificationId, token, t)))
+          case Failure(messageId) =>
+//            onComplete(Left(UnknownReasonFailedRequest(notificationId, token)))
+          logger.info(s"response failure: $messageId")
         }
     }
   }
