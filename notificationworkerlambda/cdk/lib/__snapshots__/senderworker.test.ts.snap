@@ -417,7 +417,7 @@ Object {
             "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
           ],
         },
-        "MemorySize": 3008,
+        "MemorySize": 10240,
         "PackageType": "Image",
         "ReservedConcurrentExecutions": Object {
           "Ref": "ReservedConcurrency",
@@ -956,7 +956,7 @@ Object {
             "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
           ],
         },
-        "MemorySize": 3008,
+        "MemorySize": 10240,
         "PackageType": "Image",
         "ReservedConcurrentExecutions": Object {
           "Ref": "ReservedConcurrency",
@@ -1495,7 +1495,7 @@ Object {
             "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
           ],
         },
-        "MemorySize": 3008,
+        "MemorySize": 10240,
         "PackageType": "Image",
         "ReservedConcurrentExecutions": Object {
           "Ref": "ReservedConcurrency",
@@ -2034,7 +2034,7 @@ Object {
             "com.gu.notifications.worker.IOSSender::handleChunkTokens",
           ],
         },
-        "MemorySize": 3008,
+        "MemorySize": 10240,
         "PackageType": "Image",
         "ReservedConcurrentExecutions": Object {
           "Ref": "ReservedConcurrency",
@@ -2573,7 +2573,7 @@ Object {
             "com.gu.notifications.worker.IOSSender::handleChunkTokens",
           ],
         },
-        "MemorySize": 3008,
+        "MemorySize": 10240,
         "PackageType": "Image",
         "ReservedConcurrentExecutions": Object {
           "Ref": "ReservedConcurrency",
