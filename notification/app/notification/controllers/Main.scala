@@ -78,8 +78,7 @@ final class Main(
       case _ => pushWithDuplicateProtection(notification).map(send => {
         val durationMillis = Duration.between(notificationReceivedTime, Instant.now).toMillis
 
-        // FIXME: If shipping to PROD we should add '&& !notification.dryRun.contains(true)'
-        if (notification.`type` == BreakingNews) {
+        if (notification.`type` == BreakingNews && !notification.dryRun.contains(true)) {
           logger.info("Sending SLO tracking message to SQS queue")
           sloTrackingSender.sendTrackingMessage(notification.id)
         }
