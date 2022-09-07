@@ -25,7 +25,7 @@ Here are the findings:
 
 4. For the first 18 seconds, there were actually only two instances running in parallel.  Each of them processed messages sequentially.
 
-5. New instances were created over the time.  At 20^th^ second, 30^th^ second and 40^th^ second, we had 7 instances, 11 instances and 12 instances respectively.
+5. New instances were created over the time.  At 20<sup>th</sup> second, 30<sup>th</sup> second and 40<sup>th</sup> second, we had 7 instances, 11 instances and 12 instances respectively.
 
 I checked the timing of another breaking news notification, which was sent on PROD to 1.9M recipients (05-Sep-2022 12:39 - 12:40).  It had 359 invocations with an average processing duration of 30.02s and total duration of 48.43s.
 
@@ -33,7 +33,7 @@ I checked the timing of another breaking news notification, which was sent on PR
 
 2. For the first 10 seconds, only two instances were running to process the messages.
 
-3. New instances were created over the time.  At 10^th^ second, 20^th^ second, 30^th^ second and 40^th^ second, we had 3 instances, 8 instances, 14 instances and 18 instances  respectively.
+3. New instances were created over the time.  At 10<sup>th</sup> second, 20<sup>th</sup> second, 30<sup>th</sup> second and 40<sup>th</sup> second, we had 3 instances, 8 instances, 14 instances and 18 instances  respectively.
 
 # Conclusion
 
