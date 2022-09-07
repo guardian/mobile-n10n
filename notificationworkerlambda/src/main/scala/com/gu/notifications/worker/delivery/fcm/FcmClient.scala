@@ -9,7 +9,7 @@ import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, In
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
-import com.gu.notifications.worker.delivery.{DeliveryClient, FcmDeliverySuccess, FcmPayload}
+import com.gu.notifications.worker.delivery.{DeliveryClient, FcmBatchDeliverySuccess, FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.utils.NotificationParser.logger
 import com.gu.notifications.worker.utils.UnwrappingExecutionException
 
@@ -25,6 +25,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
   extends DeliveryClient {
 
   type Success = FcmDeliverySuccess
+  type BatchSuccess = FcmBatchDeliverySuccess
   type Payload = FcmPayload
   val dryRun = config.dryRun
 
@@ -71,7 +72,6 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
         }
     }
   }
-
   def sendBatchNotification(notificationId: UUID, token: List[String], payload: Payload, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {

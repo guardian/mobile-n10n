@@ -1,7 +1,5 @@
 package com.gu.notifications.worker
 
-import java.util.UUID
-
 import _root_.models.Importance._
 import _root_.models.Link._
 import _root_.models.TopicTypes._
@@ -14,7 +12,7 @@ import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery.apns.ApnsClient
 import com.gu.notifications.worker.delivery.{ApnsDeliverySuccess, DeliveryException, DeliveryService}
 import com.gu.notifications.worker.models.SendingResults
-import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService}
+import com.gu.notifications.worker.tokens.ChunkedTokens
 import com.gu.notifications.worker.utils.Cloudwatch
 import fs2.{Chunk, Pipe, Stream}
 import org.slf4j.Logger
@@ -23,6 +21,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.libs.json.Json
 
+import java.util.UUID
 import scala.jdk.CollectionConverters._
 
 class SenderRequestHandlerSpec extends Specification with Matchers {
@@ -117,6 +116,11 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
 
       override def deliveryService: IO[DeliveryService[IO, ApnsClient]] = IO.pure(new DeliveryService[IO, ApnsClient] {
         override def send(notification: Notification, token: String): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
+          deliveryCallsCount += 1
+          deliveries
+        }
+
+        override def sendBatch(notification: Notification, tokens: List[String]): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
           deliveryCallsCount += 1
           deliveries
         }
