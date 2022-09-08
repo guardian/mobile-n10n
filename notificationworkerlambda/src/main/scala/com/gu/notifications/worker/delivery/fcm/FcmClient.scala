@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery.fcm
 import _root_.models.Notification
 import com.google.api.core.ApiFuture
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, Message, MessagingErrorCode, MulticastMessage}
+import com.google.firebase.messaging._
 import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken, UnknownReasonFailedRequest}
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
@@ -17,9 +17,9 @@ import java.io.ByteArrayInputStream
 import java.util.UUID
 import java.util.concurrent.Executor
 import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
+import scala.jdk.CollectionConverters._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
-import scala.jdk.CollectionConverters._
 
 class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
   extends DeliveryClient {
@@ -95,11 +95,15 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
             logger.info(s"Success count: ${batchResponse.getSuccessCount}")
             logger.info(s"Failure count: ${batchResponse.getFailureCount}")
             logger.info(s"Responses: ${batchResponse.getResponses}")
-//            if(batchResponse.getFailureCount == 0) {
-//              logger.info("No failures found in batch response")
-//              onComplete(Right(FcmBatchDeliverySuccess(token, batchResponse.toString)))
-//            }
-            onComplete(Right(FcmDeliverySuccess(token.head, batchResponse.toString)))
+            if(batchResponse.getFailureCount > 0) {
+              batchResponse.getResponses.asScala.toList.foreach { r => {
+                if (!r.isSuccessful) {
+                  logger.info(s"Batch response failed because: ${r.getException}")
+                }
+              }
+              }
+            }
+              onComplete(Right(FcmDeliverySuccess(token.head, batchResponse.toString)))
           case Failure(batchResponse) =>
 
 //          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
