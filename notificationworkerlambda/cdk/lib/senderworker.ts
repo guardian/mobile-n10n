@@ -106,7 +106,7 @@ class SenderWorker extends cdk.Construct {
         App: id,
         Platform: opts.platform
       },
-      memorySize: 3008,
+      memorySize: 10240,
       description: `sends notifications for ${id}`,
       role: executionRole,
       timeout: cdk.Duration.seconds(90),

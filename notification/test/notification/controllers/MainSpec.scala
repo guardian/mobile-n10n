@@ -147,6 +147,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     val reportRepository = new InMemoryNotificationReportRepository
     val authAction = new NotificationAuthAction(conf, controllerComponents)
     val metrics = mock[CloudWatchMetrics]
+    val sloTrackingSender = mock[SloTrackingSender]
 
     val main = new Main(
       configuration = conf,
@@ -156,7 +157,8 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       notificationReportRepository = reportRepository,
       articlePurge = articlePurge,
       controllerComponents = controllerComponents,
-      authAction = authAction
+      authAction = authAction,
+      sloTrackingSender = sloTrackingSender
     )
 
     val badMain = new Main(
@@ -167,7 +169,8 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       notificationReportRepository = reportRepository,
       articlePurge = articlePurge,
       controllerComponents = controllerComponents,
-      authAction = authAction
+      authAction = authAction,
+      sloTrackingSender = sloTrackingSender
     )
   }
 
