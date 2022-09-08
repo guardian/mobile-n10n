@@ -11,9 +11,11 @@ import db._
 import doobie.util.transactor.Transactor
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
+import org.threeten.bp.ZoneOffset
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.jdk.CollectionConverters._
+import java.time.{Duration, Instant, LocalDateTime, ZoneId}
 
 sealed trait WorkerSqs
 object WorkerSqs {
@@ -79,13 +81,14 @@ trait HarvesterRequestHandler extends Logging {
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
     for {
       shardedNotification <- shardedNotifications
+      notificationId = shardedNotification.notification.id
       androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, androidLiveDeliveryService)
       androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, androidBetaDeliveryService)
       androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, androidEditionDeliveryService)
       iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, iosLiveDeliveryService)
       iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, iosEditionDeliveryService)
-      notificationLog = s"(notification: ${shardedNotification.notification.id} ${shardedNotification.range})"
-      _ = logger.info(s"Queuing notification $notificationLog...")
+      notificationLog = s"(notification: $notificationId ${shardedNotification.range})"
+      _ = logger.info(Map("notificationId" -> notificationId), s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
       resp <- tokens
         .collect(routeToSqs)
@@ -94,6 +97,12 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def processNotification(event: SQSEvent, tokenService: TokenService[IO]) = {
+    val records = event.getRecords.asScala.toList.map(r => (NotificationParser.parseShardNotificationEvent(r.getBody), r.getAttributes))
+    records.foreach {
+      case (body, _) => logger.info(Map(
+        "notificationId" -> body.notification.id,
+      ), "Parsed notification event")
+    }
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
       .map(NotificationParser.parseShardNotificationEvent)
@@ -104,8 +113,46 @@ trait HarvesterRequestHandler extends Logging {
         .unsafeRunSync()
     }catch {
       case e: Throwable => {
-        logger.error(s"Error occurred: ${e.getMessage}", e)
+        records.foreach {
+          case (body, _) =>
+            logger.error(Map(
+              "notificationId" -> body.notification.id,
+              "notificationType" -> body.notification.`type`.toString,
+            ), s"Error occurred: ${e.getMessage}", e)
+        }
         throw e
+      }
+    }finally {
+      records.foreach {
+        case (body, attributes) => {
+          val end = Instant.now
+          val sentTime = Instant.ofEpochMilli(attributes.getOrDefault("SentTimestamp", "0").toLong)
+
+          logger.info(Map(
+            "_aws" -> Map(
+              "Timestamp" -> end.toEpochMilli,
+              "CloudWatchMetrics" -> List(Map(
+                "Namespace" -> s"Notifications/${env.stage}/harvester",
+                "Dimensions" -> List(List("type")),
+                "Metrics" -> List(Map(
+                  "Name" -> "harvester.notificationProcessingTime",
+                  "Unit" -> "Milliseconds"
+                ))
+              ))
+            ),
+            "harvester.notificationProcessingTime" -> Duration.between(sentTime, end).toMillis,
+            "harvester.notificationProcessingEndTime.millis" -> end.toEpochMilli,
+            "harvester.notificationProcessingStartTime.millis" -> sentTime.toEpochMilli,
+            "notificationId" -> body.notification.id,
+            "notificationType" -> body.notification.`type`.toString,
+            "type" -> {
+              body.notification.`type` match {
+                case _root_.models.NotificationType.BreakingNews => "breakingNews"
+                case _ => "other"
+              }
+            }
+          ), "Finished processing notification event")
+        }
       }
     }
   }

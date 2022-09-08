@@ -111,6 +111,14 @@ Resources:
             Effect: Allow
             Action: cloudwatch:PutMetricData
             Resource: "*"
+      - PolicyName: connectRdsProxy
+        PolicyDocument:
+          Statement:
+          - Action:
+            - rds-db:connect
+            Effect: Allow
+            Resource: 
+              Fn::ImportValue: !Sub RegistrationsDbProxyId-${Stage}
 
   LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -141,7 +149,7 @@ Resources:
       MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
       Timeout: 300
-      ReservedConcurrentExecutions: 100
+      ReservedConcurrentExecutions: 1
       VpcConfig:
         SecurityGroupIds:
           - !GetAtt LambdaSecurityGroup.GroupId

@@ -9,7 +9,6 @@ import models.TopicTypes.Breaking
 import org.joda.time.{DateTime, DateTimeZone}
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
-import cats.implicits._
 import org.specs2.specification.Scope
 
 class NotificationReportTest extends Specification {

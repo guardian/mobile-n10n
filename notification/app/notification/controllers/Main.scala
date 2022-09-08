@@ -1,14 +1,17 @@
 package notification.controllers
 
 import java.util.UUID
-
+import java.time.{Duration, Instant}
 import authentication.AuthAction
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
+import models.NotificationType.BreakingNews
 import models.{TopicTypes, _}
+import net.logstash.logback.marker.LogstashMarker
+import net.logstash.logback.marker.Markers.appendEntries
 import notification.models.PushResult
 import notification.services
-import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender}
+import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender, SloTrackingSender}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json.toJson
@@ -18,6 +21,7 @@ import tracking.SentNotificationReportRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import scala.jdk.CollectionConverters.MapHasAsJava
 
 final class Main(
   configuration: Configuration,
@@ -27,11 +31,14 @@ final class Main(
   articlePurge: ArticlePurge,
   metrics: CloudWatchMetrics,
   controllerComponents: ControllerComponents,
-  authAction: AuthAction
+  authAction: AuthAction,
+  sloTrackingSender: SloTrackingSender,
 )(implicit executionContext: ExecutionContext)
   extends AbstractController(controllerComponents) {
 
-  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  implicit private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  implicit def mapToContext(c: Map[String, _]): LogstashMarker = appendEntries(c.asJava)
+
   val weekendReadingTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-reading")
   val weekendRoundUpTopic = Topic(TopicTypes.TagSeries, "membership/series/weekend-round-up")
 
@@ -59,7 +66,7 @@ final class Main(
   }
 
   def pushTopics: Action[Notification] = authAction.async(parse.json[Notification]) { request =>
-    val startTime = System.currentTimeMillis()
+    val notificationReceivedTime = Instant.now
     val notification = request.body
     val topics = notification.topic
     val MaxTopics = 20
@@ -68,10 +75,31 @@ final class Main(
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{topic => request.isPermittedTopicType(topic.`type`)} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
-      case _ =>
-        val result = pushWithDuplicateProtection(notification)
-        result.foreach(_ => logger.info(s"Spent ${System.currentTimeMillis() - startTime} milliseconds processing notification ${notification.id}"))
-        result
+      case _ => pushWithDuplicateProtection(notification).map(send => {
+        val durationMillis = Duration.between(notificationReceivedTime, Instant.now).toMillis
+
+        if (notification.`type` == BreakingNews && !notification.dryRun.contains(true)) {
+          logger.info("Sending SLO tracking message to SQS queue")
+          sloTrackingSender.sendTrackingMessage(notification.id)
+        }
+
+        logger.info(
+          Map(
+            "notificationId" -> notification.id,
+            "notificationType" -> notification.`type`.toString,
+            "notificationTitle" -> notification.title.getOrElse("Unknown"),
+            "notificationApp.notificationProcessingTime" -> durationMillis,
+            "notificationApp.notificationReceivedTime.millis" -> notificationReceivedTime.toEpochMilli,
+            "notificationApp.notificationReceivedTime.string" -> notificationReceivedTime.toString,
+          ),
+          s"Spent $durationMillis milliseconds processing notification ${notification.id}")
+        metrics.send(MetricDataPoint(name = "NotificationAppProcessingTime", value = durationMillis.toDouble, unit = StandardUnit.Milliseconds))
+        notification.`type` match {
+          case BreakingNews => metrics.send(MetricDataPoint(name = "BreakingNewsNotificationCount", value = 1, unit = StandardUnit.Count))
+          case _ => {}
+        }
+        send
+      })
     }) recoverWith {
       case NonFatal(exception) => {
         logger.warn(s"Pushing notification failed: $notification", exception)

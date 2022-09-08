@@ -3,7 +3,7 @@ package com.gu.notificationschedule.external
 import com.gu.{AppIdentity, AwsIdentity}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.typesafe.config.Config
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 
 import scala.util.Try
 
@@ -26,12 +26,12 @@ object SsmConfigLoader {
         case awsIdentity: AwsIdentity => SsmConfig(awsIdentity.app, awsIdentity.stack, awsIdentity.stage, config)
         case _ => {
           val notAnAppMessage: String = "Not running an app"
-          LogManager.getLogger("SsmConfigLoader").error(notAnAppMessage)
+          LoggerFactory.getLogger("SsmConfigLoader").error(notAnAppMessage)
           throw new IllegalStateException(notAnAppMessage)
         }
       }
     }.fold(t => {
-      LogManager.getLogger("SsmConfigLoader").error("Failed to load config", t)
+      LoggerFactory.getLogger("SsmConfigLoader").error("Failed to load config", t)
       throw t
     }, x => x)
 

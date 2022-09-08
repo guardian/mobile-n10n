@@ -8,7 +8,7 @@ import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 val projectVersion = "1.0-latest"
 
 organization := "com.gu"
-ThisBuild / scalaVersion := "2.13.2"
+ThisBuild / scalaVersion := "2.13.8"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -23,9 +23,9 @@ ThisBuild / scalacOptions ++= compilerOptions
 val playJsonVersion = "2.8.1"
 val specsVersion: String = "4.5.1"
 val awsSdkVersion: String = "1.11.772"
-val doobieVersion: String = "0.9.2"
-val catsVersion: String = "2.1.1"
-val okHttpVersion: String = "3.14.8"
+val doobieVersion: String = "0.13.4"
+val catsVersion: String = "2.7.0"
+val okHttpVersion: String = "4.9.3"
 val paClientVersion: String = "7.0.5"
 val apacheThrift: String = "0.15.0"
 val jacksonDatabind: String = "2.13.3"
@@ -33,16 +33,18 @@ val jacksonCbor: String = "2.13.3"
 val jacksonScalaModule: String = "2.13.3"
 val simpleConfigurationVersion: String = "1.5.6"
 val googleOAuthClient: String = "1.33.3"
-val nettyVersion: String = "4.1.77.Final"
+val nettyVersion: String = "4.1.78.Final"
+val slf4jVersion: String = "1.7.36"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
     "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
   ),
+  riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.24.0",
-    "com.softwaremill.macwire" %% "macros" % "2.3.3" % "provided",
+    "com.softwaremill.macwire" %% "macros" % "2.5.7" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
@@ -53,6 +55,8 @@ val standardSettings = Seq[Setting[_]](
 lazy val commoneventconsumer = project
   .settings(Seq(
     libraryDependencies ++= Seq(
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
@@ -102,6 +106,7 @@ lazy val common = project
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
+      "org.postgresql" % "postgresql" % "42.4.1",
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
@@ -256,17 +261,16 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     ),
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
-      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.5.0",
-      "org.slf4j" % "slf4j-api" % "1.7.30",
-      "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.17.1",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+      "ch.qos.logback" % "logback-classic" % "1.2.11",
+      "net.logstash.logback" % "logstash-logback-encoder" % "7.2",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
     assembly / assemblyMergeStrategy := {
       case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-      case "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat" => new MergeLog4j2PluginCachesStrategy
       case _ => MergeStrategy.first
     },
     Test / run / fork := true,
@@ -308,7 +312,7 @@ lazy val football = lambda("football", "football")
   .settings(
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-simple" % "1.7.25",
+      "org.slf4j" % "slf4j-simple" % "1.7.36",
       "com.typesafe" % "config" % "1.3.2",
       "org.scanamo" %% "scanamo" % "1.0.0-M12",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12" % "test",
@@ -336,11 +340,23 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
       libraryDependencies ++= Seq(
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
-        "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
-        "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2",
+        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
         "io.netty" % "netty-codec-http2" % nettyVersion
       ),
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"mobile-notifications-eventconsumer-cfn/cfn.yaml")
+    )
+  })
+
+lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notifications.slos.SloMonitor"))
+  .dependsOn(commoneventconsumer)
+  .settings({
+    Seq(
+      description := "Monitors SLO performance for breaking news notifications",
+      libraryDependencies ++= Seq(
+        "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+      ),
+      riffRaffArtifactResources +=(file("cdk/cdk.out/SloMonitor-CODE.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-CODE.template.json"),
+      riffRaffArtifactResources += (file("cdk/cdk.out/SloMonitor-PROD.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-PROD.template.json")
     )
   })
 
@@ -399,7 +415,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
-      "com.google.firebase" % "firebase-admin" % "8.1.0",
+      "com.google.firebase" % "firebase-admin" % "9.0.0",
+      "com.google.protobuf" % "protobuf-java" % "3.19.2",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
@@ -415,8 +432,11 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack.template.json", "mobile-notifications-workers-cfn/sender-workers.cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"mobile-notifications-registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"mobile-notifications-topic-counter-cfn/topic-counter-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"mobile-notifications-expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml")
-  )
+    riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"mobile-notifications-expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml"),
+    riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-CODE.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-CODE.template.json"),
+    riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-PROD.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-PROD.template.json")
+)
+
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
   .dependsOn(common)

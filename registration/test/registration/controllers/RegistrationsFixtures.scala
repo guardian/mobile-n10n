@@ -3,7 +3,7 @@ package registration.controllers
 import application.WithPlayApp
 import doobie.implicits._
 import cats.effect.IO
-import cats.implicits._
+import cats.syntax.all._
 import com.gu.DevIdentity
 import db.{DatabaseConfig, JdbcConfig, RegistrationService}
 import doobie.util.transactor.Transactor
@@ -100,7 +100,7 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
           PRIMARY KEY (token, topic)
         )""".update.run
 
-        (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync
+        (drop, create).mapN(_ + _).transact(transactor).unsafeRunSync()
         RegistrationService(transactor)
       }
     }
