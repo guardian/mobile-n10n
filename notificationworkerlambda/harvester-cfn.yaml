@@ -184,7 +184,7 @@ Resources:
     - Sqs
     - HarvesterLambdaCtr
     Properties:
-      BatchSize: 2
+      BatchSize: 1
       Enabled: True
       EventSourceArn: !GetAtt Sqs.Arn
       FunctionName: !Ref HarvesterLambdaCtr
