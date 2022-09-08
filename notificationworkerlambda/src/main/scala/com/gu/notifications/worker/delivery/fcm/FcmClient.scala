@@ -98,7 +98,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
             if(batchResponse.getFailureCount > 0) {
               batchResponse.getResponses.asScala.toList.foreach { r => {
                 if (!r.isSuccessful) {
-                  logger.info(s"Batch response failed because: ${r.getException}")
+                  logger.info(s"Batch response failed: ${r.getException.getErrorCode} or ${r.getException.getMessagingErrorCode} because: ${r.getException.getMessage}" )
                 }
               }
               }
