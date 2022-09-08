@@ -149,7 +149,7 @@ Resources:
       MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
       Timeout: 300
-      ReservedConcurrentExecutions: 100
+      ReservedConcurrentExecutions: 1
       VpcConfig:
         SecurityGroupIds:
           - !GetAtt LambdaSecurityGroup.GroupId

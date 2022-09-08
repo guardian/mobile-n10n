@@ -1,0 +1,22 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+
+deployments:
+  slomonitor:
+    type: aws-lambda
+    parameters:
+      bucketSsmLookup: true
+      functionNames:
+      - mobile-notifications-slo-monitor-
+      fileName: slomonitor.jar
+      prefixStack: false
+    dependencies: [mobile-notifications-slo-monitor-cfn]
+  mobile-notifications-slo-monitor-cfn:
+    type: cloud-formation
+    app: slomonitor
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: slomonitor
+      templateStagePaths:
+        CODE: SloMonitor-CODE.template.json
+        PROD: SloMonitor-PROD.template.json
