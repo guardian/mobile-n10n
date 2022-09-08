@@ -110,6 +110,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 //            onComplete(Left(FailedRequest(notificationId, token, t)))
 //          case Failure(messageId) =>
 //            onComplete(Left(UnknownReasonFailedRequest(notificationId, token)))
+            onComplete(Left(UnknownReasonFailedRequest(notificationId, token.head)))
           logger.info(s"Failure response: $batchResponse")
           logger.info(s"Message: ${batchResponse.getMessage}")
           logger.info(s"Cause: ${batchResponse.getCause}")
