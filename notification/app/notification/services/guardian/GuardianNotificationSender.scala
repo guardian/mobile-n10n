@@ -26,7 +26,7 @@ class GuardianNotificationSender(
   harvesterSqsUrl: String,
 )(implicit ec: ExecutionContext) extends NotificationSender {
 
-  val WORKER_BATCH_SIZE: Int = 10000
+  val WORKER_BATCH_SIZE: Int = 20000
   val SQS_BATCH_SIZE: Int = 10
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
