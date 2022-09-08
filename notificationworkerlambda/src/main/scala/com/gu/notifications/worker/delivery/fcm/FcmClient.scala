@@ -73,7 +73,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     }
   }
   def sendBatchNotification(notificationId: UUID, token: List[String], payload: Payload, dryRun: Boolean)
-    (onComplete: Either[Throwable, Success] => Unit)
+    (onComplete: Either[Throwable, BatchSuccess] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {
 
     val message = MulticastMessage
@@ -84,25 +84,38 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 
 
     if (dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
-      onComplete(Right(FcmDeliverySuccess(token.head, "dryrun", dryRun = true)))
+      onComplete(Right(FcmBatchDeliverySuccess(token, "dryrun", dryRun = true)))
     } else {
       import FirebaseHelpers._
       firebaseMessaging
         .sendMulticastAsync(message)
         .asScala
         .onComplete {
-          case Success(messageId) =>
-              logger.info(s"response successful: $messageId")
-//            onComplete(Right(FcmDeliverySuccess(token.head, messageId.toString)))
+          case Success(batchResponse) =>
+            logger.info(s"Success count: ${batchResponse.getSuccessCount}")
+            logger.info(s"Failure count: ${batchResponse.getFailureCount}")
+            logger.info(s"Responses: ${batchResponse.getResponses}")
+//            if(batchResponse.getFailureCount == 0) {
+//              logger.info("No failures found in batch response")
+//              onComplete(Right(FcmBatchDeliverySuccess(token, batchResponse.toString)))
+//            }
+            onComplete(Right(FcmBatchDeliverySuccess(token, batchResponse.toString)))
+          case Failure(batchResponse) =>
+
 //          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
 //            onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
 //          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
 //            onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString))))
 //          case Failure(NonFatal(t)) =>
 //            onComplete(Left(FailedRequest(notificationId, token, t)))
-          case Failure(messageId) =>
+//          case Failure(messageId) =>
 //            onComplete(Left(UnknownReasonFailedRequest(notificationId, token)))
-          logger.info(s"response failure: $messageId")
+          logger.info(s"Failure response: $batchResponse")
+          logger.info(s"Message: ${batchResponse.getMessage}")
+          logger.info(s"Cause: ${batchResponse.getCause}")
+          logger.info(s"Suppressed: ${batchResponse.getSuppressed}")
+          logger.info(s"Localized message: ${batchResponse.getLocalizedMessage}")
+          logger.info(s"Stack trace: ${batchResponse.getStackTrace}")
         }
     }
   }
