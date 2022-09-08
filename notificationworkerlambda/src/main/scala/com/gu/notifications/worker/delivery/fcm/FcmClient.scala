@@ -92,7 +92,6 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
         .asScala
         .onComplete {
           case Success(batchResponse) =>
-            if(batchResponse.getFailureCount > 0) {
               batchResponse.getResponses.asScala.toList.foreach { r => {
                 if (!r.isSuccessful) {
                   logger.info(s"Batch response failed: ${r.getException.getMessagingErrorCode} because: ${r.getException.getMessage}" )
@@ -105,11 +104,11 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
                     case _ =>
                       onComplete(Left(UnknownReasonFailedRequest(notificationId, r.getMessageId)))
                   }
+                } else {
+                  onComplete(Right(FcmDeliverySuccess(s"Batch response succeeded", r.getMessageId)))
                 }
               }
-              }
             }
-            onComplete(Right(FcmDeliverySuccess(s"token batch succeeded: ${token.head}", batchResponse.toString)))
           case Failure(x) =>
             onComplete(Left(UnknownReasonFailedRequest(notificationId, s"Multicast Async Response Failure: ${x.getCause}")))
         }
