@@ -73,7 +73,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     }
   }
   def sendBatchNotification(notificationId: UUID, token: List[String], payload: Payload, dryRun: Boolean)
-    (onComplete: Either[Throwable, BatchSuccess] => Unit)
+    (onComplete: Either[Throwable, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {
 
     val message = MulticastMessage
@@ -84,7 +84,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 
 
     if (dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
-      onComplete(Right(FcmBatchDeliverySuccess(token, "dryrun", dryRun = true)))
+      onComplete(Right(FcmDeliverySuccess(token.head, "dryrun", dryRun = true)))
     } else {
       import FirebaseHelpers._
       firebaseMessaging
@@ -99,7 +99,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 //              logger.info("No failures found in batch response")
 //              onComplete(Right(FcmBatchDeliverySuccess(token, batchResponse.toString)))
 //            }
-            onComplete(Right(FcmBatchDeliverySuccess(token, batchResponse.toString)))
+            onComplete(Right(FcmDeliverySuccess(token.head, batchResponse.toString)))
           case Failure(batchResponse) =>
 
 //          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
