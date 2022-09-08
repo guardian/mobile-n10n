@@ -1,6 +1,7 @@
 import 'source-map-support/register';
 import { App } from 'aws-cdk-lib';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
+import { SloMonitoring } from '../lib/slo-monitoring';
 
 const app = new App();
 
@@ -27,3 +28,13 @@ export const dbProxyProdProps = {
 
 new RegistrationsDbProxy(app, 'RegistrationsDbProxy-CODE', dbProxyCodeProps);
 new RegistrationsDbProxy(app, 'RegistrationsDbProxy-PROD', dbProxyProdProps);
+
+new SloMonitoring(app, 'SloMonitor-CODE', {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+});
+
+new SloMonitoring(app, 'SloMonitor-PROD', {
+	stack: 'mobile-notifications',
+	stage: 'PROD',
+});
