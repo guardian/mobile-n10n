@@ -95,13 +95,13 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
             if(batchResponse.getFailureCount > 0) {
               batchResponse.getResponses.asScala.toList.foreach { r => {
                 if (!r.isSuccessful) {
-                  logger.info(s"Batch response failed: ${r.getException.getErrorCode} or ${r.getException.getMessagingErrorCode} because: ${r.getException.getMessage}" )
+                  logger.info(s"Batch response failed: ${r.getException.getMessagingErrorCode} because: ${r.getException.getMessage}" )
 
                   r.getException match {
-                    case UnwrappingExecutionException(e: FirebaseMessagingException) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
+                    case UnwrappingExecutionException(e: FirebaseMessagingException) if invalidTokenErrorCodes.contains(e.getMessagingErrorCode) =>
                       onComplete(Left(InvalidToken(notificationId, r.getMessageId, e.getMessage)))
                     case UnwrappingExecutionException(e: FirebaseMessagingException) =>
-                      onComplete(Left(FailedRequest(notificationId, r.getMessageId, e, Option(e.getErrorCode.toString))))
+                      onComplete(Left(FailedRequest(notificationId, r.getMessageId, e, Option(e.getMessagingErrorCode.toString))))
                     case _ =>
                       onComplete(Left(UnknownReasonFailedRequest(notificationId, r.getMessageId)))
                   }
