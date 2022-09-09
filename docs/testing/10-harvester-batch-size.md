@@ -2,11 +2,11 @@
 
 In [our study](../architecture/04-harvester-lambda-timing.md) on the harvester lambda, it was found that the lambda did not scale up the harvester lambda fast enough to achieve the level of parallel processing we need.
 
-Based on AWS recommendation, we tried increasing the batch size in an attempt to make harvester process all the messages with fewer invocations.
+Based on AWS recommendation, we tried increasing the batch size to make harvester process all the messages with fewer invocations.
 
-Since processing two messages in a call may be equivalent to processing one message with double the shard range, we also tested the performance with increased the shard range for comparison.
+Since processing two messages in an invocation may be equivalent to processing one message with double the shard range, we tested the performance of harvesters with increased the shard range for comparison.
 
-(Increased shard range was tested before, but with recent improvement on the database and other parts, the result may be different.)
+(Increased shard range was tested before, but with recent improvements on the database, the result may be different.)
 
 # Set up
 
@@ -53,13 +53,13 @@ The harvester processed one record in each invocation.  Each record covers aroun
 
 ## Conclusion
 
-We do not notice any consistent difference between the batch size of 1 and the batch size of 2.  It suggests that the harvester processes the messages in the batch sequentially and the setting of batch size does not affect the rate of scaling up in AWS lambda. 
+We do not notice much difference between the batch size of 1 and the batch size of 2.  After all, the harvester processes the messages in the batch sequentially.  But it does show that the setting of batch size does not affect the rate of scaling up in AWS lambda. 
 
-We also see a little degradation in performance if we processes around 20,000 tokens in one SQS record rather than processing two SQS records each with 10,000 tokens.  One of the possible reasons may be the fact that more memory is needed to keep the intermediate data when processing 20,000 tokens in one batch.
+We see a little degradation in performance if we processes around 20,000 tokens in one SQS record rather than processing two SQS records each with 10,000 tokens.  One of the possible reasons may be the fact that more memory is needed to keep the intermediate data when processing 20,000 tokens in one batch.
 
-If we want to improve based on the current architecture, the harvester _may_ give better throughput if it processes SQS records in parallel, provided that it runs on a machine with multiple CPU cores.
+If we want to improve the harvester based on the current architecture, the harvester _may_ give better throughput if it processes SQS records in parallel, provided that it runs on a machine with multiple CPU cores.
 
-Lambda allocates CPU power proportional to the amount of memory provisioned.  I was not able to find out from the documentation how much memory provisioned can result in one more virtual CPU allocated, but according to this [AWS document](https://aws.amazon.com/about-aws/whats-new/2020/12/aws-lambda-supports-10gb-memory-6-vcpu-cores-lambda-functions/), a lambda function can be provisioned with a maximum of 10GB memory, which leads to 6 virtual CPU allocated. 
+Lambda allocates CPU power proportional to the amount of memory provisioned.  I was not able to find out from the documentation how much memory provisioned can result in one more virtual CPU allocated, but according to this [AWS document](https://aws.amazon.com/about-aws/whats-new/2020/12/aws-lambda-supports-10gb-memory-6-vcpu-cores-lambda-functions/), a lambda function can be provisioned with a maximum of 10GB memory, which can get 6 virtual CPU allocated. 
 
 
 
