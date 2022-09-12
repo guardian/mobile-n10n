@@ -104,7 +104,8 @@ class SenderWorker extends cdk.Construct {
         Stage: scope.stage,
         Stack: scope.stack,
         App: id,
-        Platform: opts.platform
+        Platform: opts.platform,
+        JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
       },
       memorySize: 10240,
       description: `sends notifications for ${id}`,

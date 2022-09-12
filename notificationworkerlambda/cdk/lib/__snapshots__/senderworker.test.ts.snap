@@ -394,6 +394,7 @@ Object {
         "Environment": Object {
           "Variables": Object {
             "App": "android",
+            "JAVA_TOOL_OPTIONS": "-XX:+TieredCompilation -XX:TieredStopAtLevel=1",
             "Platform": "android",
             "Stack": "mobile-notifications-workers",
             "Stage": Object {
@@ -933,6 +934,7 @@ Object {
         "Environment": Object {
           "Variables": Object {
             "App": "android-beta",
+            "JAVA_TOOL_OPTIONS": "-XX:+TieredCompilation -XX:TieredStopAtLevel=1",
             "Platform": "android-beta",
             "Stack": "mobile-notifications-workers",
             "Stage": Object {
@@ -1472,6 +1474,7 @@ Object {
         "Environment": Object {
           "Variables": Object {
             "App": "android-edition",
+            "JAVA_TOOL_OPTIONS": "-XX:+TieredCompilation -XX:TieredStopAtLevel=1",
             "Platform": "android-edition",
             "Stack": "mobile-notifications-workers",
             "Stage": Object {
@@ -2011,6 +2014,7 @@ Object {
         "Environment": Object {
           "Variables": Object {
             "App": "ios",
+            "JAVA_TOOL_OPTIONS": "-XX:+TieredCompilation -XX:TieredStopAtLevel=1",
             "Platform": "ios",
             "Stack": "mobile-notifications-workers",
             "Stage": Object {
@@ -2550,6 +2554,7 @@ Object {
         "Environment": Object {
           "Variables": Object {
             "App": "ios-edition",
+            "JAVA_TOOL_OPTIONS": "-XX:+TieredCompilation -XX:TieredStopAtLevel=1",
             "Platform": "ios-edition",
             "Stack": "mobile-notifications-workers",
             "Stage": Object {

@@ -161,6 +161,7 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
       Description: Consumes events produced by the notification service and fetches batches of tokens for senders to send
       MemorySize: 10240
       Role: !GetAtt ExecutionRole.Arn
