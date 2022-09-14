@@ -20,6 +20,8 @@ We tested the performance by sending one breaking news notifications to the topi
 
 We ran the test on `CODE` and so the sender lambda functions were actually executed with `dry-running` mode (i.e. without calling Apple/Google API).
 
+## Overall duration
+
 We have the following figures for default JVM options:
 
 | # | No. harvester invocations | Avg. harvester processing (s) | Total harvester duration (s) | No. sender invocations | Avg. sender processing (s) | Total sender duration (s) |
@@ -39,6 +41,8 @@ And for tiered compilation level restricted to 1:
 | AVG | 335 | 20.50 | 31.26 | 3678 | 32.32 | 74.92 |
 
 With the new setting, the average harvester processing time was reduced by 14.7% but the average sender processing time was increased slightly by 3%.
+
+## Breakdown of the duration
 
 Since the JVM settings affects the duration of cold start as well as the duration of warm start execution, I collected the duration of the lambda execution from the logs written by AWS:
 
@@ -74,7 +78,7 @@ For tiered compilation level restricted to 1:
 - For harvester, the average cold start initialization duration was reduced by around 22% but the warm start execution time was increased by 10%.
 - For sender, the average cold start initialization duration was reduced by around 22% but the warm start execution time was increased by 50%.
 
-3. The impact we noticed seems to be reasonable.  Restricting tiered compilation to 1 is expected to cut down the cold start initialization time but it may increase the warm-start execution if it executes the same piece of code repeatedly for quite a while.
+3. The impact we noticed seems to be reasonable.  Restricting tiered compilation to 1 is expected to cut down the cold start initialization time but it may increase the warm-start execution if JVM executes the same piece of code repeatedly for quite a while.  (*Maybe* it is the reason why the negative impact on warm start execution time was greater on the sender)
 
 4. Based on the results, it seems likely that this setting can help with the performance of harvesters but not the sender worker.
 
