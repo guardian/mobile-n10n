@@ -29,8 +29,8 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       workerRequestHandler.processNotification(sqsEventShardNotification(breakingNewsNotification), tokenService)
       tokenStreamCount.get() shouldEqual 0
       tokenPlatformStreamCount.get() shouldEqual 1
-      firebaseSqsDeliveriesCount.get() shouldEqual 3
-      apnsSqsDeliveriesCount.get() shouldEqual 3
+      firebaseSqsDeliveriesCount.get() shouldEqual 2
+      apnsSqsDeliveriesCount.get() shouldEqual 2
       firebaseSqsDeliveriesTotal.get() shouldEqual 2002
       apnsSqsDeliveriesTotal.get() shouldEqual 2002
     }
