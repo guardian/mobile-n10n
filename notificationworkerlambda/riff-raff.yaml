@@ -16,7 +16,9 @@ deployments:
     parameters:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: mobile-notifications-cdk-workers
-      templatePath: sender-workers.cfn.yaml
+      templateStagePaths:
+        CODE: SenderWorkerStack-CODE.template.json
+        PROD: SenderWorkerStack-PROD.template.json
   mobile-notifications-topic-counter-cfn:
     type: cloud-formation
     app: topic-counter
@@ -49,6 +51,6 @@ deployments:
     app: registrations-db-proxy
     parameters:
       prependStackToCloudFormationStackName: false
-      templateStagePaths: 
+      templateStagePaths:
         CODE: RegistrationsDbProxy-CODE.template.json
         PROD: RegistrationsDbProxy-PROD.template.json

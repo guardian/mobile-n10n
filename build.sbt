@@ -430,7 +430,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     ),
     riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"mobile-notifications-harvester-cfn/harvester-cfn.yaml"),
     // cdk synthesised cloudformation template
-    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack.template.json", "mobile-notifications-workers-cfn/sender-workers.cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack-CODE.template.json", "mobile-notifications-workers-cfn/SenderWorkerStack-CODE.template.json"),
+    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack-PROD.template.json", "mobile-notifications-workers-cfn/SenderWorkerStack-PROD.template.json"),
     riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"mobile-notifications-registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"mobile-notifications-topic-counter-cfn/topic-counter-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"mobile-notifications-expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml"),
