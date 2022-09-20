@@ -2,6 +2,13 @@
 
 exports[`The SloMonitoring stack matches the snapshot 1`] = `
 Object {
+  "Metadata": Object {
+    "gu:cdk:constructs": Array [
+      "GuDistributionBucketParameter",
+      "GuLambdaFunction",
+    ],
+    "gu:cdk:version": "TEST",
+  },
   "Parameters": Object {
     "DistributionBucketName": Object {
       "Default": "/account/services/artifact.bucket",
@@ -260,7 +267,7 @@ Object {
                       Object {
                         "Ref": "DistributionBucketName",
                       },
-                      "/*",
+                      "/mobile-notifications/PROD/slomonitor/slomonitor.jar",
                     ],
                   ],
                 },
