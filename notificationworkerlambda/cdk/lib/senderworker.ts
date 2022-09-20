@@ -6,13 +6,14 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
+import * as cdkcore from 'constructs'
 
 import {SnsAction} from 'aws-cdk-lib/aws-cloudwatch-actions'
 import { GuStack } from "@guardian/cdk/lib/constructs/core"
 import type { App } from "aws-cdk-lib"
 import type { GuStackProps } from "@guardian/cdk/lib/constructs/core"
 
-interface SenderWorkerOpts extends GuStackProps {
+interface SenderWorkerOpts {
   handler: string,
   imageRepo: ecr.IRepository,
   buildId: string,
@@ -25,12 +26,12 @@ interface SenderWorkerOpts extends GuStackProps {
   paramPrefix: string
 }
 
-class SenderWorker extends GuStack {
+class SenderWorker extends cdkcore.Construct  {
 
   readonly senderSqs: sqs.Queue
 
-  constructor(scope: App, id: string, props: SenderWorkerOpts) {
-    super(scope, id, props)
+  constructor(scope: GuStack, id: string, props: SenderWorkerOpts) {
+    super(scope, id)
 
     cdk.Tags.of(this).add("App", id)
 
@@ -79,7 +80,7 @@ class SenderWorker extends GuStack {
           statements: [
             new iam.PolicyStatement({
               actions: [ 'ssm:GetParametersByPath' ],
-              resources: [ `arn:aws:ssm:${scope.region}:${scope.account}:parameter/notifications/${scope.stageName}/workers/${props.platform}` ]
+              resources: [ `arn:aws:ssm:${scope.region}:${scope.account}:parameter/notifications/${scope.stage}/workers/${props.platform}` ]
             })
           ] }),
         Cloudwatch: new iam.PolicyDocument({
@@ -98,11 +99,11 @@ class SenderWorker extends GuStack {
     })
 
     const senderLambdaCtr = new lambda.DockerImageFunction(this, 'SenderLambdaCtr', {
-      functionName: `${props.stack}-${id}-sender-ctr-${props.stage}`,
+      functionName: `${scope.stack}-${id}-sender-ctr-${scope.stage}`,
       code: codeImage,
       environment: {
-        Stage: props.stage,
-        Stack: props.stack,
+        Stage: scope.stage,
+        Stack: scope.stack,
         App: id,
         Platform: props.platform
       },
@@ -123,7 +124,7 @@ class SenderWorker extends GuStack {
     senderSqsEventSourceMapping.node.addDependency(senderLambdaCtr)
 
     const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
-      alarmDescription: `Triggers if the ${id} sender lambda is throttled in ${props.stage}.`,
+      alarmDescription: `Triggers if the ${id} sender lambda is throttled in ${scope.stage}.`,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
@@ -134,7 +135,7 @@ class SenderWorker extends GuStack {
     senderThrottleAlarm.addOkAction(snsTopicAction)
 
     const senderErrorAlarm = new cloudwatch.Alarm(this, 'SenderErrorAlarm', {
-      alarmDescription: `Triggers if the ${id} sender lambda errors in ${props.stage}.`,
+      alarmDescription: `Triggers if the ${id} sender lambda errors in ${scope.stage}.`,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
@@ -145,7 +146,7 @@ class SenderWorker extends GuStack {
     senderErrorAlarm.addOkAction(snsTopicAction)
 
     const senderTooFewInvocationsAlarm = new cloudwatch.Alarm(this, 'SenderTooFewInvocationsAlarm', {
-      alarmDescription: `Triggers if the ${id} sender lambda is not frequently invoked in ${props.stage}.`,
+      alarmDescription: `Triggers if the ${id} sender lambda is not frequently invoked in ${scope.stage}.`,
       comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
@@ -158,7 +159,7 @@ class SenderWorker extends GuStack {
 
     // this advertises the name of the sender queue to the harvester app
     new ssm.StringParameter(this, 'SenderQueueSSMParameter', {
-      parameterName: `/notifications/${props.stage}/workers/harvester/${props.paramPrefix}SqsCdkUrl`,
+      parameterName: `/notifications/${scope.stage}/workers/harvester/${props.paramPrefix}SqsCdkUrl`,
       simpleName: false,
       stringValue: this.senderSqs.queueUrl,
       tier: ssm.ParameterTier.STANDARD,
@@ -202,15 +203,6 @@ export class SenderWorkerStack extends GuStack {
         repositoryName: cdk.Fn.importValue("NotificationLambdaRepositoryName")
       })
 
-    // const isEnabled = this.withStageDependentValue({
-    //   app: id,
-    //   variableName: "actionsEnabled",
-    //   stageValues: {
-    //     CODE: false,
-    //     PROD: true
-    //   }
-    // })
-
     let sharedOpts = {
       imageRepo: notificationEcrRepo,
       buildId: buildIdParam.valueAsString,
@@ -224,7 +216,7 @@ export class SenderWorkerStack extends GuStack {
     let workerQueueArns: string[] = []
 
     const addWorker = (workerName: string, paramPrefix: string, handler: string) => {
-      let worker = new SenderWorker(scope, workerName, {
+      let worker = new SenderWorker(this, workerName, {
         ...props,
         platform: workerName,
         paramPrefix: paramPrefix,

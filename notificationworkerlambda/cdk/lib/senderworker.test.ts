@@ -9,6 +9,6 @@ describe('The MobileAppsRendering stack', () => {
       stack: 'mobile-notifications-workers',
       stage: 'PROD'
     });
-    expect(Template.fromStack(stack).toJSON().toMatchSnapshot());
+    expect(Template.fromStack(stack).toJSON()).toMatchSnapshot();
   });
 });
