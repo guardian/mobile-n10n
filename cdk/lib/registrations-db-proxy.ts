@@ -1,7 +1,7 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { AppIdentity, GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuVpc, SubnetType } from '@guardian/cdk/lib/constructs/ec2';
-import type { App } from "aws-cdk-lib";
+import type { App } from 'aws-cdk-lib';
 import { Arn, ArnFormat, CfnOutput } from 'aws-cdk-lib';
 import { SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import {
