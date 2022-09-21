@@ -2,6 +2,13 @@
 
 exports[`The RegistrationDbProxy stack matches the snapshot on CODE 1`] = `
 Object {
+  "Metadata": Object {
+    "gu:cdk:constructs": Array [
+      "GuVpcParameter",
+      "GuSubnetListParameter",
+    ],
+    "gu:cdk:version": "TEST",
+  },
   "Outputs": Object {
     "RegistrationsDbProxyId": Object {
       "Description": "ID of RDS proxy to registrations database",
@@ -257,6 +264,13 @@ Object {
 
 exports[`The RegistrationDbProxy stack matches the snapshot on PROD 1`] = `
 Object {
+  "Metadata": Object {
+    "gu:cdk:constructs": Array [
+      "GuVpcParameter",
+      "GuSubnetListParameter",
+    ],
+    "gu:cdk:version": "TEST",
+  },
   "Outputs": Object {
     "RegistrationsDbProxyId": Object {
       "Description": "ID of RDS proxy to registrations database",
