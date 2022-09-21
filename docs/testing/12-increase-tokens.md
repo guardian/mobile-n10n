@@ -5,7 +5,7 @@ Currently each worker lambda is responsible for processing 1000 tokens. We are e
 
 # Set up
 
-The harvester was modified to write a maximum of 2,000 tokens (instead of 1,000) in a SQS record fof sender workers.  As a result, sender workers process around 2,000 tokens by each invocation.  The number of thread is set to 50.
+The harvester was modified to write a maximum of 2,000 tokens (instead of 1,000) in a SQS record fof sender workers.  As a result, sender workers processed around 2,000 tokens by each invocation.  The number of thread was set to 50.
 
 We ran the test on `CODE` and so the sender lambda functions were actually executed with `dry-running` mode.  We added a Thread.sleep(300) to simulate the delay we would expect to see if we called Apple/Google API, as in [this test](08-thread-pool-size.md).
 
@@ -37,7 +37,7 @@ We look at the duration of some individual invocations.  The sender lambda takes
 And it takes around 12 seconds to process 2000 tokens.
 ![Example of sender worker processing 2000 tokens in an invocation](images/12-sender-duration-2000-tokens.png)
 
-Internally the sender worker uses multithreading model to processes tokens in a concurrent manner.  It does not help in this case because the size of thread pool, which is 50 on CODE (100 on PROD), is far below the number of tokens.
+Internally the sender worker uses multithreading model to processes tokens in a concurrent manner.  It does not help with the performance in this case possibly because the size of thread pool, which is 50 on CODE (100 on PROD), is far below the number of tokens.
 
 # Conclusion
 
