@@ -29,6 +29,7 @@ import tracking.NotificationReportRepository
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
 import cats.effect.IO
 import notification.controllers.LoadCache
+import notification.controllers.MyActorTask
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new NotificationApplicationComponents(identity, context)
@@ -99,6 +100,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
   lazy val fastlyPurge: FastlyPurge = wire[FastlyPurgeImpl]
   lazy val articlePurge: ArticlePurge = wire[ArticlePurge]
 
+  lazy val cacheRefresh = wire[MyActorTask]
   lazy val mainController = wire[Main]
   lazy val scheduleController = wire[Schedule]
   lazy val loadCache = wire[LoadCache]
