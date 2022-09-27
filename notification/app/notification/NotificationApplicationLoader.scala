@@ -27,6 +27,8 @@ import play.filters.hosts.AllowedHostsFilter
 import router.Routes
 import tracking.NotificationReportRepository
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
+import cats.effect.IO
+import notification.controllers.LoadCache
 
 class NotificationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new NotificationApplicationComponents(identity, context)
@@ -89,6 +91,9 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
     harvesterSqsUrl = configuration.get[String]("notifications.queues.harvester")
   )
 
+  lazy val registrationDbService: db.RegistrationService[IO, fs2.Stream] = db.RegistrationService.fromConfig(configuration, applicationLifecycle)
+
+
   lazy val sloTrackingSender :SloTrackingSender = new SloTrackingSender(sqsClient, appConfig.notificationSloQueueUrl)
 
   lazy val fastlyPurge: FastlyPurge = wire[FastlyPurgeImpl]
@@ -96,6 +101,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   lazy val mainController = wire[Main]
   lazy val scheduleController = wire[Schedule]
+  lazy val loadCache = wire[LoadCache]
   lazy val router: Router = wire[Routes]
 
 }

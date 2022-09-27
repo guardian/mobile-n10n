@@ -2,3 +2,4 @@ GET         /healthcheck                        notification.controllers.Main.he
 POST        /push/topic                         notification.controllers.Main.pushTopics
 POST        /push/newsstand                     notification.controllers.Main.pushNewsstand
 POST        /push/schedule/:dateString          notification.controllers.Schedule.scheduleNotification(dateString: String)
+GET         /loadcache                          notification.controllers.LoadCache.loadTokens
