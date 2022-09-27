@@ -21,7 +21,18 @@ class LoadCache(
 )(implicit ec: ExecutionContext) extends AbstractController(controllerComponents) {
 
     def loadTokens = Action {
-      Ok(s"Cache: tokens ($tokensCache.cache.length)")
+
+      // Get current size of heap in bytes
+      val heapSize: Long = Runtime.getRuntime().totalMemory(); 
+
+      // Get maximum size of heap in bytes. The heap cannot grow beyond this size.// Any attempt will result in an OutOfMemoryException.
+      val heapMaxSize: Long = Runtime.getRuntime().maxMemory();
+
+      // Get amount of free memory within the heap in bytes. This size will increase // after garbage collection and decrease as new objects are created.
+      val heapFreeSize: Long = Runtime.getRuntime().freeMemory(); 
+
+      Ok(s"Heap Size : ${heapSize/1024/1024} MB \nHeap Max Size : ${heapMaxSize/1024/1024} MB \nHeap Free Size : ${heapFreeSize/1024/1024} MB \nCache: tokens (${tokensCache.cache.length})")
+
   }
 }
 
