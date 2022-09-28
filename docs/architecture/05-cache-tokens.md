@@ -19,11 +19,11 @@ I tried another Notifications API with the same setup except without querying th
 
 I did not send any requests to the service in either of scenarios.
 
-## Observation
+## Analysis
 
 1. Based on the test result, if we assume that the Notifications API normally takes around 100 MB memory and it takes an additional 1.5 GB memory to cache the 3.3 million registrations, it appears that it may require and additional 3.5 GB memory to cache 7.7 million registrations.
 
-2. Optimistically, the registrations database will be growing in size.
+2. Optimistically, the registrations database will be growing in size.  So we need to prepare a larger memory to accommodate the growing data and have some monitoring tools in place before out of memory errors happen.
 
 3. Frequent GC may happen due to frequent changes to huge data structure in JVM heap, but it was not tested.
 
@@ -34,7 +34,7 @@ I did not send any requests to the service in either of scenarios.
 2. Maybe we just keep the breaking news registrations in cache only?  
 - But then there will be two different flows, one for breaking news and one for others.
 
-3. If the notification is sent to multiple topics, the notifications API need to do further processing - collect tokens from multiple topics and remove duplicates
+3. Even if the tokens are in memory, the notifications API may need to do further processing.  For example, if the notification is to be sent to multiple topics, it has to merge the list of tokens from multiple topics and remove duplicates
 
 ## Keep a cache in another service
 
