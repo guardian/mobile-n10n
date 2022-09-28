@@ -50,9 +50,9 @@ class MyActorTask (actorSystem: ActorSystem, registrationService: RegistrationSe
   var cache: List[HarvestedToken] = List()
 
   def refresh(): Unit = {
-      val breakingTopics = NonEmptyList.of(Topic("breaking/uk"), Topic("breaking/us"), Topic("breaking/au"), Topic("breaking/international"))
+      // val breakingTopics = NonEmptyList.of(Topic("breaking/uk"), Topic("breaking/us"), Topic("breaking/au"), Topic("breaking/international"))
       logger.info(s"Query DB started")
-      cache = registrationService.findTokens(breakingTopics, None).compile.toList.unsafeRunSync()
+      // cache = registrationService.findTokens(breakingTopics, None).compile.toList.unsafeRunSync()
       logger.info(s"Query DB ended")
   }
 }
