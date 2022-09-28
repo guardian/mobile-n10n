@@ -175,7 +175,13 @@ lazy val notification = project
     riffRaffPackageType := (Debian / packageBin).value,
     riffRaffArtifactResources += (file(s"notification/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     Debian / packageName := name.value,
-    version := projectVersion
+    version := projectVersion,
+    Universal / javaOptions ++= Seq(
+      // JVM memory tuning
+      "-J-Xmx2048m"),
+    Debian / javaOptions ++= Seq(
+      // JVM memory tuning
+      "-J-Xmx2048m")
   )
 
 lazy val report = project
