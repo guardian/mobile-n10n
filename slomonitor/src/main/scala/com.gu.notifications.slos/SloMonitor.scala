@@ -89,5 +89,4 @@ trait SloMonitor {
 
 object SloMonitor extends SloMonitor {
   val stage: String = System.getenv("STAGE")
-
 }

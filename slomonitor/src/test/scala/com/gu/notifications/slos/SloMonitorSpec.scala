@@ -1,13 +1,11 @@
 package com.gu.notifications.slos
 
-import org.mockito.Mockito.when
-import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
 import java.time.LocalDateTime
 
-class SloMonitorSpec extends Specification with Mockito {
+class SloMonitorSpec extends Specification {
   "generateQueryString" should {
     "include a single partitionDate if before midnight" in new Scope {
       val notificationId = "1234-ASDF"
