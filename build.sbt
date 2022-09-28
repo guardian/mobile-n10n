@@ -357,7 +357,9 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
         "io.netty" % "netty-codec" % nettyVersion,
       ),
       riffRaffArtifactResources +=(file("cdk/cdk.out/SloMonitor-CODE.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-CODE.template.json"),
-      riffRaffArtifactResources += (file("cdk/cdk.out/SloMonitor-PROD.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-PROD.template.json")
+      riffRaffArtifactResources += (file("cdk/cdk.out/SloMonitor-PROD.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-PROD.template.json"),
+      Test / fork := true,
+      Test / envVars := Map("STAGE" -> "TEST")
     )
   })
 
