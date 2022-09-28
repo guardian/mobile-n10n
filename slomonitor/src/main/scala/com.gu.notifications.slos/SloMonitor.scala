@@ -10,19 +10,19 @@ import net.logstash.logback.marker.LogstashMarker
 import net.logstash.logback.marker.Markers.appendEntries
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.time.{Instant, LocalDateTime, ZoneOffset}
+import java.time.{Instant, LocalDateTime, LocalTime, ZoneOffset}
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 import scala.concurrent.{Await, ExecutionContext, duration}
 import scala.jdk.CollectionConverters.MapHasAsJava
 
-object SloMonitor {
+trait SloMonitor {
 
   import ExecutionContext.Implicits.global
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
   implicit def mapToContext(c: Map[String, _]): LogstashMarker = appendEntries(c.asJava)
 
-  val stage: String = System.getenv("STAGE")
+  val stage: String
 
   val credentials = new AWSCredentialsProviderChain(
     new ProfileCredentialsProvider("mobile"),
@@ -40,6 +40,21 @@ object SloMonitor {
     (actualDeliveries / expectedDeliveries) * 100
   }
 
+  def generateQueryString(notificationId: String, sentTime: LocalDateTime): String = {
+    val partitionDate = if (sentTime.toLocalTime.isAfter(LocalTime.of(23, 57)))
+      s"(partition_date = '${sentTime.toLocalDate}' OR partition_date = '${sentTime.toLocalDate.plusDays(1)}')"
+    else
+      s"partition_date = '${sentTime.toLocalDate}'"
+
+    s"""
+         |SELECT COUNT(*)
+         |FROM notification_received_${stage.toLowerCase()}
+         |WHERE notificationid = '${notificationId}'
+         |AND $partitionDate
+         |AND DATE_DIFF('second', from_iso8601_timestamp('${sentTime}'), received_timestamp) < 120
+      """.stripMargin
+  }
+
   def handleMessage(event: SQSEvent): Unit = {
     logger.info(s"Running SLO monitor")
     val record = event.getRecords.get(0) // Batch size is defined as 1 in cdk
@@ -50,14 +65,7 @@ object SloMonitor {
     // b) Obtain it via the DynamoDB Report table
     // c) Something else...
     val expectedDeliveries: Int = 100 // FIXME
-    val query =
-      s"""
-         |SELECT COUNT(*)
-         |FROM notification_received_${stage.toLowerCase()}
-         |WHERE notificationid = '${notificationId}'
-         |AND partition_date = '${sentTime.toLocalDate}'
-         |AND DATE_DIFF('second', from_iso8601_timestamp('${sentTime}'), received_timestamp) < 120
-      """.stripMargin
+    val query = generateQueryString(notificationId, sentTime)
     logger.info(s"Starting query: $query")
     val result = Athena.startQuery(Query("notifications", query, s"s3://aws-mobile-event-logs-${this.stage.toLowerCase()}/athena/slo-monitoring"))
       .flatMap(Athena.fetchQueryResponse(_, rows => rows.head.head)
@@ -77,4 +85,8 @@ object SloMonitor {
     Await.result(result, duration.Duration(4, TimeUnit.MINUTES))
   }
 
+}
+
+object SloMonitor extends SloMonitor {
+  val stage: String = System.getenv("STAGE")
 }
