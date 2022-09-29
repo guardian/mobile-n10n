@@ -10,7 +10,7 @@ class SloMonitorSpec extends Specification {
     "include a single partitionDate if before midnight" in new Scope {
       val notificationId = "1234-ASDF"
       val sentTime = LocalDateTime.of(2022, 9, 28, 9, 30, 0)
-      val queryString = TestSloMonitor.generateQueryString(notificationId, sentTime)
+      val queryString = SloMonitor.generateQueryString(notificationId, sentTime)
 
       queryString shouldEqual s"""
          |SELECT COUNT(*)
@@ -24,7 +24,7 @@ class SloMonitorSpec extends Specification {
     "include a two partitionDates if just before midnight" in new Scope {
       val notificationId = "1234-ASDF"
       val sentTime = LocalDateTime.of(2022, 9, 28, 23, 58, 0)
-      val queryString = TestSloMonitor.generateQueryString(notificationId, sentTime)
+      val queryString = SloMonitor.generateQueryString(notificationId, sentTime)
 
       queryString shouldEqual
         s"""
@@ -36,8 +36,4 @@ class SloMonitorSpec extends Specification {
       """.stripMargin
     }
   }
-}
-
-object TestSloMonitor extends SloMonitor {
-  val stage: String = "TEST"
 }
