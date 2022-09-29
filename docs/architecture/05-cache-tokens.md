@@ -17,30 +17,22 @@ After the service has been running for a while, its heap grows to its maximum si
 
 I tried another Notifications API with the same setup except without querying the database.  Its heap size stays at 300 MB (the maximum size was set to 1951 MB) and its free memory is around 100 MB - 200 MB.
 
+The source code is in [this branch](https://github.com/guardian/mobile-n10n/tree/LIVE-4580-study-keep-tokens-in-memory).
+
 I did not send any requests to the service in either of scenarios.
 
 ## Analysis
 
 1. Based on the test result, if we assume that the Notifications API normally takes around 100 MB memory and it takes an additional 1.5 GB memory to cache the 3.3 million registrations, it appears that it may require and additional 3.5 GB memory to cache 7.7 million registrations.
 
-2. Optimistically, the registrations database will be growing in size.  So we need to prepare a larger memory to accommodate the growing data and have some monitoring tools in place before out of memory errors happen.
+2. A big EC2 instance class is required.  For reference, `tg4.large` provides 8 GB memory.
 
-3. Frequent GC may happen due to frequent changes to huge data structure in JVM heap, but it was not tested.
+3. The registrations table is expected to be growing in size.  So we need to prepare a larger memory to accommodate the growing data and have some monitoring tools in place before out of memory errors happen.
 
-## Keeping all cache in memory or not
+4. Frequent GC may happen due to frequent changes to huge data structure in JVM heap, but it was not tested.
 
-1. If we do, we need to use se a big EC2 instance class.  For reference, `tg4.large` provides 8 GB memory. 
+5. Maybe we just keep the breaking news registrations in cache only?  
+- But then there will be two different program flows, one for breaking news and one for others.  It may complicate the design.
 
-2. Maybe we just keep the breaking news registrations in cache only?  
-- But then there will be two different flows, one for breaking news and one for others.
-
-3. Even if the tokens are in memory, the notifications API may need to do further processing.  For example, if the notification is to be sent to multiple topics, it has to merge the list of tokens from multiple topics and remove duplicates
-
-## Keep a cache in another service
-
-1. We may need another service to keep the cache?  S3 or AWS redis?  If we need to read it at real time, would it be much faster and more reliable than reading from Postgres.
-
-2. If we read it from another service, how can we make it reliable (e.g. network connection error halfway through reading from external service)?  
-
-3. We retrieve all tokens within the synchronous API call, or spawn some asynchronous operations to do it in the background?  We may need to deal with the exception handling and retry mechanism. 
+6. Even if the tokens are in memory, the notifications API may need to do further processing.  For example, if the notification is to be sent to multiple topics, it has to merge the list of tokens from multiple topics and remove duplicates
 
