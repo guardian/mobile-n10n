@@ -15,14 +15,14 @@ import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
 import scala.concurrent.{Await, ExecutionContext, duration}
 import scala.jdk.CollectionConverters.MapHasAsJava
 
-trait SloMonitor {
+object SloMonitor {
 
   import ExecutionContext.Implicits.global
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
   implicit def mapToContext(c: Map[String, _]): LogstashMarker = appendEntries(c.asJava)
 
-  val stage: String
+  val stage: String = System.getenv("STAGE")
 
   val credentials = new AWSCredentialsProviderChain(
     new ProfileCredentialsProvider("mobile"),
@@ -85,8 +85,4 @@ trait SloMonitor {
     Await.result(result, duration.Duration(4, TimeUnit.MINUTES))
   }
 
-}
-
-object SloMonitor extends SloMonitor {
-  val stage: String = System.getenv("STAGE")
 }
