@@ -1,9 +1,15 @@
 import 'source-map-support/register';
-import * as cdk from '@aws-cdk/core';
+import {App} from 'aws-cdk-lib'
 import { SenderWorkerStack } from '../lib/senderworker';
 
-const app = new cdk.App()
+const app = new App()
 
-new SenderWorkerStack(app, 'SenderWorkerStack', {
-  stack: "mobile-notifications-workers"
+new SenderWorkerStack(app, 'SenderWorkerStack-CODE', {
+  stack: "mobile-notifications-workers",
+  stage: "CODE"
+})
+
+new SenderWorkerStack(app, 'SenderWorkerStack-PROD', {
+  stack: "mobile-notifications-workers",
+  stage: "PROD"
 })

@@ -49,6 +49,9 @@ Parameters:
   WorkerSqsQueues:
     Description: The sqs queues consummed by the workers
     Type: List<String>
+  SloSqsQueueArn:
+    Description: The sqs queue used to track the SLO
+    Type: AWS::SSM::Parameter::Value<String>
   VPCSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: The default security group of the VPC
@@ -286,6 +289,13 @@ Resources:
           - Action: sqs:SendMessage
             Effect: Allow
             Resource: !Ref WorkerSqsQueues
+      - PolicyName: SloSqs
+        PolicyDocument:
+          Statement:
+          - Action: sqs:SendMessage
+            Effect: Allow
+            Resource:
+            - !Ref SloSqsQueueArn
 
   PrivateNotificationAutoscalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup

@@ -70,24 +70,6 @@
 //      invalidTokens shouldEqual 1
 //    }
 //  }
-//
-//  "the fcm client" should {
-//    "Successfully send notifications in batches" in new FcmScope {
-//      // when calling addListener we actually want to execute the runnable, but the current implementation is complicated
-//      doNothing.when(mockApiFuture).addListener(any[Runnable], any[Executor])
-//      when(mockApiFuture.get()).thenReturn(notification.id.toString)
-//      when(mockFirebaseMessaging.sendAsync(any[Message])).thenReturn(mockApiFuture)
-//
-//      //call the new sendBatchNotification method to check the correct method is being called when sending a notification
-//      fcmClient.sendBatchNotification(notification.id, List(token), payload, dryRun)(onCompleteCb)(ec)
-//
-//      // This is less than ideal, but would require wider changes to the code to return something like
-//      // a Future[Unit] which would allow us to then Await sendNotification
-//      Thread.sleep(500)
-//
-//      deliverySuccess shouldEqual 1
-//    }
-//  }
 //}
 //
 //trait FcmScope extends Scope {

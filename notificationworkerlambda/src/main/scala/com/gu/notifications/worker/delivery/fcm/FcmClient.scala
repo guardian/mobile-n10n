@@ -16,7 +16,7 @@ import com.gu.notifications.worker.utils.UnwrappingExecutionException
 import java.io.ByteArrayInputStream
 import java.util.UUID
 import java.util.concurrent.Executor
-import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
+import scala.concurrent.{ExecutionContextExecutor, ExecutionContext, Future, Promise}
 import scala.jdk.CollectionConverters._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
@@ -40,6 +40,13 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayloadBuilder(n, config.debug)
 
+  def isUnregistered(e: FirebaseMessagingException): Boolean = {
+    (e.getErrorCode, e.getMessage) match {
+      case (ErrorCode.NOT_FOUND, "Requested entity was not found.") => true
+      case (_, _) => false
+    }
+  }
+
   def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
     (onComplete: Either[Throwable, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {
@@ -61,7 +68,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
         .onComplete {
           case Success(messageId) =>
             onComplete(Right(FcmDeliverySuccess(token, messageId)))
-          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) =>
+          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) || isUnregistered(e) =>
             onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
           case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
             onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString))))
@@ -134,11 +141,10 @@ object FcmClient {
 object FirebaseHelpers {
 
   implicit class RichApiFuture[T](val f: ApiFuture[T]) extends AnyVal {
-    def asScala(implicit e: Executor): Future[T] = {
-      val p = Promise[T]()
-      f.addListener(() => p.complete(Try(f.get())), e)
-      p.future
-    }
+    def asScala(implicit e: ExecutionContext): Future[T] =
+      Future {
+        f.get()
+      }
   }
 
 }

@@ -11,7 +11,7 @@ import net.logstash.logback.marker.LogstashMarker
 import net.logstash.logback.marker.Markers.appendEntries
 import notification.models.PushResult
 import notification.services
-import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender}
+import notification.services.{ArticlePurge, Configuration, NewsstandSender, NotificationSender, SloTrackingSender}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json.toJson
@@ -31,7 +31,8 @@ final class Main(
   articlePurge: ArticlePurge,
   metrics: CloudWatchMetrics,
   controllerComponents: ControllerComponents,
-  authAction: AuthAction
+  authAction: AuthAction,
+  sloTrackingSender: SloTrackingSender,
 )(implicit executionContext: ExecutionContext)
   extends AbstractController(controllerComponents) {
 
@@ -76,6 +77,12 @@ final class Main(
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
       case _ => pushWithDuplicateProtection(notification).map(send => {
         val durationMillis = Duration.between(notificationReceivedTime, Instant.now).toMillis
+
+        if (notification.`type` == BreakingNews && !notification.dryRun.contains(true)) {
+          logger.info("Sending SLO tracking message to SQS queue")
+          sloTrackingSender.sendTrackingMessage(notification.id)
+        }
+
         logger.info(
           Map(
             "notificationId" -> notification.id,

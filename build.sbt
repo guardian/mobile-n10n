@@ -34,6 +34,7 @@ val jacksonScalaModule: String = "2.13.3"
 val simpleConfigurationVersion: String = "1.5.6"
 val googleOAuthClient: String = "1.33.3"
 val nettyVersion: String = "4.1.78.Final"
+val slf4jVersion: String = "1.7.36"
 
 val standardSettings = Seq[Setting[_]](
   resolvers ++= Seq(
@@ -54,6 +55,8 @@ val standardSettings = Seq[Setting[_]](
 lazy val commoneventconsumer = project
   .settings(Seq(
     libraryDependencies ++= Seq(
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
@@ -258,7 +261,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     ),
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
-      "org.slf4j" % "slf4j-api" % "1.7.36",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "ch.qos.logback" % "logback-classic" % "1.2.11",
@@ -337,11 +340,26 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
       libraryDependencies ++= Seq(
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
-        "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
         "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
         "io.netty" % "netty-codec-http2" % nettyVersion
       ),
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"mobile-notifications-eventconsumer-cfn/cfn.yaml")
+    )
+  })
+
+lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notifications.slos.SloMonitor"))
+  .dependsOn(commoneventconsumer)
+  .settings({
+    Seq(
+      description := "Monitors SLO performance for breaking news notifications",
+      libraryDependencies ++= Seq(
+        "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+        "io.netty" % "netty-codec" % nettyVersion,
+      ),
+      riffRaffArtifactResources +=(file("cdk/cdk.out/SloMonitor-CODE.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-CODE.template.json"),
+      riffRaffArtifactResources += (file("cdk/cdk.out/SloMonitor-PROD.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-PROD.template.json"),
+      Test / fork := true,
+      Test / envVars := Map("STAGE" -> "TEST")
     )
   })
 
@@ -414,7 +432,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     ),
     riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"mobile-notifications-harvester-cfn/harvester-cfn.yaml"),
     // cdk synthesised cloudformation template
-    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack.template.json", "mobile-notifications-workers-cfn/sender-workers.cfn.yaml"),
+    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack-CODE.template.json", "mobile-notifications-workers-cfn/SenderWorkerStack-CODE.template.json"),
+    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack-PROD.template.json", "mobile-notifications-workers-cfn/SenderWorkerStack-PROD.template.json"),
     riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"mobile-notifications-registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"mobile-notifications-topic-counter-cfn/topic-counter-cfn.yaml"),
     riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"mobile-notifications-expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml"),
