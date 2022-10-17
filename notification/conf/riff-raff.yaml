@@ -17,6 +17,7 @@ deployments:
   notification:
     type: autoscaling
     parameters:
-      bucket: mobile-notifications-dist
+      bucketSsmLookup: true
+      bucketSsmKey: /account/services/artifact.bucket.n10n
     dependencies: [notification-cfn]
 
