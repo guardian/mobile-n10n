@@ -5,7 +5,7 @@ deployments:
   football:
     type: aws-lambda
     parameters:
-      bucket: mobile-dist
+      bucketSsmLookup: true
       functionNames: [-football-]
       fileName: football.jar
     dependencies: [mobile-notifications-football-cfn]

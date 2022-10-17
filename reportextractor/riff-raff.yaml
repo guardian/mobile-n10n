@@ -4,7 +4,8 @@ deployments:
   reportextractor:
     type: aws-lambda
     parameters:
-      bucket: mobile-notifications-dist
+      bucketSsmLookup: true
+      bucketSsmKey: /account/services/artifact.bucket.n10n
       functionNames: [mobile-notifications-reportextractor-]
       fileName: reportextractor.jar
       prefixStack: false
