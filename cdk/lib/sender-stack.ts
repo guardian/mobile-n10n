@@ -20,7 +20,7 @@ import {
 	StringParameter,
 } from 'aws-cdk-lib/aws-ssm';
 
-interface AppsStackProps extends GuStackProps {
+interface SenderStackProps extends GuStackProps {
 	appName: string;
 	asgCapacity: GuAsgCapacity;
 	instanceType: InstanceType;
@@ -29,7 +29,7 @@ interface AppsStackProps extends GuStackProps {
 }
 
 export class SenderWorkerStack extends GuStack {
-	constructor(scope: App, id: string, props: AppsStackProps) {
+	constructor(scope: App, id: string, props: SenderStackProps) {
 		super(scope, id, props);
 
 		const sqsMessageVisibilityTimeout = Duration.seconds(100);
