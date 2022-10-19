@@ -1,0 +1,2065 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`The SenderWorker stack matches the snapshot on CODE 1`] = `
+Object {
+  "Metadata": Object {
+    "gu:cdk:constructs": Array [
+      "GuVpcParameter",
+      "GuAllowPolicy",
+      "GuAllowPolicy",
+      "GuInstanceRole",
+      "GuSSMRunCommandPolicy",
+      "GuDescribeEC2Policy",
+      "GuLoggingStreamNameParameter",
+      "GuLogShippingPolicy",
+      "GuDistributionBucketParameter",
+      "GuGetDistributablePolicy",
+      "GuParameterStoreReadPolicy",
+      "GuSubnetListParameter",
+      "GuAmiParameter",
+      "GuHttpsEgressSecurityGroup",
+      "GuAutoScalingGroup",
+      "GuWazuhAccess",
+    ],
+    "gu:cdk:version": "TEST",
+  },
+  "Parameters": Object {
+    "AMISenderworker": Object {
+      "Description": "Amazon Machine Image ID for the app sender-worker. Use this in conjunction with AMIgo to keep AMIs up to date.",
+      "Type": "AWS::EC2::Image::Id",
+    },
+    "DistributionBucketName": Object {
+      "Default": "/account/services/artifact.bucket",
+      "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "LoggingStreamName": Object {
+      "Default": "/account/services/logging.stream.name",
+      "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "VpcId": Object {
+      "Default": "/account/vpc/primary/id",
+      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
+    },
+    "senderworkerPrivateSubnets": Object {
+      "Default": "/account/vpc/primary/subnets/private",
+      "Description": "A list of private subnets",
+      "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
+    },
+  },
+  "Resources": Object {
+    "AutoScalingGroupSenderworkerASG16C6D70A": Object {
+      "Properties": Object {
+        "HealthCheckGracePeriod": 300,
+        "HealthCheckType": "ELB",
+        "LaunchConfigurationName": Object {
+          "Ref": "AutoScalingGroupSenderworkerLaunchConfigE9B89211",
+        },
+        "MaxSize": "2",
+        "MinSize": "1",
+        "NotificationConfigurations": Array [
+          Object {
+            "NotificationTypes": Array [
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+            ],
+            "TopicARN": "arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsCODE",
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "PropagateAtLaunch": true,
+            "Value": "sender-worker",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "PropagateAtLaunch": true,
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "PropagateAtLaunch": true,
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Name",
+            "PropagateAtLaunch": true,
+            "Value": "SenderWorkerStack-CODE/AutoScalingGroupSenderworker",
+          },
+          Object {
+            "Key": "Stack",
+            "PropagateAtLaunch": true,
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "PropagateAtLaunch": true,
+            "Value": "CODE",
+          },
+        ],
+        "VPCZoneIdentifier": Object {
+          "Ref": "senderworkerPrivateSubnets",
+        },
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "AutoScalingGroupSenderworkerInstanceProfile4134F8D6": Object {
+      "Properties": Object {
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::InstanceProfile",
+    },
+    "AutoScalingGroupSenderworkerLaunchConfigE9B89211": Object {
+      "DependsOn": Array [
+        "InstanceRoleSenderworkerDefaultPolicy9B21B8E6",
+        "InstanceRoleSenderworker22C08323",
+      ],
+      "Properties": Object {
+        "IamInstanceProfile": Object {
+          "Ref": "AutoScalingGroupSenderworkerInstanceProfile4134F8D6",
+        },
+        "ImageId": Object {
+          "Ref": "AMISenderworker",
+        },
+        "InstanceType": "t4g.small",
+        "MetadataOptions": Object {
+          "HttpTokens": "required",
+        },
+        "SecurityGroups": Array [
+          Object {
+            "Fn::GetAtt": Array [
+              "GuHttpsEgressSecurityGroupSenderworkerFC4469C7",
+              "GroupId",
+            ],
+          },
+          Object {
+            "Fn::GetAtt": Array [
+              "WazuhSecurityGroup",
+              "GroupId",
+            ],
+          },
+        ],
+        "UserData": Object {
+          "Fn::Base64": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "#!/bin/bash -ev
+	  echo ",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                "
+	  echo mobile-notifications-workers
+	  echo CODE
+	  echo sender-worker",
+              ],
+            ],
+          },
+        },
+      },
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+    },
+    "AutoScalingGroupSenderworkerScalingPolicyCpuScalingPolicy5EA6B72D": Object {
+      "Properties": Object {
+        "AutoScalingGroupName": Object {
+          "Ref": "AutoScalingGroupSenderworkerASG16C6D70A",
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": Object {
+          "PredefinedMetricSpecification": Object {
+            "PredefinedMetricType": "ASGAverageCPUUtilization",
+          },
+          "TargetValue": 40,
+        },
+      },
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
+    "DescribeEC2PolicyFF5F9295": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeAutoScalingGroups",
+                "ec2:DescribeTags",
+                "ec2:DescribeInstances",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "describe-ec2-policy",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GetDistributablePolicySenderworker31A19438": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:s3:::",
+                    Object {
+                      "Ref": "DistributionBucketName",
+                    },
+                    "/mobile-notifications-workers/CODE/sender-worker/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GetDistributablePolicySenderworker31A19438",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GetParametersByPath37B32C62": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/notifications/CODE/workers/sender-ec2",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GetParametersByPath37B32C62",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GuHttpsEgressSecurityGroupSenderworkerFC4469C7": Object {
+      "Properties": Object {
+        "GroupDescription": "Allow all outbound HTTPS traffic",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound HTTPS traffic",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "sender-worker",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "GuLogShippingPolicy981BFE5A": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "kinesis:Describe*",
+                "kinesis:Put*",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:kinesis:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":stream/",
+                    Object {
+                      "Ref": "LoggingStreamName",
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GuLogShippingPolicy981BFE5A",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "InstanceRoleSenderworker22C08323": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "ec2.",
+                      Object {
+                        "Ref": "AWS::URLSuffix",
+                      },
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Path": "/",
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "sender-worker",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "InstanceRoleSenderworkerDefaultPolicy9B21B8E6": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsios636F1B52",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsandroidDCF78A7C",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsioseditionF8A67CD0",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsandroideditionE70A53F0",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsandroidbetaD9344C34",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "InstanceRoleSenderworkerDefaultPolicy9B21B8E6",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ParameterStoreReadSenderworker1A48F352": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/CODE/mobile-notifications-workers/sender-worker",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/CODE/mobile-notifications-workers/sender-worker/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "parameter-store-read-policy",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SSMRunCommandPolicy244E1613": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "ec2messages:AcknowledgeMessage",
+                "ec2messages:DeleteMessage",
+                "ec2messages:FailMessage",
+                "ec2messages:GetEndpoint",
+                "ec2messages:GetMessages",
+                "ec2messages:SendReply",
+                "ssm:UpdateInstanceInformation",
+                "ssm:ListInstanceAssociations",
+                "ssm:DescribeInstanceProperties",
+                "ssm:DescribeDocumentParameters",
+                "ssmmessages:CreateControlChannel",
+                "ssmmessages:CreateDataChannel",
+                "ssmmessages:OpenControlChannel",
+                "ssmmessages:OpenDataChannel",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ssm-run-command-policy",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SendToCleanerQueue79D3D329": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sqs:SendMessage",
+              "Effect": "Allow",
+              "Resource": "arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-registration-cleaning-worker-CODE-Sqs-1CFISZQCN49SR",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "SendToCleanerQueue79D3D329",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SenderDlqandroid3EECF4DE": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderDlqandroidbeta93C6ABB8": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderDlqandroideditionEDC36B0E": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderDlqiosF79F4E42": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderDlqiosedition4DAAB287": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderQueueSSMParameterandroidF97720E3": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/harvester/androidLiveSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsandroidDCF78A7C",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderQueueSSMParameterandroidbeta5D4D8779": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/harvester/androidBetaSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsandroidbetaD9344C34",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderQueueSSMParameterandroideditionBE24A16F": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/harvester/androidEditionSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsandroideditionE70A53F0",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderQueueSSMParameteriosA92D5869": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/harvester/iosLiveSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsios636F1B52",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderQueueSSMParameteriosedition755829EE": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/harvester/iosEditionSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsioseditionF8A67CD0",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderSqsandroidDCF78A7C": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqandroid3EECF4DE",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderSqsandroidbetaD9344C34": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqandroidbeta93C6ABB8",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderSqsandroideditionE70A53F0": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqandroideditionEDC36B0E",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderSqsios636F1B52": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqiosF79F4E42",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderSqsioseditionF8A67CD0": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqiosedition4DAAB287",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "WazuhSecurityGroup": Object {
+      "Properties": Object {
+        "GroupDescription": "Allow outbound traffic from wazuh agent to manager",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Wazuh event logging",
+            "FromPort": 1514,
+            "IpProtocol": "tcp",
+            "ToPort": 1514,
+          },
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Wazuh agent registration",
+            "FromPort": 1515,
+            "IpProtocol": "tcp",
+            "ToPort": 1515,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+  },
+}
+`;
+
+exports[`The SenderWorker stack matches the snapshot on PROD 1`] = `
+Object {
+  "Metadata": Object {
+    "gu:cdk:constructs": Array [
+      "GuVpcParameter",
+      "GuAllowPolicy",
+      "GuAllowPolicy",
+      "GuInstanceRole",
+      "GuSSMRunCommandPolicy",
+      "GuDescribeEC2Policy",
+      "GuLoggingStreamNameParameter",
+      "GuLogShippingPolicy",
+      "GuDistributionBucketParameter",
+      "GuGetDistributablePolicy",
+      "GuParameterStoreReadPolicy",
+      "GuSubnetListParameter",
+      "GuAmiParameter",
+      "GuHttpsEgressSecurityGroup",
+      "GuAutoScalingGroup",
+      "GuWazuhAccess",
+    ],
+    "gu:cdk:version": "TEST",
+  },
+  "Parameters": Object {
+    "AMISenderworker": Object {
+      "Description": "Amazon Machine Image ID for the app sender-worker. Use this in conjunction with AMIgo to keep AMIs up to date.",
+      "Type": "AWS::EC2::Image::Id",
+    },
+    "DistributionBucketName": Object {
+      "Default": "/account/services/artifact.bucket",
+      "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "LoggingStreamName": Object {
+      "Default": "/account/services/logging.stream.name",
+      "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "VpcId": Object {
+      "Default": "/account/vpc/primary/id",
+      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
+    },
+    "senderworkerPrivateSubnets": Object {
+      "Default": "/account/vpc/primary/subnets/private",
+      "Description": "A list of private subnets",
+      "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
+    },
+  },
+  "Resources": Object {
+    "AutoScalingGroupSenderworkerASG16C6D70A": Object {
+      "Properties": Object {
+        "HealthCheckGracePeriod": 300,
+        "HealthCheckType": "ELB",
+        "LaunchConfigurationName": Object {
+          "Ref": "AutoScalingGroupSenderworkerLaunchConfigE9B89211",
+        },
+        "MaxSize": "6",
+        "MinSize": "3",
+        "NotificationConfigurations": Array [
+          Object {
+            "NotificationTypes": Array [
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+            ],
+            "TopicARN": "arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsPROD",
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "PropagateAtLaunch": true,
+            "Value": "sender-worker",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "PropagateAtLaunch": true,
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "PropagateAtLaunch": true,
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Name",
+            "PropagateAtLaunch": true,
+            "Value": "SenderWorkerStack-PROD/AutoScalingGroupSenderworker",
+          },
+          Object {
+            "Key": "Stack",
+            "PropagateAtLaunch": true,
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "PropagateAtLaunch": true,
+            "Value": "PROD",
+          },
+        ],
+        "VPCZoneIdentifier": Object {
+          "Ref": "senderworkerPrivateSubnets",
+        },
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "AutoScalingGroupSenderworkerInstanceProfile4134F8D6": Object {
+      "Properties": Object {
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::InstanceProfile",
+    },
+    "AutoScalingGroupSenderworkerLaunchConfigE9B89211": Object {
+      "DependsOn": Array [
+        "InstanceRoleSenderworkerDefaultPolicy9B21B8E6",
+        "InstanceRoleSenderworker22C08323",
+      ],
+      "Properties": Object {
+        "IamInstanceProfile": Object {
+          "Ref": "AutoScalingGroupSenderworkerInstanceProfile4134F8D6",
+        },
+        "ImageId": Object {
+          "Ref": "AMISenderworker",
+        },
+        "InstanceType": "t4g.small",
+        "MetadataOptions": Object {
+          "HttpTokens": "required",
+        },
+        "SecurityGroups": Array [
+          Object {
+            "Fn::GetAtt": Array [
+              "GuHttpsEgressSecurityGroupSenderworkerFC4469C7",
+              "GroupId",
+            ],
+          },
+          Object {
+            "Fn::GetAtt": Array [
+              "WazuhSecurityGroup",
+              "GroupId",
+            ],
+          },
+        ],
+        "UserData": Object {
+          "Fn::Base64": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "#!/bin/bash -ev
+	  echo ",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                "
+	  echo mobile-notifications-workers
+	  echo PROD
+	  echo sender-worker",
+              ],
+            ],
+          },
+        },
+      },
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+    },
+    "AutoScalingGroupSenderworkerScalingPolicyCpuScalingPolicy5EA6B72D": Object {
+      "Properties": Object {
+        "AutoScalingGroupName": Object {
+          "Ref": "AutoScalingGroupSenderworkerASG16C6D70A",
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": Object {
+          "PredefinedMetricSpecification": Object {
+            "PredefinedMetricType": "ASGAverageCPUUtilization",
+          },
+          "TargetValue": 40,
+        },
+      },
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
+    "DescribeEC2PolicyFF5F9295": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeAutoScalingGroups",
+                "ec2:DescribeTags",
+                "ec2:DescribeInstances",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "describe-ec2-policy",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GetDistributablePolicySenderworker31A19438": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:s3:::",
+                    Object {
+                      "Ref": "DistributionBucketName",
+                    },
+                    "/mobile-notifications-workers/PROD/sender-worker/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GetDistributablePolicySenderworker31A19438",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GetParametersByPath37B32C62": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/notifications/PROD/workers/sender-ec2",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GetParametersByPath37B32C62",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GuHttpsEgressSecurityGroupSenderworkerFC4469C7": Object {
+      "Properties": Object {
+        "GroupDescription": "Allow all outbound HTTPS traffic",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound HTTPS traffic",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "sender-worker",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "GuLogShippingPolicy981BFE5A": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "kinesis:Describe*",
+                "kinesis:Put*",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:kinesis:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":stream/",
+                    Object {
+                      "Ref": "LoggingStreamName",
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GuLogShippingPolicy981BFE5A",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "InstanceRoleSenderworker22C08323": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "ec2.",
+                      Object {
+                        "Ref": "AWS::URLSuffix",
+                      },
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Path": "/",
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "sender-worker",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "InstanceRoleSenderworkerDefaultPolicy9B21B8E6": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsios636F1B52",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsandroidDCF78A7C",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsioseditionF8A67CD0",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsandroideditionE70A53F0",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": "sqs:*",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "SenderSqsandroidbetaD9344C34",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "InstanceRoleSenderworkerDefaultPolicy9B21B8E6",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ParameterStoreReadSenderworker1A48F352": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/sender-worker",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/sender-worker/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "parameter-store-read-policy",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SSMRunCommandPolicy244E1613": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "ec2messages:AcknowledgeMessage",
+                "ec2messages:DeleteMessage",
+                "ec2messages:FailMessage",
+                "ec2messages:GetEndpoint",
+                "ec2messages:GetMessages",
+                "ec2messages:SendReply",
+                "ssm:UpdateInstanceInformation",
+                "ssm:ListInstanceAssociations",
+                "ssm:DescribeInstanceProperties",
+                "ssm:DescribeDocumentParameters",
+                "ssmmessages:CreateControlChannel",
+                "ssmmessages:CreateDataChannel",
+                "ssmmessages:OpenControlChannel",
+                "ssmmessages:OpenDataChannel",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ssm-run-command-policy",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SendToCleanerQueue79D3D329": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sqs:SendMessage",
+              "Effect": "Allow",
+              "Resource": "arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-registration-cleaning-worker-PROD-Sqs-12LNONCNWBRWK",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "SendToCleanerQueue79D3D329",
+        "Roles": Array [
+          Object {
+            "Ref": "InstanceRoleSenderworker22C08323",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SenderDlqandroid3EECF4DE": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderDlqandroidbeta93C6ABB8": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderDlqandroideditionEDC36B0E": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderDlqiosF79F4E42": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderDlqiosedition4DAAB287": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderQueueSSMParameterandroidF97720E3": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/harvester/androidLiveSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsandroidDCF78A7C",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderQueueSSMParameterandroidbeta5D4D8779": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/harvester/androidBetaSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsandroidbetaD9344C34",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderQueueSSMParameterandroideditionBE24A16F": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/harvester/androidEditionSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsandroideditionE70A53F0",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderQueueSSMParameteriosA92D5869": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/harvester/iosLiveSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsios636F1B52",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderQueueSSMParameteriosedition755829EE": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/harvester/iosEditionSqsEc2Url",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "SenderSqsioseditionF8A67CD0",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderSqsandroidDCF78A7C": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqandroid3EECF4DE",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderSqsandroidbetaD9344C34": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqandroidbeta93C6ABB8",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderSqsandroideditionE70A53F0": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqandroideditionEDC36B0E",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderSqsios636F1B52": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqiosF79F4E42",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "SenderSqsioseditionF8A67CD0": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "SenderDlqiosedition4DAAB287",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "WazuhSecurityGroup": Object {
+      "Properties": Object {
+        "GroupDescription": "Allow outbound traffic from wazuh agent to manager",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Wazuh event logging",
+            "FromPort": 1514,
+            "IpProtocol": "tcp",
+            "ToPort": 1514,
+          },
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Wazuh agent registration",
+            "FromPort": 1515,
+            "IpProtocol": "tcp",
+            "ToPort": 1515,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+  },
+}
+`;
