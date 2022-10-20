@@ -20,52 +20,32 @@ import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import org.specs2.mock.Mockito
 
 import java.util.concurrent.Executor
+import scala.util.{Failure, Success}
 
 class FcmClientTest extends Specification with Mockito {
   "the FcmClient" should {
     "Parse successful responses as an FcmDeliverySuccess" in new FcmScope {
-      // when calling addListener we actually want to execute the runnable, but the current implementation is complicated
-      doNothing.when(mockApiFuture).addListener(any[Runnable], any[Executor])
-      when(mockApiFuture.get()).thenReturn(notification.id.toString)
-      when(mockFirebaseMessaging.sendAsync(any[Message])).thenReturn(mockApiFuture)
-
-      fcmClient.sendNotification(notification.id, token, payload, dryRun)(onCompleteCb)(ec)
-
-      // This is less than ideal, but would require wider changes to the code to return something like
-      // a Future[Unit] which would allow us to then Await sendNotification
-      Thread.sleep(500)
+      fcmClient.parseSendResponse(notification.id, token, Success(notification.id.toString))(onCompleteCb)
 
       deliverySuccess shouldEqual 1
     }
 
     "Parse errors with an invalid token error code as an InvalidToken" in new FcmScope {
-      doNothing.when(mockApiFuture).addListener(any[Runnable], any[Executor])
-
       // we have to mock because there is no public method for instantiating an error of this type
       val mockFirebaseMessagingException = Mockito.mock[FirebaseMessagingException]
       when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
 
-      when(mockApiFuture.get()).thenAnswer(_ => throw mockFirebaseMessagingException)
-      when(mockFirebaseMessaging.sendAsync(any[Message])).thenReturn(mockApiFuture)
-
-      fcmClient.sendNotification(notification.id, token, payload, dryRun)(onCompleteCb)(ec)
-      Thread.sleep(500)
+      fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException))(onCompleteCb)
 
       invalidTokens shouldEqual 1
     }
 
     "Parse errors with NOT_FOUND error code and 'Requested entity was not found.' error message as an InvalidToken" in new FcmScope {
-      doNothing.when(mockApiFuture).addListener(any[Runnable], any[Executor])
-
       val mockFirebaseMessagingException = Mockito.mock[FirebaseMessagingException]
       when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.NOT_FOUND)
       when(mockFirebaseMessagingException.getMessage).thenReturn("Requested entity was not found.")
 
-      when(mockApiFuture.get()).thenAnswer(_ => throw mockFirebaseMessagingException)
-      when(mockFirebaseMessaging.sendAsync(any[Message])).thenReturn(mockApiFuture)
-
-      fcmClient.sendNotification(notification.id, token, payload, dryRun)(onCompleteCb)(ec)
-      Thread.sleep(500)
+      fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException))(onCompleteCb)
 
       invalidTokens shouldEqual 1
     }
