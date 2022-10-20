@@ -1185,8 +1185,8 @@ Object {
         "LaunchConfigurationName": Object {
           "Ref": "AutoScalingGroupSenderworkerLaunchConfigE9B89211",
         },
-        "MaxSize": "6",
-        "MinSize": "3",
+        "MaxSize": "2",
+        "MinSize": "1",
         "NotificationConfigurations": Array [
           Object {
             "NotificationTypes": Array [

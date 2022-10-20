@@ -63,8 +63,8 @@ export const senderProdProps = {
 	stack: 'mobile-notifications-workers',
 	stage: 'PROD',
 	asgCapacity: {
-		minimumInstances: 3,
-		maximumInstances: 6,
+		minimumInstances: 1,
+		maximumInstances: 2,
 	},
 	instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
 	targetCpuUtilization: 20,
