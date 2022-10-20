@@ -23,6 +23,54 @@ Object {
     ],
     "gu:cdk:version": "TEST",
   },
+  "Outputs": Object {
+    "NotificationEc2SenderWorkerQueueArns": Object {
+      "Export": Object {
+        "Name": "NotificationEc2SenderWorkerQueueArns-CODE",
+      },
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsios636F1B52",
+                "Arn",
+              ],
+            },
+            ",",
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidDCF78A7C",
+                "Arn",
+              ],
+            },
+            ",",
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsioseditionF8A67CD0",
+                "Arn",
+              ],
+            },
+            ",",
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroideditionE70A53F0",
+                "Arn",
+              ],
+            },
+            ",",
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidbetaD9344C34",
+                "Arn",
+              ],
+            },
+          ],
+        ],
+      },
+    },
+  },
   "Parameters": Object {
     "AMISenderworker": Object {
       "Description": "Amazon Machine Image ID for the app sender-worker. Use this in conjunction with AMIgo to keep AMIs up to date.",
@@ -1054,6 +1102,54 @@ Object {
       "GuWazuhAccess",
     ],
     "gu:cdk:version": "TEST",
+  },
+  "Outputs": Object {
+    "NotificationEc2SenderWorkerQueueArns": Object {
+      "Export": Object {
+        "Name": "NotificationEc2SenderWorkerQueueArns-PROD",
+      },
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsios636F1B52",
+                "Arn",
+              ],
+            },
+            ",",
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidDCF78A7C",
+                "Arn",
+              ],
+            },
+            ",",
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsioseditionF8A67CD0",
+                "Arn",
+              ],
+            },
+            ",",
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroideditionE70A53F0",
+                "Arn",
+              ],
+            },
+            ",",
+            Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidbetaD9344C34",
+                "Arn",
+              ],
+            },
+          ],
+        ],
+      },
+    },
   },
   "Parameters": Object {
     "AMISenderworker": Object {

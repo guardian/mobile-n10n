@@ -8,7 +8,7 @@ import {
 } from '@guardian/cdk/lib/constructs/iam';
 import type { GuAsgCapacity } from '@guardian/cdk/lib/types';
 import type { App } from 'aws-cdk-lib';
-import { Duration } from 'aws-cdk-lib';
+import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { HealthCheck, ScalingEvents } from 'aws-cdk-lib/aws-autoscaling';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -105,7 +105,7 @@ export class SenderWorkerStack extends GuStack {
 				},
 			});
 
-			// grant permission
+			// grant the EC2 access to the queue
 			distributionRole.addToPolicy(
 				new PolicyStatement({
 					actions: ['sqs:*'],
@@ -125,10 +125,21 @@ export class SenderWorkerStack extends GuStack {
 			return senderSqs;
 		};
 
-		createSqs('ios', 'iosLive');
-		createSqs('android', 'androidLive');
-		createSqs('ios-edition', 'iosEdition');
-		createSqs('android-edition', 'androidEdition');
-		createSqs('android-beta', 'androidBeta');
+		const senderQueueArns: string[] = [
+			createSqs('ios', 'iosLive').queueArn,
+			createSqs('android', 'androidLive').queueArn,
+			createSqs('ios-edition', 'iosEdition').queueArn,
+			createSqs('android-edition', 'androidEdition').queueArn,
+			createSqs('android-beta', 'androidBeta').queueArn,
+		];
+
+		/*
+		 * Here, we export the list of sender queue ARNs so that it can be used in other stacks,
+		 * for example, Harvester needs to give itself permission to write to these queues.
+		 */
+		new CfnOutput(this, 'NotificationEc2SenderWorkerQueueArns', {
+			exportName: 'NotificationEc2SenderWorkerQueueArns-' + this.stage,
+			value: senderQueueArns.join(','),
+		});
 	}
 }
