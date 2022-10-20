@@ -10,7 +10,7 @@ import type { GuAsgCapacity } from '@guardian/cdk/lib/types';
 import type { App } from 'aws-cdk-lib';
 import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { HealthCheck, ScalingEvents } from 'aws-cdk-lib/aws-autoscaling';
-import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
+import type { InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
@@ -24,6 +24,7 @@ interface SenderStackProps extends GuStackProps {
 	appName: string;
 	asgCapacity: GuAsgCapacity;
 	instanceType: InstanceType;
+	targetCpuUtilization: number;
 	notificationSnsTopic: string;
 	cleanerQueueArn: string;
 }
@@ -35,8 +36,6 @@ export class SenderWorkerStack extends GuStack {
 		const sqsMessageVisibilityTimeout = Duration.seconds(100);
 		const sqsMessageRetentionPeriod = Duration.hours(1);
 		const sqsMessageRetryCount = 5;
-		const instanceType = InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL);
-		const targetUtilizationPercent = 40;
 
 		const vpc = GuVpc.fromIdParameter(
 			this,
@@ -63,7 +62,7 @@ export class SenderWorkerStack extends GuStack {
 		const autoScalingGroup = new GuAutoScalingGroup(this, 'AutoScalingGroup', {
 			app: props.appName,
 			vpc,
-			instanceType: instanceType,
+			instanceType: props.instanceType,
 			minimumInstances: props.asgCapacity.minimumInstances,
 			maximumInstances: props.asgCapacity.maximumInstances,
 			role: distributionRole,
@@ -91,7 +90,7 @@ export class SenderWorkerStack extends GuStack {
 			],
 		});
 		autoScalingGroup.scaleOnCpuUtilization('CpuScalingPolicy', {
-			targetUtilizationPercent: targetUtilizationPercent,
+			targetUtilizationPercent: props.targetCpuUtilization,
 		});
 
 		const createSqs = (platformName: string, paramPrefix: string) => {

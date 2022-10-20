@@ -50,6 +50,7 @@ export const senderCodeProps = {
 		maximumInstances: 2,
 	},
 	instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
+	targetCpuUtilization: 20,
 	notificationSnsTopic:
 		'arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsCODE',
 	cleanerQueueArn:
@@ -66,6 +67,7 @@ export const senderProdProps = {
 		maximumInstances: 6,
 	},
 	instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
+	targetCpuUtilization: 20,
 	notificationSnsTopic:
 		'arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsPROD',
 	cleanerQueueArn:

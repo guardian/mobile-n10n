@@ -225,7 +225,7 @@ Object {
           "PredefinedMetricSpecification": Object {
             "PredefinedMetricType": "ASGAverageCPUUtilization",
           },
-          "TargetValue": 40,
+          "TargetValue": 20,
         },
       },
       "Type": "AWS::AutoScaling::ScalingPolicy",
@@ -1305,7 +1305,7 @@ Object {
           "PredefinedMetricSpecification": Object {
             "PredefinedMetricType": "ASGAverageCPUUtilization",
           },
-          "TargetValue": 40,
+          "TargetValue": 20,
         },
       },
       "Type": "AWS::AutoScaling::ScalingPolicy",
