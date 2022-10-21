@@ -441,6 +441,23 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-PROD.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-PROD.template.json")
 )
 
+lazy val ec2SenderWorker = Project("senderworker", file("senderworker"))
+  .dependsOn(common, notificationworkerlambda, commontest % "test->test")
+  .enablePlugins(SystemdPlugin, RiffRaffArtifact, JavaServerAppPackaging)
+  .settings(standardSettings: _*)
+  .settings(
+    fork := true,
+    libraryDependencies ++= Seq(
+      logback
+    ),
+    riffRaffPackageType := (Debian / packageBin).value,
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/SenderWorker-CODE.template.json"), s"senderworker-cfn/SenderWorker-CODE.template.json"),
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/SenderWorker-PROD.template.json"), s"senderworker-cfn/SenderWorker-PROD.template.json"),
+    Debian / packageName := name.value,
+    mainClass := Some("SenderWorker"),
+    version := projectVersion
+  )
+
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
   .dependsOn(common)

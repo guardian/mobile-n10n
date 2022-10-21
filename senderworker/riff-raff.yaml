@@ -1,0 +1,24 @@
+stacks: [mobile-notifications-workers]
+regions: [eu-west-1]
+allowedStages:
+  - CODE
+  - PROD
+deployments:
+  senderworker-cfn:
+    type: cloud-formation
+    app: sender-worker
+    parameters:
+      amiParameter: AMISenderworker
+      amiTags:
+        Recipe: bionic-mobile-ARM
+        AmigoStage: PROD
+      templateStagePaths: 
+        CODE: SenderWorker-CODE.template.json
+        PROD: SenderWorker-PROD.template.json
+  senderworker:
+    type: autoscaling
+    parameters:
+      bucketSsmLookup: true
+      bucketSsmKey: /account/services/artifact.bucket
+    dependencies: [senderworker-cfn]
+
