@@ -35,7 +35,7 @@ trait Logging {
      maybePlatform: Option[Platform]
    )(end: Instant): Map[String, Any] = {
     val processingTime = Duration.between(functionStartTime, end).toMillis
-    val processingRate = numberOfTokens.toDouble / processingTime
+    val processingRate = numberOfTokens.toDouble / processingTime * 1000
     val start = Instant.ofEpochMilli(sentTime)
     Map(
       "_aws" -> Map(
@@ -62,7 +62,7 @@ trait Logging {
           case _                             => "other"
         }
       },
-      "worker.functionProcessingRate" -> f"$processingRate%1.4f",
+      "worker.functionProcessingRate" -> processingRate,
       "worker.functionProcessingTime" -> processingTime,
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> sentTime,
