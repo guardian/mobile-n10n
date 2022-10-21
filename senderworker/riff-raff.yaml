@@ -15,7 +15,7 @@ deployments:
       templateStagePaths: 
         CODE: SenderWorker-CODE.template.json
         PROD: SenderWorker-PROD.template.json
-  senderworker:
+  sender-worker:
     type: autoscaling
     parameters:
       bucketSsmLookup: true
