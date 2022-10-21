@@ -425,9 +425,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
-      "org.scalatest" %% "scalatest" % "3.2.14" % "test",
-      "org.scalatestplus" %% "mockito-4-6" % "3.2.14.0" % "test"
+      "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")

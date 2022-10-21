@@ -6,25 +6,19 @@ import _root_.models.Link._
 import _root_.models.TopicTypes._
 import com.google.api.core.ApiFuture
 import com.google.firebase.{ErrorCode, FirebaseApp}
-import com.google.firebase.messaging.{BatchResponse, FirebaseMessaging, FirebaseMessagingException, Message, MulticastMessage, SendResponse}
+import com.google.firebase.messaging.{BatchResponse, FirebaseMessaging, FirebaseMessagingException, SendResponse}
 import com.gu.notifications.worker.delivery.DeliveryException.{BatchCallFailedRequest, FailedRequest, InvalidToken, UnknownReasonFailedRequest}
 import com.gu.notifications.worker.delivery.{FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import models.FcmConfig
-
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{doNothing, when}
-
-import java.util.concurrent.Executor
-import java.util.UUID
-import scala.concurrent.ExecutionContext
-import scala.jdk.CollectionConverters._
-import scala.language.reflectiveCalls
 import org.specs2.mock.Mockito
+import org.mockito.Mockito.when
 
-import java.util.concurrent.Executor
+import java.util
+import java.util.UUID
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success}
 
 class FcmClientTest extends Specification with Mockito {
@@ -52,132 +46,97 @@ class FcmClientTest extends Specification with Mockito {
 
       fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException))(onCompleteCb)
 
-    val mockSendResponse = mock[SendResponse]
-    when(mockSendResponse.isSuccessful()).thenReturn(true)
-
-    val batchResponseSuccess: BatchResponse = new BatchResponse {
-      override def getResponses: util.List[SendResponse] = List(mockSendResponse, mockSendResponse, mockSendResponse).asJava
-
-      override def getSuccessCount: Int = 3
-
-      override def getFailureCount: Int = 0
+      invalidTokens shouldEqual 1
     }
 
-    doNothing().when(f.mockBatchApiFuture).addListener(any[Runnable], any[Executor])
-    when(f.mockBatchApiFuture.get()).thenReturn(batchResponseSuccess)
-    when(f.mockFirebaseMessaging.sendMulticastAsync(any[MulticastMessage])).thenReturn(f.mockBatchApiFuture)
+    "Parse catastrophic errors when sending multicast messages" in new FcmScope {
+      val tokenList: List[String] = List("token1")
 
-    eventually {
-      f.fcmClient.sendBatchNotification(f.notification.id, tokenList, f.payload, f.dryRun)(f.onBatchCompleteCb)(f.ec)
-      f.deliveryBatchSuccess shouldEqual 3
-    }
-  }
+      fcmClient.parseBatchSendResponse(notification.id, tokenList, Failure(new Error("catastrophic failure")))(onBatchCompleteCb)
 
-  it should "parse catastrophic errors when sending multicast messages" in {
-    val f = fcmFixure
-    val tokenList: List[String] = List("token1")
-
-    doNothing().when(f.mockBatchApiFuture).addListener(any[Runnable], any[Executor])
-    when(f.mockBatchApiFuture.get()).thenThrow(new Error("catastrophic failure"))
-    when(f.mockFirebaseMessaging.sendMulticastAsync(any[MulticastMessage])).thenReturn(f.mockBatchApiFuture)
-
-    eventually {
-      f.fcmClient.sendBatchNotification(f.notification.id, tokenList, f.payload, f.dryRun)(f.onBatchCompleteCb)(f.ec)
-      f.catastrophicBatchSendResponse shouldEqual 1
-    }
-  }
-
-  it should "Parse partially successful multicast messages" in {
-    val f = fcmFixure
-    val tokenList: List[String] = List("token1", "token2", "token3")
-
-    val mockFirebaseMessagingException = mock[FirebaseMessagingException]
-    when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
-
-    val mockSendResponseFailure = mock[SendResponse]
-    when(mockSendResponseFailure.isSuccessful()).thenReturn(false)
-    when(mockSendResponseFailure.getException()).thenReturn(mockFirebaseMessagingException)
-
-    val mockSendResponse = mock[SendResponse]
-    when(mockSendResponse.isSuccessful()).thenReturn(true)
-
-    val batchResponseSuccess: BatchResponse = new BatchResponse {
-      override def getResponses: util.List[SendResponse] = List(mockSendResponse, mockSendResponseFailure, mockSendResponse, mockSendResponseFailure).asJava
-
-      override def getSuccessCount: Int = 2
-
-      override def getFailureCount: Int = 2
+      catastrophicBatchSendResponse shouldEqual 1
     }
 
-    doNothing().when(f.mockBatchApiFuture).addListener(any[Runnable], any[Executor])
-    when(f.mockBatchApiFuture.get()).thenReturn(batchResponseSuccess)
-    when(f.mockFirebaseMessaging.sendMulticastAsync(any[MulticastMessage])).thenReturn(f.mockBatchApiFuture)
+    "Parse partially successful multicast messages" in new FcmScope {
+      val tokenList: List[String] = List("token1", "token2", "token3")
 
-    eventually {
-      f.fcmClient.sendBatchNotification(f.notification.id, tokenList, f.payload, f.dryRun)(f.onBatchCompleteCb)(f.ec)
-      f.otherBatchResponse shouldEqual 2
-    }
-  }
+      val mockFirebaseMessagingException = mock[FirebaseMessagingException]
+      when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
 
-  def fcmFixure = new {
-    val notification = BreakingNewsNotification(
-      id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
-      `type` = NotificationType.BreakingNews,
-      title = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
-      message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
-      thumbnailUrl = None,
-      sender = "matt.wells@guardian.co.uk",
-      link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
-      imageUrl = None,
-      importance = Major,
-      topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
-      dryRun = None
-    )
-    val token = "token"
-    val payload: FcmPayload = FcmPayloadBuilder(notification, false).get
+      val mockSendResponseFailure = mock[SendResponse]
+      when(mockSendResponseFailure.isSuccessful()).thenReturn(false)
+      when(mockSendResponseFailure.getException()).thenReturn(mockFirebaseMessagingException)
 
-    var invalidTokens = 0
-    var deliverySuccess = 0
-    var failedRequest = 0
-    var unknownReasonFailedRequest = 0
-    var otherResponse = 0
-    var deliveryBatchSuccess = 0
-    var otherBatchResponse = 0
-    var catastrophicBatchSendResponse = 0
+      val mockSendResponse = mock[SendResponse]
+      when(mockSendResponse.isSuccessful()).thenReturn(true)
 
-    def onCompleteCb(message: Either[Throwable, FcmDeliverySuccess]): Unit = {
-      message match {
-        case Right(_) =>
-          deliverySuccess += 1
-        case Left(InvalidToken(_, _, _, _)) =>
-          invalidTokens += 1
-        case Left(FailedRequest(_, _, _, _)) =>
-          failedRequest += 1
-        case Left(UnknownReasonFailedRequest(_, _)) =>
-          unknownReasonFailedRequest += 1
-        case _ => otherResponse += 1
+      val batchResponseSuccess: BatchResponse = new BatchResponse {
+        override def getResponses: util.List[SendResponse] = List(mockSendResponse, mockSendResponseFailure, mockSendResponse, mockSendResponseFailure).asJava
+        override def getSuccessCount: Int = 2
+        override def getFailureCount: Int = 2
       }
+
+      fcmClient.parseBatchSendResponse(notification.id, tokenList, Success(batchResponseSuccess))(onBatchCompleteCb)
+
+      otherBatchResponse shouldEqual 2
     }
-
-    def onBatchCompleteCb(message: Either[Throwable, FcmDeliverySuccess]): Unit = {
-      message match {
-        case Right(_) =>
-          deliveryBatchSuccess += 1
-        case Left(BatchCallFailedRequest(_, _)) =>
-          catastrophicBatchSendResponse += 1
-        case _ => otherBatchResponse += 1
-      }
-    }
-
-    val ec = ExecutionContext.global
-    val dryRun = false
-
-    val app: FirebaseApp = mock[FirebaseApp]
-    val mockFirebaseMessaging = mock[FirebaseMessaging]
-    val mockApiFuture = mock[ApiFuture[String]]
-    val mockBatchApiFuture = mock[ApiFuture[BatchResponse]]
-
-    val config: FcmConfig = FcmConfig("serviceAccountKey")
-    val fcmClient = new FcmClient(mockFirebaseMessaging, app, config)
   }
+}
+trait FcmScope extends Scope {
+  val notification = BreakingNewsNotification(
+    id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
+    `type` = NotificationType.BreakingNews,
+    title = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
+    message = Some("French president Francois Hollande says killers of Normandy priest claimed to be from Islamic State"),
+    thumbnailUrl = None,
+    sender = "matt.wells@guardian.co.uk",
+    link = Internal("world/2016/jul/26/men-hostages-french-church-police-normandy-saint-etienne-du-rouvray", Some("https://gu.com/p/4p7xt"), GITContent, None),
+    imageUrl = None,
+    importance = Major,
+    topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
+    dryRun = None
+  )
+  val token = "token"
+  val payload: FcmPayload = FcmPayloadBuilder(notification, false).get
+
+  var invalidTokens = 0
+  var deliverySuccess = 0
+  var failedRequest = 0
+  var unknownReasonFailedRequest = 0
+  var otherResponse = 0
+  var deliveryBatchSuccess = 0
+  var otherBatchResponse = 0
+  var catastrophicBatchSendResponse = 0
+
+  def onCompleteCb(message: Either[Throwable, FcmDeliverySuccess]): Unit = {
+    message match {
+      case Right(_) =>
+        deliverySuccess += 1
+      case Left(InvalidToken(_, _, _, _)) =>
+        invalidTokens += 1
+      case Left(FailedRequest(_, _, _, _)) =>
+        failedRequest += 1
+      case Left(UnknownReasonFailedRequest(_, _)) =>
+        unknownReasonFailedRequest += 1
+      case _ => otherResponse += 1
+    }
+  }
+
+  def onBatchCompleteCb(message: Either[Throwable, FcmDeliverySuccess]): Unit = {
+    message match {
+      case Right(_) =>
+        deliveryBatchSuccess += 1
+      case Left(BatchCallFailedRequest(_, _)) =>
+        catastrophicBatchSendResponse += 1
+      case _ => otherBatchResponse += 1
+    }
+  }
+
+  val dryRun = false
+  val app: FirebaseApp = Mockito.mock[FirebaseApp]
+  val mockFirebaseMessaging = Mockito.mock[FirebaseMessaging]
+  val mockApiFuture = Mockito.mock[ApiFuture[String]]
+
+  val config: FcmConfig = FcmConfig("serviceAccountKey")
+  val fcmClient = new FcmClient(mockFirebaseMessaging, app, config)
 }
