@@ -1,7 +1,11 @@
 import { GuAutoScalingGroup } from '@guardian/cdk/lib/constructs/autoscaling';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { AppIdentity, GuStack } from '@guardian/cdk/lib/constructs/core';
-import { GuVpc, SubnetType } from '@guardian/cdk/lib/constructs/ec2';
+import {
+	GuSecurityGroup,
+	GuVpc,
+	SubnetType,
+} from '@guardian/cdk/lib/constructs/ec2';
 import {
 	GuAllowPolicy,
 	GuInstanceRole,
@@ -36,6 +40,7 @@ export class SenderWorkerStack extends GuStack {
 		const sqsMessageVisibilityTimeout = Duration.seconds(100);
 		const sqsMessageRetentionPeriod = Duration.hours(1);
 		const sqsMessageRetryCount = 5;
+		const vpcSecurityGroupId = 'sg-85829de7';
 
 		const vpc = GuVpc.fromIdParameter(
 			this,
@@ -86,6 +91,14 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 					),
 					scalingEvents: ScalingEvents.ERRORS,
 				},
+			],
+			additionalSecurityGroups: [
+				// Need this security group to call CAPI
+				GuSecurityGroup.fromSecurityGroupId(
+					this,
+					'DefaultVpcSecurityGroup',
+					vpcSecurityGroupId,
+				),
 			],
 		});
 		autoScalingGroup.scaleOnCpuUtilization('CpuScalingPolicy', {

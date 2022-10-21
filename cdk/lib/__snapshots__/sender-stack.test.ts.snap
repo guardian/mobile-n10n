@@ -193,6 +193,7 @@ Object {
               "GroupId",
             ],
           },
+          "sg-85829de7",
         ],
         "UserData": Object {
           "Fn::Base64": Object {
@@ -1276,6 +1277,7 @@ Object {
               "GroupId",
             ],
           },
+          "sg-85829de7",
         ],
         "UserData": Object {
           "Fn::Base64": Object {
