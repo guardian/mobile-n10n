@@ -49,8 +49,7 @@ trait Logging {
               "Unit" -> "Milliseconds"
             ),
             Map(
-              "Name" -> "worker.functionProcessingRate",
-              "Unit" -> "Count/Second"
+              "Name" -> "worker.functionProcessingRate"
             )
           )
         ))
