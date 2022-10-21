@@ -19,6 +19,5 @@ deployments:
     type: autoscaling
     parameters:
       bucketSsmLookup: true
-      bucketSsmKey: /account/services/artifact.bucket
     dependencies: [senderworker-cfn]
 

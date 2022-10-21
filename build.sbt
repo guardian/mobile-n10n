@@ -441,7 +441,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-PROD.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-PROD.template.json")
 )
 
-lazy val ec2SenderWorker = Project("senderworker", file("senderworker"))
+lazy val ec2SenderWorker = Project("sender-worker", file("senderworker"))
   .dependsOn(common, notificationworkerlambda, commontest % "test->test")
   .enablePlugins(SystemdPlugin, RiffRaffArtifact, JavaServerAppPackaging)
   .settings(standardSettings: _*)
