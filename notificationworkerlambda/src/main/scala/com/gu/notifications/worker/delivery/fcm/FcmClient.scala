@@ -1,7 +1,7 @@
 package com.gu.notifications.worker.delivery.fcm
 
 import _root_.models.Notification
-import com.google.api.core.ApiFuture
+import com.google.api.core.{ApiFuture, ApiFutureCallback, ApiFutures}
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging._
 import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
@@ -48,7 +48,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
   }
 
   def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
-    (onComplete: Either[Throwable, Success] => Unit)
+    (onAPICallComplete: Either[Throwable, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor): Unit = {
 
     val message = Message
@@ -57,31 +57,35 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       .setAndroidConfig(payload.androidConfig)
       .build
 
-
     if(dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
-      onComplete(Right(FcmDeliverySuccess(token, "dryrun", dryRun = true)))
+      onAPICallComplete(Right(FcmDeliverySuccess(token, "dryrun", dryRun = true)))
     } else {
       import FirebaseHelpers._
       firebaseMessaging
         .sendAsync(message)
         .asScala
-        .onComplete {
-          case Success(messageId) =>
-            onComplete(Right(FcmDeliverySuccess(token, messageId)))
-          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) || isUnregistered(e) =>
-            onComplete(Left(InvalidToken(notificationId, token, e.getMessage)))
-          case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
-            onComplete(Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString))))
-          case Failure(NonFatal(t)) =>
-            onComplete(Left(FailedRequest(notificationId, token, t)))
-          case Failure(_) =>
-            onComplete(Left(UnknownReasonFailedRequest(notificationId, token)))
-        }
+        .onComplete { response => parseSendResponse(notificationId, token, response)(onAPICallComplete) }
     }
   }
+
+  def parseSendResponse(
+    notificationId: UUID, token: String, response: Try[String]
+  )(cb: Either[Throwable, Success] => Unit) = cb(response match {
+    case Success(messageId) =>
+      Right(FcmDeliverySuccess(token, messageId))
+    case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) || isUnregistered(e) =>
+      Left(InvalidToken(notificationId, token, e.getMessage))
+    case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
+      Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString)))
+    case Failure(NonFatal(t)) =>
+      Left(FailedRequest(notificationId, token, t))
+    case Failure(_) =>
+      Left(UnknownReasonFailedRequest(notificationId, token))
+  })
+
   def sendBatchNotification(notificationId: UUID, token: List[String], payload: Payload, dryRun: Boolean)
-    (onComplete: Either[Throwable, Success] => Unit) // Future[Either[Throwable, Success]]
-    (implicit executionContext: ExecutionContextExecutor): Unit = {
+                           (onComplete: Either[Throwable, Success] => Unit) // Future[Either[Throwable, Success]]
+                           (implicit executionContext: ExecutionContextExecutor): Unit = {
 
     val message = MulticastMessage
       .builder
@@ -124,14 +128,13 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
                     onComplete(Right(FcmDeliverySuccess(s"Token in batch response succeeded", r.getMessageId)))
                   }
                 }
-              }
+                }
             }
           case Failure(x) =>
             onComplete(Left(BatchCallFailedRequest(notificationId, s"Multicast Async Response Failure: ${x.getCause}")))
         }
     }
   }
-
 }
 
 object FcmClient {
@@ -150,11 +153,15 @@ object FcmClient {
 
 object FirebaseHelpers {
 
-  implicit class RichApiFuture[T](val f: ApiFuture[T]) extends AnyVal {
-    def asScala(implicit e: ExecutionContext): Future[T] =
-      Future {
-        f.get()
-      }
-  }
+  implicit class RichApiFuture[T](val af: ApiFuture[T]) extends AnyVal {
+    def asScala(implicit ec: ExecutionContext): Future[T] = {
+      val p = Promise[T]()
+      ApiFutures.addCallback(af, new ApiFutureCallback[T] {
+        def onFailure(t: Throwable): Unit = p failure t
 
+        def onSuccess(result: T): Unit = p success result
+      }, (command: Runnable) => ec.execute(command))
+      p.future
+    }
+  }
 }

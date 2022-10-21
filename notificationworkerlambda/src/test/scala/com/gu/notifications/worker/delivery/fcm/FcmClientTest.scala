@@ -11,73 +11,46 @@ import com.gu.notifications.worker.delivery.DeliveryException.{BatchCallFailedRe
 import com.gu.notifications.worker.delivery.{FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import models.FcmConfig
+
+import org.specs2.mutable.Specification
+import org.specs2.specification.Scope
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{doNothing, when}
-import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.flatspec.AsyncFlatSpec
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-import java.util
 import java.util.concurrent.Executor
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters._
 import scala.language.reflectiveCalls
+import org.specs2.mock.Mockito
 
-class FcmClientTest extends AsyncFlatSpec with MockitoSugar with Eventually with IntegrationPatience {
-  "The FcmClient" should "parse successful responses as an FcmDeliverySuccess" in {
-    val f = fcmFixure
-    // when calling addListener we actually want to execute the runnable, but the current implementation is complicated
-    doNothing().when(f.mockApiFuture).addListener(any[Runnable], any[Executor])
-    when(f.mockApiFuture.get()).thenReturn(f.notification.id.toString)
-    when(f.mockFirebaseMessaging.sendAsync(any[Message])).thenReturn(f.mockApiFuture)
+import java.util.concurrent.Executor
+import scala.util.{Failure, Success}
 
-    eventually {
-      f.fcmClient.sendNotification(f.notification.id, f.token, f.payload, f.dryRun)(f.onCompleteCb)(f.ec)
-      f.deliverySuccess shouldEqual 1
+class FcmClientTest extends Specification with Mockito {
+  "the FcmClient" should {
+    "Parse successful responses as an FcmDeliverySuccess" in new FcmScope {
+      fcmClient.parseSendResponse(notification.id, token, Success(notification.id.toString))(onCompleteCb)
+
+      deliverySuccess shouldEqual 1
     }
-  }
 
-  it should "parse errors with an invalid token error code as an InvalidToken" in {
-    val f = fcmFixure
+    "Parse errors with an invalid token error code as an InvalidToken" in new FcmScope {
+      // we have to mock because there is no public method for instantiating an error of this type
+      val mockFirebaseMessagingException = Mockito.mock[FirebaseMessagingException]
+      when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
 
-    doNothing().when(f.mockApiFuture).addListener(any[Runnable], any[Executor])
+      fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException))(onCompleteCb)
 
-    // we have to mock because there is no public method for instantiating an error of this type
-    val mockFirebaseMessagingException = mock[FirebaseMessagingException]
-    when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
-
-    when(f.mockApiFuture.get()).thenAnswer(_ => throw mockFirebaseMessagingException)
-    when(f.mockFirebaseMessaging.sendAsync(any[Message])).thenReturn(f.mockApiFuture)
-
-    eventually {
-      f.fcmClient.sendNotification(f.notification.id, f.token, f.payload, f.dryRun)(f.onCompleteCb)(f.ec)
-      f.invalidTokens shouldEqual 1
+      invalidTokens shouldEqual 1
     }
-  }
 
-  it should "parse errors with NOT_FOUND error code and 'Requested entity was not found.' error message as an InvalidToken" in {
-    val f = fcmFixure
+    "Parse errors with NOT_FOUND error code and 'Requested entity was not found.' error message as an InvalidToken" in new FcmScope {
+      val mockFirebaseMessagingException = Mockito.mock[FirebaseMessagingException]
+      when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.NOT_FOUND)
+      when(mockFirebaseMessagingException.getMessage).thenReturn("Requested entity was not found.")
 
-    doNothing().when(f.mockApiFuture).addListener(any[Runnable], any[Executor])
-
-    val mockFirebaseMessagingException = mock[FirebaseMessagingException]
-    when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.NOT_FOUND)
-    when(mockFirebaseMessagingException.getMessage).thenReturn("Requested entity was not found.")
-
-    when(f.mockApiFuture.get()).thenAnswer(_ => throw mockFirebaseMessagingException)
-    when(f.mockFirebaseMessaging.sendAsync(any[Message])).thenReturn(f.mockApiFuture)
-
-    eventually {
-      f.fcmClient.sendNotification(f.notification.id, f.token, f.payload, f.dryRun)(f.onCompleteCb)(f.ec)
-      f.invalidTokens shouldEqual 1
-    }
-  }
-
-  it should "parse entirely successful multicast message" in {
-    val f = fcmFixure
-    val tokenList: List[String] = List("token1", "token2", "token3")
+      fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException))(onCompleteCb)
 
     val mockSendResponse = mock[SendResponse]
     when(mockSendResponse.isSuccessful()).thenReturn(true)
