@@ -1,7 +1,11 @@
 import { GuAutoScalingGroup } from '@guardian/cdk/lib/constructs/autoscaling';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { AppIdentity, GuStack } from '@guardian/cdk/lib/constructs/core';
-import { GuVpc, SubnetType } from '@guardian/cdk/lib/constructs/ec2';
+import {
+	GuSecurityGroup,
+	GuVpc,
+	SubnetType,
+} from '@guardian/cdk/lib/constructs/ec2';
 import {
 	GuAllowPolicy,
 	GuInstanceRole,
@@ -36,6 +40,7 @@ export class SenderWorkerStack extends GuStack {
 		const sqsMessageVisibilityTimeout = Duration.seconds(100);
 		const sqsMessageRetentionPeriod = Duration.hours(1);
 		const sqsMessageRetryCount = 5;
+		const defaultVpcSecurityGroup = 'sg-85829de7';
 
 		const vpc = GuVpc.fromIdParameter(
 			this,
@@ -68,10 +73,9 @@ export class SenderWorkerStack extends GuStack {
 			role: distributionRole,
 			healthCheck: HealthCheck.elb({ grace: Duration.minutes(5) }),
 			userData: `#!/bin/bash -ev
-	  echo ${this.region}
-	  echo ${this.stack}
-	  echo ${this.stage}
-	  echo ${props.appName}`,
+aws --region ${this.region} s3 cp s3://mobile-dist/${this.stack}/${props.stage}/${props.appName}/${props.appName}_1.0-latest_all.deb /tmp
+dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
+/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${this.region} mobile-log-aggregation-${this.stage} /var/log/${props.appName}/${props.appName}.log`,
 			vpcSubnets: {
 				subnets: GuVpc.subnetsFromParameter(this, {
 					type: SubnetType.PRIVATE,
@@ -87,6 +91,13 @@ export class SenderWorkerStack extends GuStack {
 					),
 					scalingEvents: ScalingEvents.ERRORS,
 				},
+			],
+			additionalSecurityGroups: [
+				GuSecurityGroup.fromSecurityGroupId(
+					this,
+					'DefaultVpcSecurityGroup',
+					defaultVpcSecurityGroup,
+				),
 			],
 		});
 		autoScalingGroup.scaleOnCpuUtilization('CpuScalingPolicy', {
