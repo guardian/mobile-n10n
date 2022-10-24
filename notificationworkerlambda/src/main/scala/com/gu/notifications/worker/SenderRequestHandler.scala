@@ -14,7 +14,7 @@ import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParse
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.time.{Duration, Instant}
+import java.time.Instant
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
@@ -34,36 +34,10 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def reportSuccesses[C <: DeliveryClient](notification: Notification, range: ShardRange, sentTime: Long): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
-    val notificationLog = s"(notification: ${notification.id} $range)"
-    val start = Instant.ofEpochMilli(sentTime)
-    val end = Instant.now
-    val logFields = Map(
-      "_aws" -> Map(
-        "Timestamp" -> end.toEpochMilli,
-        "CloudWatchMetrics" -> List(Map(
-          "Namespace" -> s"Notifications/${env.stage}/workers",
-          "Dimensions" -> List(List("platform", "type")),
-          "Metrics" -> List(Map(
-            "Name" -> "worker.notificationProcessingTime",
-            "Unit" -> "Milliseconds"
-          ))
-        ))
-      ),
-      "notificationId" -> notification.id,
-      "platform" -> Configuration.platform.map(_.toString).getOrElse("unknown"),
-      "type" -> {
-        notification.`type` match {
-          case NotificationType.BreakingNews => "breakingNews"
-          case _ => "other"
-        }
-      },
-      "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
-      "worker.notificationProcessingStartTime.millis" -> sentTime,
-      "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-    )
+  def reportSuccesses[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+    val notificationLog = s"(notification: ${chunkedTokens.notification.id} ${chunkedTokens.range})"
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
-      .evalTap(logInfoWithFields(logFields, prefix = s"Results $notificationLog: "))
+      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform), prefix = s"Results $notificationLog: "))
       .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
   }
 
@@ -89,19 +63,22 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .evalTap(Reporting.log(s"Sending failure: "))
   } yield resp
 
-  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long)]): Stream[IO, Unit] = {
+  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant)]): Stream[IO, Unit] = {
     for {
-      (chunkedTokens, sentTime) <- chunkedTokenStream
+      (chunkedTokens, sentTime, functionStartTime) <- chunkedTokenStream
       individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
       resp <- deliverIndividualNotificationStream(individualNotifications)
-        .broadcastTo(reportSuccesses(chunkedTokens.notification, chunkedTokens.range, sentTime), cleanupFailures, trackProgress(chunkedTokens.notification.id))
+        .broadcastTo(
+          reportSuccesses(chunkedTokens, sentTime, functionStartTime),
+          cleanupFailures,
+          trackProgress(chunkedTokens.notification.id))
     } yield resp
   }
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
-    val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long)] = Stream.emits(event.getRecords.asScala)
+    val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant)] = Stream.emits(event.getRecords.asScala)
       .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
-      .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp) }
+      .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp, Instant.now) }
 
     deliverChunkedTokens(chunkedTokenStream)
       .compile
