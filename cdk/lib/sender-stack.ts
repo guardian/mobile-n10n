@@ -53,6 +53,7 @@ export class SenderWorkerStack extends GuStack {
 				// by the policy included in GuCDK pattern
 				new GuAllowPolicy(this, 'GetParametersByPath', {
 					resources: [
+						`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${props.stage}/workers`,
 						`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${props.stage}/workers/sender-ec2`,
 					],
 					actions: ['ssm:GetParametersByPath'],
