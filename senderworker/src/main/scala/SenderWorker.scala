@@ -61,6 +61,9 @@ object SenderWorker extends App {
   val config = Configuration.fetchConfiguration("Ios")
   println(s"Config = ${config.getString("android.dryrun")}")
   logger.info(s"Config = ${config.getString("android.dryrun")}")
+  println(s"Config = ${config.getString("android-beta.cleaningSqsUrl")}")
+  logger.info(s"Config = ${config.getString("android-beta.cleaningSqsUrl")}")
+
   //new AndroidSender().handleChunkTokens(sqsEvent, null)
   //new IOSSender().handleChunkTokens(sqsEvent, null)
   Thread.sleep(60*60*1000)
