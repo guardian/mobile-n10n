@@ -40,7 +40,7 @@ export class SenderWorkerStack extends GuStack {
 		const sqsMessageVisibilityTimeout = Duration.seconds(100);
 		const sqsMessageRetentionPeriod = Duration.hours(1);
 		const sqsMessageRetryCount = 5;
-		const vpcSecurityGroupId = 'sg-85829de7';
+		const defaultVpcSecurityGroup = 'sg-85829de7';
 
 		const vpc = GuVpc.fromIdParameter(
 			this,
@@ -93,11 +93,10 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 				},
 			],
 			additionalSecurityGroups: [
-				// Need this security group to call CAPI
 				GuSecurityGroup.fromSecurityGroupId(
 					this,
 					'DefaultVpcSecurityGroup',
-					vpcSecurityGroupId,
+					defaultVpcSecurityGroup,
 				),
 			],
 		});
