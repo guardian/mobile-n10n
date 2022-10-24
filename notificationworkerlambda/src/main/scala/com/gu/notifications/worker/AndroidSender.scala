@@ -10,6 +10,7 @@ import com.gu.notifications.worker.tokens.{BatchNotification, ChunkedTokens}
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, NotificationParser, Reporting}
 import fs2.Stream
 
+import java.time.Instant
 import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.jdk.CollectionConverters._
@@ -32,24 +33,16 @@ class AndroidSender extends SenderRequestHandler[FcmClient] {
   override val maxConcurrency = 100
 
   //override the deliverChunkedTokens method to validate the success of sending batch notifications to the FCM client. This implementation could be refactored in the future to make it more streamlined with APNs
-  override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long)]): Stream[IO, Unit] = {
+  override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant)]): Stream[IO, Unit] = {
     for {
-      (chunkedTokens, sentTime) <- chunkedTokenStream
+      (chunkedTokens, sentTime, functionStartTime) <- chunkedTokenStream
       batchNotifications = Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO]
       resp <- deliverBatchNotificationStream(batchNotifications)
-        .broadcastTo(reportSuccesses(chunkedTokens.notification, chunkedTokens.range, sentTime), cleanupFailures, trackProgress(chunkedTokens.notification.id))
+        .broadcastTo(
+          reportSuccesses(chunkedTokens, sentTime, functionStartTime),
+          cleanupFailures,
+          trackProgress(chunkedTokens.notification.id))
     } yield resp
-  }
-
-  override def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
-    val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long)] = Stream.emits(event.getRecords.asScala)
-      .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
-      .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp) }
-
-    deliverChunkedTokens(chunkedTokenStream)
-      .compile
-      .drain
-      .unsafeRunSync()
   }
 
   def deliverBatchNotificationStream[C <: FcmClient](batchNotificationStream: Stream[IO, BatchNotification]): Stream[IO, Either[DeliveryException, C#Success]] = for {

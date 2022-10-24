@@ -105,28 +105,16 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
   })
 
   def parseBatchSendResponse(
-    notificationId: UUID, value: List[String], triedResponse: Try[BatchResponse]
+    notificationId: UUID, tokens: List[String], triedResponse: Try[BatchResponse]
   )(cb: Either[Throwable, Success] => Unit): Unit = triedResponse match {
     case Success(batchResponse) =>
-      batchResponse.getResponses.asScala.toList.foreach { r => {
+      // From firebase sdk docs: the order of the response list corresponds to the order of the input tokens
+      batchResponse.getResponses.asScala.toList.zip(tokens).foreach { el => {
+        val (r, token) = el
         if (!r.isSuccessful) {
-          logger.info(s"Token in batch response failed: ${r.getException.getMessagingErrorCode} because: ${r.getException.getMessage}")
-          // https://firebase.google.com/docs/reference/admin/java/reference/com/google/firebase/messaging/SendResponse
-          // how to correlate failed responses to a tokenid?
-          // if the message fails then messageId is null, and I don't _think_ messageId == token
-          // docs say that the order of the response maps exactly to the order of the request
-          // so we need can get the token id of a failure from the position in the response compared to the position in the request
-          // https://firebase.google.com/docs/cloud-messaging/send-message#java_1
-          r.getException match {
-            case UnwrappingExecutionException(e: FirebaseMessagingException) if invalidTokenErrorCodes.contains(e.getMessagingErrorCode) =>
-              cb(Left(InvalidToken(notificationId, r.getMessageId, e.getMessage)))
-            case UnwrappingExecutionException(e: FirebaseMessagingException) =>
-              cb(Left(FailedRequest(notificationId, r.getMessageId, e, Option("failure"))))
-            case _ =>
-              cb(Left(UnknownReasonFailedRequest(notificationId, r.getMessageId)))
-          }
+          parseSendResponse(notificationId, token, Failure(r.getException))(cb)
         } else {
-          cb(Right(FcmDeliverySuccess(s"Token in batch response succeeded", r.getMessageId)))
+          cb(Right(FcmDeliverySuccess(s"Token in batch response succeeded", token)))
         }
       }
     }
