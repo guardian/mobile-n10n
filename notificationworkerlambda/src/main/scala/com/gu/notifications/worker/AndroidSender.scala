@@ -36,12 +36,21 @@ class AndroidSender extends SenderRequestHandler[FcmClient] {
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant)]): Stream[IO, Unit] = {
     for {
       (chunkedTokens, sentTime, functionStartTime) <- chunkedTokenStream
-      batchNotifications = Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO]
-      resp <- deliverBatchNotificationStream(batchNotifications)
-        .broadcastTo(
-          reportSuccesses(chunkedTokens, sentTime, functionStartTime),
-          cleanupFailures,
-          trackProgress(chunkedTokens.notification.id))
+      isAllowedToSendBatch = chunkedTokens.notification.topic.forall(topic => config.allowedTopicsForBatchSend.contains(topic.toString))
+      resp <- {
+        val resultStream = if (isAllowedToSendBatch) {
+          logger.info(s"Allowed to send notification ${chunkedTokens.notification.id} to topics ${chunkedTokens.notification.topic} in batches")
+          deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
+        }
+        else
+          deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
+
+        resultStream
+          .broadcastTo(
+            reportSuccesses(chunkedTokens, sentTime, functionStartTime),
+            cleanupFailures,
+            trackProgress(chunkedTokens.notification.id))
+      }
     } yield resp
   }
 
