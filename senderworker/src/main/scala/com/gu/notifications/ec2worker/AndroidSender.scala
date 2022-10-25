@@ -9,10 +9,11 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import com.gu.notifications.worker.SenderRequestHandler
 import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Platform}
 import com.gu.notifications.worker.FcmWorkerConfiguration
+import com.typesafe.config.Config
 
-class AndroidSender(androidPlatform: Platform) extends SenderRequestHandler[FcmClient] {
+class AndroidSender(appConfig: Config, androidPlatform: Platform) extends SenderRequestHandler[FcmClient] {
 
-  val config: FcmWorkerConfiguration = Configuration.fetchFirebase(androidPlatform)
+  val config: FcmWorkerConfiguration = Configuration.fetchFirebase(appConfig, androidPlatform)
   val cleaningClient = new CleaningClientImpl(config.cleaningSqsUrl)
   val cloudwatch: Cloudwatch = new CloudwatchImpl
 

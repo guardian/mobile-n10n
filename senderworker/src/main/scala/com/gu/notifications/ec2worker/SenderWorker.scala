@@ -40,7 +40,7 @@ object SenderWorker extends App {
     imageUrl = None,
     importance = Importance.Major,
     topic = List(Topic(TopicTypes.Breaking, "uk"), Topic(TopicTypes.Breaking, "us"), Topic(TopicTypes.Breaking, "au"), Topic(TopicTypes.Breaking, "international")),
-    dryRun = Some(true)
+    dryRun = None
   )
 
   val tokens = ChunkedTokens(
@@ -60,18 +60,19 @@ object SenderWorker extends App {
 
   println("Sender workers start")
   logger.info("Sender workers start")
+  val config = Configuration.fetchConfiguration()
 
   logger.info("Sender worker - Ios started")
-  new IOSSender(Ios).handleChunkTokens(sqsEvent, null)
+  new IOSSender(config, Ios).handleChunkTokens(sqsEvent, null)
   logger.info("Sender worker - Android started")
-  new AndroidSender(Android).handleChunkTokens(sqsEvent, null)
+  new AndroidSender(config, Android).handleChunkTokens(sqsEvent, null)
 
   logger.info("Sender worker - IosEdition started")
-  new IOSSender(IosEdition).handleChunkTokens(sqsEvent, null)
+  new IOSSender(config, IosEdition).handleChunkTokens(sqsEvent, null)
   logger.info("Sender worker - AndroidBeta started")
-  new AndroidSender(AndroidBeta).handleChunkTokens(sqsEvent, null)
+  new AndroidSender(config, AndroidBeta).handleChunkTokens(sqsEvent, null)
   logger.info("Sender worker - AndroidEdition started")
-  new AndroidSender(AndroidEdition).handleChunkTokens(sqsEvent, null)
+  new AndroidSender(config, AndroidEdition).handleChunkTokens(sqsEvent, null)
   logger.info("Sender worker all started")
   Thread.sleep(60*60*1000)
 }

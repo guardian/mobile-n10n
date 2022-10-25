@@ -10,10 +10,11 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Platform}
 import com.gu.notifications.worker.SenderRequestHandler
 import com.gu.notifications.worker.ApnsWorkerConfiguration
+import com.typesafe.config.Config
 
-class IOSSender(iosPlatform: Platform) extends SenderRequestHandler[ApnsClient] {
-  
-  val config: ApnsWorkerConfiguration = Configuration.fetchApns(iosPlatform)
+class IOSSender(appConfig: Config, iosPlatform: Platform) extends SenderRequestHandler[ApnsClient] {
+
+  val config: ApnsWorkerConfiguration = Configuration.fetchApns(appConfig, iosPlatform)
   val cleaningClient = new CleaningClientImpl(config.cleaningSqsUrl)
   val cloudwatch: Cloudwatch = new CloudwatchImpl
 

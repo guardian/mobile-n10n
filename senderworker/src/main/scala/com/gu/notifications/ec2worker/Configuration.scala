@@ -28,15 +28,8 @@ object Configuration {
     }
   }
 
-  def platform: Option[Platform] = Option(System.getenv("Platform")).flatMap(Platform.fromString)
-
-  def confPrefixFromPlatform: String = platform match {
-    case Some(p @ (Ios | Android | IosEdition | AndroidEdition | AndroidBeta)) => p.toString
-    case _ => throw new IllegalStateException("No Platform environment variable defined")
-  }
-
-  def fetchApns(platform: Platform): ApnsWorkerConfiguration = {
-    val config = new ConfigWithPrefix(fetchConfiguration(), platform.toString())
+  def fetchApns(appConfig: Config, platform: Platform): ApnsWorkerConfiguration = {
+    val config = new ConfigWithPrefix(appConfig, platform.toString())
     ApnsWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       ApnsConfig(
@@ -52,8 +45,8 @@ object Configuration {
     )
   }
 
-  def fetchFirebase(platform: Platform): FcmWorkerConfiguration = {
-    val config = new ConfigWithPrefix(fetchConfiguration(), platform.toString())
+  def fetchFirebase(appConfig: Config, platform: Platform): FcmWorkerConfiguration = {
+    val config = new ConfigWithPrefix(appConfig, platform.toString())
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       FcmConfig(
