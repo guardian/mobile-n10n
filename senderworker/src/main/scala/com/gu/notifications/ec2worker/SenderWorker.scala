@@ -13,13 +13,13 @@ import models.TopicTypes
 import models.Importance
 import play.api.libs.json.Json
 import java.time.Instant
-import com.gu.notifications.ec2worker.Ec2IOSSender
-import com.gu.notifications.ec2worker.Ec2AndroidSender
 import models.NotificationType
 import scala.jdk.CollectionConverters._
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Platform}
+import com.gu.notifications.worker.IOSSender
+import com.gu.notifications.worker.AndroidSender
 
 object SenderWorker extends App {
 
@@ -63,16 +63,25 @@ object SenderWorker extends App {
   val config = Configuration.fetchConfiguration()
 
   logger.info("Sender worker - Ios started")
-  new Ec2IOSSender(config, Ios).handleChunkTokens(sqsEvent, null)
+  val iosSender = new IOSSender(Configuration.fetchApns(config, Ios))
+  iosSender.handleChunkTokens(sqsEvent, null)
+  
   logger.info("Sender worker - Android started")
-  new Ec2AndroidSender(config, Android).handleChunkTokens(sqsEvent, null)
+  val androidSender = new AndroidSender(Configuration.fetchFirebase(config, Android), Some(Android.toString()))
+  androidSender.handleChunkTokens(sqsEvent, null)
 
   logger.info("Sender worker - IosEdition started")
-  new Ec2IOSSender(config, IosEdition).handleChunkTokens(sqsEvent, null)
+  val iosEditionSender = new IOSSender(Configuration.fetchApns(config, IosEdition))
+  iosEditionSender.handleChunkTokens(sqsEvent, null)
+
   logger.info("Sender worker - AndroidBeta started")
-  new Ec2AndroidSender(config, AndroidBeta).handleChunkTokens(sqsEvent, null)
+  val androidBetaSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidBeta), Some(AndroidBeta.toString()))
+  androidBetaSender.handleChunkTokens(sqsEvent, null)
+
   logger.info("Sender worker - AndroidEdition started")
-  new Ec2AndroidSender(config, AndroidEdition).handleChunkTokens(sqsEvent, null)
+  val androidEditionSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidEdition), Some(AndroidEdition.toString()))
+  androidEditionSender.handleChunkTokens(sqsEvent, null)
+
   logger.info("Sender worker all started")
   Thread.sleep(60*60*1000)
 }

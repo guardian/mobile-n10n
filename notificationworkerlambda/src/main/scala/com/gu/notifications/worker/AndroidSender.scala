@@ -7,8 +7,12 @@ import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl}
 import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-class AndroidSender extends SenderRequestHandler[FcmClient] {
-  val config: FcmWorkerConfiguration = Configuration.fetchFirebase()
+class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Option[String]) extends SenderRequestHandler[FcmClient] {
+
+  def this() = {
+    this(Configuration.fetchFirebase(), None)
+  }
+
   val cleaningClient = new CleaningClientImpl(config.cleaningSqsUrl)
   val cloudwatch: Cloudwatch = new CloudwatchImpl
 
@@ -20,6 +24,6 @@ class AndroidSender extends SenderRequestHandler[FcmClient] {
   override implicit val timer: Timer[IO] = IO.timer(ec)
 
   override val deliveryService: IO[Fcm[IO]] =
-    FcmClient(config.fcmConfig).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
+    FcmClient(config.fcmConfig, firebaseAppName).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
   override val maxConcurrency = 100
 }
