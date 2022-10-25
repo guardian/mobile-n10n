@@ -61,10 +61,11 @@ object SenderWorker extends App {
   println("Sender worker started")
   logger.info("Sender worker started")
 
+  new IOSSender(Ios).handleChunkTokens(sqsEvent, null)
   new AndroidSender(Android).handleChunkTokens(sqsEvent, null)
+
+  new IOSSender(IosEdition).handleChunkTokens(sqsEvent, null)
   new AndroidSender(AndroidBeta).handleChunkTokens(sqsEvent, null)
   new AndroidSender(AndroidEdition).handleChunkTokens(sqsEvent, null)
-  new IOSSender(Ios).handleChunkTokens(sqsEvent, null)
-  new IOSSender(IosEdition).handleChunkTokens(sqsEvent, null)
   Thread.sleep(60*60*1000)
 }
