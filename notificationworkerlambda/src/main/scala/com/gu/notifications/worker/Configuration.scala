@@ -100,6 +100,10 @@ object Configuration {
 
   def fetchFirebase(): FcmWorkerConfiguration = {
     val config = fetchConfiguration(confPrefixFromPlatform)
+
+    def getStringList(path: String): List[String] =
+      config.getString(path).split(",").toList
+
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       FcmConfig(
@@ -108,7 +112,7 @@ object Configuration {
         dryRun = config.getBoolean("dryrun")
       ),
       config.getInt("fcm.threadPoolSize"),
-      config.getStringList("fcm.allowedTopicsForBatchSend").asScala.toList
+      getStringList("fcm.allowedTopicsForBatchSend")
     )
   }
 
