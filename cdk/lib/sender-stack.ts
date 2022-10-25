@@ -62,6 +62,10 @@ export class SenderWorkerStack extends GuStack {
 					resources: [props.cleanerQueueArn],
 					actions: ['sqs:SendMessage'],
 				}),
+				new GuAllowPolicy(this, 'PutCloudwatchMetric', {
+					resources: ['*'],
+					actions: ['cloudwatch:PutMetricData'],
+				}),
 			],
 		});
 
