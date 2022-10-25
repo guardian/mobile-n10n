@@ -94,7 +94,6 @@ object FcmClient {
         case None => FirebaseApp.initializeApp(firebaseOptions)
         case Some(name) => FirebaseApp.initializeApp(firebaseOptions, name)
       }
-      FirebaseApp.initializeApp(firebaseOptions)
     }.map(app => new FcmClient(FirebaseMessaging.getInstance(app), app, config))
   }
 }
