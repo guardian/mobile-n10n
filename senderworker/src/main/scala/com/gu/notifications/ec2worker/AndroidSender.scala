@@ -24,6 +24,6 @@ class AndroidSender(androidPlatform: Platform) extends SenderRequestHandler[FcmC
   override implicit val timer: Timer[IO] = IO.timer(ec)
 
   override val deliveryService: IO[Fcm[IO]] =
-    FcmClient(config.fcmConfig).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
+    FcmClient(config.fcmConfig, s"[${androidPlatform.toString()}]").fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
   override val maxConcurrency = 100
 }

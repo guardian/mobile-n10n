@@ -58,14 +58,20 @@ object SenderWorker extends App {
     event
   }
 
-  println("Sender worker started")
-  logger.info("Sender worker started")
+  println("Sender workers start")
+  logger.info("Sender workers start")
 
+  logger.info("Sender worker - Ios started")
   new IOSSender(Ios).handleChunkTokens(sqsEvent, null)
+  logger.info("Sender worker - Android started")
   new AndroidSender(Android).handleChunkTokens(sqsEvent, null)
 
+  logger.info("Sender worker - IosEdition started")
   new IOSSender(IosEdition).handleChunkTokens(sqsEvent, null)
+  logger.info("Sender worker - AndroidBeta started")
   new AndroidSender(AndroidBeta).handleChunkTokens(sqsEvent, null)
+  logger.info("Sender worker - AndroidEdition started")
   new AndroidSender(AndroidEdition).handleChunkTokens(sqsEvent, null)
+  logger.info("Sender worker all started")
   Thread.sleep(60*60*1000)
 }
