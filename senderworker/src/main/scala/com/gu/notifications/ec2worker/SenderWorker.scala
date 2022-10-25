@@ -13,8 +13,8 @@ import models.TopicTypes
 import models.Importance
 import play.api.libs.json.Json
 import java.time.Instant
-import com.gu.notifications.ec2worker.IOSSender
-import com.gu.notifications.ec2worker.AndroidSender
+import com.gu.notifications.ec2worker.Ec2IOSSender
+import com.gu.notifications.ec2worker.Ec2AndroidSender
 import models.NotificationType
 import scala.jdk.CollectionConverters._
 import org.slf4j.LoggerFactory
@@ -63,16 +63,16 @@ object SenderWorker extends App {
   val config = Configuration.fetchConfiguration()
 
   logger.info("Sender worker - Ios started")
-  new IOSSender(config, Ios).handleChunkTokens(sqsEvent, null)
+  new Ec2IOSSender(config, Ios).handleChunkTokens(sqsEvent, null)
   logger.info("Sender worker - Android started")
-  new AndroidSender(config, Android).handleChunkTokens(sqsEvent, null)
+  new Ec2AndroidSender(config, Android).handleChunkTokens(sqsEvent, null)
 
   logger.info("Sender worker - IosEdition started")
-  new IOSSender(config, IosEdition).handleChunkTokens(sqsEvent, null)
+  new Ec2IOSSender(config, IosEdition).handleChunkTokens(sqsEvent, null)
   logger.info("Sender worker - AndroidBeta started")
-  new AndroidSender(config, AndroidBeta).handleChunkTokens(sqsEvent, null)
+  new Ec2AndroidSender(config, AndroidBeta).handleChunkTokens(sqsEvent, null)
   logger.info("Sender worker - AndroidEdition started")
-  new AndroidSender(config, AndroidEdition).handleChunkTokens(sqsEvent, null)
+  new Ec2AndroidSender(config, AndroidEdition).handleChunkTokens(sqsEvent, null)
   logger.info("Sender worker all started")
   Thread.sleep(60*60*1000)
 }
