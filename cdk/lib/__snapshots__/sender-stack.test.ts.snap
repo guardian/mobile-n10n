@@ -329,7 +329,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                       Object {
                         "Ref": "AWS::AccountId",
                       },
-                      ":parameter/notifications/CODE/workers/sender-ec2",
+                      ":parameter/notifications/CODE/ec2workers",
                     ],
                   ],
                 },
@@ -1453,7 +1453,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                       Object {
                         "Ref": "AWS::AccountId",
                       },
-                      ":parameter/notifications/PROD/workers/sender-ec2",
+                      ":parameter/notifications/PROD/ec2workers",
                     ],
                   ],
                 },
