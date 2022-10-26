@@ -40,7 +40,7 @@ object SenderWorker extends App {
     imageUrl = None,
     importance = Importance.Major,
     topic = List(Topic(TopicTypes.Breaking, "uk"), Topic(TopicTypes.Breaking, "us"), Topic(TopicTypes.Breaking, "au"), Topic(TopicTypes.Breaking, "international")),
-    dryRun = None
+    dryRun = Some(true)
   )
 
   val tokens = ChunkedTokens(
