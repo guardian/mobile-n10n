@@ -8,6 +8,8 @@ import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Pla
 import com.gu.{AppIdentity, AwsIdentity}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 
+import scala.jdk.CollectionConverters.CollectionHasAsScala
+
 case class HarvesterConfiguration(
   jdbcConfig: JdbcConfig,
   iosLiveSqsUrl: String,
@@ -30,7 +32,8 @@ case class ApnsWorkerConfiguration(
 case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
   fcmConfig: FcmConfig,
-  threadPoolSize: Int
+  threadPoolSize: Int,
+  allowedTopicsForBatchSend: List[String],
 ) extends WorkerConfiguration
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
@@ -97,6 +100,10 @@ object Configuration {
 
   def fetchFirebase(): FcmWorkerConfiguration = {
     val config = fetchConfiguration(confPrefixFromPlatform)
+
+    def getStringList(path: String): List[String] =
+      config.getString(path).split(",").toList
+
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       FcmConfig(
@@ -104,7 +111,8 @@ object Configuration {
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
       ),
-      config.getInt("fcm.threadPoolSize")
+      config.getInt("fcm.threadPoolSize"),
+      getStringList("fcm.allowedTopicsForBatchSend")
     )
   }
 

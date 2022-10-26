@@ -27,33 +27,39 @@ trait Logging {
   def logError[A](prefix: String = ""): A => IO[Unit] = log(prefix, logger.error)
 
   def logFields(
-     env: Env,
-     notification: Notification,
-     numberOfTokens: Int,
-     sentTime: Long,
-     functionStartTime: Instant,
-     maybePlatform: Option[Platform]
-   )(end: Instant): Map[String, Any] = {
+    env: Env,
+    notification: Notification,
+    numberOfTokens: Int,
+    sentTime: Long,
+    functionStartTime: Instant,
+    maybePlatform: Option[Platform]
+  )(end: Instant): Map[String, Any] = {
     val processingTime = Duration.between(functionStartTime, end).toMillis
     val processingRate = numberOfTokens.toDouble / processingTime * 1000
     val start = Instant.ofEpochMilli(sentTime)
-    Map(
-      "_aws" -> Map(
-        "Timestamp" -> end.toEpochMilli,
-        "CloudWatchMetrics" -> List(Map(
-          "Namespace" -> s"Notifications/${env.stage}/workers",
-          "Dimensions" -> List(List("platform", "type")),
-          "Metrics" -> List(
-            Map(
-              "Name" -> "worker.notificationProcessingTime",
-              "Unit" -> "Milliseconds"
-            ),
-            Map(
-              "Name" -> "worker.functionProcessingRate"
+    val maybeAwsMetric = notification.dryRun match {
+      case Some(true) => None
+      case _          => Some(
+        "_aws" -> Map(
+          "Timestamp" -> end.toEpochMilli,
+          "CloudWatchMetrics" -> List(Map(
+            "Namespace" -> s"Notifications/${env.stage}/workers",
+            "Dimensions" -> List(List("platform", "type")),
+            "Metrics" -> List(
+              Map(
+                "Name" -> "worker.notificationProcessingTime",
+                "Unit" -> "Milliseconds"
+              ),
+              Map(
+                "Name" -> "worker.functionProcessingRate"
+              )
             )
-          )
-        ))
-      ),
+          ))
+        )
+      )
+    }
+
+    Map(
       "notificationId" -> notification.id,
       "platform" -> maybePlatform.map(_.toString).getOrElse("unknown"),
       "type" -> {
@@ -67,6 +73,6 @@ trait Logging {
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-    )
+    ) ++ maybeAwsMetric
   }
 }

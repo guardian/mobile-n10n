@@ -102,6 +102,12 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     }
   }
 
+  def sendBatchNotification(notificationId: UUID, token: List[String], payload: Payload, dryRun: Boolean)
+    (onComplete: Either[Throwable, Success] => Unit)
+    (implicit executionContext: ExecutionContextExecutor): Unit = {
+      logger.info("not implemented")
+    }
+
   private def invalidationTime(timeToLive: Long) : DateTime = DateTime.now().plus(timeToLive)
 }
 
