@@ -47,6 +47,10 @@ object Configuration {
 
   def fetchFirebase(appConfig: Config, platform: Platform): FcmWorkerConfiguration = {
     val config = new ConfigWithPrefix(appConfig, platform.toString())
+
+    def getStringList(path: String): List[String] =
+      appConfig.getString(path).split(",").toList
+
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       FcmConfig(
@@ -54,7 +58,8 @@ object Configuration {
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
       ),
-      config.getInt("fcm.threadPoolSize")
+      config.getInt("fcm.threadPoolSize"),
+      getStringList("fcm.allowedTopicsForBatchSend")
     )
   }
 
