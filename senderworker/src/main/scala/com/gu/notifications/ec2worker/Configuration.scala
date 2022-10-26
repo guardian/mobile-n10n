@@ -24,7 +24,7 @@ object Configuration {
   def fetchConfiguration(): Config = {
     val identity = AppIdentity.whoAmI(defaultAppName = "sender-worker")
     ConfigurationLoader.load(identity) {
-      case AwsIdentity(_, _, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/workers")
+      case AwsIdentity(_, _, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/ec2workers")
     }
   }
 
