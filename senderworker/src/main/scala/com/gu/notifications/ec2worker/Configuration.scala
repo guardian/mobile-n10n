@@ -49,7 +49,7 @@ object Configuration {
     val config = new ConfigWithPrefix(appConfig, platform.toString())
 
     def getStringList(path: String): List[String] =
-      appConfig.getString(path).split(",").toList
+      config.getString(path).split(",").toList
 
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
