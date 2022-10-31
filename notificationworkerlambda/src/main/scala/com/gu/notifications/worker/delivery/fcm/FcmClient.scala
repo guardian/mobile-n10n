@@ -125,17 +125,19 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 }
 
 object FcmClient {
-  def apply(config: FcmConfig): Try[FcmClient] = {
+  def apply(config: FcmConfig, firebaseAppName: Option[String]): Try[FcmClient] = {
     Try {
       val firebaseOptions: FirebaseOptions = FirebaseOptions.builder()
           .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(config.serviceAccountKey.getBytes)))
           .setHttpTransport(new OkGoogleHttpTransport)
           .setConnectTimeout(10000) // 10 seconds
           .build
-      FirebaseApp.initializeApp(firebaseOptions)
+      firebaseAppName match {
+        case None => FirebaseApp.initializeApp(firebaseOptions)
+        case Some(name) => FirebaseApp.initializeApp(firebaseOptions, name)
+      }
     }.map(app => new FcmClient(FirebaseMessaging.getInstance(app), app, config))
   }
-
 }
 
 object FirebaseHelpers {

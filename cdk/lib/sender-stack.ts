@@ -53,13 +53,18 @@ export class SenderWorkerStack extends GuStack {
 				// by the policy included in GuCDK pattern
 				new GuAllowPolicy(this, 'GetParametersByPath', {
 					resources: [
-						`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${props.stage}/workers/sender-ec2`,
+						`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${props.stage}/workers`,
+						`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${props.stage}/ec2workers`,
 					],
 					actions: ['ssm:GetParametersByPath'],
 				}),
 				new GuAllowPolicy(this, 'SendToCleanerQueue', {
 					resources: [props.cleanerQueueArn],
 					actions: ['sqs:SendMessage'],
+				}),
+				new GuAllowPolicy(this, 'PutCloudwatchMetric', {
+					resources: ['*'],
+					actions: ['cloudwatch:PutMetricData'],
 				}),
 			],
 		});
@@ -75,7 +80,7 @@ export class SenderWorkerStack extends GuStack {
 			userData: `#!/bin/bash -ev
 aws --region ${this.region} s3 cp s3://mobile-dist/${this.stack}/${props.stage}/${props.appName}/${props.appName}_1.0-latest_all.deb /tmp
 dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
-/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${this.region} mobile-log-aggregation-${this.stage} /var/log/${props.appName}/${props.appName}.log`,
+/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${this.region} mobile-log-aggregation-${this.stage} /var/log/${props.appName}/application.log`,
 			vpcSubnets: {
 				subnets: GuVpc.subnetsFromParameter(this, {
 					type: SubnetType.PRIVATE,
