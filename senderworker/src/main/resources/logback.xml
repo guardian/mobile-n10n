@@ -3,10 +3,10 @@
   <contextName>sender-worker</contextName>
 
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>logs/sender-worker.log</file>
+    <file>logs/application.log</file>
 
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>logs/sender-worker.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+      <fileNamePattern>logs/application.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
       <maxHistory>30</maxHistory>
     </rollingPolicy>
 
