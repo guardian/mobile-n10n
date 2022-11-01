@@ -105,27 +105,33 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
       override val jdbcConfig: JdbcConfig = null
 
-      override val iosLiveDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
-        apnsSqsDeliveriesCount.incrementAndGet()
-        apnsSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
-        sqsDeliveries
-      }
+      override val lambdaServiceSet: SqsDeliveryServiceSet = SqsDeliveryServiceSet(
+        iosLiveDeliveryService = (chunkedTokens: ChunkedTokens) => {
+          apnsSqsDeliveriesCount.incrementAndGet()
+          apnsSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+          sqsDeliveries
+        },
+        androidLiveDeliveryService = (chunkedTokens: ChunkedTokens) => {
+          firebaseSqsDeliveriesCount.incrementAndGet()
+          firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+          sqsDeliveries
+        },
+        androidBetaDeliveryService = (chunkedTokens: ChunkedTokens) => {
+          firebaseSqsDeliveriesCount.incrementAndGet()
+          firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+          sqsDeliveries
+        },
+        iosEditionDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
+        androidEditionDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries
+      )
 
-      override val androidLiveDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
-        firebaseSqsDeliveriesCount.incrementAndGet()
-        firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
-        sqsDeliveries
-      }
-
-      override val androidBetaDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => {
-       firebaseSqsDeliveriesCount.incrementAndGet()
-       firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
-       sqsDeliveries
-      }
-
-      override val iosEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
-
-      override val androidEditionDeliveryService: SqsDeliveryService[IO] = (chunkedTokens: ChunkedTokens) => sqsDeliveries
+      override val ec2ServiceSet: SqsDeliveryServiceSet = SqsDeliveryServiceSet(
+        iosLiveDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
+        androidLiveDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
+        androidBetaDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
+        iosEditionDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
+        androidEditionDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries
+      )
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
         override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???

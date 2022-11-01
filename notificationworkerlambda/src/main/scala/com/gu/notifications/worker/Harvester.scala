@@ -26,6 +26,14 @@ object WorkerSqs {
   case object IosEditionWorkerSqs extends WorkerSqs
 }
 
+case class SqsDeliveryServiceSet(
+  iosLiveDeliveryService: SqsDeliveryService[IO],
+  iosEditionDeliveryService: SqsDeliveryService[IO],
+  androidLiveDeliveryService: SqsDeliveryService[IO],
+  androidEditionDeliveryService: SqsDeliveryService[IO],
+  androidBetaDeliveryService: SqsDeliveryService[IO]
+)
+
 trait HarvesterRequestHandler extends Logging {
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
@@ -33,12 +41,8 @@ trait HarvesterRequestHandler extends Logging {
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
   val env = Env()
 
-  val iosLiveDeliveryService: SqsDeliveryService[IO]
-  val iosEditionDeliveryService: SqsDeliveryService[IO]
-  val androidLiveDeliveryService: SqsDeliveryService[IO]
-  val androidEditionDeliveryService: SqsDeliveryService[IO]
-  val androidBetaDeliveryService: SqsDeliveryService[IO]
-
+  val lambdaServiceSet: SqsDeliveryServiceSet
+  val ec2ServiceSet: SqsDeliveryServiceSet
   val jdbcConfig: JdbcConfig
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
@@ -82,11 +86,11 @@ trait HarvesterRequestHandler extends Logging {
     for {
       shardedNotification <- shardedNotifications
       notificationId = shardedNotification.notification.id
-      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, androidLiveDeliveryService)
-      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, androidBetaDeliveryService)
-      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, androidEditionDeliveryService)
-      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, iosLiveDeliveryService)
-      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, iosEditionDeliveryService)
+      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, lambdaServiceSet.androidLiveDeliveryService)
+      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, lambdaServiceSet.androidBetaDeliveryService)
+      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, lambdaServiceSet.androidEditionDeliveryService)
+      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, lambdaServiceSet.iosLiveDeliveryService)
+      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, lambdaServiceSet.iosEditionDeliveryService)
       notificationLog = s"(notification: $notificationId ${shardedNotification.range})"
       _ = logger.info(Map("notificationId" -> notificationId), s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
@@ -181,9 +185,20 @@ class Harvester extends HarvesterRequestHandler {
   override val jdbcConfig: JdbcConfig = config.jdbcConfig
 
   override val cloudwatch: Cloudwatch = new CloudwatchImpl
-  override val iosLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsUrl)
-  override val androidLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsUrl)
-  override val iosEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl)
-  override val androidEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl)
-  override val androidBetaDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
+
+  override val lambdaServiceSet = SqsDeliveryServiceSet(
+   iosLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsUrl),
+   androidLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsUrl),
+   iosEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl),
+   androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl),
+   androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
+  )
+
+  override val ec2ServiceSet = SqsDeliveryServiceSet(
+   iosLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsEc2Url),
+   androidLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsEc2Url),
+   iosEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsEc2Url),
+   androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsEc2Url),
+   androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsEc2Url)
+  )  
 }
