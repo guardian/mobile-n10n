@@ -1,6 +1,6 @@
 package com.gu.notifications.worker.models
 
-import com.gu.notifications.worker.delivery.{DeliveryException, DeliverySuccess}
+import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryException, DeliverySuccess}
 
 case class SendingResults(
   successCount: Int,
@@ -19,6 +19,12 @@ object SendingResults {
     case Right(success) if success.dryRun => previous.copy(dryRunCount = previous.dryRunCount + 1)
     case Right(_) => previous.copy(successCount = previous.successCount + 1)
     case Left(_) => previous.copy(failureCount = previous.failureCount + 1)
+  }
+
+  def aggregateBatch(previous: SendingResults, batchSize: Int, res: Either[Throwable, BatchDeliverySuccess]): SendingResults = res match {
+    case Right(batchSuccess) =>
+      batchSuccess.responses.foldLeft(previous)((acc, resp) => SendingResults.aggregate(acc, resp))
+    case Left(_) => SendingResults(0, batchSize, 0)
   }
 }
 
