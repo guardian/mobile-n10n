@@ -21,7 +21,8 @@ case class HarvesterConfiguration(
   iosEditionSqsEc2Url: String,
   androidLiveSqsEc2Url: String,
   androidEditionSqsEc2Url: String,
-  androidBetaSqsEc2Url: String
+  androidBetaSqsEc2Url: String,
+  allowedTopicsForEc2Sender: List[String]
 )
 
 sealed trait WorkerConfiguration {
@@ -87,7 +88,8 @@ object Configuration {
       iosEditionSqsEc2Url = config.getString("iosEditionSqsEc2Url"),
       androidLiveSqsEc2Url = config.getString("androidLiveSqsEc2Url"),
       androidEditionSqsEc2Url = config.getString("androidEditionSqsEc2Url"),
-      androidBetaSqsEc2Url = config.getString("androidBetaSqsEc2Url")      
+      androidBetaSqsEc2Url = config.getString("androidBetaSqsEc2Url"),
+      allowedTopicsForEc2Sender = if (config.hasPath("allowedTopicsForEc2Sender")) config.getString("allowedTopicsForEc2Sender").split(",").toList else List()
     )
   }
 

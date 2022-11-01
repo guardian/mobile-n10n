@@ -105,7 +105,9 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
       override val jdbcConfig: JdbcConfig = null
 
-      override val lambdaServiceSet: SqsDeliveryServiceSet = SqsDeliveryServiceSet(
+      override val allowedTopicsForEc2Sender: List[String] = List()
+
+      override val lambdaServiceSet: SqsDeliveryStack = SqsDeliveryStack(
         iosLiveDeliveryService = (chunkedTokens: ChunkedTokens) => {
           apnsSqsDeliveriesCount.incrementAndGet()
           apnsSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
@@ -125,7 +127,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
         androidEditionDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries
       )
 
-      override val ec2ServiceSet: SqsDeliveryServiceSet = SqsDeliveryServiceSet(
+      override val ec2ServiceSet: SqsDeliveryStack = SqsDeliveryStack(
         iosLiveDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
         androidLiveDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
         androidBetaDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
