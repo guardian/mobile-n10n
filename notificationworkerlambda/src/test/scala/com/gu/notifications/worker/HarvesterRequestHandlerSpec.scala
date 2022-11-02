@@ -21,19 +21,103 @@ import org.specs2.specification.Scope
 import play.api.libs.json.Json
 
 import scala.jdk.CollectionConverters._
+import db.BuildTier
 
 class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
   "the WorkerRequestHandler" should {
     "Queue one multi platform breaking news notification" in new WRHSScope {
+
+      val workerRequestHandler = new TestHarvesterRequestHandler {
+        override val allowedTopicsForEc2Sender: List[String] = List()
+      }
       workerRequestHandler.processNotification(sqsEventShardNotification(breakingNewsNotification), tokenService)
       tokenStreamCount.get() shouldEqual 0
       tokenPlatformStreamCount.get() shouldEqual 1
-      firebaseSqsDeliveriesCount.get() shouldEqual 3
-      apnsSqsDeliveriesCount.get() shouldEqual 3
-      firebaseSqsDeliveriesTotal.get() shouldEqual 2002
-      apnsSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 2002
+
+      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 0
     }
+
+    "Use lambda stack if some of the topics are not on the selected list" in new WRHSScope {
+
+      val workerRequestHandler = new TestHarvesterRequestHandler {
+        override val allowedTopicsForEc2Sender: List[String] = List("breaking/uk", "breaking/us", "breaking/international")
+      }
+      workerRequestHandler.processNotification(sqsEventShardNotification(breakingNewsNotification), tokenService)
+      tokenStreamCount.get() shouldEqual 0
+      tokenPlatformStreamCount.get() shouldEqual 1
+      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 2002
+
+      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 0
+    }
+
+    "Switch to EC2 stack if all of the topics are on the selected list" in new WRHSScope {
+
+      val workerRequestHandler = new TestHarvesterRequestHandler {
+        override val allowedTopicsForEc2Sender: List[String] = List("breaking/uk", "breaking/us", "breaking/international", "breaking/au")
+      }
+      workerRequestHandler.processNotification(sqsEventShardNotification(breakingNewsNotification), tokenService)
+      tokenStreamCount.get() shouldEqual 0
+      tokenPlatformStreamCount.get() shouldEqual 1
+      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 2002
+      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 3
+      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 2002
+
+      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 0
+      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 0
+      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 0
+    }        
   }
 
 
@@ -81,18 +165,17 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
     val twoThousandTwoTokens: List[String] = Range(0,2002).map(num => s"token-$num").toList
     def tokenStream: Stream[IO, String] = Stream.emits(twoThousandTwoTokens)
-    def tokenPlatformStream: Stream[IO, HarvestedToken] = Stream.emits(twoThousandTwoTokens.map(HarvestedToken(_, Android, None)) ::: twoThousandTwoTokens.map(HarvestedToken(_, Ios, None)))
+    def tokenPlatformStream: Stream[IO, HarvestedToken] = Stream.emits(
+      twoThousandTwoTokens.map(HarvestedToken(_, Android, None)) ::: 
+      twoThousandTwoTokens.map(HarvestedToken(_, Ios, None)) :::
+      twoThousandTwoTokens.map(HarvestedToken(_, Android, Some(BuildTier.BETA))) :::
+      twoThousandTwoTokens.map(HarvestedToken(_, IosEdition, None)) :::
+      twoThousandTwoTokens.map(HarvestedToken(_, AndroidEdition, None)))
 
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 
-
-    var cloudwatchFailures = new AtomicInteger()
     val tokenStreamCount = new AtomicInteger()
     val tokenPlatformStreamCount = new AtomicInteger()
-    var apnsSqsDeliveriesCount = new AtomicInteger()
-    var firebaseSqsDeliveriesCount = new AtomicInteger()
-    var apnsSqsDeliveriesTotal = new AtomicInteger()
-    var firebaseSqsDeliveriesTotal = new AtomicInteger()
 
     val tokenService = new TokenService[IO] {
       override def tokens(notification: Notification, shardRange: ShardRange): Stream[IO, HarvestedToken] = {
@@ -101,39 +184,84 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       }
     }
 
-    val workerRequestHandler = new HarvesterRequestHandler {
+    case class SqsDeliveriesCount(
+      var apnsSqsDeliveriesCount: AtomicInteger,
+      var apnsEditionSqsDeliveriesCount: AtomicInteger,
+      var firebaseSqsDeliveriesCount: AtomicInteger,
+      var firebaseEditionSqsDeliveriesCount: AtomicInteger,
+      var firebaseBetaSqsDeliveriesCount: AtomicInteger,
 
-      override val jdbcConfig: JdbcConfig = null
+      var apnsSqsDeliveriesTotal: AtomicInteger,
+      var apnsEditionSqsDeliveriesTotal: AtomicInteger,
+      var firebaseSqsDeliveriesTotal: AtomicInteger,
+      var firebaseEditionSqsDeliveriesTotal: AtomicInteger,
+      var firebaseBetaSqsDeliveriesTotal: AtomicInteger
+    )
 
-      override val allowedTopicsForEc2Sender: List[String] = List()
-
-      override val lambdaServiceSet: SqsDeliveryStack = SqsDeliveryStack(
+    def createTestSqsDeliveryStack(deliveriesCount: SqsDeliveriesCount): SqsDeliveryStack = 
+      SqsDeliveryStack(
         iosLiveDeliveryService = (chunkedTokens: ChunkedTokens) => {
-          apnsSqsDeliveriesCount.incrementAndGet()
-          apnsSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+          deliveriesCount.apnsSqsDeliveriesCount.incrementAndGet()
+          deliveriesCount.apnsSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
           sqsDeliveries
         },
         androidLiveDeliveryService = (chunkedTokens: ChunkedTokens) => {
-          firebaseSqsDeliveriesCount.incrementAndGet()
-          firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+          deliveriesCount.firebaseSqsDeliveriesCount.incrementAndGet()
+          deliveriesCount.firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
           sqsDeliveries
         },
         androidBetaDeliveryService = (chunkedTokens: ChunkedTokens) => {
-          firebaseSqsDeliveriesCount.incrementAndGet()
-          firebaseSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+          deliveriesCount.firebaseBetaSqsDeliveriesCount.incrementAndGet()
+          deliveriesCount.firebaseBetaSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
           sqsDeliveries
         },
-        iosEditionDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
-        androidEditionDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries
+        iosEditionDeliveryService = (chunkedTokens: ChunkedTokens) => {
+          deliveriesCount.apnsEditionSqsDeliveriesCount.incrementAndGet()
+          deliveriesCount.apnsEditionSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+          sqsDeliveries
+        },
+        androidEditionDeliveryService = (chunkedTokens: ChunkedTokens) => {
+          deliveriesCount.firebaseEditionSqsDeliveriesCount.incrementAndGet()
+          deliveriesCount.firebaseEditionSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
+          sqsDeliveries
+        }
       )
 
-      override val ec2ServiceSet: SqsDeliveryStack = SqsDeliveryStack(
-        iosLiveDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
-        androidLiveDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
-        androidBetaDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
-        iosEditionDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries,
-        androidEditionDeliveryService = (chunkedTokens: ChunkedTokens) => sqsDeliveries
+    trait TestHarvesterRequestHandler extends HarvesterRequestHandler {
+
+      override val jdbcConfig: JdbcConfig = null
+
+      var cloudwatchFailures = new AtomicInteger()
+
+      var lambdaDeliveries = SqsDeliveriesCount(
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
       )
+
+      var ec2Deliveries = SqsDeliveriesCount(
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+        new AtomicInteger(),
+      )
+
+      override val lambdaServiceSet: SqsDeliveryStack = createTestSqsDeliveryStack(lambdaDeliveries)
+
+      override val ec2ServiceSet: SqsDeliveryStack = createTestSqsDeliveryStack(ec2Deliveries)
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
         override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
