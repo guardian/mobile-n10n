@@ -25,12 +25,14 @@ sealed trait WorkerConfiguration {
 
 case class ApnsWorkerConfiguration(
   cleaningSqsUrl: String,
+  sqsUrl: String,
   apnsConfig: ApnsConfig,
   threadPoolSize: Int
 ) extends WorkerConfiguration
 
 case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
+  sqsUrl: String,
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
   allowedTopicsForBatchSend: List[String],
@@ -85,6 +87,7 @@ object Configuration {
     val config = fetchConfiguration(confPrefixFromPlatform)
     ApnsWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
+      config.getString("sqsEc2Url"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
@@ -106,6 +109,7 @@ object Configuration {
 
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
+      config.getString("sqsEc2Url"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),
