@@ -142,7 +142,7 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 				this,
 				`SenderWorkerQueueEc2SSMParameter-${platformName}`,
 				{
-					parameterName: `/notifications/${this.stage}/ec2workers/${platformName}/SqsEc2Url`,
+					parameterName: `/notifications/${this.stage}/ec2workers/${platformName}/sqsEc2Url`,
 					simpleName: false,
 					stringValue: senderSqs.queueUrl,
 					tier: ParameterTier.STANDARD,
@@ -155,7 +155,7 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 				this,
 				`SenderWorkerQueueSSMParameter-${platformName}`,
 				{
-					parameterName: `/notifications/${this.stage}/workers/${platformName}/SqsUrl`,
+					parameterName: `/notifications/${this.stage}/workers/${platformName}/sqsUrl`,
 					simpleName: false,
 					stringValue: senderSqs.queueUrl,
 					tier: ParameterTier.STANDARD,

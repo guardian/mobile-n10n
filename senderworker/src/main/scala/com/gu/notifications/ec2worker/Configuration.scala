@@ -32,7 +32,7 @@ object Configuration {
     val config = new ConfigWithPrefix(appConfig, platform.toString())
     ApnsWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
-      config.getString("SqsEc2Url"),
+      config.getString("sqsEc2Url"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
@@ -54,7 +54,7 @@ object Configuration {
 
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
-      config.getString("SqsEc2Url"),
+      config.getString("sqsEc2Url"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),
