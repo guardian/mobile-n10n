@@ -54,7 +54,7 @@ object Configuration {
 
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
-      config.getString("sqsEc2Url"),
+      config.getString("SqsEc2Url"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),
