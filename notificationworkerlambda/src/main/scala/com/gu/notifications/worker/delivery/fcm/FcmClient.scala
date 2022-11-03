@@ -10,7 +10,8 @@ import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
 import com.gu.notifications.worker.delivery.{DeliveryClient, FcmBatchDeliverySuccess, FcmDeliverySuccess, FcmPayload}
-import com.gu.notifications.worker.utils.NotificationParser.logger
+import com.gu.notifications.worker.utils.Logging
+import org.slf4j.LoggerFactory
 import com.gu.notifications.worker.utils.UnwrappingExecutionException
 
 import java.io.ByteArrayInputStream
@@ -23,12 +24,14 @@ import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
-  extends DeliveryClient {
+  extends DeliveryClient with Logging {
 
   type Success = FcmDeliverySuccess
   type BatchSuccess = FcmBatchDeliverySuccess
   type Payload = FcmPayload
   val dryRun = config.dryRun
+
+  implicit val logger = LoggerFactory.getLogger(this.getClass)
 
   private val invalidTokenErrorCodes = Set(
     MessagingErrorCode.INVALID_ARGUMENT,
@@ -91,10 +94,18 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       onAPICallComplete(Right(FcmDeliverySuccess(s"token batch succeeded: $notificationId", "dryrun", dryRun = true)))
     } else {
       import FirebaseHelpers._
+      val start = Instant.now
       firebaseMessaging
         .sendMulticastAsync(message)
         .asScala
-        .onComplete { response => parseBatchSendResponse(notificationId, tokens, response)(onAPICallComplete) }
+        .onComplete { response => {
+            logger.info(Map(
+              "worker.batchRequestLatency" -> Duration.between(start, Instant.now).toMillis,
+              "notificationId" -> notificationId
+            ), "Batch send request completed")
+            parseBatchSendResponse(notificationId, tokens, response)(onAPICallComplete)
+          }
+        }
     }
   }
 
