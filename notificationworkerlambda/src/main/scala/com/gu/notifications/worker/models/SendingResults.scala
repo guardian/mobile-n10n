@@ -24,7 +24,7 @@ object SendingResults {
   def aggregateBatch(previous: SendingResults, batchSize: Int, res: Either[Throwable, BatchDeliverySuccess]): SendingResults = res match {
     case Right(batchSuccess) =>
       batchSuccess.responses.foldLeft(previous)((acc, resp) => SendingResults.aggregate(acc, resp))
-    case Left(_) => SendingResults(0, batchSize, 0)
+    case Left(_) => SendingResults(previous.successCount, previous.failureCount + batchSize, previous.dryRunCount)
   }
 }
 
