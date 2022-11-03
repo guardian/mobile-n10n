@@ -65,10 +65,18 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       onAPICallComplete(Right(FcmDeliverySuccess(token, "dryrun", dryRun = true)))
     } else {
       import FirebaseHelpers._
+      val start = Instant.now
       firebaseMessaging
         .sendAsync(message)
         .asScala
-        .onComplete { response => parseSendResponse(notificationId, token, response)(onAPICallComplete) }
+        .onComplete { response => {
+            logger.info(Map(
+              "worker.individualRequestLatency" -> Duration.between(start, Instant.now).toMillis,
+              "notificationId" -> notificationId,
+            ), "Individual send request completed")
+            parseSendResponse(notificationId, token, response)(onAPICallComplete)
+          }
+        }
     }
   }
 
