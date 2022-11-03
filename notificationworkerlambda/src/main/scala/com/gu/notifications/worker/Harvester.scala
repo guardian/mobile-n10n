@@ -76,10 +76,13 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def switchStack(topics: List[_root_.models.Topic]): SqsDeliveryStack = {
-    if (topics.forall(topic => allowedTopicsForEc2Sender.contains(topic.toString)))
+    if (topics.forall(topic => allowedTopicsForEc2Sender.contains(topic.toString))) {
+      logger.info("Switch to EC2-based sender"); 
       ec2ServiceSet
-    else
+    } else {
+      logger.info("Switch to lambda-based sender"); 
       lambdaServiceSet
+    }
   }
 
 
@@ -213,4 +216,6 @@ class Harvester extends HarvesterRequestHandler {
   )
 
   override val allowedTopicsForEc2Sender = config.allowedTopicsForEc2Sender
+
+  logger.info(s"Allowed topics for EC2 sender: ${config.allowedTopicsForEc2Sender}")
 }
