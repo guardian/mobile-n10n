@@ -32,7 +32,7 @@ object Configuration {
     val config = new ConfigWithPrefix(appConfig, platform.toString())
     ApnsWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
-      config.getString("sqsEc2Url"),
+      config.getString("SqsEc2Url"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
