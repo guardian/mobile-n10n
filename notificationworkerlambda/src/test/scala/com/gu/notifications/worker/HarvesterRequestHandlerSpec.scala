@@ -22,6 +22,7 @@ import play.api.libs.json.Json
 
 import scala.jdk.CollectionConverters._
 import db.BuildTier
+import java.time.Instant
 
 class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
@@ -264,7 +265,11 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       override val ec2ServiceSet: SqsDeliveryStack = createTestSqsDeliveryStack(ec2Deliveries)
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
+        override def sendMetrics(stage: String, platform: Option[Platform],
+                  notification: Notification,
+                  numberOfTokens: Int,
+                  sentTime: Long,
+                  functionStartTime: Instant): Pipe[IO, SendingResults, Unit] = ???
 
         override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = {
           cloudwatchFailures.incrementAndGet()

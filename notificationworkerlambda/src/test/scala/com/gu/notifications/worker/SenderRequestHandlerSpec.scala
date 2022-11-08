@@ -23,6 +23,7 @@ import play.api.libs.json.Json
 
 import java.util.UUID
 import scala.jdk.CollectionConverters._
+import java.time.Instant
 
 class SenderRequestHandlerSpec extends Specification with Matchers {
 
@@ -137,7 +138,11 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       }
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = { stream =>
+        override def sendMetrics(stage: String, platform: Option[Platform],
+                  notification: Notification,
+                  numberOfTokens: Int,
+                  sentTime: Long,
+                  functionStartTime: Instant): Pipe[IO, SendingResults, Unit] = { stream =>
           cloudwatchCallsCount += 1
           stream.map { results =>
             sendingResults = Some(results)

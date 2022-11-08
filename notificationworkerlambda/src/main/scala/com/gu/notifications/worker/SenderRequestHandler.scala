@@ -38,7 +38,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     val notificationLog = s"(notification: ${chunkedTokens.notification.id} ${chunkedTokens.range})"
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
       .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform), prefix = s"Results $notificationLog: "))
-      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
+      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime))
   }
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>

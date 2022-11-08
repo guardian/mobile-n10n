@@ -37,27 +37,6 @@ trait Logging {
     val processingTime = Duration.between(functionStartTime, end).toMillis
     val processingRate = numberOfTokens.toDouble / processingTime * 1000
     val start = Instant.ofEpochMilli(sentTime)
-    val maybeAwsMetric = notification.dryRun match {
-      case Some(true) => None
-      case _          => Some(
-        "_aws" -> Map(
-          "Timestamp" -> end.toEpochMilli,
-          "CloudWatchMetrics" -> List(Map(
-            "Namespace" -> s"Notifications/${env.stage}/workers",
-            "Dimensions" -> List(List("platform", "type")),
-            "Metrics" -> List(
-              Map(
-                "Name" -> "worker.notificationProcessingTime",
-                "Unit" -> "Milliseconds"
-              ),
-              Map(
-                "Name" -> "worker.functionProcessingRate"
-              )
-            )
-          ))
-        )
-      )
-    }
 
     Map(
       "notificationId" -> notification.id,
@@ -73,6 +52,6 @@ trait Logging {
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-    ) ++ maybeAwsMetric
+    )
   }
 }
