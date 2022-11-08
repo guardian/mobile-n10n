@@ -138,13 +138,30 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 			});
 
 			//this advertises the name of the ec2 worker queue
-			new StringParameter(this, `SenderQueueEc2SSMParameter-${platformName}`, {
-				parameterName: `/notifications/${this.stage}/ec2workers/${platformName}/SqsEc2Url`,
-				simpleName: false,
-				stringValue: senderSqs.queueUrl,
-				tier: ParameterTier.STANDARD,
-				dataType: ParameterDataType.TEXT,
-			});
+			new StringParameter(
+				this,
+				`SenderWorkerQueueEc2SSMParameter-${platformName}`,
+				{
+					parameterName: `/notifications/${this.stage}/ec2workers/${platformName}/sqsEc2Url`,
+					simpleName: false,
+					stringValue: senderSqs.queueUrl,
+					tier: ParameterTier.STANDARD,
+					dataType: ParameterDataType.TEXT,
+				},
+			);
+
+			//this advertises the name of the worker queue
+			new StringParameter(
+				this,
+				`SenderWorkerQueueSSMParameter-${platformName}`,
+				{
+					parameterName: `/notifications/${this.stage}/workers/${platformName}/sqsUrl`,
+					simpleName: false,
+					stringValue: senderSqs.queueUrl,
+					tier: ParameterTier.STANDARD,
+					dataType: ParameterDataType.TEXT,
+				},
+			);
 
 			return senderSqs;
 		};
