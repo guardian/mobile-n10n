@@ -21,13 +21,25 @@ class CleaningClientImpl(sqsUrl: String) extends CleaningClient {
     .withRegion(Regions.EU_WEST_1)
     .build
 
+  private def sendTokensToQueue(tokens: List[String])(implicit logger: Logger): Unit = {
+    val json = Json.stringify(Json.toJson(InvalidTokens(tokens)))
+    sqsClient.sendMessage(sqsUrl, json)
+    logger.info(s"Sent ${tokens.size} tokens for deletion via SQS")
+  }
 
   def sendInvalidTokensToCleaning(implicit logger: Logger): Pipe[IO, Chunk[String], Unit] =
     _.evalMap { chunk =>
       IO.delay {
-        val json = Json.stringify(Json.toJson(InvalidTokens(chunk.toList)))
-        sqsClient.sendMessage(sqsUrl, json)
-        logger.info(s"Sent ${chunk.size} tokens for deletion via SQS")
+        sendTokensToQueue(chunk.toList)
       }
     }
+
+  def sendInvalidBatchTokensToCleaning(implicit logger: Logger): Pipe[IO, Chunk[List[String]], Unit] = {
+    _.evalMap { chunk =>
+      IO.delay {
+        sendTokensToQueue(chunk.toList.flatten)
+      }
+    }
+  }
+
 }

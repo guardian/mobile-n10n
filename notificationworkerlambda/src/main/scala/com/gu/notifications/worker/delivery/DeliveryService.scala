@@ -22,7 +22,7 @@ trait DeliveryService[F[_], C <: DeliveryClient] {
   def sendBatch(
     notification: Notification,
     tokens: List[String]
-  ): Stream[F, Either[DeliveryException, C#Success]]
+  ): Stream[F, Either[DeliveryException, C#BatchSuccess]]
 }
 
 class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
@@ -90,11 +90,11 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
     } yield res
   }
 
-  def sendBatch(notification: Notification, tokens: List[String]): Stream[F, Either[DeliveryException, C#Success]] = {
+  def sendBatch(notification: Notification, tokens: List[String]): Stream[F, Either[DeliveryException, C#BatchSuccess]] = {
 
-    def sendBatchAsync(client: C)(token: List[String], payload: client.Payload): F[C#Success] = {
+    def sendBatchAsync(client: C)(token: List[String], payload: client.Payload): F[C#BatchSuccess] = {
       logger.info("Sending batch notification")
-      Async[F].async { (cb: Either[Throwable, C#Success] => Unit) =>
+      Async[F].async { (cb: Either[Throwable, C#BatchSuccess] => Unit) =>
         client.sendBatchNotification(
           notification.id,
           token,
@@ -104,7 +104,7 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
       }
     }
 
-    def sending(client: C)(token: List[String], payload: client.Payload): Stream[F, Either[DeliveryException, C#Success]] = {
+    def sending(client: C)(token: List[String], payload: client.Payload): Stream[F, Either[DeliveryException, C#BatchSuccess]] = {
 
       val delayInMs = {
         val rangeInMs = Range(1000, 3000)
