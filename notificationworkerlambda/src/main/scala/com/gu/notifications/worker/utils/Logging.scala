@@ -32,7 +32,8 @@ trait Logging {
     numberOfTokens: Int,
     sentTime: Long,
     functionStartTime: Instant,
-    maybePlatform: Option[Platform]
+    maybePlatform: Option[Platform],
+    isIndividualNotificationSend: Boolean = true
   )(end: Instant): Map[String, Any] = {
     val processingTime = Duration.between(functionStartTime, end).toMillis
     val processingRate = numberOfTokens.toDouble / processingTime * 1000
@@ -73,6 +74,7 @@ trait Logging {
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
+      "worker.notificationSendMethod" -> { if (isIndividualNotificationSend) "individual" else "batch" }
     ) ++ maybeAwsMetric
   }
 }

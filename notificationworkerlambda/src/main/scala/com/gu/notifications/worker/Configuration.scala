@@ -16,7 +16,13 @@ case class HarvesterConfiguration(
   iosEditionSqsUrl: String,
   androidLiveSqsUrl: String,
   androidEditionSqsUrl: String,
-  androidBetaSqsUrl: String
+  androidBetaSqsUrl: String,
+  iosLiveSqsEc2Url: String,
+  iosEditionSqsEc2Url: String,
+  androidLiveSqsEc2Url: String,
+  androidEditionSqsEc2Url: String,
+  androidBetaSqsEc2Url: String,
+  allowedTopicsForEc2Sender: List[String]
 )
 
 sealed trait WorkerConfiguration {
@@ -79,7 +85,13 @@ object Configuration {
       iosEditionSqsUrl = config.getString("iosEditionSqsCdkUrl"),
       androidLiveSqsUrl = config.getString("androidLiveSqsCdkUrl"),
       androidEditionSqsUrl = config.getString("androidEditionSqsCdkUrl"),
-      androidBetaSqsUrl = config.getString("androidBetaSqsCdkUrl")
+      androidBetaSqsUrl = config.getString("androidBetaSqsCdkUrl"),
+      iosLiveSqsEc2Url = config.getString("iosLiveSqsEc2Url"),
+      iosEditionSqsEc2Url = config.getString("iosEditionSqsEc2Url"),
+      androidLiveSqsEc2Url = config.getString("androidLiveSqsEc2Url"),
+      androidEditionSqsEc2Url = config.getString("androidEditionSqsEc2Url"),
+      androidBetaSqsEc2Url = config.getString("androidBetaSqsEc2Url"),
+      allowedTopicsForEc2Sender = if (config.hasPath("allowedTopicsForEc2Sender")) config.getString("allowedTopicsForEc2Sender").split(",").toList else List()
     )
   }
 
