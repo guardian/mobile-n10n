@@ -27,8 +27,8 @@ object SenderWorker extends App {
     .withRegion("eu-west-1")
     .build()
 
-  def pollQueue(queue: String, handleChunkTokens: (SQSEvent, Context) => Unit): Future[Unit] = Future {
-    logger.info(s"About to poll queue - $queue")
+  def pollQueue(queue: String, appName: String, handleChunkTokens: (SQSEvent, Context) => Unit): Future[Unit] = Future {
+    logger.info(s"About to poll queue - $appName")
     val receiveMessages = sqsClient.receiveMessage(new ReceiveMessageRequest().withQueueUrl(queue).withWaitTimeSeconds(20)).getMessages.asScala.toList
 
     def parsedReceivedMessages(message: List[Message]): SQSEvent = {
@@ -54,7 +54,7 @@ object SenderWorker extends App {
       logger.info("Successfully deleted message")
     })
 
-    logger.info(s"Finished polling $queue")
+    logger.info(s"Finished polling $appName")
 
   }
 
@@ -64,23 +64,23 @@ object SenderWorker extends App {
 
   logger.info("Sender worker - Ios started")
   val iosSender = new IOSSender(Configuration.fetchApns(config, Ios))
-  pollQueue(iosSender.config.sqsUrl, iosSender.handleChunkTokens)
+  pollQueue(iosSender.config.sqsUrl, "ios", iosSender.handleChunkTokens)
 
   logger.info("Sender worker - Android started")
   val androidSender = new AndroidSender(Configuration.fetchFirebase(config, Android), Some(Android.toString()))
-  pollQueue(androidSender.config.sqsUrl, androidSender.handleChunkTokens)
+  pollQueue(androidSender.config.sqsUrl, "android", androidSender.handleChunkTokens)
 
   logger.info("Sender worker - IosEdition started")
   val iosEditionSender = new IOSSender(Configuration.fetchApns(config, IosEdition))
-  pollQueue(iosEditionSender.config.sqsUrl, iosEditionSender.handleChunkTokens)
+  pollQueue(iosEditionSender.config.sqsUrl, "ios-edition", iosEditionSender.handleChunkTokens)
 
   logger.info("Sender worker - AndroidBeta started")
   val androidBetaSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidBeta), Some(AndroidBeta.toString()))
-  pollQueue(androidBetaSender.config.sqsUrl, androidBetaSender.handleChunkTokens)
+  pollQueue(androidBetaSender.config.sqsUrl,"android-beta", androidBetaSender.handleChunkTokens)
 
   logger.info("Sender worker - AndroidEdition started")
   val androidEditionSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidEdition), Some(AndroidEdition.toString()))
-  pollQueue(androidEditionSender.config.sqsUrl, androidEditionSender.handleChunkTokens)
+  pollQueue(androidEditionSender.config.sqsUrl, "android-edition", androidEditionSender.handleChunkTokens)
 
   logger.info("Sender worker all started")
   Thread.sleep(60*60*1000)
