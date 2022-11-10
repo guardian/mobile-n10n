@@ -8,7 +8,7 @@ import com.google.api.core.ApiFuture
 import com.google.firebase.{ErrorCode, FirebaseApp}
 import com.google.firebase.messaging.{BatchResponse, FirebaseMessaging, FirebaseMessagingException, SendResponse}
 import com.gu.notifications.worker.delivery.DeliveryException.{BatchCallFailedRequest, FailedRequest, InvalidToken, UnknownReasonFailedRequest}
-import com.gu.notifications.worker.delivery.{FcmDeliverySuccess, FcmPayload}
+import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryException, FcmBatchDeliverySuccess, FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import models.FcmConfig
 import org.specs2.mutable.Specification
@@ -25,19 +25,20 @@ import scala.util.{Failure, Success}
 class FcmClientTest extends Specification with Mockito {
   "the FcmClient" should {
     "Parse successful responses as an FcmDeliverySuccess" in new FcmScope {
-      fcmClient.parseSendResponse(notification.id, token, Success(notification.id.toString))(onCompleteCb)
+      val response = fcmClient.parseSendResponse(notification.id, token, Success(notification.id.toString))
 
-      deliverySuccess shouldEqual 1
+      response shouldEqual Right(FcmDeliverySuccess(token, notification.id.toString))
     }
 
     "Parse errors with an invalid token error code as an InvalidToken" in new FcmScope {
       // we have to mock because there is no public method for instantiating an error of this type
       val mockFirebaseMessagingException = Mockito.mock[FirebaseMessagingException]
       when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
+      when(mockFirebaseMessagingException.getMessage).thenReturn("invalid")
 
-      fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException))(onCompleteCb)
+      val response = fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException))
 
-      invalidTokens shouldEqual 1
+      response shouldEqual Left(InvalidToken(notification.id, token, "invalid"))
     }
 
     "Parse errors with NOT_FOUND error code and 'Requested entity was not found.' error message as an InvalidToken" in new FcmScope {
@@ -45,9 +46,9 @@ class FcmClientTest extends Specification with Mockito {
       when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.NOT_FOUND)
       when(mockFirebaseMessagingException.getMessage).thenReturn("Requested entity was not found.")
 
-      fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException))(onCompleteCb)
+      val response = fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException))
 
-      invalidTokens shouldEqual 1
+      response shouldEqual Left(InvalidToken(notification.id, token, "Requested entity was not found."))
     }
 
     "Parse catastrophic errors when sending multicast messages" in new FcmScope {
@@ -136,17 +137,21 @@ trait FcmScope extends Scope {
   var catastrophicBatchSendResponse = 0
   val batchInvalidTokens = ListBuffer.empty[String]
 
-  def onCompleteCb(message: Either[Throwable, FcmDeliverySuccess]): Unit = {
+  def onCompleteCb(message: Either[DeliveryException, BatchDeliverySuccess]): Unit = {
     message match {
-      case Right(_) =>
-        deliverySuccess += 1
-      case Left(InvalidToken(_, token, _, _)) =>
-        invalidTokens += 1
-        batchInvalidTokens += token
-      case Left(FailedRequest(_, _, _, _)) =>
-        failedRequest += 1
-      case Left(UnknownReasonFailedRequest(_, _)) =>
-        unknownReasonFailedRequest += 1
+      case Right(FcmBatchDeliverySuccess(responses, _)) =>
+            responses.foreach {
+              case Right(_) =>
+                deliverySuccess += 1
+              case Left(InvalidToken(_, token, _, _)) =>
+                invalidTokens += 1
+                batchInvalidTokens += token
+              case Left(FailedRequest(_, _, _, _)) =>
+                failedRequest += 1
+              case Left(UnknownReasonFailedRequest(_, _)) =>
+                unknownReasonFailedRequest += 1
+              case _ => otherResponse += 1
+            }
       case Left(BatchCallFailedRequest(_, _)) =>
         catastrophicBatchSendResponse += 1
       case _ => otherResponse += 1

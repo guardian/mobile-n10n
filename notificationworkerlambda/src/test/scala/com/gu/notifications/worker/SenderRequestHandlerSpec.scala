@@ -10,7 +10,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery.apns.ApnsClient
-import com.gu.notifications.worker.delivery.{ApnsDeliverySuccess, DeliveryException, DeliveryService}
+import com.gu.notifications.worker.delivery.{ApnsBatchDeliverySuccess, ApnsDeliverySuccess, BatchDeliverySuccess, DeliveryException, DeliveryService}
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.ChunkedTokens
 import com.gu.notifications.worker.utils.Cloudwatch
@@ -122,9 +122,8 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           deliveries
         }
 
-        override def sendBatch(notification: Notification, tokens: List[String]): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
-          deliveryCallsCount += 1
-          deliveries
+        override def sendBatch(notification: Notification, tokens: List[String]): Stream[IO, Either[DeliveryException, ApnsBatchDeliverySuccess]] = {
+          Stream(Right(ApnsBatchDeliverySuccess(List(), notification.id.toString)))
         }
       })
 
