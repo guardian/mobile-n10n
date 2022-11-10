@@ -51,7 +51,6 @@ class CloudwatchImpl extends Cloudwatch {
         countDatum("dryrun", results.dryRunCount, dimension),
         countDatum("total", results.total, dimension)
       )
-
       val req = new PutMetricDataRequest()
         .withNamespace(s"Notifications/$stage/workers")
         .withMetricData(metrics.asJava)
