@@ -68,6 +68,6 @@ trait Logging {
       "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
       "worker.notificationSendMethod" -> { if (isIndividualNotificationSend) "individual" else "batch" }
-    ) ++ maybeAwsMetric
+    )
   }
 }
