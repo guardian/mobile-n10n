@@ -36,12 +36,11 @@ class CloudwatchImpl extends Cloudwatch {
       .withValue(value.toDouble)
       .withDimensions(dimension)
 
-  private def metricDatum(name: String, unit: StandardUnit, value: Double, dimension: Dimension) =
+  private def perfMetricDatum(name: String, unit: StandardUnit, value: Double) =
     new MetricDatum()
       .withMetricName(name)
       .withUnit(unit)
       .withValue(value)
-      .withDimensions(dimension)
 
   def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = _.evalMap { results =>
     IO.delay {
@@ -63,11 +62,11 @@ class CloudwatchImpl extends Cloudwatch {
 
   def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit = performanceData =>
     if (enablePerformanceMetric) {
-        val perfDimension = new Dimension().withName("platform").withValue(performanceData.platform)
-          .withName("type").withValue(performanceData.notificationType)
+        val dimension1 = new Dimension().withName("platform").withValue(performanceData.platform)
+        val dimension2 = new Dimension().withName("type").withValue(performanceData.notificationType)
         val perfMetrics: Seq[MetricDatum] = Seq(
-          metricDatum("worker.notificationProcessingTime", StandardUnit.Milliseconds, performanceData.notificationProcessingTime.toDouble, perfDimension),
-          metricDatum("worker.functionProcessingRate", StandardUnit.None, performanceData.functionProcessingRate, perfDimension),
+          perfMetricDatum("worker.notificationProcessingTime", StandardUnit.Milliseconds, performanceData.notificationProcessingTime.toDouble).withDimensions(dimension1, dimension2),
+          perfMetricDatum("worker.functionProcessingRate", StandardUnit.None, performanceData.functionProcessingRate).withDimensions(dimension1, dimension2),
         )
         val req = new PutMetricDataRequest()
           .withNamespace(s"Notifications/$stage/workers")
