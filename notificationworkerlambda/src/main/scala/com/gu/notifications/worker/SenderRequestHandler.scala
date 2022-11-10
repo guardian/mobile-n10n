@@ -36,9 +36,15 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
   def reportSuccesses[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${chunkedTokens.notification.id} ${chunkedTokens.range})"
+    val enableAwsMetric = true
+    // chunkedTokens.notification.dryRun match {
+    //   case Some(true) => false
+    //   case _          => true
+    // }
+
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
-      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform), prefix = s"Results $notificationLog: "))
-      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime))
+      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
+      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
   }
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
