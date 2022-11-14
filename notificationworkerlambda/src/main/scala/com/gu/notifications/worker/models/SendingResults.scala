@@ -28,3 +28,14 @@ object SendingResults {
   }
 }
 
+case class PerformanceMetrics(
+  notificationId: String,
+  platform: String,
+  notificationType: String,
+  functionProcessingRate: Double,
+  functionProcessingTime: Long,
+  notificationProcessingTime: Long,
+  notificationProcessingStartTime: Long,
+  notificationProcessingEndTime: Long
+)
+
