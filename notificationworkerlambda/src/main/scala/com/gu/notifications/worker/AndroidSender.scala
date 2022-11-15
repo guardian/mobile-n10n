@@ -37,10 +37,10 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
 
   //override the deliverChunkedTokens method to validate the success of sending batch notifications to the FCM client. This implementation could be refactored in the future to make it more streamlined with APNs
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant)]): Stream[IO, Unit] = {
-    for {
-      (chunkedTokens, sentTime, functionStartTime) <- chunkedTokenStream
-      isAllowedToSendBatch = chunkedTokens.notification.topic.forall(topic => config.allowedTopicsForBatchSend.contains(topic.toString))
-      resp <- {
+    chunkedTokenStream.map {
+      case (chunkedTokens, sentTime, functionStartTime) =>
+        val isAllowedToSendBatch = chunkedTokens.notification.topic.forall(topic => config.allowedTopicsForBatchSend.contains(topic.toString))
+
         if (isAllowedToSendBatch) {
           logger.info(s"Allowed to send notification ${chunkedTokens.notification.id} to topics ${chunkedTokens.notification.topic} in batches")
           deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
@@ -48,15 +48,13 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
               reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime),
               cleanupBatchFailures(chunkedTokens.notification.id),
               trackBatchProgress(chunkedTokens.notification.id))
-        }
-        else
+        } else
           deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
             .broadcastTo(
               reportSuccesses(chunkedTokens, sentTime, functionStartTime),
               cleanupFailures,
               trackProgress(chunkedTokens.notification.id))
-      }
-    } yield resp
+    }.parJoin(maxConcurrency)
   }
 
   def deliverBatchNotificationStream[C <: FcmClient](batchNotificationStream: Stream[IO, BatchNotification]): Stream[IO, Either[DeliveryException, C#BatchSuccess]] = for {

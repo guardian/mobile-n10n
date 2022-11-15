@@ -463,7 +463,7 @@ Object {
         "androidSenderSqsCF269D3F",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -932,7 +932,7 @@ Object {
         "androidbetaSenderSqs57513D18",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -1401,7 +1401,7 @@ Object {
         "androideditionSenderSqs400C0F3A",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -1870,7 +1870,7 @@ Object {
         "iosSenderSqsA94CB0A0",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -2299,7 +2299,7 @@ Object {
         "ioseditionSenderSqsFDE339AC",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [

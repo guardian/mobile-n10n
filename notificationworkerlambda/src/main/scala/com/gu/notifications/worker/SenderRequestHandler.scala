@@ -69,15 +69,15 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   } yield resp
 
   def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant)]): Stream[IO, Unit] = {
-    for {
-      (chunkedTokens, sentTime, functionStartTime) <- chunkedTokenStream
-      individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
-      resp <- deliverIndividualNotificationStream(individualNotifications)
-        .broadcastTo(
-          reportSuccesses(chunkedTokens, sentTime, functionStartTime),
-          cleanupFailures,
-          trackProgress(chunkedTokens.notification.id))
-    } yield resp
+    chunkedTokenStream.map {
+      case (chunkedTokens, sentTime, functionStartTime) =>
+        val individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
+        deliverIndividualNotificationStream(individualNotifications)
+          .broadcastTo(
+            reportSuccesses(chunkedTokens, sentTime, functionStartTime),
+            cleanupFailures,
+            trackProgress(chunkedTokens.notification.id))
+      }.parJoin(maxConcurrency)
   }
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {

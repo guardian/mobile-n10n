@@ -115,7 +115,7 @@ class SenderWorker extends cdkcore.Construct  {
     })
 
     const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
-      batchSize: 1,
+      batchSize: 20,
       enabled: true,
       eventSourceArn: this.senderSqs.queueArn,
       target: senderLambdaCtr
