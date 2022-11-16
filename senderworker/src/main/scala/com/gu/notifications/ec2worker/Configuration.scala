@@ -33,7 +33,7 @@ object Configuration {
     ApnsWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       config.getString("sqsEc2Url"),
-//      config.getString("sqsEc2Name"),
+      config.getString("sqsEc2Name"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
@@ -56,7 +56,7 @@ object Configuration {
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       config.getString("sqsEc2Url"),
-//      config.getString("sqsEc2Name"),
+      config.getString("sqsEc2Name"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),

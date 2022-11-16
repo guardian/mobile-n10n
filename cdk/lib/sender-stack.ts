@@ -150,18 +150,18 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 				},
 			);
 
-			// //this advertises the name of the ec2 worker queue
-			// new StringParameter(
-			// 	this,
-			// 	`SenderWorkerQueueNameEc2SSMParameter-${platformName}`,
-			// 	{
-			// 		parameterName: `/notifications/${this.stage}/ec2workers/${platformName}/sqsEc2Name`,
-			// 		simpleName: false,
-			// 		stringValue: senderSqs.queueName,
-			// 		tier: ParameterTier.STANDARD,
-			// 		dataType: ParameterDataType.TEXT,
-			// 	},
-			// );
+			//this advertises the name of the ec2 worker queue
+			new StringParameter(
+				this,
+				`SenderWorkerQueueNameEc2SSMParameter-${platformName}`,
+				{
+					parameterName: `/notifications/${this.stage}/ec2workers/${platformName}/sqsEc2Name`,
+					simpleName: false,
+					stringValue: senderSqs.queueName,
+					tier: ParameterTier.STANDARD,
+					dataType: ParameterDataType.TEXT,
+				},
+			);
 
 			//this advertises the url of the worker queue
 			new StringParameter(
@@ -176,18 +176,18 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 				},
 			);
 
-			// //this advertises the name of the worker queue
-			// new StringParameter(
-			// 	this,
-			// 	`SenderWorkerQueueNameSSMParameter-${platformName}`,
-			// 	{
-			// 		parameterName: `/notifications/${this.stage}/workers/${platformName}/sqsName`,
-			// 		simpleName: false,
-			// 		stringValue: senderSqs.queueName,
-			// 		tier: ParameterTier.STANDARD,
-			// 		dataType: ParameterDataType.TEXT,
-			// 	},
-			// );
+			//this advertises the name of the worker queue
+			new StringParameter(
+				this,
+				`SenderWorkerQueueNameSSMParameter-${platformName}`,
+				{
+					parameterName: `/notifications/${this.stage}/workers/${platformName}/sqsName`,
+					simpleName: false,
+					stringValue: senderSqs.queueName,
+					tier: ParameterTier.STANDARD,
+					dataType: ParameterDataType.TEXT,
+				},
+			);
 
 			return senderSqs;
 		};

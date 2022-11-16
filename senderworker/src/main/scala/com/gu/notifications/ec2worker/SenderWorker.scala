@@ -49,32 +49,33 @@ object SenderWorker extends App {
 
   class ReceiverCallback(queueUrl: String, handleChunkTokens: (SQSEvent, Context) => Unit) extends MessageListener {
 
-    def parsedReceivedMessages(message: jms.Message): SQSEvent = {
+    def parsedReceivedMessages(message: jms.Message): Option[SQSEvent] = {
 
-      message match {
-        case textMessage: TextMessage => println(s"Text message: ${textMessage.getText}")
-        case objectMessage: ObjectMessage => println(s"Object message: ${objectMessage.getObject}")
+     message match {
+        case textMessage: TextMessage => {
+          val sqsMessage = new SQSMessage()
+          sqsMessage.setBody(textMessage.getText)
+          sqsMessage.setAttributes(Map("SentTimestamp" -> textMessage.getJMSTimestamp.toString).asJava)
+          val event = new SQSEvent()
+          event.setRecords(List(sqsMessage).asJava)
+          Some(event)
+          }
+        case _ => None
       }
-
-      //      val parsedMessages = {
-      //        val sqsMessage = new SQSMessage()
-      //        sqsMessage.setBody(message)
-      //        sqsMessage.setAttributes(message)
-      //        sqsMessage.setReceiptHandle(message.getReceiptHandle)
-      //        sqsMessage
-      //      }
-
-      val event = new SQSEvent()
-      //            event.setRecords(parsedMessages.asJava)
-      event
     }
-
-//    val parsedEvent: SQSEvent = parsedReceivedMessages()
 
     override def onMessage(message: jms.Message): Unit = {
       println("JMS message received")
-      handleChunkTokens(parsedReceivedMessages(message), null)
-      message.acknowledge()
+      val parsedEvent = parsedReceivedMessages(message)
+      parsedEvent match {
+        case Some(event) => {
+          handleChunkTokens(event, null)
+          message.acknowledge()
+        }
+        case None => {
+          logger.error("Cannot parse message")
+        }
+      }
     }
   }
 
@@ -97,24 +98,24 @@ object SenderWorker extends App {
 
   logger.info("Sender worker - Ios started")
   val iosSender = new IOSSender(Configuration.fetchApns(config, Ios))
-  listenForMessages("notification-sender-workers-ec2-CODE-SenderSqsios636F1B52-khVE8tvZpkqb", iosSender.config.sqsUrl, "ios", iosSender.handleChunkTokens)
+  listenForMessages(iosSender.config.sqsName, iosSender.config.sqsUrl, "ios", iosSender.handleChunkTokens)
 
-//  logger.info("Sender worker - Android started")
-//  val androidSender = new AndroidSender(Configuration.fetchFirebase(config, Android), Some(Android.toString()))
-//  listenForMessages(androidSender.config.sqsName, androidSender.config.sqsUrl, "android", androidSender.handleChunkTokens)
-//
-//  logger.info("Sender worker - IosEdition started")
-//  val iosEditionSender = new IOSSender(Configuration.fetchApns(config, IosEdition))
-//  listenForMessages(iosEditionSender.config.sqsName, iosEditionSender.config.sqsUrl, "ios-edition", iosEditionSender.handleChunkTokens)
-//
-//  logger.info("Sender worker - AndroidBeta started")
-//  val androidBetaSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidBeta), Some(AndroidBeta.toString()))
-//  listenForMessages(androidBetaSender.config.sqsName, androidBetaSender.config.sqsUrl,"android-beta", androidBetaSender.handleChunkTokens)
-//
-//  logger.info("Sender worker - AndroidEdition started")
-//  val androidEditionSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidEdition), Some(AndroidEdition.toString()))
-//  listenForMessages(androidEditionSender.config.sqsName, androidEditionSender.config.sqsUrl, "android-edition", androidEditionSender.handleChunkTokens)
+  logger.info("Sender worker - Android started")
+  val androidSender = new AndroidSender(Configuration.fetchFirebase(config, Android), Some(Android.toString()))
+  listenForMessages(androidSender.config.sqsName, androidSender.config.sqsUrl, "android", androidSender.handleChunkTokens)
 
-//  logger.info("Sender worker all started")
+  logger.info("Sender worker - IosEdition started")
+  val iosEditionSender = new IOSSender(Configuration.fetchApns(config, IosEdition))
+  listenForMessages(iosEditionSender.config.sqsName, iosEditionSender.config.sqsUrl, "ios-edition", iosEditionSender.handleChunkTokens)
+
+  logger.info("Sender worker - AndroidBeta started")
+  val androidBetaSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidBeta), Some(AndroidBeta.toString()))
+  listenForMessages(androidBetaSender.config.sqsName, androidBetaSender.config.sqsUrl,"android-beta", androidBetaSender.handleChunkTokens)
+
+  logger.info("Sender worker - AndroidEdition started")
+  val androidEditionSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidEdition), Some(AndroidEdition.toString()))
+  listenForMessages(androidEditionSender.config.sqsName, androidEditionSender.config.sqsUrl, "android-edition", androidEditionSender.handleChunkTokens)
+
+  logger.info("Sender worker all started")
 
 }
