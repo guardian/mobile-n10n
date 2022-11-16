@@ -474,6 +474,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androidSenderLambdaCtr85CB623B",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -943,6 +944,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -1412,6 +1414,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androideditionSenderLambdaCtrF0169D16",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -1881,6 +1884,7 @@ Object {
         "FunctionName": Object {
           "Ref": "iosSenderLambdaCtr6053C1F8",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -2310,6 +2314,7 @@ Object {
         "FunctionName": Object {
           "Ref": "ioseditionSenderLambdaCtr2410D4D7",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
