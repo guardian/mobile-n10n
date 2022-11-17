@@ -463,7 +463,7 @@ Object {
         "androidSenderSqsCF269D3F",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -474,6 +474,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androidSenderLambdaCtr85CB623B",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -932,7 +933,7 @@ Object {
         "androidbetaSenderSqs57513D18",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -943,6 +944,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -1401,7 +1403,7 @@ Object {
         "androideditionSenderSqs400C0F3A",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -1412,6 +1414,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androideditionSenderLambdaCtrF0169D16",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -1870,7 +1873,7 @@ Object {
         "iosSenderSqsA94CB0A0",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -1881,6 +1884,7 @@ Object {
         "FunctionName": Object {
           "Ref": "iosSenderLambdaCtr6053C1F8",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -2299,7 +2303,7 @@ Object {
         "ioseditionSenderSqsFDE339AC",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -2310,6 +2314,7 @@ Object {
         "FunctionName": Object {
           "Ref": "ioseditionSenderLambdaCtr2410D4D7",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },

@@ -39,13 +39,7 @@ object NotificationParser extends Logging {
 
   private def parseChunkedTokens(json: JsValue): ChunkedTokens = {
     json.validate[ChunkedTokens] match {
-      case JsSuccess(chunkedTokens, _) => {
-        logger.info(Map(
-          "worker.chunkTokenSize" -> chunkedTokens.tokens.size,
-          "notificationId" -> chunkedTokens.notification.id
-        ), "Parsed chunk tokens")
-        chunkedTokens
-      }
+      case JsSuccess(chunkedTokens, _) => chunkedTokens
       case JsError(errors) => throw new RuntimeException(s"Unable to parse message $errors")
     }
   }
