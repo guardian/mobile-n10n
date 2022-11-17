@@ -31,6 +31,8 @@ trait Logging {
         notificationProcessingTime = metricsField.get("worker.notificationProcessingTime").get.asInstanceOf[Long],
         notificationProcessingStartTime = metricsField.get("worker.notificationProcessingStartTime.millis").get.asInstanceOf[Long],
         notificationProcessingEndTime = metricsField.get("worker.notificationProcessingEndTime.millis").get.asInstanceOf[Long],
+        sqsMessageBatchSize = metricsField("sqsMessageBatchSize").asInstanceOf[Int],
+        chunkTokenSize = metricsField("worker.chunkTokenSize").asInstanceOf[Int]
       )
     }
   }
@@ -47,7 +49,8 @@ trait Logging {
     sentTime: Long,
     functionStartTime: Instant,
     maybePlatform: Option[Platform],
-    isIndividualNotificationSend: Boolean = true
+    isIndividualNotificationSend: Boolean = true,
+    sqsMessageBatchSize: Int,
   )(end: Instant): Map[String, Any] = {
     val processingTime = Duration.between(functionStartTime, end).toMillis
     val processingRate = numberOfTokens.toDouble / processingTime * 1000
@@ -67,7 +70,9 @@ trait Logging {
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-      "worker.notificationSendMethod" -> { if (isIndividualNotificationSend) "individual" else "batch" }
+      "worker.notificationSendMethod" -> { if (isIndividualNotificationSend) "individual" else "batch" },
+      "sqsMessageBatchSize" -> sqsMessageBatchSize,
+      "worker.chunkTokenSize" -> numberOfTokens,
     )
   }
 }
