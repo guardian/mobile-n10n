@@ -1,6 +1,9 @@
 import 'source-map-support/register';
 import { App } from 'aws-cdk-lib';
+import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
+import { SenderWorkerStack } from '../lib/sender-stack';
+import { SloMonitoring } from '../lib/slo-monitoring';
 
 const app = new App();
 
@@ -27,3 +30,47 @@ export const dbProxyProdProps = {
 
 new RegistrationsDbProxy(app, 'RegistrationsDbProxy-CODE', dbProxyCodeProps);
 new RegistrationsDbProxy(app, 'RegistrationsDbProxy-PROD', dbProxyProdProps);
+
+new SloMonitoring(app, 'SloMonitor-CODE', {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+});
+
+new SloMonitoring(app, 'SloMonitor-PROD', {
+	stack: 'mobile-notifications',
+	stage: 'PROD',
+});
+
+export const senderCodeProps = {
+	appName: 'sender-worker',
+	stack: 'mobile-notifications-workers',
+	stage: 'CODE',
+	asgCapacity: {
+		minimumInstances: 1,
+		maximumInstances: 2,
+	},
+	instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
+	targetCpuUtilization: 20,
+	notificationSnsTopic:
+		'arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsCODE',
+	cleanerQueueArn:
+		'arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-registration-cleaning-worker-CODE-Sqs-1CFISZQCN49SR',
+};
+new SenderWorkerStack(app, 'SenderWorker-CODE', senderCodeProps);
+
+export const senderProdProps = {
+	appName: 'sender-worker',
+	stack: 'mobile-notifications-workers',
+	stage: 'PROD',
+	asgCapacity: {
+		minimumInstances: 1,
+		maximumInstances: 2,
+	},
+	instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
+	targetCpuUtilization: 20,
+	notificationSnsTopic:
+		'arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsPROD',
+	cleanerQueueArn:
+		'arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-registration-cleaning-worker-PROD-Sqs-12LNONCNWBRWK',
+};
+new SenderWorkerStack(app, 'SenderWorker-PROD', senderProdProps);

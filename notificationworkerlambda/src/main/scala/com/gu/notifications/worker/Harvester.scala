@@ -11,10 +11,11 @@ import db._
 import doobie.util.transactor.Transactor
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
+import org.threeten.bp.ZoneOffset
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.jdk.CollectionConverters._
-import java.time.{Duration, Instant}
+import java.time.{Duration, Instant, LocalDateTime, ZoneId}
 
 sealed trait WorkerSqs
 object WorkerSqs {
@@ -25,6 +26,14 @@ object WorkerSqs {
   case object IosEditionWorkerSqs extends WorkerSqs
 }
 
+case class SqsDeliveryStack(
+  iosLiveDeliveryService: SqsDeliveryService[IO],
+  iosEditionDeliveryService: SqsDeliveryService[IO],
+  androidLiveDeliveryService: SqsDeliveryService[IO],
+  androidEditionDeliveryService: SqsDeliveryService[IO],
+  androidBetaDeliveryService: SqsDeliveryService[IO]
+)
+
 trait HarvesterRequestHandler extends Logging {
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
@@ -32,16 +41,13 @@ trait HarvesterRequestHandler extends Logging {
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
   val env = Env()
 
-  val iosLiveDeliveryService: SqsDeliveryService[IO]
-  val iosEditionDeliveryService: SqsDeliveryService[IO]
-  val androidLiveDeliveryService: SqsDeliveryService[IO]
-  val androidEditionDeliveryService: SqsDeliveryService[IO]
-  val androidBetaDeliveryService: SqsDeliveryService[IO]
-
+  val lambdaServiceSet: SqsDeliveryStack
+  val ec2ServiceSet: SqsDeliveryStack
   val jdbcConfig: JdbcConfig
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
   val supportedPlatforms = List(Ios, Android, IosEdition, AndroidEdition)
+  val allowedTopicsForEc2Sender: List[String]
 
   def logErrors(prefix: String = ""): Pipe[IO, Throwable, Unit] = throwables => {
     throwables.map(throwable => logger.warn(s"${prefix}Error queueing", throwable))
@@ -69,6 +75,17 @@ trait HarvesterRequestHandler extends Logging {
 
   }
 
+  def switchStack(topics: List[_root_.models.Topic]): SqsDeliveryStack = {
+    if (topics.forall(topic => allowedTopicsForEc2Sender.contains(topic.toString))) {
+      logger.info("Switch to EC2-based sender"); 
+      ec2ServiceSet
+    } else {
+      logger.info("Switch to lambda-based sender"); 
+      lambdaServiceSet
+    }
+  }
+
+
   def routeToSqs: PartialFunction[HarvestedToken, (WorkerSqs, HarvestedToken)] = {
     case token @ HarvestedToken(_, Ios, _) => (WorkerSqs.IosWorkerSqs, token)
     case token @ HarvestedToken(_, IosEdition, _) => (WorkerSqs.IosEditionWorkerSqs, token)
@@ -80,12 +97,13 @@ trait HarvesterRequestHandler extends Logging {
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
     for {
       shardedNotification <- shardedNotifications
+      deliveryStack = switchStack(shardedNotification.notification.topic)
       notificationId = shardedNotification.notification.id
-      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, androidLiveDeliveryService)
-      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, androidBetaDeliveryService)
-      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, androidEditionDeliveryService)
-      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, iosLiveDeliveryService)
-      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, iosEditionDeliveryService)
+      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, deliveryStack.androidLiveDeliveryService)
+      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, deliveryStack.androidBetaDeliveryService)
+      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, deliveryStack.androidEditionDeliveryService)
+      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, deliveryStack.iosLiveDeliveryService)
+      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, deliveryStack.iosEditionDeliveryService)
       notificationLog = s"(notification: $notificationId ${shardedNotification.range})"
       _ = logger.info(Map("notificationId" -> notificationId), s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
@@ -96,15 +114,12 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def processNotification(event: SQSEvent, tokenService: TokenService[IO]) = {
-    val start = Instant.now
-    val records = event.getRecords.asScala.toList.map(r => r.getBody).map(NotificationParser.parseShardNotificationEvent)
-    records.foreach(record =>
-      logger.info(Map(
-        "notificationId" -> record.notification.id,
-        "harvester.notificationProcessingStartTime.millis" -> start.toEpochMilli,
-        "harvester.notificationProcessingStartTime.string" -> start.toString,
+    val records = event.getRecords.asScala.toList.map(r => (NotificationParser.parseShardNotificationEvent(r.getBody), r.getAttributes))
+    records.foreach {
+      case (body, _) => logger.info(Map(
+        "notificationId" -> body.notification.id,
       ), "Parsed notification event")
-    )
+    }
     val shardNotificationStream: Stream[IO, ShardedNotification] = Stream.emits(event.getRecords.asScala)
       .map(r => r.getBody)
       .map(NotificationParser.parseShardNotificationEvent)
@@ -115,25 +130,47 @@ trait HarvesterRequestHandler extends Logging {
         .unsafeRunSync()
     }catch {
       case e: Throwable => {
-        records.foreach(record =>
-          logger.error(Map(
-            "notificationId" -> record.notification.id,
-            "notificationType" -> record.notification.`type`.toString,
-          ), s"Error occurred: ${e.getMessage}", e)
-        )
+        records.foreach {
+          case (body, _) =>
+            logger.error(Map(
+              "notificationId" -> body.notification.id,
+              "notificationType" -> body.notification.`type`.toString,
+            ), s"Error occurred: ${e.getMessage}", e)
+        }
         throw e
       }
     }finally {
-      val end = Instant.now
-      records.foreach(record =>
-        logger.info(Map(
-          "notificationId" -> record.notification.id,
-          "notificationType" -> record.notification.`type`.toString,
-          "harvester.notificationProcessingTime" -> Duration.between(start, end).toMillis,
-          "harvester.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-          "harvester.notificationProcessingEndTime.string" -> end.toString,
-        ), "Finished processing notification event")
-      )
+      records.foreach {
+        case (body, attributes) => {
+          val end = Instant.now
+          val sentTime = Instant.ofEpochMilli(attributes.getOrDefault("SentTimestamp", "0").toLong)
+
+          logger.info(Map(
+            "_aws" -> Map(
+              "Timestamp" -> end.toEpochMilli,
+              "CloudWatchMetrics" -> List(Map(
+                "Namespace" -> s"Notifications/${env.stage}/harvester",
+                "Dimensions" -> List(List("type")),
+                "Metrics" -> List(Map(
+                  "Name" -> "harvester.notificationProcessingTime",
+                  "Unit" -> "Milliseconds"
+                ))
+              ))
+            ),
+            "harvester.notificationProcessingTime" -> Duration.between(sentTime, end).toMillis,
+            "harvester.notificationProcessingEndTime.millis" -> end.toEpochMilli,
+            "harvester.notificationProcessingStartTime.millis" -> sentTime.toEpochMilli,
+            "notificationId" -> body.notification.id,
+            "notificationType" -> body.notification.`type`.toString,
+            "type" -> {
+              body.notification.`type` match {
+                case _root_.models.NotificationType.BreakingNews => "breakingNews"
+                case _ => "other"
+              }
+            }
+          ), "Finished processing notification event")
+        }
+      }
     }
   }
 
@@ -161,9 +198,24 @@ class Harvester extends HarvesterRequestHandler {
   override val jdbcConfig: JdbcConfig = config.jdbcConfig
 
   override val cloudwatch: Cloudwatch = new CloudwatchImpl
-  override val iosLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsUrl)
-  override val androidLiveDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsUrl)
-  override val iosEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl)
-  override val androidEditionDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl)
-  override val androidBetaDeliveryService: SqsDeliveryService[IO] = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
+
+  override val lambdaServiceSet = SqsDeliveryStack(
+   iosLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsUrl),
+   androidLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsUrl),
+   iosEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl),
+   androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl),
+   androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
+  )
+
+  override val ec2ServiceSet = SqsDeliveryStack(
+   iosLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsEc2Url),
+   androidLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsEc2Url),
+   iosEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsEc2Url),
+   androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsEc2Url),
+   androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsEc2Url)
+  )
+
+  override val allowedTopicsForEc2Sender = config.allowedTopicsForEc2Sender
+
+  logger.info(s"Allowed topics for EC2 sender: ${config.allowedTopicsForEc2Sender}")
 }

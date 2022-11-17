@@ -1,14 +1,12 @@
 package com.gu.notifications.events
 
-import java.time.ZonedDateTime
+import java.time.{Duration, ZonedDateTime}
 import java.util.concurrent.{Executors, ScheduledExecutorService}
-
 import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.athena.{AmazonAthenaAsync, AmazonAthenaAsyncClient}
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
-import com.football.notifications.events.AthenaMetrics
 
 import scala.beans.BeanProperty
 
@@ -22,8 +20,11 @@ class LambdaParameters{
 case class ReportingWindow(start: ZonedDateTime, end: ZonedDateTime, reIndex: Boolean)
 
 object ReportingWindow {
+
+  val reportingWindow: Duration = Duration.ofHours(3)
+
   def default = ReportingWindow(
-    start = ZonedDateTime.now().minus(AthenaMetrics.reportingWindow),
+    start = ZonedDateTime.now().minus(reportingWindow),
     end = ZonedDateTime.now(),
     reIndex = true
   )

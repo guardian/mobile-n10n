@@ -115,6 +115,16 @@ Resources:
                 - ","
                 - "Fn::ImportValue":
                     "Fn::Sub": 'NotificationSenderWorkerQueueArns-${Stage}'
+      - PolicyName: SQSOutputForEc2
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action: sqs:*
+            Resource:
+              "Fn::Split":
+                - ","
+                - "Fn::ImportValue":
+                    "Fn::Sub": 'NotificationEc2SenderWorkerQueueArns-${Stage}'
       - PolicyName: VPC
         PolicyDocument:
           Statement:
@@ -161,8 +171,9 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
       Description: Consumes events produced by the notification service and fetches batches of tokens for senders to send
-      MemorySize: 3008
+      MemorySize: 10240
       Role: !GetAtt ExecutionRole.Arn
       Timeout: 60
       ReservedConcurrentExecutions: 200

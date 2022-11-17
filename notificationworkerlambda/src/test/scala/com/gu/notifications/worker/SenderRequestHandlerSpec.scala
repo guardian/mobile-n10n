@@ -1,7 +1,5 @@
 package com.gu.notifications.worker
 
-import java.util.UUID
-
 import _root_.models.Importance._
 import _root_.models.Link._
 import _root_.models.TopicTypes._
@@ -12,9 +10,9 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery.apns.ApnsClient
-import com.gu.notifications.worker.delivery.{ApnsDeliverySuccess, DeliveryException, DeliveryService}
+import com.gu.notifications.worker.delivery.{ApnsBatchDeliverySuccess, ApnsDeliverySuccess, BatchDeliverySuccess, DeliveryException, DeliveryService}
 import com.gu.notifications.worker.models.SendingResults
-import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService}
+import com.gu.notifications.worker.tokens.ChunkedTokens
 import com.gu.notifications.worker.utils.Cloudwatch
 import fs2.{Chunk, Pipe, Stream}
 import org.slf4j.Logger
@@ -23,7 +21,10 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import play.api.libs.json.Json
 
+import java.util.UUID
 import scala.jdk.CollectionConverters._
+import java.time.Instant
+import com.gu.notifications.worker.models.PerformanceMetrics
 
 class SenderRequestHandlerSpec extends Specification with Matchers {
 
@@ -95,6 +96,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
       sqsMessage.setBody(Json.stringify(Json.toJson(chunkedTokens)))
+      sqsMessage.setAttributes((Map("SentTimestamp" -> "10").asJava))
       event.setRecords(List(sqsMessage).asJava)
       event
     }
@@ -119,6 +121,10 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           deliveryCallsCount += 1
           deliveries
         }
+
+        override def sendBatch(notification: Notification, tokens: List[String]): Stream[IO, Either[DeliveryException, ApnsBatchDeliverySuccess]] = {
+          Stream(Right(ApnsBatchDeliverySuccess(List(), notification.id.toString)))
+        }
       })
 
       override val cleaningClient: CleaningClient = new CleaningClient {
@@ -132,6 +138,9 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       }
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
+
+        override def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit = _ => ()
+
         override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = { stream =>
           cloudwatchCallsCount += 1
           stream.map { results =>

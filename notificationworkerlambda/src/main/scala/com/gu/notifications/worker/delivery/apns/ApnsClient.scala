@@ -25,6 +25,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   type Success = ApnsDeliverySuccess
   type Payload = ApnsPayload
+  type BatchSuccess = ApnsBatchDeliverySuccess
   val dryRun = config.dryRun
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
   private val timer = new Timer("ios-worker-timeout", true)
@@ -42,7 +43,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
   def payloadBuilder: Notification => Option[ApnsPayload] = apnsPayloadBuilder.apply _
 
   def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
-    (onComplete: Either[Throwable, Success] => Unit)
+    (onComplete: Either[DeliveryException, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit = {
 
     val pushNotification = new SimpleApnsPushNotification(
@@ -101,6 +102,12 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
       futureResult.addListener(handler)
     }
   }
+
+  def sendBatchNotification(notificationId: UUID, token: List[String], payload: Payload, dryRun: Boolean)
+    (onComplete: Either[DeliveryException, BatchSuccess] => Unit)
+    (implicit executionContext: ExecutionContextExecutor): Unit = {
+      logger.info("not implemented")
+    }
 
   private def invalidationTime(timeToLive: Long) : DateTime = DateTime.now().plus(timeToLive)
 }

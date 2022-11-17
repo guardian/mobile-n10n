@@ -8,13 +8,21 @@ import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Pla
 import com.gu.{AppIdentity, AwsIdentity}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 
+import scala.jdk.CollectionConverters.CollectionHasAsScala
+
 case class HarvesterConfiguration(
   jdbcConfig: JdbcConfig,
   iosLiveSqsUrl: String,
   iosEditionSqsUrl: String,
   androidLiveSqsUrl: String,
   androidEditionSqsUrl: String,
-  androidBetaSqsUrl: String
+  androidBetaSqsUrl: String,
+  iosLiveSqsEc2Url: String,
+  iosEditionSqsEc2Url: String,
+  androidLiveSqsEc2Url: String,
+  androidEditionSqsEc2Url: String,
+  androidBetaSqsEc2Url: String,
+  allowedTopicsForEc2Sender: List[String]
 )
 
 sealed trait WorkerConfiguration {
@@ -23,12 +31,17 @@ sealed trait WorkerConfiguration {
 
 case class ApnsWorkerConfiguration(
   cleaningSqsUrl: String,
-  apnsConfig: ApnsConfig
+  sqsUrl: String,
+  apnsConfig: ApnsConfig,
+  threadPoolSize: Int
 ) extends WorkerConfiguration
 
 case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
-  fcmConfig: FcmConfig
+  sqsUrl: String,
+  fcmConfig: FcmConfig,
+  threadPoolSize: Int,
+  allowedTopicsForBatchSend: List[String],
 ) extends WorkerConfiguration
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
@@ -72,7 +85,13 @@ object Configuration {
       iosEditionSqsUrl = config.getString("iosEditionSqsCdkUrl"),
       androidLiveSqsUrl = config.getString("androidLiveSqsCdkUrl"),
       androidEditionSqsUrl = config.getString("androidEditionSqsCdkUrl"),
-      androidBetaSqsUrl = config.getString("androidBetaSqsCdkUrl")
+      androidBetaSqsUrl = config.getString("androidBetaSqsCdkUrl"),
+      iosLiveSqsEc2Url = config.getString("iosLiveSqsEc2Url"),
+      iosEditionSqsEc2Url = config.getString("iosEditionSqsEc2Url"),
+      androidLiveSqsEc2Url = config.getString("androidLiveSqsEc2Url"),
+      androidEditionSqsEc2Url = config.getString("androidEditionSqsEc2Url"),
+      androidBetaSqsEc2Url = config.getString("androidBetaSqsEc2Url"),
+      allowedTopicsForEc2Sender = if (config.hasPath("allowedTopicsForEc2Sender")) config.getString("allowedTopicsForEc2Sender").split(",").toList else List()
     )
   }
 
@@ -80,6 +99,7 @@ object Configuration {
     val config = fetchConfiguration(confPrefixFromPlatform)
     ApnsWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
+      config.getString("sqsUrl"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
@@ -88,19 +108,27 @@ object Configuration {
         mapiBaseUrl = config.getString("mapi.baseUrl"),
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
         dryRun = config.getBoolean("dryrun")
-      )
+      ),
+      config.getInt("apns.threadPoolSize")
     )
   }
 
   def fetchFirebase(): FcmWorkerConfiguration = {
     val config = fetchConfiguration(confPrefixFromPlatform)
+
+    def getStringList(path: String): List[String] =
+      config.getString(path).split(",").toList
+
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
+      config.getString("sqsUrl"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
-      )
+      ),
+      config.getInt("fcm.threadPoolSize"),
+      getStringList("fcm.allowedTopicsForBatchSend")
     )
   }
 
