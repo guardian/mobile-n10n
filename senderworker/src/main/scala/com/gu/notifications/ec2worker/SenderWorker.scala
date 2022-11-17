@@ -64,8 +64,8 @@ object SenderWorker extends App {
       }
     }
 
-    override def onMessage(message: jms.Message): Unit = {
-      println("JMS message received")
+    override def onMessage(message: jms.Message): Unit = Future {
+      logger.info("JMS message received")
       val parsedEvent = parsedReceivedMessages(message)
       parsedEvent match {
         case Some(event) => {
