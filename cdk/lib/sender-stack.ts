@@ -1,4 +1,5 @@
 import { GuAutoScalingGroup } from '@guardian/cdk/lib/constructs/autoscaling';
+import { GuAlarm } from '@guardian/cdk/lib/constructs/cloudwatch';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { AppIdentity, GuStack } from '@guardian/cdk/lib/constructs/core';
 import {
@@ -14,6 +15,7 @@ import type { GuAsgCapacity } from '@guardian/cdk/lib/types';
 import type { App } from 'aws-cdk-lib';
 import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { HealthCheck, ScalingEvents } from 'aws-cdk-lib/aws-autoscaling';
+import { ComparisonOperator, Metric, TreatMissingData } from 'aws-cdk-lib/aws-cloudwatch';
 import type { InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Topic } from 'aws-cdk-lib/aws-sns';
@@ -41,6 +43,8 @@ export class SenderWorkerStack extends GuStack {
 		const sqsMessageRetentionPeriod = Duration.hours(1);
 		const sqsMessageRetryCount = 5;
 		const defaultVpcSecurityGroup = 'sg-85829de7';
+		const runbookCopy =
+		"<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>";
 
 		const vpc = GuVpc.fromIdParameter(
 			this,
@@ -163,6 +167,38 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 				},
 			);
 
+			const oldestMessageAgeAlarm = new GuAlarm(this, `MessageAgeAlarm-${platformName}`, {
+				app: props.appName,
+				actionsEnabled: false, // param
+				alarmDescription: `Triggers if the age of the oldest message exceeds the threshold. ${runbookCopy}`,
+				alarmName: `${props.appName}-${this.stage}-MessageAge-${platformName}`,
+				comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+				evaluationPeriods: 2,
+				metric: senderSqs.metricApproximateAgeOfOldestMessage({
+					period: Duration.seconds(60),
+					statistic: "Maximum",
+				}),
+				snsTopicName: props.notificationSnsTopic, // param
+				threshold: 180, // param
+				treatMissingData: TreatMissingData.NOT_BREACHING,
+			});
+
+			const messagesInFlightAlarm = new GuAlarm(this, `messagesInFlightAlarm-${platformName}`, {
+				app: props.appName,
+				actionsEnabled: false, // param
+				alarmDescription: `Triggers if the number of messages in flight exceeds the threshold. ${runbookCopy}`,
+				alarmName: `${props.appName}-${this.stage}-MessageInFlight-${platformName}`,
+				comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+				evaluationPeriods: 2,
+				metric: senderSqs.metricApproximateNumberOfMessagesNotVisible({
+					period: Duration.seconds(60),
+					statistic: "Maximum",
+				}),
+				snsTopicName: props.notificationSnsTopic, // param
+				threshold: 500, // param
+				treatMissingData: TreatMissingData.NOT_BREACHING,
+			});
+
 			return senderSqs;
 		};
 
@@ -173,6 +209,8 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 			createSqs('android-edition', 'androidEdition').queueArn,
 			createSqs('android-beta', 'androidBeta').queueArn,
 		];
+
+		
 
 		/*
 		 * Here, we export the list of sender queue ARNs so that it can be used in other stacks,
