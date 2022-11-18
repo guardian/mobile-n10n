@@ -23,7 +23,8 @@ interface SenderWorkerOpts {
   tooFewInvocationsEnabled: boolean,
   cleanerQueueArn: string,
   platform: string,
-  paramPrefix: string
+  paramPrefix: string,
+  isBatchingSqsMessages: boolean,
 }
 
 class SenderWorker extends cdkcore.Construct  {
@@ -39,7 +40,7 @@ class SenderWorker extends cdkcore.Construct  {
 
     const senderDlq = new sqs.Queue(this, 'SenderDlq')
     this.senderSqs = new sqs.Queue(this, 'SenderSqs', {
-      visibilityTimeout: cdk.Duration.seconds(100),
+      visibilityTimeout: props.isBatchingSqsMessages ? cdk.Duration.seconds(200) : cdk.Duration.seconds(100),
       retentionPeriod: cdk.Duration.hours(1),
       deadLetterQueue: {
         queue: senderDlq,
@@ -110,12 +111,13 @@ class SenderWorker extends cdkcore.Construct  {
       memorySize: 10240,
       description: `sends notifications for ${id}`,
       role: executionRole,
-      timeout: cdk.Duration.seconds(90),
+      timeout: props.isBatchingSqsMessages ? cdk.Duration.seconds(180) : cdk.Duration.seconds(90),
       reservedConcurrentExecutions: props.reservedConcurrency
     })
 
     const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
-      batchSize: 1,
+      batchSize: props.isBatchingSqsMessages ? 20 : 1,
+      maxBatchingWindow: props.isBatchingSqsMessages ? cdk.Duration.seconds(1) : cdk.Duration.seconds(0),
       enabled: true,
       eventSourceArn: this.senderSqs.queueArn,
       target: senderLambdaCtr
@@ -215,12 +217,13 @@ export class SenderWorkerStack extends GuStack {
 
     let workerQueueArns: string[] = []
 
-    const addWorker = (workerName: string, paramPrefix: string, handler: string) => {
+    const addWorker = (workerName: string, paramPrefix: string, handler: string, isBatchingSqsMessages: boolean = false) => {
       let worker = new SenderWorker(this, workerName, {
         ...props,
         platform: workerName,
         paramPrefix: paramPrefix,
         handler: handler,
+        isBatchingSqsMessages,
         ...sharedOpts
       })
       workerQueueArns.push(worker.senderSqs.queueArn)
@@ -232,7 +235,7 @@ export class SenderWorkerStack extends GuStack {
      */
 
     addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", true)
     addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
     addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
     addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
