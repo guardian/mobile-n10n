@@ -8,7 +8,9 @@ deployments:
       amiTags:
         Recipe: bionic-mobile-ARM
         AmigoStage: PROD
-      templatePath: cfn.yaml
+      templateStagePaths:
+        CODE: Registration-CODE.template.json
+        PROD: Registration-PROD.template.json
   registration:
     type: autoscaling
     parameters:
