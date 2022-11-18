@@ -864,7 +864,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "Timeout": 180,
+        "Timeout": 90,
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -922,7 +922,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "VisibilityTimeout": 200,
+        "VisibilityTimeout": 100,
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
@@ -933,7 +933,7 @@ Object {
         "androidbetaSenderSqs57513D18",
       ],
       "Properties": Object {
-        "BatchSize": 20,
+        "BatchSize": 1,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -944,7 +944,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
         },
-        "MaximumBatchingWindowInSeconds": 1,
+        "MaximumBatchingWindowInSeconds": 0,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -1334,7 +1334,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "Timeout": 180,
+        "Timeout": 90,
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -1392,7 +1392,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "VisibilityTimeout": 200,
+        "VisibilityTimeout": 100,
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
@@ -1403,7 +1403,7 @@ Object {
         "androideditionSenderSqs400C0F3A",
       ],
       "Properties": Object {
-        "BatchSize": 20,
+        "BatchSize": 1,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -1414,7 +1414,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androideditionSenderLambdaCtrF0169D16",
         },
-        "MaximumBatchingWindowInSeconds": 1,
+        "MaximumBatchingWindowInSeconds": 0,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -1804,7 +1804,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "Timeout": 180,
+        "Timeout": 90,
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -1862,7 +1862,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "VisibilityTimeout": 200,
+        "VisibilityTimeout": 100,
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
@@ -1873,7 +1873,7 @@ Object {
         "iosSenderSqsA94CB0A0",
       ],
       "Properties": Object {
-        "BatchSize": 20,
+        "BatchSize": 1,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -1884,7 +1884,7 @@ Object {
         "FunctionName": Object {
           "Ref": "iosSenderLambdaCtr6053C1F8",
         },
-        "MaximumBatchingWindowInSeconds": 1,
+        "MaximumBatchingWindowInSeconds": 0,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -2274,7 +2274,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "Timeout": 180,
+        "Timeout": 90,
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -2303,7 +2303,7 @@ Object {
         "ioseditionSenderSqsFDE339AC",
       ],
       "Properties": Object {
-        "BatchSize": 20,
+        "BatchSize": 1,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -2314,7 +2314,7 @@ Object {
         "FunctionName": Object {
           "Ref": "ioseditionSenderLambdaCtr2410D4D7",
         },
-        "MaximumBatchingWindowInSeconds": 1,
+        "MaximumBatchingWindowInSeconds": 0,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -2353,7 +2353,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "VisibilityTimeout": 200,
+        "VisibilityTimeout": 100,
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
