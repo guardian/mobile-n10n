@@ -463,7 +463,7 @@ Object {
         "androidSenderSqsCF269D3F",
       ],
       "Properties": Object {
-        "BatchSize": 20,
+        "BatchSize": 10,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
