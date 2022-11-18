@@ -63,23 +63,23 @@ object SenderWorker extends App {
   val config = Configuration.fetchConfiguration()
 
   logger.info("Sender worker - Ios started")
-  val iosSender = new IOSSender(Configuration.fetchApns(config, Ios))
+  val iosSender = new IOSSender(Configuration.fetchApns(config, Ios), "ec2workers")
   pollQueue(iosSender.config.sqsUrl, "ios", iosSender.handleChunkTokens)
 
   logger.info("Sender worker - Android started")
-  val androidSender = new AndroidSender(Configuration.fetchFirebase(config, Android), Some(Android.toString()))
+  val androidSender = new AndroidSender(Configuration.fetchFirebase(config, Android), Some(Android.toString()), "ec2workers")
   pollQueue(androidSender.config.sqsUrl, "android", androidSender.handleChunkTokens)
 
   logger.info("Sender worker - IosEdition started")
-  val iosEditionSender = new IOSSender(Configuration.fetchApns(config, IosEdition))
+  val iosEditionSender = new IOSSender(Configuration.fetchApns(config, IosEdition), "ec2workers")
   pollQueue(iosEditionSender.config.sqsUrl, "ios-edition", iosEditionSender.handleChunkTokens)
 
   logger.info("Sender worker - AndroidBeta started")
-  val androidBetaSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidBeta), Some(AndroidBeta.toString()))
+  val androidBetaSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidBeta), Some(AndroidBeta.toString()), "ec2workers")
   pollQueue(androidBetaSender.config.sqsUrl,"android-beta", androidBetaSender.handleChunkTokens)
 
   logger.info("Sender worker - AndroidEdition started")
-  val androidEditionSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidEdition), Some(AndroidEdition.toString()))
+  val androidEditionSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidEdition), Some(AndroidEdition.toString()), "ec2workers")
   pollQueue(androidEditionSender.config.sqsUrl, "android-edition", androidEditionSender.handleChunkTokens)
 
   logger.info("Sender worker all started")
