@@ -15,7 +15,13 @@ import type { GuAsgCapacity } from '@guardian/cdk/lib/types';
 import type { App } from 'aws-cdk-lib';
 import { CfnOutput, Duration } from 'aws-cdk-lib';
 import { HealthCheck, ScalingEvents } from 'aws-cdk-lib/aws-autoscaling';
-import { ComparisonOperator, Metric, TreatMissingData } from 'aws-cdk-lib/aws-cloudwatch';
+import {
+	ComparisonOperator,
+	MathExpression,
+	Metric,
+	TreatMissingData,
+} from 'aws-cdk-lib/aws-cloudwatch';
+import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
 import type { InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Topic } from 'aws-cdk-lib/aws-sns';
@@ -32,6 +38,8 @@ interface SenderStackProps extends GuStackProps {
 	instanceType: InstanceType;
 	targetCpuUtilization: number;
 	notificationSnsTopic: string;
+	alarmSnsTopic: string;
+	alarmEnabled: boolean;
 	cleanerQueueArn: string;
 }
 
@@ -44,7 +52,16 @@ export class SenderWorkerStack extends GuStack {
 		const sqsMessageRetryCount = 5;
 		const defaultVpcSecurityGroup = 'sg-85829de7';
 		const runbookCopy =
-		"<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>";
+			'<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>';
+		const alarmSnsTopic = Topic.fromTopicArn(
+			this,
+			`SnsTopicForOkAction`,
+			`arn:aws:sns:${this.region}:${this.account}:${props.alarmSnsTopic}`,
+		);
+		const oldestMessageAgeThreshold = 180;
+		const messagesInFlightThreshold = 500;
+		const toleratedErrorPercentage = 25;
+		const thresholdProcessingRate = 75;
 
 		const vpc = GuVpc.fromIdParameter(
 			this,
@@ -113,7 +130,7 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 			targetUtilizationPercent: props.targetCpuUtilization,
 		});
 
-		const createSqs = (platformName: string, paramPrefix: string) => {
+		const createSqsWithAlarms = (platformName: string, paramPrefix: string) => {
 			const senderDlq = new Queue(this, `SenderDlq-${platformName}`);
 			const senderSqs = new Queue(this, `SenderSqs-${platformName}`, {
 				visibilityTimeout: sqsMessageVisibilityTimeout,
@@ -167,50 +184,124 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 				},
 			);
 
-			const oldestMessageAgeAlarm = new GuAlarm(this, `MessageAgeAlarm-${platformName}`, {
-				app: props.appName,
-				actionsEnabled: false, // param
-				alarmDescription: `Triggers if the age of the oldest message exceeds the threshold. ${runbookCopy}`,
-				alarmName: `${props.appName}-${this.stage}-MessageAge-${platformName}`,
-				comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
-				evaluationPeriods: 2,
-				metric: senderSqs.metricApproximateAgeOfOldestMessage({
-					period: Duration.seconds(60),
-					statistic: "Maximum",
-				}),
-				snsTopicName: props.notificationSnsTopic, // param
-				threshold: 180, // param
-				treatMissingData: TreatMissingData.NOT_BREACHING,
-			});
+			const oldestMessageAgeAlarm = new GuAlarm(
+				this,
+				`MessageAgeAlarm-${platformName}`,
+				{
+					app: props.appName,
+					actionsEnabled: props.alarmEnabled,
+					alarmDescription: `Triggers if the age of the oldest message exceeds the threshold. ${runbookCopy}`,
+					alarmName: `${props.appName}-${this.stage}-MessageAge-${platformName}`,
+					comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+					evaluationPeriods: 2,
+					metric: senderSqs.metricApproximateAgeOfOldestMessage({
+						period: Duration.seconds(60),
+						statistic: 'Maximum',
+					}),
+					snsTopicName: props.alarmSnsTopic,
+					threshold: oldestMessageAgeThreshold,
+					treatMissingData: TreatMissingData.NOT_BREACHING,
+				},
+			);
+			oldestMessageAgeAlarm.addOkAction(new SnsAction(alarmSnsTopic));
 
-			const messagesInFlightAlarm = new GuAlarm(this, `messagesInFlightAlarm-${platformName}`, {
-				app: props.appName,
-				actionsEnabled: false, // param
-				alarmDescription: `Triggers if the number of messages in flight exceeds the threshold. ${runbookCopy}`,
-				alarmName: `${props.appName}-${this.stage}-MessageInFlight-${platformName}`,
-				comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
-				evaluationPeriods: 2,
-				metric: senderSqs.metricApproximateNumberOfMessagesNotVisible({
-					period: Duration.seconds(60),
-					statistic: "Maximum",
-				}),
-				snsTopicName: props.notificationSnsTopic, // param
-				threshold: 500, // param
-				treatMissingData: TreatMissingData.NOT_BREACHING,
-			});
+			const messagesInFlightAlarm = new GuAlarm(
+				this,
+				`messagesInFlightAlarm-${platformName}`,
+				{
+					app: props.appName,
+					actionsEnabled: props.alarmEnabled,
+					alarmDescription: `Triggers if the number of messages in flight exceeds the threshold. ${runbookCopy}`,
+					alarmName: `${props.appName}-${this.stage}-MessageInFlight-${platformName}`,
+					comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+					evaluationPeriods: 2,
+					metric: senderSqs.metricApproximateNumberOfMessagesNotVisible({
+						period: Duration.seconds(60),
+						statistic: 'Maximum',
+					}),
+					snsTopicName: props.alarmSnsTopic,
+					threshold: messagesInFlightThreshold,
+					treatMissingData: TreatMissingData.NOT_BREACHING,
+				},
+			);
+			messagesInFlightAlarm.addOkAction(new SnsAction(alarmSnsTopic));
 
+			const getMetric = (metricName: string, statistic: string = 'Sum') =>
+				new Metric({
+					namespace: `Notifications/${this.stage}/ec2workers`,
+					metricName: metricName,
+					period: Duration.minutes(5),
+					statistic: statistic,
+					dimensionsMap: { platform: platformName },
+					label: `${metricName}-${platformName}`,
+				});
+			const failureRateExpr = new MathExpression({
+				expression: '100*m1/(m2-m3)',
+				usingMetrics: {
+					m1: getMetric('failure'),
+					m2: getMetric('total'),
+					m3: getMetric('dryrun'),
+				},
+				label: `Success % of EC2 Sender - ${platformName}`,
+				period: Duration.minutes(5),
+			});
+			const failureRateAlarm = new GuAlarm(
+				this,
+				`failureRate-${platformName}`,
+				{
+					app: props.appName,
+					actionsEnabled: props.alarmEnabled,
+					metric: failureRateExpr,
+					treatMissingData: TreatMissingData.NOT_BREACHING,
+					threshold: toleratedErrorPercentage,
+					comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+					evaluationPeriods: 1,
+					alarmName: `${props.appName}-${props.stage}-failureRate-${platformName}`,
+					alarmDescription: `EC2 sender exceeded ${toleratedErrorPercentage}% error rate`,
+					snsTopicName: props.alarmSnsTopic,
+				},
+			);
+			failureRateAlarm.addOkAction(new SnsAction(alarmSnsTopic));
+
+			const processingRateExpr = new MathExpression({
+				expression: '100*m1/m2',
+				usingMetrics: {
+					m1: getMetric('total', 'SampleCount'),
+					m2: senderSqs.metricNumberOfMessagesReceived({
+						period: Duration.minutes(5),
+						statistic: 'Sum',
+					}),
+				},
+				label: `Processed % of SQS messages by EC2 Sender - ${platformName}`,
+				period: Duration.minutes(5),
+			});
+			const processingRateAlarm = new GuAlarm(
+				this,
+				`processingRate-${platformName}`,
+				{
+					app: props.appName,
+					actionsEnabled: props.alarmEnabled,
+					metric: processingRateExpr,
+					treatMissingData: TreatMissingData.BREACHING,
+					threshold: thresholdProcessingRate,
+					comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
+					evaluationPeriods: 2,
+					alarmName: `${props.appName}-${props.stage}-processingRate-${platformName}`,
+					alarmDescription: `EC2 sender went below ${thresholdProcessingRate}% processing rate`,
+					snsTopicName: props.alarmSnsTopic,
+				},
+			);
+			processingRateAlarm.addOkAction(new SnsAction(alarmSnsTopic));
 			return senderSqs;
 		};
 
 		const senderQueueArns: string[] = [
-			createSqs('ios', 'iosLive').queueArn,
-			createSqs('android', 'androidLive').queueArn,
-			createSqs('ios-edition', 'iosEdition').queueArn,
-			createSqs('android-edition', 'androidEdition').queueArn,
-			createSqs('android-beta', 'androidBeta').queueArn,
+			createSqsWithAlarms('ios', 'iosLive').queueArn,
+			createSqsWithAlarms('android', 'androidLive').queueArn,
+			createSqsWithAlarms('ios-edition', 'iosEdition').queueArn,
+			createSqsWithAlarms('android-edition', 'androidEdition').queueArn,
+			createSqsWithAlarms('android-beta', 'androidBeta').queueArn,
 		];
-
-		
 
 		/*
 		 * Here, we export the list of sender queue ARNs so that it can be used in other stacks,

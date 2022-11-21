@@ -21,6 +21,26 @@ Object {
       "GuHttpsEgressSecurityGroup",
       "GuAutoScalingGroup",
       "GuWazuhAccess",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -544,6 +564,321 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
       },
       "Type": "AWS::IAM::Policy",
+    },
+    "MessageAgeAlarmandroidB60A67E9": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageAge-android",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidDCF78A7C",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MessageAgeAlarmandroidbetaC5859B97": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageAge-android-beta",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidbetaD9344C34",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MessageAgeAlarmandroidedition5A973330": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageAge-android-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroideditionE70A53F0",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MessageAgeAlarmiosD48AE20F": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageAge-ios",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsios636F1B52",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MessageAgeAlarmiosedition6D787D77": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageAge-ios-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsioseditionF8A67CD0",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
     },
     "ParameterStoreReadSenderworker1A48F352": Object {
       "Properties": Object {
@@ -1300,6 +1635,1366 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
+    "failureRateandroidF3480B68": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-CODE-failureRate-android",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - android",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-android",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-android",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-android",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "failureRateandroidbetaCF56BB5E": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-CODE-failureRate-android-beta",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - android-beta",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-android-beta",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-android-beta",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-android-beta",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "failureRateandroidedition11756D02": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-CODE-failureRate-android-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - android-edition",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-android-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-android-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-android-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "failureRateiosA081B9CF": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-CODE-failureRate-ios",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - ios",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-ios",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-ios",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-ios",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "failureRateiosedition38A87D6D": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-CODE-failureRate-ios-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - ios-edition",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-ios-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-ios-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-ios-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmandroid4277DD3D": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageInFlight-android",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidDCF78A7C",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmandroidbeta4F8D771C": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageInFlight-android-beta",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidbetaD9344C34",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmandroideditionEF38BFA2": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageInFlight-android-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroideditionE70A53F0",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmios1417977D": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageInFlight-ios",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsios636F1B52",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmioseditionB74B94D0": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-CODE-MessageInFlight-ios-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsioseditionF8A67CD0",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateandroid55B0FFB7": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-CODE-processingRate-android",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - android",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-android",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsandroidDCF78A7C",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateandroidbeta877F989F": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-CODE-processingRate-android-beta",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - android-beta",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-android-beta",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsandroidbetaD9344C34",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateandroidedition416914A9": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-CODE-processingRate-android-edition",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - android-edition",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-android-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsandroideditionE70A53F0",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateios3E5DA673": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-CODE-processingRate-ios",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - ios",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-ios",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsios636F1B52",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateioseditionBBDB2410": Object {
+      "Properties": Object {
+        "ActionsEnabled": false,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-CODE-processingRate-ios-edition",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - ios-edition",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-ios-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/CODE/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsioseditionF8A67CD0",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
   },
 }
 `;
@@ -1325,6 +3020,26 @@ Object {
       "GuHttpsEgressSecurityGroup",
       "GuAutoScalingGroup",
       "GuWazuhAccess",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -1848,6 +3563,321 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
       },
       "Type": "AWS::IAM::Policy",
+    },
+    "MessageAgeAlarmandroidB60A67E9": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageAge-android",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidDCF78A7C",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MessageAgeAlarmandroidbetaC5859B97": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageAge-android-beta",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidbetaD9344C34",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MessageAgeAlarmandroidedition5A973330": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageAge-android-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroideditionE70A53F0",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MessageAgeAlarmiosD48AE20F": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageAge-ios",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsios636F1B52",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MessageAgeAlarmiosedition6D787D77": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the age of the oldest message exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageAge-ios-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsioseditionF8A67CD0",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateAgeOfOldestMessage",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 180,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
     },
     "ParameterStoreReadSenderworker1A48F352": Object {
       "Properties": Object {
@@ -2603,6 +4633,1366 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
+    },
+    "failureRateandroidF3480B68": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-PROD-failureRate-android",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - android",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-android",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-android",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-android",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "failureRateandroidbetaCF56BB5E": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-PROD-failureRate-android-beta",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - android-beta",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-android-beta",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-android-beta",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-android-beta",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "failureRateandroidedition11756D02": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-PROD-failureRate-android-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - android-edition",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-android-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-android-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-android-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "failureRateiosA081B9CF": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-PROD-failureRate-ios",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - ios",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-ios",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-ios",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-ios",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "failureRateiosedition38A87D6D": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender exceeded 25% error rate",
+        "AlarmName": "sender-worker-PROD-failureRate-ios-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/(m2-m3)",
+            "Id": "expr_1",
+            "Label": "Success % of EC2 Sender - ios-edition",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "failure-ios-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "Label": "total-ios-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m3",
+            "Label": "dryrun-ios-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "dryrun",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 25,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmandroid4277DD3D": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageInFlight-android",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidDCF78A7C",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmandroidbeta4F8D771C": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageInFlight-android-beta",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroidbetaD9344C34",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmandroideditionEF38BFA2": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageInFlight-android-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsandroideditionE70A53F0",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmios1417977D": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageInFlight-ios",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsios636F1B52",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "messagesInFlightAlarmioseditionB74B94D0": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if the number of messages in flight exceeds the threshold. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmName": "sender-worker-PROD-MessageInFlight-ios-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "QueueName",
+            "Value": Object {
+              "Fn::GetAtt": Array [
+                "SenderSqsioseditionF8A67CD0",
+                "QueueName",
+              ],
+            },
+          },
+        ],
+        "EvaluationPeriods": 2,
+        "MetricName": "ApproximateNumberOfMessagesNotVisible",
+        "Namespace": "AWS/SQS",
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Period": 60,
+        "Statistic": "Maximum",
+        "Threshold": 500,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateandroid55B0FFB7": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-PROD-processingRate-android",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - android",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-android",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsandroidDCF78A7C",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateandroidbeta877F989F": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-PROD-processingRate-android-beta",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - android-beta",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-android-beta",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsandroidbetaD9344C34",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateandroidedition416914A9": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-PROD-processingRate-android-edition",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - android-edition",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-android-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsandroideditionE70A53F0",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateios3E5DA673": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-PROD-processingRate-ios",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - ios",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-ios",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsios636F1B52",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "processingRateioseditionBBDB2410": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "EC2 sender went below 75% processing rate",
+        "AlarmName": "sender-worker-PROD-processingRate-ios-edition",
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": Array [
+          Object {
+            "Expression": "100*m1/m2",
+            "Id": "expr_1",
+            "Label": "Processed % of SQS messages by EC2 Sender - ios-edition",
+          },
+          Object {
+            "Id": "m1",
+            "Label": "total-ios-edition",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/ec2workers",
+              },
+              "Period": 300,
+              "Stat": "SampleCount",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "m2",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "QueueName",
+                    "Value": Object {
+                      "Fn::GetAtt": Array [
+                        "SenderSqsioseditionF8A67CD0",
+                        "QueueName",
+                      ],
+                    },
+                  },
+                ],
+                "MetricName": "NumberOfMessagesReceived",
+                "Namespace": "AWS/SQS",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "Threshold": 75,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
     },
   },
 }
