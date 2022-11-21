@@ -15,14 +15,14 @@ import java.util.UUID
 import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Option[String]) extends SenderRequestHandler[FcmClient] {
+class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Option[String], val metricNs: String) extends SenderRequestHandler[FcmClient] {
 
   def this() = {
-    this(Configuration.fetchFirebase(), None)
+    this(Configuration.fetchFirebase(), None, "workers")
   }
 
   val cleaningClient = new CleaningClientImpl(config.cleaningSqsUrl)
-  val cloudwatch: Cloudwatch = new CloudwatchImpl
+  val cloudwatch: Cloudwatch = new CloudwatchImpl(metricNs)
 
   override implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.threadPoolSize))
 

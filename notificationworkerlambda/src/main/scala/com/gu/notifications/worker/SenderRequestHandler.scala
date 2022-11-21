@@ -80,10 +80,17 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       }.parJoin(maxConcurrency)
   }
 
+  def logStartAndCount(acc: Int, chunkedTokens: ChunkedTokens) = {
+    logger.info(Map(
+          "notificationId" -> chunkedTokens.notification.id
+        ), "Start processing a SQS message");
+    acc + chunkedTokens.tokens.size
+  }
+
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
     val sqsMessageBatchSize = event.getRecords.size
     val startTime = Instant.now
-    val totalTokensProcessed: Int = event.getRecords.asScala.map(event => NotificationParser.parseChunkedTokenEvent(event.getBody)).foldLeft(0)((acc, r) => acc + r.tokens.size)
+    val totalTokensProcessed: Int = event.getRecords.asScala.map(event => NotificationParser.parseChunkedTokenEvent(event.getBody)).foldLeft(0)(logStartAndCount)
     val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)] = Stream.emits(event.getRecords.asScala)
       .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
       .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp, startTime, sqsMessageBatchSize) }
