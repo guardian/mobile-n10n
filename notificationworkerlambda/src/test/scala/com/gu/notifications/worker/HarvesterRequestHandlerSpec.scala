@@ -22,6 +22,8 @@ import play.api.libs.json.Json
 
 import scala.jdk.CollectionConverters._
 import db.BuildTier
+import java.time.Instant
+import com.gu.notifications.worker.models.PerformanceMetrics
 
 class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
@@ -265,6 +267,8 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
         override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
+
+        override def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit = ???
 
         override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = {
           cloudwatchFailures.incrementAndGet()
