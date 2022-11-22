@@ -116,7 +116,7 @@ class SenderWorker extends cdkcore.Construct  {
     })
 
     const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
-      batchSize: props.isBatchingSqsMessages ? 20 : 1,
+      batchSize: props.isBatchingSqsMessages ? 10 : 1,
       maxBatchingWindow: props.isBatchingSqsMessages ? cdk.Duration.seconds(1) : cdk.Duration.seconds(0),
       enabled: true,
       eventSourceArn: this.senderSqs.queueArn,

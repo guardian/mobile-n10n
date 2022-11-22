@@ -197,7 +197,7 @@ class Harvester extends HarvesterRequestHandler {
 
   override val jdbcConfig: JdbcConfig = config.jdbcConfig
 
-  override val cloudwatch: Cloudwatch = new CloudwatchImpl
+  override val cloudwatch: Cloudwatch = new CloudwatchImpl("workers")
 
   override val lambdaServiceSet = SqsDeliveryStack(
    iosLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsUrl),
