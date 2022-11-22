@@ -39,21 +39,12 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
       case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize) =>
-        val isAllowedToSendBatch = chunkedTokens.notification.topic.forall(topic => config.allowedTopicsForBatchSend.contains(topic.toString))
-
-        if (isAllowedToSendBatch) {
-          logger.info(s"Allowed to send notification ${chunkedTokens.notification.id} to topics ${chunkedTokens.notification.topic} in batches")
-          deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
-            .broadcastTo(
-              reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
-              cleanupBatchFailures(chunkedTokens.notification.id),
-              trackBatchProgress(chunkedTokens.notification.id))
-        } else
-          deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
-            .broadcastTo(
-              reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
-              cleanupFailures,
-              trackProgress(chunkedTokens.notification.id))
+        logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} to topics ${chunkedTokens.notification.topic} in batches")
+        deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
+          .broadcastTo(
+            reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+            cleanupBatchFailures(chunkedTokens.notification.id),
+            trackBatchProgress(chunkedTokens.notification.id))
     }.parJoin(maxConcurrency)
   }
 
