@@ -8,10 +8,14 @@ import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl}
 import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-class IOSSender extends SenderRequestHandler[ApnsClient] {
-  val config: ApnsWorkerConfiguration = Configuration.fetchApns()
+class IOSSender(val config: ApnsWorkerConfiguration, val metricNs: String) extends SenderRequestHandler[ApnsClient] {
+
+  def this() = {
+    this(Configuration.fetchApns(), "workers")
+  }
+
   val cleaningClient = new CleaningClientImpl(config.cleaningSqsUrl)
-  val cloudwatch: Cloudwatch = new CloudwatchImpl
+  val cloudwatch: Cloudwatch = new CloudwatchImpl(metricNs)
 
   override implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.threadPoolSize))
 

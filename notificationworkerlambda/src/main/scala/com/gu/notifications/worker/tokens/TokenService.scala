@@ -1,6 +1,6 @@
 package com.gu.notifications.worker.tokens
 
-import _root_.models.{Notification, Platform, ShardRange}
+import _root_.models.{Notification, ShardRange}
 import cats.data.NonEmptyList
 import cats.effect.{Async, Concurrent, Timer}
 import cats.syntax.list._
@@ -12,9 +12,11 @@ import play.api.libs.json.{Format, Json}
 import scala.concurrent.ExecutionContextExecutor
 
 case class IndividualNotification(notification: Notification, token: String)
+case class BatchNotification(notification: Notification, token: List[String])
 
 case class ChunkedTokens(notification: Notification, tokens: List[String], range: ShardRange) {
   def toNotificationToSends: List[IndividualNotification] = tokens.map(IndividualNotification(notification, _))
+  def toBatchNotificationToSends: List[BatchNotification] = tokens.grouped(500).map(BatchNotification(notification, _)).toList
 }
 
 object ChunkedTokens {

@@ -108,5 +108,40 @@ Part of [Notification Worker Lambda(s)](notificationworkerlambda). Retrieves the
 
 Tunnel to the CODE notifications database(See[Mobile Platform](https://github.com/guardian/mobile-platform/))) Run `sbt` set `project notificationworkerlambda` and `run` runs the lambda locally. 
 
-   
+### Notification Worker Local Run
 
+The notification worker lambdas can be run locally.
+
+Export the desired `Platform` env var in your terminal (e.g. `export Platform=android`). Without the Platform env var an exception is thrown during instantiation. 
+
+When running locally our identity resolves to a DevIdentity. This means that we attempt to load config locally instead of from ssm. Ensure that you have a ~/.gu/notification-worker.conf file with the following properties:
+
+````
+{
+    cleaningSqsUrl = "url"
+    dryrun = false
+    fcm {
+            debug = true
+            serviceAccountKey = """key"""
+            threadPoolSize = x
+        }
+}
+````
+
+NB: note the `"""` enclosing the serviceAccountKey, which are needed to correctly parse this string.
+
+After starting `sbt`, inside the `notificationworkerlambda` project we can execute:
+
+`run NotificationWorkerLocalRun android`
+
+The last argument in the command is the name of the worker lambda you want to run locally, eg `android`, `ios`.
+
+To control the tokens we send from the local lambda we can modify the NotificationWorkerLocalRun.scala file:
+
+```
+  val tokens = ChunkedTokens(
+    notification = notification,
+    range = ShardRange(0, 1),
+    tokens = List("<your_token _1>", "your_token_2", ...)
+  )
+```

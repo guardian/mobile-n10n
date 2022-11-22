@@ -418,7 +418,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
-      "com.google.firebase" % "firebase-admin" % "9.0.0",
+      "com.google.firebase" % "firebase-admin" % "9.1.1",
       "com.google.protobuf" % "protobuf-java" % "3.19.2",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
@@ -440,6 +440,23 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-CODE.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-CODE.template.json"),
     riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-PROD.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-PROD.template.json")
 )
+
+lazy val ec2SenderWorker = Project("sender-worker", file("senderworker"))
+  .dependsOn(common, notificationworkerlambda, commontest % "test->test")
+  .enablePlugins(SystemdPlugin, RiffRaffArtifact, JavaServerAppPackaging)
+  .settings(standardSettings: _*)
+  .settings(
+    fork := true,
+    libraryDependencies ++= Seq(
+      logback
+    ),
+    riffRaffPackageType := (Debian / packageBin).value,
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/SenderWorker-CODE.template.json"), s"senderworker-cfn/SenderWorker-CODE.template.json"),
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/SenderWorker-PROD.template.json"), s"senderworker-cfn/SenderWorker-PROD.template.json"),
+    Debian / packageName := name.value,
+    mainClass := Some("SenderWorker"),
+    version := projectVersion
+  )
 
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))

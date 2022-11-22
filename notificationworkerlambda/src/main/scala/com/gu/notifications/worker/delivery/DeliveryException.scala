@@ -45,6 +45,10 @@ object DeliveryException {
     override def getMessage = s"Request failed (Notification: $notificationId, Token: $token)"
   }
 
+  case class BatchCallFailedRequest(notificationId: UUID, failure: String) extends DeliveryException {
+    override def getMessage = s"Entire batch request failed (Notification: $notificationId, $failure)"
+  }
+
 
   case class InvalidPayload(notificationId: UUID) extends DeliveryException {
     override def getMessage = s"Cannot generate payload (Notification: $notificationId)"
