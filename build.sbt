@@ -151,7 +151,8 @@ lazy val registration = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (Debian / packageBin).value,
-    riffRaffArtifactResources += (file(s"registration/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/Registration-CODE.template.json"), s"registration-cfn/Registration-CODE.template.json"),
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/Registration-PROD.template.json"), s"registration-cfn/Registration-PROD.template.json"),
     Debian / packageName := name.value,
     version := projectVersion
   )
