@@ -319,14 +319,14 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@guardian/cdk@48.5.0":
-  version "48.5.0"
-  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-48.5.0.tgz#f77b67ae100365d11c4bb3150febcfe1c420e2bd"
-  integrity sha512-LTSf4MbGCwz2sZEi+/RokUhtGk2O42M5Ij1XDJGTbjMH01+hw1c2RU/gtVEFiDtr1qy0y4fU1CZW2r1EXNAMrw==
+"@guardian/cdk@48.5.1":
+  version "48.5.1"
+  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-48.5.1.tgz#f04b751ff3537b68614879ea2ec7bbbd8455295c"
+  integrity sha512-zSxENlken3wMJ2FXIBdgOZq7URDyAJPhibddFRokA4k7NX1edrTTTpuOysZ/9Oj1/RRWyT7VB9J47NORMgauGw==
   dependencies:
     "@oclif/core" "1.20.4"
     aws-cdk-lib "2.50.0"
-    aws-sdk "^2.1252.0"
+    aws-sdk "^2.1255.0"
     chalk "^4.1.2"
     codemaker "^1.71.0"
     constructs "10.1.155"
@@ -867,10 +867,10 @@ aws-cdk@2.50.0:
   optionalDependencies:
     fsevents "2.3.2"
 
-aws-sdk@^2.1252.0:
-  version "2.1257.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1257.0.tgz#8ed8ca99f97dc642fce98dac7d5eb18e94ae9833"
-  integrity sha512-SNfKIVlJdLyBbUSGgvsBOuV4iOE1modoKOhnV/bIi2F7DJkq4SCPmrN1nwLNBnOQQvZRlPwFbHPVrJ3clTXLDQ==
+aws-sdk@^2.1255.0:
+  version "2.1260.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1260.0.tgz#3dc18f49dd4aaa18e4e9787c62f1ad02e5aaac4c"
+  integrity sha512-iciXVukPbhmh44xcF+5/CO15jtESqRkXuEH54XaU8IpCzbYkAcPBaS29vLRN2SRuN1Dy2S3X7SaZZxFJWLAHrg==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
