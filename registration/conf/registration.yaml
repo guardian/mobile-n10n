@@ -1,3 +1,6 @@
+# The infrastructure in this file is now ingested and built via CDK before deployment (i.e. this file is no longer
+# directly uploaded to Riff-Raff). You can edit this file as normal, but you must update the CDK snapshot tests in order
+# to get CI to pass.
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Registration for mobile notifications
 Mappings:

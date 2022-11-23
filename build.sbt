@@ -151,7 +151,8 @@ lazy val registration = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (Debian / packageBin).value,
-    riffRaffArtifactResources += (file(s"registration/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/Registration-CODE.template.json"), s"registration-cfn/Registration-CODE.template.json"),
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/Registration-PROD.template.json"), s"registration-cfn/Registration-PROD.template.json"),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -418,7 +419,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
-      "com.google.firebase" % "firebase-admin" % "9.1.1",
+      "com.google.firebase" % "firebase-admin" % "9.0.0",
       "com.google.protobuf" % "protobuf-java" % "3.19.2",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
