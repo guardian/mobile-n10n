@@ -58,9 +58,9 @@ export class SenderWorkerStack extends GuStack {
 			`SnsTopicForOkAction`,
 			`arn:aws:sns:${this.region}:${this.account}:${props.alarmSnsTopic}`,
 		);
-		const oldestMessageAgeThreshold = 180;
+		const oldestMessageAgeThreshold = 180; // in seconds
 		const messagesInFlightThreshold = 500;
-		const toleratedErrorPercentage = 25;
+		const toleratedLowSuccessRate = 75;
 		const thresholdProcessingRate = 75;
 
 		const vpc = GuVpc.fromIdParameter(
@@ -235,33 +235,33 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 					dimensionsMap: { platform: platformName },
 					label: `${metricName}-${platformName}`,
 				});
-			const failureRateExpr = new MathExpression({
+			const successRateExpr = new MathExpression({
 				expression: '100*m1/(m2-m3)',
 				usingMetrics: {
-					m1: getMetric('failure'),
+					m1: getMetric('success'),
 					m2: getMetric('total'),
 					m3: getMetric('dryrun'),
 				},
 				label: `Success % of EC2 Sender - ${platformName}`,
 				period: Duration.minutes(5),
 			});
-			const failureRateAlarm = new GuAlarm(
+			const lowSuccessRateAlarm = new GuAlarm(
 				this,
-				`failureRate-${platformName}`,
+				`lowSucccessRate-${platformName}`,
 				{
 					app: props.appName,
 					actionsEnabled: props.alarmEnabled,
-					metric: failureRateExpr,
+					metric: successRateExpr,
 					treatMissingData: TreatMissingData.NOT_BREACHING,
-					threshold: toleratedErrorPercentage,
-					comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+					threshold: toleratedLowSuccessRate,
+					comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
 					evaluationPeriods: 1,
-					alarmName: `${props.appName}-${props.stage}-failureRate-${platformName}`,
-					alarmDescription: `EC2 sender exceeded ${toleratedErrorPercentage}% error rate`,
+					alarmName: `${props.appName}-${props.stage}-lowSuccessRate-${platformName}`,
+					alarmDescription: `EC2 sender went below ${toleratedLowSuccessRate}% success rate`,
 					snsTopicName: props.alarmSnsTopic,
 				},
 			);
-			failureRateAlarm.addOkAction(new SnsAction(alarmSnsTopic));
+			lowSuccessRateAlarm.addOkAction(new SnsAction(alarmSnsTopic));
 
 			const processingRateExpr = new MathExpression({
 				expression: '100*m1/m2',
@@ -282,7 +282,7 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 					app: props.appName,
 					actionsEnabled: props.alarmEnabled,
 					metric: processingRateExpr,
-					treatMissingData: TreatMissingData.BREACHING,
+					treatMissingData: TreatMissingData.NOT_BREACHING,
 					threshold: thresholdProcessingRate,
 					comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
 					evaluationPeriods: 2,
