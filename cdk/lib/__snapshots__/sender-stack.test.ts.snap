@@ -600,7 +600,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -623,7 +623,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -663,7 +663,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -686,7 +686,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -726,7 +726,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -749,7 +749,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -789,7 +789,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -812,7 +812,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -852,7 +852,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -875,7 +875,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -1635,7 +1635,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "lowSucccessRateandroid0C5310D4": Object {
+    "failurePercentageandroidCD03357C": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -1656,19 +1656,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-CODE-lowSuccessRate-android",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-CODE-failure-android",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - android",
+            "Label": "Failure % of EC2 Sender - android",
           },
           Object {
             "Id": "m1",
-            "Label": "success-android",
+            "Label": "failure-android",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -1677,7 +1677,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "android",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/CODE/ec2workers",
               },
               "Period": 300,
@@ -1742,12 +1742,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "lowSucccessRateandroidbeta54A27A3F": Object {
+    "failurePercentageandroidbeta58BBE921": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -1768,19 +1768,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-CODE-lowSuccessRate-android-beta",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-CODE-failure-android-beta",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - android-beta",
+            "Label": "Failure % of EC2 Sender - android-beta",
           },
           Object {
             "Id": "m1",
-            "Label": "success-android-beta",
+            "Label": "failure-android-beta",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -1789,7 +1789,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "android-beta",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/CODE/ec2workers",
               },
               "Period": 300,
@@ -1854,12 +1854,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "lowSucccessRateandroidedition5F27E836": Object {
+    "failurePercentageandroideditionBE5D24E3": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -1880,19 +1880,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-CODE-lowSuccessRate-android-edition",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-CODE-failure-android-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - android-edition",
+            "Label": "Failure % of EC2 Sender - android-edition",
           },
           Object {
             "Id": "m1",
-            "Label": "success-android-edition",
+            "Label": "failure-android-edition",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -1901,7 +1901,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "android-edition",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/CODE/ec2workers",
               },
               "Period": 300,
@@ -1966,12 +1966,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "lowSucccessRateiosAE24AB51": Object {
+    "failurePercentageios3A8FD40D": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -1992,19 +1992,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-CODE-lowSuccessRate-ios",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-CODE-failure-ios",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - ios",
+            "Label": "Failure % of EC2 Sender - ios",
           },
           Object {
             "Id": "m1",
-            "Label": "success-ios",
+            "Label": "failure-ios",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -2013,7 +2013,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "ios",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/CODE/ec2workers",
               },
               "Period": 300,
@@ -2078,12 +2078,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "lowSucccessRateiosedition217BD2F9": Object {
+    "failurePercentageiosedition5E69B50F": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -2104,19 +2104,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-CODE-lowSuccessRate-ios-edition",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-CODE-failure-ios-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - ios-edition",
+            "Label": "Failure % of EC2 Sender - ios-edition",
           },
           Object {
             "Id": "m1",
-            "Label": "success-ios-edition",
+            "Label": "failure-ios-edition",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -2125,7 +2125,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "ios-edition",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/CODE/ec2workers",
               },
               "Period": 300,
@@ -2190,7 +2190,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -2230,7 +2230,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -2253,7 +2253,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -2293,7 +2293,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -2316,7 +2316,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -2356,7 +2356,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -2379,7 +2379,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -2419,7 +2419,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -2442,7 +2442,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -2482,7 +2482,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -2505,12 +2505,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateandroid55B0FFB7": Object {
+    "processedandroid4C5DB298": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -2531,10 +2531,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-CODE-processingRate-android",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-CODE-processed-android",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -2602,12 +2602,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateandroidbeta877F989F": Object {
+    "processedandroidbetaA273AA12": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -2628,10 +2628,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-CODE-processingRate-android-beta",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-CODE-processed-android-beta",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -2699,12 +2699,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateandroidedition416914A9": Object {
+    "processedandroideditionA36DBF89": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -2725,10 +2725,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-CODE-processingRate-android-edition",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-CODE-processed-android-edition",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -2796,12 +2796,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateios3E5DA673": Object {
+    "processediosD1D3AE06": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -2822,10 +2822,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-CODE-processingRate-ios",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-CODE-processed-ios",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -2893,12 +2893,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateioseditionBBDB2410": Object {
+    "processedioseditionC7509270": Object {
       "Properties": Object {
         "ActionsEnabled": false,
         "AlarmActions": Array [
@@ -2919,10 +2919,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-CODE-processingRate-ios-edition",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-CODE-processed-ios-edition",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -2990,7 +2990,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -3599,7 +3599,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -3622,7 +3622,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -3662,7 +3662,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -3685,7 +3685,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -3725,7 +3725,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -3748,7 +3748,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -3788,7 +3788,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -3811,7 +3811,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -3851,7 +3851,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateAgeOfOldestMessage",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -3874,7 +3874,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 180,
+        "Threshold": 700,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -4634,7 +4634,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "lowSucccessRateandroid0C5310D4": Object {
+    "failurePercentageandroidCD03357C": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -4655,19 +4655,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-PROD-lowSuccessRate-android",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-PROD-failure-android",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - android",
+            "Label": "Failure % of EC2 Sender - android",
           },
           Object {
             "Id": "m1",
-            "Label": "success-android",
+            "Label": "failure-android",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -4676,7 +4676,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "android",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/PROD/ec2workers",
               },
               "Period": 300,
@@ -4741,12 +4741,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "lowSucccessRateandroidbeta54A27A3F": Object {
+    "failurePercentageandroidbeta58BBE921": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -4767,19 +4767,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-PROD-lowSuccessRate-android-beta",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-PROD-failure-android-beta",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - android-beta",
+            "Label": "Failure % of EC2 Sender - android-beta",
           },
           Object {
             "Id": "m1",
-            "Label": "success-android-beta",
+            "Label": "failure-android-beta",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -4788,7 +4788,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "android-beta",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/PROD/ec2workers",
               },
               "Period": 300,
@@ -4853,12 +4853,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "lowSucccessRateandroidedition5F27E836": Object {
+    "failurePercentageandroideditionBE5D24E3": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -4879,19 +4879,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-PROD-lowSuccessRate-android-edition",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-PROD-failure-android-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - android-edition",
+            "Label": "Failure % of EC2 Sender - android-edition",
           },
           Object {
             "Id": "m1",
-            "Label": "success-android-edition",
+            "Label": "failure-android-edition",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -4900,7 +4900,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "android-edition",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/PROD/ec2workers",
               },
               "Period": 300,
@@ -4965,12 +4965,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "lowSucccessRateiosAE24AB51": Object {
+    "failurePercentageios3A8FD40D": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -4991,19 +4991,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-PROD-lowSuccessRate-ios",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-PROD-failure-ios",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - ios",
+            "Label": "Failure % of EC2 Sender - ios",
           },
           Object {
             "Id": "m1",
-            "Label": "success-ios",
+            "Label": "failure-ios",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -5012,7 +5012,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "ios",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/PROD/ec2workers",
               },
               "Period": 300,
@@ -5077,12 +5077,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "lowSucccessRateiosedition217BD2F9": Object {
+    "failurePercentageiosedition5E69B50F": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -5103,19 +5103,19 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% success rate",
-        "AlarmName": "sender-worker-PROD-lowSuccessRate-ios-edition",
-        "ComparisonOperator": "LessThanThreshold",
+        "AlarmDescription": "EC2 sender exceeds 1% error percentage",
+        "AlarmName": "sender-worker-PROD-failure-ios-edition",
+        "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/(m2-m3)",
             "Id": "expr_1",
-            "Label": "Success % of EC2 Sender - ios-edition",
+            "Label": "Failure % of EC2 Sender - ios-edition",
           },
           Object {
             "Id": "m1",
-            "Label": "success-ios-edition",
+            "Label": "failure-ios-edition",
             "MetricStat": Object {
               "Metric": Object {
                 "Dimensions": Array [
@@ -5124,7 +5124,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
                     "Value": "ios-edition",
                   },
                 ],
-                "MetricName": "success",
+                "MetricName": "failure",
                 "Namespace": "Notifications/PROD/ec2workers",
               },
               "Period": 300,
@@ -5189,7 +5189,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 1,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -5229,7 +5229,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -5252,7 +5252,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -5292,7 +5292,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -5315,7 +5315,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -5355,7 +5355,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -5378,7 +5378,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -5418,7 +5418,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -5441,7 +5441,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
@@ -5481,7 +5481,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             },
           },
         ],
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 1,
         "MetricName": "ApproximateNumberOfMessagesNotVisible",
         "Namespace": "AWS/SQS",
         "OKActions": Array [
@@ -5504,12 +5504,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         ],
         "Period": 60,
         "Statistic": "Maximum",
-        "Threshold": 500,
+        "Threshold": 400,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateandroid55B0FFB7": Object {
+    "processedandroid4C5DB298": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -5530,10 +5530,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-PROD-processingRate-android",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-PROD-processed-android",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -5601,12 +5601,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateandroidbeta877F989F": Object {
+    "processedandroidbetaA273AA12": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -5627,10 +5627,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-PROD-processingRate-android-beta",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-PROD-processed-android-beta",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -5698,12 +5698,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateandroidedition416914A9": Object {
+    "processedandroideditionA36DBF89": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -5724,10 +5724,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-PROD-processingRate-android-edition",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-PROD-processed-android-edition",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -5795,12 +5795,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateios3E5DA673": Object {
+    "processediosD1D3AE06": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -5821,10 +5821,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-PROD-processingRate-ios",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-PROD-processed-ios",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -5892,12 +5892,12 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "processingRateioseditionBBDB2410": Object {
+    "processedioseditionC7509270": Object {
       "Properties": Object {
         "ActionsEnabled": true,
         "AlarmActions": Array [
@@ -5918,10 +5918,10 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "AlarmDescription": "EC2 sender went below 75% processing rate",
-        "AlarmName": "sender-worker-PROD-processingRate-ios-edition",
+        "AlarmDescription": "EC2 sender processed less than 50% messages",
+        "AlarmName": "sender-worker-PROD-processed-ios-edition",
         "ComparisonOperator": "LessThanThreshold",
-        "EvaluationPeriods": 2,
+        "EvaluationPeriods": 3,
         "Metrics": Array [
           Object {
             "Expression": "100*m1/m2",
@@ -5989,7 +5989,7 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
             ],
           },
         ],
-        "Threshold": 75,
+        "Threshold": 50,
         "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",

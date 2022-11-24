@@ -58,10 +58,11 @@ export class SenderWorkerStack extends GuStack {
 			`SnsTopicForOkAction`,
 			`arn:aws:sns:${this.region}:${this.account}:${props.alarmSnsTopic}`,
 		);
-		const oldestMessageAgeThreshold = 180; // in seconds
-		const messagesInFlightThreshold = 500;
-		const toleratedLowSuccessRate = 75;
-		const thresholdProcessingRate = 75;
+		const oldestMessageAgeThreshold = 700; // in seconds
+		const messagesInFlightThreshold = 400;
+		const toleratedErrorPercentage = 1;
+		const processedPercentageThreshold = 50;
+		const processedPercentageEvalPeriod = 3;
 
 		const vpc = GuVpc.fromIdParameter(
 			this,
@@ -193,7 +194,7 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 					alarmDescription: `Triggers if the age of the oldest message exceeds the threshold. ${runbookCopy}`,
 					alarmName: `${props.appName}-${this.stage}-MessageAge-${platformName}`,
 					comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
-					evaluationPeriods: 2,
+					evaluationPeriods: 1,
 					metric: senderSqs.metricApproximateAgeOfOldestMessage({
 						period: Duration.seconds(60),
 						statistic: 'Maximum',
@@ -214,7 +215,7 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 					alarmDescription: `Triggers if the number of messages in flight exceeds the threshold. ${runbookCopy}`,
 					alarmName: `${props.appName}-${this.stage}-MessageInFlight-${platformName}`,
 					comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
-					evaluationPeriods: 2,
+					evaluationPeriods: 1,
 					metric: senderSqs.metricApproximateNumberOfMessagesNotVisible({
 						period: Duration.seconds(60),
 						statistic: 'Maximum',
@@ -235,35 +236,35 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 					dimensionsMap: { platform: platformName },
 					label: `${metricName}-${platformName}`,
 				});
-			const successRateExpr = new MathExpression({
+			const failurePercentageExpr = new MathExpression({
 				expression: '100*m1/(m2-m3)',
 				usingMetrics: {
-					m1: getMetric('success'),
+					m1: getMetric('failure'),
 					m2: getMetric('total'),
 					m3: getMetric('dryrun'),
 				},
-				label: `Success % of EC2 Sender - ${platformName}`,
+				label: `Failure % of EC2 Sender - ${platformName}`,
 				period: Duration.minutes(5),
 			});
-			const lowSuccessRateAlarm = new GuAlarm(
+			const failurePercentageAlarm = new GuAlarm(
 				this,
-				`lowSucccessRate-${platformName}`,
+				`failurePercentage-${platformName}`,
 				{
 					app: props.appName,
 					actionsEnabled: props.alarmEnabled,
-					metric: successRateExpr,
+					metric: failurePercentageExpr,
 					treatMissingData: TreatMissingData.NOT_BREACHING,
-					threshold: toleratedLowSuccessRate,
-					comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
+					threshold: toleratedErrorPercentage,
+					comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
 					evaluationPeriods: 1,
-					alarmName: `${props.appName}-${props.stage}-lowSuccessRate-${platformName}`,
-					alarmDescription: `EC2 sender went below ${toleratedLowSuccessRate}% success rate`,
+					alarmName: `${props.appName}-${props.stage}-failure-${platformName}`,
+					alarmDescription: `EC2 sender exceeds ${toleratedErrorPercentage}% error percentage`,
 					snsTopicName: props.alarmSnsTopic,
 				},
 			);
-			lowSuccessRateAlarm.addOkAction(new SnsAction(alarmSnsTopic));
+			failurePercentageAlarm.addOkAction(new SnsAction(alarmSnsTopic));
 
-			const processingRateExpr = new MathExpression({
+			const processedPercentageExpr = new MathExpression({
 				expression: '100*m1/m2',
 				usingMetrics: {
 					m1: getMetric('total', 'SampleCount'),
@@ -275,23 +276,23 @@ dpkg -i /tmp/${props.appName}_1.0-latest_all.deb
 				label: `Processed % of SQS messages by EC2 Sender - ${platformName}`,
 				period: Duration.minutes(5),
 			});
-			const processingRateAlarm = new GuAlarm(
+			const processedPercentageAlarm = new GuAlarm(
 				this,
-				`processingRate-${platformName}`,
+				`processed-${platformName}`,
 				{
 					app: props.appName,
 					actionsEnabled: props.alarmEnabled,
-					metric: processingRateExpr,
+					metric: processedPercentageExpr,
 					treatMissingData: TreatMissingData.NOT_BREACHING,
-					threshold: thresholdProcessingRate,
+					threshold: processedPercentageThreshold,
 					comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
-					evaluationPeriods: 2,
-					alarmName: `${props.appName}-${props.stage}-processingRate-${platformName}`,
-					alarmDescription: `EC2 sender went below ${thresholdProcessingRate}% processing rate`,
+					evaluationPeriods: processedPercentageEvalPeriod,
+					alarmName: `${props.appName}-${props.stage}-processed-${platformName}`,
+					alarmDescription: `EC2 sender processed less than ${processedPercentageThreshold}% messages`,
 					snsTopicName: props.alarmSnsTopic,
 				},
 			);
-			processingRateAlarm.addOkAction(new SnsAction(alarmSnsTopic));
+			processedPercentageAlarm.addOkAction(new SnsAction(alarmSnsTopic));
 			return senderSqs;
 		};
 
