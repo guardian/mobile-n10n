@@ -36,6 +36,8 @@ case class PerformanceMetrics(
   functionProcessingTime: Long,
   notificationProcessingTime: Long,
   notificationProcessingStartTime: Long,
-  notificationProcessingEndTime: Long
+  notificationProcessingEndTime: Long,
+  sqsMessageBatchSize: Int,
+  chunkTokenSize: Int,
 )
 

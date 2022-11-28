@@ -21,7 +21,7 @@ trait Cloudwatch {
   def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit]
 }
 
-class CloudwatchImpl extends Cloudwatch {
+class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
 
   lazy val cloudwatchClient: AmazonCloudWatch = AmazonCloudWatchClientBuilder
     .standard()
@@ -52,7 +52,7 @@ class CloudwatchImpl extends Cloudwatch {
         countDatum("total", results.total, dimension)
       )
       val req = new PutMetricDataRequest()
-        .withNamespace(s"Notifications/$stage/workers")
+        .withNamespace(s"Notifications/$stage/$senderMetricNs")
         .withMetricData(metrics.asJava)
       cloudwatchClient.putMetricData(req)
       ()
@@ -68,7 +68,7 @@ class CloudwatchImpl extends Cloudwatch {
           perfMetricDatum("worker.functionProcessingRate", StandardUnit.None, performanceData.functionProcessingRate).withDimensions(dimension1, dimension2),
         )
         val req = new PutMetricDataRequest()
-          .withNamespace(s"Notifications/$stage/workers")
+          .withNamespace(s"Notifications/$stage/$senderMetricNs")
           .withMetricData(perfMetrics.asJava)
         cloudwatchClient.putMetricData(req)
         ()

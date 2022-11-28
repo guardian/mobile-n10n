@@ -4,7 +4,7 @@ exports[`The MobileAppsRendering stack matches the snapshot 1`] = `
 Object {
   "Metadata": Object {
     "gu:cdk:constructs": Array [],
-    "gu:cdk:version": "47.3.3",
+    "gu:cdk:version": "48.5.0",
   },
   "Outputs": Object {
     "NotificationSenderWorkerQueueArns": Object {
@@ -214,7 +214,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -242,7 +242,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -379,7 +379,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -394,7 +394,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "Timeout": 90,
+        "Timeout": 180,
       },
       "Type": "AWS::Lambda::Function",
     },
@@ -406,7 +406,7 @@ Object {
           "App": "android",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "47.3.3",
+          "gu:cdk:version": "48.5.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -437,7 +437,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -452,7 +452,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "VisibilityTimeout": 100,
+        "VisibilityTimeout": 200,
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
@@ -463,7 +463,7 @@ Object {
         "androidSenderSqsCF269D3F",
       ],
       "Properties": Object {
-        "BatchSize": 1,
+        "BatchSize": 10,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [
@@ -474,6 +474,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androidSenderLambdaCtr85CB623B",
         },
+        "MaximumBatchingWindowInSeconds": 1,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -683,7 +684,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -711,7 +712,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -848,7 +849,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -875,7 +876,7 @@ Object {
           "App": "android-beta",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "47.3.3",
+          "gu:cdk:version": "48.5.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -906,7 +907,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -943,6 +944,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
         },
+        "MaximumBatchingWindowInSeconds": 0,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -1152,7 +1154,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1180,7 +1182,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1317,7 +1319,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1344,7 +1346,7 @@ Object {
           "App": "android-edition",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "47.3.3",
+          "gu:cdk:version": "48.5.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -1375,7 +1377,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1412,6 +1414,7 @@ Object {
         "FunctionName": Object {
           "Ref": "androideditionSenderLambdaCtrF0169D16",
         },
+        "MaximumBatchingWindowInSeconds": 0,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -1621,7 +1624,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1649,7 +1652,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1786,7 +1789,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1813,7 +1816,7 @@ Object {
           "App": "ios",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "47.3.3",
+          "gu:cdk:version": "48.5.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -1844,7 +1847,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -1881,6 +1884,7 @@ Object {
         "FunctionName": Object {
           "Ref": "iosSenderLambdaCtr6053C1F8",
         },
+        "MaximumBatchingWindowInSeconds": 0,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -2090,7 +2094,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -2118,7 +2122,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -2255,7 +2259,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
@@ -2282,7 +2286,7 @@ Object {
           "App": "ios-edition",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "47.3.3",
+          "gu:cdk:version": "48.5.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -2310,6 +2314,7 @@ Object {
         "FunctionName": Object {
           "Ref": "ioseditionSenderLambdaCtr2410D4D7",
         },
+        "MaximumBatchingWindowInSeconds": 0,
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
@@ -2333,7 +2338,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "47.3.3",
+            "Value": "48.5.0",
           },
           Object {
             "Key": "gu:repo",
