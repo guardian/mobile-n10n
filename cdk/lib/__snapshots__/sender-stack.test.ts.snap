@@ -1502,6 +1502,216 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
       },
       "Type": "AWS::SSM::Parameter",
     },
+    "SenderWorkerQueueNameEc2SSMParameterandroid083E7FB7": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/ec2workers/android/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroidDCF78A7C",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameEc2SSMParameterandroidbetaE699F68C": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/ec2workers/android-beta/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroidbetaD9344C34",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameEc2SSMParameterandroideditionD80873C5": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/ec2workers/android-edition/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroideditionE70A53F0",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameEc2SSMParameteriosEC299B84": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/ec2workers/ios/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsios636F1B52",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameEc2SSMParameterioseditionC08EEB07": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/ec2workers/ios-edition/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsioseditionF8A67CD0",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterandroid356C0579": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/android/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroidDCF78A7C",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterandroidbeta806E75AE": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/android-beta/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroidbetaD9344C34",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterandroidedition844CC6FD": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/android-edition/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroideditionE70A53F0",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterios0859571B": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/ios/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsios636F1B52",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterioseditionB4D58401": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/CODE/workers/ios-edition/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "CODE",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsioseditionF8A67CD0",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
     "SenderWorkerQueueSSMParameterandroid4CF3EFFE": Object {
       "Properties": Object {
         "DataType": "text",
@@ -4497,6 +4707,216 @@ dpkg -i /tmp/sender-worker_1.0-latest_all.deb
         "Type": "String",
         "Value": Object {
           "Ref": "SenderSqsioseditionF8A67CD0",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameEc2SSMParameterandroid083E7FB7": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/ec2workers/android/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroidDCF78A7C",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameEc2SSMParameterandroidbetaE699F68C": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/ec2workers/android-beta/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroidbetaD9344C34",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameEc2SSMParameterandroideditionD80873C5": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/ec2workers/android-edition/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroideditionE70A53F0",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameEc2SSMParameteriosEC299B84": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/ec2workers/ios/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsios636F1B52",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameEc2SSMParameterioseditionC08EEB07": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/ec2workers/ios-edition/sqsEc2Name",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsioseditionF8A67CD0",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterandroid356C0579": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/android/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroidDCF78A7C",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterandroidbeta806E75AE": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/android-beta/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroidbetaD9344C34",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterandroidedition844CC6FD": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/android-edition/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsandroideditionE70A53F0",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterios0859571B": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/ios/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsios636F1B52",
+            "QueueName",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "SenderWorkerQueueNameSSMParameterioseditionB4D58401": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/ios-edition/sqsName",
+        "Tags": Object {
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "TEST",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Fn::GetAtt": Array [
+            "SenderSqsioseditionF8A67CD0",
+            "QueueName",
+          ],
         },
       },
       "Type": "AWS::SSM::Parameter",

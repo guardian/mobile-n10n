@@ -4,57 +4,91 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.jdk.CollectionConverters._
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Platform}
+import com.amazon.sqs.javamessaging.{ProviderConfiguration, SQSConnection, SQSConnectionFactory, SQSQueueDestination}
 import com.amazonaws.services.lambda.runtime.Context
+import com.amazonaws.services.sqs
 import com.amazonaws.services.sqs.{AmazonSQSAsyncClientBuilder, AmazonSQSClientBuilder}
-import com.amazonaws.services.sqs.model.{Message, ReceiveMessageRequest}
 import com.gu.notifications.worker.IOSSender
 import com.gu.notifications.worker.AndroidSender
 import com.gu.notifications.worker.utils.Aws.credentialsProvider
 
-import scala.concurrent.Future
+import java.util.concurrent.TimeUnit
+import javax.jms
+import javax.jms.{Destination, MessageConsumer, MessageListener, ObjectMessage, Queue, Session, TextMessage}
+import javax.security.auth.callback.Callback
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 object SenderWorker extends App {
 
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  val sqsClient = AmazonSQSAsyncClientBuilder.standard()
+  val sqsClient = AmazonSQSClientBuilder.standard()
     .withCredentials(credentialsProvider)
     .withRegion("eu-west-1")
     .build()
 
-  def pollQueue(queue: String, appName: String, handleChunkTokens: (SQSEvent, Context) => Unit): Future[Unit] = Future {
-    logger.info(s"About to poll queue - $appName")
-    val receiveMessages = sqsClient.receiveMessage(new ReceiveMessageRequest().withQueueUrl(queue).withWaitTimeSeconds(20)).getMessages.asScala.toList
+  class OpenConnection(queueName: String) {
+    val connectionFactory = new SQSConnectionFactory(
+      new ProviderConfiguration(),
+      sqsClient
+    )
 
-    def parsedReceivedMessages(message: List[Message]): SQSEvent = {
-      val parsedMessages = message.map(m => {
-        val sqsMessage = new SQSMessage()
-        sqsMessage.setBody(m.getBody)
-        sqsMessage.setAttributes(m.getAttributes)
-        sqsMessage.setReceiptHandle(m.getReceiptHandle)
-        sqsMessage
-      })
+    val connection: SQSConnection = connectionFactory.createConnection()
 
-      val event = new SQSEvent()
-      event.setRecords(parsedMessages.asJava)
-      event
+    val connectionSession: Session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
+
+    val consumer: MessageConsumer = connectionSession.createConsumer(connectionSession.createQueue(queueName))
+
+    connection.start()
+  }
+
+  class ReceiverCallback(queueUrl: String, handleChunkTokens: (SQSEvent, Context) => Unit) extends MessageListener {
+
+    def parsedReceivedMessages(message: jms.Message): Option[SQSEvent] = {
+
+     message match {
+        case textMessage: TextMessage => {
+          val sqsMessage = new SQSMessage()
+          sqsMessage.setBody(textMessage.getText)
+          sqsMessage.setAttributes(Map("SentTimestamp" -> textMessage.getJMSTimestamp.toString).asJava)
+          val event = new SQSEvent()
+          event.setRecords(List(sqsMessage).asJava)
+          Some(event)
+          }
+        case _ => None
+      }
     }
 
-    val parsedEvent: SQSEvent = parsedReceivedMessages(receiveMessages)
+    override def onMessage(message: jms.Message): Unit = Future {
+      logger.info("JMS message received")
+      val parsedEvent = parsedReceivedMessages(message)
+      parsedEvent match {
+        case Some(event) => {
+          handleChunkTokens(event, null)
+          message.acknowledge()
+        }
+        case None => {
+          logger.error("Cannot parse message")
+        }
+      }
+    }
+  }
 
-    handleChunkTokens(parsedEvent, null)
+  def listenForMessages(queueName: String, queueUrl: String, appName: String, handleChunkTokens: (SQSEvent, Context) => Unit): Unit = {
+    logger.info(s"About to poll queue - $appName")
 
-    parsedEvent.getRecords.forEach(m => {
-      sqsClient.deleteMessage(queue, m.getReceiptHandle)
-      logger.info("Successfully deleted message")
-    })
+    val connectionCallback = new ReceiverCallback(queueUrl, handleChunkTokens)
 
-    logger.info(s"Finished polling $appName")
+    new OpenConnection(queueName) {
+      consumer.setMessageListener(connectionCallback)
+    }
+
+    logger.info(s"Polling for messages from $appName queue")
 
   }
 
@@ -64,24 +98,24 @@ object SenderWorker extends App {
 
   logger.info("Sender worker - Ios started")
   val iosSender = new IOSSender(Configuration.fetchApns(config, Ios), "ec2workers")
-  pollQueue(iosSender.config.sqsUrl, "ios", iosSender.handleChunkTokens)
+  listenForMessages(iosSender.config.sqsName, iosSender.config.sqsUrl, "ios", iosSender.handleChunkTokens)
 
   logger.info("Sender worker - Android started")
   val androidSender = new AndroidSender(Configuration.fetchFirebase(config, Android), Some(Android.toString()), "ec2workers")
-  pollQueue(androidSender.config.sqsUrl, "android", androidSender.handleChunkTokens)
+  listenForMessages(androidSender.config.sqsName, androidSender.config.sqsUrl, "android", androidSender.handleChunkTokens)
 
   logger.info("Sender worker - IosEdition started")
   val iosEditionSender = new IOSSender(Configuration.fetchApns(config, IosEdition), "ec2workers")
-  pollQueue(iosEditionSender.config.sqsUrl, "ios-edition", iosEditionSender.handleChunkTokens)
+  listenForMessages(iosEditionSender.config.sqsName, iosEditionSender.config.sqsUrl, "ios-edition", iosEditionSender.handleChunkTokens)
 
   logger.info("Sender worker - AndroidBeta started")
   val androidBetaSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidBeta), Some(AndroidBeta.toString()), "ec2workers")
-  pollQueue(androidBetaSender.config.sqsUrl,"android-beta", androidBetaSender.handleChunkTokens)
+  listenForMessages(androidBetaSender.config.sqsName, androidBetaSender.config.sqsUrl,"android-beta", androidBetaSender.handleChunkTokens)
 
   logger.info("Sender worker - AndroidEdition started")
   val androidEditionSender = new AndroidSender(Configuration.fetchFirebase(config, AndroidEdition), Some(AndroidEdition.toString()), "ec2workers")
-  pollQueue(androidEditionSender.config.sqsUrl, "android-edition", androidEditionSender.handleChunkTokens)
+  listenForMessages(androidEditionSender.config.sqsName, androidEditionSender.config.sqsUrl, "android-edition", androidEditionSender.handleChunkTokens)
 
   logger.info("Sender worker all started")
-  Thread.sleep(60*60*1000)
+
 }

@@ -11,7 +11,7 @@ import com.gu.notifications.worker.ApnsWorkerConfiguration
 import com.gu.notifications.worker.FcmWorkerConfiguration
 
 class ConfigWithPrefix(config: Config, prefix: String) {
-    
+
     def getString(key: String): String = config.getString(s"${prefix}.${key}")
 
     def getBoolean(key: String): Boolean = config.getBoolean(s"${prefix}.${key}")
@@ -33,6 +33,7 @@ object Configuration {
     ApnsWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       config.getString("sqsEc2Url"),
+      config.getString("sqsEc2Name"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
@@ -55,6 +56,7 @@ object Configuration {
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       config.getString("sqsEc2Url"),
+      config.getString("sqsEc2Name"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),
