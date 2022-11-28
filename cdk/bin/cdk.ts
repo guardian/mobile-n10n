@@ -68,6 +68,8 @@ export const senderCodeProps = {
 	targetCpuUtilization: 20,
 	notificationSnsTopic:
 		'arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsCODE',
+	alarmSnsTopic: 'mobile-server-side',
+	alarmEnabled: false,
 	cleanerQueueArn:
 		'arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-registration-cleaning-worker-CODE-Sqs-1CFISZQCN49SR',
 };
@@ -85,6 +87,8 @@ export const senderProdProps = {
 	targetCpuUtilization: 20,
 	notificationSnsTopic:
 		'arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsPROD',
+	alarmSnsTopic: 'mobile-server-side',
+	alarmEnabled: true,
 	cleanerQueueArn:
 		'arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-registration-cleaning-worker-PROD-Sqs-12LNONCNWBRWK',
 };
