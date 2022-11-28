@@ -452,7 +452,7 @@ Object {
             "Value": "PROD",
           },
         ],
-        "VisibilityTimeout": 200,
+        "VisibilityTimeout": 190,
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
@@ -463,7 +463,7 @@ Object {
         "androidSenderSqsCF269D3F",
       ],
       "Properties": Object {
-        "BatchSize": 10,
+        "BatchSize": 20,
         "Enabled": true,
         "EventSourceArn": Object {
           "Fn::GetAtt": Array [

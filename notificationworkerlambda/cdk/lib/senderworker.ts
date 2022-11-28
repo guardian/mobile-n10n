@@ -40,7 +40,7 @@ class SenderWorker extends cdkcore.Construct  {
 
     const senderDlq = new sqs.Queue(this, 'SenderDlq')
     this.senderSqs = new sqs.Queue(this, 'SenderSqs', {
-      visibilityTimeout: props.isBatchingSqsMessages ? cdk.Duration.seconds(200) : cdk.Duration.seconds(100),
+      visibilityTimeout: props.isBatchingSqsMessages ? cdk.Duration.seconds(190) : cdk.Duration.seconds(100),
       retentionPeriod: cdk.Duration.hours(1),
       deadLetterQueue: {
         queue: senderDlq,
@@ -116,7 +116,7 @@ class SenderWorker extends cdkcore.Construct  {
     })
 
     const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
-      batchSize: props.isBatchingSqsMessages ? 10 : 1,
+      batchSize: props.isBatchingSqsMessages ? 20 : 1,
       maxBatchingWindow: props.isBatchingSqsMessages ? cdk.Duration.seconds(1) : cdk.Duration.seconds(0),
       enabled: true,
       eventSourceArn: this.senderSqs.queueArn,
