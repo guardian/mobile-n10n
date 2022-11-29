@@ -41,5 +41,19 @@ export class Registration extends GuStack {
 		const applicationServerErrors = loadBalancerMetric('HTTPCode_Backend_5XX');
 		const loadBalancerErrors = loadBalancerMetric('HTTPCode_ELB_5XX');
 		const allRequests = loadBalancerMetric('RequestCount');
+
+		const budgetAlarm = new GuErrorBudgetAlarmExperimental(this, {
+			sloName: "RegistrationAvailabilitySlo",
+			sloTarget: 0.999,
+			badEvents: new MathExpression({
+			  expression: "applicationServerErrors + loadBalancerErrors",
+			  usingMetrics: {
+				applicationServerErrors,
+				loadBalancerErrors,
+			  },
+			}),
+			validEvents: allRequests,
+			snsTopicNameForAlerts: "jacob-test",
+		  });
 	}
 }
