@@ -40,7 +40,7 @@ class SenderWorker extends cdkcore.Construct  {
 
     const senderDlq = new sqs.Queue(this, 'SenderDlq')
     this.senderSqs = new sqs.Queue(this, 'SenderSqs', {
-      visibilityTimeout: props.isBatchingSqsMessages ? cdk.Duration.seconds(200) : cdk.Duration.seconds(100),
+      visibilityTimeout: props.isBatchingSqsMessages ? cdk.Duration.seconds(190) : cdk.Duration.seconds(100),
       retentionPeriod: cdk.Duration.hours(1),
       deadLetterQueue: {
         queue: senderDlq,
