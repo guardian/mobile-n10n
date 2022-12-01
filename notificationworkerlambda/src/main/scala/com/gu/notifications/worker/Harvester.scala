@@ -43,6 +43,12 @@ trait HarvesterRequestHandler extends Logging {
 
   val lambdaServiceSet: SqsDeliveryStack
   val ec2ServiceSet: SqsDeliveryStack
+  val iosLiveEventService: EventDeliveryService[IO]
+  val androidLiveEventService: EventDeliveryService[IO]
+  val iosEditionEventService: EventDeliveryService[IO]
+  val androidEditionEventService: EventDeliveryService[IO]
+  val androidBetaEventService: EventDeliveryService[IO]
+
   val jdbcConfig: JdbcConfig
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
@@ -57,7 +63,7 @@ trait HarvesterRequestHandler extends Logging {
     throwables.broadcastTo(logErrors(s"platform:[${platform}] "), cloudwatch.sendFailures(env.stage, platform))
   }
 
-  def platformSink(shardedNotification: ShardedNotification, platform: Platform, workerSqs: WorkerSqs, deliveryService: SqsDeliveryService[IO]): Pipe[IO, (WorkerSqs, HarvestedToken), Unit] = {
+  def platformSink(shardedNotification: ShardedNotification, platform: Platform, workerSqs: WorkerSqs, deliveryService: SqsDeliveryService[IO], eventService: EventDeliveryService[IO]): Pipe[IO, (WorkerSqs, HarvestedToken), Unit] = {
     val platformSinkErrors = sinkErrors(platform)
     tokens =>
       tokens
@@ -67,6 +73,7 @@ trait HarvesterRequestHandler extends Logging {
         .chunkN(1000)
         .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range))
         .map(deliveryService.sending)
+        .map(eventService.streamEmit)
         .parJoin(maxConcurrency)
         .collect {
           case Left(throwable) => throwable
@@ -99,11 +106,11 @@ trait HarvesterRequestHandler extends Logging {
       shardedNotification <- shardedNotifications
       deliveryStack = switchStack(shardedNotification.notification.topic)
       notificationId = shardedNotification.notification.id
-      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, deliveryStack.androidLiveDeliveryService)
-      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, deliveryStack.androidBetaDeliveryService)
-      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, deliveryStack.androidEditionDeliveryService)
-      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, deliveryStack.iosLiveDeliveryService)
-      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, deliveryStack.iosEditionDeliveryService)
+      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, deliveryStack.androidLiveDeliveryService, androidLiveEventService)
+      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, deliveryStack.androidBetaDeliveryService, androidBetaEventService)
+      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, deliveryStack.androidEditionDeliveryService, androidEditionEventService)
+      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, deliveryStack.iosLiveDeliveryService, iosLiveEventService)
+      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, deliveryStack.iosEditionDeliveryService, iosEditionEventService)
       notificationLog = s"(notification: $notificationId ${shardedNotification.range})"
       _ = logger.info(Map("notificationId" -> notificationId), s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
@@ -206,6 +213,12 @@ class Harvester extends HarvesterRequestHandler {
    androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl),
    androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
   )
+
+  override val iosLiveEventService = new EventDeliveryServiceImpl[IO](Ios, config.iosLiveSqsUrl)
+  override val androidLiveEventService = new EventDeliveryServiceImpl[IO](Android, config.androidLiveSqsUrl)
+  override val iosEditionEventService = new EventDeliveryServiceImpl[IO](IosEdition, config.iosEditionSqsUrl)
+  override val androidEditionEventService = new EventDeliveryServiceImpl[IO](AndroidEdition, config.androidEditionSqsUrl)
+  override val androidBetaEventService = new EventDeliveryServiceImpl[IO](AndroidBeta, config.androidBetaSqsUrl)
 
   override val ec2ServiceSet = SqsDeliveryStack(
    iosLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsEc2Url),
