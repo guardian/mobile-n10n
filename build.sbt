@@ -424,6 +424,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
+      "com.amazonaws" % "aws-java-sdk-eventbridge" % awsSdkVersion,
       "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "1.1.0",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
