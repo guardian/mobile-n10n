@@ -5,11 +5,11 @@ import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.{Timer, UUID}
 import java.util.concurrent.{TimeUnit, TimeoutException}
-
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
-import models.ApnsConfig
+import models.{ApnsConfig, IOSMetricsRegistry}
 import _root_.models.Notification
+import com.codahale.metrics.MetricRegistry
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayloadBuilder
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.PushNotificationFuture
@@ -114,7 +114,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
 object ApnsClient {
 
-  def apply(config: ApnsConfig): Try[ApnsClient] = {
+  def apply(config: ApnsConfig, metricsListener: IOSMetricsRegistry): Try[ApnsClient] = {
     val apnsServer =
       if (config.sendingToProdServer) ApnsClientBuilder.PRODUCTION_APNS_HOST
       else ApnsClientBuilder.DEVELOPMENT_APNS_HOST
@@ -130,6 +130,7 @@ object ApnsClient {
         .setApnsServer(apnsServer)
         .setSigningKey(signingKey)
         .setConnectionTimeout(10, TimeUnit.SECONDS)
+        .setMetricsListener(metricsListener)
         .build()
     ).map(pushyClient => new ApnsClient(pushyClient, config))
   }
