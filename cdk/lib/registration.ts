@@ -43,7 +43,7 @@ export class Registration extends GuStack {
 		const allRequests = loadBalancerMetric('RequestCount');
 
 		const budgetAlarm = new GuErrorBudgetAlarmExperimental(this, {
-			sloName: 'RegistrationAvailabilitySlo',
+			sloName: `RegistrationAvailability${this.stage}Slo`,
 			sloTarget: 0.999,
 			badEvents: new MathExpression({
 				expression: 'applicationServerErrors + loadBalancerErrors',

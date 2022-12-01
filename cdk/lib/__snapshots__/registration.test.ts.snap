@@ -116,9 +116,9 @@ Object {
     },
   },
   "Resources": Object {
-    "ChildAlarmLongPeriodRegistrationAvailabilitySloFastBurnCompositeAlarm9DBCB1E7": Object {
+    "ChildAlarmLongPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm9A488A8B": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilitySloFastBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -198,9 +198,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmLongPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarmD93550B4": Object {
+    "ChildAlarmLongPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarmA8996F9A": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -280,9 +280,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmLongPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm79F9858A": Object {
+    "ChildAlarmLongPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarmBA0A58D0": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -362,9 +362,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmShortPeriodRegistrationAvailabilitySloFastBurnCompositeAlarmBD049EFA": Object {
+    "ChildAlarmShortPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm8A5062E9": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilitySloFastBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -444,9 +444,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmShortPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarmD27BCD8B": Object {
+    "ChildAlarmShortPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarmFA4465F4": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -526,9 +526,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmShortPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm3A9D9B78": Object {
+    "ChildAlarmShortPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarm6D64C393": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -1203,7 +1203,7 @@ Object {
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
     },
-    "RegistrationAvailabilitySloFastBurnCompositeAlarm204BF040": Object {
+    "RegistrationAvailabilityCODESloFastBurnCompositeAlarm18091507": Object {
       "Properties": Object {
         "AlarmActions": Array [
           Object {
@@ -1223,7 +1223,7 @@ Object {
             ],
           },
         ],
-        "AlarmName": "RegistrationCODERegistrationAvailabilitySloFastBurnCompositeAlarm4A6A4D26",
+        "AlarmName": "RegistrationCODERegistrationAvailabilityCODESloFastBurnCompositeAlarm9597A684",
         "AlarmRule": Object {
           "Fn::Join": Array [
             "",
@@ -1231,14 +1231,14 @@ Object {
               "(ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmLongPeriodRegistrationAvailabilitySloFastBurnCompositeAlarm9DBCB1E7",
+                  "ChildAlarmLongPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm9A488A8B",
                   "Arn",
                 ],
               },
               "\\") AND ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmShortPeriodRegistrationAvailabilitySloFastBurnCompositeAlarmBD049EFA",
+                  "ChildAlarmShortPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm8A5062E9",
                   "Arn",
                 ],
               },
@@ -1249,11 +1249,11 @@ Object {
       },
       "Type": "AWS::CloudWatch::CompositeAlarm",
     },
-    "RegistrationAvailabilitySloMediumBurnCompositeAlarm4A61EF5E": Object {
+    "RegistrationAvailabilityCODESloMediumBurnCompositeAlarmB3912EC4": Object {
       "Properties": Object {
         "ActionsSuppressor": Object {
           "Fn::GetAtt": Array [
-            "RegistrationAvailabilitySloFastBurnCompositeAlarm204BF040",
+            "RegistrationAvailabilityCODESloFastBurnCompositeAlarm18091507",
             "Arn",
           ],
         },
@@ -1277,7 +1277,7 @@ Object {
             ],
           },
         ],
-        "AlarmName": "RegistrationCODERegistrationAvailabilitySloMediumBurnCompositeAlarm298EACD2",
+        "AlarmName": "RegistrationCODERegistrationAvailabilityCODESloMediumBurnCompositeAlarm2E51BAC8",
         "AlarmRule": Object {
           "Fn::Join": Array [
             "",
@@ -1285,14 +1285,14 @@ Object {
               "(ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmLongPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarmD93550B4",
+                  "ChildAlarmLongPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarmA8996F9A",
                   "Arn",
                 ],
               },
               "\\") AND ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmShortPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarmD27BCD8B",
+                  "ChildAlarmShortPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarmFA4465F4",
                   "Arn",
                 ],
               },
@@ -1303,11 +1303,11 @@ Object {
       },
       "Type": "AWS::CloudWatch::CompositeAlarm",
     },
-    "RegistrationAvailabilitySloSlowBurnCompositeAlarm493AEA5E": Object {
+    "RegistrationAvailabilityCODESloSlowBurnCompositeAlarm2492818E": Object {
       "Properties": Object {
         "ActionsSuppressor": Object {
           "Fn::GetAtt": Array [
-            "RegistrationAvailabilitySloMediumBurnCompositeAlarm4A61EF5E",
+            "RegistrationAvailabilityCODESloMediumBurnCompositeAlarmB3912EC4",
             "Arn",
           ],
         },
@@ -1331,7 +1331,7 @@ Object {
             ],
           },
         ],
-        "AlarmName": "RegistrationCODERegistrationAvailabilitySloSlowBurnCompositeAlarmD808551D",
+        "AlarmName": "RegistrationCODERegistrationAvailabilityCODESloSlowBurnCompositeAlarm1FA4BC2F",
         "AlarmRule": Object {
           "Fn::Join": Array [
             "",
@@ -1339,14 +1339,14 @@ Object {
               "(ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmLongPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm79F9858A",
+                  "ChildAlarmLongPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarmBA0A58D0",
                   "Arn",
                 ],
               },
               "\\") AND ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmShortPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm3A9D9B78",
+                  "ChildAlarmShortPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarm6D64C393",
                   "Arn",
                 ],
               },
@@ -1561,9 +1561,9 @@ Object {
     },
   },
   "Resources": Object {
-    "ChildAlarmLongPeriodRegistrationAvailabilitySloFastBurnCompositeAlarm9DBCB1E7": Object {
+    "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm904FE6B3": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilitySloFastBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -1643,9 +1643,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmLongPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarmD93550B4": Object {
+    "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm6D4E00F5": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -1725,9 +1725,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmLongPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm79F9858A": Object {
+    "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarmFD2D9570": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -1807,9 +1807,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmShortPeriodRegistrationAvailabilitySloFastBurnCompositeAlarmBD049EFA": Object {
+    "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm77DE6914": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilitySloFastBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -1889,9 +1889,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmShortPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarmD27BCD8B": Object {
+    "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm0BAFCB45": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -1971,9 +1971,9 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "ChildAlarmShortPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm3A9D9B78": Object {
+    "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarm2C6CA489": Object {
       "Properties": Object {
-        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm",
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarm",
         "ComparisonOperator": "GreaterThanThreshold",
         "EvaluationPeriods": 1,
         "Metrics": Array [
@@ -2648,7 +2648,7 @@ Object {
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
     },
-    "RegistrationAvailabilitySloFastBurnCompositeAlarm204BF040": Object {
+    "RegistrationAvailabilityPRODSloFastBurnCompositeAlarm98D5A44A": Object {
       "Properties": Object {
         "AlarmActions": Array [
           Object {
@@ -2668,7 +2668,7 @@ Object {
             ],
           },
         ],
-        "AlarmName": "RegistrationPRODRegistrationAvailabilitySloFastBurnCompositeAlarmC4A92317",
+        "AlarmName": "RegistrationPRODRegistrationAvailabilityPRODSloFastBurnCompositeAlarm05562A97",
         "AlarmRule": Object {
           "Fn::Join": Array [
             "",
@@ -2676,14 +2676,14 @@ Object {
               "(ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmLongPeriodRegistrationAvailabilitySloFastBurnCompositeAlarm9DBCB1E7",
+                  "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm904FE6B3",
                   "Arn",
                 ],
               },
               "\\") AND ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmShortPeriodRegistrationAvailabilitySloFastBurnCompositeAlarmBD049EFA",
+                  "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm77DE6914",
                   "Arn",
                 ],
               },
@@ -2694,11 +2694,11 @@ Object {
       },
       "Type": "AWS::CloudWatch::CompositeAlarm",
     },
-    "RegistrationAvailabilitySloMediumBurnCompositeAlarm4A61EF5E": Object {
+    "RegistrationAvailabilityPRODSloMediumBurnCompositeAlarmECC2D850": Object {
       "Properties": Object {
         "ActionsSuppressor": Object {
           "Fn::GetAtt": Array [
-            "RegistrationAvailabilitySloFastBurnCompositeAlarm204BF040",
+            "RegistrationAvailabilityPRODSloFastBurnCompositeAlarm98D5A44A",
             "Arn",
           ],
         },
@@ -2722,7 +2722,7 @@ Object {
             ],
           },
         ],
-        "AlarmName": "RegistrationPRODRegistrationAvailabilitySloMediumBurnCompositeAlarm04ACB927",
+        "AlarmName": "RegistrationPRODRegistrationAvailabilityPRODSloMediumBurnCompositeAlarmBE88DBD9",
         "AlarmRule": Object {
           "Fn::Join": Array [
             "",
@@ -2730,14 +2730,14 @@ Object {
               "(ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmLongPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarmD93550B4",
+                  "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm6D4E00F5",
                   "Arn",
                 ],
               },
               "\\") AND ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmShortPeriodRegistrationAvailabilitySloMediumBurnCompositeAlarmD27BCD8B",
+                  "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm0BAFCB45",
                   "Arn",
                 ],
               },
@@ -2748,11 +2748,11 @@ Object {
       },
       "Type": "AWS::CloudWatch::CompositeAlarm",
     },
-    "RegistrationAvailabilitySloSlowBurnCompositeAlarm493AEA5E": Object {
+    "RegistrationAvailabilityPRODSloSlowBurnCompositeAlarmF843FA7A": Object {
       "Properties": Object {
         "ActionsSuppressor": Object {
           "Fn::GetAtt": Array [
-            "RegistrationAvailabilitySloMediumBurnCompositeAlarm4A61EF5E",
+            "RegistrationAvailabilityPRODSloMediumBurnCompositeAlarmECC2D850",
             "Arn",
           ],
         },
@@ -2776,7 +2776,7 @@ Object {
             ],
           },
         ],
-        "AlarmName": "RegistrationPRODRegistrationAvailabilitySloSlowBurnCompositeAlarm47A16A9B",
+        "AlarmName": "RegistrationPRODRegistrationAvailabilityPRODSloSlowBurnCompositeAlarmAA523B94",
         "AlarmRule": Object {
           "Fn::Join": Array [
             "",
@@ -2784,14 +2784,14 @@ Object {
               "(ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmLongPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm79F9858A",
+                  "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarmFD2D9570",
                   "Arn",
                 ],
               },
               "\\") AND ALARM(\\"",
               Object {
                 "Fn::GetAtt": Array [
-                  "ChildAlarmShortPeriodRegistrationAvailabilitySloSlowBurnCompositeAlarm3A9D9B78",
+                  "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarm2C6CA489",
                   "Arn",
                 ],
               },
