@@ -12,6 +12,8 @@ import {SnsAction} from 'aws-cdk-lib/aws-cloudwatch-actions'
 import { GuStack } from "@guardian/cdk/lib/constructs/core"
 import type { App } from "aws-cdk-lib"
 import type { GuStackProps } from "@guardian/cdk/lib/constructs/core"
+import { Rule } from 'aws-cdk-lib/aws-events'
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets'
 
 interface SenderWorkerOpts {
   handler: string,
@@ -115,15 +117,22 @@ class SenderWorker extends cdkcore.Construct  {
       reservedConcurrentExecutions: props.reservedConcurrency
     })
 
-    const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
-      batchSize: props.isBatchingSqsMessages ? 20 : 1,
-      maxBatchingWindow: props.isBatchingSqsMessages ? cdk.Duration.seconds(1) : cdk.Duration.seconds(0),
+    const eventRule = new Rule(this, "SqsMessageSentRulee", {
       enabled: true,
-      eventSourceArn: this.senderSqs.queueArn,
-      target: senderLambdaCtr
-    })
-    senderSqsEventSourceMapping.node.addDependency(this.senderSqs)
-    senderSqsEventSourceMapping.node.addDependency(senderLambdaCtr)
+      description: `SQS message sent to SQS queue for ${props.platform} on ${scope.stage}`,
+      ruleName: `${scope.stack}-sender-${props.platform}-${scope.stage}-trigger`,
+      eventPattern: {
+        source: ["com.gu.notifications.worker.Harvester"],
+        detailType: ["Tokens sent"],
+        detail: {
+          platform: [`${props.platform}`],
+        }
+      },
+    });
+    eventRule.addTarget(new LambdaFunction(senderLambdaCtr, {
+      maxEventAge: cdk.Duration.minutes(30), // Optional: set the maxEventAge retry policy
+      retryAttempts: 2, // Optional: set the max number of retry attempts
+    }));
 
     const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
       alarmDescription: `Triggers if the ${id} sender lambda is throttled in ${scope.stage}.`,
