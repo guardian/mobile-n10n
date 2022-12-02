@@ -8,6 +8,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery._
+import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
 import models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, IndividualNotification}
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
@@ -26,6 +27,8 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   val cleaningClient: CleaningClient
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int
+
+  val registry: IOSMetricsRegistry
 
   def env = Env()
 
@@ -100,10 +103,6 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .drain
       .unsafeRunSync()
 
-    logger.info(Map(
-      "sqsMessageBatchSize" -> sqsMessageBatchSize,
-      "totalTokensProcessed" -> totalTokensProcessed,
-      "invocation.functionProcessingRate" -> { totalTokensProcessed.toDouble / Duration.between(startTime, Instant.now).toMillis * 1000 },
-    ), "Processed all sqs messages from sqs event")
+    logEndOfInvocation(sqsMessageBatchSize, totalTokensProcessed, startTime, registry)
   }
 }
