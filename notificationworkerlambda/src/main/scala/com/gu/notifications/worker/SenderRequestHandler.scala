@@ -133,7 +133,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
   def handleRequest(input: InputStream, output: OutputStream,  context: Context): Unit = {
     val json: JsValue = Json.parse(input);
     val resourceJson: JsValue = (json \ "resources" \ 0).get
-    val sqsQueue = Json.stringify(resourceJson)
+    val sqsQueue = resourceJson.as[String]
     
     val sqsClient = AmazonSQSClientBuilder.standard()
       .withCredentials(Aws.credentialsProvider)
