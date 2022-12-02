@@ -24,7 +24,7 @@ Current ideas and initiatives for the fine-tuning phase:
 - [Query performance improvements ](../architecture/02-database-tuning.md)
 - ~~Handling DB connection errors more gracefully~~ parked for now since errors reduced after DB vacuum (including re-indexing)
 - [Lambda concurrency](./04-reducing-lambda-duration.md)
-- [Reducing lambda execution time](./06-reducing-lambda-cold-start-times.md)
+- [Reducing lambda execution time](./09-reducing-lambda-cold-start-times.md)
 - Change batch size for sender lambdas (increase throughput to apns/fcm)
 - Increase sqs throughput: use multiple threads, validate we're using batch requests
 
