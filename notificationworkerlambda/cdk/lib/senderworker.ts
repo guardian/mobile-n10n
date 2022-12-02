@@ -117,7 +117,7 @@ class SenderWorker extends cdkcore.Construct  {
       reservedConcurrentExecutions: props.reservedConcurrency
     })
 
-    const eventRule = new Rule(this, "SqsMessageSentRulee", {
+    const eventRule = new Rule(this, "SqsMessageSentRule", {
       enabled: true,
       description: `SQS message sent to SQS queue for ${props.platform} on ${scope.stage}`,
       ruleName: `${scope.stack}-sender-${props.platform}-${scope.stage}-trigger`,
@@ -130,7 +130,7 @@ class SenderWorker extends cdkcore.Construct  {
       },
     });
     eventRule.addTarget(new LambdaFunction(senderLambdaCtr, {
-      maxEventAge: cdk.Duration.minutes(30), // Optional: set the maxEventAge retry policy
+      maxEventAge: cdk.Duration.minutes(5), // Optional: set the maxEventAge retry policy
       retryAttempts: 2, // Optional: set the max number of retry attempts
     }));
 
@@ -243,11 +243,11 @@ export class SenderWorkerStack extends GuStack {
      * platform or app by talking to a different lambda handler function
      */
 
-    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", true)
-    addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
-    addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleRequest")
+    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleRequest", true)
+    addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleRequest")
+    addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleRequest")
+    addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleRequest")
 
     /*
      * each worker has been assigned an SQS queue which, when written to, will

@@ -4,7 +4,7 @@ exports[`The MobileAppsRendering stack matches the snapshot 1`] = `
 Object {
   "Metadata": Object {
     "gu:cdk:constructs": Array [],
-    "gu:cdk:version": "48.5.0",
+    "gu:cdk:version": "47.3.3",
   },
   "Outputs": Object {
     "NotificationSenderWorkerQueueArns": Object {
@@ -214,7 +214,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -242,7 +242,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -358,7 +358,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-android-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
+            "com.gu.notifications.worker.AndroidSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -379,7 +379,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -406,7 +406,7 @@ Object {
           "App": "android",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "48.5.0",
+          "gu:cdk:version": "47.3.3",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -437,7 +437,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -456,27 +456,6 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
-    },
-    "androidSenderSqsEventSourceMapping29E8124B": Object {
-      "DependsOn": Array [
-        "androidSenderLambdaCtr85CB623B",
-        "androidSenderSqsCF269D3F",
-      ],
-      "Properties": Object {
-        "BatchSize": 20,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "androidSenderSqsCF269D3F",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "androidSenderLambdaCtr85CB623B",
-        },
-        "MaximumBatchingWindowInSeconds": 1,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
     },
     "androidSenderThrottleAlarmE6E5BEC7": Object {
       "Properties": Object {
@@ -542,6 +521,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androidSqsMessageSentRule0B42DCFA": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for android on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "android",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-android-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androidSenderLambdaCtr85CB623B",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 300,
+              "MaximumRetryAttempts": 2,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "androidSqsMessageSentRuleAllowEventRuleSenderWorkerStackandroidSenderLambdaCtrAABC020D3EA6A969": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androidSenderLambdaCtr85CB623B",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androidSqsMessageSentRule0B42DCFA",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "androidbetaExecutionRoleFA113395": Object {
       "Properties": Object {
@@ -684,7 +718,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -712,7 +746,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -828,7 +862,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-android-beta-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
+            "com.gu.notifications.worker.AndroidSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -849,7 +883,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -876,7 +910,7 @@ Object {
           "App": "android-beta",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "48.5.0",
+          "gu:cdk:version": "47.3.3",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -907,7 +941,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -926,27 +960,6 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
-    },
-    "androidbetaSenderSqsEventSourceMappingA8FE78C9": Object {
-      "DependsOn": Array [
-        "androidbetaSenderLambdaCtrB3CF7FC4",
-        "androidbetaSenderSqs57513D18",
-      ],
-      "Properties": Object {
-        "BatchSize": 1,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "androidbetaSenderSqs57513D18",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
-        },
-        "MaximumBatchingWindowInSeconds": 0,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
     },
     "androidbetaSenderThrottleAlarmEA10B1A4": Object {
       "Properties": Object {
@@ -1012,6 +1025,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androidbetaSqsMessageSentRuleAllowEventRuleSenderWorkerStackandroidbetaSenderLambdaCtrB733DAF74641C2B2": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaSenderLambdaCtrB3CF7FC4",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaSqsMessageSentRuleEE4F4102",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "androidbetaSqsMessageSentRuleEE4F4102": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for android-beta on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "android-beta",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-android-beta-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androidbetaSenderLambdaCtrB3CF7FC4",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 300,
+              "MaximumRetryAttempts": 2,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
     },
     "androideditionExecutionRoleDEF8ADAE": Object {
       "Properties": Object {
@@ -1154,7 +1222,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -1182,7 +1250,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -1298,7 +1366,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-android-edition-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
+            "com.gu.notifications.worker.AndroidSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -1319,7 +1387,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -1346,7 +1414,7 @@ Object {
           "App": "android-edition",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "48.5.0",
+          "gu:cdk:version": "47.3.3",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -1377,7 +1445,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -1396,27 +1464,6 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
-    },
-    "androideditionSenderSqsEventSourceMapping87D2DEDF": Object {
-      "DependsOn": Array [
-        "androideditionSenderLambdaCtrF0169D16",
-        "androideditionSenderSqs400C0F3A",
-      ],
-      "Properties": Object {
-        "BatchSize": 1,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "androideditionSenderSqs400C0F3A",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "androideditionSenderLambdaCtrF0169D16",
-        },
-        "MaximumBatchingWindowInSeconds": 0,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
     },
     "androideditionSenderThrottleAlarmBE557A69": Object {
       "Properties": Object {
@@ -1482,6 +1529,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androideditionSqsMessageSentRule59271E2B": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for android-edition on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "android-edition",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-android-edition-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androideditionSenderLambdaCtrF0169D16",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 300,
+              "MaximumRetryAttempts": 2,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "androideditionSqsMessageSentRuleAllowEventRuleSenderWorkerStackandroideditionSenderLambdaCtr777BBF30EBE4468A": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androideditionSenderLambdaCtrF0169D16",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androideditionSqsMessageSentRule59271E2B",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "iosExecutionRoleEE25DF12": Object {
       "Properties": Object {
@@ -1624,7 +1726,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -1652,7 +1754,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -1768,7 +1870,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-ios-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.IOSSender::handleChunkTokens",
+            "com.gu.notifications.worker.IOSSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -1789,7 +1891,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -1816,7 +1918,7 @@ Object {
           "App": "ios",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "48.5.0",
+          "gu:cdk:version": "47.3.3",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -1847,7 +1949,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -1866,27 +1968,6 @@ Object {
       },
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
-    },
-    "iosSenderSqsEventSourceMapping2E507F40": Object {
-      "DependsOn": Array [
-        "iosSenderLambdaCtr6053C1F8",
-        "iosSenderSqsA94CB0A0",
-      ],
-      "Properties": Object {
-        "BatchSize": 1,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "iosSenderSqsA94CB0A0",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "iosSenderLambdaCtr6053C1F8",
-        },
-        "MaximumBatchingWindowInSeconds": 0,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
     },
     "iosSenderThrottleAlarmFCACC1F8": Object {
       "Properties": Object {
@@ -1952,6 +2033,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "iosSqsMessageSentRule7642511F": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for ios on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "ios",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-ios-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "iosSenderLambdaCtr6053C1F8",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 300,
+              "MaximumRetryAttempts": 2,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "iosSqsMessageSentRuleAllowEventRuleSenderWorkerStackiosSenderLambdaCtr6C663C0CC5ADD3E7": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "iosSenderLambdaCtr6053C1F8",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "iosSqsMessageSentRule7642511F",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "ioseditionExecutionRole61247F06": Object {
       "Properties": Object {
@@ -2094,7 +2230,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -2122,7 +2258,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -2238,7 +2374,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-ios-edition-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.IOSSender::handleChunkTokens",
+            "com.gu.notifications.worker.IOSSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -2259,7 +2395,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -2286,7 +2422,7 @@ Object {
           "App": "ios-edition",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "48.5.0",
+          "gu:cdk:version": "47.3.3",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -2296,27 +2432,6 @@ Object {
         },
       },
       "Type": "AWS::SSM::Parameter",
-    },
-    "ioseditionSenderSqsEventSourceMapping9B8EF143": Object {
-      "DependsOn": Array [
-        "ioseditionSenderLambdaCtr2410D4D7",
-        "ioseditionSenderSqsFDE339AC",
-      ],
-      "Properties": Object {
-        "BatchSize": 1,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "ioseditionSenderSqsFDE339AC",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "ioseditionSenderLambdaCtr2410D4D7",
-        },
-        "MaximumBatchingWindowInSeconds": 0,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
     },
     "ioseditionSenderSqsFDE339AC": Object {
       "DeletionPolicy": "Delete",
@@ -2338,7 +2453,7 @@ Object {
           },
           Object {
             "Key": "gu:cdk:version",
-            "Value": "48.5.0",
+            "Value": "47.3.3",
           },
           Object {
             "Key": "gu:repo",
@@ -2422,6 +2537,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ioseditionSqsMessageSentRule884AAE62": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for ios-edition on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "ios-edition",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-ios-edition-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "ioseditionSenderLambdaCtr2410D4D7",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 300,
+              "MaximumRetryAttempts": 2,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ioseditionSqsMessageSentRuleAllowEventRuleSenderWorkerStackioseditionSenderLambdaCtr506C802F1C721A43": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionSenderLambdaCtr2410D4D7",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionSqsMessageSentRule884AAE62",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
   },
 }
