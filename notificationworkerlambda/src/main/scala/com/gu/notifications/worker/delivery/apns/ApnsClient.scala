@@ -130,6 +130,7 @@ object ApnsClient {
         .setApnsServer(apnsServer)
         .setSigningKey(signingKey)
         .setConnectionTimeout(10, TimeUnit.SECONDS)
+        .setConcurrentConnections(config.concurrentPushyConnections)
         .build()
     ).map(pushyClient => new ApnsClient(pushyClient, config))
   }
