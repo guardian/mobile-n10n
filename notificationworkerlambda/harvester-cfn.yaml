@@ -125,6 +125,13 @@ Resources:
                 - ","
                 - "Fn::ImportValue":
                     "Fn::Sub": 'NotificationEc2SenderWorkerQueueArns-${Stage}'
+      - PolicyName: EmitEvent
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action: events:PutEvents
+              Resource:
+              - !Sub "arn:aws:events:eu-west-1:${AWS::AccountId}:event-bus/default"             
       - PolicyName: VPC
         PolicyDocument:
           Statement:
