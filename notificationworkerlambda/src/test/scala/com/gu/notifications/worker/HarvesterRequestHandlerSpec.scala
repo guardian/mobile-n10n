@@ -24,6 +24,7 @@ import scala.jdk.CollectionConverters._
 import db.BuildTier
 import java.time.Instant
 import com.gu.notifications.worker.models.PerformanceMetrics
+import com.gu.notifications.worker.tokens.EventDeliveryService
 
 class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
@@ -229,6 +230,10 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
         }
       )
 
+    def createTestEventService(): EventDeliveryService[IO] = (sqsCalls: Stream[IO, Either[Throwable, Unit]]) => {
+      sqsCalls
+    }
+
     trait TestHarvesterRequestHandler extends HarvesterRequestHandler {
 
       override val jdbcConfig: JdbcConfig = null
@@ -260,6 +265,12 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
         new AtomicInteger(),
         new AtomicInteger(),
       )
+
+      val androidBetaEventService: EventDeliveryService[IO] = createTestEventService()
+      val androidEditionEventService: EventDeliveryService[IO] = createTestEventService()
+      val androidLiveEventService: EventDeliveryService[IO] = createTestEventService()
+      val iosEditionEventService: EventDeliveryService[IO] = createTestEventService()
+      val iosLiveEventService: EventDeliveryService[IO] = createTestEventService()
 
       override val lambdaServiceSet: SqsDeliveryStack = createTestSqsDeliveryStack(lambdaDeliveries)
 
