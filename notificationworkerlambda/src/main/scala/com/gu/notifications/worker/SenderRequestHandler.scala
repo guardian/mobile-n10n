@@ -147,5 +147,6 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
       .getMessages.asScala.toList
 
     handleChunkTokensInMessages(receiveMessages.map(SqsMessage.fromSqsApiMessage(_)))
+    receiveMessages.foreach(msg => sqsClient.deleteMessage(sqsQueue, msg.getReceiptHandle()))
   }
 }
