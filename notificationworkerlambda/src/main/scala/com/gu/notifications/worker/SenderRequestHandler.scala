@@ -143,7 +143,8 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
     val receiveMessages = sqsClient.receiveMessage(new ReceiveMessageRequest()
       .withQueueUrl(sqsQueue)
       .withMaxNumberOfMessages(1)
-      .withWaitTimeSeconds(1))
+      .withWaitTimeSeconds(1)
+      .withAttributeNames("SentTimestamp"))
       .getMessages.asScala.toList
 
     handleChunkTokensInMessages(receiveMessages.map(SqsMessage.fromSqsApiMessage(_)))
