@@ -28,6 +28,6 @@ class IOSSender(val config: ApnsWorkerConfiguration, val metricNs: String) exten
 
   override val deliveryService: IO[Apns[IO]] =
     ApnsClient(config.apnsConfig, registry).fold(e => IO.raiseError(e), c => IO.delay(new Apns(c)))
-  override val maxConcurrency = 100
+  override val maxConcurrency = config.apnsConfig.maxConcurrency
 
 }

@@ -110,7 +110,9 @@ object Configuration {
         certificate = config.getString("apns.certificate"),
         mapiBaseUrl = config.getString("mapi.baseUrl"),
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
-        dryRun = config.getBoolean("dryrun")
+        dryRun = config.getBoolean("dryrun"),
+        concurrentPushyConnections = config.getInt("apns.concurrentPushyConnections"),
+        maxConcurrency = config.getInt("apns.maxConcurrency"),
       ),
       config.getInt("apns.threadPoolSize")
     )
