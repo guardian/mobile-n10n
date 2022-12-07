@@ -136,7 +136,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
     val json: JsValue = Json.parse(input);
     val sqsQueue = (json \ "resources" \ 0).get.as[String]
     val batchSize = (json \ "detail" \ "batchsize").toOption.map(_.as[Int]).getOrElse(1)
-    logger.info("EventBridge to process " + batchSize);
+
     val sqsClient = AmazonSQSClientBuilder.standard()
       .withCredentials(Aws.credentialsProvider)
       .withRegion(Regions.EU_WEST_1)
