@@ -4,6 +4,8 @@ import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsPro
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.athena.AmazonAthenaAsyncClient
+import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
+import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.athena.{Athena, Query}
 import net.logstash.logback.marker.LogstashMarker
@@ -12,8 +14,10 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.{Instant, LocalDateTime, LocalTime, ZoneOffset}
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
+import scala.jdk.CollectionConverters._
 import scala.concurrent.{Await, ExecutionContext, duration}
 import scala.jdk.CollectionConverters.MapHasAsJava
+import scala.util.{Failure, Success, Try}
 
 object SloMonitor {
 
@@ -29,6 +33,10 @@ object SloMonitor {
     DefaultAWSCredentialsProviderChain.getInstance
   )
 
+  val cloudWatchClient: AmazonCloudWatch = {
+    AmazonCloudWatchClientBuilder.standard().withRegion(Regions.EU_WEST_1).build
+  }
+
   implicit val athenaClient = AmazonAthenaAsyncClient.asyncBuilder()
     .withCredentials(credentials)
     .withRegion(Regions.EU_WEST_1)
@@ -36,8 +44,45 @@ object SloMonitor {
 
   implicit val scheduledExecutorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
-  def calculatePercentage(actualDeliveries: Double, expectedDeliveries: Double): Double = {
-    (actualDeliveries / expectedDeliveries) * 100
+  def buildMetricsForPlatform(deliveryTimings: List[String], platform: String): List[MetricDatum] = {
+
+    def metricDatum(name: String, resultLocation: Int) = {
+      val deliveryCount: Double = Try(deliveryTimings(resultLocation).toDouble).getOrElse(0)
+      val platformDimension: Dimension = new Dimension()
+        .withName("platform")
+        .withValue(platform)
+      new MetricDatum()
+        .withMetricName(name)
+        .withUnit(StandardUnit.Count)
+        .withValue(deliveryCount)
+        .withDimensions(platformDimension)
+    }
+
+    List(
+      metricDatum("lessThan30", 1),
+      metricDatum("lessThan60", 2),
+      metricDatum("lessThan90", 3),
+      metricDatum("lessThan120", 4),
+      metricDatum("lessThan150", 5),
+      metricDatum("lessThan180", 6),
+      metricDatum("lessThan210", 7),
+      metricDatum("lessThan240", 8),
+      metricDatum("lessThan270", 9),
+      metricDatum("lessThan300", 10),
+      metricDatum("totalDeliveries", 11),
+    )
+
+  }
+
+  def pushMetricsToCloudWatch(metrics: List[MetricDatum]): Unit = {
+    val request = new PutMetricDataRequest()
+      .withNamespace(s"Notifications/$stage/slomonitor")
+      .withMetricData(metrics.asJava)
+
+    Try(cloudWatchClient.putMetricData(request)) match {
+      case Failure(exception) => logger.error(s"Failed to push metrics to CloudWatch due to $exception", exception)
+      case Success(_) => logger.info("Successfully pushed metrics to CloudWatch")
+    }
   }
 
   def generateQueryString(notificationId: String, sentTime: LocalDateTime): String = {
@@ -47,12 +92,54 @@ object SloMonitor {
       s"partition_date = '${sentTime.toLocalDate}'"
 
     s"""
-         |SELECT COUNT(*)
-         |FROM notification_received_${stage.toLowerCase()}
-         |WHERE notificationid = '${notificationId}'
-         |AND $partitionDate
-         |AND DATE_DIFF('second', from_iso8601_timestamp('${sentTime}'), received_timestamp) < 120
-      """.stripMargin
+       |SELECT
+       |  platform,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 30 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_30,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 60 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_60,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 90 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_90,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 120 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_120,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 150 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_150,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 180 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_180,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 210 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_210,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 240 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_240,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 270 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_270,
+       |  SUM(CASE
+       |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 300 THEN 1
+       |    ELSE 0
+       |  END) AS less_than_300,
+       |  COUNT(*) AS total_deliveries
+       |FROM notification_received_${stage.toLowerCase()}
+       |WHERE notificationid = '$notificationId'
+       |AND $partitionDate
+       |GROUP BY platform
+     """.stripMargin
   }
 
   def handleMessage(event: SQSEvent): Unit = {
@@ -60,28 +147,21 @@ object SloMonitor {
     val record = event.getRecords.get(0) // Batch size is defined as 1 in cdk
     val notificationId = record.getBody
     val sentTime: LocalDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(record.getAttributes.get("SentTimestamp").toLong), ZoneOffset.UTC)
-    // The number of expected deliveries is hardcoded for the purposes of this prototype, but we could:
-    // a) Send this as part of the SQS message (from the notifications app)
-    // b) Obtain it via the DynamoDB Report table
-    // c) Something else...
-    val expectedDeliveries: Int = 100 // FIXME
     val query = generateQueryString(notificationId, sentTime)
     logger.info(s"Starting query: $query")
-    val result = Athena.startQuery(Query("notifications", query, s"s3://aws-mobile-event-logs-${this.stage.toLowerCase()}/athena/slo-monitoring"))
-      .flatMap(Athena.fetchQueryResponse(_, rows => rows.head.head)
-        .map(actualDeliveries => {
-          // val percentage = calculatePercentage(actualDeliveries.toDouble, expectedDeliveries.toDouble)
-          // In the future we could log structured data (for visualisation in Kibana) & send this as a CloudWatch metric here
-
-          // For the purposes of validating the approach we decided to log only the actual deliveries
-          // We will compare the actual deliveries logged against the data we see in bigquery as a way to validate accuracy of the solution/setup
-          logger.info(Map(
-            "notificationId" -> notificationId,
-            "deliveriesWithin2mins" -> actualDeliveries
-          ),
-          s"Notifications delivered within 120 seconds was $actualDeliveries")
-        })
-      )
+    val result = Athena.startQuery(Query("notifications", query, s"s3://aws-mobile-event-logs-${this.stage.toLowerCase()}/athena/slo-monitoring")).flatMap {
+      Athena.fetchQueryResponse(_, rows => {
+        val androidDeliveries = rows.head
+        val iosDeliveries = rows(1)
+        pushMetricsToCloudWatch(buildMetricsForPlatform(androidDeliveries, "android") ++ buildMetricsForPlatform(iosDeliveries, "ios"))
+        val deliveriesWithinTwoMinutes = androidDeliveries(4) + iosDeliveries(4)
+        logger.info(Map(
+          "notificationId" -> notificationId,
+          "deliveriesWithin2mins" -> deliveriesWithinTwoMinutes
+        ),
+          s"Notifications delivered within 120 seconds was $deliveriesWithinTwoMinutes")
+      })
+    }
     Await.result(result, duration.Duration(4, TimeUnit.MINUTES))
   }
 

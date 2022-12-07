@@ -317,6 +317,11 @@ Object {
               },
             },
             Object {
+              "Action": "cloudwatch:PutMetricData",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            Object {
               "Action": Array [
                 "athena:StartQueryExecution",
                 "athena:GetQueryExecution",

@@ -355,6 +355,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
       ),
       riffRaffArtifactResources +=(file("cdk/cdk.out/SloMonitor-CODE.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-CODE.template.json"),
