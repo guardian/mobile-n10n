@@ -4,7 +4,7 @@ import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsPro
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.athena.AmazonAthenaAsyncClient
-import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest, StandardUnit}
+import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.athena.{Athena, Query}
@@ -44,28 +44,32 @@ object SloMonitor {
 
   implicit val scheduledExecutorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
-  def pushMetrics(deliveryTimings: List[String]): Unit = {
+  def pushMetricsForPlatform(deliveryTimings: List[String], platform: String): Unit = {
 
     def metricDatum(name: String, resultLocation: Int) = {
       val deliveryCount: Double = Try(deliveryTimings(resultLocation).toDouble).getOrElse(0)
+      val platformDimension: Dimension = new Dimension()
+        .withName("platform")
+        .withValue(platform)
       new MetricDatum()
         .withMetricName(name)
         .withUnit(StandardUnit.Count)
         .withValue(deliveryCount)
+        .withDimensions(platformDimension)
     }
 
     val metrics = List(
-      metricDatum("lessThan30", 0),
-      metricDatum("lessThan60", 1),
-      metricDatum("lessThan90", 2),
-      metricDatum("lessThan120", 3),
-      metricDatum("lessThan150", 4),
-      metricDatum("lessThan180", 5),
-      metricDatum("lessThan210", 6),
-      metricDatum("lessThan240", 7),
-      metricDatum("lessThan270", 8),
-      metricDatum("lessThan300", 9),
-      metricDatum("totalDeliveries", 10),
+      metricDatum("lessThan30", 1),
+      metricDatum("lessThan60", 2),
+      metricDatum("lessThan90", 3),
+      metricDatum("lessThan120", 4),
+      metricDatum("lessThan150", 5),
+      metricDatum("lessThan180", 6),
+      metricDatum("lessThan210", 7),
+      metricDatum("lessThan240", 8),
+      metricDatum("lessThan270", 9),
+      metricDatum("lessThan300", 10),
+      metricDatum("totalDeliveries", 11),
     )
 
     val request = new PutMetricDataRequest()
@@ -87,6 +91,7 @@ object SloMonitor {
 
     s"""
        |SELECT
+       |  platform,
        |  SUM(CASE
        |    WHEN DATE_DIFF('second', from_iso8601_timestamp('$sentTime'), received_timestamp) < 30 THEN 1
        |    ELSE 0
@@ -131,6 +136,7 @@ object SloMonitor {
        |FROM notification_received_${stage.toLowerCase()}
        |WHERE notificationid = '$notificationId'
        |AND $partitionDate
+       |GROUP BY platform
      """.stripMargin
   }
 
@@ -141,18 +147,20 @@ object SloMonitor {
     val sentTime: LocalDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(record.getAttributes.get("SentTimestamp").toLong), ZoneOffset.UTC)
     val query = generateQueryString(notificationId, sentTime)
     logger.info(s"Starting query: $query")
-    val result = Athena.startQuery(Query("notifications", query, s"s3://aws-mobile-event-logs-${this.stage.toLowerCase()}/athena/slo-monitoring"))
-      .flatMap(Athena.fetchQueryResponse(_, rows => rows.head)
-        .map(deliveryTimings => {
-          pushMetrics(deliveryTimings)
-          val deliveriesWithTwoMinutes = deliveryTimings(3)
-          logger.info(Map(
-            "notificationId" -> notificationId,
-            "deliveriesWithin2mins" -> deliveriesWithTwoMinutes
-          ),
-            s"Notifications delivered within 120 seconds was $deliveriesWithTwoMinutes")
-        })
-      )
+    val result = Athena.startQuery(Query("notifications", query, s"s3://aws-mobile-event-logs-${this.stage.toLowerCase()}/athena/slo-monitoring")).flatMap {
+      Athena.fetchQueryResponse(_, rows => {
+        val androidDeliveries = rows.head
+        val iosDeliveries = rows(1)
+        pushMetricsForPlatform(androidDeliveries, "android")
+        pushMetricsForPlatform(iosDeliveries, "ios")
+        val deliveriesWithinTwoMinutes = androidDeliveries(4) + iosDeliveries(4)
+        logger.info(Map(
+          "notificationId" -> notificationId,
+          "deliveriesWithin2mins" -> deliveriesWithinTwoMinutes
+        ),
+          s"Notifications delivered within 120 seconds was $deliveriesWithinTwoMinutes")
+      })
+    }
     Await.result(result, duration.Duration(4, TimeUnit.MINUTES))
   }
 
