@@ -44,7 +44,7 @@ object SloMonitor {
 
   implicit val scheduledExecutorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
-  def pushMetricsForPlatform(deliveryTimings: List[String], platform: String): Unit = {
+  def buildMetricsForPlatform(deliveryTimings: List[String], platform: String): List[MetricDatum] = {
 
     def metricDatum(name: String, resultLocation: Int) = {
       val deliveryCount: Double = Try(deliveryTimings(resultLocation).toDouble).getOrElse(0)
@@ -58,7 +58,7 @@ object SloMonitor {
         .withDimensions(platformDimension)
     }
 
-    val metrics = List(
+    List(
       metricDatum("lessThan30", 1),
       metricDatum("lessThan60", 2),
       metricDatum("lessThan90", 3),
@@ -72,6 +72,9 @@ object SloMonitor {
       metricDatum("totalDeliveries", 11),
     )
 
+  }
+
+  def pushMetricsToCloudWatch(metrics: List[MetricDatum]): Unit = {
     val request = new PutMetricDataRequest()
       .withNamespace(s"Notifications/$stage/slomonitor")
       .withMetricData(metrics.asJava)
@@ -80,7 +83,6 @@ object SloMonitor {
       case Failure(exception) => logger.error(s"Failed to push metrics to CloudWatch due to $exception", exception)
       case Success(_) => logger.info("Successfully pushed metrics to CloudWatch")
     }
-
   }
 
   def generateQueryString(notificationId: String, sentTime: LocalDateTime): String = {
@@ -151,8 +153,7 @@ object SloMonitor {
       Athena.fetchQueryResponse(_, rows => {
         val androidDeliveries = rows.head
         val iosDeliveries = rows(1)
-        pushMetricsForPlatform(androidDeliveries, "android")
-        pushMetricsForPlatform(iosDeliveries, "ios")
+        pushMetricsToCloudWatch(buildMetricsForPlatform(androidDeliveries, "android") ++ buildMetricsForPlatform(iosDeliveries, "ios"))
         val deliveriesWithinTwoMinutes = androidDeliveries(4) + iosDeliveries(4)
         logger.info(Map(
           "notificationId" -> notificationId,
