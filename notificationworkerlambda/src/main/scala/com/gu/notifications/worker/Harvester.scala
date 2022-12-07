@@ -177,6 +177,8 @@ trait HarvesterRequestHandler extends Logging {
   def handleHarvesting(event: SQSEvent, context: Context): Unit = {
     // open connection
     val (transactor, datasource): (Transactor[IO], HikariDataSource) = DatabaseConfig.transactorAndDataSource[IO](jdbcConfig)
+    logger.info("Java version: " + System.getProperty("java.version"))
+
     logger.info("SQL connection open")
 
     // create services that rely on the connection
