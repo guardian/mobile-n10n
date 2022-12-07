@@ -232,6 +232,55 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "androidScheduledRerunRuleA1334820": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androidSenderLambdaCtr85CB623B",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "androidSenderSqsCF269D3F",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"android\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "androidScheduledRerunRuleAllowEventRuleSenderWorkerStackandroidSenderLambdaCtrAABC020DD76A55D8": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androidSenderLambdaCtr85CB623B",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androidScheduledRerunRuleA1334820",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
     "androidSenderDlqB74778CC": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -735,6 +784,55 @@ Object {
         ],
       },
       "Type": "AWS::IAM::Role",
+    },
+    "androidbetaScheduledRerunRule100756A7": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androidbetaSenderLambdaCtrB3CF7FC4",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "androidbetaSenderSqs57513D18",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"android-beta\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "androidbetaScheduledRerunRuleAllowEventRuleSenderWorkerStackandroidbetaSenderLambdaCtrB733DAF7FE2660D2": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaSenderLambdaCtrB3CF7FC4",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaScheduledRerunRule100756A7",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "androidbetaSenderDlqE9C306E1": Object {
       "DeletionPolicy": "Delete",
@@ -1240,6 +1338,55 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "androideditionScheduledRerunRuleAllowEventRuleSenderWorkerStackandroideditionSenderLambdaCtr777BBF3084F56A15": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androideditionSenderLambdaCtrF0169D16",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androideditionScheduledRerunRuleEA809FA3",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "androideditionScheduledRerunRuleEA809FA3": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androideditionSenderLambdaCtrF0169D16",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "androideditionSenderSqs400C0F3A",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"android-edition\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
     "androideditionSenderDlqE5B23A41": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -1744,6 +1891,55 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "iosScheduledRerunRuleAllowEventRuleSenderWorkerStackiosSenderLambdaCtr6C663C0CACB41E7C": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "iosSenderLambdaCtr6053C1F8",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "iosScheduledRerunRuleC146D846",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "iosScheduledRerunRuleC146D846": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "iosSenderLambdaCtr6053C1F8",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "iosSenderSqsA94CB0A0",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"ios\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
     "iosSenderDlqE2E2925D": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -2247,6 +2443,55 @@ Object {
         ],
       },
       "Type": "AWS::IAM::Role",
+    },
+    "ioseditionScheduledRerunRule63DBE225": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "ioseditionSenderLambdaCtr2410D4D7",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "ioseditionSenderSqsFDE339AC",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"ios-edition\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ioseditionScheduledRerunRuleAllowEventRuleSenderWorkerStackioseditionSenderLambdaCtr506C802F12CB61A1": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionSenderLambdaCtr2410D4D7",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionScheduledRerunRule63DBE225",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "ioseditionSenderDlq85139531": Object {
       "DeletionPolicy": "Delete",
