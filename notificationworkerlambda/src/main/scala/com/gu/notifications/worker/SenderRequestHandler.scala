@@ -28,6 +28,8 @@ import com.gu.notifications.worker.utils.Aws
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest
 import com.amazonaws.services.sqs.model.Message
+import com.amazonaws.services.sqs.AmazonSQS
+import scala.annotation.tailrec
 
 
 case class SqsMessage(body: String, sentTimestamp: Long)
@@ -130,6 +132,25 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
     ), "Processed all sqs messages from sqs event")
   }
 
+  @tailrec
+  final private def processSqsMessage(sqsClient: AmazonSQS, sqsQueue: String, context: Context, totalProcessed: Int): Int = {
+    val receiveMessages = sqsClient.receiveMessage(new ReceiveMessageRequest()
+      .withQueueUrl(sqsQueue)
+      .withMaxNumberOfMessages(1)
+      .withWaitTimeSeconds(5)
+      .withAttributeNames("SentTimestamp"))
+      .getMessages.asScala.toList
+
+    handleChunkTokensInMessages(receiveMessages.map(SqsMessage.fromSqsApiMessage(_)))
+    receiveMessages.foreach(msg => sqsClient.deleteMessage(sqsQueue, msg.getReceiptHandle()))
+    
+    val nProcessed = receiveMessages.size
+    if (nProcessed > 0 && context.getRemainingTimeInMillis() > 30*1000)
+      processSqsMessage(sqsClient, sqsQueue, context, nProcessed + totalProcessed)
+    else
+      nProcessed + totalProcessed
+  }
+
   def handleRequest(input: InputStream, output: OutputStream,  context: Context): Unit = {
     val json: JsValue = Json.parse(input);
     val resourceJson: JsValue = (json \ "resources" \ 0).get
@@ -140,14 +161,10 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
       .withRegion(Regions.EU_WEST_1)
       .build()
 
-    val receiveMessages = sqsClient.receiveMessage(new ReceiveMessageRequest()
-      .withQueueUrl(sqsQueue)
-      .withMaxNumberOfMessages(1)
-      .withWaitTimeSeconds(5)
-      .withAttributeNames("SentTimestamp"))
-      .getMessages.asScala.toList
-
-    handleChunkTokensInMessages(receiveMessages.map(SqsMessage.fromSqsApiMessage(_)))
-    receiveMessages.foreach(msg => sqsClient.deleteMessage(sqsQueue, msg.getReceiptHandle()))
+    val totalSqsProcessed = processSqsMessage(sqsClient, sqsQueue, context, 0)
+    logger.info(Map(
+          "AwsRequestId" -> context.getAwsRequestId,
+          "ProcessedMessageCount" -> totalSqsProcessed
+        ), "Processed SQS messages");
   }
 }
