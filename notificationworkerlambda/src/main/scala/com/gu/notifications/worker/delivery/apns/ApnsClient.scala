@@ -5,12 +5,13 @@ import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.{Timer, UUID}
 import java.util.concurrent.{TimeUnit, TimeoutException}
-
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
-import models.ApnsConfig
+import models.{ApnsConfig, IOSMetricsRegistry}
 import _root_.models.Notification
+import com.codahale.metrics.MetricRegistry
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayloadBuilder
+import com.gu.notifications.worker.utils.Logging
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.util.concurrent.PushNotificationFuture
 import com.turo.pushy.apns.util.{SimpleApnsPushNotification, TokenUtil}
@@ -18,10 +19,11 @@ import com.turo.pushy.apns.{ApnsClientBuilder, PushNotificationResponse, ApnsCli
 import org.joda.time.DateTime
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.time.{Duration, Instant}
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Try
 
-class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig) extends DeliveryClient {
+class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig) extends DeliveryClient with Logging {
 
   type Success = ApnsDeliverySuccess
   type Payload = ApnsPayload
@@ -59,12 +61,21 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
     type Feedback = PushNotificationFuture[SimpleApnsPushNotification, PushNotificationResponse[SimpleApnsPushNotification]]
 
-    def responseHandler = new PushNotificationResponseListenerWithTimeout[SimpleApnsPushNotification]() {
+    def responseHandler(start: Instant) = new PushNotificationResponseListenerWithTimeout[SimpleApnsPushNotification]() {
+
       def timeout(): Unit = {
+        logger.info(Map(
+          "worker.individualRequestLatency" -> Duration.between(start, Instant.now).toMillis,
+          "notificationId" -> notificationId,
+        ), "Individual send request timed out")
         onComplete(Left(FailedRequest(notificationId, token, new TimeoutException("No APNs response received in time"), Some("ClientTimeout"))))
       }
 
       override def operationCompleteWithoutTimeout(feedback: Feedback): Unit = {
+        logger.info(Map(
+          "worker.individualRequestLatency" -> Duration.between(start, Instant.now).toMillis,
+          "notificationId" -> notificationId,
+        ), "Individual send request completed")
         if (feedback.isSuccess) {
           val response = feedback.getNow
           if (response.isAccepted) {
@@ -96,8 +107,9 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     if(dryRun) {
       onComplete(Right(ApnsDeliverySuccess(token, dryRun = true)))
     } else {
+      val start = Instant.now
       val futureResult = underlying.sendNotification(pushNotification)
-      val handler = responseHandler
+      val handler = responseHandler(start)
       handler.startTimeout(timer, timeoutInMs = 20000L)
       futureResult.addListener(handler)
     }
@@ -114,7 +126,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
 object ApnsClient {
 
-  def apply(config: ApnsConfig): Try[ApnsClient] = {
+  def apply(config: ApnsConfig, metricsListener: IOSMetricsRegistry): Try[ApnsClient] = {
     val apnsServer =
       if (config.sendingToProdServer) ApnsClientBuilder.PRODUCTION_APNS_HOST
       else ApnsClientBuilder.DEVELOPMENT_APNS_HOST
@@ -130,6 +142,8 @@ object ApnsClient {
         .setApnsServer(apnsServer)
         .setSigningKey(signingKey)
         .setConnectionTimeout(10, TimeUnit.SECONDS)
+        .setMetricsListener(metricsListener)
+        .setConcurrentConnections(config.concurrentPushyConnections)
         .build()
     ).map(pushyClient => new ApnsClient(pushyClient, config))
   }
