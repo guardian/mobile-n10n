@@ -73,7 +73,7 @@ trait HarvesterRequestHandler extends Logging {
         .chunkN(1000)
         .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range))
         .map(deliveryService.sending)
-        .map(eventService.streamEmit)
+//        .map(eventService.streamEmit)
         .parJoin(maxConcurrency)
         .collect {
           case Left(throwable) => throwable
