@@ -130,8 +130,8 @@ class SenderWorker extends cdkcore.Construct  {
       },
     });
     eventRule.addTarget(new LambdaFunction(senderLambdaCtr, {
-      maxEventAge: cdk.Duration.minutes(5), // Optional: set the maxEventAge retry policy
-      retryAttempts: 2, // Optional: set the max number of retry attempts
+      maxEventAge: cdk.Duration.minutes(15), // Optional: set the maxEventAge retry policy
+      retryAttempts: 5, // Optional: set the max number of retry attempts
     }));
 
     const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
