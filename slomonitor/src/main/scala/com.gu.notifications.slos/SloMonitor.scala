@@ -154,7 +154,7 @@ object SloMonitor {
         val androidDeliveries = rows.head
         val iosDeliveries = rows(1)
         pushMetricsToCloudWatch(buildMetricsForPlatform(androidDeliveries, "android") ++ buildMetricsForPlatform(iosDeliveries, "ios"))
-        val deliveriesWithinTwoMinutes = androidDeliveries(4) + iosDeliveries(4)
+        val deliveriesWithinTwoMinutes = Try(androidDeliveries(4).toDouble + iosDeliveries(4).toDouble).getOrElse("unknown")
         logger.info(Map(
           "notificationId" -> notificationId,
           "deliveriesWithin2mins" -> deliveriesWithinTwoMinutes
