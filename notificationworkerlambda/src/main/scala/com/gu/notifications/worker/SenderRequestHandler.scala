@@ -132,7 +132,16 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
     ), "Processed all sqs messages from sqs event")
   }
 
-  final private def processSqsMessage(sqsClient: AmazonSQS, sqsQueue: String, batchSize: Int): Unit = {
+  def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
+    val json: JsValue = Json.parse(input);
+    val sqsQueue = (json \ "resources" \ 0).get.as[String]
+    val batchSize = (json \ "detail" \ "batchsize").toOption.map(_.as[Int]).getOrElse(1)
+    logger.info("EventBridge to process " + batchSize);
+    val sqsClient = AmazonSQSClientBuilder.standard()
+      .withCredentials(Aws.credentialsProvider)
+      .withRegion(Regions.EU_WEST_1)
+      .build()
+
     val receiveMessages = sqsClient.receiveMessage(new ReceiveMessageRequest()
       .withQueueUrl(sqsQueue)
       .withMaxNumberOfMessages(batchSize)
@@ -142,18 +151,5 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
 
     handleChunkTokensInMessages(receiveMessages.map(SqsMessage.fromSqsApiMessage(_)))
     receiveMessages.foreach(msg => sqsClient.deleteMessage(sqsQueue, msg.getReceiptHandle()))   
-  }
-
-  def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
-    val json: JsValue = Json.parse(input);
-    val resourceJson: JsValue = (json \ "resources" \ 0).get
-    val sqsQueue = resourceJson.as[String]
-    
-    val sqsClient = AmazonSQSClientBuilder.standard()
-      .withCredentials(Aws.credentialsProvider)
-      .withRegion(Regions.EU_WEST_1)
-      .build()
-
-    processSqsMessage(sqsClient, sqsQueue, 1)
   }
 }

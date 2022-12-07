@@ -12,7 +12,7 @@ import {SnsAction} from 'aws-cdk-lib/aws-cloudwatch-actions'
 import { GuStack } from "@guardian/cdk/lib/constructs/core"
 import type { App } from "aws-cdk-lib"
 import type { GuStackProps } from "@guardian/cdk/lib/constructs/core"
-import { Rule } from 'aws-cdk-lib/aws-events'
+import { Rule, RuleTargetInput, Schedule } from 'aws-cdk-lib/aws-events'
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets'
 
 interface SenderWorkerOpts {
@@ -132,6 +132,21 @@ class SenderWorker extends cdkcore.Construct  {
     eventRule.addTarget(new LambdaFunction(senderLambdaCtr, {
       maxEventAge: cdk.Duration.minutes(15), // Optional: set the maxEventAge retry policy
       retryAttempts: 5, // Optional: set the max number of retry attempts
+    }));
+
+    const scheduledEventRule = new Rule(this, "ScheduledRerunRule", {
+      schedule: Schedule.cron({ minute: "0/10" }),
+    });
+    scheduledEventRule.addTarget(new LambdaFunction(senderLambdaCtr, {
+      event: RuleTargetInput.fromObject({
+        source: "com.gu.notifications.worker",
+        "detail-type": "Scheduled sender",
+        resources: [`${this.senderSqs.queueUrl}`],
+        detail: {
+          platform: `${props.platform}`,
+          batchsize: 10,
+        }
+      })
     }));
 
     const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
