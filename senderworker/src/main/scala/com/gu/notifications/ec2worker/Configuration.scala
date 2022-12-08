@@ -43,7 +43,8 @@ object Configuration {
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
         dryRun = config.getBoolean("dryrun")
       ),
-      config.getInt("apns.threadPoolSize")
+      config.getInt("apns.threadPoolSize"),
+      config.getInt("batchsize"),
     )
   }
 
@@ -63,6 +64,7 @@ object Configuration {
         dryRun = config.getBoolean("dryrun")
       ),
       config.getInt("fcm.threadPoolSize"),
+      config.getInt("batchsize"),
       getStringList("fcm.allowedTopicsForBatchSend")
     )
   }
