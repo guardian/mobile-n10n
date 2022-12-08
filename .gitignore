@@ -29,4 +29,3 @@ dynamodb-local-schedule-lambda/
 project/.bloop/
 project/metals.sbt
 .bsp/
-.tool-versions
