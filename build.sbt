@@ -355,6 +355,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
       ),
       riffRaffArtifactResources +=(file("cdk/cdk.out/SloMonitor-CODE.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-CODE.template.json"),
@@ -428,7 +429,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "1.1.0",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient
+      "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
+      "com.eatthepath" % "pushy-dropwizard-metrics-listener" % "0.15.1",
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")

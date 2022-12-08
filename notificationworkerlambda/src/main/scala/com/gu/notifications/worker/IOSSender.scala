@@ -2,14 +2,14 @@ package com.gu.notifications.worker
 
 import cats.effect.{ContextShift, IO, Timer}
 import com.gu.notifications.worker.cleaning.CleaningClientImpl
+import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
 import com.gu.notifications.worker.delivery.apns.{Apns, ApnsClient}
-import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl}
+import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, IOSLogging}
 
 import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
-class IOSSender(val config: ApnsWorkerConfiguration, val metricNs: String) extends SenderRequestHandler[ApnsClient] {
-
+class IOSSender(val config: ApnsWorkerConfiguration, val metricNs: String) extends SenderRequestHandler[ApnsClient] with IOSLogging {
   def this() = {
     this(Configuration.fetchApns(), "workers")
   }
@@ -24,9 +24,10 @@ class IOSSender(val config: ApnsWorkerConfiguration, val metricNs: String) exten
   override implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   override implicit val timer: Timer[IO] = IO.timer(ec)
 
-  override val deliveryService: IO[Apns[IO]] =
-    ApnsClient(config.apnsConfig).fold(e => IO.raiseError(e), c => IO.delay(new Apns(c)))
-  override val maxConcurrency = 100
-  override val batchSize: Int = config.batchSize
+  val registry = new IOSMetricsRegistry
 
+  override val deliveryService: IO[Apns[IO]] =
+    ApnsClient(config.apnsConfig, registry).fold(e => IO.raiseError(e), c => IO.delay(new Apns(c)))
+  override val maxConcurrency = config.apnsConfig.maxConcurrency
+  override val batchSize: Int = config.batchSize
 }

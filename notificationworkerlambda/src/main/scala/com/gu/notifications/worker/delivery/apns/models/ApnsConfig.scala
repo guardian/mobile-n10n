@@ -7,5 +7,7 @@ case class ApnsConfig(
   certificate: String,
   mapiBaseUrl: String,
   sendingToProdServer: Boolean = false,
-  dryRun: Boolean = true
+  dryRun: Boolean = true,
+  concurrentPushyConnections: Int,
+  maxConcurrency: Int,
 )

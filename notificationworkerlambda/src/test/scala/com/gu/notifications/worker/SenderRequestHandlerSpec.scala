@@ -10,6 +10,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery.apns.ApnsClient
+import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
 import com.gu.notifications.worker.delivery.{ApnsBatchDeliverySuccess, ApnsDeliverySuccess, BatchDeliverySuccess, DeliveryException, DeliveryService}
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.ChunkedTokens
@@ -114,6 +115,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
 
     val workerRequestHandler = new SenderRequestHandler[ApnsClient] {
 
+      override val registry = new IOSMetricsRegistry
       override val maxConcurrency = 100
       override val batchSize = 1
 
