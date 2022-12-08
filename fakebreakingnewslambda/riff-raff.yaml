@@ -6,7 +6,8 @@ deployments:
     type: aws-lambda
     app: fakebreakingnewslambda
     parameters:
-      bucket: mobile-notifications-dist
+      bucketSsmLookup: true
+      bucketSsmKey: /account/services/artifact.bucket.n10n
       functionNames: [mobile-notifications-fakebreakingnews-]
       fileName: fakebreakingnewslambda.jar
       prefixStack: false
