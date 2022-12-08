@@ -6,7 +6,7 @@ deployments:
     app: notification
     parameters:
       amiTags:
-        Recipe: bionic-mobile-ARM
+        Recipe: bionic-mobile-java11-ARM
         AmigoStage: PROD
       templatePath: cfn.yaml
       templateStageParameters:
