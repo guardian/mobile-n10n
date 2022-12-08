@@ -34,6 +34,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override val deliveryService: IO[Fcm[IO]] =
     FcmClient(config.fcmConfig, firebaseAppName).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
   override val maxConcurrency = 100
+  override val batchSize: Int = config.batchSize
 
   //override the deliverChunkedTokens method to validate the success of sending batch notifications to the FCM client. This implementation could be refactored in the future to make it more streamlined with APNs
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {

@@ -34,7 +34,8 @@ case class ApnsWorkerConfiguration(
   sqsUrl: String,
   sqsName: String,
   apnsConfig: ApnsConfig,
-  threadPoolSize: Int
+  threadPoolSize: Int,
+  batchSize: Int,
 ) extends WorkerConfiguration
 
 case class FcmWorkerConfiguration(
@@ -43,6 +44,7 @@ case class FcmWorkerConfiguration(
   sqsName: String,
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
+  batchSize: Int,
   allowedTopicsForBatchSend: List[String],
 ) extends WorkerConfiguration
 
@@ -112,7 +114,8 @@ object Configuration {
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
         dryRun = config.getBoolean("dryrun")
       ),
-      config.getInt("apns.threadPoolSize")
+      config.getInt("apns.threadPoolSize"),
+      config.getInt("batchsize")
     )
   }
 
@@ -132,6 +135,7 @@ object Configuration {
         dryRun = config.getBoolean("dryrun")
       ),
       config.getInt("fcm.threadPoolSize"),
+      config.getInt("batchsize"),
       getStringList("fcm.allowedTopicsForBatchSend")
     )
   }

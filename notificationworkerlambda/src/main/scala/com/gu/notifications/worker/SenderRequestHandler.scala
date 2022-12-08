@@ -47,7 +47,8 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
   val cleaningClient: CleaningClient
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int
-
+  val batchSize: Int
+  
   def env = Env()
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
@@ -135,7 +136,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
   def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     val json: JsValue = Json.parse(input);
     val sqsQueue = (json \ "resources" \ 0).get.as[String]
-    val batchSize = (json \ "detail" \ "batchsize").toOption.map(_.as[Int]).getOrElse(1)
+    val batchSizeToUse = (json \ "detail" \ "batchsize").toOption.map(_.as[Int]).getOrElse(batchSize)
 
     val sqsClient = AmazonSQSClientBuilder.standard()
       .withCredentials(Aws.credentialsProvider)
@@ -144,7 +145,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStre
 
     val receiveMessages = sqsClient.receiveMessage(new ReceiveMessageRequest()
       .withQueueUrl(sqsQueue)
-      .withMaxNumberOfMessages(batchSize)
+      .withMaxNumberOfMessages(batchSizeToUse)
       .withWaitTimeSeconds(1)
       .withAttributeNames("SentTimestamp"))
       .getMessages.asScala.toList
