@@ -78,7 +78,7 @@ Resources:
       Handler: fakebreakingnews.FakeBreakingNewsLambda::handleRequest
       MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
+      Runtime: java11
       Timeout: 300
       Tags:
         - Key: Stage

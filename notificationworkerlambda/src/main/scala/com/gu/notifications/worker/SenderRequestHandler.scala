@@ -98,6 +98,8 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
       .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp, startTime, sqsMessageBatchSize) }
 
+    logger.info("Java version: " + System.getProperty("java.version"))
+
     deliverChunkedTokens(chunkedTokenStream)
       .compile
       .drain
