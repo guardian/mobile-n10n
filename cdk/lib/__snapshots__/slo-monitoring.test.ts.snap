@@ -175,6 +175,43 @@ Object {
       },
       "Type": "AWS::Lambda::Function",
     },
+    "SloMonitorCurrentVersion0C15C79104d1d7255e12c2e9f245ad8771ce31e6": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "SloMonitor1106EE7E",
+        },
+      },
+      "Type": "AWS::Lambda::Version",
+    },
+    "SloMonitorCurrentVersionSqsEventSourceSloMonitoringMessageQueue50CCCDD53A502287": Object {
+      "Properties": Object {
+        "BatchSize": 1,
+        "EventSourceArn": Object {
+          "Fn::GetAtt": Array [
+            "MessageQueue7A3BF959",
+            "Arn",
+          ],
+        },
+        "FunctionName": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              Object {
+                "Ref": "SloMonitor1106EE7E",
+              },
+              ":",
+              Object {
+                "Fn::GetAtt": Array [
+                  "SloMonitorCurrentVersion0C15C79104d1d7255e12c2e9f245ad8771ce31e6",
+                  "Version",
+                ],
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::EventSourceMapping",
+    },
     "SloMonitorServiceRole66A7ADCC": Object {
       "Properties": Object {
         "AssumeRolePolicyDocument": Object {
@@ -450,21 +487,6 @@ Object {
         ],
       },
       "Type": "AWS::IAM::Policy",
-    },
-    "SloMonitorSqsEventSourceSloMonitoringMessageQueue50CCCDD511949E74": Object {
-      "Properties": Object {
-        "BatchSize": 1,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "MessageQueue7A3BF959",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "SloMonitor1106EE7E",
-        },
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
     },
   },
 }

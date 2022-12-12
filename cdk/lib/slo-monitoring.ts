@@ -4,7 +4,7 @@ import { GuLambdaFunction } from '@guardian/cdk/lib/constructs/lambda';
 import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Runtime, Version } from 'aws-cdk-lib/aws-lambda';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import {
@@ -102,6 +102,8 @@ export class SloMonitoring extends GuStack {
 
 		queue.grantConsumeMessages(sloMonitor);
 
-		sloMonitor.addEventSource(new SqsEventSource(queue, { batchSize: 1 }));
+		sloMonitor.currentVersion.addEventSource(
+			new SqsEventSource(queue, { batchSize: 1 }),
+		);
 	}
 }
