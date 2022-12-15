@@ -2,6 +2,8 @@ package com.gu.notifications.worker.models
 
 import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryException, DeliverySuccess}
 
+import java.time.Instant
+
 case class SendingResults(
   successCount: Int,
   failureCount: Int,
@@ -40,4 +42,26 @@ case class PerformanceMetrics(
   sqsMessageBatchSize: Int,
   chunkTokenSize: Int,
 )
+
+case class LatencyMetric(
+  tokenDeliveries: Int,
+  timeOfCompletion: Instant,
+)
+
+case class LatencyMetrics(
+  tokenDeliveriesWithin10: Int,
+  tokenDeliveriesWithin20: Int,
+  totalTokenDeliveries: Int
+)
+
+object LatencyMetrics {
+
+  def aggregateBatchLatency(previous: LatencyMetrics, batchSize: Int, result: Either[Throwable, BatchDeliverySuccess]): LatencyMetrics = result match {
+    case Right(batchSuccess) =>
+      //batchSuccess.responses.foldLeft(previous)((acc, resp) => SendingResults.aggregate(acc, resp))
+      val successfulDeliveries = batchSuccess.responses.count(x => x.isRight)
+      val timeOfDeliveries: Instant = batchSuccess.timeOfCompletion
+    case Left(_) => SendingResults(previous.successCount, previous.failureCount + batchSize, previous.dryRunCount)
+  }
+}
 
