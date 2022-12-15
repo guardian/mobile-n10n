@@ -93,7 +93,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       onAPICallComplete(Right(
         FcmBatchDeliverySuccess(
           List.fill(tokens.size)(Right(FcmDeliverySuccess(s"success", "dryrun", dryRun = true))),
-          notificationId.toString,
+          notificationId.toString
         )))
     } else {
       import FirebaseHelpers._
