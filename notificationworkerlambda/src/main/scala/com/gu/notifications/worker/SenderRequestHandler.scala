@@ -9,7 +9,7 @@ import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
-import models.SendingResults
+import models.{LatencyMetrics, SendingResults}
 import com.gu.notifications.worker.tokens.{ChunkedTokens, IndividualNotification}
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
 import fs2.{Pipe, Stream}
@@ -46,21 +46,8 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
       .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize = sqsMessageBatchSize), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
-      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
+      .through(cloudwatch.sendResults(env.stage, Configuration.platform))
   }
-
-  def reportLatency[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant, sqsMessageBatchSize: Int): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
-    val enableAwsMetric = chunkedTokens.notification.dryRun match {
-      case Some(true) => false
-      case _          => true
-    }
-
-//Aggregates results of the different BatchResponses //todo - modify this to aggregate durations into time buckets
-    input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
-//Sends aggregated results to Cloudwatch // todo - modify to push metrics in the format we want
-      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
-  }
-
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     input.chunkN(100).evalMap(chunk => IO.delay(logger.info(Map("notificationId" -> notificationId), s"Processed ${chunk.size} individual notification")))

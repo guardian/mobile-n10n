@@ -266,7 +266,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       override val ec2ServiceSet: SqsDeliveryStack = createTestSqsDeliveryStack(ec2Deliveries)
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
+        override def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
 
         override def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit = ???
 
