@@ -4,20 +4,22 @@ import cats.effect.IO
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
-import com.gu.notifications.worker.models.SendingResults
+import com.gu.notifications.worker.models.{LatencyMetrics, PerformanceMetrics, SendingResults}
 import fs2.Pipe
 import models.Platform
 
 import scala.jdk.CollectionConverters._
 import models.Notification
 import models.NotificationType
+
 import java.time.Instant
 import java.time.Duration
-import com.gu.notifications.worker.models.PerformanceMetrics
 
 trait Cloudwatch {
-  def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit]
+  def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit]
   def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit
+
+  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, LatencyMetrics, Unit]
   def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit]
 }
 
@@ -42,7 +44,7 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
       .withUnit(unit)
       .withValue(value)
 
-  def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = _.evalMap { results =>
+  def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = _.evalMap { results =>
     IO.delay {
       val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
       val metrics: Seq[MetricDatum] = Seq(
@@ -55,6 +57,24 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
         .withNamespace(s"Notifications/$stage/$senderMetricNs")
         .withMetricData(metrics.asJava)
       cloudwatchClient.putMetricData(req)
+      ()
+    }
+  }
+
+  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, LatencyMetrics, Unit] = _.evalMap { metrics =>
+    IO.delay {
+      val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
+      val cloudWatchMetrics: Seq[MetricDatum] = Seq(
+        countDatum("tokenDeliveriesWithin10", metrics.tokenDeliveriesWithin10, dimension),
+        countDatum("tokenDeliveriesWithin20", metrics.tokenDeliveriesWithin20, dimension),
+        countDatum("totalTokenDeliveries", metrics.totalTokenDeliveries, dimension)
+      )
+      val req = new PutMetricDataRequest()
+        .withNamespace(s"Notifications/$stage/$senderMetricNs")
+        .withMetricData(cloudWatchMetrics.asJava)
+      if (shouldPushMetricsToAws) {
+        cloudwatchClient.putMetricData(req)
+      }
       ()
     }
   }

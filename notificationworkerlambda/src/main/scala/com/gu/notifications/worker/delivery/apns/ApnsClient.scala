@@ -78,7 +78,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
         if (feedback.isSuccess) {
           val response = feedback.getNow
           if (response.isAccepted) {
-            onComplete(Right(ApnsDeliverySuccess(token)))
+            onComplete(Right(ApnsDeliverySuccess(token, Instant.now())))
           } else {
             val invalidationTimestamp = Option(response.getTokenInvalidationTimestamp)
               .map(d => new Timestamp(d.getTime).toLocalDateTime)
@@ -104,7 +104,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     }
 
     if(dryRun) {
-      onComplete(Right(ApnsDeliverySuccess(token, dryRun = true)))
+      onComplete(Right(ApnsDeliverySuccess(token, Instant.now(), dryRun = true)))
     } else {
       val start = Instant.now
       val futureResult = underlying.sendNotification(pushNotification)
