@@ -46,6 +46,16 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .through(cloudwatch.sendResults(env.stage, Configuration.platform))
   }
 
+  def reportLatency[C <: DeliveryClient](chunkedTokens: ChunkedTokens, notificationSentTime: Instant): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+    val shouldPushMetricsToAws = chunkedTokens.notification.dryRun match {
+      case Some(true) => false
+      case _ => true
+    }
+    input
+      .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectLatency(acc, resp, notificationSentTime) }
+      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform))
+  }
+
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     input.chunkN(100).evalMap(chunk => IO.delay(logger.info(Map("notificationId" -> notificationId), s"Processed ${chunk.size} individual notification")))
   }
@@ -75,6 +85,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
         deliverIndividualNotificationStream(individualNotifications)
           .broadcastTo(
             reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+            reportLatency(chunkedTokens, functionStartTime), // FIXME - we want the time that the MSS stack received the notification, not the function start time
             cleanupFailures,
             trackProgress(chunkedTokens.notification.id))
       }.parJoin(maxConcurrency)

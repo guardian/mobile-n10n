@@ -46,6 +46,14 @@ case class PerformanceMetrics(
 
 object LatencyMetrics {
 
+  def collectLatency(previous: List[Long], result: Either[Throwable, DeliverySuccess], notificationSentTime: Instant): List[Long] = {
+    result.map { successfulDelivery =>
+      val timeOfDeliveries: Instant = successfulDelivery.deliveryTime
+      val duration = Duration.between(notificationSentTime, timeOfDeliveries).toSeconds
+      previous :+ duration
+    }.getOrElse(previous) // If the overall batch was a failure (or the batch only contained failures) just return the previous result
+  }
+
   def collectBatchLatency(previous: List[Long], result: Either[Throwable, BatchDeliverySuccess], notificationSentTime: Instant): List[Long] = {
     result.toOption.flatMap { batchSuccess =>
       val successes = batchSuccess.responses.collect { case Right(success) => success }
