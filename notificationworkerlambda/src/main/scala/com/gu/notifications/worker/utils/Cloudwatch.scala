@@ -1,6 +1,7 @@
 package com.gu.notifications.worker.utils
 
 import cats.effect.IO
+import com.amazonaws.internal.SdkInternalList
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
@@ -19,7 +20,7 @@ trait Cloudwatch {
   def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit]
   def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit
 
-  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, LatencyMetrics, Unit]
+  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, List[Long], Unit]
   def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit]
 }
 
@@ -37,6 +38,17 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
       .withUnit(StandardUnit.None)
       .withValue(value.toDouble)
       .withDimensions(dimension)
+
+  private def latencyDatum(name: String, values: List[Long], counts: List[Int], dimension: Dimension) = {
+    val valuesAsJava = values.map(value => Double.box(value.toDouble)).asJava
+    val countsAsJava = counts.map(count => Double.box(count.toDouble)).asJava
+    new MetricDatum()
+      .withMetricName(name)
+      .withUnit(StandardUnit.Seconds)
+      .withValues(valuesAsJava)
+      .withCounts(countsAsJava)
+      .withDimensions(dimension)
+  }
 
   private def perfMetricDatum(name: String, unit: StandardUnit, value: Double) =
     new MetricDatum()
@@ -61,7 +73,7 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
     }
   }
 
-  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, LatencyMetrics, Unit] = _.evalMap { metrics =>
+  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, List[Long], Unit] = _.evalMap { metrics =>
     IO.delay {
       val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
       val cloudWatchMetrics: Seq[MetricDatum] = Seq(
