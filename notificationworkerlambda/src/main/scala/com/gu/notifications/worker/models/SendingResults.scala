@@ -1,6 +1,8 @@
 package com.gu.notifications.worker.models
 
 import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryException, DeliverySuccess}
+import com.gu.notifications.worker.utils.Logging
+import org.slf4j.LoggerFactory
 
 import java.time.{Duration, Instant}
 
@@ -52,8 +54,8 @@ object LatencyMetrics {
     val countsForEachValue = allTokenDeliveryLatencies.groupBy(identity).view.mapValues(_.size)
     val orderedCounts = uniqueValues.map(value => countsForEachValue(value))
     uniqueValues.grouped(150).toList.zipWithIndex.map { case (uniqueValueBatch, index) =>
-      orderedCounts.grouped(150).toList(index)
-      LatencyMetricsForCloudWatch(uniqueValueBatch, orderedCounts)
+      val orderedCountsGrouped = orderedCounts.grouped(150).toList(index)
+      LatencyMetricsForCloudWatch(uniqueValueBatch, orderedCountsGrouped)
     }
   }
 
