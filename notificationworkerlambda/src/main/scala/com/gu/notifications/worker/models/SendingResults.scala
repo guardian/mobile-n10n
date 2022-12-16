@@ -2,7 +2,6 @@ package com.gu.notifications.worker.models
 
 import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryException, DeliverySuccess}
 
-import java.time.temporal.{ChronoUnit, TemporalUnit}
 import java.time.{Duration, Instant}
 
 case class SendingResults(
