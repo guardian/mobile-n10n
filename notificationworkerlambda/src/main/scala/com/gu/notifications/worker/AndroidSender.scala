@@ -4,7 +4,7 @@ import cats.effect.{ContextShift, IO, Timer}
 import com.gu.notifications.worker.cleaning.CleaningClientImpl
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
-import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryClient, DeliveryException, DeliverySuccess}
+import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryClient, DeliveryException}
 import com.gu.notifications.worker.delivery.fcm.{Fcm, FcmClient}
 import com.gu.notifications.worker.models.{LatencyMetrics, SendingResults}
 import com.gu.notifications.worker.tokens.{BatchNotification, ChunkedTokens}

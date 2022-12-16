@@ -1,20 +1,14 @@
 package com.gu.notifications.worker.utils
 
 import cats.effect.IO
-import com.amazonaws.internal.SdkInternalList
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
-import com.gu.notifications.worker.models.{LatencyMetrics, PerformanceMetrics, SendingResults}
+import com.gu.notifications.worker.models.{PerformanceMetrics, SendingResults}
 import fs2.Pipe
 import models.Platform
 
 import scala.jdk.CollectionConverters._
-import models.Notification
-import models.NotificationType
-
-import java.time.Instant
-import java.time.Duration
 
 trait Cloudwatch {
   def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit]

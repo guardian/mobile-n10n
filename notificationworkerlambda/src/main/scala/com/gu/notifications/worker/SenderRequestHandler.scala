@@ -1,7 +1,6 @@
 package com.gu.notifications.worker
 
 import java.util.UUID
-import _root_.models.{Notification, NotificationType, ShardRange}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -15,7 +14,7 @@ import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParse
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.time.{Duration, Instant}
+import java.time.Instant
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 

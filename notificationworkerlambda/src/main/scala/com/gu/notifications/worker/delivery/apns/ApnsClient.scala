@@ -9,7 +9,6 @@ import com.gu.notifications.worker.delivery._
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
 import models.{ApnsConfig, IOSMetricsRegistry}
 import _root_.models.Notification
-import com.codahale.metrics.MetricRegistry
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayloadBuilder
 import com.gu.notifications.worker.utils.Logging
 import com.turo.pushy.apns.auth.ApnsSigningKey
