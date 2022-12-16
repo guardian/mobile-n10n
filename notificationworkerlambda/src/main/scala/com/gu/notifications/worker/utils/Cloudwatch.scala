@@ -74,7 +74,7 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
       val orderedCounts = uniqueValues.map(value => countsForEachValue(value))
       val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
       // TODO: split into batches of 150 unique values: https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html
-      val cloudWatchMetric: MetricDatum = latencyDatum(name = "NotificationDeliveryLatency", dimension = dimension, values = uniqueValues, counts = orderedCounts)
+      val cloudWatchMetric: MetricDatum = latencyDatum(name = "TokenDeliveryLatency", dimension = dimension, values = uniqueValues, counts = orderedCounts)
       val req = new PutMetricDataRequest()
         .withNamespace(s"Notifications/$stage/$senderMetricNs")
         .withMetricData(cloudWatchMetric)
