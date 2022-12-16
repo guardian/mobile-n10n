@@ -73,17 +73,17 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
     }
   }
 
-  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, List[Long], Unit] = _.evalMap { metrics =>
+  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, List[Long], Unit] = _.evalMap { deliveryTimes =>
     IO.delay {
+      val uniqueValues = deliveryTimes.distinct
+      val countsForEachValue = deliveryTimes.groupBy(identity).view.mapValues(_.size)
+      val orderedCounts = uniqueValues.map(value => countsForEachValue(value))
       val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
-      val cloudWatchMetrics: Seq[MetricDatum] = Seq(
-        countDatum("tokenDeliveriesWithin10", metrics.tokenDeliveriesWithin10, dimension),
-        countDatum("tokenDeliveriesWithin20", metrics.tokenDeliveriesWithin20, dimension),
-        countDatum("totalTokenDeliveries", metrics.totalTokenDeliveries, dimension)
-      )
+      // TODO: split into batches of 150 unique values: https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html
+      val cloudWatchMetric: MetricDatum = latencyDatum(name = "NotificationDeliveryLatency", dimension = dimension, values = uniqueValues, counts = orderedCounts)
       val req = new PutMetricDataRequest()
         .withNamespace(s"Notifications/$stage/$senderMetricNs")
-        .withMetricData(cloudWatchMetrics.asJava)
+        .withMetricData(cloudWatchMetric)
       if (shouldPushMetricsToAws) {
         cloudwatchClient.putMetricData(req)
       }
