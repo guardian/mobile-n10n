@@ -74,7 +74,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
       case _ => true
     }
     input
-      .fold(LatencyMetrics.empty) { case (acc, resp) => LatencyMetrics.aggregateBatchLatency(acc, resp, notificationSentTime) }
+      .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectBatchLatency(acc, resp, notificationSentTime) }
       .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform))
   }
 
