@@ -4,7 +4,7 @@ import cats.effect.IO
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
-import com.gu.notifications.worker.models.{PerformanceMetrics, SendingResults}
+import com.gu.notifications.worker.models.{LatencyMetrics, PerformanceMetrics, SendingResults}
 import fs2.Pipe
 import models.Platform
 
@@ -69,16 +69,14 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
 
   def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, List[Long], Unit] = _.evalMap { deliveryTimes =>
     IO.delay {
-      val uniqueValues = deliveryTimes.distinct
-      val countsForEachValue = deliveryTimes.groupBy(identity).view.mapValues(_.size)
-      val orderedCounts = uniqueValues.map(value => countsForEachValue(value))
+      val valuesAndCounts = LatencyMetrics.aggregateForCloudWatch(deliveryTimes)
       val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
       // TODO: split into batches of 150 unique values: https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html
-      val cloudWatchMetric: MetricDatum = latencyDatum(name = "TokenDeliveryLatency", dimension = dimension, values = uniqueValues, counts = orderedCounts)
+      val cloudWatchMetric: MetricDatum = latencyDatum("TokenDeliveryLatency", valuesAndCounts.uniqueValues, valuesAndCounts.orderedCounts, dimension)
       val req = new PutMetricDataRequest()
         .withNamespace(s"Notifications/$stage/$senderMetricNs")
         .withMetricData(cloudWatchMetric)
-      if (shouldPushMetricsToAws) {
+      if (shouldPushMetricsToAws && valuesAndCounts.uniqueValues.nonEmpty) {
         cloudwatchClient.putMetricData(req)
       }
       ()

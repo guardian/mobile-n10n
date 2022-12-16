@@ -43,7 +43,16 @@ case class PerformanceMetrics(
   chunkTokenSize: Int,
 )
 
+case class LatencyMetricsForCloudWatch(uniqueValues: List[Long], orderedCounts: List[Int])
+
 object LatencyMetrics {
+
+  def aggregateForCloudWatch(allTokenDeliveryLatencies: List[Long]): LatencyMetricsForCloudWatch = {
+    val uniqueValues = allTokenDeliveryLatencies.distinct
+    val countsForEachValue = allTokenDeliveryLatencies.groupBy(identity).view.mapValues(_.size)
+    val orderedCounts = uniqueValues.map(value => countsForEachValue(value))
+    LatencyMetricsForCloudWatch(uniqueValues, orderedCounts)
+  }
 
   def collectLatency(previous: List[Long], result: Either[Throwable, DeliverySuccess], notificationSentTime: Instant): List[Long] = {
     result.map { successfulDelivery =>
