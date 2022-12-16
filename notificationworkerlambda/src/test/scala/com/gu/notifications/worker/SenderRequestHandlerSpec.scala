@@ -57,7 +57,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     "Count dry runs" in new WRHSScope {
       override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
         Stream(
-          Right(ApnsDeliverySuccess("token", dryRun = true))
+          Right(ApnsDeliverySuccess("token", Instant.now(), dryRun = true))
         )
 
       workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
@@ -102,7 +102,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     }
 
 
-    def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token")))
+    def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token", Instant.now())))
 
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 
@@ -147,6 +147,10 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
             sendingResults = Some(results)
             ()
           }
+        }
+
+        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, List[Long], Unit] = { stream =>
+          stream.map { _ => () }
         }
 
         override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = throw new RuntimeException()
