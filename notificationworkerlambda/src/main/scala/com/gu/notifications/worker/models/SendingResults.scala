@@ -50,7 +50,7 @@ object LatencyMetrics {
       val timeOfDeliveries: Instant = successfulDelivery.deliveryTime
       val duration = Duration.between(notificationSentTime, timeOfDeliveries).toSeconds
       previous :+ duration
-    }.getOrElse(previous) // If the overall batch was a failure (or the batch only contained failures) just return the previous result
+    }.getOrElse(previous) // If the delivery was a failure just return the previous result
   }
 
   def collectBatchLatency(previous: List[Long], result: Either[Throwable, BatchDeliverySuccess], notificationSentTime: Instant): List[Long] = {
