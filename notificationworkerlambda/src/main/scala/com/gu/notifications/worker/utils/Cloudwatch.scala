@@ -70,7 +70,6 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
   def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, List[Long], Unit] = _.evalMap { deliveryTimes =>
     IO.delay {
       val latencyMetrics = LatencyMetrics.aggregateForCloudWatch(deliveryTimes)
-      // TODO: split into batches of 150 unique values: https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html
       val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
       val requests = latencyMetrics.map { valuesAndCounts =>
         val cloudWatchMetric: MetricDatum = latencyDatum("TokenDeliveryLatency", valuesAndCounts.uniqueValues, valuesAndCounts.orderedCounts, dimension)
