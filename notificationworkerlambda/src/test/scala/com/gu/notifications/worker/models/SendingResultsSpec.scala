@@ -7,32 +7,36 @@ import org.specs2.specification.Scope
 class SendingResultsSpec extends Specification with Matchers {
 
   "LatencyMetrics.aggregateForCloudWatch" should {
-    "Create a single batch of token delivery latencies if there are less than 150 unique values" in new Scope {
+    "Create a single batch of token delivery latencies if there are less than 150 unique values (and the default batch size is used)" in new Scope {
       val allDeliveries = List(1L,1L,1L,1L,2L,2L,2L,3L)
       val result = LatencyMetrics.aggregateForCloudWatch(allDeliveries)
       val expected = List(LatencyMetricsForCloudWatch(
         uniqueValues = List(1L, 2L, 3L),
         orderedCounts = List(4, 3, 1),
       ))
-      result shouldEqual(expected)
+      result shouldEqual expected
     }
 
-    "Create multiple batches of token delivery latencies if there are more than 150 unique values" in new Scope {
-      val threeHundredUniques = (1L to 300L).toList
-      val moreData = List(1L, 1L, 1L, 1L, 300L, 300L, 300L)
-      val allDeliveries = threeHundredUniques ++ moreData
-      val result = LatencyMetrics.aggregateForCloudWatch(allDeliveries)
+    "Create multiple batches of token delivery latencies if the number of items exceeds the batch size" in new Scope {
+      val allDeliveries = List(7L, 5L, 7L, 6L, 6L, 6L, 6L, 10L, 10L, 10L, 10L, 10L, 9L, 4L, 4L, 4L, 4L, 4L, 4L, 9L, 9L)
+      val result = LatencyMetrics.aggregateForCloudWatch(allDeliveries, batchSize = 3)
       val expected = List(
         LatencyMetricsForCloudWatch(
-          uniqueValues = (1L to 150L).toList,
-          orderedCounts = List(5) ++ List.fill(149)(1),
+          uniqueValues = List(7L, 5L, 6L),
+          orderedCounts = List(2, 1, 4),
         ),
         LatencyMetricsForCloudWatch(
-          uniqueValues = (151L to 300L).toList,
-          orderedCounts = List.fill(149)(1) ++ List(4),
+          uniqueValues = List(10L, 9L, 4L),
+          orderedCounts = List(5, 3, 6),
         )
       )
-      result shouldEqual (expected)
+      result shouldEqual expected
+    }
+
+    "Create multiple batches of 150 by default" in new Scope {
+      val sixHundredUniques = (1L to 600L).toList
+      val result = LatencyMetrics.aggregateForCloudWatch(sixHundredUniques)
+      result.map(_.uniqueValues.size) shouldEqual List(150, 150, 150, 150)
     }
 
   }

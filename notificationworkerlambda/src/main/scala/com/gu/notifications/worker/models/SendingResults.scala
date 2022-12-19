@@ -49,13 +49,13 @@ case class LatencyMetricsForCloudWatch(uniqueValues: List[Long], orderedCounts: 
 
 object LatencyMetrics {
 
-  def aggregateForCloudWatch(allTokenDeliveryLatencies: List[Long]): List[LatencyMetricsForCloudWatch] = {
-    val uniqueValues = allTokenDeliveryLatencies.distinct
-    val countsForEachValue = allTokenDeliveryLatencies.groupBy(identity).view.mapValues(_.size)
-    val orderedCounts = uniqueValues.map(value => countsForEachValue(value))
-    uniqueValues.grouped(150).toList.zipWithIndex.map { case (uniqueValueBatch, index) =>
-      val orderedCountsGrouped = orderedCounts.grouped(150).toList(index)
-      LatencyMetricsForCloudWatch(uniqueValueBatch, orderedCountsGrouped)
+  def aggregateForCloudWatch(allTokenDeliveryLatencies: List[Long], batchSize: Int = 150): List[LatencyMetricsForCloudWatch] = {
+    val uniqueLatencies = allTokenDeliveryLatencies.distinct
+    val countsForEachLatency = allTokenDeliveryLatencies.groupBy(identity).view.mapValues(_.size)
+    val orderedCounts = uniqueLatencies.map(value => countsForEachLatency(value))
+    uniqueLatencies.grouped(batchSize).toList.zipWithIndex.map { case (uniqueValueBatch, index) =>
+      val orderedCountsForBatch = orderedCounts.grouped(batchSize).toList(index)
+      LatencyMetricsForCloudWatch(uniqueValueBatch, orderedCountsForBatch)
     }
   }
 
