@@ -44,7 +44,7 @@ export class Registration extends GuStack {
 
 		const budgetAlarm = new GuErrorBudgetAlarmExperimental(this, {
 			sloName: `RegistrationAvailability${this.stage}Slo`,
-			sloTarget: 0.999,
+			sloTarget: 0.995,
 			badEvents: new MathExpression({
 				expression: 'applicationServerErrors + loadBalancerErrors',
 				usingMetrics: {
@@ -53,7 +53,7 @@ export class Registration extends GuStack {
 				},
 			}),
 			validEvents: allRequests,
-			snsTopicNameForAlerts: 'jacob-test',
+			snsTopicNameForAlerts: 'mobile-server-side',
 		});
 	}
 }
