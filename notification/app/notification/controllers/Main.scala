@@ -75,7 +75,7 @@ final class Main(
       case a: Int if a > MaxTopics => Future.successful(BadRequest(s"Too many topics, maximum: $MaxTopics"))
       case _ if !topics.forall{topic => request.isPermittedTopicType(topic.`type`)} =>
         Future.successful(Unauthorized(s"This API key is not valid for ${topics.filterNot(topic => request.isPermittedTopicType(topic.`type`))}."))
-      case _ => pushWithDuplicateProtection(notification).map(send => {
+      case _ => pushWithDuplicateProtection(notification, notificationReceivedTime).map(send => {
         val durationMillis = Duration.between(notificationReceivedTime, Instant.now).toMillis
 
         if (notification.`type` == BreakingNews && !notification.dryRun.contains(true)) {
@@ -108,17 +108,17 @@ final class Main(
     }
   }
 
-  private def pushWithDuplicateProtection(notification: Notification): Future[Result] = {
+  private def pushWithDuplicateProtection(notification: Notification, notificationReceivedTime: Instant): Future[Result] = {
     val isDuplicate = notificationReportRepository.getByUuid(notification.id).map(_.isRight)
 
     isDuplicate.flatMap {
       case true => Future.successful(BadRequest(s"${notification.id} has been sent before - refusing to resend"))
-      case false => pushGeneric(notification)
+      case false => pushGeneric(notification, notificationReceivedTime)
     }
   }
 
-  private def pushGeneric(notification: Notification) = {
-    prepareReportAndSendPush(notification) flatMap {
+  private def pushGeneric(notification: Notification, notificationReceivedTime: Instant) = {
+    prepareReportAndSendPush(notification, notificationReceivedTime) flatMap {
       case Right(report) =>
         reportPushSent(notification, List(report)) map {
           case Right(_) =>
@@ -144,14 +144,14 @@ final class Main(
     }
   }
 
-  private def prepareReportAndSendPush(notification: Notification): Future[Either[services.SenderError, SenderReport]] = {
+  private def prepareReportAndSendPush(notification: Notification, notificationReceivedTime: Instant): Future[Either[services.SenderError, SenderReport]] = {
     val notificationReport = NotificationReport.create(notification.id, notification.`type`, notification, DateTime.now(DateTimeZone.UTC), List(), None)
     for {
       initialEmptyNotificationReport <- notificationReportRepository.store(notificationReport)
       _ <- decacheArticle(notification)
       sentPush <- initialEmptyNotificationReport match {
         case Left(error) => Future.failed(new Exception(error.message))
-        case Right(_) => notificationSender.sendNotification(notification)
+        case Right(_) => notificationSender.sendNotification(notification, notificationReceivedTime)
       }
     } yield sentPush
   }
