@@ -1,8 +1,7 @@
 package com.gu.notifications.worker.models
 
 import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryException, DeliverySuccess}
-import com.gu.notifications.worker.utils.Logging
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.{Duration, Instant}
 
@@ -49,14 +48,18 @@ case class LatencyMetricsForCloudWatch(uniqueValues: List[Long], orderedCounts: 
 
 object LatencyMetrics {
 
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
   def aggregateForCloudWatch(allTokenDeliveryLatencies: List[Long], batchSize: Int = 150): List[LatencyMetricsForCloudWatch] = {
     val uniqueLatencies = allTokenDeliveryLatencies.distinct
     val countsForEachLatency = allTokenDeliveryLatencies.groupBy(identity).view.mapValues(_.size)
     val orderedCounts = uniqueLatencies.map(value => countsForEachLatency(value))
-    uniqueLatencies.grouped(batchSize).toList.zipWithIndex.map { case (uniqueValueBatch, index) =>
+    val aggregatedMetrics = uniqueLatencies.grouped(batchSize).toList.zipWithIndex.map { case (uniqueValueBatch, index) =>
       val orderedCountsForBatch = orderedCounts.grouped(batchSize).toList(index)
       LatencyMetricsForCloudWatch(uniqueValueBatch, orderedCountsForBatch)
     }
+    logger.info(s"Aggregated the following latency metrics for CloudWatch: ${aggregatedMetrics}")
+    aggregatedMetrics
   }
 
   def collectLatency(previous: List[Long], result: Either[Throwable, DeliverySuccess], notificationSentTime: Instant): List[Long] = {
