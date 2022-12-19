@@ -90,7 +90,8 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     val chunkedTokens = ChunkedTokens(
       notification = notification,
       range = ShardRange(0, 1),
-      tokens = List("token")
+      tokens = List("token"),
+      notificationAppReceivedTime = Some(Instant.now())
     )
 
     val chunkedTokensNotification: SQSEvent = {

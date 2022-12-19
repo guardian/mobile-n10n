@@ -15,6 +15,8 @@ import scala.util.control.NonFatal
 import models.TopicCount.topicCountJF
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.time.Instant
+
 case class GuardianFailedToQueueShard(
   senderName: String,
   reason: String
@@ -31,10 +33,10 @@ class GuardianNotificationSender(
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  override def sendNotification(notification: Notification): Future[SenderResult] = {
+  override def sendNotification(notification: Notification, notificationReceivedTime: Instant): Future[SenderResult] = {
     val result = for {
       registrationCount <- countRegistration(notification.topic)
-      workerBatches = prepareBatch(notification, registrationCount)
+      workerBatches = prepareBatch(notification, registrationCount, notificationReceivedTime)
       sqsBatchResults <- sendBatch(workerBatches, harvesterSqsUrl)
     } yield {
       val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
@@ -98,7 +100,7 @@ class GuardianNotificationSender(
     }
   }
 
-  def prepareBatch(notification: Notification, registrationCount: Option[Int]): List[SendMessageBatchRequestEntry] = {
+  def prepareBatch(notification: Notification, registrationCount: Option[Int], notificationReceivedTime: Instant): List[SendMessageBatchRequestEntry] = {
     val countWithDefault: Int = registrationCount match {
       case Some(count) => count
       case None if notification.topic.exists(_.`type` == TopicTypes.Breaking) =>
@@ -110,7 +112,7 @@ class GuardianNotificationSender(
     }
 
     shard(countWithDefault).map { shard =>
-      val shardedNotification = ShardedNotification(notification, shard)
+      val shardedNotification = ShardedNotification(notification, shard, Some(notificationReceivedTime))
       val payloadJson = Json.stringify(Json.toJson(shardedNotification))
       val messageId = s"${notification.id}-${shard.start}-${shard.end}"
       new SendMessageBatchRequestEntry(messageId, payloadJson)

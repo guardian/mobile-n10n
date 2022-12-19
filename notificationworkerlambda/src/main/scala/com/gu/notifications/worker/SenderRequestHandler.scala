@@ -87,7 +87,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
         deliverIndividualNotificationStream(individualNotifications)
           .broadcastTo(
             reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
-            reportLatency(chunkedTokens, functionStartTime), // FIXME - we want the time that the MSS stack received the notification, not the function start time
+            reportLatency(chunkedTokens, chunkedTokens.notificationAppReceivedTime.getOrElse(functionStartTime)), // FIXME: remove this fallback after initial deployment
             cleanupFailures,
             trackProgress(chunkedTokens.notification.id))
       }.parJoin(maxConcurrency)

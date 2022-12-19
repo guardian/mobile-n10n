@@ -9,12 +9,13 @@ import db.{HarvestedToken, RegistrationService, Topic}
 import fs2.Stream
 import play.api.libs.json.{Format, Json}
 
+import java.time.Instant
 import scala.concurrent.ExecutionContextExecutor
 
 case class IndividualNotification(notification: Notification, token: String)
 case class BatchNotification(notification: Notification, token: List[String])
 
-case class ChunkedTokens(notification: Notification, tokens: List[String], range: ShardRange) {
+case class ChunkedTokens(notification: Notification, tokens: List[String], range: ShardRange, notificationAppReceivedTime: Option[Instant]) {
   def toNotificationToSends: List[IndividualNotification] = tokens.map(IndividualNotification(notification, _))
   def toBatchNotificationToSends: List[BatchNotification] = tokens.grouped(500).map(BatchNotification(notification, _)).toList
 }
