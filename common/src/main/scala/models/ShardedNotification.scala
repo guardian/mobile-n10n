@@ -15,7 +15,7 @@ object ShardRange {
 case class ShardedNotification(
   notification: Notification,
   range: ShardRange,
-  notificationAppReceivedTime: Option[Instant]
+  notificationAppReceivedTime: Instant
 )
 
 object ShardedNotification {
