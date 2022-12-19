@@ -35,7 +35,7 @@ object NotificationWorkerLocalRun extends App {
     notification = notification,
     range = ShardRange(0, 1),
     tokens = List("token"),
-    notificationAppReceivedTime = Some(Instant.now())
+    notificationAppReceivedTime = Instant.now()
   )
 
   val sqsEvent: SQSEvent = {
