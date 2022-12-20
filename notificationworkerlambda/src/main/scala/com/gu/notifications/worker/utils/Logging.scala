@@ -49,7 +49,6 @@ trait Logging {
     sentTime: Long,
     functionStartTime: Instant,
     maybePlatform: Option[Platform],
-    isIndividualNotificationSend: Boolean = true,
     sqsMessageBatchSize: Int,
   )(end: Instant): Map[String, Any] = {
     val processingTime = Duration.between(functionStartTime, end).toMillis
@@ -70,7 +69,6 @@ trait Logging {
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-      "worker.notificationSendMethod" -> { if (isIndividualNotificationSend) "individual" else "batch" },
       "sqsMessageBatchSize" -> sqsMessageBatchSize,
       "worker.chunkTokenSize" -> numberOfTokens,
     )

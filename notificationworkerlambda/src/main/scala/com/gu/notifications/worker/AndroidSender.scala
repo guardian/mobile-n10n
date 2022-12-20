@@ -61,7 +61,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
     val notificationLog = s"(notification: ${chunkedTokens.notification.id} ${chunkedTokens.range})"
     input
       .fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregateBatch(acc, chunkedTokens.tokens.size, resp) }
-      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, isIndividualNotificationSend = false, sqsMessageBatchSize), prefix = s"Results $notificationLog: "))
+      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize), prefix = s"Results $notificationLog: "))
       .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
   }
 
