@@ -41,7 +41,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
       case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize) =>
-        logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} to topics ${chunkedTokens.notification.topic} in batches")
+        logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} in batches")
         deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
           .broadcastTo(
             reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),

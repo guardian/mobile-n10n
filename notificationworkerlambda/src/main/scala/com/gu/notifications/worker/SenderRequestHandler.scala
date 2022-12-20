@@ -80,33 +80,16 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       }.parJoin(maxConcurrency)
   }
 
-  def logStartAndCount(acc: Int, chunkedTokens: ChunkedTokens) = {
-    logger.info(Map(
-          "notificationId" -> chunkedTokens.notification.id
-        ), "Start processing a SQS message");
-    acc + chunkedTokens.tokens.size
-  }
-
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
     val sqsMessageBatchSize = event.getRecords.size
     val startTime = Instant.now
-    val totalTokensProcessed: Int = event.getRecords.asScala.map(event => NotificationParser.parseChunkedTokenEvent(event.getBody)).foldLeft(0)(logStartAndCount)
     val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)] = Stream.emits(event.getRecords.asScala)
       .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
       .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp, startTime, sqsMessageBatchSize) }
-
-    logger.info("Java version: " + System.getProperty("java.version"))
 
     deliverChunkedTokens(chunkedTokenStream)
       .compile
       .drain
       .unsafeRunSync()
-
-    logger.info(Map(
-      "sqsMessageBatchSize" -> sqsMessageBatchSize,
-      "totalTokensProcessed" -> totalTokensProcessed,
-      "invocation.functionProcessingRate" -> {
-        totalTokensProcessed.toDouble / Duration.between(startTime, Instant.now).toMillis * 1000
-      },
-    ), "Processed all sqs messages from sqs event")  }
+  }
 }
