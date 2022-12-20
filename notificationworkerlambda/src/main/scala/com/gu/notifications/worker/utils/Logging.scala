@@ -2,7 +2,6 @@ package com.gu.notifications.worker.utils
 
 import cats.effect.IO
 import com.gu.notifications.worker.Env
-import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
 import models.{Notification, NotificationType, Platform}
 import net.logstash.logback.marker.LogstashMarker
 import net.logstash.logback.marker.Markers.appendEntries
@@ -76,10 +75,4 @@ trait Logging {
       "worker.chunkTokenSize" -> numberOfTokens,
     )
   }
-  def logEndOfInvocation(sqsMessageBatchSize: Int, totalTokensProcessed: Int, startTime: Instant, registry: IOSMetricsRegistry): Unit =
-      logger.info(Map(
-        "sqsMessageBatchSize" -> sqsMessageBatchSize,
-        "totalTokensProcessed" -> totalTokensProcessed,
-        "invocation.functionProcessingRate" -> { totalTokensProcessed.toDouble / Duration.between(startTime, Instant.now).toMillis * 1000 },
-      ), "Processed all sqs messages from sqs event")
 }

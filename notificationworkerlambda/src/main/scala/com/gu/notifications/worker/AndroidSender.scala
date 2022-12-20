@@ -3,7 +3,6 @@ package com.gu.notifications.worker
 import cats.effect.{ContextShift, IO, Timer}
 import com.gu.notifications.worker.cleaning.CleaningClientImpl
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
-import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
 import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryClient, DeliveryException}
 import com.gu.notifications.worker.delivery.fcm.{Fcm, FcmClient}
 import com.gu.notifications.worker.models.SendingResults
@@ -20,7 +19,6 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
 
   // maybe we'll implement a metrics registry for android in the future?
   // it seems like a metrics registry could be a nice way to abstract all the metrics we care about collecting
-  val registry = new IOSMetricsRegistry
   def this() = {
     this(Configuration.fetchFirebase(), None, "workers")
   }
