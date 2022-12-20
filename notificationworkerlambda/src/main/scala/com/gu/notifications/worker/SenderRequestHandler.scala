@@ -52,7 +52,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     }
     input
       .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectLatency(acc, resp, notificationSentTime) }
-      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform))
+      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform, Reporting.notificationTypeForObservability(chunkedTokens.notification)))
   }
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>

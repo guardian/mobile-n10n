@@ -77,7 +77,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
     }
     input
       .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectBatchLatency(acc, resp, notificationSentTime) }
-      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform))
+      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform, Reporting.notificationTypeForObservability(chunkedTokens.notification)))
   }
 
   def cleanupBatchFailures[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[Throwable, BatchDeliverySuccess], Unit] = { input =>

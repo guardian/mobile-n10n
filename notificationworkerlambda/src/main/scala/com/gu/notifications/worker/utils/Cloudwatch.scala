@@ -14,7 +14,7 @@ trait Cloudwatch {
   def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit]
   def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit
 
-  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, List[Long], Unit]
+  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], notificationType: String): Pipe[IO, List[Long], Unit]
   def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit]
 }
 
@@ -33,7 +33,7 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
       .withValue(value.toDouble)
       .withDimensions(dimension)
 
-  private def latencyDatum(name: String, values: List[Long], counts: List[Int], dimension: Dimension) = {
+  private def latencyDatum(name: String, values: List[Long], counts: List[Int], dimensions: List[Dimension]) = {
     val valuesAsJava = values.map(value => Double.box(value.toDouble)).asJava
     val countsAsJava = counts.map(count => Double.box(count.toDouble)).asJava
     new MetricDatum()
@@ -41,7 +41,7 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
       .withUnit(StandardUnit.Seconds)
       .withValues(valuesAsJava)
       .withCounts(countsAsJava)
-      .withDimensions(dimension)
+      .withDimensions(dimensions.asJava)
   }
 
   private def perfMetricDatum(name: String, unit: StandardUnit, value: Double) =
@@ -67,12 +67,13 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
     }
   }
 
-  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform]): Pipe[IO, List[Long], Unit] = _.evalMap { deliveryTimes =>
+  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], notificationType: String): Pipe[IO, List[Long], Unit] = _.evalMap { deliveryTimes =>
     IO.delay {
       val latencyMetrics = LatencyMetrics.aggregateForCloudWatch(deliveryTimes)
-      val dimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
+      val platformDimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
+      val notificationTypeDimension = new Dimension().withName("type").withValue(notificationType)
       val requests = latencyMetrics.map { valuesAndCounts =>
-        val cloudWatchMetric: MetricDatum = latencyDatum("TokenDeliveryLatency", valuesAndCounts.uniqueValues, valuesAndCounts.orderedCounts, dimension)
+        val cloudWatchMetric: MetricDatum = latencyDatum("TokenDeliveryLatency", valuesAndCounts.uniqueValues, valuesAndCounts.orderedCounts, List(platformDimension, notificationTypeDimension))
         new PutMetricDataRequest()
           .withNamespace(s"Notifications/$stage/$senderMetricNs")
           .withMetricData(cloudWatchMetric)

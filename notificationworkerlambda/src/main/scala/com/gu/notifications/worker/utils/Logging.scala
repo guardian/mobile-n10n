@@ -59,12 +59,7 @@ trait Logging {
     Map(
       "notificationId" -> notification.id,
       "platform" -> maybePlatform.map(_.toString).getOrElse("unknown"),
-      "type" -> {
-        notification.`type` match {
-          case NotificationType.BreakingNews => "breakingNews"
-          case _                             => "other"
-        }
-      },
+      "type" -> Reporting.notificationTypeForObservability(notification),
       "worker.functionProcessingRate" -> processingRate,
       "worker.functionProcessingTime" -> processingTime,
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
