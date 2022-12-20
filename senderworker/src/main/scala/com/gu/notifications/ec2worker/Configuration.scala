@@ -45,7 +45,8 @@ object Configuration {
         concurrentPushyConnections = config.getInt("apns.concurrentPushyConnections"),
         maxConcurrency = config.getInt("apns.maxConcurrency"),
       ),
-      config.getInt("apns.threadPoolSize")
+      config.getInt("apns.threadPoolSize"),
+      config.getInt("batchsize"),
     )
   }
 
@@ -65,6 +66,7 @@ object Configuration {
         dryRun = config.getBoolean("dryrun")
       ),
       config.getInt("fcm.threadPoolSize"),
+      config.getInt("batchsize"),
       getStringList("fcm.allowedTopicsForBatchSend")
     )
   }

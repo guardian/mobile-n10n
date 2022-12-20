@@ -232,6 +232,55 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "androidScheduledRerunRuleA1334820": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androidSenderLambdaCtr85CB623B",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "androidSenderSqsCF269D3F",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"android\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "androidScheduledRerunRuleAllowEventRuleSenderWorkerStackandroidSenderLambdaCtrAABC020DD76A55D8": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androidSenderLambdaCtr85CB623B",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androidScheduledRerunRuleA1334820",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
     "androidSenderDlqB74778CC": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -358,7 +407,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-android-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
+            "com.gu.notifications.worker.AndroidSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -457,27 +506,6 @@ Object {
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
     },
-    "androidSenderSqsEventSourceMapping29E8124B": Object {
-      "DependsOn": Array [
-        "androidSenderLambdaCtr85CB623B",
-        "androidSenderSqsCF269D3F",
-      ],
-      "Properties": Object {
-        "BatchSize": 20,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "androidSenderSqsCF269D3F",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "androidSenderLambdaCtr85CB623B",
-        },
-        "MaximumBatchingWindowInSeconds": 1,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
-    },
     "androidSenderThrottleAlarmE6E5BEC7": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -542,6 +570,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androidSqsMessageSentRule0B42DCFA": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for android on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "android",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-android-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androidSenderLambdaCtr85CB623B",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 900,
+              "MaximumRetryAttempts": 5,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "androidSqsMessageSentRuleAllowEventRuleSenderWorkerStackandroidSenderLambdaCtrAABC020D3EA6A969": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androidSenderLambdaCtr85CB623B",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androidSqsMessageSentRule0B42DCFA",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "androidbetaExecutionRoleFA113395": Object {
       "Properties": Object {
@@ -702,6 +785,55 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "androidbetaScheduledRerunRule100756A7": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androidbetaSenderLambdaCtrB3CF7FC4",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "androidbetaSenderSqs57513D18",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"android-beta\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "androidbetaScheduledRerunRuleAllowEventRuleSenderWorkerStackandroidbetaSenderLambdaCtrB733DAF7FE2660D2": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaSenderLambdaCtrB3CF7FC4",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaScheduledRerunRule100756A7",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
     "androidbetaSenderDlqE9C306E1": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -828,7 +960,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-android-beta-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
+            "com.gu.notifications.worker.AndroidSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -927,27 +1059,6 @@ Object {
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
     },
-    "androidbetaSenderSqsEventSourceMappingA8FE78C9": Object {
-      "DependsOn": Array [
-        "androidbetaSenderLambdaCtrB3CF7FC4",
-        "androidbetaSenderSqs57513D18",
-      ],
-      "Properties": Object {
-        "BatchSize": 1,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "androidbetaSenderSqs57513D18",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
-        },
-        "MaximumBatchingWindowInSeconds": 0,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
-    },
     "androidbetaSenderThrottleAlarmEA10B1A4": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -1012,6 +1123,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androidbetaSqsMessageSentRuleAllowEventRuleSenderWorkerStackandroidbetaSenderLambdaCtrB733DAF74641C2B2": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaSenderLambdaCtrB3CF7FC4",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaSqsMessageSentRuleEE4F4102",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "androidbetaSqsMessageSentRuleEE4F4102": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for android-beta on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "android-beta",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-android-beta-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androidbetaSenderLambdaCtrB3CF7FC4",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 900,
+              "MaximumRetryAttempts": 5,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
     },
     "androideditionExecutionRoleDEF8ADAE": Object {
       "Properties": Object {
@@ -1172,6 +1338,55 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "androideditionScheduledRerunRuleAllowEventRuleSenderWorkerStackandroideditionSenderLambdaCtr777BBF3084F56A15": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androideditionSenderLambdaCtrF0169D16",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androideditionScheduledRerunRuleEA809FA3",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "androideditionScheduledRerunRuleEA809FA3": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androideditionSenderLambdaCtrF0169D16",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "androideditionSenderSqs400C0F3A",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"android-edition\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
     "androideditionSenderDlqE5B23A41": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -1298,7 +1513,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-android-edition-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
+            "com.gu.notifications.worker.AndroidSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -1397,27 +1612,6 @@ Object {
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
     },
-    "androideditionSenderSqsEventSourceMapping87D2DEDF": Object {
-      "DependsOn": Array [
-        "androideditionSenderLambdaCtrF0169D16",
-        "androideditionSenderSqs400C0F3A",
-      ],
-      "Properties": Object {
-        "BatchSize": 1,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "androideditionSenderSqs400C0F3A",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "androideditionSenderLambdaCtrF0169D16",
-        },
-        "MaximumBatchingWindowInSeconds": 0,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
-    },
     "androideditionSenderThrottleAlarmBE557A69": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -1482,6 +1676,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androideditionSqsMessageSentRule59271E2B": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for android-edition on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "android-edition",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-android-edition-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "androideditionSenderLambdaCtrF0169D16",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 900,
+              "MaximumRetryAttempts": 5,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "androideditionSqsMessageSentRuleAllowEventRuleSenderWorkerStackandroideditionSenderLambdaCtr777BBF30EBE4468A": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "androideditionSenderLambdaCtrF0169D16",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "androideditionSqsMessageSentRule59271E2B",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "iosExecutionRoleEE25DF12": Object {
       "Properties": Object {
@@ -1642,6 +1891,55 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "iosScheduledRerunRuleAllowEventRuleSenderWorkerStackiosSenderLambdaCtr6C663C0CACB41E7C": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "iosSenderLambdaCtr6053C1F8",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "iosScheduledRerunRuleC146D846",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "iosScheduledRerunRuleC146D846": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "iosSenderLambdaCtr6053C1F8",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "iosSenderSqsA94CB0A0",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"ios\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
     "iosSenderDlqE2E2925D": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -1768,7 +2066,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-ios-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.IOSSender::handleChunkTokens",
+            "com.gu.notifications.worker.IOSSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -1867,27 +2165,6 @@ Object {
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
     },
-    "iosSenderSqsEventSourceMapping2E507F40": Object {
-      "DependsOn": Array [
-        "iosSenderLambdaCtr6053C1F8",
-        "iosSenderSqsA94CB0A0",
-      ],
-      "Properties": Object {
-        "BatchSize": 1,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "iosSenderSqsA94CB0A0",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "iosSenderLambdaCtr6053C1F8",
-        },
-        "MaximumBatchingWindowInSeconds": 0,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
-    },
     "iosSenderThrottleAlarmFCACC1F8": Object {
       "Properties": Object {
         "AlarmActions": Array [
@@ -1952,6 +2229,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "iosSqsMessageSentRule7642511F": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for ios on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "ios",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-ios-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "iosSenderLambdaCtr6053C1F8",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 900,
+              "MaximumRetryAttempts": 5,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "iosSqsMessageSentRuleAllowEventRuleSenderWorkerStackiosSenderLambdaCtr6C663C0CC5ADD3E7": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "iosSenderLambdaCtr6053C1F8",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "iosSqsMessageSentRule7642511F",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "ioseditionExecutionRole61247F06": Object {
       "Properties": Object {
@@ -2112,6 +2444,55 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "ioseditionScheduledRerunRule63DBE225": Object {
+      "Properties": Object {
+        "ScheduleExpression": "cron(0/10 * * * ? *)",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "ioseditionSenderLambdaCtr2410D4D7",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "Input": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "{\\"source\\":\\"com.gu.notifications.worker\\",\\"detail-type\\":\\"Scheduled sender\\",\\"resources\\":[\\"",
+                  Object {
+                    "Ref": "ioseditionSenderSqsFDE339AC",
+                  },
+                  "\\"],\\"detail\\":{\\"platform\\":\\"ios-edition\\",\\"batchsize\\":10}}",
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ioseditionScheduledRerunRuleAllowEventRuleSenderWorkerStackioseditionSenderLambdaCtr506C802F12CB61A1": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionSenderLambdaCtr2410D4D7",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionScheduledRerunRule63DBE225",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
     "ioseditionSenderDlq85139531": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -2238,7 +2619,7 @@ Object {
         "FunctionName": "mobile-notifications-workers-ios-edition-sender-ctr-PROD",
         "ImageConfig": Object {
           "Command": Array [
-            "com.gu.notifications.worker.IOSSender::handleChunkTokens",
+            "com.gu.notifications.worker.IOSSender::handleRequest",
           ],
         },
         "MemorySize": 10240,
@@ -2296,27 +2677,6 @@ Object {
         },
       },
       "Type": "AWS::SSM::Parameter",
-    },
-    "ioseditionSenderSqsEventSourceMapping9B8EF143": Object {
-      "DependsOn": Array [
-        "ioseditionSenderLambdaCtr2410D4D7",
-        "ioseditionSenderSqsFDE339AC",
-      ],
-      "Properties": Object {
-        "BatchSize": 1,
-        "Enabled": true,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
-            "ioseditionSenderSqsFDE339AC",
-            "Arn",
-          ],
-        },
-        "FunctionName": Object {
-          "Ref": "ioseditionSenderLambdaCtr2410D4D7",
-        },
-        "MaximumBatchingWindowInSeconds": 0,
-      },
-      "Type": "AWS::Lambda::EventSourceMapping",
     },
     "ioseditionSenderSqsFDE339AC": Object {
       "DeletionPolicy": "Delete",
@@ -2422,6 +2782,61 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ioseditionSqsMessageSentRule884AAE62": Object {
+      "Properties": Object {
+        "Description": "SQS message sent to SQS queue for ios-edition on PROD",
+        "EventPattern": Object {
+          "detail": Object {
+            "platform": Array [
+              "ios-edition",
+            ],
+          },
+          "detail-type": Array [
+            "Tokens sent",
+          ],
+          "source": Array [
+            "com.gu.notifications.worker.Harvester",
+          ],
+        },
+        "Name": "mobile-notifications-workers-sender-ios-edition-PROD-trigger",
+        "State": "ENABLED",
+        "Targets": Array [
+          Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "ioseditionSenderLambdaCtr2410D4D7",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+            "RetryPolicy": Object {
+              "MaximumEventAgeInSeconds": 900,
+              "MaximumRetryAttempts": 5,
+            },
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ioseditionSqsMessageSentRuleAllowEventRuleSenderWorkerStackioseditionSenderLambdaCtr506C802F1C721A43": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionSenderLambdaCtr2410D4D7",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionSqsMessageSentRule884AAE62",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
   },
 }

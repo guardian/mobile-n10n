@@ -12,6 +12,8 @@ import {SnsAction} from 'aws-cdk-lib/aws-cloudwatch-actions'
 import { GuStack } from "@guardian/cdk/lib/constructs/core"
 import type { App } from "aws-cdk-lib"
 import type { GuStackProps } from "@guardian/cdk/lib/constructs/core"
+import { Rule, RuleTargetInput, Schedule } from 'aws-cdk-lib/aws-events'
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets'
 
 interface SenderWorkerOpts {
   handler: string,
@@ -115,15 +117,37 @@ class SenderWorker extends cdkcore.Construct  {
       reservedConcurrentExecutions: props.reservedConcurrency
     })
 
-    const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
-      batchSize: props.isBatchingSqsMessages ? 20 : 1,
-      maxBatchingWindow: props.isBatchingSqsMessages ? cdk.Duration.seconds(1) : cdk.Duration.seconds(0),
+    const eventRule = new Rule(this, "SqsMessageSentRule", {
       enabled: true,
-      eventSourceArn: this.senderSqs.queueArn,
-      target: senderLambdaCtr
-    })
-    senderSqsEventSourceMapping.node.addDependency(this.senderSqs)
-    senderSqsEventSourceMapping.node.addDependency(senderLambdaCtr)
+      description: `SQS message sent to SQS queue for ${props.platform} on ${scope.stage}`,
+      ruleName: `${scope.stack}-sender-${props.platform}-${scope.stage}-trigger`,
+      eventPattern: {
+        source: ["com.gu.notifications.worker.Harvester"],
+        detailType: ["Tokens sent"],
+        detail: {
+          platform: [`${props.platform}`],
+        }
+      },
+    });
+    eventRule.addTarget(new LambdaFunction(senderLambdaCtr, {
+      maxEventAge: cdk.Duration.minutes(15), // Optional: set the maxEventAge retry policy
+      retryAttempts: 5, // Optional: set the max number of retry attempts
+    }));
+
+    const scheduledEventRule = new Rule(this, "ScheduledRerunRule", {
+      schedule: Schedule.cron({ minute: "0/10" }),
+    });
+    scheduledEventRule.addTarget(new LambdaFunction(senderLambdaCtr, {
+      event: RuleTargetInput.fromObject({
+        source: "com.gu.notifications.worker",
+        "detail-type": "Scheduled sender",
+        resources: [`${this.senderSqs.queueUrl}`],
+        detail: {
+          platform: `${props.platform}`,
+          batchsize: 10,
+        }
+      })
+    }));
 
     const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
       alarmDescription: `Triggers if the ${id} sender lambda is throttled in ${scope.stage}.`,
@@ -234,11 +258,11 @@ export class SenderWorkerStack extends GuStack {
      * platform or app by talking to a different lambda handler function
      */
 
-    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", true)
-    addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
-    addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleRequest")
+    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleRequest", true)
+    addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleRequest")
+    addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleRequest")
+    addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleRequest")
 
     /*
      * each worker has been assigned an SQS queue which, when written to, will

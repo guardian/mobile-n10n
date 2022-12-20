@@ -5,6 +5,7 @@ import _root_.models.{Notification, NotificationType, ShardRange}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
+import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery._
@@ -18,19 +19,39 @@ import org.slf4j.{Logger, LoggerFactory}
 import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
+import play.api.libs.json.Json
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler
+import play.api.libs.json.JsValue
+import java.io.InputStream
+import java.io.OutputStream
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder
+import com.gu.notifications.worker.utils.Aws
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest
+import com.amazonaws.services.sqs.model.Message
+import com.amazonaws.services.sqs.AmazonSQS
+import scala.annotation.tailrec
 
 
-trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
+case class SqsMessage(body: String, sentTimestamp: Long)
+
+object SqsMessage {
+  def fromSqsApiMessage(message: Message) = SqsMessage(message.getBody(), message.getAttributes.getOrDefault("SentTimestamp", "0").toLong)
+
+  def fromSqsEventMessage(message: SQSMessage) = SqsMessage(message.getBody(), message.getAttributes.getOrDefault("SentTimestamp", "0").toLong)
+}
+
+trait SenderRequestHandler[C <: DeliveryClient] extends Logging with RequestStreamHandler {
 
   def deliveryService: IO[DeliveryService[IO, C]]
 
   val cleaningClient: CleaningClient
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int
-
+  val batchSize: Int
   val registry: IOSMetricsRegistry
 
-  def env = Env()
+def env = Env()
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
@@ -91,11 +112,15 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   }
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
-    val sqsMessageBatchSize = event.getRecords.size
+    handleChunkTokensInMessages(event.getRecords().asScala.toList.map(SqsMessage.fromSqsEventMessage(_)))
+  }
+
+  def handleChunkTokensInMessages(records: List[SqsMessage]): Unit = {
+    val sqsMessageBatchSize = records.size
     val startTime = Instant.now
-    val totalTokensProcessed: Int = event.getRecords.asScala.map(event => NotificationParser.parseChunkedTokenEvent(event.getBody)).foldLeft(0)(logStartAndCount)
-    val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)] = Stream.emits(event.getRecords.asScala)
-      .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
+    val totalTokensProcessed: Int = records.map(event => NotificationParser.parseChunkedTokenEvent(event.body)).foldLeft(0)(logStartAndCount)
+    val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)] = Stream.emits(records)
+      .map(r => (r.body, r.sentTimestamp))
       .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp, startTime, sqsMessageBatchSize) }
 
     logger.info("Java version: " + System.getProperty("java.version"))
@@ -106,5 +131,26 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .unsafeRunSync()
 
     logEndOfInvocation(sqsMessageBatchSize, totalTokensProcessed, startTime, registry)
+  }
+
+  def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
+    val json: JsValue = Json.parse(input);
+    val sqsQueue = (json \ "resources" \ 0).get.as[String]
+    val batchSizeToUse = (json \ "detail" \ "batchsize").toOption.map(_.as[Int]).getOrElse(batchSize)
+
+    val sqsClient = AmazonSQSClientBuilder.standard()
+      .withCredentials(Aws.credentialsProvider)
+      .withRegion(Regions.EU_WEST_1)
+      .build()
+
+    val receiveMessages = sqsClient.receiveMessage(new ReceiveMessageRequest()
+      .withQueueUrl(sqsQueue)
+      .withMaxNumberOfMessages(batchSizeToUse)
+      .withWaitTimeSeconds(1)
+      .withAttributeNames("SentTimestamp"))
+      .getMessages.asScala.toList
+
+    handleChunkTokensInMessages(receiveMessages.map(SqsMessage.fromSqsApiMessage(_)))
+    receiveMessages.foreach(msg => sqsClient.deleteMessage(sqsQueue, msg.getReceiptHandle()))   
   }
 }
