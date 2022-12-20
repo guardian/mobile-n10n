@@ -59,9 +59,13 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
 
   def reportBatchSuccesses[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant, sqsMessageBatchSize: Int): Pipe[IO, Either[DeliveryException, BatchDeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${chunkedTokens.notification.id} ${chunkedTokens.range})"
+    val enableAwsMetric = chunkedTokens.notification.dryRun match {
+      case Some(true) => false
+      case _ => true
+    }
     input
       .fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregateBatch(acc, chunkedTokens.tokens.size, resp) }
-      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize), prefix = s"Results $notificationLog: "))
+      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
       .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
   }
 
