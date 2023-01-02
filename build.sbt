@@ -429,7 +429,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
-      "com.eatthepath" % "pushy-dropwizard-metrics-listener" % "0.15.1",
+      "com.eatthepath" % "pushy-dropwizard-metrics-listener" % "0.15.2",
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
