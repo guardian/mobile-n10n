@@ -83,6 +83,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
     val sqsMessageBatchSize = event.getRecords.size
     val startTime = Instant.now
+    val totalTokensProcessed: Int = event.getRecords.asScala.map(event => NotificationParser.parseChunkedTokenEvent(event.getBody)).foldLeft(0)(logStartAndCount)
     val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)] = Stream.emits(event.getRecords.asScala)
       .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
       .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp, startTime, sqsMessageBatchSize) }
@@ -91,5 +92,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .compile
       .drain
       .unsafeRunSync()
+
+    logEndOfInvocation(sqsMessageBatchSize, totalTokensProcessed, startTime)
   }
 }

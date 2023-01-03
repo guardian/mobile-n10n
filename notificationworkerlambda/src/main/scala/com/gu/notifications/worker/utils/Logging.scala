@@ -10,6 +10,7 @@ import org.slf4j.Logger
 import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters.MapHasAsJava
 import com.gu.notifications.worker.models.PerformanceMetrics
+import com.gu.notifications.worker.tokens.ChunkedTokens
 
 trait Logging {
   def logger: Logger
@@ -73,4 +74,20 @@ trait Logging {
       "worker.chunkTokenSize" -> numberOfTokens,
     )
   }
+
+  def logStartAndCount(acc: Int, chunkedTokens: ChunkedTokens): Unit = {
+    logger.info(Map(
+      "notificationId" -> chunkedTokens.notification.id
+    ), "Start processing a SQS message");
+    acc + chunkedTokens.tokens.size
+  }
+
+  def logEndOfInvocation(sqsMessageBatchSize: Int, totalTokensProcessed: Int, startTime: Instant): Unit =
+    logger.info(Map(
+      "sqsMessageBatchSize" -> sqsMessageBatchSize,
+      "totalTokensProcessed" -> totalTokensProcessed,
+      "invocation.functionProcessingRate" -> {
+        totalTokensProcessed.toDouble / Duration.between(startTime, Instant.now).toMillis * 1000
+      },
+    ), "Processed all messages from SQS event")
 }
