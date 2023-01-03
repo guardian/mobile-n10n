@@ -75,7 +75,7 @@ trait Logging {
     )
   }
 
-  def logStartAndCount(acc: Int, chunkedTokens: ChunkedTokens): Unit = {
+  def logStartAndCount(acc: Int, chunkedTokens: ChunkedTokens): Int = {
     logger.info(Map(
       "notificationId" -> chunkedTokens.notification.id
     ), "Start processing a SQS message");
