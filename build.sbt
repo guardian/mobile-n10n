@@ -79,6 +79,7 @@ lazy val commontest = project
 
 lazy val common = project
   .dependsOn(commoneventconsumer)
+  .dependsOn(commoncore)
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
@@ -116,6 +117,26 @@ lazy val common = project
     Test / testOptions += dynamoDBLocalTestCleanup.value,
     // the following option is to allow tests using wsClient such as NotificationHubClientSpec
     Test / testOptions += Tests.Argument(TestFrameworks.Specs2, "sequential", "true")
+  )
+
+lazy val commoncore = project
+  .settings(standardSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      ws,
+      // "org.typelevel" %% "cats-core" % catsVersion,
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
+      "ai.x" %% "play-json-extensions" % "0.42.0",
+      "commons-codec" % "commons-codec" % "1.15",
+      "org.typelevel" %% "cats-effect" % "2.5.1",
+      "org.tpolecat" %% "doobie-core"      % doobieVersion,
+      "org.tpolecat" %% "doobie-hikari"    % doobieVersion,
+      "org.tpolecat" %% "doobie-postgres"  % doobieVersion,
+      "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
+      "software.amazon.awssdk" % "sqs" % "2.17.239",
+    ),
+    fork := true,
   )
 
 lazy val commonscheduledynamodb = project
@@ -410,7 +431,7 @@ lazy val ecrRepositorySettings =
   }
 
 lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notificationworkerlambda", Some("com.gu.notifications.worker.TopicCounterLocalRun"))
-  .dependsOn(common)
+  .dependsOn(commoncore)
   .enablePlugins(DockerPlugin)
   .enablePlugins(JavaAppPackaging)
   .settings(ecrRepositorySettings: _*)
@@ -420,16 +441,22 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
-      "com.google.firebase" % "firebase-admin" % "9.0.0",
-      "com.google.protobuf" % "protobuf-java" % "3.19.2",
-      "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
+      "com.google.http-client" % "google-http-client-jackson2" % "1.41.8", 
+      "com.google.firebase" % "firebase-admin" % "9.0.0"
+        exclude("com.google.cloud", "google-cloud-firestore")
+        exclude("com.google.cloud", "google-cloud-storage")
+        exclude("io.netty", "netty-codec-http")
+        exclude("io.netty", "netty-handler")
+        exclude("io.netty", "netty-transport"),
+      "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",       
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
-      "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
-      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "1.1.0",
+      "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
-      "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
       "com.eatthepath" % "pushy-dropwizard-metrics-listener" % "0.15.1",
+      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
+      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
+      "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")

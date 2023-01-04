@@ -11,7 +11,6 @@ import db._
 import doobie.util.transactor.Transactor
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
-import org.threeten.bp.ZoneOffset
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.jdk.CollectionConverters._
