@@ -121,7 +121,7 @@ class SenderWorker extends cdkcore.Construct  {
 			functionName: `${scope.stack}-${id}-sender-jar-${scope.stage}`,
       code: lambda.Code.fromBucket(
         Bucket.fromBucketName(this, "sender-code-bucket", "mobile-notifications-dist"),
-        `mobile-notifications/${scope.stage}/n10n-workers/notificationworkerlambda.jar`),
+        `mobile-notifications/${scope.stage}/notificationworkerlambda/notificationworkerlambda.jar`),
 			// app: 'n10n-workers',
       handler: props.handler,     
 			runtime: Runtime.JAVA_11,

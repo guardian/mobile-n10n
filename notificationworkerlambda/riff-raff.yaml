@@ -56,7 +56,7 @@ deployments:
         PROD: RegistrationsDbProxy-PROD.template.json
   mobile-notifications-workers:
     type: aws-lambda
-    app: n10n-workers    
+    app: notificationworkerlambda  
     parameters:
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
@@ -69,4 +69,3 @@ deployments:
       fileName: notificationworkerlambda.jar
       prefixStack: false
     dependencies: [mobile-notifications-workers-cfn]
-    
