@@ -54,3 +54,19 @@ deployments:
       templateStagePaths:
         CODE: RegistrationsDbProxy-CODE.template.json
         PROD: RegistrationsDbProxy-PROD.template.json
+  mobile-notifications-workers:
+    type: aws-lambda
+    app: n10n-workers    
+    parameters:
+      bucketSsmLookup: true
+      bucketSsmKey: /account/services/artifact.bucket.n10n
+      functionNames:
+      - mobile-notifications-android-sender-jar-
+      - mobile-notifications-android-beta-sender-jar-
+      - mobile-notifications-android-edition-sender-jar-
+      - mobile-notifications-ios-sender-jar-
+      - mobile-notifications-ios-edition-sender-jar-
+      fileName: notificationworkerlambda.jar
+      prefixStack: false
+    dependencies: [mobile-notifications-workers-cfn]
+    

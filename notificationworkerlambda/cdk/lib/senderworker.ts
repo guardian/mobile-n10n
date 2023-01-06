@@ -12,6 +12,8 @@ import {SnsAction} from 'aws-cdk-lib/aws-cloudwatch-actions'
 import { GuStack } from "@guardian/cdk/lib/constructs/core"
 import type { App } from "aws-cdk-lib"
 import type { GuStackProps } from "@guardian/cdk/lib/constructs/core"
+import { Runtime } from 'aws-cdk-lib/aws-lambda'
+import { Bucket } from 'aws-cdk-lib/aws-s3'
 
 interface SenderWorkerOpts {
   handler: string,
@@ -115,15 +117,36 @@ class SenderWorker extends cdkcore.Construct  {
       reservedConcurrentExecutions: props.reservedConcurrency
     })
 
+    const senderLambdaJar = new lambda.Function(this, `SenderLambdaJar`, {
+			functionName: `${scope.stack}-${id}-sender-jar-${scope.stage}`,
+      code: lambda.Code.fromBucket(
+        Bucket.fromBucketName(this, "sender-code-bucket", "mobile-notifications-dist"),
+        `mobile-notifications/${scope.stage}/n10n-workers/notificationworkerlambda.jar`),
+			// app: 'n10n-workers',
+      handler: props.handler,     
+			runtime: Runtime.JAVA_11,
+      environment: {
+        Stage: scope.stage,
+        Stack: scope.stack,
+        App: id,
+        Platform: props.platform
+      },
+      memorySize: 10240,
+      description: `sends notifications for ${id}`,
+      role: executionRole,
+      timeout: props.isBatchingSqsMessages ? cdk.Duration.seconds(180) : cdk.Duration.seconds(90),
+      reservedConcurrentExecutions: props.reservedConcurrency,      
+		});
+
     const senderSqsEventSourceMapping = new lambda.EventSourceMapping(this, "SenderSqsEventSourceMapping", {
       batchSize: props.isBatchingSqsMessages ? 20 : 1,
       maxBatchingWindow: props.isBatchingSqsMessages ? cdk.Duration.seconds(1) : cdk.Duration.seconds(0),
       enabled: true,
       eventSourceArn: this.senderSqs.queueArn,
-      target: senderLambdaCtr
+      target: senderLambdaJar
     })
     senderSqsEventSourceMapping.node.addDependency(this.senderSqs)
-    senderSqsEventSourceMapping.node.addDependency(senderLambdaCtr)
+    senderSqsEventSourceMapping.node.addDependency(senderLambdaJar)
 
     const senderThrottleAlarm = new cloudwatch.Alarm(this, 'SenderThrottleAlarm', {
       alarmDescription: `Triggers if the ${id} sender lambda is throttled in ${scope.stage}.`,

@@ -479,7 +479,8 @@ lazy val ec2SenderWorker = Project("sender-worker", file("senderworker"))
   .settings(
     fork := true,
     libraryDependencies ++= Seq(
-      logback
+      logback,
+      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "1.1.0",
     ),
     riffRaffPackageType := (Debian / packageBin).value,
     riffRaffArtifactResources += (file(s"cdk/cdk.out/SenderWorker-CODE.template.json"), s"senderworker-cfn/SenderWorker-CODE.template.json"),

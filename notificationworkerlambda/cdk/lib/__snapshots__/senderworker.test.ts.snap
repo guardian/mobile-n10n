@@ -3,7 +3,14 @@
 exports[`The MobileAppsRendering stack matches the snapshot 1`] = `
 Object {
   "Metadata": Object {
-    "gu:cdk:constructs": Array [],
+    "gu:cdk:constructs": Array [
+      "GuDistributionBucketParameter",
+      "GuLambdaFunction",
+      "GuLambdaFunction",
+      "GuLambdaFunction",
+      "GuLambdaFunction",
+      "GuLambdaFunction",
+    ],
     "gu:cdk:version": "48.5.0",
   },
   "Outputs": Object {
@@ -63,6 +70,11 @@ Object {
       "Description": "The ARN of the cleaner SQS queue",
       "Type": "String",
     },
+    "DistributionBucketName": Object {
+      "Default": "/account/services/artifact.bucket",
+      "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
     "ReservedConcurrency": Object {
       "Description": "How many concurrent execution to provision the lamdba with",
       "Type": "Number",
@@ -73,6 +85,321 @@ Object {
     },
   },
   "Resources": Object {
+    "SenderLambdaJarandroid677FF98F": Object {
+      "DependsOn": Array [
+        "androidExecutionRoleDefaultPolicy4839D0CD",
+        "androidExecutionRole81D14062",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Ref": "DistributionBucketName",
+          },
+          "S3Key": "mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+        },
+        "Description": "sends notifications for android",
+        "Environment": Object {
+          "Variables": Object {
+            "APP": "n10n-workers",
+            "App": "android",
+            "Platform": "android",
+            "STACK": "mobile-notifications-workers",
+            "STAGE": "PROD",
+            "Stack": "mobile-notifications-workers",
+            "Stage": "PROD",
+          },
+        },
+        "FunctionName": "mobile-notifications-workers-android-sender-jar-PROD",
+        "Handler": "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
+        "MemorySize": 10240,
+        "ReservedConcurrentExecutions": Object {
+          "Ref": "ReservedConcurrency",
+        },
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "androidExecutionRole81D14062",
+            "Arn",
+          ],
+        },
+        "Runtime": "java11",
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "n10n-workers",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "48.5.0",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Timeout": 180,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "SenderLambdaJarandroidbeta94DB936B": Object {
+      "DependsOn": Array [
+        "androidbetaExecutionRoleDefaultPolicy9F8E3BEA",
+        "androidbetaExecutionRoleFA113395",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Ref": "DistributionBucketName",
+          },
+          "S3Key": "mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+        },
+        "Description": "sends notifications for android-beta",
+        "Environment": Object {
+          "Variables": Object {
+            "APP": "n10n-workers",
+            "App": "android-beta",
+            "Platform": "android-beta",
+            "STACK": "mobile-notifications-workers",
+            "STAGE": "PROD",
+            "Stack": "mobile-notifications-workers",
+            "Stage": "PROD",
+          },
+        },
+        "FunctionName": "mobile-notifications-workers-android-beta-sender-jar-PROD",
+        "Handler": "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
+        "MemorySize": 10240,
+        "ReservedConcurrentExecutions": Object {
+          "Ref": "ReservedConcurrency",
+        },
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "androidbetaExecutionRoleFA113395",
+            "Arn",
+          ],
+        },
+        "Runtime": "java11",
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "n10n-workers",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "48.5.0",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Timeout": 90,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "SenderLambdaJarandroidedition5E56318E": Object {
+      "DependsOn": Array [
+        "androideditionExecutionRoleDefaultPolicyBDC1328A",
+        "androideditionExecutionRoleDEF8ADAE",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Ref": "DistributionBucketName",
+          },
+          "S3Key": "mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+        },
+        "Description": "sends notifications for android-edition",
+        "Environment": Object {
+          "Variables": Object {
+            "APP": "n10n-workers",
+            "App": "android-edition",
+            "Platform": "android-edition",
+            "STACK": "mobile-notifications-workers",
+            "STAGE": "PROD",
+            "Stack": "mobile-notifications-workers",
+            "Stage": "PROD",
+          },
+        },
+        "FunctionName": "mobile-notifications-workers-android-edition-sender-jar-PROD",
+        "Handler": "com.gu.notifications.worker.AndroidSender::handleChunkTokens",
+        "MemorySize": 10240,
+        "ReservedConcurrentExecutions": Object {
+          "Ref": "ReservedConcurrency",
+        },
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "androideditionExecutionRoleDEF8ADAE",
+            "Arn",
+          ],
+        },
+        "Runtime": "java11",
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "n10n-workers",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "48.5.0",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Timeout": 90,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "SenderLambdaJarios873F4401": Object {
+      "DependsOn": Array [
+        "iosExecutionRoleDefaultPolicyFB4A61D5",
+        "iosExecutionRoleEE25DF12",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Ref": "DistributionBucketName",
+          },
+          "S3Key": "mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+        },
+        "Description": "sends notifications for ios",
+        "Environment": Object {
+          "Variables": Object {
+            "APP": "n10n-workers",
+            "App": "ios",
+            "Platform": "ios",
+            "STACK": "mobile-notifications-workers",
+            "STAGE": "PROD",
+            "Stack": "mobile-notifications-workers",
+            "Stage": "PROD",
+          },
+        },
+        "FunctionName": "mobile-notifications-workers-ios-sender-jar-PROD",
+        "Handler": "com.gu.notifications.worker.IOSSender::handleChunkTokens",
+        "MemorySize": 10240,
+        "ReservedConcurrentExecutions": Object {
+          "Ref": "ReservedConcurrency",
+        },
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "iosExecutionRoleEE25DF12",
+            "Arn",
+          ],
+        },
+        "Runtime": "java11",
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "n10n-workers",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "48.5.0",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Timeout": 90,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "SenderLambdaJariosedition077A38E4": Object {
+      "DependsOn": Array [
+        "ioseditionExecutionRoleDefaultPolicy016CA14F",
+        "ioseditionExecutionRole61247F06",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Ref": "DistributionBucketName",
+          },
+          "S3Key": "mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+        },
+        "Description": "sends notifications for ios-edition",
+        "Environment": Object {
+          "Variables": Object {
+            "APP": "n10n-workers",
+            "App": "ios-edition",
+            "Platform": "ios-edition",
+            "STACK": "mobile-notifications-workers",
+            "STAGE": "PROD",
+            "Stack": "mobile-notifications-workers",
+            "Stage": "PROD",
+          },
+        },
+        "FunctionName": "mobile-notifications-workers-ios-edition-sender-jar-PROD",
+        "Handler": "com.gu.notifications.worker.IOSSender::handleChunkTokens",
+        "MemorySize": 10240,
+        "ReservedConcurrentExecutions": Object {
+          "Ref": "ReservedConcurrency",
+        },
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "ioseditionExecutionRole61247F06",
+            "Arn",
+          ],
+        },
+        "Runtime": "java11",
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "n10n-workers",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "48.5.0",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Timeout": 90,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
     "androidExecutionRole81D14062": Object {
       "Properties": Object {
         "AssumeRolePolicyDocument": Object {
@@ -232,6 +559,106 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "androidExecutionRoleDefaultPolicy4839D0CD": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                      "/mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "androidExecutionRoleDefaultPolicy4839D0CD",
+        "Roles": Array [
+          Object {
+            "Ref": "androidExecutionRole81D14062",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
     "androidSenderDlqB74778CC": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -295,6 +722,7 @@ Object {
     },
     "androidSenderLambdaCtr85CB623B": Object {
       "DependsOn": Array [
+        "androidExecutionRoleDefaultPolicy4839D0CD",
         "androidExecutionRole81D14062",
       ],
       "Properties": Object {
@@ -459,8 +887,8 @@ Object {
     },
     "androidSenderSqsEventSourceMapping29E8124B": Object {
       "DependsOn": Array [
-        "androidSenderLambdaCtr85CB623B",
         "androidSenderSqsCF269D3F",
+        "SenderLambdaJarandroid677FF98F",
       ],
       "Properties": Object {
         "BatchSize": 20,
@@ -472,7 +900,7 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "androidSenderLambdaCtr85CB623B",
+          "Ref": "SenderLambdaJarandroid677FF98F",
         },
         "MaximumBatchingWindowInSeconds": 1,
       },
@@ -542,6 +970,106 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androidbetaExecutionRoleDefaultPolicy9F8E3BEA": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                      "/mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "androidbetaExecutionRoleDefaultPolicy9F8E3BEA",
+        "Roles": Array [
+          Object {
+            "Ref": "androidbetaExecutionRoleFA113395",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "androidbetaExecutionRoleFA113395": Object {
       "Properties": Object {
@@ -765,6 +1293,7 @@ Object {
     },
     "androidbetaSenderLambdaCtrB3CF7FC4": Object {
       "DependsOn": Array [
+        "androidbetaExecutionRoleDefaultPolicy9F8E3BEA",
         "androidbetaExecutionRoleFA113395",
       ],
       "Properties": Object {
@@ -929,8 +1458,8 @@ Object {
     },
     "androidbetaSenderSqsEventSourceMappingA8FE78C9": Object {
       "DependsOn": Array [
-        "androidbetaSenderLambdaCtrB3CF7FC4",
         "androidbetaSenderSqs57513D18",
+        "SenderLambdaJarandroidbeta94DB936B",
       ],
       "Properties": Object {
         "BatchSize": 1,
@@ -942,7 +1471,7 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "androidbetaSenderLambdaCtrB3CF7FC4",
+          "Ref": "SenderLambdaJarandroidbeta94DB936B",
         },
         "MaximumBatchingWindowInSeconds": 0,
       },
@@ -1172,6 +1701,106 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "androideditionExecutionRoleDefaultPolicyBDC1328A": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                      "/mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "androideditionExecutionRoleDefaultPolicyBDC1328A",
+        "Roles": Array [
+          Object {
+            "Ref": "androideditionExecutionRoleDEF8ADAE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
     "androideditionSenderDlqE5B23A41": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -1235,6 +1864,7 @@ Object {
     },
     "androideditionSenderLambdaCtrF0169D16": Object {
       "DependsOn": Array [
+        "androideditionExecutionRoleDefaultPolicyBDC1328A",
         "androideditionExecutionRoleDEF8ADAE",
       ],
       "Properties": Object {
@@ -1399,8 +2029,8 @@ Object {
     },
     "androideditionSenderSqsEventSourceMapping87D2DEDF": Object {
       "DependsOn": Array [
-        "androideditionSenderLambdaCtrF0169D16",
         "androideditionSenderSqs400C0F3A",
+        "SenderLambdaJarandroidedition5E56318E",
       ],
       "Properties": Object {
         "BatchSize": 1,
@@ -1412,7 +2042,7 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "androideditionSenderLambdaCtrF0169D16",
+          "Ref": "SenderLambdaJarandroidedition5E56318E",
         },
         "MaximumBatchingWindowInSeconds": 0,
       },
@@ -1482,6 +2112,106 @@ Object {
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "iosExecutionRoleDefaultPolicyFB4A61D5": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                      "/mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "iosExecutionRoleDefaultPolicyFB4A61D5",
+        "Roles": Array [
+          Object {
+            "Ref": "iosExecutionRoleEE25DF12",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "iosExecutionRoleEE25DF12": Object {
       "Properties": Object {
@@ -1705,6 +2435,7 @@ Object {
     },
     "iosSenderLambdaCtr6053C1F8": Object {
       "DependsOn": Array [
+        "iosExecutionRoleDefaultPolicyFB4A61D5",
         "iosExecutionRoleEE25DF12",
       ],
       "Properties": Object {
@@ -1869,8 +2600,8 @@ Object {
     },
     "iosSenderSqsEventSourceMapping2E507F40": Object {
       "DependsOn": Array [
-        "iosSenderLambdaCtr6053C1F8",
         "iosSenderSqsA94CB0A0",
+        "SenderLambdaJarios873F4401",
       ],
       "Properties": Object {
         "BatchSize": 1,
@@ -1882,7 +2613,7 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "iosSenderLambdaCtr6053C1F8",
+          "Ref": "SenderLambdaJarios873F4401",
         },
         "MaximumBatchingWindowInSeconds": 0,
       },
@@ -2112,6 +2843,106 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
+    "ioseditionExecutionRoleDefaultPolicy016CA14F": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Ref": "DistributionBucketName",
+                      },
+                      "/mobile-notifications-workers/PROD/n10n-workers/notificationworkerlambda.jar",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers",
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:aws:ssm:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications-workers/n10n-workers/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ioseditionExecutionRoleDefaultPolicy016CA14F",
+        "Roles": Array [
+          Object {
+            "Ref": "ioseditionExecutionRole61247F06",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
     "ioseditionSenderDlq85139531": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -2175,6 +3006,7 @@ Object {
     },
     "ioseditionSenderLambdaCtr2410D4D7": Object {
       "DependsOn": Array [
+        "ioseditionExecutionRoleDefaultPolicy016CA14F",
         "ioseditionExecutionRole61247F06",
       ],
       "Properties": Object {
@@ -2299,8 +3131,8 @@ Object {
     },
     "ioseditionSenderSqsEventSourceMapping9B8EF143": Object {
       "DependsOn": Array [
-        "ioseditionSenderLambdaCtr2410D4D7",
         "ioseditionSenderSqsFDE339AC",
+        "SenderLambdaJariosedition077A38E4",
       ],
       "Properties": Object {
         "BatchSize": 1,
@@ -2312,7 +3144,7 @@ Object {
           ],
         },
         "FunctionName": Object {
-          "Ref": "ioseditionSenderLambdaCtr2410D4D7",
+          "Ref": "SenderLambdaJariosedition077A38E4",
         },
         "MaximumBatchingWindowInSeconds": 0,
       },
