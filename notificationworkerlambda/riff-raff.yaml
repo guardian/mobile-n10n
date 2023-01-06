@@ -61,11 +61,11 @@ deployments:
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
       functionNames:
-      - mobile-notifications-android-sender-jar-
-      - mobile-notifications-android-beta-sender-jar-
-      - mobile-notifications-android-edition-sender-jar-
-      - mobile-notifications-ios-sender-jar-
-      - mobile-notifications-ios-edition-sender-jar-
+      - mobile-notifications-workers-android-sender-jar-
+      - mobile-notifications-workers-android-beta-sender-jar-
+      - mobile-notifications-workers-android-edition-sender-jar-
+      - mobile-notifications-workers-ios-sender-jar-
+      - mobile-notifications-workers-ios-edition-sender-jar-
       fileName: notificationworkerlambda.jar
       prefixStack: false
     dependencies: [mobile-notifications-workers-cfn]
