@@ -54,7 +54,7 @@ deployments:
       templateStagePaths:
         CODE: RegistrationsDbProxy-CODE.template.json
         PROD: RegistrationsDbProxy-PROD.template.json
-  mobile-notifications-workers:
+  notificationworkerlambda:
     type: aws-lambda
     app: notificationworkerlambda  
     parameters:
