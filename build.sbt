@@ -449,11 +449,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
-      "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
-      "com.eatthepath" % "pushy-dropwizard-metrics-listener" % "0.15.1",
-      "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
-      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
-      "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
+      "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
