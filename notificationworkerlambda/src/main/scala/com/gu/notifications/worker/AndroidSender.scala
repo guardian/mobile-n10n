@@ -30,7 +30,6 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
 
   override implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.threadPoolSize))
 
-  logger.info(s"Some dependencies are excluded 2")
   logger.info(s"Using thread pool size: ${config.threadPoolSize}")
 
   override implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
