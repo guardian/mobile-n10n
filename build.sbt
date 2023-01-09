@@ -444,10 +444,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.google.http-client" % "google-http-client-jackson2" % "1.41.8", 
       "com.google.firebase" % "firebase-admin" % "9.0.0"
         exclude("com.google.cloud", "google-cloud-firestore")
-        exclude("com.google.cloud", "google-cloud-storage")
-        exclude("io.netty", "netty-codec-http")
-        exclude("io.netty", "netty-handler")
-        exclude("io.netty", "netty-transport"),
+        exclude("com.google.cloud", "google-cloud-storage"),
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",       
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
