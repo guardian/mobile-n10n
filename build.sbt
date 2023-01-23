@@ -21,7 +21,7 @@ val compilerOptions = Seq(
 ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "2.8.1"
-val specsVersion: String = "4.5.1"
+val specsVersion: String = "4.19.1"
 val awsSdkVersion: String = "1.12.343"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.7.0"
