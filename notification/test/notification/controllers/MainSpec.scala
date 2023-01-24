@@ -1,8 +1,8 @@
 package notification.controllers
 
 import models.TopicTypes.Breaking
-import java.util.UUID
 
+import java.util.UUID
 import models._
 import notification.{DateTimeFreezed, NotificationsFixtures}
 import notification.services.{NewsstandSender, _}
@@ -19,6 +19,8 @@ import play.api.test.Helpers.stubControllerComponents
 import cats.syntax.either._
 import metrics.CloudWatchMetrics
 import org.joda.time.DateTime
+
+import java.time.Instant
 
 
 class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito with JsonMatchers with DateTimeFreezed {
@@ -112,7 +114,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     newsstandNotificationSender.sendNotification(any[UUID]) returns Future.successful(Right(Some("")))
     val mockNotificationSender = {
       new NotificationSender {
-        override def sendNotification(notification: Notification): Future[SenderResult] = {
+        override def sendNotification(notification: Notification, notificationAppSentTime: Instant): Future[SenderResult] = {
           pushSent = Some(notification)
           Future.successful(Right(senderReport(Senders.AzureNotificationsHub)))
         }
@@ -121,7 +123,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
     val mockBadNotificationSender = {
       new NotificationSender {
-        override def sendNotification(notification: Notification): Future[SenderResult] = {
+        override def sendNotification(notification: Notification, notificationAppSentTime: Instant): Future[SenderResult] = {
           Future.failed(new Throwable("non fatal error"))
         }
       }

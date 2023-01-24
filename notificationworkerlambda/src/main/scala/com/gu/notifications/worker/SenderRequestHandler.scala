@@ -1,20 +1,19 @@
 package com.gu.notifications.worker
 
 import java.util.UUID
-import _root_.models.{Notification, NotificationType, ShardRange}
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery._
-import models.SendingResults
+import models.{LatencyMetrics, SendingResults}
 import com.gu.notifications.worker.tokens.{ChunkedTokens, IndividualNotification}
 import com.gu.notifications.worker.utils.{Cloudwatch, Logging, NotificationParser, Reporting}
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.time.{Duration, Instant}
+import java.time.Instant
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
@@ -43,7 +42,17 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
 
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
       .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize = sqsMessageBatchSize), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
-      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
+      .through(cloudwatch.sendResults(env.stage, Configuration.platform))
+  }
+
+  def reportLatency[C <: DeliveryClient](chunkedTokens: ChunkedTokens, notificationSentTime: Instant): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+    val shouldPushMetricsToAws = chunkedTokens.notification.dryRun match {
+      case Some(true) => false
+      case _ => true
+    }
+    input
+      .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectLatency(acc, resp, notificationSentTime) }
+      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform, Reporting.notificationTypeForObservability(chunkedTokens.notification)))
   }
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
@@ -75,6 +84,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
         deliverIndividualNotificationStream(individualNotifications)
           .broadcastTo(
             reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+            reportLatency(chunkedTokens, chunkedTokens.notificationAppReceivedTime.getOrElse(functionStartTime)), // FIXME: remove this fallback after initial deployment
             cleanupFailures,
             trackProgress(chunkedTokens.notification.id))
       }.parJoin(maxConcurrency)

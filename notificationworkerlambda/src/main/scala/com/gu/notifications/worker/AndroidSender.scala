@@ -5,7 +5,7 @@ import com.gu.notifications.worker.cleaning.CleaningClientImpl
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryClient, DeliveryException}
 import com.gu.notifications.worker.delivery.fcm.{Fcm, FcmClient}
-import com.gu.notifications.worker.models.SendingResults
+import com.gu.notifications.worker.models.{LatencyMetrics, SendingResults}
 import com.gu.notifications.worker.tokens.{BatchNotification, ChunkedTokens}
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, Reporting}
 import fs2.{Pipe, Stream}
@@ -45,6 +45,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
         deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
           .broadcastTo(
             reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+            reportBatchLatency(chunkedTokens, chunkedTokens.notificationAppReceivedTime.getOrElse(functionStartTime)), // FIXME: remove this fallback after initial deployment
             cleanupBatchFailures(chunkedTokens.notification.id),
             trackBatchProgress(chunkedTokens.notification.id))
     }.parJoin(maxConcurrency)
@@ -66,7 +67,17 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
     input
       .fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregateBatch(acc, chunkedTokens.tokens.size, resp) }
       .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
-      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
+      .through(cloudwatch.sendResults(env.stage, Configuration.platform))
+  }
+
+  def reportBatchLatency[C <: DeliveryClient](chunkedTokens: ChunkedTokens, notificationSentTime: Instant): Pipe[IO, Either[DeliveryException, BatchDeliverySuccess], Unit] = { input =>
+    val shouldPushMetricsToAws = chunkedTokens.notification.dryRun match {
+      case Some(true) => false
+      case _ => true
+    }
+    input
+      .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectBatchLatency(acc, resp, notificationSentTime) }
+      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform, Reporting.notificationTypeForObservability(chunkedTokens.notification)))
   }
 
   def cleanupBatchFailures[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[Throwable, BatchDeliverySuccess], Unit] = { input =>
