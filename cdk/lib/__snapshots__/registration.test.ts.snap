@@ -1,0 +1,2891 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`The Registration stack matches the snapshot for CODE 1`] = `
+Object {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Registration for mobile notifications",
+  "Mappings": Object {
+    "Constants": Object {
+      "App": Object {
+        "Value": "registration",
+      },
+      "Stack": Object {
+        "Value": "mobile-notifications",
+      },
+    },
+    "StageVariables": Object {
+      "CODE": Object {
+        "CPUAlarmPeriodLower": 300,
+        "CPUAlarmPeriodUpper": 1200,
+        "CPUAlarmThresholdLower": 20,
+        "CPUAlarmThresholdUpper": 50,
+        "InstanceType": "t4g.micro",
+        "NotificationAlarmPeriod": 1200,
+      },
+      "PROD": Object {
+        "CPUAlarmPeriodLower": 300,
+        "CPUAlarmPeriodUpper": 60,
+        "CPUAlarmThresholdLower": 20,
+        "CPUAlarmThresholdUpper": 50,
+        "InstanceType": "t4g.micro",
+        "NotificationAlarmPeriod": 1200,
+      },
+    },
+  },
+  "Metadata": Object {
+    "gu:cdk:constructs": Array [
+      "GuErrorBudgetAlarmExperimental",
+    ],
+    "gu:cdk:version": "TEST",
+  },
+  "Outputs": Object {
+    "LoadBalancerUrl": Object {
+      "Value": Object {
+        "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
+      },
+    },
+  },
+  "Parameters": Object {
+    "AMI": Object {
+      "Description": "AMI used by the instances",
+      "Type": "AWS::EC2::Image::Id",
+    },
+    "ASGMaxSize": Object {
+      "Description": "Maximum size of the autoscaling group",
+      "Type": "Number",
+    },
+    "ASGMinSize": Object {
+      "Description": "Minimum size of the autoscaling group",
+      "Type": "Number",
+    },
+    "AlarmTopic": Object {
+      "Description": "The ARN of the SNS topic to send all the cloudwatch alarms to",
+      "Type": "String",
+    },
+    "CertArn": Object {
+      "Description": "ACM Certificate for app use",
+      "Type": "String",
+    },
+    "DistBucket": Object {
+      "Description": "The name of the s3 bucket containing the server artifact",
+      "Type": "String",
+    },
+    "DomainName": Object {
+      "Description": "The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.",
+      "Type": "String",
+    },
+    "HostedZone": Object {
+      "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
+      "Type": "String",
+    },
+    "NotEnough200sPerDayThreshold": Object {
+      "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
+      "Type": "Number",
+    },
+    "NotEnough200sThreshold": Object {
+      "Description": "Alarm if less than this many 200s in half an hour",
+      "Type": "Number",
+    },
+    "PrivateSubnets": Object {
+      "Description": "The private subnets of the VPC for the autoscaling group",
+      "Type": "List<AWS::EC2::Subnet::Id>",
+    },
+    "PublicSubnets": Object {
+      "Description": "The public subnets of the VPC for the loadbalancer",
+      "Type": "List<AWS::EC2::Subnet::Id>",
+    },
+    "RunbookCopy": Object {
+      "Default": "<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+      "Type": "String",
+    },
+    "Stage": Object {
+      "AllowedValues": Array [
+        "CODE",
+        "PROD",
+      ],
+      "Description": "Environment name",
+      "Type": "String",
+    },
+    "VPCSecurityGroup": Object {
+      "Description": "The default security group of the VPC",
+      "Type": "AWS::EC2::SecurityGroup::Id",
+    },
+    "VpcId": Object {
+      "Description": "The VPC",
+      "Type": "AWS::EC2::VPC::Id",
+    },
+  },
+  "Resources": Object {
+    "ChildAlarmLongPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm9A488A8B": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 3600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 3600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 3600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.07200000000000006,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmLongPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarmA8996F9A": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 21600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 21600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 21600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.030000000000000027,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmLongPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarmBA0A58D0": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 86400,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 86400,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 86400,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.015000000000000013,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmShortPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm8A5062E9": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.07200000000000006,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmShortPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarmFA4465F4": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 1800,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 1800,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 1800,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.030000000000000027,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmShortPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarm6D64C393": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 7200,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 7200,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 7200,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.015000000000000013,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "DistributionInstanceProfile": Object {
+      "Properties": Object {
+        "Path": "/",
+        "Roles": Array [
+          Object {
+            "Ref": "DistributionRole",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::InstanceProfile",
+    },
+    "DistributionRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "ec2.amazonaws.com",
+              },
+            },
+          ],
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Sub": "arn:aws:iam::\${AWS::AccountId}:policy/ssm-scala-v1",
+          },
+        ],
+        "Path": "/",
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "s3:GetObject",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Sub": "arn:aws:s3:::\${DistBucket}/*",
+                  },
+                },
+                Object {
+                  "Action": "ec2:DescribeTags",
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "cloudwatch:*",
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "autoscaling:DescribeAutoScalingInstances",
+                    "autoscaling:DescribeAutoScalingGroups",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "kinesis:PutRecord",
+                    "kinesis:PutRecords",
+                    "kinesis:DescribeStream",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Sub": "arn:aws:kinesis:\${AWS::Region}:\${AWS::AccountId}:stream/mobile-log-aggregation-\${Stage}",
+                  },
+                },
+              ],
+            },
+            "PolicyName": "root",
+          },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "ssm:GetParametersByPath",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Sub": Array [
+                      "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/notifications/\${Stage}/\${Stack}",
+                      Object {
+                        "Stack": Object {
+                          "Fn::FindInMap": Array [
+                            "Constants",
+                            "Stack",
+                            "Value",
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": "conf",
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "DnsRecord": Object {
+      "Properties": Object {
+        "HostedZoneName": Object {
+          "Ref": "HostedZone",
+        },
+        "Name": Object {
+          "Ref": "DomainName",
+        },
+        "ResourceRecords": Array [
+          Object {
+            "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
+          },
+        ],
+        "TTL": "60",
+        "Type": "CNAME",
+      },
+      "Type": "AWS::Route53::RecordSet",
+    },
+    "GuardianAccessSecurityGroup": Object {
+      "Properties": Object {
+        "GroupDescription": "SSH and management server access from Guardian network",
+        "SecurityGroupIngress": Array [
+          Object {
+            "FromPort": 22,
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": Object {
+              "Ref": "VPCSecurityGroup",
+            },
+            "ToPort": 22,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "HighCPUAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "ScaleUpPolicy",
+          },
+        ],
+        "AlarmDescription": Object {
+          "Fn::Sub": Array [
+            "Scale-Up if CPU is greater than \${CPUAlarmThresholdUpper} % over last \${CPUAlarmPeriodUpper} seconds",
+            Object {
+              "CPUAlarmPeriodUpper": Object {
+                "Fn::FindInMap": Array [
+                  "StageVariables",
+                  Object {
+                    "Ref": "Stage",
+                  },
+                  "CPUAlarmThresholdUpper",
+                ],
+              },
+              "CPUAlarmThresholdUpper": Object {
+                "Fn::FindInMap": Array [
+                  "StageVariables",
+                  Object {
+                    "Ref": "Stage",
+                  },
+                  "CPUAlarmThresholdUpper",
+                ],
+              },
+            },
+          ],
+        },
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "AutoScalingGroupName",
+            "Value": Object {
+              "Ref": "PrivateRegistrationAutoscalingGroup",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Period": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "CPUAlarmPeriodUpper",
+          ],
+        },
+        "Statistic": "Average",
+        "Threshold": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "CPUAlarmThresholdUpper",
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "InstanceSecurityGroup": Object {
+      "Properties": Object {
+        "GroupDescription": "Open up HTTP access to load balancer",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80,
+          },
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443,
+          },
+        ],
+        "SecurityGroupIngress": Array [
+          Object {
+            "FromPort": 9000,
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": Object {
+              "Ref": "LoadBalancerSecurityGroup",
+            },
+            "ToPort": 9000,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "LoadBalancerSecurityGroup": Object {
+      "Properties": Object {
+        "GroupDescription": "Open up HTTP access to load balancer",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 9000,
+            "IpProtocol": "tcp",
+            "ToPort": 9000,
+          },
+        ],
+        "SecurityGroupIngress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "LoadBalancerToPrivateASG": Object {
+      "Properties": Object {
+        "CrossZone": true,
+        "HealthCheck": Object {
+          "HealthyThreshold": "2",
+          "Interval": "30",
+          "Target": "HTTP:9000/healthcheck",
+          "Timeout": "10",
+          "UnhealthyThreshold": "10",
+        },
+        "Listeners": Array [
+          Object {
+            "InstancePort": "9000",
+            "LoadBalancerPort": "443",
+            "Protocol": "HTTPS",
+            "SSLCertificateId": Object {
+              "Fn::Sub": "\${CertArn}",
+            },
+          },
+        ],
+        "SecurityGroups": Array [
+          Object {
+            "Ref": "LoadBalancerSecurityGroup",
+          },
+        ],
+        "Subnets": Object {
+          "Ref": "PublicSubnets",
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+    },
+    "LowCPUAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "ScaleDownPolicy",
+          },
+        ],
+        "AlarmDescription": Object {
+          "Fn::Sub": Array [
+            "Scale-Down if CPU is less than \${CPUAlarmThresholdLower} % over last \${CPUAlarmPeriodLower} seconds",
+            Object {
+              "CPUAlarmPeriodLower": Object {
+                "Fn::FindInMap": Array [
+                  "StageVariables",
+                  Object {
+                    "Ref": "Stage",
+                  },
+                  "CPUAlarmPeriodLower",
+                ],
+              },
+              "CPUAlarmThresholdLower": Object {
+                "Fn::FindInMap": Array [
+                  "StageVariables",
+                  Object {
+                    "Ref": "Stage",
+                  },
+                  "CPUAlarmThresholdLower",
+                ],
+              },
+            },
+          ],
+        },
+        "ComparisonOperator": "LessThanOrEqualToThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "AutoScalingGroupName",
+            "Value": Object {
+              "Ref": "PrivateRegistrationAutoscalingGroup",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Period": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "CPUAlarmPeriodLower",
+          ],
+        },
+        "Statistic": "Average",
+        "Threshold": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "CPUAlarmThresholdLower",
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "NotEnoughHttpCode200sAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "AlarmTopic",
+          },
+        ],
+        "AlarmDescription": Object {
+          "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in half an hour. \${RunbookCopy}",
+        },
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "LoadBalancerName",
+            "Value": Object {
+              "Ref": "LoadBalancerToPrivateASG",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "HTTPCode_Backend_2XX",
+        "Namespace": "AWS/ELB",
+        "OKActions": Array [
+          Object {
+            "Ref": "AlarmTopic",
+          },
+        ],
+        "Period": 1800,
+        "Statistic": "Sum",
+        "Threshold": Object {
+          "Ref": "NotEnough200sThreshold",
+        },
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "NotEnoughHttpCode200sPerDayAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "AlarmTopic",
+          },
+        ],
+        "AlarmDescription": Object {
+          "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in a whole day. \${RunbookCopy}",
+        },
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "LoadBalancerName",
+            "Value": Object {
+              "Ref": "LoadBalancerToPrivateASG",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "HTTPCode_Backend_2XX",
+        "Namespace": "AWS/ELB",
+        "OKActions": Array [
+          Object {
+            "Ref": "AlarmTopic",
+          },
+        ],
+        "Period": 86400,
+        "Statistic": "Sum",
+        "Threshold": Object {
+          "Ref": "NotEnough200sPerDayThreshold",
+        },
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "PrivateRegistrationAutoscalingGroup": Object {
+      "Properties": Object {
+        "AvailabilityZones": Object {
+          "Fn::GetAZs": "",
+        },
+        "HealthCheckGracePeriod": 400,
+        "HealthCheckType": "ELB",
+        "LaunchConfigurationName": Object {
+          "Ref": "RegistrationLaunchConfig",
+        },
+        "LoadBalancerNames": Array [
+          Object {
+            "Ref": "LoadBalancerToPrivateASG",
+          },
+        ],
+        "MaxSize": Object {
+          "Ref": "ASGMaxSize",
+        },
+        "MinSize": Object {
+          "Ref": "ASGMinSize",
+        },
+        "NotificationConfiguration": Object {
+          "NotificationTypes": Array [
+            "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+            "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+          ],
+          "TopicARN": Object {
+            "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
+          },
+        },
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "PropagateAtLaunch": true,
+            "Value": Object {
+              "Fn::FindInMap": Array [
+                "Constants",
+                "App",
+                "Value",
+              ],
+            },
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "PropagateAtLaunch": true,
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "PropagateAtLaunch": true,
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "PropagateAtLaunch": true,
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "PropagateAtLaunch": true,
+            "Value": "CODE",
+          },
+        ],
+        "VPCZoneIdentifier": Object {
+          "Ref": "PrivateSubnets",
+        },
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "RegistrationAvailabilityCODESloFastBurnCompositeAlarm18091507": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmName": "RegistrationCODERegistrationAvailabilityCODESloFastBurnCompositeAlarm9597A684",
+        "AlarmRule": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "(ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmLongPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm9A488A8B",
+                  "Arn",
+                ],
+              },
+              "\\") AND ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmShortPeriodRegistrationAvailabilityCODESloFastBurnCompositeAlarm8A5062E9",
+                  "Arn",
+                ],
+              },
+              "\\"))",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::CompositeAlarm",
+    },
+    "RegistrationAvailabilityCODESloMediumBurnCompositeAlarmB3912EC4": Object {
+      "Properties": Object {
+        "ActionsSuppressor": Object {
+          "Fn::GetAtt": Array [
+            "RegistrationAvailabilityCODESloFastBurnCompositeAlarm18091507",
+            "Arn",
+          ],
+        },
+        "ActionsSuppressorExtensionPeriod": 1800,
+        "ActionsSuppressorWaitPeriod": 120,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmName": "RegistrationCODERegistrationAvailabilityCODESloMediumBurnCompositeAlarm2E51BAC8",
+        "AlarmRule": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "(ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmLongPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarmA8996F9A",
+                  "Arn",
+                ],
+              },
+              "\\") AND ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmShortPeriodRegistrationAvailabilityCODESloMediumBurnCompositeAlarmFA4465F4",
+                  "Arn",
+                ],
+              },
+              "\\"))",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::CompositeAlarm",
+    },
+    "RegistrationAvailabilityCODESloSlowBurnCompositeAlarm2492818E": Object {
+      "Properties": Object {
+        "ActionsSuppressor": Object {
+          "Fn::GetAtt": Array [
+            "RegistrationAvailabilityCODESloMediumBurnCompositeAlarmB3912EC4",
+            "Arn",
+          ],
+        },
+        "ActionsSuppressorExtensionPeriod": 7200,
+        "ActionsSuppressorWaitPeriod": 120,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmName": "RegistrationCODERegistrationAvailabilityCODESloSlowBurnCompositeAlarm1FA4BC2F",
+        "AlarmRule": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "(ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmLongPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarmBA0A58D0",
+                  "Arn",
+                ],
+              },
+              "\\") AND ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmShortPeriodRegistrationAvailabilityCODESloSlowBurnCompositeAlarm6D64C393",
+                  "Arn",
+                ],
+              },
+              "\\"))",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::CompositeAlarm",
+    },
+    "RegistrationLaunchConfig": Object {
+      "Properties": Object {
+        "AssociatePublicIpAddress": false,
+        "IamInstanceProfile": Object {
+          "Ref": "DistributionInstanceProfile",
+        },
+        "ImageId": Object {
+          "Ref": "AMI",
+        },
+        "InstanceType": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "InstanceType",
+          ],
+        },
+        "MetadataOptions": Object {
+          "HttpTokens": "required",
+        },
+        "SecurityGroups": Array [
+          Object {
+            "Ref": "InstanceSecurityGroup",
+          },
+          Object {
+            "Ref": "GuardianAccessSecurityGroup",
+          },
+          Object {
+            "Ref": "VPCSecurityGroup",
+          },
+        ],
+        "UserData": Object {
+          "Fn::Base64": Object {
+            "Fn::Sub": Array [
+              "#!/bin/bash -ev
+aws --region \${AWS::Region} s3 cp s3://\${DistBucket}/\${Stack}/\${Stage}/\${App}/\${App}_1.0-latest_all.deb /tmp
+dpkg -i /tmp/\${App}_1.0-latest_all.deb
+/opt/aws-kinesis-agent/configure-aws-kinesis-agent \${AWS::Region} mobile-log-aggregation-\${Stage} /var/log/\${App}/application.log
+",
+              Object {
+                "App": Object {
+                  "Fn::FindInMap": Array [
+                    "Constants",
+                    "App",
+                    "Value",
+                  ],
+                },
+                "Stack": Object {
+                  "Fn::FindInMap": Array [
+                    "Constants",
+                    "Stack",
+                    "Value",
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+    },
+    "ScaleDownPolicy": Object {
+      "Properties": Object {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": Object {
+          "Ref": "PrivateRegistrationAutoscalingGroup",
+        },
+        "Cooldown": "3600",
+        "ScalingAdjustment": -1,
+      },
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
+    "ScaleUpPolicy": Object {
+      "Properties": Object {
+        "AdjustmentType": "PercentChangeInCapacity",
+        "AutoScalingGroupName": Object {
+          "Ref": "PrivateRegistrationAutoscalingGroup",
+        },
+        "Cooldown": "300",
+        "ScalingAdjustment": 100,
+      },
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
+  },
+}
+`;
+
+exports[`The Registration stack matches the snapshot for PROD 1`] = `
+Object {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Registration for mobile notifications",
+  "Mappings": Object {
+    "Constants": Object {
+      "App": Object {
+        "Value": "registration",
+      },
+      "Stack": Object {
+        "Value": "mobile-notifications",
+      },
+    },
+    "StageVariables": Object {
+      "CODE": Object {
+        "CPUAlarmPeriodLower": 300,
+        "CPUAlarmPeriodUpper": 1200,
+        "CPUAlarmThresholdLower": 20,
+        "CPUAlarmThresholdUpper": 50,
+        "InstanceType": "t4g.micro",
+        "NotificationAlarmPeriod": 1200,
+      },
+      "PROD": Object {
+        "CPUAlarmPeriodLower": 300,
+        "CPUAlarmPeriodUpper": 60,
+        "CPUAlarmThresholdLower": 20,
+        "CPUAlarmThresholdUpper": 50,
+        "InstanceType": "t4g.micro",
+        "NotificationAlarmPeriod": 1200,
+      },
+    },
+  },
+  "Metadata": Object {
+    "gu:cdk:constructs": Array [
+      "GuErrorBudgetAlarmExperimental",
+    ],
+    "gu:cdk:version": "TEST",
+  },
+  "Outputs": Object {
+    "LoadBalancerUrl": Object {
+      "Value": Object {
+        "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
+      },
+    },
+  },
+  "Parameters": Object {
+    "AMI": Object {
+      "Description": "AMI used by the instances",
+      "Type": "AWS::EC2::Image::Id",
+    },
+    "ASGMaxSize": Object {
+      "Description": "Maximum size of the autoscaling group",
+      "Type": "Number",
+    },
+    "ASGMinSize": Object {
+      "Description": "Minimum size of the autoscaling group",
+      "Type": "Number",
+    },
+    "AlarmTopic": Object {
+      "Description": "The ARN of the SNS topic to send all the cloudwatch alarms to",
+      "Type": "String",
+    },
+    "CertArn": Object {
+      "Description": "ACM Certificate for app use",
+      "Type": "String",
+    },
+    "DistBucket": Object {
+      "Description": "The name of the s3 bucket containing the server artifact",
+      "Type": "String",
+    },
+    "DomainName": Object {
+      "Description": "The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.",
+      "Type": "String",
+    },
+    "HostedZone": Object {
+      "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
+      "Type": "String",
+    },
+    "NotEnough200sPerDayThreshold": Object {
+      "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
+      "Type": "Number",
+    },
+    "NotEnough200sThreshold": Object {
+      "Description": "Alarm if less than this many 200s in half an hour",
+      "Type": "Number",
+    },
+    "PrivateSubnets": Object {
+      "Description": "The private subnets of the VPC for the autoscaling group",
+      "Type": "List<AWS::EC2::Subnet::Id>",
+    },
+    "PublicSubnets": Object {
+      "Description": "The public subnets of the VPC for the loadbalancer",
+      "Type": "List<AWS::EC2::Subnet::Id>",
+    },
+    "RunbookCopy": Object {
+      "Default": "<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+      "Type": "String",
+    },
+    "Stage": Object {
+      "AllowedValues": Array [
+        "CODE",
+        "PROD",
+      ],
+      "Description": "Environment name",
+      "Type": "String",
+    },
+    "VPCSecurityGroup": Object {
+      "Description": "The default security group of the VPC",
+      "Type": "AWS::EC2::SecurityGroup::Id",
+    },
+    "VpcId": Object {
+      "Description": "The VPC",
+      "Type": "AWS::EC2::VPC::Id",
+    },
+  },
+  "Resources": Object {
+    "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm904FE6B3": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 3600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 3600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 3600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.07200000000000006,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm6D4E00F5": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 21600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 21600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 21600,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.030000000000000027,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarmFD2D9570": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 86400,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 86400,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 86400,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.015000000000000013,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm77DE6914": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.07200000000000006,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm0BAFCB45": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 1800,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 1800,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 1800,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.030000000000000027,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarm2C6CA489": Object {
+      "Properties": Object {
+        "AlarmName": "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarm",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": Array [
+          Object {
+            "Expression": "badEvents/validEvents",
+            "Id": "expr_1",
+            "Label": "Observed failure rate",
+          },
+          Object {
+            "Expression": "applicationServerErrors + loadBalancerErrors",
+            "Id": "badEvents",
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "applicationServerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_Backend_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 7200,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "loadBalancerErrors",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "HTTPCode_ELB_5XX",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 7200,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          Object {
+            "Id": "validEvents",
+            "MetricStat": Object {
+              "Metric": Object {
+                "Dimensions": Array [
+                  Object {
+                    "Name": "LoadBalancerName",
+                    "Value": Object {
+                      "Ref": "LoadBalancerToPrivateASG",
+                    },
+                  },
+                ],
+                "MetricName": "RequestCount",
+                "Namespace": "AWS/ELB",
+              },
+              "Period": 7200,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Threshold": 0.015000000000000013,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "DistributionInstanceProfile": Object {
+      "Properties": Object {
+        "Path": "/",
+        "Roles": Array [
+          Object {
+            "Ref": "DistributionRole",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::InstanceProfile",
+    },
+    "DistributionRole": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "ec2.amazonaws.com",
+              },
+            },
+          ],
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Sub": "arn:aws:iam::\${AWS::AccountId}:policy/ssm-scala-v1",
+          },
+        ],
+        "Path": "/",
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "s3:GetObject",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Sub": "arn:aws:s3:::\${DistBucket}/*",
+                  },
+                },
+                Object {
+                  "Action": "ec2:DescribeTags",
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "cloudwatch:*",
+                    "logs:*",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "autoscaling:DescribeAutoScalingInstances",
+                    "autoscaling:DescribeAutoScalingGroups",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+                Object {
+                  "Action": Array [
+                    "kinesis:PutRecord",
+                    "kinesis:PutRecords",
+                    "kinesis:DescribeStream",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Sub": "arn:aws:kinesis:\${AWS::Region}:\${AWS::AccountId}:stream/mobile-log-aggregation-\${Stage}",
+                  },
+                },
+              ],
+            },
+            "PolicyName": "root",
+          },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "ssm:GetParametersByPath",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Sub": Array [
+                      "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/notifications/\${Stage}/\${Stack}",
+                      Object {
+                        "Stack": Object {
+                          "Fn::FindInMap": Array [
+                            "Constants",
+                            "Stack",
+                            "Value",
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            "PolicyName": "conf",
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "DnsRecord": Object {
+      "Properties": Object {
+        "HostedZoneName": Object {
+          "Ref": "HostedZone",
+        },
+        "Name": Object {
+          "Ref": "DomainName",
+        },
+        "ResourceRecords": Array [
+          Object {
+            "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
+          },
+        ],
+        "TTL": "60",
+        "Type": "CNAME",
+      },
+      "Type": "AWS::Route53::RecordSet",
+    },
+    "GuardianAccessSecurityGroup": Object {
+      "Properties": Object {
+        "GroupDescription": "SSH and management server access from Guardian network",
+        "SecurityGroupIngress": Array [
+          Object {
+            "FromPort": 22,
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": Object {
+              "Ref": "VPCSecurityGroup",
+            },
+            "ToPort": 22,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "HighCPUAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "ScaleUpPolicy",
+          },
+        ],
+        "AlarmDescription": Object {
+          "Fn::Sub": Array [
+            "Scale-Up if CPU is greater than \${CPUAlarmThresholdUpper} % over last \${CPUAlarmPeriodUpper} seconds",
+            Object {
+              "CPUAlarmPeriodUpper": Object {
+                "Fn::FindInMap": Array [
+                  "StageVariables",
+                  Object {
+                    "Ref": "Stage",
+                  },
+                  "CPUAlarmThresholdUpper",
+                ],
+              },
+              "CPUAlarmThresholdUpper": Object {
+                "Fn::FindInMap": Array [
+                  "StageVariables",
+                  Object {
+                    "Ref": "Stage",
+                  },
+                  "CPUAlarmThresholdUpper",
+                ],
+              },
+            },
+          ],
+        },
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "AutoScalingGroupName",
+            "Value": Object {
+              "Ref": "PrivateRegistrationAutoscalingGroup",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Period": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "CPUAlarmPeriodUpper",
+          ],
+        },
+        "Statistic": "Average",
+        "Threshold": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "CPUAlarmThresholdUpper",
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "InstanceSecurityGroup": Object {
+      "Properties": Object {
+        "GroupDescription": "Open up HTTP access to load balancer",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80,
+          },
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443,
+          },
+        ],
+        "SecurityGroupIngress": Array [
+          Object {
+            "FromPort": 9000,
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": Object {
+              "Ref": "LoadBalancerSecurityGroup",
+            },
+            "ToPort": 9000,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "LoadBalancerSecurityGroup": Object {
+      "Properties": Object {
+        "GroupDescription": "Open up HTTP access to load balancer",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 9000,
+            "IpProtocol": "tcp",
+            "ToPort": 9000,
+          },
+        ],
+        "SecurityGroupIngress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443,
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "VpcId",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "LoadBalancerToPrivateASG": Object {
+      "Properties": Object {
+        "CrossZone": true,
+        "HealthCheck": Object {
+          "HealthyThreshold": "2",
+          "Interval": "30",
+          "Target": "HTTP:9000/healthcheck",
+          "Timeout": "10",
+          "UnhealthyThreshold": "10",
+        },
+        "Listeners": Array [
+          Object {
+            "InstancePort": "9000",
+            "LoadBalancerPort": "443",
+            "Protocol": "HTTPS",
+            "SSLCertificateId": Object {
+              "Fn::Sub": "\${CertArn}",
+            },
+          },
+        ],
+        "SecurityGroups": Array [
+          Object {
+            "Ref": "LoadBalancerSecurityGroup",
+          },
+        ],
+        "Subnets": Object {
+          "Ref": "PublicSubnets",
+        },
+        "Tags": Array [
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+    },
+    "LowCPUAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "ScaleDownPolicy",
+          },
+        ],
+        "AlarmDescription": Object {
+          "Fn::Sub": Array [
+            "Scale-Down if CPU is less than \${CPUAlarmThresholdLower} % over last \${CPUAlarmPeriodLower} seconds",
+            Object {
+              "CPUAlarmPeriodLower": Object {
+                "Fn::FindInMap": Array [
+                  "StageVariables",
+                  Object {
+                    "Ref": "Stage",
+                  },
+                  "CPUAlarmPeriodLower",
+                ],
+              },
+              "CPUAlarmThresholdLower": Object {
+                "Fn::FindInMap": Array [
+                  "StageVariables",
+                  Object {
+                    "Ref": "Stage",
+                  },
+                  "CPUAlarmThresholdLower",
+                ],
+              },
+            },
+          ],
+        },
+        "ComparisonOperator": "LessThanOrEqualToThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "AutoScalingGroupName",
+            "Value": Object {
+              "Ref": "PrivateRegistrationAutoscalingGroup",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Period": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "CPUAlarmPeriodLower",
+          ],
+        },
+        "Statistic": "Average",
+        "Threshold": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "CPUAlarmThresholdLower",
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "NotEnoughHttpCode200sAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "AlarmTopic",
+          },
+        ],
+        "AlarmDescription": Object {
+          "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in half an hour. \${RunbookCopy}",
+        },
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "LoadBalancerName",
+            "Value": Object {
+              "Ref": "LoadBalancerToPrivateASG",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "HTTPCode_Backend_2XX",
+        "Namespace": "AWS/ELB",
+        "OKActions": Array [
+          Object {
+            "Ref": "AlarmTopic",
+          },
+        ],
+        "Period": 1800,
+        "Statistic": "Sum",
+        "Threshold": Object {
+          "Ref": "NotEnough200sThreshold",
+        },
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "NotEnoughHttpCode200sPerDayAlarm": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "AlarmTopic",
+          },
+        ],
+        "AlarmDescription": Object {
+          "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in a whole day. \${RunbookCopy}",
+        },
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "LoadBalancerName",
+            "Value": Object {
+              "Ref": "LoadBalancerToPrivateASG",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "HTTPCode_Backend_2XX",
+        "Namespace": "AWS/ELB",
+        "OKActions": Array [
+          Object {
+            "Ref": "AlarmTopic",
+          },
+        ],
+        "Period": 86400,
+        "Statistic": "Sum",
+        "Threshold": Object {
+          "Ref": "NotEnough200sPerDayThreshold",
+        },
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "PrivateRegistrationAutoscalingGroup": Object {
+      "Properties": Object {
+        "AvailabilityZones": Object {
+          "Fn::GetAZs": "",
+        },
+        "HealthCheckGracePeriod": 400,
+        "HealthCheckType": "ELB",
+        "LaunchConfigurationName": Object {
+          "Ref": "RegistrationLaunchConfig",
+        },
+        "LoadBalancerNames": Array [
+          Object {
+            "Ref": "LoadBalancerToPrivateASG",
+          },
+        ],
+        "MaxSize": Object {
+          "Ref": "ASGMaxSize",
+        },
+        "MinSize": Object {
+          "Ref": "ASGMinSize",
+        },
+        "NotificationConfiguration": Object {
+          "NotificationTypes": Array [
+            "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+            "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+          ],
+          "TopicARN": Object {
+            "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
+          },
+        },
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "PropagateAtLaunch": true,
+            "Value": Object {
+              "Fn::FindInMap": Array [
+                "Constants",
+                "App",
+                "Value",
+              ],
+            },
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "PropagateAtLaunch": true,
+            "Value": "TEST",
+          },
+          Object {
+            "Key": "gu:repo",
+            "PropagateAtLaunch": true,
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "PropagateAtLaunch": true,
+            "Value": "mobile-notifications",
+          },
+          Object {
+            "Key": "Stage",
+            "PropagateAtLaunch": true,
+            "Value": "PROD",
+          },
+        ],
+        "VPCZoneIdentifier": Object {
+          "Ref": "PrivateSubnets",
+        },
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "RegistrationAvailabilityPRODSloFastBurnCompositeAlarm98D5A44A": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmName": "RegistrationPRODRegistrationAvailabilityPRODSloFastBurnCompositeAlarm05562A97",
+        "AlarmRule": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "(ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm904FE6B3",
+                  "Arn",
+                ],
+              },
+              "\\") AND ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloFastBurnCompositeAlarm77DE6914",
+                  "Arn",
+                ],
+              },
+              "\\"))",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::CompositeAlarm",
+    },
+    "RegistrationAvailabilityPRODSloMediumBurnCompositeAlarmECC2D850": Object {
+      "Properties": Object {
+        "ActionsSuppressor": Object {
+          "Fn::GetAtt": Array [
+            "RegistrationAvailabilityPRODSloFastBurnCompositeAlarm98D5A44A",
+            "Arn",
+          ],
+        },
+        "ActionsSuppressorExtensionPeriod": 1800,
+        "ActionsSuppressorWaitPeriod": 120,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmName": "RegistrationPRODRegistrationAvailabilityPRODSloMediumBurnCompositeAlarmBE88DBD9",
+        "AlarmRule": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "(ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm6D4E00F5",
+                  "Arn",
+                ],
+              },
+              "\\") AND ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloMediumBurnCompositeAlarm0BAFCB45",
+                  "Arn",
+                ],
+              },
+              "\\"))",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::CompositeAlarm",
+    },
+    "RegistrationAvailabilityPRODSloSlowBurnCompositeAlarmF843FA7A": Object {
+      "Properties": Object {
+        "ActionsSuppressor": Object {
+          "Fn::GetAtt": Array [
+            "RegistrationAvailabilityPRODSloMediumBurnCompositeAlarmECC2D850",
+            "Arn",
+          ],
+        },
+        "ActionsSuppressorExtensionPeriod": 7200,
+        "ActionsSuppressorWaitPeriod": 120,
+        "AlarmActions": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:aws:sns:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                Object {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmName": "RegistrationPRODRegistrationAvailabilityPRODSloSlowBurnCompositeAlarmAA523B94",
+        "AlarmRule": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "(ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmLongPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarmFD2D9570",
+                  "Arn",
+                ],
+              },
+              "\\") AND ALARM(\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "ChildAlarmShortPeriodRegistrationAvailabilityPRODSloSlowBurnCompositeAlarm2C6CA489",
+                  "Arn",
+                ],
+              },
+              "\\"))",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::CloudWatch::CompositeAlarm",
+    },
+    "RegistrationLaunchConfig": Object {
+      "Properties": Object {
+        "AssociatePublicIpAddress": false,
+        "IamInstanceProfile": Object {
+          "Ref": "DistributionInstanceProfile",
+        },
+        "ImageId": Object {
+          "Ref": "AMI",
+        },
+        "InstanceType": Object {
+          "Fn::FindInMap": Array [
+            "StageVariables",
+            Object {
+              "Ref": "Stage",
+            },
+            "InstanceType",
+          ],
+        },
+        "MetadataOptions": Object {
+          "HttpTokens": "required",
+        },
+        "SecurityGroups": Array [
+          Object {
+            "Ref": "InstanceSecurityGroup",
+          },
+          Object {
+            "Ref": "GuardianAccessSecurityGroup",
+          },
+          Object {
+            "Ref": "VPCSecurityGroup",
+          },
+        ],
+        "UserData": Object {
+          "Fn::Base64": Object {
+            "Fn::Sub": Array [
+              "#!/bin/bash -ev
+aws --region \${AWS::Region} s3 cp s3://\${DistBucket}/\${Stack}/\${Stage}/\${App}/\${App}_1.0-latest_all.deb /tmp
+dpkg -i /tmp/\${App}_1.0-latest_all.deb
+/opt/aws-kinesis-agent/configure-aws-kinesis-agent \${AWS::Region} mobile-log-aggregation-\${Stage} /var/log/\${App}/application.log
+",
+              Object {
+                "App": Object {
+                  "Fn::FindInMap": Array [
+                    "Constants",
+                    "App",
+                    "Value",
+                  ],
+                },
+                "Stack": Object {
+                  "Fn::FindInMap": Array [
+                    "Constants",
+                    "Stack",
+                    "Value",
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+    },
+    "ScaleDownPolicy": Object {
+      "Properties": Object {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": Object {
+          "Ref": "PrivateRegistrationAutoscalingGroup",
+        },
+        "Cooldown": "3600",
+        "ScalingAdjustment": -1,
+      },
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
+    "ScaleUpPolicy": Object {
+      "Properties": Object {
+        "AdjustmentType": "PercentChangeInCapacity",
+        "AutoScalingGroupName": Object {
+          "Ref": "PrivateRegistrationAutoscalingGroup",
+        },
+        "Cooldown": "300",
+        "ScalingAdjustment": 100,
+      },
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
+  },
+}
+`;

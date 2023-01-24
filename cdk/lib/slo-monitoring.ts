@@ -63,6 +63,10 @@ export class SloMonitoring extends GuStack {
 
 		const policies = [
 			new PolicyStatement({
+				actions: ['cloudwatch:PutMetricData'],
+				resources: ['*'],
+			}),
+			new PolicyStatement({
 				actions: [
 					'athena:StartQueryExecution',
 					'athena:GetQueryExecution',

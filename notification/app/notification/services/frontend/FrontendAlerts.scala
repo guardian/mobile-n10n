@@ -1,7 +1,6 @@
 package notification.services.frontend
 
 import java.net.URI
-
 import models.{BreakingNewsNotification, Notification, SenderReport}
 import notification.services.{NotificationSender, SenderError, SenderResult, Senders}
 import org.joda.time.DateTime
@@ -10,6 +9,7 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.mvc.Http.Status.CREATED
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 case class FrontendAlertsConfig(endpoint: URI, apiKey: String)
@@ -31,7 +31,7 @@ class FrontendAlerts(config: FrontendAlertsConfig, wsClient: WSClient)(implicit 
       }
     }
 
-  override def sendNotification(notification: Notification): Future[SenderResult] = notification match {
+  override def sendNotification(notification: Notification, notificationReceivedTime: Instant): Future[SenderResult] = notification match {
     case bn: BreakingNewsNotification =>
       sendAsBreakingNewsAlert(notification, bn)
     case _ =>

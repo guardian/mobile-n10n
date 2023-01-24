@@ -32,6 +32,7 @@ sealed trait WorkerConfiguration {
 case class ApnsWorkerConfiguration(
   cleaningSqsUrl: String,
   sqsUrl: String,
+  sqsName: String,
   apnsConfig: ApnsConfig,
   threadPoolSize: Int
 ) extends WorkerConfiguration
@@ -39,6 +40,7 @@ case class ApnsWorkerConfiguration(
 case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
   sqsUrl: String,
+  sqsName: String,
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
   allowedTopicsForBatchSend: List[String],
@@ -100,6 +102,7 @@ object Configuration {
     ApnsWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       config.getString("sqsUrl"),
+      config.getString("sqsName"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
@@ -107,7 +110,9 @@ object Configuration {
         certificate = config.getString("apns.certificate"),
         mapiBaseUrl = config.getString("mapi.baseUrl"),
         sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
-        dryRun = config.getBoolean("dryrun")
+        dryRun = config.getBoolean("dryrun"),
+        concurrentPushyConnections = config.getInt("apns.concurrentPushyConnections"),
+        maxConcurrency = config.getInt("apns.maxConcurrency"),
       ),
       config.getInt("apns.threadPoolSize")
     )
@@ -122,6 +127,7 @@ object Configuration {
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       config.getString("sqsUrl"),
+      config.getString("sqsName"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),

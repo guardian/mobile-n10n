@@ -65,7 +65,7 @@ trait HarvesterRequestHandler extends Logging {
           case (targetSqs, harvestedToken) if targetSqs == workerSqs => harvestedToken.token
         }
         .chunkN(1000)
-        .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range))
+        .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range, shardedNotification.notificationAppReceivedTime))
         .map(deliveryService.sending)
         .parJoin(maxConcurrency)
         .collect {
@@ -177,6 +177,8 @@ trait HarvesterRequestHandler extends Logging {
   def handleHarvesting(event: SQSEvent, context: Context): Unit = {
     // open connection
     val (transactor, datasource): (Transactor[IO], HikariDataSource) = DatabaseConfig.transactorAndDataSource[IO](jdbcConfig)
+    logger.info("Java version: " + System.getProperty("java.version"))
+
     logger.info("SQL connection open")
 
     // create services that rely on the connection
@@ -197,7 +199,7 @@ class Harvester extends HarvesterRequestHandler {
 
   override val jdbcConfig: JdbcConfig = config.jdbcConfig
 
-  override val cloudwatch: Cloudwatch = new CloudwatchImpl
+  override val cloudwatch: Cloudwatch = new CloudwatchImpl("workers")
 
   override val lambdaServiceSet = SqsDeliveryStack(
    iosLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsUrl),

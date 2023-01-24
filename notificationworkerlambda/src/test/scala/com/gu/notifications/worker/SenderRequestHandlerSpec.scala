@@ -23,6 +23,8 @@ import play.api.libs.json.Json
 
 import java.util.UUID
 import scala.jdk.CollectionConverters._
+import java.time.Instant
+import com.gu.notifications.worker.models.PerformanceMetrics
 
 class SenderRequestHandlerSpec extends Specification with Matchers {
 
@@ -55,7 +57,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     "Count dry runs" in new WRHSScope {
       override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
         Stream(
-          Right(ApnsDeliverySuccess("token", dryRun = true))
+          Right(ApnsDeliverySuccess("token", Instant.now(), dryRun = true))
         )
 
       workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
@@ -87,7 +89,8 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     val chunkedTokens = ChunkedTokens(
       notification = notification,
       range = ShardRange(0, 1),
-      tokens = List("token")
+      tokens = List("token"),
+      notificationAppReceivedTime = Some(Instant.now())
     )
 
     val chunkedTokensNotification: SQSEvent = {
@@ -100,7 +103,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     }
 
 
-    def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token")))
+    def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token", Instant.now())))
 
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 
@@ -136,12 +139,19 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       }
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = { stream =>
+
+        override def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit = _ => ()
+
+        override def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = { stream =>
           cloudwatchCallsCount += 1
           stream.map { results =>
             sendingResults = Some(results)
             ()
           }
+        }
+
+        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], notificationType: String): Pipe[IO, List[Long], Unit] = { stream =>
+          stream.map { _ => () }
         }
 
         override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = throw new RuntimeException()

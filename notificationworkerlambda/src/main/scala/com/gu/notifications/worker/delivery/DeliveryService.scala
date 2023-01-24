@@ -93,7 +93,6 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
   def sendBatch(notification: Notification, tokens: List[String]): Stream[F, Either[DeliveryException, C#BatchSuccess]] = {
 
     def sendBatchAsync(client: C)(token: List[String], payload: client.Payload): F[C#BatchSuccess] = {
-      logger.info("Sending batch notification")
       Async[F].async { (cb: Either[Throwable, C#BatchSuccess] => Unit) =>
         client.sendBatchNotification(
           notification.id,

@@ -1,11 +1,26 @@
 import 'source-map-support/register';
+import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App } from 'aws-cdk-lib';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
+import { Registration } from '../lib/registration';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
 import { SenderWorkerStack } from '../lib/sender-stack';
 import { SloMonitoring } from '../lib/slo-monitoring';
 
 const app = new App();
+
+export const registrationCodeProps: GuStackProps = {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+};
+
+export const registrationProdProps: GuStackProps = {
+	stack: 'mobile-notifications',
+	stage: 'PROD',
+};
+
+new Registration(app, 'Registration-CODE', registrationCodeProps);
+new Registration(app, 'Registration-PROD', registrationProdProps);
 
 export const dbProxyCodeProps = {
 	stack: 'mobile-notifications',
@@ -53,6 +68,8 @@ export const senderCodeProps = {
 	targetCpuUtilization: 20,
 	notificationSnsTopic:
 		'arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsCODE',
+	alarmSnsTopic: 'mobile-server-side',
+	alarmEnabled: false,
 	cleanerQueueArn:
 		'arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-registration-cleaning-worker-CODE-Sqs-1CFISZQCN49SR',
 };
@@ -70,6 +87,8 @@ export const senderProdProps = {
 	targetCpuUtilization: 20,
 	notificationSnsTopic:
 		'arn:aws:sns:eu-west-1:201359054765:AutoscalingNotificationsPROD',
+	alarmSnsTopic: 'mobile-server-side',
+	alarmEnabled: true,
 	cleanerQueueArn:
 		'arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-registration-cleaning-worker-PROD-Sqs-12LNONCNWBRWK',
 };

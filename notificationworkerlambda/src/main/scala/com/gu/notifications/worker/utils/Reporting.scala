@@ -3,9 +3,15 @@ package com.gu.notifications.worker.utils
 import cats.effect.IO
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken}
 import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryClient, DeliveryException, DeliverySuccess}
+import models.{Notification, NotificationType}
 import org.slf4j.Logger
 
 object Reporting {
+
+  def notificationTypeForObservability(notification: Notification): String = notification.`type` match {
+    case NotificationType.BreakingNews => "breakingNews"
+    case _ => "other"
+  }
 
   private def logMatchCase(response: Either[DeliveryException, DeliverySuccess], prefix: String)(implicit logger: Logger): Unit = response match {
     case Left(e: InvalidToken) => logger.warn(s"$prefix $e")

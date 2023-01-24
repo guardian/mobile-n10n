@@ -22,7 +22,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "2.8.1"
 val specsVersion: String = "4.5.1"
-val awsSdkVersion: String = "1.11.772"
+val awsSdkVersion: String = "1.12.343"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.7.0"
 val okHttpVersion: String = "4.9.3"
@@ -151,7 +151,8 @@ lazy val registration = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
     riffRaffPackageType := (Debian / packageBin).value,
-    riffRaffArtifactResources += (file(s"registration/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/Registration-CODE.template.json"), s"registration-cfn/Registration-CODE.template.json"),
+    riffRaffArtifactResources += (file(s"cdk/cdk.out/Registration-PROD.template.json"), s"registration-cfn/Registration-PROD.template.json"),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -354,6 +355,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+        "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
       ),
       riffRaffArtifactResources +=(file("cdk/cdk.out/SloMonitor-CODE.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-CODE.template.json"),
@@ -419,13 +421,14 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.0.0",
-      "com.google.protobuf" % "protobuf-java" % "3.19.2",
+      "com.google.protobuf" % "protobuf-java" % "3.19.6",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
+      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "1.1.0",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient
+      "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")

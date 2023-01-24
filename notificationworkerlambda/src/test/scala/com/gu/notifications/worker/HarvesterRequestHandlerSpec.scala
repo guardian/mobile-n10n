@@ -22,6 +22,8 @@ import play.api.libs.json.Json
 
 import scala.jdk.CollectionConverters._
 import db.BuildTier
+import java.time.Instant
+import com.gu.notifications.worker.models.PerformanceMetrics
 
 class HarvesterRequestHandlerSpec extends Specification with Matchers {
 
@@ -153,7 +155,8 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
     def sqsEventShardNotification(notification: Notification): SQSEvent = {
       val shardedNotification = ShardedNotification(
         notification = notification,
-        range = ShardRange(0, 1)
+        range = ShardRange(0, 1),
+        notificationAppReceivedTime = Some(Instant.now()),
       )
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
@@ -264,7 +267,11 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       override val ec2ServiceSet: SqsDeliveryStack = createTestSqsDeliveryStack(ec2Deliveries)
 
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
+        override def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
+
+        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], notificationType: String): Pipe[IO, List[Long], Unit] = ???
+
+        override def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit = ???
 
         override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = {
           cloudwatchFailures.incrementAndGet()

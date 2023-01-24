@@ -76,7 +76,7 @@ Resources:
       MemorySize: 1024
       ReservedConcurrentExecutions: 1
       Role: !GetAtt MobileNotificationsScheduleRole.Arn
-      Runtime: java8
+      Runtime: java11
       Timeout: 300
   MobileNotificationsScheduleEventRule:
     Type: AWS::Events::Rule

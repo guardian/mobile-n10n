@@ -60,7 +60,9 @@ class ApnsPayloadBuilderSpec extends Specification with Matchers {
         bundleId = "",
         keyId = "",
         certificate = "",
-        mapiBaseUrl = "https://mobile.guardianapis.com"
+        mapiBaseUrl = "https://mobile.guardianapis.com",
+        maxConcurrency = 100,
+        concurrentPushyConnections = 1,
       )
       val generatedJson = new ApnsPayloadBuilder(dummyConfig)
         .apply(notification)
