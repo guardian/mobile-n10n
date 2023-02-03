@@ -65,7 +65,7 @@ trait HarvesterRequestHandler extends Logging {
           case (targetSqs, harvestedToken) if targetSqs == workerSqs => harvestedToken.token
         }
         .chunkN(1000)
-        .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range, shardedNotification.notificationAppReceivedTime))
+        .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range, shardedNotification.metadata))
         .map(deliveryService.sending)
         .parJoin(maxConcurrency)
         .collect {

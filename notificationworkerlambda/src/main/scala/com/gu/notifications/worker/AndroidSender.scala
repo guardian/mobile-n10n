@@ -45,7 +45,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
         deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
           .broadcastTo(
             reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
-            reportBatchLatency(chunkedTokens, chunkedTokens.notificationAppReceivedTime.getOrElse(functionStartTime)), // FIXME: remove this fallback after initial deployment
+            reportBatchLatency(chunkedTokens, chunkedTokens.metadata.map(_.notificationAppReceivedTime).getOrElse(functionStartTime)), // FIXME: remove this fallback after initial deployment
             cleanupBatchFailures(chunkedTokens.notification.id),
             trackBatchProgress(chunkedTokens.notification.id))
     }.parJoin(maxConcurrency)
