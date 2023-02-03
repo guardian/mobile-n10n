@@ -78,7 +78,7 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
           .withNamespace(s"Notifications/$stage/$senderMetricNs")
           .withMetricData(cloudWatchMetric)
       }
-      if (shouldPushMetricsToAws && latencyMetrics.exists(_.uniqueValues.nonEmpty)) {
+      if (latencyMetrics.exists(_.uniqueValues.nonEmpty)) {
         requests.map(req => cloudwatchClient.putMetricData(req))
       }
       ()
