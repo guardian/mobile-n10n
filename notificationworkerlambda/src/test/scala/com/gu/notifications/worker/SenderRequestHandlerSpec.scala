@@ -150,7 +150,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           }
         }
 
-        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], notificationType: String): Pipe[IO, List[Long], Unit] = { stream =>
+        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], audienceSize: Option[Int]): Pipe[IO, List[Long], Unit] = { stream =>
           stream.map { _ => () }
         }
 

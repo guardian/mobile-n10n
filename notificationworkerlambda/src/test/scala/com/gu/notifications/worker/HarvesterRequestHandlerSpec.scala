@@ -269,7 +269,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       override val cloudwatch: Cloudwatch = new Cloudwatch {
         override def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
 
-        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], notificationType: String): Pipe[IO, List[Long], Unit] = ???
+        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], audienceSize: Option[Int]): Pipe[IO, List[Long], Unit] = ???
 
         override def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit = ???
 

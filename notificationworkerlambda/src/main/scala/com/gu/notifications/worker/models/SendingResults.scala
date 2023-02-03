@@ -84,5 +84,14 @@ object LatencyMetrics {
       }
     }.getOrElse(previous) // If the overall batch was a failure (or the batch only contained failures) just return the previous result
   }
+
+  def audienceSizeBucket(audienceSize: Option[Int]): String = audienceSize match {
+    case None => "unknown"
+    case Some(audience) if audience < 100000 => "S"
+    case Some(audience) if audience < 500000 => "M"
+    case Some(audience) if audience < 1000000 => "L"
+    case _ => "XL"
+  }
+
 }
 
