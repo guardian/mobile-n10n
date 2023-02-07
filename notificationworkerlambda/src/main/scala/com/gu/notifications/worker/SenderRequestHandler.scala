@@ -1,5 +1,6 @@
 package com.gu.notifications.worker
 
+import _root_.models.NotificationMetadata
 import java.util.UUID
 import cats.effect.{ContextShift, IO, Timer}
 import com.amazonaws.services.lambda.runtime.Context
@@ -45,14 +46,14 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .through(cloudwatch.sendResults(env.stage, Configuration.platform))
   }
 
-  def reportLatency[C <: DeliveryClient](chunkedTokens: ChunkedTokens, notificationSentTime: Instant): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+  def reportLatency[C <: DeliveryClient](chunkedTokens: ChunkedTokens, metadata: Option[NotificationMetadata]): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val shouldPushMetricsToAws = chunkedTokens.notification.dryRun match {
       case Some(true) => false
       case _ => true
     }
     input
-      .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectLatency(acc, resp, notificationSentTime) }
-      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform, Reporting.notificationTypeForObservability(chunkedTokens.notification)))
+      .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectLatency(acc, resp, metadata.map(_.notificationAppReceivedTime).getOrElse(Instant.now())) } // FIXME: remove this fallback after initial deployment
+      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform, metadata.flatMap(_.audienceSize)))
   }
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
@@ -84,7 +85,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
         deliverIndividualNotificationStream(individualNotifications)
           .broadcastTo(
             reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
-            reportLatency(chunkedTokens, chunkedTokens.notificationAppReceivedTime.getOrElse(functionStartTime)), // FIXME: remove this fallback after initial deployment
+            reportLatency(chunkedTokens, chunkedTokens.metadata),
             cleanupFailures,
             trackProgress(chunkedTokens.notification.id))
       }.parJoin(maxConcurrency)
