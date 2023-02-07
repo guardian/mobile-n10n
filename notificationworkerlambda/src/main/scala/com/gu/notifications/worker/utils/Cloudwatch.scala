@@ -14,7 +14,7 @@ trait Cloudwatch {
   def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit]
   def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit
 
-  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], notificationType: String): Pipe[IO, List[Long], Unit]
+  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], audienceSize: Option[Int]): Pipe[IO, List[Long], Unit]
   def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit]
 }
 
@@ -67,13 +67,13 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
     }
   }
 
-  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], notificationType: String): Pipe[IO, List[Long], Unit] = _.evalMap { deliveryTimes =>
+  def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], audienceSize: Option[Int]): Pipe[IO, List[Long], Unit] = _.evalMap { deliveryTimes =>
     IO.delay {
       val latencyMetrics = LatencyMetrics.aggregateForCloudWatch(deliveryTimes)
       val platformDimension = new Dimension().withName("platform").withValue(platform.map(_.toString).getOrElse("unknown"))
-      val notificationTypeDimension = new Dimension().withName("type").withValue(notificationType)
+      val audienceSizeDimension = new Dimension().withName("audienceSize").withValue(LatencyMetrics.audienceSizeBucket(audienceSize))
       val requests = latencyMetrics.map { valuesAndCounts =>
-        val cloudWatchMetric: MetricDatum = latencyDatum("TokenDeliveryLatency", valuesAndCounts.uniqueValues, valuesAndCounts.orderedCounts, List(platformDimension, notificationTypeDimension))
+        val cloudWatchMetric: MetricDatum = latencyDatum("TokenDeliveryLatency", valuesAndCounts.uniqueValues, valuesAndCounts.orderedCounts, List(platformDimension, audienceSizeDimension))
         new PutMetricDataRequest()
           .withNamespace(s"Notifications/$stage/$senderMetricNs")
           .withMetricData(cloudWatchMetric)

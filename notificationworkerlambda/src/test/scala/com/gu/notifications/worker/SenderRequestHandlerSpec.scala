@@ -90,7 +90,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
       notification = notification,
       range = ShardRange(0, 1),
       tokens = List("token"),
-      notificationAppReceivedTime = Some(Instant.now())
+      metadata = Some(NotificationMetadata(Instant.now(), Some(1234)))
     )
 
     val chunkedTokensNotification: SQSEvent = {
@@ -150,7 +150,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           }
         }
 
-        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], notificationType: String): Pipe[IO, List[Long], Unit] = { stream =>
+        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], audienceSize: Option[Int]): Pipe[IO, List[Long], Unit] = { stream =>
           stream.map { _ => () }
         }
 

@@ -2,8 +2,6 @@ package models
 
 import play.api.libs.json.{Format, Json}
 
-import java.time.Instant
-
 case class ShardRange(start: Short, end: Short) {
   def range: Range = Range.inclusive(start, end)
 }
@@ -15,7 +13,7 @@ object ShardRange {
 case class ShardedNotification(
   notification: Notification,
   range: ShardRange,
-  notificationAppReceivedTime: Option[Instant]
+  metadata: Option[NotificationMetadata]
 )
 
 object ShardedNotification {
