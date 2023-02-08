@@ -41,4 +41,29 @@ class SendingResultsSpec extends Specification with Matchers {
 
   }
 
+  "LatencyMetrics.audienceSizeBucket" should {
+
+    "Categorise a small audience correctly" in new Scope {
+      LatencyMetrics.audienceSizeBucket(Some(190007)) shouldEqual "S"
+    }
+
+    "Categorise a medium audience correctly" in new Scope {
+      LatencyMetrics.audienceSizeBucket(Some(858927)) shouldEqual "M"
+    }
+
+    "Categorise a large audience correctly" in new Scope {
+      LatencyMetrics.audienceSizeBucket(Some(1425749)) shouldEqual "L"
+    }
+
+    "Categorise an extra large audience correctly" in new Scope {
+      LatencyMetrics.audienceSizeBucket(Some(3012022)) shouldEqual "XL"
+    }
+
+    "Mark a missing audience as unknown" in new Scope {
+      LatencyMetrics.audienceSizeBucket(None) shouldEqual "unknown"
+    }
+
+  }
+
+
 }
