@@ -46,14 +46,14 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .through(cloudwatch.sendResults(env.stage, Configuration.platform))
   }
 
-  def reportLatency[C <: DeliveryClient](chunkedTokens: ChunkedTokens, metadata: Option[NotificationMetadata]): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+  def reportLatency[C <: DeliveryClient](chunkedTokens: ChunkedTokens, metadata: NotificationMetadata): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val shouldPushMetricsToAws = chunkedTokens.notification.dryRun match {
       case Some(true) => false
       case _ => true
     }
     input
-      .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectLatency(acc, resp, metadata.map(_.notificationAppReceivedTime).getOrElse(Instant.now())) } // FIXME: remove this fallback after initial deployment
-      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform, metadata.flatMap(_.audienceSize)))
+      .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectLatency(acc, resp, metadata.notificationAppReceivedTime) }
+      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform, metadata.audienceSize))
   }
 
   def trackProgress[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>

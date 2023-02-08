@@ -112,7 +112,7 @@ class GuardianNotificationSender(
     }
 
     shard(countWithDefault).map { shard =>
-      val shardedNotification = ShardedNotification(notification, shard, Some(NotificationMetadata(notificationReceivedTime, registrationCount)))
+      val shardedNotification = ShardedNotification(notification, shard, NotificationMetadata(notificationReceivedTime, registrationCount))
       val payloadJson = Json.stringify(Json.toJson(shardedNotification))
       val messageId = s"${notification.id}-${shard.start}-${shard.end}"
       new SendMessageBatchRequestEntry(messageId, payloadJson)

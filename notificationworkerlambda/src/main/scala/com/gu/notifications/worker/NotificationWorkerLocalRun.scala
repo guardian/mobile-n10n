@@ -35,7 +35,7 @@ object NotificationWorkerLocalRun extends App {
     notification = notification,
     range = ShardRange(0, 1),
     tokens = List("token"),
-    metadata = Some(NotificationMetadata(Instant.now(), Some(1234)))
+    metadata = NotificationMetadata(Instant.now(), Some(1234))
   )
 
   val sqsEvent: SQSEvent = {

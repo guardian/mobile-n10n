@@ -156,7 +156,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       val shardedNotification = ShardedNotification(
         notification = notification,
         range = ShardRange(0, 1),
-        metadata = Some(NotificationMetadata(Instant.now(), Some(1234))),
+        metadata = NotificationMetadata(Instant.now(), Some(1234))
       )
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
