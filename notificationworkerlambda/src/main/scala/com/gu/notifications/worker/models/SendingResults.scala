@@ -87,9 +87,9 @@ object LatencyMetrics {
 
   def audienceSizeBucket(audienceSize: Option[Int]): String = audienceSize match {
     case None => "unknown"
-    case Some(audience) if audience < 100000 => "S"
-    case Some(audience) if audience < 500000 => "M"
-    case Some(audience) if audience < 1000000 => "L"
+    case Some(audience) if audience < 250000 => "S"
+    case Some(audience) if audience < 1000000 => "M"
+    case Some(audience) if audience < 2000000 => "L"
     case _ => "XL"
   }
 
