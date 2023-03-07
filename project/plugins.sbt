@@ -19,7 +19,7 @@ libraryDependencies += "org.vafer" % "jdeb" % "1.10" artifacts (Artifact("jdeb",
 
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.13")
 
-addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.6")
+addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.6.1")
 
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.0")
 
