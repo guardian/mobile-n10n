@@ -10,7 +10,7 @@ deployments:
     parameters:
       amiParameter: AMISenderworker
       amiTags:
-        Recipe: bionic-mobile-java11-ARM
+        Recipe: jammy-mobile-java11-ARM
         AmigoStage: PROD
       templateStagePaths: 
         CODE: SenderWorker-CODE.template.json
