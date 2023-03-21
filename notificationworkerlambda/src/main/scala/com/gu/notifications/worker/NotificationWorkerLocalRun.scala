@@ -27,7 +27,7 @@ object NotificationWorkerLocalRun extends App {
     ),
     imageUrl = None,
     importance = Major,
-    topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
+    topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"), Topic(Breaking, "europe")),
     dryRun = None
   )
 
