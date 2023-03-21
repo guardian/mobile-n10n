@@ -17,7 +17,7 @@ addSbtPlugin("com.localytics" % "sbt-dynamodb" % "2.0.3")
 
 libraryDependencies += "org.vafer" % "jdeb" % "1.10" artifacts (Artifact("jdeb", "jar", "jar"))
 
-addSbtPlugin("com.github.sbt" % "sbt-release" % "1.0.15")
+addSbtPlugin("com.github.sbt" % "sbt-release" % "1.1.0")
 
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.6.1")
 
