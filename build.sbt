@@ -354,7 +354,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
     Seq(
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+        "com.amazonaws" % "aws-lambda-java-events" % "3.11.1",
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
       ),
