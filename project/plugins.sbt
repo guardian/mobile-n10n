@@ -1,6 +1,6 @@
 libraryDependencies ++= Seq(
-  "com.github.docker-java" % "docker-java-core" % "3.2.14",
-  "com.github.docker-java" % "docker-java-transport-httpclient5" % "3.2.14"
+  "com.github.docker-java" % "docker-java-core" % "3.3.0",
+  "com.github.docker-java" % "docker-java-transport-httpclient5" % "3.3.0"
 )
 
 resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
