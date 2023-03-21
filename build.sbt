@@ -314,7 +314,7 @@ lazy val football = lambda("football", "football")
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-simple" % "1.7.36",
-      "com.typesafe" % "config" % "1.3.4",
+      "com.typesafe" % "config" % "1.4.2",
       "org.scanamo" %% "scanamo" % "1.0.0-M12",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12" % "test",
       "com.gu" %% "content-api-client-default" % "19.2.1",
