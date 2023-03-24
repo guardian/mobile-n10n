@@ -22,7 +22,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "2.9.4"
 val specsVersion: String = "4.5.1"
-val awsSdkVersion: String = "1.12.431"
+val awsSdkVersion: String = "1.12.434"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.9.0"
 val okHttpVersion: String = "4.10.0"
@@ -85,7 +85,7 @@ lazy val common = project
     libraryDependencies ++= Seq(
       ws,
       "org.typelevel" %% "cats-core" % catsVersion,
-      "joda-time" % "joda-time" % "2.12.2",
+      "joda-time" % "joda-time" % "2.12.4",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
@@ -425,7 +425,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
-      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "1.2.0",
+      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "2.1.1",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
