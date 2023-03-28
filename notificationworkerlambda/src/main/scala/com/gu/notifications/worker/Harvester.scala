@@ -42,12 +42,10 @@ trait HarvesterRequestHandler extends Logging {
   val env = Env()
 
   val lambdaServiceSet: SqsDeliveryStack
-  val ec2ServiceSet: SqsDeliveryStack
   val jdbcConfig: JdbcConfig
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
   val supportedPlatforms = List(Ios, Android, IosEdition, AndroidEdition)
-  val allowedTopicsForEc2Sender: List[String]
 
   def logErrors(prefix: String = ""): Pipe[IO, Throwable, Unit] = throwables => {
     throwables.map(throwable => logger.warn(s"${prefix}Error queueing", throwable))
@@ -76,13 +74,7 @@ trait HarvesterRequestHandler extends Logging {
   }
 
   def switchStack(topics: List[_root_.models.Topic]): SqsDeliveryStack = {
-    if (topics.forall(topic => allowedTopicsForEc2Sender.contains(topic.toString))) {
-      logger.info("Switch to EC2-based sender"); 
-      ec2ServiceSet
-    } else {
-      logger.info("Switch to lambda-based sender"); 
-      lambdaServiceSet
-    }
+    lambdaServiceSet
   }
 
 
@@ -208,16 +200,5 @@ class Harvester extends HarvesterRequestHandler {
    androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl),
    androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
   )
-
-  override val ec2ServiceSet = SqsDeliveryStack(
-   iosLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsEc2Url),
-   androidLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsEc2Url),
-   iosEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsEc2Url),
-   androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsEc2Url),
-   androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsEc2Url)
-  )
-
-  override val allowedTopicsForEc2Sender = config.allowedTopicsForEc2Sender
-
-  logger.info(s"Allowed topics for EC2 sender: ${config.allowedTopicsForEc2Sender}")
 }
+    
