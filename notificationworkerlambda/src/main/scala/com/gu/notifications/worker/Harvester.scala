@@ -73,11 +73,6 @@ trait HarvesterRequestHandler extends Logging {
 
   }
 
-  def switchStack(topics: List[_root_.models.Topic]): SqsDeliveryStack = {
-    lambdaServiceSet
-  }
-
-
   def routeToSqs: PartialFunction[HarvestedToken, (WorkerSqs, HarvestedToken)] = {
     case token @ HarvestedToken(_, Ios, _) => (WorkerSqs.IosWorkerSqs, token)
     case token @ HarvestedToken(_, IosEdition, _) => (WorkerSqs.IosEditionWorkerSqs, token)
@@ -89,13 +84,12 @@ trait HarvesterRequestHandler extends Logging {
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
     for {
       shardedNotification <- shardedNotifications
-      deliveryStack = switchStack(shardedNotification.notification.topic)
       notificationId = shardedNotification.notification.id
-      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, deliveryStack.androidLiveDeliveryService)
-      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, deliveryStack.androidBetaDeliveryService)
-      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, deliveryStack.androidEditionDeliveryService)
-      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, deliveryStack.iosLiveDeliveryService)
-      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, deliveryStack.iosEditionDeliveryService)
+      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, lambdaServiceSet.androidLiveDeliveryService)
+      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, lambdaServiceSet.androidBetaDeliveryService)
+      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, lambdaServiceSet.androidEditionDeliveryService)
+      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, lambdaServiceSet.iosLiveDeliveryService)
+      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, lambdaServiceSet.iosEditionDeliveryService)
       notificationLog = s"(notification: $notificationId ${shardedNotification.range})"
       _ = logger.info(Map("notificationId" -> notificationId), s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
