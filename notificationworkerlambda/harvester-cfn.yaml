@@ -115,16 +115,6 @@ Resources:
                 - ","
                 - "Fn::ImportValue":
                     "Fn::Sub": 'NotificationSenderWorkerQueueArns-${Stage}'
-      - PolicyName: SQSOutputForEc2
-        PolicyDocument:
-          Statement:
-            Effect: Allow
-            Action: sqs:*
-            Resource:
-              "Fn::Split":
-                - ","
-                - "Fn::ImportValue":
-                    "Fn::Sub": 'NotificationEc2SenderWorkerQueueArns-${Stage}'
       - PolicyName: VPC
         PolicyDocument:
           Statement:
