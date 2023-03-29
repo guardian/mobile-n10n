@@ -25,8 +25,6 @@ sealed trait WorkerConfiguration {
 
 case class ApnsWorkerConfiguration(
   cleaningSqsUrl: String,
-  sqsUrl: String,
-  sqsName: String,
   apnsConfig: ApnsConfig,
   threadPoolSize: Int
 ) extends WorkerConfiguration
@@ -87,8 +85,6 @@ object Configuration {
     val config = fetchConfiguration(confPrefixFromPlatform)
     ApnsWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
-      config.getString("sqsUrl"),
-      config.getString("sqsName"),
       ApnsConfig(
         teamId = config.getString("apns.teamId"),
         bundleId = config.getString("apns.bundleId"),
