@@ -33,8 +33,6 @@ case class ApnsWorkerConfiguration(
 
 case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
-  sqsUrl: String,
-  sqsName: String,
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
   allowedTopicsForBatchSend: List[String],
@@ -114,8 +112,6 @@ object Configuration {
 
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
-      config.getString("sqsUrl"),
-      config.getString("sqsName"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
         debug = config.getBoolean("fcm.debug"),
