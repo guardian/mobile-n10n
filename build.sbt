@@ -33,7 +33,7 @@ val jacksonCbor: String = "2.13.3"
 val jacksonScalaModule: String = "2.13.3"
 val simpleConfigurationVersion: String = "1.5.6"
 val googleOAuthClient: String = "1.34.1"
-val nettyVersion: String = "4.1.90.Final"
+val nettyVersion: String = "4.1.91.Final"
 val slf4jVersion: String = "1.7.36"
 
 val standardSettings = Seq[Setting[_]](
