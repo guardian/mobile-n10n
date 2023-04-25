@@ -8,7 +8,7 @@ import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 val projectVersion = "1.0-latest"
 
 organization := "com.gu"
-ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / scalaVersion := "2.13.10"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -20,20 +20,20 @@ val compilerOptions = Seq(
 
 ThisBuild / scalacOptions ++= compilerOptions
 
-val playJsonVersion = "2.8.1"
-val specsVersion: String = "4.5.1"
-val awsSdkVersion: String = "1.12.399"
+val playJsonVersion = "2.9.4"
+val specsVersion: String = "4.8.3"
+val awsSdkVersion: String = "1.12.451"
 val doobieVersion: String = "0.13.4"
-val catsVersion: String = "2.7.0"
-val okHttpVersion: String = "4.9.3"
-val paClientVersion: String = "7.0.5"
+val catsVersion: String = "2.9.0"
+val okHttpVersion: String = "4.10.0"
+val paClientVersion: String = "7.0.6"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.13.3"
-val jacksonCbor: String = "2.13.3"
-val jacksonScalaModule: String = "2.13.3"
+val jacksonDatabind: String = "2.14.2"
+val jacksonCbor: String = "2.14.2"
+val jacksonScalaModule: String = "2.14.2"
 val simpleConfigurationVersion: String = "1.5.6"
-val googleOAuthClient: String = "1.33.3"
-val nettyVersion: String = "4.1.78.Final"
+val googleOAuthClient: String = "1.34.1"
+val nettyVersion: String = "4.1.91.Final"
 val slf4jVersion: String = "1.7.36"
 
 val standardSettings = Seq[Setting[_]](
@@ -43,8 +43,8 @@ val standardSettings = Seq[Setting[_]](
   ),
   riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   libraryDependencies ++= Seq(
-    "com.github.nscala-time" %% "nscala-time" % "2.24.0",
-    "com.softwaremill.macwire" %% "macros" % "2.5.7" % "provided",
+    "com.github.nscala-time" %% "nscala-time" % "2.32.0",
+    "com.softwaremill.macwire" %% "macros" % "2.5.8" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
@@ -85,7 +85,7 @@ lazy val common = project
     libraryDependencies ++= Seq(
       ws,
       "org.typelevel" %% "cats-core" % catsVersion,
-      "joda-time" % "joda-time" % "2.9.9",
+      "joda-time" % "joda-time" % "2.12.4",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
@@ -106,7 +106,7 @@ lazy val common = project
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
-      "org.postgresql" % "postgresql" % "42.4.1",
+      "org.postgresql" % "postgresql" % "42.6.0",
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
@@ -261,11 +261,11 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.2",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "ch.qos.logback" % "logback-classic" % "1.2.11",
+      "ch.qos.logback" % "logback-classic" % "1.4.6",
       "net.logstash.logback" % "logstash-logback-encoder" % "7.2",
       specs2 % Test
     ),
@@ -313,11 +313,11 @@ lazy val football = lambda("football", "football")
   .settings(
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-simple" % "1.7.36",
-      "com.typesafe" % "config" % "1.3.2",
+      "org.slf4j" % "slf4j-simple" % "2.0.7",
+      "com.typesafe" % "config" % "1.3.4",
       "org.scanamo" %% "scanamo" % "1.0.0-M12",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12" % "test",
-      "com.gu" %% "content-api-client-default" % "15.9",
+      "com.gu" %% "content-api-client-default" % "19.3.0",
       "org.apache.thrift" % "libthrift" % apacheThrift,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
@@ -341,7 +341,7 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
       libraryDependencies ++= Seq(
         "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
-        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
+        "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2",
         "io.netty" % "netty-codec-http2" % nettyVersion
       ),
       riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"mobile-notifications-eventconsumer-cfn/cfn.yaml")
@@ -354,7 +354,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
     Seq(
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+        "com.amazonaws" % "aws-lambda-java-events" % "3.11.1",
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
       ),
@@ -420,12 +420,12 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
-      "com.google.firebase" % "firebase-admin" % "9.0.0",
-      "com.google.protobuf" % "protobuf-java" % "3.20.3",
-      "com.amazonaws" % "aws-lambda-java-events" % "2.2.8",
+      "com.google.firebase" % "firebase-admin" % "9.1.1",
+      "com.google.protobuf" % "protobuf-java" % "3.22.3",
+      "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
-      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "1.1.0",
+      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "2.1.1",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
