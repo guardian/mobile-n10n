@@ -313,22 +313,18 @@ lazy val football = lambda("football", "football")
   .settings(
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
-      "org.slf4j" % "slf4j-simple" % "1.7.36",
-      "com.typesafe" % "config" % "1.3.2",
-      "org.scanamo" %% "scanamo" % "1.0.0-M12",
-      "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12" % "test",
+      "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
+      "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
       "com.gu" %% "content-api-client-default" % "15.9",
-      "org.apache.thrift" % "libthrift" % apacheThrift,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
-      "com.google.code.findbugs" % "jsr305" % "3.0.2",
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
-      "io.netty" % "netty-codec-http2" % nettyVersion
     ),
     excludeDependencies ++= Seq(
-      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
+      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13"),
+      ExclusionRule("software.amazon.awssdk", "ec2")
     ),
     riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "mobile-notifications-football-cfn/cfn.yaml")
   )
