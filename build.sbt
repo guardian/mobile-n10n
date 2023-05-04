@@ -313,8 +313,8 @@ lazy val football = lambda("football", "football")
   .settings(
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
-      "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
-      "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
+      "org.scanamo" %% "scanamo" % "1.0.0-M25",
+      "org.scanamo" %% "scanamo-testkit" % "1.0.0-M25" % "test",
       "com.gu" %% "content-api-client-default" % "15.9",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
