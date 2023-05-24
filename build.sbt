@@ -37,6 +37,9 @@ val nettyVersion: String = "4.1.91.Final"
 val slf4jVersion: String = "1.7.36"
 
 val standardSettings = Seq[Setting[_]](
+  // We should remove this when all transitive dependencies use the same version of scala-xml
+  // For now this isn't considered an issue due to the compatability between 1.2.x and 2.1.x of the library
+  libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
   resolvers ++= Seq(
     "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
