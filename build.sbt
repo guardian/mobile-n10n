@@ -22,21 +22,24 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "2.9.4"
 val specsVersion: String = "4.8.3"
-val awsSdkVersion: String = "1.12.465"
+val awsSdkVersion: String = "1.12.474"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.9.0"
 val okHttpVersion: String = "4.10.0"
-val paClientVersion: String = "7.0.6"
+val paClientVersion: String = "7.0.7"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.15.0"
-val jacksonCbor: String = "2.15.0"
-val jacksonScalaModule: String = "2.15.0"
+val jacksonDatabind: String = "2.15.1"
+val jacksonCbor: String = "2.15.1"
+val jacksonScalaModule: String = "2.15.1"
 val simpleConfigurationVersion: String = "1.5.6"
 val googleOAuthClient: String = "1.34.1"
 val nettyVersion: String = "4.1.91.Final"
 val slf4jVersion: String = "1.7.36"
 
 val standardSettings = Seq[Setting[_]](
+  // We should remove this when all transitive dependencies use the same version of scala-xml
+  // For now this isn't considered an issue due to the compatability between 1.2.x and 2.1.x of the library
+  libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
   resolvers ++= Seq(
     "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
@@ -350,7 +353,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
     Seq(
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-events" % "3.11.1",
+        "com.amazonaws" % "aws-lambda-java-events" % "3.11.2",
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
       ),
@@ -417,7 +420,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.1.1",
-      "com.google.protobuf" % "protobuf-java" % "3.23.0",
+      "com.google.protobuf" % "protobuf-java" % "3.23.1",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
