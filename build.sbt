@@ -25,7 +25,7 @@ val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.477"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.9.0"
-val okHttpVersion: String = "4.10.0"
+val okHttpVersion: String = "4.11.0"
 val paClientVersion: String = "7.0.7"
 val apacheThrift: String = "0.15.0"
 val jacksonDatabind: String = "2.15.1"
@@ -33,7 +33,7 @@ val jacksonCbor: String = "2.15.1"
 val jacksonScalaModule: String = "2.15.1"
 val simpleConfigurationVersion: String = "1.5.6"
 val googleOAuthClient: String = "1.34.1"
-val nettyVersion: String = "4.1.91.Final"
+val nettyVersion: String = "4.1.93.Final"
 val slf4jVersion: String = "1.7.36"
 
 val standardSettings = Seq[Setting[_]](
@@ -88,7 +88,7 @@ lazy val common = project
     libraryDependencies ++= Seq(
       ws,
       "org.typelevel" %% "cats-core" % catsVersion,
-      "joda-time" % "joda-time" % "2.12.4",
+      "joda-time" % "joda-time" % "2.12.5",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
@@ -268,8 +268,8 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "ch.qos.logback" % "logback-classic" % "1.4.6",
-      "net.logstash.logback" % "logstash-logback-encoder" % "7.2",
+      "ch.qos.logback" % "logback-classic" % "1.4.7",
+      "net.logstash.logback" % "logstash-logback-encoder" % "7.3",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
@@ -318,7 +318,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "15.9",
+      "com.gu" %% "content-api-client-default" % "19.3.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
