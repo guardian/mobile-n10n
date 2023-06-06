@@ -34,7 +34,7 @@ val jacksonScalaModule: String = "2.15.2"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.34.1"
 val nettyVersion: String = "4.1.93.Final"
-val slf4jVersion: String = "1.7.36"
+val slf4jVersion: String = "2.0.7"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
