@@ -7,7 +7,7 @@ resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releas
 
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.19")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.7.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.7.6")
 
 addSbtPlugin("com.gu" % "sbt-riffraff-artifact" % "1.1.18")
 
@@ -21,7 +21,7 @@ addSbtPlugin("com.github.sbt" % "sbt-release" % "1.1.0")
 
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.6.1")
 
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.1.1")
+addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.1.2")
 
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.21")
 
