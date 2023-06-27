@@ -8,7 +8,7 @@ import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 val projectVersion = "1.0-latest"
 
 organization := "com.gu"
-ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / scalaVersion := "2.13.11"
 
 val compilerOptions = Seq(
   "-deprecation",
