@@ -24,7 +24,7 @@ object Platform {
     case "android-beta" => AndroidBeta
   }
 
-  implicit val jf = new Format[Platform] {
+  implicit val jf: Format[Platform] = new Format[Platform] {
     def reads(json: JsValue): JsResult[Platform] = json match {
       case JsString(s) => fromString(s) map { JsSuccess(_) } getOrElse JsError(s"$s is not a valid platform")
       case _ => JsError(s"Platform could not be decoded")

@@ -63,8 +63,8 @@ class RequestNotificationImpl(
       .url(url)
       .header("Authorization", authHeaderValue)
       .post(RequestBody.create(
-        jsonMediaType,
-        notificationsScheduleEntry.notification
+        notificationsScheduleEntry.notification,
+        jsonMediaType
       ))
       .build()).execute())
   }

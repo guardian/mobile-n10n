@@ -7,7 +7,7 @@ object Importance {
   case object Minor extends Importance
   case object Major extends Importance
 
-  implicit val jf = new Writes[Importance] {
+  implicit val jf: Writes[Importance] = new Writes[Importance] {
     override def writes(o: Importance): JsValue = o match {
       case Minor => JsString("Minor")
       case Major => JsString("Major")

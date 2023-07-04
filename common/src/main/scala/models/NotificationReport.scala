@@ -1,13 +1,12 @@
 package models
 
 import java.util.UUID
-
 import JsonUtils._
 import com.github.nscala_time.time.Imports._
 import com.gu.notifications.events.model.EventAggregation
 import models.NotificationType.BreakingNews
 import org.joda.time.DateTime
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class NotificationReport(id: UUID,
   `type`: NotificationType,
@@ -27,7 +26,7 @@ case class SenderReport(
 )
 
 object SenderReport {
-  implicit val jf = Json.format[SenderReport]
+  implicit val jf: OFormat[SenderReport] = Json.format[SenderReport]
 }
 
 object NotificationReport {
@@ -73,5 +72,5 @@ object NotificationReport {
     )
   }
 
-  implicit val jf = Json.format[NotificationReport]
+  implicit val jf: OFormat[NotificationReport] = Json.format[NotificationReport]
 }

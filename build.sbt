@@ -8,7 +8,7 @@ import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 val projectVersion = "1.0-latest"
 
 organization := "com.gu"
-ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / scalaVersion := "2.13.11"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -28,12 +28,12 @@ val catsVersion: String = "2.9.0"
 val okHttpVersion: String = "4.11.0"
 val paClientVersion: String = "7.0.7"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.15.1"
-val jacksonCbor: String = "2.15.1"
-val jacksonScalaModule: String = "2.15.1"
+val jacksonDatabind: String = "2.15.2"
+val jacksonCbor: String = "2.15.2"
+val jacksonScalaModule: String = "2.15.2"
 val simpleConfigurationVersion: String = "1.5.6"
 val googleOAuthClient: String = "1.34.1"
-val nettyVersion: String = "4.1.93.Final"
+val nettyVersion: String = "4.1.94.Final"
 val slf4jVersion: String = "1.7.36"
 
 val standardSettings = Seq[Setting[_]](
@@ -268,8 +268,8 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "ch.qos.logback" % "logback-classic" % "1.4.7",
-      "net.logstash.logback" % "logstash-logback-encoder" % "7.3",
+      "ch.qos.logback" % "logback-classic" % "1.4.8",
+      "net.logstash.logback" % "logstash-logback-encoder" % "7.4",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
@@ -318,7 +318,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "19.3.0",
+      "com.gu" %% "content-api-client-default" % "19.3.1",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -426,7 +426,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.1.1",
-      "com.google.protobuf" % "protobuf-java" % "3.23.1",
+      "com.google.protobuf" % "protobuf-java" % "3.23.3",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,

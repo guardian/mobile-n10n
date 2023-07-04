@@ -1,11 +1,10 @@
 package fakebreakingnews
 
 import java.util.UUID
-
-import models.{Android, Platform, Ios}
+import models.{Android, Ios, Platform}
 import okhttp3.{MediaType, OkHttpClient, Request, RequestBody}
 import org.slf4j.LoggerFactory
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 import scala.concurrent.Future
 
@@ -18,7 +17,7 @@ case class FakeRegistrationDevice(
 )
 
 object FakeRegistrationDevice {
-  implicit val fakeRegistrationDeviceJF = Json.format[FakeRegistrationDevice]
+  implicit val fakeRegistrationDeviceJF: OFormat[FakeRegistrationDevice] = Json.format[FakeRegistrationDevice]
 }
 
 case class FakeRegistrationTopic(
@@ -28,7 +27,7 @@ case class FakeRegistrationTopic(
 )
 
 object FakeRegistrationTopic {
-  implicit val fakeRegistrationTopicJF = Json.format[FakeRegistrationTopic]
+  implicit val fakeRegistrationTopicJF: OFormat[FakeRegistrationTopic] = Json.format[FakeRegistrationTopic]
 }
 
 case class FakeRegistrationPreferences(
@@ -38,7 +37,7 @@ case class FakeRegistrationPreferences(
 )
 
 object FakeRegistrationPreferences {
-  implicit val fakeRegistrationPreferencesJF = Json.format[FakeRegistrationPreferences]
+  implicit val fakeRegistrationPreferencesJF: OFormat[FakeRegistrationPreferences] = Json.format[FakeRegistrationPreferences]
 }
 
 case class FakeRegistration(
@@ -48,7 +47,7 @@ case class FakeRegistration(
 )
 
 object FakeRegistration {
-  implicit val fakeRegistrationJf = Json.format[FakeRegistration]
+  implicit val fakeRegistrationJf: OFormat[FakeRegistration] = Json.format[FakeRegistration]
 }
 
 class FakeRegistrations(okHttpClient: OkHttpClient, legacyDeviceRegistrationUrl: String) {
@@ -60,7 +59,7 @@ class FakeRegistrations(okHttpClient: OkHttpClient, legacyDeviceRegistrationUrl:
     val body = Json.toJson(FakeRegistration(FakeRegistrationDevice(platform.toString, firebaseToken, pushToken)))
     val request = new Request.Builder()
       .url(legacyDeviceRegistrationUrl)
-      .post(RequestBody.create(MediaType.get("application/json; charset=UTF-8"), Json.toBytes(body)))
+      .post(RequestBody.create(Json.toBytes(body), MediaType.get("application/json; charset=UTF-8")))
       .build()
     RequestToPromise.requestToFuture(okHttpClient, request, (code, _) => {
       if (code < 200 || code >= 300) {

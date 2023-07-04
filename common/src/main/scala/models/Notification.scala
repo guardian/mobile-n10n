@@ -21,7 +21,7 @@ sealed trait Notification {
 
 object Notification {
 
-  implicit val jf = new Format[Notification] {
+  implicit val jf: Format[Notification] = new Format[Notification] {
     override def writes(o: Notification): JsValue = o match {
       case n: BreakingNewsNotification => BreakingNewsNotification.jf.writes(n)
       case n: ContentNotification => ContentNotification.jf.writes(n)
@@ -67,7 +67,7 @@ case class BreakingNewsNotification(
 ) extends Notification
 
 object BreakingNewsNotification {
-  implicit val jf = Json.format[BreakingNewsNotification]
+  implicit val jf: OFormat[BreakingNewsNotification] = Json.format[BreakingNewsNotification]
 }
 
 case class NewsstandShardNotification(
@@ -84,7 +84,7 @@ case class NewsstandShardNotification(
 
 }
 object NewsstandShardNotification {
-  implicit val jf = Json.format[NewsstandShardNotification]
+  implicit val jf: OFormat[NewsstandShardNotification] = Json.format[NewsstandShardNotification]
 }
 
 case class EditionsNotification(
@@ -103,7 +103,7 @@ case class EditionsNotification(
 }
 
 object EditionsNotification {
-  implicit val jf = Json.format[EditionsNotification]
+  implicit val jf: OFormat[EditionsNotification] = Json.format[EditionsNotification]
 }
 
 case class ContentNotification(
@@ -121,7 +121,7 @@ case class ContentNotification(
 ) extends Notification with NotificationWithLink
 
 object ContentNotification {
-  implicit val jf = Json.format[ContentNotification]
+  implicit val jf: OFormat[ContentNotification] = Json.format[ContentNotification]
 }
 
 
@@ -183,7 +183,7 @@ case class GoalAlertNotification(
 ) extends Notification
 
 object GoalAlertNotification {
-  implicit val jf = Json.format[GoalAlertNotification]
+  implicit val jf: OFormat[GoalAlertNotification] = Json.format[GoalAlertNotification]
 }
 
 
@@ -204,7 +204,7 @@ case class LiveEventNotification(
 ) extends Notification
 
 object LiveEventNotification {
-  implicit val jf = Json.format[LiveEventNotification]
+  implicit val jf: OFormat[LiveEventNotification] = Json.format[LiveEventNotification]
 }
 
 case class Us2020ResultsNotification (
