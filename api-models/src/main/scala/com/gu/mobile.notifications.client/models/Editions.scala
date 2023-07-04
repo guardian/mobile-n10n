@@ -43,7 +43,7 @@ object Editions {
       case _ => None
     }
 
-    implicit val jf = new Format[Edition] {
+    implicit val jf: Format[Edition] = new Format[Edition] {
       override def reads(json: JsValue): JsResult[Edition] = json match {
         case JsString("uk") => JsSuccess(UK)
         case JsString("us") => JsSuccess(US)

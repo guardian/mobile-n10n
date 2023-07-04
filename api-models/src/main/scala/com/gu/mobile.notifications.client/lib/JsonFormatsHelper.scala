@@ -33,7 +33,7 @@ object JsonFormatsHelper {
   }
 
 
-  implicit val urlFormat = new Format[URI] {
+  implicit val urlFormat: Format[URI] = new Format[URI] {
     override def writes(o: URI): JsValue = JsString(o.toString)
     override def reads(json: JsValue): JsResult[URI] = json match {
       case JsString(uri) => Try(JsSuccess(new URI(uri))).getOrElse(JsError(s"Invalid uri: $uri"))

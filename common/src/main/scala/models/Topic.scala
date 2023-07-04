@@ -14,7 +14,7 @@ case class Topic(`type`: TopicType, name: String) {
 
 object Topic {
 
-  implicit val jf = Json.format[Topic]
+  implicit val jf: OFormat[Topic] = Json.format[Topic]
 
   def fromString(s: String): Either[String, Topic] = {
     val formattedTopicString = s.replaceAll("%", "/")

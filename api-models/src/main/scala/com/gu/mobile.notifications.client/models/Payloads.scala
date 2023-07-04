@@ -9,7 +9,7 @@ import play.api.libs.json._
 import NotificationPayloadType._
 sealed case class GuardianItemType(mobileAggregatorPrefix: String)
 object GuardianItemType {
-  implicit val jf = Json.writes[GuardianItemType]
+  implicit val jf: OWrites[GuardianItemType] = Json.writes[GuardianItemType]
 }
 
 object GITSection extends GuardianItemType("section")
@@ -18,7 +18,7 @@ object GITContent extends GuardianItemType("item-trimmed")
 
 sealed trait Link
 object Link {
-  implicit val jf = new Writes[Link] {
+  implicit val jf: Writes[Link] = new Writes[Link] {
     override def writes(o: Link): JsValue = o match {
       case l: ExternalLink => ExternalLink.jf.writes(l)
       case l: GuardianLinkDetails => GuardianLinkDetails.jf.writes(l)
@@ -26,7 +26,7 @@ object Link {
   }
 }
 
-object ExternalLink { implicit val jf = Json.writes[ExternalLink] }
+object ExternalLink { implicit val jf: OWrites[ExternalLink] = Json.writes[ExternalLink] }
 case class ExternalLink(url: String) extends Link {
   override val toString = url
 }
@@ -42,7 +42,7 @@ case class GuardianLinkDetails(
 }
 
 object GuardianLinkDetails {
-  implicit val jf = Json.writes[GuardianLinkDetails]
+  implicit val jf: OWrites[GuardianLinkDetails] = Json.writes[GuardianLinkDetails]
 }
 
 sealed trait GoalType
@@ -51,7 +51,7 @@ object PenaltyGoalType extends GoalType
 object DefaultGoalType extends GoalType
 
 object GoalType {
-  implicit val jf = new Writes[GoalType] {
+  implicit val jf: Writes[GoalType] = new Writes[GoalType] {
     override def writes(o: GoalType): JsValue = o match {
       case OwnGoalType => JsString("Own")
       case PenaltyGoalType => JsString("Penalty")
@@ -74,7 +74,7 @@ sealed trait NotificationPayload {
 }
 
 object NotificationPayload {
-  implicit val jf = new Writes[NotificationPayload] {
+  implicit val jf: Writes[NotificationPayload] = new Writes[NotificationPayload] {
     override def writes(o: NotificationPayload): JsValue = o match {
       case n: BreakingNewsPayload => BreakingNewsPayload.jf.writes(n)
       case n: ContentAlertPayload => ContentAlertPayload.jf.writes(n)
@@ -104,7 +104,7 @@ case class BreakingNewsPayload(
 }
 
 object ContentAlertPayload {
-  implicit val jf = new Writes[ContentAlertPayload] {
+  implicit val jf: Writes[ContentAlertPayload] = new Writes[ContentAlertPayload] {
     override def writes(o: ContentAlertPayload) = (Json.writes[ContentAlertPayload] withAdditionalStringFields Map("type" -> ContentAlert.toString, "id" -> o.id.toString)).writes(o)
   }
 }
@@ -141,35 +141,32 @@ case class ContentAlertPayload(
 }
 
 object FootballMatchStatusPayload {
-  implicit val jf = new Writes[FootballMatchStatusPayload] {
-    // more than 22 fields so I have to define that manually
-    override def writes(o: FootballMatchStatusPayload): JsValue = Json.obj(
-      "id" -> o.id,
-      "type" -> FootballMatchStatus.toString,
-      "title" -> o.title,
-      "message" -> o.message,
-      "thumbnailUrl" -> o.thumbnailUrl,
-      "sender" -> o.sender,
-      "awayTeamName" -> o.awayTeamName,
-      "awayTeamScore" -> o.awayTeamScore,
-      "awayTeamMessage" -> o.awayTeamMessage,
-      "awayTeamId" -> o.awayTeamId,
-      "homeTeamName" -> o.homeTeamName,
-      "homeTeamScore" -> o.homeTeamScore,
-      "homeTeamMessage" -> o.homeTeamMessage,
-      "homeTeamId" -> o.homeTeamId,
-      "competitionName" -> o.competitionName,
-      "venue" -> o.venue,
-      "matchId" -> o.matchId,
-      "matchInfoUri" -> o.matchInfoUri,
-      "articleUri" -> o.articleUri,
-      "importance" -> o.importance,
-      "topic" -> o.topic,
-      "matchStatus" -> o.matchStatus,
-      "eventId" -> o.eventId,
-      "debug" -> o.debug
-    )
-  }
+  implicit val jf: Writes[FootballMatchStatusPayload] = (o: FootballMatchStatusPayload) => Json.obj(
+    "id" -> o.id,
+    "type" -> FootballMatchStatus.toString,
+    "title" -> o.title,
+    "message" -> o.message,
+    "thumbnailUrl" -> o.thumbnailUrl,
+    "sender" -> o.sender,
+    "awayTeamName" -> o.awayTeamName,
+    "awayTeamScore" -> o.awayTeamScore,
+    "awayTeamMessage" -> o.awayTeamMessage,
+    "awayTeamId" -> o.awayTeamId,
+    "homeTeamName" -> o.homeTeamName,
+    "homeTeamScore" -> o.homeTeamScore,
+    "homeTeamMessage" -> o.homeTeamMessage,
+    "homeTeamId" -> o.homeTeamId,
+    "competitionName" -> o.competitionName,
+    "venue" -> o.venue,
+    "matchId" -> o.matchId,
+    "matchInfoUri" -> o.matchInfoUri,
+    "articleUri" -> o.articleUri,
+    "importance" -> o.importance,
+    "topic" -> o.topic,
+    "matchStatus" -> o.matchStatus,
+    "eventId" -> o.eventId,
+    "debug" -> o.debug
+  )
 }
 case class FootballMatchStatusPayload(
   title: Option[String],
