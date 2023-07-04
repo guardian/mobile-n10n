@@ -59,7 +59,7 @@ class FakeRegistrations(okHttpClient: OkHttpClient, legacyDeviceRegistrationUrl:
     val body = Json.toJson(FakeRegistration(FakeRegistrationDevice(platform.toString, firebaseToken, pushToken)))
     val request = new Request.Builder()
       .url(legacyDeviceRegistrationUrl)
-      .post(RequestBody.create(MediaType.get("application/json; charset=UTF-8"), Json.toBytes(body)))
+      .post(RequestBody.create(Json.toBytes(body), MediaType.get("application/json; charset=UTF-8")))
       .build()
     RequestToPromise.requestToFuture(okHttpClient, request, (code, _) => {
       if (code < 200 || code >= 300) {

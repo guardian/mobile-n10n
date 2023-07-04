@@ -48,7 +48,7 @@ class NotificationClient(okhttp: OkHttpClient, host: String, apiKey: String) {
     val request = new Request.Builder()
       .url(url)
       .addHeader("Authorization", s"Bearer $apiKey")
-      .post(RequestBody.create(MediaType.get(s"application/json; charset=UTF-8"), body))
+      .post(RequestBody.create(body, MediaType.get(s"application/json; charset=UTF-8")))
       .build()
     requestToFuture(okhttp, request, codeAndBodyToHttpResponse)
   }

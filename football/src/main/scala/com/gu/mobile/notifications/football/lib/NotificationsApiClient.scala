@@ -25,7 +25,7 @@ class NotificationsApiClient(config: Configuration) extends Logging {
 
     val mediaType = MediaType.parse(s"application/json; charset=utf-8")
     val authHeader = s"Bearer ${config.notificationsApiKey}"
-    val body = RequestBody.create(mediaType, Json.toBytes(Json.toJson(notification)))
+    val body = RequestBody.create(Json.toBytes(Json.toJson(notification)), mediaType)
     val request = new Request.Builder()
       .url(url)
       .header("Authorization", authHeader)
