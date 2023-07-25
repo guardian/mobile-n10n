@@ -3,7 +3,7 @@
     "aws-cdk-lib": "2.87.0",
     "@guardian/cdk": "50.10.3",
     "@types/jest": "^27.4.1",
-    "aws-cdk": "2.50.0",
+    "aws-cdk": "2.87.0",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.4",
     "typescript": "^4.8.3"
