@@ -1,6 +1,6 @@
 package com.gu.notifications.events.model
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class PlatformCount(
   total: Int,
@@ -12,7 +12,7 @@ case class PlatformCount(
 
 
 object PlatformCount {
-  implicit val jf = Json.format[PlatformCount]
+  implicit val jf: OFormat[PlatformCount] = Json.format[PlatformCount]
 }
 
 

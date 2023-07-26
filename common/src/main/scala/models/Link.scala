@@ -13,17 +13,17 @@ object Link {
     def webUri(frontendBaseUrl: String): URI = new URI(url)
   }
   object External {
-    implicit val jf = Json.format[External]
+    implicit val jf: OFormat[External] = Json.format[External]
   }
 
   case class Internal(contentApiId: String, shortUrl: Option[String], git: GuardianItemType, blockId: Option[String]) extends Link {
     def webUri(frontendBaseUrl: String): URI = new URI(s"$frontendBaseUrl$contentApiId")
   }
   object Internal {
-    implicit val jf = Json.format[Internal]
+    implicit val jf: OFormat[Internal] = Json.format[Internal]
   }
 
-  implicit val jf = new Format[Link] {
+  implicit val jf: Format[Link] = new Format[Link] {
     override def writes(o: Link): JsValue = o match {
       case external: External => External.jf.writes(external)
       case internal: Internal => Internal.jf.writes(internal)

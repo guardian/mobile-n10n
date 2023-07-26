@@ -3,7 +3,7 @@ package com.gu.notifications.slos
 import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.athena.AmazonAthenaAsyncClient
+import com.amazonaws.services.athena.{AmazonAthenaAsync, AmazonAthenaAsyncClient}
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, PutMetricDataRequest, StandardUnit}
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
@@ -37,7 +37,7 @@ object SloMonitor {
     AmazonCloudWatchClientBuilder.standard().withRegion(Regions.EU_WEST_1).build
   }
 
-  implicit val athenaClient = AmazonAthenaAsyncClient.asyncBuilder()
+  implicit val athenaClient: AmazonAthenaAsync = AmazonAthenaAsyncClient.asyncBuilder()
     .withCredentials(credentials)
     .withRegion(Regions.EU_WEST_1)
     .build()

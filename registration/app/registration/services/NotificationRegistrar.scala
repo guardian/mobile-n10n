@@ -15,7 +15,7 @@ case class RegistrationResponse(
 object RegistrationResponse {
   import play.api.libs.json._
 
-  implicit val jf = Json.format[RegistrationResponse]
+  implicit val jf: OFormat[RegistrationResponse] = Json.format[RegistrationResponse]
 }
 
 trait NotificationRegistrar {

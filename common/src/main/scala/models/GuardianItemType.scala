@@ -5,13 +5,13 @@ import play.api.libs.json._
 sealed case class GuardianItemType(mobileAggregatorPrefix: String)
 
 object GuardianItemType {
-  implicit val reads = Json.reads[GuardianItemType].collect(JsonValidationError("Unrecognised item type")) {
+  implicit val reads: Reads[GuardianItemType] = Json.reads[GuardianItemType].collect(JsonValidationError("Unrecognised item type")) {
     case GuardianItemType("section") => GITSection
     case GuardianItemType("latest") => GITTag
     case GuardianItemType("item-trimmed") => GITContent
   }
 
-  implicit val writes = Json.writes[GuardianItemType]
+  implicit val writes: OWrites[GuardianItemType] = Json.writes[GuardianItemType]
 }
 
 object GITSection extends GuardianItemType("section")

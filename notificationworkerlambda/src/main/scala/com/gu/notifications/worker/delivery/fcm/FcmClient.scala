@@ -11,7 +11,7 @@ import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
 import com.gu.notifications.worker.delivery.{DeliveryClient, DeliveryException, FcmBatchDeliverySuccess, FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.utils.Logging
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 import com.gu.notifications.worker.utils.UnwrappingExecutionException
 
 import java.io.ByteArrayInputStream
@@ -30,7 +30,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
   type Payload = FcmPayload
   val dryRun = config.dryRun
 
-  implicit val logger = LoggerFactory.getLogger(this.getClass)
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val invalidTokenErrorCodes = Set(
     MessagingErrorCode.INVALID_ARGUMENT,

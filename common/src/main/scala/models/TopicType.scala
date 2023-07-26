@@ -39,7 +39,7 @@ object TopicType {
     case "editions" => Editions
   }
 
-  implicit val jf = new Format[TopicType] {
+  implicit val jf: Format[TopicType] = new Format[TopicType] {
     def reads(json: JsValue): JsResult[TopicType] = json match {
       case JsString(s) => fromString(s) map { JsSuccess(_) } getOrElse JsError(s"$s is not a valid topic type")
       case _ => JsError(s"Topic type could not be decoded")

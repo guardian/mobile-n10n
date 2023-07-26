@@ -12,7 +12,7 @@ case class AggregationCounts(success: Int, failure: Int) {
 
 object AggregationCounts {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  implicit val jf = Json.format[AggregationCounts]
+  implicit val jf: OFormat[AggregationCounts] = Json.format[AggregationCounts]
 
 
   def aggregateResultCounts(attemptsToUpdateEachEvent: List[Future[Unit]])(implicit executionContext: ExecutionContext): Future[AggregationCounts] = {
