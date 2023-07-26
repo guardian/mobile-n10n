@@ -341,10 +341,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@guardian/cdk@50.10.3":
-  version "50.10.3"
-  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-50.10.3.tgz#2f1b3d9fd88ffe61b5a09bd39d41e75e1f785019"
-  integrity sha512-oCDp13s89/igF4ELQuqo+7N/UJn8n+9ljCxf0SeS3k3kwDVzBbnAzKS3K4Bn7pI9yk6xz24div2OMNKz5d23EA==
+"@guardian/cdk@50.10.4":
+  version "50.10.4"
+  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-50.10.4.tgz#33a3d843d8bd83e9e9aab926868be02ad5222543"
+  integrity sha512-J/dG1/SToj2UZ+joSG9CA0TF2dld04ImQbvFZU6o3d72TvAUXlIvj4J7o0SbilxrhZs89sPsxlB6yWh/1mvq6w==
   dependencies:
     "@oclif/core" "2.9.3"
     aws-cdk-lib "2.87.0"
