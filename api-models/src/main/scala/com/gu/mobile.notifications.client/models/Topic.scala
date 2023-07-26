@@ -7,7 +7,7 @@ import play.api.libs.json._
 sealed trait TopicType
 
 object TopicType {
-  implicit val jf = new Writes[TopicType] {
+  implicit val jf: Writes[TopicType] = new Writes[TopicType] {
     override def writes(o: TopicType): JsValue = JsString(o.toString)
   }
 }
@@ -29,7 +29,7 @@ case class Topic(`type`: TopicType, name: String) {
   def toTopicString = `type`.toString + "//" + name
 }
 object Topic {
-  implicit val jf = Json.writes[Topic]
+  implicit val jf: OWrites[Topic] = Json.writes[Topic]
   val BreakingNewsUk = Topic(Breaking, UK.toString)
   val BreakingNewsUs = Topic(Breaking, US.toString)
   val BreakingNewsAu = Topic(Breaking, AU.toString)

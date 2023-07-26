@@ -51,7 +51,7 @@ class RequestNotificationImplSpec extends Specification with Mockito {
               .request(request)
               .message("status message")
               .headers(Headers.of(Map[String, String]().asJava))
-              .body(ResponseBody.create(MediaType.parse("application/json"), ""))
+              .body(ResponseBody.create("", MediaType.parse("application/json")))
               .build()
             mockCall
           }

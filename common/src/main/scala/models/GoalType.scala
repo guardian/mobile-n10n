@@ -8,7 +8,7 @@ object GoalType {
   case object Penalty extends GoalType
   case object Default extends GoalType
 
-  implicit val jf = new Format[GoalType] {
+  implicit val jf: Format[GoalType] = new Format[GoalType] {
     override def writes(o: GoalType): JsValue = o match {
       case Own => JsString("Own")
       case Penalty => JsString("Penalty")

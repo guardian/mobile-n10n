@@ -29,7 +29,7 @@ object NotificationType {
 
   val toRep: Map[NotificationType, String] = fromRep.map(_.swap)
 
-  implicit val jf = new Format[NotificationType] {
+  implicit val jf: Format[NotificationType] = new Format[NotificationType] {
     override def writes(o: NotificationType): JsValue = JsString(o.value)
 
     override def reads(json: JsValue): JsResult[NotificationType] = json match {

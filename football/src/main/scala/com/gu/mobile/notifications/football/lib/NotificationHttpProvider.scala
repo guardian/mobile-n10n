@@ -11,7 +11,7 @@ class NotificationHttpProvider(implicit ec: ExecutionContext) extends HttpProvid
   override def post(uri: String, apiKey: String, contentType: ContentType, body: Array[Byte]): Future[HttpResponse] = {
     val authHeader = s"Bearer $apiKey"
     val mediaType = MediaType.parse(s"${contentType.mediaType}; charset=${contentType.charset}")
-    val requestBody = RequestBody.create(mediaType, body)
+    val requestBody = RequestBody.create(body, mediaType)
     val httpRequest = new Request.Builder()
       .url(uri)
       .header("Authorization", authHeader)
