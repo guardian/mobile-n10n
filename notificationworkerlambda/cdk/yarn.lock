@@ -341,12 +341,12 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@guardian/cdk@50.10.3":
-  version "50.10.3"
-  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-50.10.3.tgz#2f1b3d9fd88ffe61b5a09bd39d41e75e1f785019"
-  integrity sha512-oCDp13s89/igF4ELQuqo+7N/UJn8n+9ljCxf0SeS3k3kwDVzBbnAzKS3K4Bn7pI9yk6xz24div2OMNKz5d23EA==
+"@guardian/cdk@50.10.6":
+  version "50.10.6"
+  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-50.10.6.tgz#bcc367b2395e1feeb71787844786fee433c0f8c7"
+  integrity sha512-sst1JL5D4/Y/7jqOnZP2d+ces+MCjonSlhcG+McxhApZM3xOxoTty9kHvRABbyGziIFFgHWLW9jL0X0IkCizAA==
   dependencies:
-    "@oclif/core" "2.9.3"
+    "@oclif/core" "2.10.0"
     aws-cdk-lib "2.87.0"
     aws-sdk "^2.1415.0"
     chalk "^4.1.2"
@@ -592,10 +592,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@oclif/core@2.9.3":
-  version "2.9.3"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-2.9.3.tgz#d20478d03b57713e5a6d9582027f97e83e8be496"
-  integrity sha512-0KLiVpXCJivAjLoj/LAXQf85MtGzyforyPkgNJQEP6QQugnuq2kHcG+DojWEQYz0sADXT2259EdPibslEThUMg==
+"@oclif/core@2.10.0":
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-2.10.0.tgz#8fd4a46bdea2a45ccf090c1433e913ea454b0607"
+  integrity sha512-4csNtXBb+RKrhO2lBAwBvxuyk0B3NB45tAkSHOrJjUo1ufT+qpg9V+g7nHZBMlwoQmjlAjCOKtm6RHar8FrpZg==
   dependencies:
     "@types/cli-progress" "^3.11.0"
     ansi-escapes "^4.3.2"
