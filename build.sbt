@@ -268,7 +268,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "ch.qos.logback" % "logback-classic" % "1.4.8",
+      "ch.qos.logback" % "logback-classic" % "1.4.9",
       "net.logstash.logback" % "logstash-logback-encoder" % "7.4",
       specs2 % Test
     ),
