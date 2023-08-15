@@ -268,7 +268,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "ch.qos.logback" % "logback-classic" % "1.4.8",
+      "ch.qos.logback" % "logback-classic" % "1.4.9",
       "net.logstash.logback" % "logstash-logback-encoder" % "7.4",
       specs2 % Test
     ),
@@ -426,7 +426,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.1.1",
-      "com.google.protobuf" % "protobuf-java" % "3.23.4",
+      "com.google.protobuf" % "protobuf-java" % "3.24.0",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
