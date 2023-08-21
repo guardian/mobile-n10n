@@ -53,6 +53,9 @@ jobs:
           else
             echo "Skipping deploy, no deploy.sh file found"
           fi
+        env:
+          NOTIFICATION_LAMBDA_REPOSITORY_ID: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_ID }}
+          NOTIFICATION_LAMBDA_REPOSITORY_URL: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_URL }}
 
       - name: Cdk synth
         run: |
