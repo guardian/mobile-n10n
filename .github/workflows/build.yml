@@ -30,7 +30,8 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          cache: yarn
+          cache: npm
+          cache-dependency-path: cdk/package-lock.json
           node-version-file: .nvmrc
 
       - uses: aws-actions/configure-aws-credentials@v2
