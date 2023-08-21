@@ -1,0 +1,78 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+# allow queued workflows to interrupt previous runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          cache: sbt
+          java-version: 11
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: yarn
+          node-version-file: .nvmrc
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+
+      - name: Clean, compile and test
+        run: sbt clean compile test
+
+      - name: Build docker image
+        run: sbt docker:publishLocal
+
+      - name: Publish docker image
+        run: |
+          if [ -e "./deploy.sh" ]
+          then
+            ./deploy.sh
+          else
+            echo "Skipping deploy, no deploy.sh file found"
+          fi
+
+      - name: Cdk synth
+        run: |
+          set -e
+          if [ -e cdk/ ]
+          then
+              echo "CDK detected"
+              source ~/.nvm/nvm.sh
+              nvm install
+              nvm use
+              (
+          	    echo "Running CDK CI steps"
+                  cd cdk
+                  npm ci
+                  npm run lint
+                  npm test
+                  npm run synth
+              )    
+          else
+              echo "No CDK - skipping"
+          fi
+
+      - name: Upload to riff-raff
+        run: sbt riffRaffUpload
