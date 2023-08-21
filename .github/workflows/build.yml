@@ -39,20 +39,19 @@ jobs:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
-      - name: Login to ECR
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          mask-password: 'true'
+#      - name: Login to ECR
+#        uses: aws-actions/amazon-ecr-login@v1
+#        with:
+#          mask-password: 'true'
 
-      - name: Clean, compile and test
-        run: sbt clean compile test
+      - name: Compile and test
+        run: sbt compile test
 
       - name: Build docker image
         run: sbt docker:publishLocal
 
       - name: Publish docker image
-        run: |
-          docker push ${NOTIFICATION_LAMBDA_REPOSITORY_URL}:${BUILD_NUMBER}
+        run: ./deploy.sh
         env:
           NOTIFICATION_LAMBDA_REPOSITORY_ID: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_ID }}
           NOTIFICATION_LAMBDA_REPOSITORY_URL: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_URL }}
