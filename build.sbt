@@ -22,7 +22,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "2.9.4"
 val specsVersion: String = "4.8.3"
-val awsSdkVersion: String = "1.12.519"
+val awsSdkVersion: String = "1.12.534"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.10.0"
 val okHttpVersion: String = "4.11.0"
@@ -264,7 +264,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.2.2",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.3",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
