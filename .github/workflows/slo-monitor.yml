@@ -1,0 +1,53 @@
+name: SLO monitor
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - slomonitor/**
+      - commoneventconsumer/**
+      - .github/workflows/slo-monitor.yml
+  pull_request:
+  workflow_dispatch:
+
+# allow queued workflows to interrupt previous runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          cache: sbt
+          java-version: 11
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+
+      - name: Compile, test and assembly
+        run: sbt compile test slomonitor/assembly
+
+      - name: Upload to riff-raff
+        uses: guardian/actions-riff-raff@v2
+        with:
+          projectName: mobile-n10n:slomonitor
+          configPath: slomonitor/riff-raff.yaml
+          contentDirectories: |
+            slomonitor:
+              - slomonitor/target/scala-2.13/slomonitor.jar
+            mobile-notifications-slo-monitor-cfn:
+              - cdk/cdk.out/SloMonitor-CODE.template.json
+              - cdk/cdk.out/SloMonitor-PROD.template.json
