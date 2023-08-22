@@ -8,7 +8,7 @@ on:
       - football/**
       - api-models/**
       - .github/workflows/football.yml
-  pull_request:
+  # pull_request:
   workflow_dispatch:
 
 # allow queued workflows to interrupt previous runs

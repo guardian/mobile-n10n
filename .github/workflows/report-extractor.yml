@@ -8,7 +8,7 @@ on:
       - reportextractor/**
       - common/**
       - .github/workflows/report-extractor.yml
-  pull_request:
+  # pull_request:
   workflow_dispatch:
 
 # allow queued workflows to interrupt previous runs

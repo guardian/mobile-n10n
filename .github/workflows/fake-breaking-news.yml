@@ -9,7 +9,7 @@ on:
       - common/**
       - api-models/**
       - .github/workflows/fake-breaking-news.yml
-  pull_request:
+  # pull_request:
   workflow_dispatch:
 
 # allow queued workflows to interrupt previous runs

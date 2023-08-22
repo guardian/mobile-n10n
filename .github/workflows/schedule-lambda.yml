@@ -8,7 +8,7 @@ on:
       - schedulelambda/**
       - commonscheduledynamodb/**
       - .github/workflows/schedule-lambda.yml
-  pull_request:
+  # pull_request:
   workflow_dispatch:
 
 # allow queued workflows to interrupt previous runs
