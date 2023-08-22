@@ -88,5 +88,110 @@ jobs:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
-      - name: Upload to riff-raff
-        run: sbt riffRaffUpload
+      - name: Upload eventconsumer to riff-raff
+        uses: guardian/actions-riff-raff@v2
+        with:
+          projectName: mobile-n10n:eventconsumer
+#          buildNumberOffset: 172
+          configPath: eventconsumer/riff-raff.yaml
+          contentDirectories: |
+            eventconsumer:
+              - eventconsumer/target/scala-2.13/eventconsumer.jar
+            mobile-notifications-eventconsumer-cfn:
+              - cfn.yaml
+
+#      - name: Upload fakebreakingnewslambda to riff-raff
+#        uses: guardian/actions-riff-raff@v2
+#        with:
+#          projectName: mobile-n10n
+##          buildNumberOffset: 172
+#          configPath: riff-raff.yaml
+#          contentDirectories: |
+#            live-app-versions:
+#              - target/scala-2.12/live-app-versions.jar
+#            live-app-versions-cfn:
+#              - cfn.yaml
+#
+#      - name: Upload football to riff-raff
+#        uses: guardian/actions-riff-raff@v2
+#        with:
+#          projectName: mobile-n10n
+##          buildNumberOffset: 172
+#          configPath: riff-raff.yaml
+#          contentDirectories: |
+#            live-app-versions:
+#              - target/scala-2.12/live-app-versions.jar
+#            live-app-versions-cfn:
+#              - cfn.yaml
+#
+#      - name: Upload notification to riff-raff
+#        uses: guardian/actions-riff-raff@v2
+#        with:
+#          projectName: mobile-n10n
+##          buildNumberOffset: 172
+#          configPath: riff-raff.yaml
+#          contentDirectories: |
+#            live-app-versions:
+#              - target/scala-2.12/live-app-versions.jar
+#            live-app-versions-cfn:
+#              - cfn.yaml
+#
+#      - name: Upload registration to riff-raff
+#        uses: guardian/actions-riff-raff@v2
+#        with:
+#          projectName: mobile-n10n
+##          buildNumberOffset: 172
+#          configPath: riff-raff.yaml
+#          contentDirectories: |
+#            live-app-versions:
+#              - target/scala-2.12/live-app-versions.jar
+#            live-app-versions-cfn:
+#              - cfn.yaml
+#
+#      - name: Upload report to riff-raff
+#        uses: guardian/actions-riff-raff@v2
+#        with:
+#          projectName: mobile-n10n
+##          buildNumberOffset: 172
+#          configPath: riff-raff.yaml
+#          contentDirectories: |
+#            live-app-versions:
+#              - target/scala-2.12/live-app-versions.jar
+#            live-app-versions-cfn:
+#              - cfn.yaml
+#
+#      - name: Upload reportextractor to riff-raff
+#        uses: guardian/actions-riff-raff@v2
+#        with:
+#          projectName: mobile-n10n
+##          buildNumberOffset: 172
+#          configPath: riff-raff.yaml
+#          contentDirectories: |
+#            live-app-versions:
+#              - target/scala-2.12/live-app-versions.jar
+#            live-app-versions-cfn:
+#              - cfn.yaml
+#
+#      - name: Upload schedule to riff-raff
+#        uses: guardian/actions-riff-raff@v2
+#        with:
+#          projectName: mobile-n10n
+##          buildNumberOffset: 172
+#          configPath: riff-raff.yaml
+#          contentDirectories: |
+#            live-app-versions:
+#              - target/scala-2.12/live-app-versions.jar
+#            live-app-versions-cfn:
+#              - cfn.yaml
+#
+#      - name: Upload slomonitor to riff-raff
+#        uses: guardian/actions-riff-raff@v2
+#        with:
+#          projectName: mobile-n10n
+##          buildNumberOffset: 172
+#          configPath: riff-raff.yaml
+#          contentDirectories: |
+#            live-app-versions:
+#              - target/scala-2.12/live-app-versions.jar
+#            live-app-versions-cfn:
+#              - cfn.yaml
