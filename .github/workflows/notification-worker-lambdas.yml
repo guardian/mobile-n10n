@@ -8,7 +8,7 @@ on:
       - notificationworkerlambda/**
       - common/**
       - .github/workflows/notification-worker-lambdas.yml
-  pull_request:
+  # pull_request:
   workflow_dispatch:
 
 # allow queued workflows to interrupt previous runs
@@ -35,6 +35,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           cache: npm
+          cache-dependency-path: cdk/package-lock.json
           node-version-file: .nvmrc
 
       - uses: aws-actions/configure-aws-credentials@v2
