@@ -47,6 +47,6 @@ jobs:
           configPath: schedulelambda/riff-raff.yaml
           contentDirectories: |
             schedule:
-              - schedulelambda/target/scala-2.13/schedulelambda.jar
+              - schedulelambda/target/scala-2.13/schedule.jar
             schedule-cfn:
               - schedulelambda/cfn.yaml
