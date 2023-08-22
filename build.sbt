@@ -24,7 +24,7 @@ val playJsonVersion = "2.9.4"
 val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.534"
 val doobieVersion: String = "0.13.4"
-val catsVersion: String = "2.9.0"
+val catsVersion: String = "2.10.0"
 val okHttpVersion: String = "4.11.0"
 val paClientVersion: String = "7.0.7"
 val apacheThrift: String = "0.15.0"
@@ -268,7 +268,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "ch.qos.logback" % "logback-classic" % "1.4.9",
+      "ch.qos.logback" % "logback-classic" % "1.4.11",
       "net.logstash.logback" % "logstash-logback-encoder" % "7.4",
       specs2 % Test
     ),
