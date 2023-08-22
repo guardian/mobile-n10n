@@ -51,7 +51,11 @@ jobs:
         run: sbt docker:publishLocal
 
       - name: Publish docker image
-        run: ./deploy.sh
+        run: |
+          echo $BUILD_NUMBER
+          docker tag $NOTIFICATION_LAMBDA_REPOSITORY_URL:$BUILD_NUMBER
+          docker images
+          ./deploy.sh
         env:
           NOTIFICATION_LAMBDA_REPOSITORY_ID: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_ID }}
           NOTIFICATION_LAMBDA_REPOSITORY_URL: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_URL }}
