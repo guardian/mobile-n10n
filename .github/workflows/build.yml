@@ -44,18 +44,15 @@ jobs:
 #        with:
 #          mask-password: 'true'
 
-      - name: Compile and test
-        run: sbt compile test
+      - name: Compile, test and assembly
+        run: sbt compile test eventconsumer/assembly
 
       - name: Build docker image
         run: sbt docker:publishLocal
 
       - name: Publish docker image
         run: |
-          echo $BUILD_NUMBER
-          docker images
           docker tag notificationworkerlambda:DEV $NOTIFICATION_LAMBDA_REPOSITORY_URL:$BUILD_NUMBER
-          docker images
           ./deploy.sh
         env:
           NOTIFICATION_LAMBDA_REPOSITORY_ID: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_ID }}
@@ -98,7 +95,7 @@ jobs:
             eventconsumer:
               - eventconsumer/target/scala-2.13/eventconsumer.jar
             mobile-notifications-eventconsumer-cfn:
-              - cfn.yaml
+              - eventconsumer/cfn.yaml
 
 #      - name: Upload fakebreakingnewslambda to riff-raff
 #        uses: guardian/actions-riff-raff@v2
