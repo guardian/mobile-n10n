@@ -93,10 +93,10 @@ jobs:
               - notificationworkerlambda/cdk/cdk.out/SenderWorkerStack-PROD.template.json
             mobile-notifications-topic-counter-cfn:
               - notificationworkerlambda/topic-counter-cfn.yaml
-            mobile-notifications-registration-cleaning-worker-cfn
+            mobile-notifications-registration-cleaning-worker-cfn:
               - notificationworkerlambda/registration-cleaning-worker-cfn.yaml
-            mobile-notifications-expired-registration-cleaner-cfn
+            mobile-notifications-expired-registration-cleaner-cfn:
               - notificationworkerlambda/expired-registration-cleaner-cfn.yaml
-            registrations-db-proxy-cfn
+            registrations-db-proxy-cfn:
               - cdk/cdk.out/RegistrationsDbProxy-CODE.template.json
               - cdk/cdk.out/RegistrationsDbProxy-PROD.template.json
