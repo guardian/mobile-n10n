@@ -38,7 +38,7 @@ jobs:
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
       - name: Compile, test and assembly
-        run: sbt compile test schedulelambda/assembly
+        run: sbt compile test schedule/assembly
 
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v2
