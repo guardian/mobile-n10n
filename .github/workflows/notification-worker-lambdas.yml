@@ -3,7 +3,7 @@ name: Notification worker lambdas
 on:
   push:
     branches:
-      - *
+      - "**"
     paths:
       - notificationworkerlambda/**
       - common/**
@@ -72,7 +72,7 @@ jobs:
           npm install
           npm run lint
           npm test
-          npm run synth          
+          npm run synth
 
       - uses: aws-actions/configure-aws-credentials@v2
         with:
