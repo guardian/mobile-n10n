@@ -28,6 +28,13 @@ It has many uses:
 * Monitoring of notifications
 * Logging for diagnostics and status of each notification
 
+## SLOs and Dashboards
+
+We have Service Level Objectives (SLOs) in place for both the registration and notification services. Please refer to [this document](https://docs.google.com/document/d/1wDKfCFU4geZvpnYIjl3IENlJEu_7506GOvbxBhrocDI) for a full description. 
+
+There are several data visualizations and dashboards available in Grafana related to these SLOs. You can access them through the [Mobile Notifications SLO Hub](https://metrics.gutools.co.uk/d/hwjXe51Vz/mss-slos-start-here?orgId=1), which serves as the jumping-off point to explore them.
+
+
 ## Architecture
 ![Architecture Diagram](Notifications-Architecture.jpg)
 

@@ -2,7 +2,6 @@ package notification.services.guardian
 
 import java.net.URI
 import java.util.UUID
-
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.{BatchResultErrorEntry, SendMessageBatchRequest, SendMessageBatchResult}
@@ -21,6 +20,8 @@ import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
 import org.apache.commons.lang3.concurrent.ConcurrentUtils
 import play.api.libs.json.Format
+
+import java.time.Instant
 
 class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specification with Mockito {
   "GuardianNotificationSender" should {
@@ -49,7 +50,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
     }
 
     "put batches messages on the queue" in new GuardianNotificationSenderScope {
-      val futureResult = notificationSender.sendNotification(notification)
+      val futureResult = notificationSender.sendNotification(notification, Instant.now())
       val result = Await.result(futureResult, 10.seconds)
 
       there was one(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
@@ -62,7 +63,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
     }
 
     "put many batches messages on the queue for popular topics" in new GuardianNotificationSenderScope(registrationCountPerPlatform = 3000000) {
-      val futureResult = notificationSender.sendNotification(notification)
+      val futureResult = notificationSender.sendNotification(notification, Instant.now())
       val result = Await.result(futureResult, 10.seconds)
 
       there was exactly(30)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
@@ -84,7 +85,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
         harvesterSqsUrl = ""
       )
 
-      val futureResult = notificationSender.sendNotification(notification)
+      val futureResult = notificationSender.sendNotification(notification, Instant.now())
       val result = Await.result(futureResult, 10.seconds)
 
       there was atLeast(1)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
@@ -100,7 +101,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
         new BatchResultErrorEntry().withCode("123").withId("456").withMessage("error")
       )
     ) {
-      val futureResult = notificationSender.sendNotification(notification)
+      val futureResult = notificationSender.sendNotification(notification, Instant.now())
       val result = Await.result(futureResult, 10.seconds)
 
       there was one(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])

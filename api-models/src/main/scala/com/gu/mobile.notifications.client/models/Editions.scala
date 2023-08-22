@@ -10,7 +10,8 @@ object Editions {
     "uk" -> UK,
     "us" -> US,
     "au" -> AU,
-    "international" -> International
+    "international" -> International,
+    "europe" -> Europe
   )
 
   sealed trait Edition
@@ -31,6 +32,10 @@ object Editions {
     override val toString = "international"
   }
 
+  case object Europe extends Edition {
+    override val toString = "europe"
+  }
+
   object Edition {
 
     def fromTopic(t: Topic): Option[Edition] = t match {
@@ -38,12 +43,13 @@ object Editions {
       case _ => None
     }
 
-    implicit val jf = new Format[Edition] {
+    implicit val jf: Format[Edition] = new Format[Edition] {
       override def reads(json: JsValue): JsResult[Edition] = json match {
         case JsString("uk") => JsSuccess(UK)
         case JsString("us") => JsSuccess(US)
         case JsString("au") => JsSuccess(AU)
         case JsString("international") => JsSuccess(International)
+        case JsString("europe") => JsSuccess(Europe)
         case JsString(unknown) => JsError(s"Unkown region [$unknown]")
         case _ => JsError(s"Unknown type $json")
       }

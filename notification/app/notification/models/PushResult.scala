@@ -20,5 +20,5 @@ case class PushResult(
 object PushResult {
   def fromReport(report: NotificationReport): PushResult = PushResult(report.notification.id)
 
-  implicit val jf = Json.format[PushResult]
+  implicit val jf: OFormat[PushResult] = Json.format[PushResult]
 }

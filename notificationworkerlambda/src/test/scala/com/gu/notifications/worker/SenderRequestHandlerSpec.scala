@@ -10,7 +10,6 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.cleaning.CleaningClient
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
 import com.gu.notifications.worker.delivery.apns.ApnsClient
-import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
 import com.gu.notifications.worker.delivery.{ApnsBatchDeliverySuccess, ApnsDeliverySuccess, BatchDeliverySuccess, DeliveryException, DeliveryService}
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.ChunkedTokens
@@ -58,7 +57,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     "Count dry runs" in new WRHSScope {
       override def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] =
         Stream(
-          Right(ApnsDeliverySuccess("token", dryRun = true))
+          Right(ApnsDeliverySuccess("token", Instant.now(), dryRun = true))
         )
 
       workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
@@ -90,7 +89,8 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     val chunkedTokens = ChunkedTokens(
       notification = notification,
       range = ShardRange(0, 1),
-      tokens = List("token")
+      tokens = List("token"),
+      metadata = NotificationMetadata(Instant.now(), Some(1234))
     )
 
     val chunkedTokensNotification: SQSEvent = {
@@ -103,7 +103,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     }
 
 
-    def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token")))
+    def deliveries: Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = Stream(Right(ApnsDeliverySuccess("token", Instant.now())))
 
     def sqsDeliveries: Stream[IO, Either[Throwable, Unit]] = Stream(Right(()))
 
@@ -115,7 +115,6 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
 
     val workerRequestHandler = new SenderRequestHandler[ApnsClient] {
 
-      override val registry = new IOSMetricsRegistry
       override val maxConcurrency = 100
 
       override def deliveryService: IO[DeliveryService[IO, ApnsClient]] = IO.pure(new DeliveryService[IO, ApnsClient] {
@@ -143,12 +142,16 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
 
         override def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit = _ => ()
 
-        override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = { stream =>
+        override def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = { stream =>
           cloudwatchCallsCount += 1
           stream.map { results =>
             sendingResults = Some(results)
             ()
           }
+        }
+
+        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], audienceSize: Option[Int]): Pipe[IO, List[Long], Unit] = { stream =>
+          stream.map { _ => () }
         }
 
         override def sendFailures(stage: String, platform: Platform): Pipe[IO, Throwable, Unit] = throw new RuntimeException()

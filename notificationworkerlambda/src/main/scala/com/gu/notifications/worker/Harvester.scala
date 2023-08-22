@@ -42,12 +42,10 @@ trait HarvesterRequestHandler extends Logging {
   val env = Env()
 
   val lambdaServiceSet: SqsDeliveryStack
-  val ec2ServiceSet: SqsDeliveryStack
   val jdbcConfig: JdbcConfig
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int = 100
   val supportedPlatforms = List(Ios, Android, IosEdition, AndroidEdition)
-  val allowedTopicsForEc2Sender: List[String]
 
   def logErrors(prefix: String = ""): Pipe[IO, Throwable, Unit] = throwables => {
     throwables.map(throwable => logger.warn(s"${prefix}Error queueing", throwable))
@@ -65,7 +63,7 @@ trait HarvesterRequestHandler extends Logging {
           case (targetSqs, harvestedToken) if targetSqs == workerSqs => harvestedToken.token
         }
         .chunkN(1000)
-        .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range))
+        .map(chunk => ChunkedTokens(shardedNotification.notification, chunk.toList, shardedNotification.range, shardedNotification.metadata))
         .map(deliveryService.sending)
         .parJoin(maxConcurrency)
         .collect {
@@ -74,17 +72,6 @@ trait HarvesterRequestHandler extends Logging {
         .through(platformSinkErrors)
 
   }
-
-  def switchStack(topics: List[_root_.models.Topic]): SqsDeliveryStack = {
-    if (topics.forall(topic => allowedTopicsForEc2Sender.contains(topic.toString))) {
-      logger.info("Switch to EC2-based sender"); 
-      ec2ServiceSet
-    } else {
-      logger.info("Switch to lambda-based sender"); 
-      lambdaServiceSet
-    }
-  }
-
 
   def routeToSqs: PartialFunction[HarvestedToken, (WorkerSqs, HarvestedToken)] = {
     case token @ HarvestedToken(_, Ios, _) => (WorkerSqs.IosWorkerSqs, token)
@@ -97,13 +84,12 @@ trait HarvesterRequestHandler extends Logging {
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
     for {
       shardedNotification <- shardedNotifications
-      deliveryStack = switchStack(shardedNotification.notification.topic)
       notificationId = shardedNotification.notification.id
-      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, deliveryStack.androidLiveDeliveryService)
-      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, deliveryStack.androidBetaDeliveryService)
-      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, deliveryStack.androidEditionDeliveryService)
-      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, deliveryStack.iosLiveDeliveryService)
-      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, deliveryStack.iosEditionDeliveryService)
+      androidSink = platformSink(shardedNotification, Android, WorkerSqs.AndroidWorkerSqs, lambdaServiceSet.androidLiveDeliveryService)
+      androidBetaSink = platformSink(shardedNotification, AndroidBeta, WorkerSqs.AndroidBetaWorkerSqs, lambdaServiceSet.androidBetaDeliveryService)
+      androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, lambdaServiceSet.androidEditionDeliveryService)
+      iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, lambdaServiceSet.iosLiveDeliveryService)
+      iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, lambdaServiceSet.iosEditionDeliveryService)
       notificationLog = s"(notification: $notificationId ${shardedNotification.range})"
       _ = logger.info(Map("notificationId" -> notificationId), s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
@@ -208,16 +194,5 @@ class Harvester extends HarvesterRequestHandler {
    androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl),
    androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
   )
-
-  override val ec2ServiceSet = SqsDeliveryStack(
-   iosLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosLiveSqsEc2Url),
-   androidLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsEc2Url),
-   iosEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsEc2Url),
-   androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsEc2Url),
-   androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsEc2Url)
-  )
-
-  override val allowedTopicsForEc2Sender = config.allowedTopicsForEc2Sender
-
-  logger.info(s"Allowed topics for EC2 sender: ${config.allowedTopicsForEc2Sender}")
 }
+    

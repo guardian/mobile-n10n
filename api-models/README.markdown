@@ -85,3 +85,12 @@ Because of the incompatibility of the play-json module between version 2.3 and 2
 Each change that has been merged into ````main```` MUST be merged into the ````play-2.4```` branch
 
 Once this is done, make sure to run ````sbt release```` on both branches
+
+# Mobile Notifications API Models
+[![Maven Central](https://img.shields.io/maven-metadata/v.svg?label=maven-central&metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fgu%2Fmobile-notifications-api-models_2.13%2Fmaven-metadata.xml)](https://maven-badges.herokuapp.com/maven-central/com.gu/mobile-notifications-api-models_1.0.16)
+[![Project status](https://img.shields.io/badge/status-active-brightgreen.svg)](#status)
+
+### When to release version changes?
+When there's been changes to the model, and a new version of the library has been released in Maven, the `version.sbt` file needs to be updated with the next available version.
+
+NB: As the main branch is protected, we cannot push directly from main, so we need to do this through a development branch (create a PR).

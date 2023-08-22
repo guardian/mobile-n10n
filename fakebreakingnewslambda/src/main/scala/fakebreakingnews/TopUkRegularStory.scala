@@ -2,11 +2,10 @@ package fakebreakingnews
 
 import java.io.IOException
 import java.util.UUID
-
 import com.gu.mobile.notifications.client
 import com.gu.mobile.notifications.client.models.{BreakingNewsPayload, GuardianLinkDetails}
 import okhttp3.{Call, Callback, OkHttpClient, Request, Response}
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success, Try}
@@ -14,25 +13,25 @@ import scala.util.{Failure, Success, Try}
 case class UkRegularStoryLinks(shortUrl: Option[String])
 
 object UkRegularStoryLinks {
-  implicit val ukRegularStoryLinksJF = Json.format[UkRegularStoryLinks]
+  implicit val ukRegularStoryLinksJF: OFormat[UkRegularStoryLinks] = Json.format[UkRegularStoryLinks]
 }
 
 case class UkRegularStoryItem(id: String, links: UkRegularStoryLinks)
 
 object UkRegularStoryItem {
-  implicit val ukRegularStoryItemJF = Json.format[UkRegularStoryItem]
+  implicit val ukRegularStoryItemJF: OFormat[UkRegularStoryItem] = Json.format[UkRegularStoryItem]
 }
 
 case class UkRegularStoriesCard(item: UkRegularStoryItem, title: String)
 
 object UkRegularStoriesCard {
-  implicit val ukRegularStoriesCardJF = Json.format[UkRegularStoriesCard]
+  implicit val ukRegularStoriesCardJF: OFormat[UkRegularStoriesCard] = Json.format[UkRegularStoriesCard]
 }
 
 case class UkRegularStories(cards: List[UkRegularStoriesCard])
 
 object UkRegularStories {
-  implicit val ukRegularStoriesJF = Json.format[UkRegularStories]
+  implicit val ukRegularStoriesJF: OFormat[UkRegularStories] = Json.format[UkRegularStories]
 }
 
 class TopUkRegularStory(okHttpClient: OkHttpClient, ukRegularStoriesUrl: String) {

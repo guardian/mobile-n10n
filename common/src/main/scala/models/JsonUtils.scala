@@ -21,7 +21,7 @@ object JsonUtils {
     }
   }
 
-  lazy implicit val jodaFormat = new Format[DateTime] {
+  lazy implicit val jodaFormat: Format[DateTime] = new Format[DateTime] {
     override def reads(json: JsValue): JsResult[DateTime] =
       JodaReads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss.SSSZ").reads(json).map(_.withZone(DateTimeZone.UTC))
 
@@ -39,7 +39,7 @@ object JsonUtils {
       o map format.writes getOrElse JsNull
   }
 
-  implicit val uriFormat = new Format[URI] {
+  implicit val uriFormat: Format[URI] = new Format[URI] {
     override def reads(json: JsValue): JsResult[URI] = json match {
       case JsString(uri) => Try(new URI(uri)).map(u => JsSuccess(u)).getOrElse(JsError(s"Invalid URI: $uri"))
       case _ => JsError("URI must be a String")

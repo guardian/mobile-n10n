@@ -1,12 +1,12 @@
 package com.gu.notifications.worker
 
+import _root_.models.NotificationMetadata
 import cats.effect.{ContextShift, IO, Timer}
 import com.gu.notifications.worker.cleaning.CleaningClientImpl
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
-import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
 import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryClient, DeliveryException}
 import com.gu.notifications.worker.delivery.fcm.{Fcm, FcmClient}
-import com.gu.notifications.worker.models.SendingResults
+import com.gu.notifications.worker.models.{LatencyMetrics, SendingResults}
 import com.gu.notifications.worker.tokens.{BatchNotification, ChunkedTokens}
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, Reporting}
 import fs2.{Pipe, Stream}
@@ -20,7 +20,6 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
 
   // maybe we'll implement a metrics registry for android in the future?
   // it seems like a metrics registry could be a nice way to abstract all the metrics we care about collecting
-  val registry = new IOSMetricsRegistry
   def this() = {
     this(Configuration.fetchFirebase(), None, "workers")
   }
@@ -43,10 +42,11 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
       case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize) =>
-        logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} to topics ${chunkedTokens.notification.topic} in batches")
+        logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} in batches")
         deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
           .broadcastTo(
             reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+            reportBatchLatency(chunkedTokens, chunkedTokens.metadata),
             cleanupBatchFailures(chunkedTokens.notification.id),
             trackBatchProgress(chunkedTokens.notification.id))
     }.parJoin(maxConcurrency)
@@ -61,10 +61,24 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
 
   def reportBatchSuccesses[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant, sqsMessageBatchSize: Int): Pipe[IO, Either[DeliveryException, BatchDeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${chunkedTokens.notification.id} ${chunkedTokens.range})"
+    val enableAwsMetric = chunkedTokens.notification.dryRun match {
+      case Some(true) => false
+      case _ => true
+    }
     input
       .fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregateBatch(acc, chunkedTokens.tokens.size, resp) }
-      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, isIndividualNotificationSend = false, sqsMessageBatchSize), prefix = s"Results $notificationLog: "))
-      .through(cloudwatch.sendMetrics(env.stage, Configuration.platform))
+      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
+      .through(cloudwatch.sendResults(env.stage, Configuration.platform))
+  }
+
+  def reportBatchLatency[C <: DeliveryClient](chunkedTokens: ChunkedTokens, metadata: NotificationMetadata): Pipe[IO, Either[DeliveryException, BatchDeliverySuccess], Unit] = { input =>
+    val shouldPushMetricsToAws = chunkedTokens.notification.dryRun match {
+      case Some(true) => false
+      case _ => true
+    }
+    input
+      .fold(List.empty[Long]) { case (acc, resp) => LatencyMetrics.collectBatchLatency(acc, resp, metadata.notificationAppReceivedTime) }
+      .through(cloudwatch.sendLatencyMetrics(shouldPushMetricsToAws, env.stage, Configuration.platform, metadata.audienceSize))
   }
 
   def cleanupBatchFailures[C <: DeliveryClient](notificationId: UUID): Pipe[IO, Either[Throwable, BatchDeliverySuccess], Unit] = { input =>

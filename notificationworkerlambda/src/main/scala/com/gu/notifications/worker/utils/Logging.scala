@@ -2,7 +2,6 @@ package com.gu.notifications.worker.utils
 
 import cats.effect.IO
 import com.gu.notifications.worker.Env
-import com.gu.notifications.worker.delivery.apns.models.IOSMetricsRegistry
 import models.{Notification, NotificationType, Platform}
 import net.logstash.logback.marker.LogstashMarker
 import net.logstash.logback.marker.Markers.appendEntries
@@ -11,6 +10,7 @@ import org.slf4j.Logger
 import java.time.{Duration, Instant}
 import scala.jdk.CollectionConverters.MapHasAsJava
 import com.gu.notifications.worker.models.PerformanceMetrics
+import com.gu.notifications.worker.tokens.ChunkedTokens
 
 trait Logging {
   def logger: Logger
@@ -50,7 +50,6 @@ trait Logging {
     sentTime: Long,
     functionStartTime: Instant,
     maybePlatform: Option[Platform],
-    isIndividualNotificationSend: Boolean = true,
     sqsMessageBatchSize: Int,
   )(end: Instant): Map[String, Any] = {
     val processingTime = Duration.between(functionStartTime, end).toMillis
@@ -60,26 +59,30 @@ trait Logging {
     Map(
       "notificationId" -> notification.id,
       "platform" -> maybePlatform.map(_.toString).getOrElse("unknown"),
-      "type" -> {
-        notification.`type` match {
-          case NotificationType.BreakingNews => "breakingNews"
-          case _                             => "other"
-        }
-      },
+      "type" -> Reporting.notificationTypeForObservability(notification),
       "worker.functionProcessingRate" -> processingRate,
       "worker.functionProcessingTime" -> processingTime,
       "worker.notificationProcessingTime" -> Duration.between(start, end).toMillis,
       "worker.notificationProcessingStartTime.millis" -> sentTime,
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
-      "worker.notificationSendMethod" -> { if (isIndividualNotificationSend) "individual" else "batch" },
       "sqsMessageBatchSize" -> sqsMessageBatchSize,
       "worker.chunkTokenSize" -> numberOfTokens,
     )
   }
-  def logEndOfInvocation(sqsMessageBatchSize: Int, totalTokensProcessed: Int, startTime: Instant, registry: IOSMetricsRegistry): Unit =
-      logger.info(Map(
-        "sqsMessageBatchSize" -> sqsMessageBatchSize,
-        "totalTokensProcessed" -> totalTokensProcessed,
-        "invocation.functionProcessingRate" -> { totalTokensProcessed.toDouble / Duration.between(startTime, Instant.now).toMillis * 1000 },
-      ), "Processed all sqs messages from sqs event")
+
+  def logStartAndCount(acc: Int, chunkedTokens: ChunkedTokens): Int = {
+    logger.info(Map(
+      "notificationId" -> chunkedTokens.notification.id
+    ), "Start processing a SQS message");
+    acc + chunkedTokens.tokens.size
+  }
+
+  def logEndOfInvocation(sqsMessageBatchSize: Int, totalTokensProcessed: Int, startTime: Instant): Unit =
+    logger.info(Map(
+      "sqsMessageBatchSize" -> sqsMessageBatchSize,
+      "totalTokensProcessed" -> totalTokensProcessed,
+      "invocation.functionProcessingRate" -> {
+        totalTokensProcessed.toDouble / Duration.between(startTime, Instant.now).toMillis * 1000
+      },
+    ), "Processed all messages from SQS event")
 }

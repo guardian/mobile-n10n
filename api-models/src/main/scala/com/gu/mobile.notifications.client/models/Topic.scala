@@ -7,7 +7,7 @@ import play.api.libs.json._
 sealed trait TopicType
 
 object TopicType {
-  implicit val jf = new Writes[TopicType] {
+  implicit val jf: Writes[TopicType] = new Writes[TopicType] {
     override def writes(o: TopicType): JsValue = JsString(o.toString)
   }
 }
@@ -29,21 +29,19 @@ case class Topic(`type`: TopicType, name: String) {
   def toTopicString = `type`.toString + "//" + name
 }
 object Topic {
-  implicit val jf = Json.writes[Topic]
+  implicit val jf: OWrites[Topic] = Json.writes[Topic]
   val BreakingNewsUk = Topic(Breaking, UK.toString)
   val BreakingNewsUs = Topic(Breaking, US.toString)
   val BreakingNewsAu = Topic(Breaking, AU.toString)
   val BreakingNewsInternational = Topic(Breaking, International.toString)
+  val BreakingNewsEurope = Topic(Breaking, Europe.toString)
   val BreakingNewsSportUk = Topic(Breaking, "uk-sport")
   val BreakingNewsSportUs = Topic(Breaking, "us-sport")
   val BreakingNewsSportAu = Topic(Breaking, "au-sport")
   val BreakingNewsSportInternational = Topic(Breaking, "international-sport")
+  val BreakingNewsSportEurope = Topic(Breaking, "europe-sport")
   val BreakingNewsElection = Topic(Breaking, "uk-general-election")
   val BreakingNewsUSElection = Topic(Breaking, "us-election-2020-live")
-  val BreakingNewsCovid19Uk = Topic(Breaking, "uk-covid-19")
-  val BreakingNewsCovid19Us = Topic(Breaking, "us-covid-19")
-  val BreakingNewsCovid19Au = Topic(Breaking, "au-covid-19")
-  val BreakingNewsCovid19International = Topic(Breaking, "international-covid-19")
   val BreakingNewsInternalTest = Topic(Breaking, "internal-test")
   val NewsstandIos = Topic(Newsstand, "newsstandIos")
 }

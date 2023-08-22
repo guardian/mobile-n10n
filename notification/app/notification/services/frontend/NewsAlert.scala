@@ -2,11 +2,10 @@ package notification.services.frontend
 
 import java.net.URI
 import java.util.UUID
-
 import models.BreakingNewsNotification
 import models.Link.Internal
 import org.joda.time.DateTime
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 import scala.PartialFunction.condOpt
 
@@ -24,7 +23,7 @@ case class NewsAlert(
 object NewsAlert {
   import models.JsonUtils._
 
-  implicit val jf = Json.format[NewsAlert]
+  implicit val jf: OFormat[NewsAlert] = Json.format[NewsAlert]
 
   def fromNotification(notification: BreakingNewsNotification, sent: DateTime): Option[NewsAlert] = {
     val urlId = condOpt(notification.link) { case Internal(contentId, _, _, _) => new URI(contentId) }

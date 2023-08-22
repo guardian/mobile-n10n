@@ -5,8 +5,9 @@ deployments:
     type: cloud-formation
     app: registration
     parameters:
+      amiEncrypted: true
       amiTags:
-        Recipe: bionic-mobile-java11-ARM
+        Recipe: mobile-java11-jammy-ARM
         AmigoStage: PROD
       templateStagePaths:
         CODE: Registration-CODE.template.json

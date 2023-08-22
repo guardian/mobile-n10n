@@ -27,14 +27,15 @@ object NotificationWorkerLocalRun extends App {
     ),
     imageUrl = None,
     importance = Major,
-    topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international")),
+    topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"), Topic(Breaking, "europe")),
     dryRun = None
   )
 
   val tokens = ChunkedTokens(
     notification = notification,
     range = ShardRange(0, 1),
-    tokens = List("token")
+    tokens = List("token"),
+    metadata = NotificationMetadata(Instant.now(), Some(1234))
   )
 
   val sqsEvent: SQSEvent = {

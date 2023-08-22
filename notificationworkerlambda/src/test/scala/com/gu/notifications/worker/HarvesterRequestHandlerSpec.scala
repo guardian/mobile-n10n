@@ -31,7 +31,6 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
     "Queue one multi platform breaking news notification" in new WRHSScope {
 
       val workerRequestHandler = new TestHarvesterRequestHandler {
-        override val allowedTopicsForEc2Sender: List[String] = List()
       }
       workerRequestHandler.processNotification(sqsEventShardNotification(breakingNewsNotification), tokenService)
       tokenStreamCount.get() shouldEqual 0
@@ -46,80 +45,7 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
       workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 2002
       workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 3
       workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 2002
-
-      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 0
-    }
-
-    "Use lambda stack if some of the topics are not on the selected list" in new WRHSScope {
-
-      val workerRequestHandler = new TestHarvesterRequestHandler {
-        override val allowedTopicsForEc2Sender: List[String] = List("breaking/uk", "breaking/us", "breaking/international")
-      }
-      workerRequestHandler.processNotification(sqsEventShardNotification(breakingNewsNotification), tokenService)
-      tokenStreamCount.get() shouldEqual 0
-      tokenPlatformStreamCount.get() shouldEqual 1
-      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 2002
-      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesTotal.get() shouldEqual 2002
-      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 2002
-      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 2002
-      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 2002
-
-      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 0
-    }
-
-    "Switch to EC2 stack if all of the topics are on the selected list" in new WRHSScope {
-
-      val workerRequestHandler = new TestHarvesterRequestHandler {
-        override val allowedTopicsForEc2Sender: List[String] = List("breaking/uk", "breaking/us", "breaking/international", "breaking/au")
-      }
-      workerRequestHandler.processNotification(sqsEventShardNotification(breakingNewsNotification), tokenService)
-      tokenStreamCount.get() shouldEqual 0
-      tokenPlatformStreamCount.get() shouldEqual 1
-      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.ec2Deliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 2002
-      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.ec2Deliveries.apnsSqsDeliveriesTotal.get() shouldEqual 2002
-      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.ec2Deliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 2002
-      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.ec2Deliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 2002
-      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 3
-      workerRequestHandler.ec2Deliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 2002
-
-      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.lambdaDeliveries.firebaseSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.lambdaDeliveries.apnsSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.lambdaDeliveries.firebaseEditionSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.lambdaDeliveries.apnsEditionSqsDeliveriesTotal.get() shouldEqual 0
-      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesCount.get() shouldEqual 0
-      workerRequestHandler.lambdaDeliveries.firebaseBetaSqsDeliveriesTotal.get() shouldEqual 0
-    }        
+    }    
   }
 
 
@@ -155,7 +81,8 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
     def sqsEventShardNotification(notification: Notification): SQSEvent = {
       val shardedNotification = ShardedNotification(
         notification = notification,
-        range = ShardRange(0, 1)
+        range = ShardRange(0, 1),
+        metadata = NotificationMetadata(Instant.now(), Some(1234))
       )
       val event = new SQSEvent()
       val sqsMessage = new SQSMessage()
@@ -248,25 +175,12 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
         new AtomicInteger(),
       )
 
-      var ec2Deliveries = SqsDeliveriesCount(
-        new AtomicInteger(),
-        new AtomicInteger(),
-        new AtomicInteger(),
-        new AtomicInteger(),
-        new AtomicInteger(),
-        new AtomicInteger(),
-        new AtomicInteger(),
-        new AtomicInteger(),
-        new AtomicInteger(),
-        new AtomicInteger(),
-      )
-
       override val lambdaServiceSet: SqsDeliveryStack = createTestSqsDeliveryStack(lambdaDeliveries)
 
-      override val ec2ServiceSet: SqsDeliveryStack = createTestSqsDeliveryStack(ec2Deliveries)
-
       override val cloudwatch: Cloudwatch = new Cloudwatch {
-        override def sendMetrics(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
+        override def sendResults(stage: String, platform: Option[Platform]): Pipe[IO, SendingResults, Unit] = ???
+
+        override def sendLatencyMetrics(shouldPushMetricsToAws: Boolean, stage: String, platform: Option[Platform], audienceSize: Option[Int]): Pipe[IO, List[Long], Unit] = ???
 
         override def sendPerformanceMetrics(stage: String, enablePerformanceMetric: Boolean): PerformanceMetrics => Unit = ???
 

@@ -11,7 +11,7 @@ import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
 import com.gu.notifications.worker.delivery.{DeliveryClient, DeliveryException, FcmBatchDeliverySuccess, FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.utils.Logging
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 import com.gu.notifications.worker.utils.UnwrappingExecutionException
 
 import java.io.ByteArrayInputStream
@@ -30,7 +30,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
   type Payload = FcmPayload
   val dryRun = config.dryRun
 
-  implicit val logger = LoggerFactory.getLogger(this.getClass)
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val invalidTokenErrorCodes = Set(
     MessagingErrorCode.INVALID_ARGUMENT,
@@ -61,20 +61,20 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       .build
 
     if (dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
-      onAPICallComplete(Right(FcmDeliverySuccess(token, "dryrun", dryRun = true)))
+      onAPICallComplete(Right(FcmDeliverySuccess(token, "dryrun", Instant.now(), dryRun = true)))
     } else {
       import FirebaseHelpers._
       val start = Instant.now
       firebaseMessaging
         .sendAsync(message)
         .asScala
-        .onComplete { response => {
-            logger.info(Map(
-              "worker.individualRequestLatency" -> Duration.between(start, Instant.now).toMillis,
-              "notificationId" -> notificationId,
-            ), "Individual send request completed")
-            onAPICallComplete(parseSendResponse(notificationId, token, response))
-          }
+        .onComplete { response =>
+          val requestCompletionTime = Instant.now
+          logger.info(Map(
+            "worker.individualRequestLatency" -> Duration.between(start, requestCompletionTime).toMillis,
+            "notificationId" -> notificationId,
+          ), "Individual send request completed")
+          onAPICallComplete(parseSendResponse(notificationId, token, response, requestCompletionTime))
         }
     }
   }
@@ -92,8 +92,8 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     if (dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
       onAPICallComplete(Right(
         FcmBatchDeliverySuccess(
-          List.fill(tokens.size)(Right(FcmDeliverySuccess(s"success", "dryrun", dryRun = true))),
-          notificationId.toString,
+          List.fill(tokens.size)(Right(FcmDeliverySuccess(s"success", "dryrun", Instant.now(), dryRun = true))),
+          notificationId.toString
         )))
     } else {
       import FirebaseHelpers._
@@ -101,22 +101,22 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       firebaseMessaging
         .sendMulticastAsync(message)
         .asScala
-        .onComplete { response => {
-            logger.info(Map(
-              "worker.batchRequestLatency" -> Duration.between(start, Instant.now).toMillis,
-              "notificationId" -> notificationId
-            ), "Batch send request completed")
-            parseBatchSendResponse(notificationId, tokens, response)(onAPICallComplete)
-          }
+        .onComplete { response =>
+          val requestCompletionTime = Instant.now
+          logger.info(Map(
+            "worker.batchRequestLatency" -> Duration.between(start, requestCompletionTime).toMillis,
+            "notificationId" -> notificationId
+          ), "Batch send request completed")
+          parseBatchSendResponse(notificationId, tokens, response, requestCompletionTime)(onAPICallComplete)
         }
     }
   }
 
   def parseSendResponse(
-    notificationId: UUID, token: String, response: Try[String]
+    notificationId: UUID, token: String, response: Try[String], requestCompletionTime: Instant
   ): Either[DeliveryException, Success] = response match {
     case Success(messageId) =>
-      Right(FcmDeliverySuccess(token, messageId))
+      Right(FcmDeliverySuccess(token, messageId, requestCompletionTime))
     case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) || isUnregistered(e) =>
       Left(InvalidToken(notificationId, token, e.getMessage))
     case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
@@ -128,7 +128,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
   }
 
   def parseBatchSendResponse(
-    notificationId: UUID, tokens: List[String], triedResponse: Try[BatchResponse]
+    notificationId: UUID, tokens: List[String], triedResponse: Try[BatchResponse], requestCompletionTime: Instant
   )(cb: Either[DeliveryException, BatchSuccess] => Unit): Unit = triedResponse match {
     case Success(batchResponse) =>
       cb(Right(FcmBatchDeliverySuccess(
@@ -136,9 +136,9 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
         batchResponse.getResponses.asScala.toList.zip(tokens).map { el => {
           val (r, token) = el
           if (!r.isSuccessful) {
-            parseSendResponse(notificationId, token, Failure(r.getException))
+            parseSendResponse(notificationId, token, Failure(r.getException), requestCompletionTime)
           } else {
-            Right(FcmDeliverySuccess(s"Token in batch response succeeded", token))
+            Right(FcmDeliverySuccess(s"Token in batch response succeeded", token, requestCompletionTime))
           }
         }
         }, notificationId.toString)))
