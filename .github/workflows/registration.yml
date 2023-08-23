@@ -7,9 +7,9 @@ on:
     paths:
       - registration/**
       - common/**
+      - commoneventconsumer/**
       - commontest/**
       - .github/workflows/registration.yml
-  # pull_request:
   workflow_dispatch:
 
 # allow queued workflows to interrupt previous runs
@@ -38,8 +38,8 @@ jobs:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
-      - name: Compile, test and assembly
-        run: sbt compile test registration/assembly
+      - name: Compile, test and package
+        run: sbt "project registration" "compile" "test" "debian:packageBin"
 
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v2
@@ -48,7 +48,7 @@ jobs:
           configPath: registration/conf/riff-raff.yaml
           contentDirectories: |
             registration:
-              - registration/target/scala-2.13/registration.jar
+              - registration/target/registration_1.0-latest_all.deb
             registration-cfn:
               - cdk/cdk.out/Registration-CODE.template.json
               - cdk/cdk.out/Registration-PROD.template.json

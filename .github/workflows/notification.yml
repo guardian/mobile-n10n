@@ -10,7 +10,6 @@ on:
       - commoneventconsumer/**
       - commonscheduleddynamodb/**
       - .github/workflows/notification.yml
-  # pull_request:
   workflow_dispatch:
 
 # allow queued workflows to interrupt previous runs

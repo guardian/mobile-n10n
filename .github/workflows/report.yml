@@ -7,9 +7,9 @@ on:
     paths:
       - report/**
       - common/**
+      - commoneventconsumer/**
       - commontest/**
       - .github/workflows/report.yml
-  # pull_request:
   workflow_dispatch:
 
 # allow queued workflows to interrupt previous runs
@@ -38,8 +38,8 @@ jobs:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
-      - name: Compile, test and assembly
-        run: sbt compile test report/assembly
+      - name: Compile, test and package
+        run: sbt "project report" "compile" "test" "debian:packageBin"
 
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v2
@@ -48,6 +48,6 @@ jobs:
           configPath: report/conf/riff-raff.yaml
           contentDirectories: |
             report:
-              - report/target/scala-2.13/report.jar
+              - report/target/report_1.0-latest_all.deb
             report-cfn:
               - report/conf/report.yaml
