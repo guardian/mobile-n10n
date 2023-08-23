@@ -7,6 +7,7 @@ on:
     paths:
       - notification/**
       - common/**
+      - commoneventconsumer/**
       - commonscheduleddynamodb/**
       - .github/workflows/notification.yml
   # pull_request:
