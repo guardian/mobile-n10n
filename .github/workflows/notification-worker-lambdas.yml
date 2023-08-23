@@ -64,13 +64,16 @@ jobs:
           NOTIFICATION_LAMBDA_REPOSITORY_URL: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_URL }}
           BUILD_NUMBER: ${{ github.run_number }}
 
-      - name: CDK synth
+      - name: CDK synth (worker lambda cdk directory)
+        working-directory: notificationworkerlambda/cdk
         run: |
-          cd notificationworkerlambda/cdk
           yarn install
           yarn test
           yarn synth
-          cd ../../cdk
+
+      - name: CDK synth (root cdk directory)
+        working-directory: cdk
+        run: |
           npm install
           npm run lint
           npm test
