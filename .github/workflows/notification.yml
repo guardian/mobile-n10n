@@ -38,8 +38,8 @@ jobs:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
-      - name: Compile, test and assembly
-        run: sbt compile test notification/assembly
+      - name: Compile, test and package
+        run: sbt "project notification" "compile" "test" "debian:packageBin"
 
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v2
@@ -48,6 +48,6 @@ jobs:
           configPath: notification/conf/riff-raff.yaml
           contentDirectories: |
             notification:
-              - notification/target/scala-2.13/notification.jar
+              - notification/target/notification_1.0-latest_all.deb
             notification-cfn:
               - notification/conf/notification.yaml
