@@ -7,8 +7,8 @@ on:
     paths:
       - notificationworkerlambda/**
       - common/**
+      - commoneventconsumer/**
       - .github/workflows/notification-worker-lambdas.yml
-  # pull_request:
   workflow_dispatch:
 
 # allow queued workflows to interrupt previous runs
