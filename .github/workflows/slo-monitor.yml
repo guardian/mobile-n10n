@@ -7,6 +7,9 @@ on:
     paths:
       - slomonitor/**
       - commoneventconsumer/**
+      - cdk/**
+      - project/**
+      - build.sbt
       - .github/workflows/slo-monitor.yml
   workflow_dispatch:
 

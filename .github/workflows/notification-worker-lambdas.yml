@@ -8,6 +8,9 @@ on:
       - notificationworkerlambda/**
       - common/**
       - commoneventconsumer/**
+      - cdk/**
+      - project/**
+      - build.sbt
       - .github/workflows/notification-worker-lambdas.yml
   workflow_dispatch:
 

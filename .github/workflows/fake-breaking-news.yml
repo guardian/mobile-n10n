@@ -9,6 +9,8 @@ on:
       - common/**
       - commoneventconsumer/**
       - api-models/**
+      - project/**
+      - build.sbt
       - .github/workflows/fake-breaking-news.yml
   workflow_dispatch:
 

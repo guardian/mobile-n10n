@@ -9,6 +9,9 @@ on:
       - common/**
       - commoneventconsumer/**
       - commontest/**
+      - cdk/**
+      - project/**
+      - build.sbt
       - .github/workflows/registration.yml
   workflow_dispatch:
 

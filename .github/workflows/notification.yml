@@ -9,6 +9,8 @@ on:
       - common/**
       - commoneventconsumer/**
       - commonscheduleddynamodb/**
+      - project/**
+      - build.sbt
       - .github/workflows/notification.yml
   workflow_dispatch:
 

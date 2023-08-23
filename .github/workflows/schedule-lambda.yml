@@ -7,6 +7,8 @@ on:
     paths:
       - schedulelambda/**
       - commonscheduledynamodb/**
+      - project/**
+      - build.sbt
       - .github/workflows/schedule-lambda.yml
   workflow_dispatch:
 

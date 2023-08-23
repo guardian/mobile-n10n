@@ -9,6 +9,8 @@ on:
       - common/**
       - commoneventconsumer/**
       - commontest/**
+      - project/**
+      - build.sbt
       - .github/workflows/report.yml
   workflow_dispatch:
 
