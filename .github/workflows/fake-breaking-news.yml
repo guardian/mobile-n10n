@@ -2,8 +2,6 @@ name: Fake breaking news lambda
 
 on:
   push:
-    branches:
-      - "**"
     paths:
       - fakebreakingnewslambda/**
       - common/**

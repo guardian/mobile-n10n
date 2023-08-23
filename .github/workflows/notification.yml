@@ -2,8 +2,6 @@ name: Notification
 
 on:
   push:
-    branches:
-      - "**"
     paths:
       - notification/**
       - common/**

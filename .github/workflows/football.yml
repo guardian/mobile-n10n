@@ -2,8 +2,6 @@ name: Football
 
 on:
   push:
-    branches:
-      - "**"
     paths:
       - football/**
       - api-models/**

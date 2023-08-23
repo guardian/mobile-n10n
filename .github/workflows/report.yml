@@ -2,8 +2,6 @@ name: Report
 
 on:
   push:
-    branches:
-      - "**"
     paths:
       - report/**
       - common/**

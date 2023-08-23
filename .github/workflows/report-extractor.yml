@@ -2,8 +2,6 @@ name: Report extractor
 
 on:
   push:
-    branches:
-      - "**"
     paths:
       - reportextractor/**
       - common/**

@@ -2,8 +2,6 @@ name: Notification worker lambdas
 
 on:
   push:
-    branches:
-      - "**"
     paths:
       - notificationworkerlambda/**
       - common/**

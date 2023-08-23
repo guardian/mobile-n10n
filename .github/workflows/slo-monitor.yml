@@ -2,8 +2,6 @@ name: SLO monitor
 
 on:
   push:
-    branches:
-      - "**"
     paths:
       - slomonitor/**
       - commoneventconsumer/**

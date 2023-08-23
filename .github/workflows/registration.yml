@@ -2,8 +2,6 @@ name: Registration
 
 on:
   push:
-    branches:
-      - "**"
     paths:
       - registration/**
       - common/**
