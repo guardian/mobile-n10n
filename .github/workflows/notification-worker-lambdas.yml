@@ -52,7 +52,7 @@ jobs:
           mask-password: 'true'
 
       - name: Compile and test
-        run: sbt compile test notificationworkerlambda/assembly
+        run: sbt "project notificationworkerlambda" "compile" "test"
 
       - name: Build docker image
         run: sbt docker:publishLocal
