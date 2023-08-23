@@ -33,10 +33,24 @@ jobs:
           cache: sbt
           java-version: 11
 
+      - uses: actions/setup-node@v3
+        with:
+          cache: npm
+          cache-dependency-path: cdk/package-lock.json
+          node-version-file: .nvmrc
+
       - uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+
+      - name: CDK synth
+        run: |
+          cd cdk
+          npm install
+          npm run lint
+          npm test
+          npm run synth
 
       - name: Compile, test and package
         run: sbt "project registration" "compile" "test" "debian:packageBin"
