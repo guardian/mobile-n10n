@@ -44,7 +44,7 @@ jobs:
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v2
         with:
-          projectName: mobile-n10n:schedulelambda
+          projectName: mobile-n10n:schedule
           configPath: schedulelambda/riff-raff.yaml
           contentDirectories: |
             schedule:
