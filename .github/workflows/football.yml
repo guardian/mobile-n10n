@@ -39,6 +39,9 @@ jobs:
       - name: Compile, test and assembly
         run: sbt "project football" "compile" "test" "assembly"
 
+      - name: Copy jar to root
+        run: cp football/target/scala-*/football.jar .
+
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v2
         with:
@@ -46,6 +49,6 @@ jobs:
           configPath: football/riff-raff.yaml
           contentDirectories: |
             football:
-              - football/target/scala-2.13/football.jar
+              - football.jar
             mobile-notifications-football-cfn:
               - football/cfn.yaml

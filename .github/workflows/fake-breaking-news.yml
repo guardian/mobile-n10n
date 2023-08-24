@@ -41,6 +41,9 @@ jobs:
       - name: Compile, test and assembly
         run: sbt "project fakebreakingnewslambda" "compile" "test" "assembly"
 
+      - name: Copy jar to root
+        run: cp fakebreakingnewslambda/target/scala-*/fakebreakingnewslambda.jar .
+
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v2
         with:
@@ -48,6 +51,6 @@ jobs:
           configPath: fakebreakingnewslambda/riff-raff.yaml
           contentDirectories: |
             fakebreakingnewslambda:
-              - fakebreakingnewslambda/target/scala-2.13/fakebreakingnewslambda.jar
+              - fakebreakingnewslambda.jar
             fakebreakingnewslambda-cfn:
               - fakebreakingnewslambda/fakebreakingnewslambda-cfn.yaml

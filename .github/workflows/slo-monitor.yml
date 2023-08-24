@@ -46,6 +46,9 @@ jobs:
       - name: Compile, test and assembly
         run: sbt "project slomonitor" "compile" "test" "assembly"
 
+      - name: Copy jar to root
+        run: cp slomonitor/target/scala-*/slomonitor.jar .
+
       - name: CDK synth
         run: |
           cd cdk
@@ -61,7 +64,7 @@ jobs:
           configPath: slomonitor/riff-raff.yaml
           contentDirectories: |
             slomonitor:
-              - slomonitor/target/scala-2.13/slomonitor.jar
+              - slomonitor.jar
             mobile-notifications-slo-monitor-cfn:
               - cdk/cdk.out/SloMonitor-CODE.template.json
               - cdk/cdk.out/SloMonitor-PROD.template.json
