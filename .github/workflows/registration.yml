@@ -1,0 +1,70 @@
+name: Registration
+
+on:
+  push:
+    paths:
+      - registration/**
+      - common/**
+      - commoneventconsumer/**
+      - commontest/**
+      - cdk/**
+      - project/**
+      - build.sbt
+      - .github/workflows/registration.yml
+  workflow_dispatch:
+
+# allow queued workflows to interrupt previous runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          cache: sbt
+          java-version: 11
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: npm
+          cache-dependency-path: cdk/package-lock.json
+          node-version-file: .nvmrc
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+
+      - name: CDK synth
+        run: |
+          cd cdk
+          npm install
+          npm run lint
+          npm test
+          npm run synth
+
+      - name: Compile, test and package
+        run: sbt "project registration" "compile" "test" "debian:packageBin"
+
+      - name: Upload to riff-raff
+        uses: guardian/actions-riff-raff@v2
+        with:
+          projectName: mobile-n10n:registration
+          buildNumberOffset: 4147
+          configPath: registration/conf/riff-raff.yaml
+          contentDirectories: |
+            registration:
+              - registration/target/registration_1.0-latest_all.deb
+            registration-cfn:
+              - cdk/cdk.out/Registration-CODE.template.json
+              - cdk/cdk.out/Registration-PROD.template.json
