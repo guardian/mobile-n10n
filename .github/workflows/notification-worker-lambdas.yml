@@ -57,7 +57,7 @@ jobs:
 
       - name: Publish docker image
         run: |
-          echo "{BUILD_NUMBER_WITH_OFFSET}=${$BUILD_NUMBER+4147}" >> "$GITHUB_ENV"
+          echo "{BUILD_NUMBER_WITH_OFFSET}={$BUILD_NUMBER+4147}" >> "$GITHUB_ENV"
           docker tag notificationworkerlambda:DEV $NOTIFICATION_LAMBDA_REPOSITORY_URL:$BUILD_NUMBER_WITH_OFFSET
           docker push ${NOTIFICATION_LAMBDA_REPOSITORY_URL}:${BUILD_NUMBER_WITH_OFFSET}
         env:
