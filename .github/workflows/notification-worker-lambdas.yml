@@ -57,7 +57,7 @@ jobs:
 
       - name: Publish docker image
         run: |
-          ::set-env name=BUILD_NUMBER_WITH_OFFSET::$(($BUILD_NUMBER+4147))
+          echo ::set-env name=BUILD_NUMBER_WITH_OFFSET::$(($BUILD_NUMBER+4147))
           docker tag notificationworkerlambda:DEV $NOTIFICATION_LAMBDA_REPOSITORY_URL:$BUILD_NUMBER_WITH_OFFSET
           docker push ${NOTIFICATION_LAMBDA_REPOSITORY_URL}:${BUILD_NUMBER_WITH_OFFSET}
         env:
