@@ -46,7 +46,8 @@ jobs:
         if: success() || failure()    # run this step even if previous step failed
         with:
           name: Tests
-          path: notification/target/specs2-reports/stats/notification-*.stats
+                notification/target/specs2-reports/stats
+          path: notification/target/specs2-reports/stats/*.stats
           reporter: java-junit
           only-summary: 'false'
           fail-on-error: 'true'
