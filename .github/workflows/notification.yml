@@ -45,6 +45,7 @@ jobs:
         uses: guardian/actions-riff-raff@v2
         with:
           projectName: mobile-n10n:notification
+          buildNumberOffset: 4147
           configPath: notification/conf/riff-raff.yaml
           contentDirectories: |
             notification:

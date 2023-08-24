@@ -61,6 +61,7 @@ jobs:
         uses: guardian/actions-riff-raff@v2
         with:
           projectName: mobile-n10n:slomonitor
+          buildNumberOffset: 4147
           configPath: slomonitor/riff-raff.yaml
           contentDirectories: |
             slomonitor:

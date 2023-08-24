@@ -46,6 +46,7 @@ jobs:
         uses: guardian/actions-riff-raff@v2
         with:
           projectName: mobile-n10n:schedule
+          buildNumberOffset: 4147
           configPath: schedulelambda/riff-raff.yaml
           contentDirectories: |
             schedule:

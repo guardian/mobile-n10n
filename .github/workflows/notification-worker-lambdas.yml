@@ -57,8 +57,9 @@ jobs:
 
       - name: Publish docker image
         run: |
-          docker tag notificationworkerlambda:DEV $NOTIFICATION_LAMBDA_REPOSITORY_URL:$BUILD_NUMBER
-          docker push ${NOTIFICATION_LAMBDA_REPOSITORY_URL}:${BUILD_NUMBER}
+          ::set-env name=BUILD_NUMBER_WITH_OFFSET::$(($BUILD_NUMBER+4147))
+          docker tag notificationworkerlambda:DEV $NOTIFICATION_LAMBDA_REPOSITORY_URL:$BUILD_NUMBER_WITH_OFFSET
+          docker push ${NOTIFICATION_LAMBDA_REPOSITORY_URL}:${BUILD_NUMBER_WITH_OFFSET}
         env:
           NOTIFICATION_LAMBDA_REPOSITORY_ID: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_ID }}
           NOTIFICATION_LAMBDA_REPOSITORY_URL: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_URL }}
@@ -88,6 +89,7 @@ jobs:
         uses: guardian/actions-riff-raff@v2
         with:
           projectName: mobile-n10n:notificationworkerlambda
+          buildNumberOffset: 4147
           configPath: notificationworkerlambda/riff-raff.yaml
           contentDirectories: |
             mobile-notifications-harvester-cfn:

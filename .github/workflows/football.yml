@@ -46,6 +46,7 @@ jobs:
         uses: guardian/actions-riff-raff@v2
         with:
           projectName: mobile-n10n:football
+          buildNumberOffset: 4147
           configPath: football/riff-raff.yaml
           contentDirectories: |
             football:

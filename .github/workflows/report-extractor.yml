@@ -47,6 +47,7 @@ jobs:
         uses: guardian/actions-riff-raff@v2
         with:
           projectName: mobile-n10n:reportextractor
+          buildNumberOffset: 4147
           configPath: reportextractor/riff-raff.yaml
           contentDirectories: |
             reportextractor:

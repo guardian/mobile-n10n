@@ -60,6 +60,7 @@ jobs:
         uses: guardian/actions-riff-raff@v2
         with:
           projectName: mobile-n10n:registration
+          buildNumberOffset: 4147
           configPath: registration/conf/riff-raff.yaml
           contentDirectories: |
             registration:
