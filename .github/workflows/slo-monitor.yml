@@ -52,7 +52,7 @@ jobs:
         if: success() || failure()    # run this step even if previous step failed
         with:
           name: Tests
-          path: slo-monitor/target/test-reports/TEST-*.xml
+          path: slomonitor/target/test-reports/TEST-*.xml
           reporter: java-junit
           only-summary: 'false'
           fail-on-error: 'true'
