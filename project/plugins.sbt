@@ -9,8 +9,6 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.19")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.8.1")
 
-addSbtPlugin("com.gu" % "sbt-riffraff-artifact" % "1.1.18")
-
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.1.1")
 
 addSbtPlugin("com.localytics" % "sbt-dynamodb" % "2.0.3")

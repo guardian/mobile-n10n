@@ -1,0 +1,108 @@
+name: Notification worker lambdas
+
+on:
+  push:
+    paths:
+      - notificationworkerlambda/**
+      - common/**
+      - commoneventconsumer/**
+      - cdk/**
+      - project/**
+      - build.sbt
+      - .github/workflows/notification-worker-lambdas.yml
+  workflow_dispatch:
+
+# allow queued workflows to interrupt previous runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          cache: sbt
+          java-version: 11
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: npm
+          cache-dependency-path: cdk/package-lock.json
+          node-version-file: .nvmrc
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
+
+      - name: Compile and test
+        run: sbt "project notificationworkerlambda" "compile" "test"
+
+      - name: Build docker image
+        run: sbt docker:publishLocal
+
+      - name: Publish docker image
+        run: |
+          BUILD_NUMBER_WITH_OFFSET=$(($BUILD_NUMBER+4147))
+          docker tag notificationworkerlambda:DEV $NOTIFICATION_LAMBDA_REPOSITORY_URL:$BUILD_NUMBER_WITH_OFFSET
+          docker push ${NOTIFICATION_LAMBDA_REPOSITORY_URL}:${BUILD_NUMBER_WITH_OFFSET}
+        env:
+          NOTIFICATION_LAMBDA_REPOSITORY_ID: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_ID }}
+          NOTIFICATION_LAMBDA_REPOSITORY_URL: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_URL }}
+          BUILD_NUMBER: ${{ github.run_number }}
+
+      - name: CDK synth (worker lambda cdk directory)
+        working-directory: notificationworkerlambda/cdk
+        run: |
+          yarn install
+          yarn test
+          yarn synth
+
+      - name: CDK synth (root cdk directory)
+        working-directory: cdk
+        run: |
+          npm install
+          npm run lint
+          npm test
+          npm run synth
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+
+      - name: Upload to riff-raff
+        uses: guardian/actions-riff-raff@v2
+        with:
+          projectName: mobile-n10n:notificationworkerlambda
+          buildNumberOffset: 4147
+          configPath: notificationworkerlambda/riff-raff.yaml
+          contentDirectories: |
+            mobile-notifications-harvester-cfn:
+              - notificationworkerlambda/harvester-cfn.yaml
+            mobile-notifications-workers-cfn:
+              - notificationworkerlambda/cdk/cdk.out/SenderWorkerStack-CODE.template.json
+              - notificationworkerlambda/cdk/cdk.out/SenderWorkerStack-PROD.template.json
+            mobile-notifications-topic-counter-cfn:
+              - notificationworkerlambda/topic-counter-cfn.yaml
+            mobile-notifications-registration-cleaning-worker-cfn:
+              - notificationworkerlambda/registration-cleaning-worker-cfn.yaml
+            mobile-notifications-expired-registration-cleaner-cfn:
+              - notificationworkerlambda/expired-registration-cleaner-cfn.yaml
+            registrations-db-proxy-cfn:
+              - cdk/cdk.out/RegistrationsDbProxy-CODE.template.json
+              - cdk/cdk.out/RegistrationsDbProxy-PROD.template.json

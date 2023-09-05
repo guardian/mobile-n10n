@@ -1,4 +1,3 @@
-import com.gu.riffraff.artifact.RiffRaffArtifact.autoImport._
 import play.sbt.PlayImport.specs2
 import sbt.Keys.{libraryDependencies, mainClass}
 import sbtassembly.AssemblyPlugin.autoImport.{assemblyJarName, assemblyMergeStrategy}
@@ -22,7 +21,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "2.9.4"
 val specsVersion: String = "4.8.3"
-val awsSdkVersion: String = "1.12.534"
+val awsSdkVersion: String = "1.12.539"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.10.0"
 val okHttpVersion: String = "4.11.0"
@@ -44,7 +43,6 @@ val standardSettings = Seq[Setting[_]](
     "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
   ),
-  riffRaffManifestProjectName := s"mobile-n10n:${name.value}",
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.32.0",
     "com.softwaremill.macwire" %% "macros" % "2.5.9" % "provided",
@@ -140,7 +138,7 @@ lazy val commonscheduledynamodb = project
 
 lazy val registration = project
   .dependsOn(common, commontest % "test->test")
-  .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
+  .enablePlugins(SystemdPlugin, PlayScala, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork := true,
@@ -153,9 +151,6 @@ lazy val registration = project
       logback,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
-    riffRaffPackageType := (Debian / packageBin).value,
-    riffRaffArtifactResources += (file(s"cdk/cdk.out/Registration-CODE.template.json"), s"registration-cfn/Registration-CODE.template.json"),
-    riffRaffArtifactResources += (file(s"cdk/cdk.out/Registration-PROD.template.json"), s"registration-cfn/Registration-PROD.template.json"),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -163,7 +158,7 @@ lazy val registration = project
 lazy val notification = project
   .dependsOn(common)
   .dependsOn(commonscheduledynamodb)
-  .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
+  .enablePlugins(SystemdPlugin, PlayScala, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork := true,
@@ -176,15 +171,13 @@ lazy val notification = project
       logback,
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
-    riffRaffPackageType := (Debian / packageBin).value,
-    riffRaffArtifactResources += (file(s"notification/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     Debian / packageName := name.value,
     version := projectVersion
   )
 
 lazy val report = project
   .dependsOn(common, commontest % "test->test")
-  .enablePlugins(SystemdPlugin, PlayScala, RiffRaffArtifact, JDebPackaging)
+  .enablePlugins(SystemdPlugin, PlayScala, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
     fork := true,
@@ -197,8 +190,6 @@ lazy val report = project
     libraryDependencies ++= Seq(
       logback
     ),
-    riffRaffPackageType := (Debian / packageBin).value,
-    riffRaffArtifactResources += (file(s"report/conf/${name.value}.yaml"), s"${name.value}-cfn/cfn.yaml"),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -256,7 +247,7 @@ lazy val apiModels = {
 
 def lambda(projectName: String, directoryName: String, mainClassName: Option[String] = None): Project =
   Project(projectName, file(directoryName))
-  .enablePlugins(RiffRaffArtifact, AssemblyPlugin)
+  .enablePlugins(AssemblyPlugin)
   .settings(
     organization := "com.gu",
     resolvers ++= Seq(
@@ -279,10 +270,6 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
     },
     Test / run / fork := true,
     scalacOptions := compilerOptions,
-    riffRaffPackageType := assembly.value,
-    riffRaffUploadArtifactBucket := Option("riffraff-artifact"),
-    riffRaffUploadManifestBucket := Option("riffraff-builds"),
-    riffRaffManifestProjectName := s"mobile-n10n:$projectName",
     mainClass := mainClassName,
     // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
     Test / parallelExecution := false
@@ -307,7 +294,6 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
       excludeDependencies ++= Seq(
         ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
       ),
-      riffRaffArtifactResources += (file(s"schedulelambda/cfn.yaml"), s"${name.value}-cfn/cfn.yaml"),
     )
   }
 
@@ -333,7 +319,6 @@ lazy val football = lambda("football", "football")
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13"),
       ExclusionRule("software.amazon.awssdk", "ec2")
     ),
-    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "mobile-notifications-football-cfn/cfn.yaml")
   )
 
 lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.notifications.events.LocalRun"))
@@ -347,7 +332,6 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
         "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2",
         "io.netty" % "netty-codec-http2" % nettyVersion
       ),
-      riffRaffArtifactResources += ((baseDirectory.value / "cfn.yaml"), s"mobile-notifications-eventconsumer-cfn/cfn.yaml")
     )
   })
 
@@ -363,8 +347,6 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
         "io.netty" % "netty-codec-http" % nettyVersion,
         "io.netty" % "netty-codec-http2" % nettyVersion,
       ),
-      riffRaffArtifactResources +=(file("cdk/cdk.out/SloMonitor-CODE.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-CODE.template.json"),
-      riffRaffArtifactResources += (file("cdk/cdk.out/SloMonitor-PROD.template.json"), s"mobile-notifications-slo-monitor-cfn/SloMonitor-PROD.template.json"),
       Test / fork := true,
       Test / envVars := Map("STAGE" -> "TEST")
     )
@@ -438,15 +420,6 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
     ),
-    riffRaffArtifactResources += (baseDirectory.value / "harvester-cfn.yaml", s"mobile-notifications-harvester-cfn/harvester-cfn.yaml"),
-    // cdk synthesised cloudformation template
-    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack-CODE.template.json", "mobile-notifications-workers-cfn/SenderWorkerStack-CODE.template.json"),
-    riffRaffArtifactResources += (baseDirectory.value / "cdk" / "cdk.out" / "SenderWorkerStack-PROD.template.json", "mobile-notifications-workers-cfn/SenderWorkerStack-PROD.template.json"),
-    riffRaffArtifactResources += (baseDirectory.value / "registration-cleaning-worker-cfn.yaml", s"mobile-notifications-registration-cleaning-worker-cfn/registration-cleaning-worker-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "topic-counter-cfn.yaml", s"mobile-notifications-topic-counter-cfn/topic-counter-cfn.yaml"),
-    riffRaffArtifactResources += (baseDirectory.value / "expired-registration-cleaner-cfn.yaml", s"mobile-notifications-expired-registration-cleaner-cfn/expired-registration-cleaner-cfn.yaml"),
-    riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-CODE.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-CODE.template.json"),
-    riffRaffArtifactResources += (file("cdk/cdk.out/RegistrationsDbProxy-PROD.template.json"), s"registrations-db-proxy-cfn/RegistrationsDbProxy-PROD.template.json")
 )
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
@@ -459,13 +432,11 @@ lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreaking
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
     ),
-    riffRaffArtifactResources += (baseDirectory.value / "fakebreakingnewslambda-cfn.yaml", "fakebreakingnewslambda-cfn/fakebreakingnewslambda-cfn.yaml")
   )
 
 lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("com.gu.notifications.extractor.LocalRun"))
   .dependsOn(common)
   .settings(
-    riffRaffArtifactResources += (baseDirectory.value / "cfn.yaml", "reportextractor-cfn/cfn.yaml"),
     excludeDependencies ++= Seq(
       ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
     )

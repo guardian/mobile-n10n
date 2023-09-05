@@ -9,7 +9,7 @@ deployments:
       amiTags:
         Recipe: mobile-java11-jammy-ARM
         AmigoStage: PROD
-      templatePath: cfn.yaml
+      templatePath: report.yaml
   report:
     type: autoscaling
     parameters:
