@@ -32,7 +32,7 @@ val jacksonCbor: String = "2.15.2"
 val jacksonScalaModule: String = "2.15.2"
 val simpleConfigurationVersion: String = "1.5.6"
 val googleOAuthClient: String = "1.34.1"
-val nettyVersion: String = "4.1.96.Final"
+val nettyVersion: String = "4.1.97.Final"
 val slf4jVersion: String = "1.7.36"
 
 val standardSettings = Seq[Setting[_]](
@@ -408,7 +408,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.1.1",
-      "com.google.protobuf" % "protobuf-java" % "3.24.1",
+      "com.google.protobuf" % "protobuf-java" % "3.24.2",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
