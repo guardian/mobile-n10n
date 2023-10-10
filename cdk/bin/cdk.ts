@@ -1,7 +1,6 @@
 import 'source-map-support/register';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App } from 'aws-cdk-lib';
-import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { Registration } from '../lib/registration';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
 import { SloMonitoring } from '../lib/slo-monitoring';
