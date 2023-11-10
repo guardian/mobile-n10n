@@ -12,7 +12,7 @@ import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.{CannedAccessControlList, ObjectMetadata, PutObjectRequest}
-import com.gu.{AppIdentity, AwsIdentity}
+import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import models.NotificationType
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.{JsValue, Json}
@@ -38,7 +38,16 @@ class Lambda extends RequestHandler[DateRange, Unit] {
 
   val credentials = new MobileAwsCredentialsProvider()
 
-  val identity: AppIdentity = AppIdentity.whoAmI(defaultAppName = "report-extractor", credentials = MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
+  val defaultAppName = "report-extractor"
+
+  val identity: AppIdentity = 
+   Option(System.getenv("MOBILE_LOCAL_DEV")) match {
+      case Some(_) => DevIdentity(defaultAppName)
+      case None =>
+        AppIdentity
+          .whoAmI(defaultAppName, MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
+          .getOrElse(DevIdentity(defaultAppName))
+    } 
 
   val region: Regions = identity match {
     case AwsIdentity(_, _, _, region) => Regions.fromName(region)
