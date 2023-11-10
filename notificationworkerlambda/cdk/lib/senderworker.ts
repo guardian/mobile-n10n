@@ -154,8 +154,7 @@ class SenderWorker extends cdkcore.Construct  {
       evaluationPeriods: 1,
       threshold: 0,
       // whole day for editions, 60 minutes for others
-      // metric: senderLambdaCtr.metricInvocations({period: cdk.Duration.seconds(props.dailyAlarmPeriod ? 60 * 60 * 24 : 60 * 60), statistic: "Sum"}),
-      metric: senderLambdaCtr.metricInvocations({period: cdk.Duration.seconds(60), statistic: "Sum"}),
+      metric: senderLambdaCtr.metricInvocations({period: cdk.Duration.seconds(props.dailyAlarmPeriod ? 60 * 60 * 24 : 60 * 60), statistic: "Sum"}),
       treatMissingData: cloudwatch.TreatMissingData.BREACHING,
       actionsEnabled: true // isEnabled
     })
