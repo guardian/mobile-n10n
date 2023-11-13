@@ -2,7 +2,7 @@ import { Template } from "aws-cdk-lib/assertions";
 import { App } from "aws-cdk-lib"
 import {SenderWorkerStack} from "./senderworker";
 
-describe('The MobileAppsRendering stack', () => {
+describe('The Sender Worker stack', () => {
   it('matches the snapshot', () => {
     const app = new App();
     const stack = new SenderWorkerStack(app, 'SenderWorkerStack', {
