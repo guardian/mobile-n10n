@@ -380,7 +380,7 @@ Resources:
       Dimensions:
         - Name: LoadBalancerName
           Value: !Ref LoadBalancerToPrivateASG
-      EvaluationPeriods: 1
+      EvaluationPeriods: 10
       MetricName: HTTPCode_Backend_5XX
       Namespace: AWS/ELB
       Period: 60
@@ -398,7 +398,7 @@ Resources:
       Dimensions:
         - Name: LoadBalancerName
           Value: !Ref LoadBalancerToPrivateASG
-      EvaluationPeriods: 1
+      EvaluationPeriods: 10
       MetricName: HTTPCode_ELB_5XX
       Namespace: AWS/ELB
       Period: 60

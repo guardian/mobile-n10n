@@ -25,6 +25,7 @@ interface SenderWorkerOpts {
   platform: string,
   paramPrefix: string,
   isBatchingSqsMessages: boolean,
+  dailyAlarmPeriod: boolean
 }
 
 class SenderWorker extends cdkcore.Construct  {
@@ -152,9 +153,10 @@ class SenderWorker extends cdkcore.Construct  {
       comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
       evaluationPeriods: 1,
       threshold: 0,
-      metric: senderLambdaCtr.metricInvocations({period: cdk.Duration.seconds(360), statistic: "Sum"}),
+      // whole day for editions, 60 minutes for others
+      metric: senderLambdaCtr.metricInvocations({period: cdk.Duration.seconds(props.dailyAlarmPeriod ? 60 * 60 * 24 : 60 * 60), statistic: "Sum"}),
       treatMissingData: cloudwatch.TreatMissingData.BREACHING,
-      actionsEnabled: false // isEnabled
+      actionsEnabled: true // isEnabled
     })
     senderTooFewInvocationsAlarm.addAlarmAction(snsTopicAction)
     senderTooFewInvocationsAlarm.addOkAction(snsTopicAction)
@@ -217,14 +219,15 @@ export class SenderWorkerStack extends GuStack {
 
     let workerQueueArns: string[] = []
 
-    const addWorker = (workerName: string, paramPrefix: string, handler: string, isBatchingSqsMessages: boolean = false) => {
+    const addWorker = (workerName: string, paramPrefix: string, handler: string, isBatchingSqsMessages: boolean = false, dailyAlarmPeriod: boolean = false) => {
       let worker = new SenderWorker(this, workerName, {
         ...props,
         platform: workerName,
         paramPrefix: paramPrefix,
         handler: handler,
         isBatchingSqsMessages,
-        ...sharedOpts
+        ...sharedOpts,
+        dailyAlarmPeriod: dailyAlarmPeriod
       })
       workerQueueArns.push(worker.senderSqs.queueArn)
     }
@@ -236,8 +239,10 @@ export class SenderWorkerStack extends GuStack {
 
     addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
     addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", true)
-    addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
+        // edition apps only send one notification a day in order to get content for that day
+    addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens", false, true)
+    addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", false, true)
+
     addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
 
     /*

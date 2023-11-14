@@ -2,10 +2,12 @@ package com.gu.mobile.notifications.football
 
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
-import com.gu.{AppIdentity, AwsIdentity}
+import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import com.typesafe.config.Config
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain => AwsCredentialsProviderChainV2, DefaultCredentialsProvider => DefaultCredentialsProviderV2, ProfileCredentialsProvider => ProfileCredentialsProviderV2}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
+import software.amazon.awssdk.regions.Region.EU_WEST_1
+
 class Configuration extends Logging {
 
   val credentials = new AWSCredentialsProviderChain(
@@ -22,14 +24,21 @@ class Configuration extends Logging {
   val stage = Option(System.getenv("Stage")).getOrElse(sys.error("No app name set. Lambda will not run"))
 
   private val conf: Config = {
-     val identity = AppIdentity.whoAmI(defaultAppName = appName)
-     logger.info(s"Tryling: ${identity}")
-     ConfigurationLoader.load(identity = identity, credentials = credentialsv2) {
-       case AwsIdentity(app, stack, stage, _) =>
-         val path = s"/$app/$stage/$stack"
-         logger.info(s"Attempting to retrieve config from: $path")
-         SSMConfigurationLocation(path = path)
-     }
+    val identity = Option(System.getenv("MOBILE_LOCAL_DEV")) match {
+      case Some(_) => DevIdentity(appName)
+      case None =>
+        AppIdentity
+          .whoAmI(defaultAppName = appName, credentialsv2)
+          .getOrElse(DevIdentity(appName))
+    }
+    
+    logger.info(s"Detected AppIdentity: ${identity}")
+    ConfigurationLoader.load(identity = identity, credentials = credentialsv2) {
+      case AwsIdentity(app, stack, stage, region) =>
+        val path = s"/$app/$stage/$stack"
+        logger.info(s"Attempting to retrieve config from: $path")
+        SSMConfigurationLocation(path = path, region)
+    }
   }
 
   val paApiKey = conf.getString("pa.api-key")
