@@ -43,7 +43,7 @@ jobs:
         run: cp schedulelambda/target/scala-*/schedule.jar .
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v2
+        uses: guardian/actions-riff-raff@v3
         with:
           projectName: mobile-n10n:schedule
           buildNumberOffset: 4147

@@ -57,7 +57,7 @@ jobs:
         run: sbt "project registration" "compile" "test" "debian:packageBin"
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v2
+        uses: guardian/actions-riff-raff@v3
         with:
           projectName: mobile-n10n:registration
           buildNumberOffset: 4147
