@@ -21,6 +21,7 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 
 jobs:
   build:
@@ -59,6 +60,7 @@ jobs:
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v3
         with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:registration
           buildNumberOffset: 4147
           configPath: registration/conf/riff-raff.yaml
