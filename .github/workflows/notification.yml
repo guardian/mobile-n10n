@@ -20,6 +20,7 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 
 jobs:
   build:
@@ -42,8 +43,9 @@ jobs:
         run: sbt "project notification" "compile" "test" "debian:packageBin"
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v2
+        uses: guardian/actions-riff-raff@v3
         with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:notification
           buildNumberOffset: 4147
           configPath: notification/conf/riff-raff.yaml
