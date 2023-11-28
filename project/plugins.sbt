@@ -1,15 +1,15 @@
 libraryDependencies ++= Seq(
-  "com.github.docker-java" % "docker-java-core" % "3.3.3",
-  "com.github.docker-java" % "docker-java-transport-httpclient5" % "3.3.3"
+  "com.github.docker-java" % "docker-java-core" % "3.3.4",
+  "com.github.docker-java" % "docker-java-transport-httpclient5" % "3.3.4"
 )
 
 resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.19")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.9.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.8.1")
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.1.3")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.1.4")
 
 addSbtPlugin("com.localytics" % "sbt-dynamodb" % "2.0.3")
 
