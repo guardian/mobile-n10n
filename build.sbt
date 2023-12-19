@@ -88,7 +88,7 @@ lazy val common = project
       "org.typelevel" %% "cats-core" % catsVersion,
       "joda-time" % "joda-time" % "2.12.5",
       "org.playframework" %% "play-json" % playJsonVersion,
-      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
+      "org.playframework" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
