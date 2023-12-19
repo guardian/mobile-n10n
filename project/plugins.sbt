@@ -1,15 +1,15 @@
 libraryDependencies ++= Seq(
-  "com.github.docker-java" % "docker-java-core" % "3.3.3",
-  "com.github.docker-java" % "docker-java-transport-httpclient5" % "3.3.3"
+  "com.github.docker-java" % "docker-java-core" % "3.3.4",
+  "com.github.docker-java" % "docker-java-transport-httpclient5" % "3.3.4"
 )
 
 resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.19")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.9.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.8.1")
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.1.3")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.1.5")
 
 addSbtPlugin("com.localytics" % "sbt-dynamodb" % "2.0.3")
 
@@ -21,7 +21,7 @@ addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.6.1")
 
 addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.2.1")
 
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.21")
+addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.10.0")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 
