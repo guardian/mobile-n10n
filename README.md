@@ -152,3 +152,7 @@ To control the tokens we send from the local lambda we can modify the Notificati
     tokens = List("<your_token _1>", "your_token_2", ...)
   )
 ```
+
+## How to test breaking news notifications
+
+Here are [some instructions](https://docs.google.com/document/d/11dRtGLAFmxleuGO_Ig0yzVUbIwD8FNCZMJEo17HFJZo/edit) for how to test news notifications on CODE. As this is a public repository, that document needs to be kept private. 
