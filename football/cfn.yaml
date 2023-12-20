@@ -142,6 +142,9 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: ttl
         Enabled: true
+      Tags:
+        - Key: devx-backup-enabled
+          Value: true
 
   MobileNotificationsFootballConsumedReadThrottleEvents:
     Type: AWS::CloudWatch::Alarm
