@@ -37,3 +37,6 @@ Resources:
         AttributeName: ttl
       StreamSpecification:
         StreamViewType: NEW_IMAGE
+      Tags:
+        - Key: devx-backup-enabled
+          Value: true
