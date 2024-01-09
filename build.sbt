@@ -21,7 +21,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "2.10.3"
 val specsVersion: String = "4.8.3"
-val awsSdkVersion: String = "1.12.598"
+val awsSdkVersion: String = "1.12.610"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.10.0"
 val okHttpVersion: String = "4.12.0"
@@ -341,7 +341,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
     Seq(
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-events" % "3.11.3",
+        "com.amazonaws" % "aws-lambda-java-events" % "3.11.4",
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
         "io.netty" % "netty-codec-http" % nettyVersion,
