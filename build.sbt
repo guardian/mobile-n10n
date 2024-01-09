@@ -19,7 +19,7 @@ val compilerOptions = Seq(
 
 ThisBuild / scalacOptions ++= compilerOptions
 
-val playJsonVersion = "3.0.1"
+val playJsonVersion = "2.10.3"
 val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.598"
 val doobieVersion: String = "0.13.4"
@@ -34,6 +34,7 @@ val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.34.1"
 val nettyVersion: String = "4.1.104.Final"
 val slf4jVersion: String = "1.7.36"
+val logbackVersion: String = "1.4.14"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
@@ -58,7 +59,7 @@ lazy val commoneventconsumer = project
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
-      "org.playframework" %% "play-json" % playJsonVersion,
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
@@ -87,8 +88,8 @@ lazy val common = project
       ws,
       "org.typelevel" %% "cats-core" % catsVersion,
       "joda-time" % "joda-time" % "2.12.5",
-      "org.playframework" %% "play-json" % playJsonVersion,
-      "org.playframework" %% "play-json-joda" % playJsonVersion,
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
@@ -108,6 +109,8 @@ lazy val common = project
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
       "org.postgresql" % "postgresql" % "42.7.1",
+      "ch.qos.logback" % "logback-core" % logbackVersion,
+      "ch.qos.logback" % "logback-classic" % logbackVersion,
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
@@ -201,7 +204,7 @@ lazy val apiModels = {
   Project("api-models", file("api-models")).settings(Seq(
     name := "mobile-notifications-api-models",
     libraryDependencies ++= Seq(
-      "org.playframework" %% "play-json" % playJsonVersion,
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
@@ -259,7 +262,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "ch.qos.logback" % "logback-classic" % "1.4.14",
+      "ch.qos.logback" % "logback-classic" % logbackVersion,
       "net.logstash.logback" % "logstash-logback-encoder" % "7.4",
       specs2 % Test
     ),
@@ -327,7 +330,7 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
     Seq(
       description := "Consumes events produced when an app receives a notification",
       libraryDependencies ++= Seq(
-        "org.playframework" %% "play-json" % playJsonVersion,
+        "com.typesafe.play" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2",
         "io.netty" % "netty-codec-http2" % nettyVersion
@@ -414,7 +417,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
       "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "2.1.1",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
-      "org.playframework" %% "play-json" % playJsonVersion,
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
     ),
     excludeDependencies ++= Seq(
