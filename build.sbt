@@ -25,14 +25,14 @@ val awsSdkVersion: String = "1.12.637"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.10.0"
 val okHttpVersion: String = "4.12.0"
-val paClientVersion: String = "7.0.7"
+val paClientVersion: String = "7.0.8"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.16.0"
-val jacksonCbor: String = "2.16.0"
-val jacksonScalaModule: String = "2.16.0"
+val jacksonDatabind: String = "2.16.1"
+val jacksonCbor: String = "2.16.1"
+val jacksonScalaModule: String = "2.16.1"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.34.1"
-val nettyVersion: String = "4.1.104.Final"
+val nettyVersion: String = "4.1.105.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.4.14"
 
@@ -87,7 +87,7 @@ lazy val common = project
     libraryDependencies ++= Seq(
       ws,
       "org.typelevel" %% "cats-core" % catsVersion,
-      "joda-time" % "joda-time" % "2.12.5",
+      "joda-time" % "joda-time" % "2.12.6",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
@@ -411,7 +411,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.1.1",
-      "com.google.protobuf" % "protobuf-java" % "3.25.1",
+      "com.google.protobuf" % "protobuf-java" % "3.25.2",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
