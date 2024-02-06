@@ -31,8 +31,8 @@ val jacksonDatabind: String = "2.16.1"
 val jacksonCbor: String = "2.16.1"
 val jacksonScalaModule: String = "2.16.1"
 val simpleConfigurationVersion: String = "1.5.7"
-val googleOAuthClient: String = "1.34.1"
-val nettyVersion: String = "4.1.105.Final"
+val googleOAuthClient: String = "1.35.0"
+val nettyVersion: String = "4.1.106.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.4.14"
 
@@ -307,7 +307,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "20.0.0",
+      "com.gu" %% "content-api-client-default" % "20.0.1",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
