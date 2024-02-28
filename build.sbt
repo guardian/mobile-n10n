@@ -34,7 +34,7 @@ val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.35.0"
 val nettyVersion: String = "4.1.107.Final"
 val slf4jVersion: String = "1.7.36"
-val logbackVersion: String = "1.5.0"
+val logbackVersion: String = "1.5.1"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
