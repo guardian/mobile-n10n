@@ -17,6 +17,9 @@ case class BatchNotification(notification: Notification, token: List[String])
 
 case class ChunkedTokens(notification: Notification, tokens: List[String], range: ShardRange, metadata: NotificationMetadata) {
   def toNotificationToSends: List[IndividualNotification] = tokens.map(IndividualNotification(notification, _))
+
+  // the Firebase sendEachForMulticast API has a maximum limit of 500 tokens for each request
+  // so this grouping of 500 tokens must not be increased further
   def toBatchNotificationToSends: List[BatchNotification] = tokens.grouped(500).map(BatchNotification(notification, _)).toList
 }
 
