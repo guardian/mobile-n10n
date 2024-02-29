@@ -99,7 +99,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       import FirebaseHelpers._
       val start = Instant.now
       firebaseMessaging
-        .sendEachForMulticastAsync(message)
+        .sendMulticastAsync(message)
         .asScala
         .onComplete { response =>
           val requestCompletionTime = Instant.now
