@@ -90,11 +90,19 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       .build
 
     if (dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
-      onAPICallComplete(Right(
-        FcmBatchDeliverySuccess(
-          List.fill(tokens.size)(Right(FcmDeliverySuccess(s"success", "dryrun", Instant.now(), dryRun = true))),
-          notificationId.toString
-        )))
+      import FirebaseHelpers._
+      val start = Instant.now
+      firebaseMessaging
+        .sendEachForMulticastAsync(message, true)
+        .asScala
+        .onComplete { response =>
+          val requestCompletionTime = Instant.now
+          logger.info(Map(
+            "worker.batchRequestLatency" -> Duration.between(start, requestCompletionTime).toMillis,
+            "notificationId" -> notificationId
+          ), "Batch send request completed")
+          parseBatchSendResponse(notificationId, tokens, response, requestCompletionTime)(onAPICallComplete)
+        }    
     } else {
       import FirebaseHelpers._
       val start = Instant.now
