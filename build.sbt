@@ -32,9 +32,9 @@ val jacksonCbor: String = "2.16.1"
 val jacksonScalaModule: String = "2.16.1"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.35.0"
-val nettyVersion: String = "4.1.106.Final"
+val nettyVersion: String = "4.1.107.Final"
 val slf4jVersion: String = "1.7.36"
-val logbackVersion: String = "1.4.14"
+val logbackVersion: String = "1.5.0"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
@@ -411,7 +411,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.1.1",
-      "com.google.protobuf" % "protobuf-java" % "3.25.2",
+      "com.google.protobuf" % "protobuf-java" % "3.25.3",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
