@@ -22,7 +22,9 @@ import scala.jdk.CollectionConverters._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig)
+import okhttp3.{Headers, MediaType, OkHttpClient, Request, RequestBody, Response, ResponseBody}
+
+class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig, projectId: String, credential: GoogleCredentials)
   extends DeliveryClient with Logging {
 
   type Success = FcmDeliverySuccess
@@ -39,7 +41,15 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     ErrorCode.PERMISSION_DENIED
   )
 
+  // private val requestFactory = ApiClientUtils.newAuthorizedRequestFactory(app)
+  // private val childRequestFactory = ApiClientUtils.newUnauthorizedRequestFactory(app)
+  // private val jsonFactory = app.getOptions().getJsonFactory()
+
   def close(): Unit = firebaseApp.delete()
+
+  private final val FCM_URL: String = s"https://fcm.googleapis.com/v1/projects/${projectId}/messages:send";
+
+  private val fcmClient: FcmTransportMultiplexedHttp2Impl = new FcmTransportMultiplexedHttp2Impl(credential, FCM_URL, firebaseApp.getOptions().getJsonFactory())
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayloadBuilder(n, config.debug)
 
@@ -65,9 +75,10 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     } else {
       import FirebaseHelpers._
       val start = Instant.now
-      firebaseMessaging
-        .sendAsync(message)
-        .asScala
+      fcmClient.sendAsync(token, payload, dryRun)
+      // firebaseMessaging
+      //   .sendAsync(message)
+        // .asScala
         .onComplete { response =>
           val requestCompletionTime = Instant.now
           logger.info(Map(
@@ -151,19 +162,20 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 }
 
 object FcmClient {
-  def apply(config: FcmConfig, firebaseAppName: Option[String]): Try[FcmClient] = {
+  def apply(config: FcmConfig, firebaseAppName: Option[String]): Try[FcmClient] =
     Try {
+      val credential = GoogleCredentials.fromStream(new ByteArrayInputStream(config.serviceAccountKey.getBytes))
       val firebaseOptions: FirebaseOptions = FirebaseOptions.builder()
-          .setCredentials(GoogleCredentials.fromStream(new ByteArrayInputStream(config.serviceAccountKey.getBytes)))
+          .setCredentials(credential)
           .setHttpTransport(new OkGoogleHttpTransport)
           .setConnectTimeout(10000) // 10 seconds
           .build
-      firebaseAppName match {
+      val firebaseApp = firebaseAppName match {
         case None => FirebaseApp.initializeApp(firebaseOptions)
         case Some(name) => FirebaseApp.initializeApp(firebaseOptions, name)
       }
-    }.map(app => new FcmClient(FirebaseMessaging.getInstance(app), app, config))
-  }
+      new FcmClient(FirebaseMessaging.getInstance(firebaseApp), firebaseApp, config, firebaseOptions.getProjectId(), credential)
+    }
 }
 
 object FirebaseHelpers {
