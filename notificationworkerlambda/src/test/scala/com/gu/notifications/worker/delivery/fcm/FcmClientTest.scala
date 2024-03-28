@@ -22,6 +22,8 @@ import java.util.UUID
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success}
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.api.client.json.JsonFactory
 
 class FcmClientTest extends Specification with Mockito {
   "the FcmClient" should {
@@ -171,5 +173,7 @@ trait FcmScope extends Scope {
   val mockApiFuture = Mockito.mock[ApiFuture[String]]
 
   val config: FcmConfig = FcmConfig("serviceAccountKey")
-  val fcmClient = new FcmClient(mockFirebaseMessaging, app, config)
+  val mockCredential = Mockito.mock[GoogleCredentials]
+  val mockJsonFactory = Mockito.mock[JsonFactory]
+  val fcmClient = new FcmClient(mockFirebaseMessaging, app, config, "TEST-PROJECT-ID", mockCredential, mockJsonFactory)
 }

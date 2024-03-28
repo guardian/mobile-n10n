@@ -2,6 +2,7 @@ package com.gu.notifications.worker.delivery.fcm
 
 import _root_.models.Notification
 import com.google.api.core.{ApiFuture, ApiFutureCallback, ApiFutures}
+import com.google.api.client.json.JsonFactory
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.messaging._
 import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
@@ -24,7 +25,7 @@ import scala.util.{Failure, Success, Try}
 
 import okhttp3.{Headers, MediaType, OkHttpClient, Request, RequestBody, Response, ResponseBody}
 
-class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig, projectId: String, credential: GoogleCredentials)
+class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig, projectId: String, credential: GoogleCredentials, jsonFactory: JsonFactory)
   extends DeliveryClient with Logging {
 
   type Success = FcmDeliverySuccess
@@ -49,7 +50,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 
   private final val FCM_URL: String = s"https://fcm.googleapis.com/v1/projects/${projectId}/messages:send";
 
-  private val fcmClient: FcmTransportMultiplexedHttp2Impl = new FcmTransportMultiplexedHttp2Impl(credential, FCM_URL, firebaseApp.getOptions().getJsonFactory())
+  private val fcmClient: FcmTransportMultiplexedHttp2Impl = new FcmTransportMultiplexedHttp2Impl(credential, FCM_URL, jsonFactory)
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayloadBuilder(n, config.debug)
 
@@ -174,7 +175,7 @@ object FcmClient {
         case None => FirebaseApp.initializeApp(firebaseOptions)
         case Some(name) => FirebaseApp.initializeApp(firebaseOptions, name)
       }
-      new FcmClient(FirebaseMessaging.getInstance(firebaseApp), firebaseApp, config, firebaseOptions.getProjectId(), credential)
+      new FcmClient(FirebaseMessaging.getInstance(firebaseApp), firebaseApp, config, firebaseOptions.getProjectId(), credential, firebaseOptions.getJsonFactory())
     }
 }
 
