@@ -122,6 +122,12 @@ lazy val common = project
     Test / testOptions += Tests.Argument(TestFrameworks.Specs2, "sequential", "true")
   )
 
+excludeDependencies ++= Seq(
+  // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+  // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+  ExclusionRule(organization = "com.typesafe.play")
+)
+
 lazy val commonscheduledynamodb = project
   .settings(LocalDynamoDBScheduleLambda.settings)
   .settings(List(
