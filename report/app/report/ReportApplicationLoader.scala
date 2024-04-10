@@ -1,7 +1,7 @@
 package report
 
 import _root_.controllers.AssetsComponents
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import aws.AsyncDynamo
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.gu.AppIdentity
