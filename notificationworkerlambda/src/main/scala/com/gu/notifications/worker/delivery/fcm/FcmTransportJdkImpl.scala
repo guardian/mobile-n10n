@@ -20,7 +20,11 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
 
-class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactory: JsonFactory) {
+trait FcmTransport {
+  def sendAsync(token: String, payload: FcmPayload, dryRun: Boolean): Future[String]
+}
+
+class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactory: JsonFactory) extends FcmTransport {
   
   private val httpClient: HttpClient = HttpClient.newHttpClient()
 

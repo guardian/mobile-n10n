@@ -46,7 +46,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 
   private final val FCM_URL: String = s"https://fcm.googleapis.com/v1/projects/${projectId}/messages:send";
 
-  private val fcmTransport: FcmTransportJdkImpl = new FcmTransportJdkImpl(credential, FCM_URL, jsonFactory)
+  private val fcmTransport: FcmTransport = new FcmTransportJdkImpl(credential, FCM_URL, jsonFactory)
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayloadBuilder(n, config.debug)
 
@@ -118,21 +118,6 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
           parseBatchSendResponse(notificationId, tokens, response, requestCompletionTime)(onAPICallComplete)
         }
     }
-  }
-
-  def parseSendResponseOld(
-    notificationId: UUID, token: String, response: Try[String], requestCompletionTime: Instant
-  ): Either[DeliveryException, Success] = response match {
-    case Success(messageId) =>
-      Right(FcmDeliverySuccess(token, messageId, requestCompletionTime))
-    case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) || isUnregistered(e) =>
-      Left(InvalidToken(notificationId, token, e.getMessage))
-    case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
-      Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString)))
-    case Failure(NonFatal(t)) =>
-      Left(FailedRequest(notificationId, token, t))
-    case Failure(_) =>
-      Left(UnknownReasonFailedRequest(notificationId, token))
   }
 
   def parseSendResponse(
