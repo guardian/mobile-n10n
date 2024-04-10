@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery.fcm
 import _root_.models.Notification
 import com.google.api.core.{ApiFuture, ApiFutureCallback, ApiFutures}
 import com.google.api.client.json.JsonFactory
-import com.google.auth.oauth2.GoogleCredentials
+import com.google.auth.oauth2.{GoogleCredentials, ServiceAccountCredentials}
 import com.google.firebase.messaging._
 import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
 import com.gu.notifications.worker.delivery.DeliveryException.{BatchCallFailedRequest, FailedRequest, InvalidToken, UnknownReasonFailedRequest}
@@ -42,15 +42,11 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     ErrorCode.PERMISSION_DENIED
   )
 
-  // private val requestFactory = ApiClientUtils.newAuthorizedRequestFactory(app)
-  // private val childRequestFactory = ApiClientUtils.newUnauthorizedRequestFactory(app)
-  // private val jsonFactory = app.getOptions().getJsonFactory()
-
   def close(): Unit = firebaseApp.delete()
 
   private final val FCM_URL: String = s"https://fcm.googleapis.com/v1/projects/${projectId}/messages:send";
 
-  private val fcmClient: FcmTransportMultiplexedHttp2Impl = new FcmTransportMultiplexedHttp2Impl(credential, FCM_URL, jsonFactory)
+  private val fcmTransport: FcmTransportOkhttpImpl = new FcmTransportOkhttpImpl(credential, FCM_URL, jsonFactory)
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayloadBuilder(n, config.debug)
 
@@ -76,7 +72,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     } else {
       import FirebaseHelpers._
       val start = Instant.now
-      fcmClient.sendAsync(token, payload, dryRun)
+      fcmTransport.sendAsync(token, payload, dryRun)
       // firebaseMessaging
       //   .sendAsync(message)
         // .asScala
@@ -124,7 +120,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     }
   }
 
-  def parseSendResponse(
+  def parseSendResponseOld(
     notificationId: UUID, token: String, response: Try[String], requestCompletionTime: Instant
   ): Either[DeliveryException, Success] = response match {
     case Success(messageId) =>
@@ -135,6 +131,27 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString)))
     case Failure(NonFatal(t)) =>
       Left(FailedRequest(notificationId, token, t))
+    case Failure(_) =>
+      Left(UnknownReasonFailedRequest(notificationId, token))
+  }
+
+  def parseSendResponse(
+    notificationId: UUID, token: String, response: Try[String], requestCompletionTime: Instant
+  ): Either[DeliveryException, Success] = response match {
+    case Success(messageId) =>
+      Right(FcmDeliverySuccess(token, messageId, requestCompletionTime))
+    case Failure(e: InvalidTokenException) =>
+      Left(InvalidToken(notificationId, token, e.getMessage()))
+    case Failure(e: FcmServerException) =>
+      Left(FailedRequest(notificationId, token, e, Option(e.details.status)))
+    case Failure(e: UnknownException) =>
+      Left(FailedRequest(notificationId, token, e, Option(e.details.status)))
+    case Failure(e: InvalidResponseException) =>
+      Left(FailedRequest(notificationId, token, e, None))
+    case Failure(e: QuotaExceededException) =>
+      Left(FailedRequest(notificationId, token, e, None))
+    case Failure(e: FcmServerTransportException) =>
+      Left(FailedRequest(notificationId, token, e, None))
     case Failure(_) =>
       Left(UnknownReasonFailedRequest(notificationId, token))
   }
@@ -175,7 +192,11 @@ object FcmClient {
         case None => FirebaseApp.initializeApp(firebaseOptions)
         case Some(name) => FirebaseApp.initializeApp(firebaseOptions, name)
       }
-      new FcmClient(FirebaseMessaging.getInstance(firebaseApp), firebaseApp, config, firebaseOptions.getProjectId(), credential, firebaseOptions.getJsonFactory())
+      val projectId = credential match {
+        case s: ServiceAccountCredentials => s.getProjectId()
+        case _ => ""
+      }
+      new FcmClient(FirebaseMessaging.getInstance(firebaseApp), firebaseApp, config, projectId, credential, firebaseOptions.getJsonFactory())
     }
 }
 
