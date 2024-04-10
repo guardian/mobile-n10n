@@ -35,7 +35,7 @@ case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
-  allowedTopicsForBatchSend: List[String],
+  allowedTopicsForIndividualSend: List[String],
 ) extends WorkerConfiguration
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
@@ -112,8 +112,11 @@ object Configuration {
   def fetchFirebase(): FcmWorkerConfiguration = {
     val config = fetchConfiguration(confPrefixFromPlatform)
 
-    def getStringList(path: String): List[String] =
-      config.getString(path).split(",").toList
+    def getStringList(path: String): List[String] = 
+      if (config.hasPath(path))
+        config.getString(path).split(",").toList
+      else
+        List()
 
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
@@ -123,7 +126,7 @@ object Configuration {
         dryRun = config.getBoolean("dryrun")
       ),
       config.getInt("fcm.threadPoolSize"),
-      getStringList("fcm.allowedTopicsForBatchSend")
+      getStringList("fcm.allowedTopicsForIndividualSend")
     )
   }
 

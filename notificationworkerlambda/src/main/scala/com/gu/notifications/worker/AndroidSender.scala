@@ -30,6 +30,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.threadPoolSize))
 
   logger.info(s"Using thread pool size: ${config.threadPoolSize}")
+  logger.info(s"Topics for individual send: ${config.allowedTopicsForIndividualSend.mkString(",")}")
 
   override implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   override implicit val timer: Timer[IO] = IO.timer(ec)
@@ -42,7 +43,14 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
       case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize) =>
-        if (false) {
+        val isAllowedToIndividualBatch = chunkedTokens.notification.topic.forall(topic => config.allowedTopicsForIndividualSend.contains(topic.toString))
+        if (isAllowedToIndividualBatch) 
+          deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
+                      .broadcastTo(
+                        reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+                        cleanupFailures,
+                        trackProgress(chunkedTokens.notification.id))
+        else {
           logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} in batches")
           deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
             .broadcastTo(
@@ -51,12 +59,6 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
               cleanupBatchFailures(chunkedTokens.notification.id),
               trackBatchProgress(chunkedTokens.notification.id))
           }
-        else 
-          deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
-                      .broadcastTo(
-                        reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
-                        cleanupFailures,
-                        trackProgress(chunkedTokens.notification.id))
     }.parJoin(maxConcurrency)
   }
 
