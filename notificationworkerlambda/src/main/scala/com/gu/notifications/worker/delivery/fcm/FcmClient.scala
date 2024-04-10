@@ -46,7 +46,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 
   private final val FCM_URL: String = s"https://fcm.googleapis.com/v1/projects/${projectId}/messages:send";
 
-  private val fcmTransport: FcmTransportOkhttpImpl = new FcmTransportOkhttpImpl(credential, FCM_URL, jsonFactory)
+  private val fcmTransport: FcmTransportJdkImpl = new FcmTransportJdkImpl(credential, FCM_URL, jsonFactory)
 
   def payloadBuilder: Notification => Option[FcmPayload] = n => FcmPayloadBuilder(n, config.debug)
 

@@ -9,36 +9,28 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.{Future, Promise}
 import scala.util.{Try, Success, Failure}
 import scala.util.Random
-import okhttp3.{Call, Callback, ConnectionPool, Dns, Headers, MediaType, OkHttpClient, Request, RequestBody, Response, ResponseBody}
 import play.api.libs.json.{Format, Json, JsError, JsValue, JsSuccess}
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.api.client.json.{JsonFactory, JsonGenerator}
 import com.google.firebase.messaging._
 import com.gu.notifications.worker.delivery.FcmPayload
 import com.gu.notifications.worker.delivery.fcm.models.payload.{FcmResponse, FcmError, FcmErrorPayload}
+import java.net.http.HttpRequest
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpResponse
 
-class FcmTransportOkhttpImpl(credential: GoogleCredentials, url: String, jsonFactory: JsonFactory) {
+class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactory: JsonFactory) {
   
-  private val okHttpClient: OkHttpClient = new OkHttpClient.Builder()
-    .dns((hostname: String) => Random.shuffle(Dns.SYSTEM.lookup(hostname).asScala).asJava)
-    .connectionPool(new ConnectionPool(20, 5, TimeUnit.MINUTES))
-    .followRedirects(false)
-    .build()
-  okHttpClient.dispatcher().setMaxRequests(500)
+  private val httpClient: HttpClient = HttpClient.newHttpClient()
 
   private val charSet = StandardCharsets.UTF_8
 
-  private val mediaType = MediaType.parse("application/json; charset=UTF-8")
+  private val mediaType = "application/json; charset=UTF-8"
 
   private val authFcmScope = "https://www.googleapis.com/auth/firebase.messaging"
 
   private val scopedCredential = credential.createScoped(authFcmScope)
-
-  def shutdown: Unit = {
-    okHttpClient.dispatcher().executorService().shutdown()
-    okHttpClient.connectionPool().evictAll()
-    Option(okHttpClient.cache()).foreach(_.close())
-  }
   
   private def getAccessToken(): String = {
     scopedCredential.refreshIfExpired()
@@ -58,19 +50,19 @@ class FcmTransportOkhttpImpl(credential: GoogleCredentials, url: String, jsonFac
     sink.toByteArray()
   }
 
-  private def parseBody(responseBody: ResponseBody): Try[FcmResponse] = {
-    val json: JsValue = Json.parse(responseBody.string())
+  private def parseBody(responseBody: String): Try[FcmResponse] = {
+    val json: JsValue = Json.parse(responseBody)
     json.validate[FcmResponse] match {
       case JsSuccess(message, _) => Success(message)
-      case JsError(errors)       => Failure(InvalidResponseException(responseBody.string()))
+      case JsError(errors)       => Failure(InvalidResponseException(responseBody))
     }
   }
 
-  private def parseError(responseBody: ResponseBody): Try[FcmError] = {
-    val json: JsValue = Json.parse(responseBody.string())
+  private def parseError(responseBody: String): Try[FcmError] = {
+    val json: JsValue = Json.parse(responseBody)
     json.validate[FcmError] match {
       case JsSuccess(message, _) => Success(message)
-      case JsError(errors)       => Failure(InvalidResponseException(responseBody.string()))
+      case JsError(errors)       => Failure(InvalidResponseException(responseBody))
     }
   }
 
@@ -87,8 +79,8 @@ class FcmTransportOkhttpImpl(credential: GoogleCredentials, url: String, jsonFac
   val quotaExceededErrorCodes = Set(
     MessagingErrorCode.QUOTA_EXCEEDED).map(_.name())
 
-  private def handleResponse(response: Response): Try[FcmResponse] = {
-    if (response.code == 200)
+  private def handleResponse(response: HttpResponse[String]): Try[FcmResponse] = {
+    if (response.statusCode() == 200)
       parseBody(response.body())
     else
       parseError(response.body()).flatMap(fcmError => fcmError.error.status match {
@@ -106,21 +98,21 @@ class FcmTransportOkhttpImpl(credential: GoogleCredentials, url: String, jsonFac
           .setAndroidConfig(payload.androidConfig)
           .build
     val body = createBody(message, dryRun)
-    val request: Request = new Request.Builder()
-      .url(url)
-      .addHeader("Authorization", "Bearer " + getAccessToken())
-      .post(RequestBody.create(body, mediaType))
-      .build();
+
+    val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
+      .version(HttpClient.Version.HTTP_2)
+      .header("Authorization", "Bearer " + getAccessToken())
+      .header("Content-Type", mediaType)
+      .POST(HttpRequest.BodyPublishers.ofByteArray(body))
+      .build()
     val p = Promise[String]()
-    okHttpClient.newCall(request).enqueue(new Callback() {
-      def onFailure(call: Call, ex: IOException): Unit = {
-        ex.printStackTrace()
-        p.failure(FcmServerTransportException(ex))
-      }
-      def onResponse(call: Call, response: Response): Unit = {
+    httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
+      if (response == null) {
+        p.failure(FcmServerTransportException(err))
+      } else {
         handleResponse(response).fold(
           ex => p.failure(ex),
-          response => p.success(response.name)
+          fcmResponse => p.success(fcmResponse.name)
         )
       }
     })
