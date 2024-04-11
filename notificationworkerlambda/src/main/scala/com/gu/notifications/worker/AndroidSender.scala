@@ -1,6 +1,7 @@
 package com.gu.notifications.worker
 
 import _root_.models.NotificationMetadata
+import _root_.models.Topic
 import cats.effect.{ContextShift, IO, Timer}
 import com.gu.notifications.worker.cleaning.CleaningClientImpl
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
@@ -39,12 +40,14 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
     FcmClient(config.fcmConfig, firebaseAppName).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
   override val maxConcurrency = 100
 
+  def isIndividualSend(topics: List[Topic], selectedTopics: List[String]): Boolean = 
+    topics.forall(topic => selectedTopics.exists(topic.toString.startsWith(_)))
+
   //override the deliverChunkedTokens method to validate the success of sending batch notifications to the FCM client. This implementation could be refactored in the future to make it more streamlined with APNs
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
       case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize) =>
-        val isAllowedToIndividualBatch = chunkedTokens.notification.topic.forall(topic => config.allowedTopicsForIndividualSend.contains(topic.toString))
-        if (isAllowedToIndividualBatch) 
+        if (isIndividualSend(chunkedTokens.notification.topic, config.allowedTopicsForIndividualSend)) 
           deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
                       .broadcastTo(
                         reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
