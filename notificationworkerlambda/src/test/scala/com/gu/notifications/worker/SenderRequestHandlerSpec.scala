@@ -116,6 +116,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     val workerRequestHandler = new SenderRequestHandler[ApnsClient] {
 
       override val maxConcurrency = 100
+      override val batchConcurrency = 100
 
       override def deliveryService: IO[DeliveryService[IO, ApnsClient]] = IO.pure(new DeliveryService[IO, ApnsClient] {
         override def send(notification: Notification, token: String): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {

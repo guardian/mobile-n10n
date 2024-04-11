@@ -55,6 +55,7 @@ class FcmWorkerConfigurationSpec extends Specification with Matchers {
         cleaningSqsUrl = "cleaning-sqs-url",
         fcmConfig = FcmConfig(serviceAccountKey = "key", debug = false, dryRun = false),
         threadPoolSize = 50,
-        allowedTopicsForIndividualSend = selectedTopics)
+        allowedTopicsForIndividualSend = selectedTopics,
+        concurrencyForIndividualSend = 200)
   }
 }

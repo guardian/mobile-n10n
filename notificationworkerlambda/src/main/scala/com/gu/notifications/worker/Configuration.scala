@@ -36,6 +36,7 @@ case class FcmWorkerConfiguration(
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
   allowedTopicsForIndividualSend: List[String],
+  concurrencyForIndividualSend: Int
 ) extends WorkerConfiguration {
   def isIndividualSend(topics: List[String]): Boolean = 
       topics.forall(topic => allowedTopicsForIndividualSend.exists(topic.startsWith(_)))
@@ -120,6 +121,12 @@ object Configuration {
         config.getString(path).split(",").toList
       else
         List()
+    
+    def getOptionalInt(path: String, defVal: Int): Int =
+      if (config.hasPath(path))
+        config.getInt(path)
+      else
+        defVal
 
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
@@ -129,7 +136,8 @@ object Configuration {
         dryRun = config.getBoolean("dryrun")
       ),
       config.getInt("fcm.threadPoolSize"),
-      getStringList("fcm.allowedTopicsForIndividualSend")
+      getStringList("fcm.allowedTopicsForIndividualSend"),
+      getOptionalInt("fcm.concurrencyForIndividualSend", 100)
     )
   }
 

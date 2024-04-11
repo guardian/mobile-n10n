@@ -32,17 +32,16 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
 
   logger.info(s"Using thread pool size: ${config.threadPoolSize}")
   logger.info(s"Topics for individual send: ${config.allowedTopicsForIndividualSend.mkString(",")}")
+  logger.info(s"Concurrency for individual send: ${config.concurrencyForIndividualSend}")
 
   override implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   override implicit val timer: Timer[IO] = IO.timer(ec)
 
   override val deliveryService: IO[Fcm[IO]] =
     FcmClient(config.fcmConfig, firebaseAppName).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
-  override val maxConcurrency = 100
-
-  def isIndividualSend(topics: List[Topic], selectedTopics: List[String]): Boolean = 
-    topics.forall(topic => selectedTopics.exists(topic.toString.startsWith(_)))
-
+  override val maxConcurrency = config.concurrencyForIndividualSend
+  override val batchConcurrency = 100
+    
   //override the deliverChunkedTokens method to validate the success of sending batch notifications to the FCM client. This implementation could be refactored in the future to make it more streamlined with APNs
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
@@ -62,13 +61,13 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
               cleanupBatchFailures(chunkedTokens.notification.id),
               trackBatchProgress(chunkedTokens.notification.id))
           }
-    }.parJoin(maxConcurrency)
+    }.parJoin(batchConcurrency)
   }
 
   def deliverBatchNotificationStream[C <: FcmClient](batchNotificationStream: Stream[IO, BatchNotification]): Stream[IO, Either[DeliveryException, C#BatchSuccess]] = for {
     deliveryService <- Stream.eval(deliveryService)
     resp <- batchNotificationStream.map(batchNotification => deliveryService.sendBatch(batchNotification.notification, batchNotification.token))
-      .parJoin(maxConcurrency)
+      .parJoin(batchConcurrency)
       .evalTap(Reporting.logBatch(s"Sending failure: "))
   } yield resp
 
