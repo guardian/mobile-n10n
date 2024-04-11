@@ -36,7 +36,10 @@ case class FcmWorkerConfiguration(
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
   allowedTopicsForIndividualSend: List[String],
-) extends WorkerConfiguration
+) extends WorkerConfiguration {
+  def isIndividualSend(topics: List[String]): Boolean = 
+      topics.forall(topic => allowedTopicsForIndividualSend.exists(topic.startsWith(_)))
+}
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
 

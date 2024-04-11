@@ -13,6 +13,7 @@ import play.api.libs.json.{Format, Json, JsError, JsValue, JsSuccess}
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.api.client.json.{JsonFactory, JsonGenerator}
 import com.google.firebase.messaging._
+import com.google.firebase.ErrorCode
 import com.gu.notifications.worker.delivery.FcmPayload
 import com.gu.notifications.worker.delivery.fcm.models.payload.{FcmResponse, FcmError, FcmErrorPayload}
 import java.net.http.HttpRequest
@@ -73,7 +74,8 @@ class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactor
   val invalidTokenErrorCodes = Set(
     MessagingErrorCode.INVALID_ARGUMENT,
     MessagingErrorCode.UNREGISTERED,
-    MessagingErrorCode.SENDER_ID_MISMATCH).map(_.name())
+    MessagingErrorCode.SENDER_ID_MISMATCH,
+    ErrorCode.PERMISSION_DENIED).map(_.name())
 
   val internalServerErrorCodes = Set(
     MessagingErrorCode.UNAVAILABLE,

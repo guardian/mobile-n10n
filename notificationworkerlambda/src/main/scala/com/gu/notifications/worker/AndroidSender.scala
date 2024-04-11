@@ -47,7 +47,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
       case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize) =>
-        if (isIndividualSend(chunkedTokens.notification.topic, config.allowedTopicsForIndividualSend)) 
+        if (config.isIndividualSend(chunkedTokens.notification.topic.map(_.toString()))) 
           deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
                       .broadcastTo(
                         reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
