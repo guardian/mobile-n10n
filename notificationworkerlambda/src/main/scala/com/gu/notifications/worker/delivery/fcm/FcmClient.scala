@@ -73,9 +73,6 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       import FirebaseHelpers._
       val start = Instant.now
       fcmTransport.sendAsync(token, payload, dryRun)
-      // firebaseMessaging
-      //   .sendAsync(message)
-        // .asScala
         .onComplete { response =>
           val requestCompletionTime = Instant.now
           logger.info(Map(
@@ -120,6 +117,21 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     }
   }
 
+  def parseFirebaseSdkSendResponse(
+    notificationId: UUID, token: String, response: Try[String], requestCompletionTime: Instant
+  ): Either[DeliveryException, Success] = response match {
+    case Success(messageId) =>
+      Right(FcmDeliverySuccess(token, messageId, requestCompletionTime))
+    case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) || isUnregistered(e) =>
+      Left(InvalidToken(notificationId, token, e.getMessage))
+    case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
+      Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString)))
+    case Failure(NonFatal(t)) =>
+      Left(FailedRequest(notificationId, token, t))
+    case Failure(_) =>
+      Left(UnknownReasonFailedRequest(notificationId, token))
+  }
+
   def parseSendResponse(
     notificationId: UUID, token: String, response: Try[String], requestCompletionTime: Instant
   ): Either[DeliveryException, Success] = response match {
@@ -150,7 +162,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
         batchResponse.getResponses.asScala.toList.zip(tokens).map { el => {
           val (r, token) = el
           if (!r.isSuccessful) {
-            parseSendResponse(notificationId, token, Failure(r.getException), requestCompletionTime)
+            parseFirebaseSdkSendResponse(notificationId, token, Failure(r.getException), requestCompletionTime)
           } else {
             Right(FcmDeliverySuccess(s"Token in batch response succeeded", token, requestCompletionTime))
           }
