@@ -38,7 +38,7 @@ jobs:
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
       - name: Compile, test and assembly
-        run: sbt "project schedule" "compile" "test" "assembly"
+        run: sbt "project commonscheduledynamodb" "compile" "test" "project schedule" "compile" "test" "assembly"
 
       - name: Copy jar to root
         run: cp schedulelambda/target/scala-*/schedule.jar .
