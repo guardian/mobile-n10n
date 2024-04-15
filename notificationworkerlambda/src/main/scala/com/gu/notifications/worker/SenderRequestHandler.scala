@@ -26,6 +26,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   val cleaningClient: CleaningClient
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int
+  val batchConcurrency: Int
 
   def env = Env()
 
@@ -88,7 +89,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
             reportLatency(chunkedTokens, chunkedTokens.metadata),
             cleanupFailures,
             trackProgress(chunkedTokens.notification.id))
-      }.parJoin(maxConcurrency)
+      }.parJoin(batchConcurrency)
   }
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {

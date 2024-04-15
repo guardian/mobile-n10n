@@ -1,6 +1,7 @@
 package com.gu.notifications.worker
 
 import _root_.models.NotificationMetadata
+import _root_.models.Topic
 import cats.effect.{ContextShift, IO, Timer}
 import com.gu.notifications.worker.cleaning.CleaningClientImpl
 import com.gu.notifications.worker.delivery.DeliveryException.InvalidToken
@@ -30,32 +31,43 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.threadPoolSize))
 
   logger.info(s"Using thread pool size: ${config.threadPoolSize}")
+  logger.info(s"Topics for individual send: ${config.allowedTopicsForIndividualSend.mkString(",")}")
+  logger.info(s"Concurrency for individual send: ${config.concurrencyForIndividualSend}")
 
   override implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   override implicit val timer: Timer[IO] = IO.timer(ec)
 
   override val deliveryService: IO[Fcm[IO]] =
     FcmClient(config.fcmConfig, firebaseAppName).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
-  override val maxConcurrency = 100
-
+  override val maxConcurrency = config.concurrencyForIndividualSend
+  override val batchConcurrency = 100
+    
   //override the deliverChunkedTokens method to validate the success of sending batch notifications to the FCM client. This implementation could be refactored in the future to make it more streamlined with APNs
   override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
       case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize) =>
-        logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} in batches")
-        deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
-          .broadcastTo(
-            reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
-            reportBatchLatency(chunkedTokens, chunkedTokens.metadata),
-            cleanupBatchFailures(chunkedTokens.notification.id),
-            trackBatchProgress(chunkedTokens.notification.id))
-    }.parJoin(maxConcurrency)
+        if (config.isIndividualSend(chunkedTokens.notification.topic.map(_.toString()))) 
+          deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
+                      .broadcastTo(
+                        reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+                        cleanupFailures,
+                        trackProgress(chunkedTokens.notification.id))
+        else {
+          logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} in batches")
+          deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
+            .broadcastTo(
+              reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+              reportBatchLatency(chunkedTokens, chunkedTokens.metadata),
+              cleanupBatchFailures(chunkedTokens.notification.id),
+              trackBatchProgress(chunkedTokens.notification.id))
+          }
+    }.parJoin(batchConcurrency)
   }
 
   def deliverBatchNotificationStream[C <: FcmClient](batchNotificationStream: Stream[IO, BatchNotification]): Stream[IO, Either[DeliveryException, C#BatchSuccess]] = for {
     deliveryService <- Stream.eval(deliveryService)
     resp <- batchNotificationStream.map(batchNotification => deliveryService.sendBatch(batchNotification.notification, batchNotification.token))
-      .parJoin(maxConcurrency)
+      .parJoin(batchConcurrency)
       .evalTap(Reporting.logBatch(s"Sending failure: "))
   } yield resp
 

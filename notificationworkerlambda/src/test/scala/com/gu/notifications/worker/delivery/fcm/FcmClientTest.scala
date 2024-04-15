@@ -22,6 +22,10 @@ import java.util.UUID
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success}
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.api.client.json.JsonFactory
+import com.google.firebase.messaging.MessagingErrorCode
+import com.gu.notifications.worker.delivery.fcm.models.payload.FcmErrorPayload
 
 class FcmClientTest extends Specification with Mockito {
   "the FcmClient" should {
@@ -33,26 +37,20 @@ class FcmClientTest extends Specification with Mockito {
     }
 
     "Parse errors with an invalid token error code as an InvalidToken" in new FcmScope {
-      // we have to mock because there is no public method for instantiating an error of this type
-      val mockFirebaseMessagingException = Mockito.mock[FirebaseMessagingException]
-      when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
-      when(mockFirebaseMessagingException.getMessage).thenReturn("invalid")
-
+      val fcmException = InvalidTokenException(FcmErrorPayload(500, "Invalid", MessagingErrorCode.INVALID_ARGUMENT.name()))
       val now = Instant.now()
-      val response = fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException), now)
+      val response = fcmClient.parseSendResponse(notification.id, token, Failure(fcmException), now)
 
-      response shouldEqual Left(InvalidToken(notification.id, token, "invalid"))
+      response shouldEqual Left(InvalidToken(notification.id, token, fcmException.getMessage()))
     }
 
     "Parse errors with NOT_FOUND error code and 'Requested entity was not found.' error message as an InvalidToken" in new FcmScope {
-      val mockFirebaseMessagingException = Mockito.mock[FirebaseMessagingException]
-      when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.NOT_FOUND)
-      when(mockFirebaseMessagingException.getMessage).thenReturn("Requested entity was not found.")
+      val fcmException = InvalidTokenException(FcmErrorPayload(500, "Requested entity was not found.", MessagingErrorCode.UNREGISTERED.name()))
 
       val now = Instant.now()
-      val response = fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException), now)
+      val response = fcmClient.parseSendResponse(notification.id, token, Failure(fcmException), now)
 
-      response shouldEqual Left(InvalidToken(notification.id, token, "Requested entity was not found."))
+      response shouldEqual Left(InvalidToken(notification.id, token, fcmException.getMessage()))
     }
 
     "Parse catastrophic errors when sending multicast messages" in new FcmScope {
@@ -171,5 +169,7 @@ trait FcmScope extends Scope {
   val mockApiFuture = Mockito.mock[ApiFuture[String]]
 
   val config: FcmConfig = FcmConfig("serviceAccountKey")
-  val fcmClient = new FcmClient(mockFirebaseMessaging, app, config)
+  val mockCredential = Mockito.mock[GoogleCredentials]
+  val mockJsonFactory = Mockito.mock[JsonFactory]
+  val fcmClient = new FcmClient(mockFirebaseMessaging, app, config, "TEST-PROJECT-ID", mockCredential, mockJsonFactory)
 }

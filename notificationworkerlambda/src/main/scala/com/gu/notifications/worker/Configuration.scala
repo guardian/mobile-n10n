@@ -35,8 +35,12 @@ case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
-  allowedTopicsForBatchSend: List[String],
-) extends WorkerConfiguration
+  allowedTopicsForIndividualSend: List[String],
+  concurrencyForIndividualSend: Int
+) extends WorkerConfiguration {
+  def isIndividualSend(topics: List[String]): Boolean = 
+      topics.forall(topic => allowedTopicsForIndividualSend.exists(topic.startsWith(_)))
+}
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
 
@@ -112,8 +116,17 @@ object Configuration {
   def fetchFirebase(): FcmWorkerConfiguration = {
     val config = fetchConfiguration(confPrefixFromPlatform)
 
-    def getStringList(path: String): List[String] =
-      config.getString(path).split(",").toList
+    def getStringList(path: String): List[String] = 
+      if (config.hasPath(path))
+        config.getString(path).split(",").toList
+      else
+        List()
+    
+    def getOptionalInt(path: String, defVal: Int): Int =
+      if (config.hasPath(path))
+        config.getInt(path)
+      else
+        defVal
 
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
@@ -123,7 +136,8 @@ object Configuration {
         dryRun = config.getBoolean("dryrun")
       ),
       config.getInt("fcm.threadPoolSize"),
-      getStringList("fcm.allowedTopicsForBatchSend")
+      getStringList("fcm.allowedTopicsForIndividualSend"),
+      getOptionalInt("fcm.concurrencyForIndividualSend", 100)
     )
   }
 
