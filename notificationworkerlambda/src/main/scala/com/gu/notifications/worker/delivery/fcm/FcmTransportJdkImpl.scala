@@ -20,6 +20,7 @@ import java.net.http.HttpRequest
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
+import org.slf4j.{Logger, LoggerFactory}
 
 trait FcmTransport {
   def sendAsync(token: String, payload: FcmPayload, dryRun: Boolean): Future[String]
@@ -27,7 +28,11 @@ trait FcmTransport {
 
 class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactory: JsonFactory) extends FcmTransport {
   
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
   private val httpClient: HttpClient = HttpClient.newHttpClient()
+
+  logger.info("HttpClient is instantiated")
 
   private val charSet = StandardCharsets.UTF_8
 
