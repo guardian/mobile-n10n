@@ -42,8 +42,6 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     ErrorCode.PERMISSION_DENIED
   )
 
-  def close(): Unit = firebaseApp.delete()
-
   private final val FCM_URL: String = s"https://fcm.googleapis.com/v1/projects/${projectId}/messages:send";
 
   private val fcmTransport: FcmTransport = new FcmTransportJdkImpl(credential, FCM_URL, jsonFactory)
