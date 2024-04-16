@@ -176,8 +176,10 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 
 }
 
-object FcmClient {
-  def apply(config: FcmConfig, firebaseAppName: Option[String]): Try[FcmClient] =
+case class FcmFirebase(firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig, projectId: String, credential: GoogleCredentials, jsonFactory: JsonFactory)
+
+object FcmFirebase {
+  def apply(config: FcmConfig, firebaseAppName: Option[String]): Try[FcmFirebase] =
     Try {
       val credential = GoogleCredentials.fromStream(new ByteArrayInputStream(config.serviceAccountKey.getBytes))
       val firebaseOptions: FirebaseOptions = FirebaseOptions.builder()
@@ -193,8 +195,13 @@ object FcmClient {
         case s: ServiceAccountCredentials => s.getProjectId()
         case _ => ""
       }
-      new FcmClient(FirebaseMessaging.getInstance(firebaseApp), firebaseApp, config, projectId, credential, firebaseOptions.getJsonFactory())
+      new FcmFirebase(FirebaseMessaging.getInstance(firebaseApp), firebaseApp, config, projectId, credential, firebaseOptions.getJsonFactory())
     }
+}
+
+object FcmClient {
+  def apply(firebase: FcmFirebase): FcmClient =
+      new FcmClient(firebase.firebaseMessaging, firebase.firebaseApp, firebase.config, firebase.projectId, firebase.credential, firebase.jsonFactory)
 }
 
 object FirebaseHelpers {
