@@ -154,6 +154,11 @@ lazy val registration = project
       logback,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
+    excludeDependencies ++= Seq(
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
+    ),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -174,6 +179,11 @@ lazy val notification = project
       logback,
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
+    excludeDependencies ++= Seq(
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
+    ),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -192,6 +202,11 @@ lazy val report = project
     ),
     libraryDependencies ++= Seq(
       logback
+    ),
+    excludeDependencies ++= Seq(
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
     ),
     Debian / packageName := name.value,
     version := projectVersion
