@@ -16,6 +16,8 @@ import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
+import com.gu.notifications.worker.delivery.fcm.FcmFirebase
+import scala.util.Try
 
 class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Option[String], val metricNs: String) extends SenderRequestHandler[FcmClient] {
 
@@ -37,8 +39,10 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   override implicit val timer: Timer[IO] = IO.timer(ec)
 
-  override val deliveryService: IO[Fcm[IO]] =
-    FcmClient(config.fcmConfig, firebaseAppName).fold(e => IO.raiseError(e), c => IO.delay(new Fcm(c)))
+  val fcmFirebase: Try[FcmFirebase] = FcmFirebase(config.fcmConfig, firebaseAppName)
+  override val deliveryService: IO[Fcm[IO]] = 
+    fcmFirebase.fold(e => IO.raiseError(e), c => IO.delay(new Fcm(FcmClient(c))))
+
   override val maxConcurrency = config.concurrencyForIndividualSend
   override val batchConcurrency = 100
     
