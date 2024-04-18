@@ -108,7 +108,6 @@ class SenderWorker extends cdkcore.Construct  {
         Stack: scope.stack,
         App: id,
         Platform: props.platform,
-        JAVA_TOOL_OPTIONS: "-Djdk.httpclient.connectionPoolSize=2"
       },
       memorySize: 10240,
       description: `sends notifications for ${id}`,
