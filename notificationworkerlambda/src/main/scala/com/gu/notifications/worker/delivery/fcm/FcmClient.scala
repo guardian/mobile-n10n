@@ -76,7 +76,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
           logger.info(Map(
             "worker.individualRequestLatency" -> Duration.between(start, requestCompletionTime).toMillis,
             "notificationId" -> notificationId,
-          ), "Individual send request completed")
+          ), s"Individual send request completed - ${this.toString()}")
           onAPICallComplete(parseSendResponse(notificationId, token, response, requestCompletionTime))
         }
     }
