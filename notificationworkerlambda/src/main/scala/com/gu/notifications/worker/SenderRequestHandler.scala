@@ -43,7 +43,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     }
 
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
-      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize = sqsMessageBatchSize), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
+      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize = sqsMessageBatchSize, messagingApi = Some("Individual")), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
       .through(cloudwatch.sendResults(env.stage, Configuration.platform))
   }
 

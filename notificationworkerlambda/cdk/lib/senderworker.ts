@@ -107,7 +107,7 @@ class SenderWorker extends cdkcore.Construct  {
         Stage: scope.stage,
         Stack: scope.stack,
         App: id,
-        Platform: props.platform
+        Platform: props.platform,
       },
       memorySize: 10240,
       description: `sends notifications for ${id}`,
