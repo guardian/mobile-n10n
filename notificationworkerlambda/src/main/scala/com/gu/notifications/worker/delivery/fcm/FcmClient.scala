@@ -42,8 +42,6 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     ErrorCode.PERMISSION_DENIED
   )
 
-  def close(): Unit = firebaseApp.delete()
-
   private final val FCM_URL: String = s"https://fcm.googleapis.com/v1/projects/${projectId}/messages:send";
 
   private val fcmTransport: FcmTransport = new FcmTransportJdkImpl(credential, FCM_URL, jsonFactory)
@@ -78,7 +76,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
           logger.info(Map(
             "worker.individualRequestLatency" -> Duration.between(start, requestCompletionTime).toMillis,
             "notificationId" -> notificationId,
-          ), "Individual send request completed")
+          ), s"Individual send request completed - ${this.toString()}")
           onAPICallComplete(parseSendResponse(notificationId, token, response, requestCompletionTime))
         }
     }
@@ -176,8 +174,10 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
 
 }
 
-object FcmClient {
-  def apply(config: FcmConfig, firebaseAppName: Option[String]): Try[FcmClient] =
+case class FcmFirebase(firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig, projectId: String, credential: GoogleCredentials, jsonFactory: JsonFactory)
+
+object FcmFirebase {
+  def apply(config: FcmConfig, firebaseAppName: Option[String]): Try[FcmFirebase] =
     Try {
       val credential = GoogleCredentials.fromStream(new ByteArrayInputStream(config.serviceAccountKey.getBytes))
       val firebaseOptions: FirebaseOptions = FirebaseOptions.builder()
@@ -193,8 +193,13 @@ object FcmClient {
         case s: ServiceAccountCredentials => s.getProjectId()
         case _ => ""
       }
-      new FcmClient(FirebaseMessaging.getInstance(firebaseApp), firebaseApp, config, projectId, credential, firebaseOptions.getJsonFactory())
+      new FcmFirebase(FirebaseMessaging.getInstance(firebaseApp), firebaseApp, config, projectId, credential, firebaseOptions.getJsonFactory())
     }
+}
+
+object FcmClient {
+  def apply(firebase: FcmFirebase): FcmClient =
+      new FcmClient(firebase.firebaseMessaging, firebase.firebaseApp, firebase.config, firebase.projectId, firebase.credential, firebase.jsonFactory)
 }
 
 object FirebaseHelpers {

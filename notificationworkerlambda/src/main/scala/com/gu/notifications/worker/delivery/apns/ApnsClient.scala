@@ -39,8 +39,6 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
     "DeviceTokenNotForTopic"
   )
 
-  def close(): Unit = underlying.close().get
-
   def payloadBuilder: Notification => Option[ApnsPayload] = apnsPayloadBuilder.apply _
 
   def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
