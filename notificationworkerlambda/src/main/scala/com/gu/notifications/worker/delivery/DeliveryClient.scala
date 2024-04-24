@@ -12,7 +12,6 @@ trait DeliveryClient {
   type Payload <: DeliveryPayload
   type BatchSuccess <: BatchDeliverySuccess
 
-  def close(): Unit
   def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
     (onComplete: Either[DeliveryException, Success] => Unit)
     (implicit ece: ExecutionContextExecutor): Unit

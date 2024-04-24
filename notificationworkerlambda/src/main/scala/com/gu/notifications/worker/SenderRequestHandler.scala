@@ -26,6 +26,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   val cleaningClient: CleaningClient
   val cloudwatch: Cloudwatch
   val maxConcurrency: Int
+  val batchConcurrency: Int
 
   def env = Env()
 
@@ -42,7 +43,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     }
 
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
-      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize = sqsMessageBatchSize), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
+      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize = sqsMessageBatchSize, messagingApi = Some("Individual")), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
       .through(cloudwatch.sendResults(env.stage, Configuration.platform))
   }
 
@@ -88,7 +89,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
             reportLatency(chunkedTokens, chunkedTokens.metadata),
             cleanupFailures,
             trackProgress(chunkedTokens.notification.id))
-      }.parJoin(maxConcurrency)
+      }.parJoin(batchConcurrency)
   }
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {

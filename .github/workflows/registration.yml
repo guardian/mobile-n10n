@@ -55,7 +55,7 @@ jobs:
           npm run synth
 
       - name: Compile, test and package
-        run: sbt "project registration" "compile" "test" "debian:packageBin"
+        run: sbt "project common" "compile" "test" "project registration" "compile" "test" "debian:packageBin"
 
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v3

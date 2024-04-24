@@ -51,6 +51,7 @@ trait Logging {
     functionStartTime: Instant,
     maybePlatform: Option[Platform],
     sqsMessageBatchSize: Int,
+    messagingApi: Option[String] = None
   )(end: Instant): Map[String, Any] = {
     val processingTime = Duration.between(functionStartTime, end).toMillis
     val processingRate = numberOfTokens.toDouble / processingTime * 1000
@@ -67,7 +68,7 @@ trait Logging {
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
       "sqsMessageBatchSize" -> sqsMessageBatchSize,
       "worker.chunkTokenSize" -> numberOfTokens,
-    )
+    ) ++ messagingApi.map(s => Map("worker.messagingApi" -> s)).getOrElse(Map())
   }
 
   def logStartAndCount(acc: Int, chunkedTokens: ChunkedTokens): Int = {
