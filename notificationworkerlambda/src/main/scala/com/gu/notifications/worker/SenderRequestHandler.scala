@@ -35,6 +35,9 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
+  logger.info("Java version: " + System.getProperty("java.version"))
+  logger.info(s"Max heap size: ${Runtime.getRuntime().maxMemory()}")
+
   def reportSuccesses[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant, sqsMessageBatchSize: Int): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${chunkedTokens.notification.id} ${chunkedTokens.range})"
     val enableAwsMetric = chunkedTokens.notification.dryRun match {
