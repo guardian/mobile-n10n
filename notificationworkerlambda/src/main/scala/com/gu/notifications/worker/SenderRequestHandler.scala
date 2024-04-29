@@ -38,7 +38,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   logger.info("Java version: " + System.getProperty("java.version"))
   logger.info(s"Max heap size: ${Runtime.getRuntime().maxMemory()}")
 
-  def reportSuccesses[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant, sqsMessageBatchSize: Int): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
+  def reportSuccesses[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant, sqsMessageBatchSize: Int, awsRequestId: String): Pipe[IO, Either[DeliveryException, DeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${chunkedTokens.notification.id} ${chunkedTokens.range})"
     val enableAwsMetric = chunkedTokens.notification.dryRun match {
       case Some(true) => false
@@ -46,7 +46,7 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
     }
 
     input.fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregate(acc, resp) }
-      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize = sqsMessageBatchSize, messagingApi = Some("Individual")), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
+      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize = sqsMessageBatchSize, messagingApi = "Individual", awsRequestId = awsRequestId), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
       .through(cloudwatch.sendResults(env.stage, Configuration.platform))
   }
 
@@ -82,13 +82,13 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
       .evalTap(Reporting.log(s"Sending failure: "))
   } yield resp
 
-  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
+  def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int, String)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
-      case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize) =>
+      case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize, awsRequestId) =>
         val individualNotifications = Stream.emits(chunkedTokens.toNotificationToSends).covary[IO]
         deliverIndividualNotificationStream(individualNotifications)
           .broadcastTo(
-            reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+            reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize, awsRequestId),
             reportLatency(chunkedTokens, chunkedTokens.metadata),
             cleanupFailures,
             trackProgress(chunkedTokens.notification.id))
@@ -96,18 +96,19 @@ trait SenderRequestHandler[C <: DeliveryClient] extends Logging {
   }
 
   def handleChunkTokens(event: SQSEvent, context: Context): Unit = {
+    val awsRequestId = context.getAwsRequestId()
     val sqsMessageBatchSize = event.getRecords.size
     val startTime = Instant.now
-    val totalTokensProcessed: Int = event.getRecords.asScala.map(event => NotificationParser.parseChunkedTokenEvent(event.getBody)).foldLeft(0)(logStartAndCount)
-    val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)] = Stream.emits(event.getRecords.asScala)
+    val totalTokensProcessed: Int = event.getRecords.asScala.map(event => NotificationParser.parseChunkedTokenEvent(event.getBody)).foldLeft(0)(logStartAndCount(awsRequestId))
+    val chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int, String)] = Stream.emits(event.getRecords.asScala)
       .map(r => (r.getBody, r.getAttributes.getOrDefault("SentTimestamp", "0").toLong))
-      .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp, startTime, sqsMessageBatchSize) }
+      .map { case (body, sentTimestamp) => (NotificationParser.parseChunkedTokenEvent(body), sentTimestamp, startTime, sqsMessageBatchSize, awsRequestId) }
 
     deliverChunkedTokens(chunkedTokenStream)
       .compile
       .drain
       .unsafeRunSync()
 
-    logEndOfInvocation(sqsMessageBatchSize, totalTokensProcessed, startTime)
+    logEndOfInvocation(awsRequestId)(sqsMessageBatchSize, totalTokensProcessed, startTime)
   }
 }

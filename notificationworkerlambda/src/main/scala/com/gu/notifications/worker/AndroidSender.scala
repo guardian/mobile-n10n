@@ -55,29 +55,31 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override val batchConcurrency = 100
     
   //override the deliverChunkedTokens method to validate the success of sending batch notifications to the FCM client. This implementation could be refactored in the future to make it more streamlined with APNs
-  override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int)]): Stream[IO, Unit] = {
+  override def deliverChunkedTokens(chunkedTokenStream: Stream[IO, (ChunkedTokens, Long, Instant, Int, String)]): Stream[IO, Unit] = {
     chunkedTokenStream.map {
-      case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize) =>
+      case (chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize, awsRequestId) => {
+        val commonLogFields = Map("notificationId" -> chunkedTokens.notification.id, "awsRequestId" -> awsRequestId)
         if (config.isIndividualSend(chunkedTokens.notification.topic.map(_.toString()))) {
           for {
-            _ <- Stream.eval( IO { logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} with individual API") } )
+            _ <- Stream.eval( IO { logger.info(commonLogFields ++ Map("worker.messagingApi" -> "Individual"), s"Sending notification ${chunkedTokens.notification.id} with individual API") } )
             deliverStream <- deliverIndividualNotificationStream(Stream.emits(chunkedTokens.toNotificationToSends).covary[IO])
                         .broadcastTo(
-                          reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+                          reportSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize, awsRequestId),
                           cleanupFailures,
                           trackProgress(chunkedTokens.notification.id))
           } yield deliverStream
         } else {
           for {
-          _ <- Stream.eval(IO { logger.info(Map("notificationId" -> chunkedTokens.notification.id), s"Sending notification ${chunkedTokens.notification.id} in batches") })
+          _ <- Stream.eval(IO { logger.info(commonLogFields ++ Map("worker.messagingApi" -> "Batch"), s"Sending notification ${chunkedTokens.notification.id} in batches") })
           deliverStream <- deliverBatchNotificationStream(Stream.emits(chunkedTokens.toBatchNotificationToSends).covary[IO])
             .broadcastTo(
-              reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize),
+              reportBatchSuccesses(chunkedTokens, sentTime, functionStartTime, sqsMessageBatchSize, awsRequestId),
               reportBatchLatency(chunkedTokens, chunkedTokens.metadata),
               cleanupBatchFailures(chunkedTokens.notification.id),
               trackBatchProgress(chunkedTokens.notification.id))
           } yield deliverStream
         }
+      }
     }.parJoin(config.concurrencyForMessages)
   }
 
@@ -99,7 +101,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
       .evalTap(Reporting.logBatch(s"Sending failure: "))
   } yield resp
 
-  def reportBatchSuccesses[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant, sqsMessageBatchSize: Int): Pipe[IO, Either[DeliveryException, BatchDeliverySuccess], Unit] = { input =>
+  def reportBatchSuccesses[C <: DeliveryClient](chunkedTokens: ChunkedTokens, sentTime: Long, functionStartTime: Instant, sqsMessageBatchSize: Int, awsRequestId: String): Pipe[IO, Either[DeliveryException, BatchDeliverySuccess], Unit] = { input =>
     val notificationLog = s"(notification: ${chunkedTokens.notification.id} ${chunkedTokens.range})"
     val enableAwsMetric = chunkedTokens.notification.dryRun match {
       case Some(true) => false
@@ -107,7 +109,7 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
     }
     input
       .fold(SendingResults.empty) { case (acc, resp) => SendingResults.aggregateBatch(acc, chunkedTokens.tokens.size, resp) }
-      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize, messagingApi = Some("Batch")), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
+      .evalTap(logInfoWithFields(logFields(env, chunkedTokens.notification, chunkedTokens.tokens.size, sentTime, functionStartTime, Configuration.platform, sqsMessageBatchSize, messagingApi = "Batch", awsRequestId = awsRequestId), prefix = s"Results $notificationLog: ").andThen(_.map(cloudwatch.sendPerformanceMetrics(env.stage, enableAwsMetric))))
       .through(cloudwatch.sendResults(env.stage, Configuration.platform))
   }
 
