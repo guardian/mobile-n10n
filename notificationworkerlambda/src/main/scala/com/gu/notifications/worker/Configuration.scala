@@ -36,7 +36,9 @@ case class FcmWorkerConfiguration(
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
   allowedTopicsForIndividualSend: List[String],
-  concurrencyForIndividualSend: Int
+  concurrencyForIndividualSend: Int,
+  concurrencyForMessages: Int,
+  httpClientPoolSize: Int,
 ) extends WorkerConfiguration {
   def isIndividualSend(topics: List[String]): Boolean = 
       topics.forall(topic => allowedTopicsForIndividualSend.exists(topic.startsWith(_)))
@@ -137,7 +139,9 @@ object Configuration {
       ),
       config.getInt("fcm.threadPoolSize"),
       getStringList("fcm.allowedTopicsForIndividualSend"),
-      getOptionalInt("fcm.concurrencyForIndividualSend", 100)
+      getOptionalInt("fcm.concurrencyForIndividualSend", 100),
+      concurrencyForMessages = getOptionalInt("fcm.concurrencyForMessages", 20),
+      httpClientPoolSize = getOptionalInt("fcm.httpClientPoolSize", 10)
     )
   }
 
