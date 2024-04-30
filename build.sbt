@@ -27,14 +27,14 @@ val catsVersion: String = "2.10.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.9"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.16.1"
-val jacksonCbor: String = "2.16.1"
-val jacksonScalaModule: String = "2.16.1"
+val jacksonDatabind: String = "2.16.2"
+val jacksonCbor: String = "2.16.2"
+val jacksonScalaModule: String = "2.16.2"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.35.0"
-val nettyVersion: String = "4.1.107.Final"
+val nettyVersion: String = "4.1.109.Final"
 val slf4jVersion: String = "1.7.36"
-val logbackVersion: String = "1.5.3"
+val logbackVersion: String = "1.5.6"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
@@ -108,7 +108,7 @@ lazy val common = project
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
-      "org.postgresql" % "postgresql" % "42.7.2",
+      "org.postgresql" % "postgresql" % "42.7.3",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
     ),
@@ -325,7 +325,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "23.0.0",
+      "com.gu" %% "content-api-client-default" % "27.0.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -432,7 +432,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.1.1",
-      "com.google.protobuf" % "protobuf-java" % "3.25.3",
+      "com.google.protobuf" % "protobuf-java" % "4.26.1",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
