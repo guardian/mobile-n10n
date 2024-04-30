@@ -1,6 +1,6 @@
 package metrics
 
-import akka.actor.Actor
+import org.apache.pekko.actor.Actor
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient
 import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest, StandardUnit, StatisticSet}
 import org.slf4j.{Logger, LoggerFactory}

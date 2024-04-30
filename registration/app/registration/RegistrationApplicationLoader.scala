@@ -2,7 +2,7 @@ package registration
 
 import _root_.controllers.AssetsComponents
 import _root_.models.NewsstandShardConfig
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import cats.effect.IO
 import com.gu.AppIdentity
 import com.softwaremill.macwire._
