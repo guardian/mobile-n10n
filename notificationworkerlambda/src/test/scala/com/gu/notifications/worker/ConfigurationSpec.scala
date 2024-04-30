@@ -56,6 +56,9 @@ class FcmWorkerConfigurationSpec extends Specification with Matchers {
         fcmConfig = FcmConfig(serviceAccountKey = "key", debug = false, dryRun = false),
         threadPoolSize = 50,
         allowedTopicsForIndividualSend = selectedTopics,
-        concurrencyForIndividualSend = 200)
+        concurrencyForIndividualSend = 200,
+        concurrencyForMessages = 10,
+        httpClientPoolSize = 10,
+        )
   }
 }

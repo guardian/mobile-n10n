@@ -51,7 +51,8 @@ trait Logging {
     functionStartTime: Instant,
     maybePlatform: Option[Platform],
     sqsMessageBatchSize: Int,
-    messagingApi: Option[String] = None
+    messagingApi: String,
+    awsRequestId: String,
   )(end: Instant): Map[String, Any] = {
     val processingTime = Duration.between(functionStartTime, end).toMillis
     val processingRate = numberOfTokens.toDouble / processingTime * 1000
@@ -68,22 +69,26 @@ trait Logging {
       "worker.notificationProcessingEndTime.millis" -> end.toEpochMilli,
       "sqsMessageBatchSize" -> sqsMessageBatchSize,
       "worker.chunkTokenSize" -> numberOfTokens,
-    ) ++ messagingApi.map(s => Map("worker.messagingApi" -> s)).getOrElse(Map())
+      "worker.messagingApi" -> messagingApi,
+      "awsRequestId" -> awsRequestId,
+    )
   }
 
-  def logStartAndCount(acc: Int, chunkedTokens: ChunkedTokens): Int = {
+  def logStartAndCount(awsRequestId: String)(acc: Int, chunkedTokens: ChunkedTokens): Int = {
     logger.info(Map(
-      "notificationId" -> chunkedTokens.notification.id
+      "notificationId" -> chunkedTokens.notification.id,
+      "awsRequestId" -> awsRequestId,
     ), "Start processing a SQS message");
     acc + chunkedTokens.tokens.size
   }
 
-  def logEndOfInvocation(sqsMessageBatchSize: Int, totalTokensProcessed: Int, startTime: Instant): Unit =
+  def logEndOfInvocation(awsRequestId: String)(sqsMessageBatchSize: Int, totalTokensProcessed: Int, startTime: Instant): Unit =
     logger.info(Map(
       "sqsMessageBatchSize" -> sqsMessageBatchSize,
       "totalTokensProcessed" -> totalTokensProcessed,
       "invocation.functionProcessingRate" -> {
         totalTokensProcessed.toDouble / Duration.between(startTime, Instant.now).toMillis * 1000
       },
+      "awsRequestId" -> awsRequestId,
     ), "Processed all messages from SQS event")
 }
