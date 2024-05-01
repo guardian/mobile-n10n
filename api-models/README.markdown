@@ -80,17 +80,9 @@ For instance:
 client.send(...).map { case Left(e: CompositeApiError) => ... }
 ```
 ## Releasing the library
-
-Because of the incompatibility of the play-json module between version 2.3 and 2.4, a different branch has been created.
-Each change that has been merged into ````main```` MUST be merged into the ````play-2.4```` branch
-
-Once this is done, make sure to run ````sbt release```` on both branches
+This repo uses [`gha-scala-library-release-workflow`](https://github.com/guardian/gha-scala-library-release-workflow)
+to automate publishing releases (both full & preview releases) - see
+[**Making a Release**](https://github.com/guardian/gha-scala-library-release-workflow/blob/main/docs/making-a-release.md).
 
 # Mobile Notifications API Models
-[![Maven Central](https://img.shields.io/maven-metadata/v.svg?label=maven-central&metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Fgu%2Fmobile-notifications-api-models_2.13%2Fmaven-metadata.xml)](https://maven-badges.herokuapp.com/maven-central/com.gu/mobile-notifications-api-models_1.0.16)
-[![Project status](https://img.shields.io/badge/status-active-brightgreen.svg)](#status)
-
-### When to release version changes?
-When there's been changes to the model, and a new version of the library has been released in Maven, the `version.sbt` file needs to be updated with the next available version.
-
-NB: As the main branch is protected, we cannot push directly from main, so we need to do this through a development branch (create a PR).
+[![mobile-notifications-api-models Scala version support](https://index.scala-lang.org/guardian/mobile-n10n/mobile-notifications-api-models/latest-by-scala-version.svg?platform=jvm)](https://index.scala-lang.org/guardian/mobile-n10n/mobile-notifications-api-models)
