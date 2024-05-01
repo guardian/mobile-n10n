@@ -19,11 +19,11 @@ addSbtPlugin("com.github.sbt" % "sbt-release" % "1.4.0")
 
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.6.1")
 
-addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.2.1")
-
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.10.0")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
+
+addSbtPlugin("ch.epfl.scala" % "sbt-version-policy" % "3.2.1")
 
 /*
    Without setting VersionScheme.Always here on `scala-xml`, sbt 1.8.0 will raise fatal 'version conflict' errors when
