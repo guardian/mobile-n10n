@@ -1,3 +1,5 @@
+import ReleaseTransformations.*
+import sbtversionpolicy.withsbtrelease.ReleaseVersion
 import play.sbt.PlayImport.specs2
 import sbt.Keys.{libraryDependencies, mainClass}
 import sbtassembly.AssemblyPlugin.autoImport.{assemblyJarName, assemblyMergeStrategy}
@@ -5,8 +7,20 @@ import sbtassembly.MergeStrategy
 import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 
 val projectVersion = "1.0-latest"
-
-organization := "com.gu"
+ThisBuild / publish / skip := true
+releaseVersion := ReleaseVersion.fromAggregatedAssessedCompatibilityWithLatestRelease().value
+releaseCrossBuild := true // true if you cross-build the project for multiple Scala versions
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  setNextVersion,
+  commitNextVersion
+)
 ThisBuild / scalaVersion := "2.13.13"
 
 val compilerOptions = Seq(
@@ -14,7 +28,8 @@ val compilerOptions = Seq(
   "-Xfatal-warnings",
   "-feature",
   "-language:postfixOps",
-  "-language:implicitConversions"
+  "-language:implicitConversions",
+  "-release:11"
 )
 
 ThisBuild / scalacOptions ++= compilerOptions
@@ -218,6 +233,7 @@ lazy val apiModels = {
   import ReleaseStateTransformations._
   Project("api-models", file("api-models")).settings(Seq(
     name := "mobile-notifications-api-models",
+    publish / skip := false,
     libraryDependencies ++= Seq(
       "org.playframework" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
@@ -227,39 +243,8 @@ lazy val apiModels = {
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
     ),
     organization := "com.gu",
-    publishTo := sonatypePublishToBundle.value,
-
-    scmInfo := Some(ScmInfo(
-      url("https://github.com/guardian/mobile-n10n"),
-      "scm:git:git@github.com:guardian/mobile-n10n.git"
-    )),
-
-    homepage := Some(url("https://github.com/guardian/mobile-n10n")),
-
-    developers := List(Developer(
-      id = "Guardian",
-      name = "Guardian",
-      email = null,
-      url = url("https://github.com/guardian")
-    )),
     description := "Scala models for the Guardian Push Notifications API",
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    releaseVersionFile := file("api-models/version.sbt"),
-    licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runClean,
-      runTest,
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      publishArtifacts,
-      releaseStepCommand("sonatypeBundleRelease"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
-    )
+    licenses := Seq(License.Apache2),
   ))
 }
 
