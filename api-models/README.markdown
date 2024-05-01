@@ -1,8 +1,5 @@
 # Mobile Notifications API Client
-
-[![Maven Central](https://img.shields.io/maven-central/v/com.gu/mobile-notifications-client_2.11.svg)](https://maven-badges.herokuapp.com/maven-central/com.gu/mobile-notifications-client_2.11)
-[![Project status](https://img.shields.io/badge/status-active-brightgreen.svg)](#status)
-
+[![mobile-notifications-api-models Scala version support](https://index.scala-lang.org/guardian/mobile-n10n/mobile-notifications-api-models/latest-by-scala-version.svg?platform=jvm)](https://index.scala-lang.org/guardian/mobile-n10n/mobile-notifications-api-models)
 Scala client for the Guardian Mobile Notifications API.
 
 ## Integrating with your application
@@ -83,6 +80,3 @@ client.send(...).map { case Left(e: CompositeApiError) => ... }
 This repo uses [`gha-scala-library-release-workflow`](https://github.com/guardian/gha-scala-library-release-workflow)
 to automate publishing releases (both full & preview releases) - see
 [**Making a Release**](https://github.com/guardian/gha-scala-library-release-workflow/blob/main/docs/making-a-release.md).
-
-# Mobile Notifications API Models
-[![mobile-notifications-api-models Scala version support](https://index.scala-lang.org/guardian/mobile-n10n/mobile-notifications-api-models/latest-by-scala-version.svg?platform=jvm)](https://index.scala-lang.org/guardian/mobile-n10n/mobile-notifications-api-models)
