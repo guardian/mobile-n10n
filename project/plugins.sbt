@@ -17,8 +17,6 @@ libraryDependencies += "org.vafer" % "jdeb" % "1.10" artifacts (Artifact("jdeb",
 
 addSbtPlugin("com.github.sbt" % "sbt-release" % "1.4.0")
 
-addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.6.1")
-
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.10.0")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
