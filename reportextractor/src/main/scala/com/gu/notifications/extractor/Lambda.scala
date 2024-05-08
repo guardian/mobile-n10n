@@ -53,8 +53,8 @@ class Lambda extends RequestHandler[DateRange, Unit] {
     case _ => Region.getRegion(Regions.EU_WEST_1)
   }
 
-  val dynamoDB = AmazonDynamoDBClientBuilder.standard().withCredentials(credentials).withRegion(region).build()
-  val s3 = AmazonS3ClientBuilder.standard().withCredentials(credentials).withRegion(region).build()
+  val dynamoDB = AmazonDynamoDBClientBuilder.standard().withCredentials(credentials).withRegion(region.getName).build()
+  val s3 = AmazonS3ClientBuilder.standard().withCredentials(credentials).withRegion(region.getName).build()
 
   val tableName: String = identity match {
     case AwsIdentity(_, _, stage, _) => s"mobile-notifications-reports-$stage"
