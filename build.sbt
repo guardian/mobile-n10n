@@ -34,7 +34,7 @@ val compilerOptions = Seq(
 
 ThisBuild / scalacOptions ++= compilerOptions
 
-val playJsonVersion = "3.0.2"
+val playJsonVersion = "3.0.3"
 val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.687"
 val doobieVersion: String = "0.13.4"
@@ -42,9 +42,9 @@ val catsVersion: String = "2.10.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.9"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.16.2"
-val jacksonCbor: String = "2.16.2"
-val jacksonScalaModule: String = "2.16.2"
+val jacksonDatabind: String = "2.17.0"
+val jacksonCbor: String = "2.17.0"
+val jacksonScalaModule: String = "2.17.0"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.35.0"
 val nettyVersion: String = "4.1.109.Final"
