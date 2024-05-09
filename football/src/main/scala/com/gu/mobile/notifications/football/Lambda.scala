@@ -1,9 +1,8 @@
 package com.gu.mobile.notifications.football
 
-import java.net.URL
+import java.net.{URI, URL}
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
-
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
@@ -65,7 +64,7 @@ object Lambda extends Logging {
 
   def getZonedDateTime(): ZonedDateTime = {
     val zonedDateTime = if (configuration.stage == "CODE") {
-      val is = new URL("https://hdjq4n85yi.execute-api.eu-west-1.amazonaws.com/Prod/getTime").openStream()
+      val is = URI.create("https://hdjq4n85yi.execute-api.eu-west-1.amazonaws.com/Prod/getTime").toURL.openStream()
       val json = Json.parse(Source.fromInputStream(is).mkString)
       ZonedDateTime.parse((json \ "currentDate").as[String])
     } else {

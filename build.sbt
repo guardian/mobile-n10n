@@ -36,7 +36,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "3.0.3"
 val specsVersion: String = "4.8.3"
-val awsSdkVersion: String = "1.12.687"
+val awsSdkVersion: String = "1.12.707"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.10.0"
 val okHttpVersion: String = "4.12.0"
@@ -350,7 +350,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
     Seq(
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-events" % "3.11.4",
+        "com.amazonaws" % "aws-lambda-java-events" % "3.11.5",
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
         "io.netty" % "netty-codec-http" % nettyVersion,
@@ -421,7 +421,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
-      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "2.1.2",
+      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "2.1.3",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "org.playframework" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
