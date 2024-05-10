@@ -18,11 +18,6 @@ trait DeliveryService[F[_], C <: DeliveryClient] {
     notification: Notification,
     token: String
   ): Stream[F, Either[DeliveryException, C#Success]]
-
-  def sendBatch(
-    notification: Notification,
-    tokens: List[String]
-  ): Stream[F, Either[DeliveryException, C#BatchSuccess]]
 }
 
 class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
@@ -89,59 +84,4 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
       res <- sending(client)(token, payload)
     } yield res
   }
-
-  def sendBatch(notification: Notification, tokens: List[String]): Stream[F, Either[DeliveryException, C#BatchSuccess]] = {
-
-    def sendBatchAsync(client: C)(token: List[String], payload: client.Payload): F[C#BatchSuccess] = {
-      Async[F].async { (cb: Either[Throwable, C#BatchSuccess] => Unit) =>
-        client.sendBatchNotification(
-          notification.id,
-          token,
-          payload,
-          notification.dryRun.contains(true) || client.dryRun
-        )(cb)
-      }
-    }
-
-    def sending(client: C)(token: List[String], payload: client.Payload): Stream[F, Either[DeliveryException, C#BatchSuccess]] = {
-
-      val delayInMs = {
-        val rangeInMs = Range(1000, 3000)
-        rangeInMs.min + Random.nextInt(rangeInMs.length)
-      }
-      Stream
-        .retry(
-          sendBatchAsync(client)(token, payload),
-          delay = FiniteDuration(delayInMs, TimeUnit.MILLISECONDS),
-          nextDelay = _.mul(2),
-          maxAttempts = 3,
-          retriable = {
-            case NonFatal(e: FailedDelivery) => true
-            case NonFatal(e: InvalidToken) => false
-            case NonFatal(exception: Exception) =>
-              logger.error("Encountered an error, will retry", exception)
-              true
-            case _ => false
-          }
-        )
-        .attempt
-        .map {
-          _.leftMap {
-            case de: DeliveryException => de
-            case NonFatal(e) => GenericFailure(notification.id, token.head, e)
-          }
-        }
-    }
-
-    val payloadF: F[client.Payload] = client
-      .payloadBuilder(notification)
-      .map(p => F.delay(p))
-      .getOrElse(F.raiseError(InvalidPayload(notification.id)))
-
-    for {
-      payload <- Stream.eval(payloadF)
-      res <- sending(client)(tokens, payload)
-    } yield res
-  }
-
 }

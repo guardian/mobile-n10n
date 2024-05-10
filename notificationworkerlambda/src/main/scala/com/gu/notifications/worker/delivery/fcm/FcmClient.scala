@@ -81,55 +81,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
         }
     }
   }
-
-  def sendBatchNotification(notificationId: UUID, tokens: List[String], payload: Payload, dryRun: Boolean)
-    (onAPICallComplete: Either[DeliveryException, BatchSuccess] => Unit)
-    (implicit executionContext: ExecutionContextExecutor) = {
-
-    val message = MulticastMessage
-      .builder
-      .addAllTokens(tokens.asJava)
-      .setAndroidConfig(payload.androidConfig)
-      .build
-
-    if (dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
-      onAPICallComplete(Right(
-        FcmBatchDeliverySuccess(
-          List.fill(tokens.size)(Right(FcmDeliverySuccess(s"success", "dryrun", Instant.now(), dryRun = true))),
-          notificationId.toString
-        )))
-    } else {
-      import FirebaseHelpers._
-      val start = Instant.now
-      firebaseMessaging
-        .sendMulticastAsync(message)
-        .asScala
-        .onComplete { response =>
-          val requestCompletionTime = Instant.now
-          logger.info(Map(
-            "worker.batchRequestLatency" -> Duration.between(start, requestCompletionTime).toMillis,
-            "notificationId" -> notificationId
-          ), "Batch send request completed")
-          parseBatchSendResponse(notificationId, tokens, response, requestCompletionTime)(onAPICallComplete)
-        }
-    }
-  }
-
-  def parseFirebaseSdkSendResponse(
-    notificationId: UUID, token: String, response: Try[String], requestCompletionTime: Instant
-  ): Either[DeliveryException, Success] = response match {
-    case Success(messageId) =>
-      Right(FcmDeliverySuccess(token, messageId, requestCompletionTime))
-    case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) if invalidTokenErrorCodes.contains(e.getErrorCode) || isUnregistered(e) =>
-      Left(InvalidToken(notificationId, token, e.getMessage))
-    case Failure(UnwrappingExecutionException(e: FirebaseMessagingException)) =>
-      Left(FailedRequest(notificationId, token, e, Option(e.getErrorCode.toString)))
-    case Failure(NonFatal(t)) =>
-      Left(FailedRequest(notificationId, token, t))
-    case Failure(_) =>
-      Left(UnknownReasonFailedRequest(notificationId, token))
-  }
-
+ 
   def parseSendResponse(
     notificationId: UUID, token: String, response: Try[String], requestCompletionTime: Instant
   ): Either[DeliveryException, Success] = response match {
@@ -150,28 +102,6 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     case Failure(_) =>
       Left(UnknownReasonFailedRequest(notificationId, token))
   }
-
-  def parseBatchSendResponse(
-    notificationId: UUID, tokens: List[String], triedResponse: Try[BatchResponse], requestCompletionTime: Instant
-  )(cb: Either[DeliveryException, BatchSuccess] => Unit): Unit = triedResponse match {
-    case Success(batchResponse) =>
-      cb(Right(FcmBatchDeliverySuccess(
-        // From firebase sdk docs: the order of the response list corresponds to the order of the input tokens
-        batchResponse.getResponses.asScala.toList.zip(tokens).map { el => {
-          val (r, token) = el
-          if (!r.isSuccessful) {
-            parseFirebaseSdkSendResponse(notificationId, token, Failure(r.getException), requestCompletionTime)
-          } else {
-            Right(FcmDeliverySuccess(s"Token in batch response succeeded", token, requestCompletionTime))
-          }
-        }
-        }, notificationId.toString)))
-
-
-    case Failure(x) =>
-      cb(Left(BatchCallFailedRequest(notificationId, s"Multicast Async Response Failure: ${x.getCause}")))
-  }
-
 }
 
 case class FcmFirebase(firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig, projectId: String, credential: GoogleCredentials, jsonFactory: JsonFactory)
