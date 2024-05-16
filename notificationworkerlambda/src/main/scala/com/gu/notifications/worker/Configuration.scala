@@ -134,6 +134,8 @@ object Configuration {
       config.getString("cleaningSqsUrl"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
+        connectTimeout = getOptionalInt("fcm.connectTimeout", 10),
+        requestTimeout = getOptionalInt("fcm.requestTimeout", 10),
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
       ),
