@@ -168,7 +168,7 @@ trait FcmScope extends Scope {
   val mockFirebaseMessaging = Mockito.mock[FirebaseMessaging]
   val mockApiFuture = Mockito.mock[ApiFuture[String]]
 
-  val config: FcmConfig = FcmConfig("serviceAccountKey")
+  val config: FcmConfig = FcmConfig("serviceAccountKey", 10, 10)
   val mockCredential = Mockito.mock[GoogleCredentials]
   val mockJsonFactory = Mockito.mock[JsonFactory]
   val fcmClient = new FcmClient(mockFirebaseMessaging, app, config, "TEST-PROJECT-ID", mockCredential, mockJsonFactory)

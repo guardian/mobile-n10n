@@ -37,6 +37,8 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   logger.info(s"Concurrency for individual send: ${config.concurrencyForIndividualSend}")
   logger.info(s"Concurrency for message processing: ${config.concurrencyForMessages}")
   logger.info(s"HttpClient object pool: ${config.httpClientPoolSize}")
+  logger.info(s"HttpClient connect timeout in sec: ${config.fcmConfig.connectTimeout}")
+  logger.info(s"HttpClient request timeout in sec: ${config.fcmConfig.requestTimeout}")
 
   override implicit val ioContextShift: ContextShift[IO] = IO.contextShift(ec)
   override implicit val timer: Timer[IO] = IO.timer(ec)

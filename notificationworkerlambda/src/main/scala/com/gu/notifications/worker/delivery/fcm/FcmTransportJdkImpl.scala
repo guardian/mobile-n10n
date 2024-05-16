@@ -4,6 +4,7 @@ import java.io.OutputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{Future, Promise}
@@ -26,11 +27,11 @@ trait FcmTransport {
   def sendAsync(token: String, payload: FcmPayload, dryRun: Boolean): Future[String]
 }
 
-class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactory: JsonFactory) extends FcmTransport {
+class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactory: JsonFactory, connectTimeout: Int, requestTimeout: Int) extends FcmTransport {
   
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  private val httpClient: HttpClient = HttpClient.newHttpClient()
+  private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(connectTimeout)).build()
 
   logger.info("HttpClient is instantiated")
 
@@ -115,6 +116,7 @@ class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactor
       .header("Authorization", "Bearer " + getAccessToken())
       .header("Content-Type", mediaType)
       .POST(HttpRequest.BodyPublishers.ofByteArray(body))
+      .timeout(Duration.ofSeconds(requestTimeout))
       .build()
     val p = Promise[String]()
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {

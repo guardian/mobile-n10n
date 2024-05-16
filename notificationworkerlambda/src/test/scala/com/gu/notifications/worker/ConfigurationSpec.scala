@@ -53,7 +53,7 @@ class FcmWorkerConfigurationSpec extends Specification with Matchers {
     def createConfiguration(selectedTopics: List[String]): FcmWorkerConfiguration =
       FcmWorkerConfiguration(
         cleaningSqsUrl = "cleaning-sqs-url",
-        fcmConfig = FcmConfig(serviceAccountKey = "key", debug = false, dryRun = false),
+        fcmConfig = FcmConfig(serviceAccountKey = "key", connectTimeout = 10, requestTimeout = 10, debug = false, dryRun = false),
         threadPoolSize = 50,
         allowedTopicsForIndividualSend = selectedTopics,
         concurrencyForIndividualSend = 200,
