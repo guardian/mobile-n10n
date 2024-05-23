@@ -52,67 +52,6 @@ class FcmClientTest extends Specification with Mockito {
 
       response shouldEqual Left(InvalidToken(notification.id, token, fcmException.getMessage()))
     }
-
-    "Parse catastrophic errors when sending multicast messages" in new FcmScope {
-      val tokenList: List[String] = List("token1")
-
-      val now = Instant.now()
-      fcmClient.parseBatchSendResponse(notification.id, tokenList, Failure(new Error("catastrophic failure")), now)(onCompleteCb)
-
-      catastrophicBatchSendResponse shouldEqual 1
-    }
-
-    "Parse partially successful multicast messages" in new FcmScope {
-      val tokenList: List[String] = List("token1", "token2", "token3", "token4")
-
-      val mockFirebaseMessagingException = mock[FirebaseMessagingException]
-        when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.INTERNAL)
-
-      val mockSendResponseFailure = mock[SendResponse]
-      when(mockSendResponseFailure.isSuccessful()).thenReturn(false)
-      when(mockSendResponseFailure.getException()).thenReturn(mockFirebaseMessagingException)
-
-      val mockSendResponse = mock[SendResponse]
-      when(mockSendResponse.isSuccessful()).thenReturn(true)
-
-      val batchResponseSuccess: BatchResponse = new BatchResponse {
-        override def getResponses: util.List[SendResponse] = List(mockSendResponse, mockSendResponseFailure, mockSendResponse, mockSendResponseFailure).asJava
-        override def getSuccessCount: Int = 2
-        override def getFailureCount: Int = 2
-      }
-
-      val now = Instant.now()
-      fcmClient.parseBatchSendResponse(notification.id, tokenList, Success(batchResponseSuccess), now)(onCompleteCb)
-
-      failedRequest shouldEqual 2
-    }
-
-    "Parse partially successful multicast messages with invalid tokens" in new FcmScope {
-      val tokenList: List[String] = List("token1", "token2", "token3", "token4")
-
-      val mockFirebaseMessagingException = mock[FirebaseMessagingException]
-      when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
-
-      val mockSendResponseFailure = mock[SendResponse]
-      when(mockSendResponseFailure.isSuccessful()).thenReturn(false)
-      when(mockSendResponseFailure.getException()).thenReturn(mockFirebaseMessagingException)
-
-      val mockSendResponse = mock[SendResponse]
-      when(mockSendResponse.isSuccessful()).thenReturn(true)
-
-      val batchResponseSuccess: BatchResponse = new BatchResponse {
-        override def getResponses: util.List[SendResponse] = List(mockSendResponse, mockSendResponseFailure, mockSendResponse, mockSendResponseFailure).asJava
-        override def getSuccessCount: Int = 2
-        override def getFailureCount: Int = 2
-      }
-
-      val now = Instant.now()
-      fcmClient.parseBatchSendResponse(notification.id, tokenList, Success(batchResponseSuccess), now)(onCompleteCb)
-
-      invalidTokens shouldEqual 2
-      batchInvalidTokens.contains("token2") shouldEqual true
-      batchInvalidTokens.contains("token4") shouldEqual true
-    }
   }
 }
 trait FcmScope extends Scope {

@@ -33,7 +33,6 @@ class AndroidSender(val config: FcmWorkerConfiguration, val firebaseAppName: Opt
   override implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(config.threadPoolSize))
 
   logger.info(s"Using thread pool size: ${config.threadPoolSize}")
-  logger.info(s"Topics for individual send: ${config.allowedTopicsForIndividualSend.mkString(",")}")
   logger.info(s"Concurrency for individual send: ${config.concurrencyForIndividualSend}")
   logger.info(s"Concurrency for message processing: ${config.concurrencyForMessages}")
   logger.info(s"HttpClient object pool: ${config.httpClientPoolSize}")
