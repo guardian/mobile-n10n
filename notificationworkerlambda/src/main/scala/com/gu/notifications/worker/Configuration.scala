@@ -35,14 +35,10 @@ case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
-  allowedTopicsForIndividualSend: List[String],
   concurrencyForIndividualSend: Int,
   concurrencyForMessages: Int,
   httpClientPoolSize: Int,
-) extends WorkerConfiguration {
-  def isIndividualSend(topics: List[String]): Boolean = 
-      topics.forall(topic => allowedTopicsForIndividualSend.exists(topic.startsWith(_)))
-}
+) extends WorkerConfiguration
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
 
@@ -140,7 +136,6 @@ object Configuration {
         dryRun = config.getBoolean("dryrun")
       ),
       config.getInt("fcm.threadPoolSize"),
-      getStringList("fcm.allowedTopicsForIndividualSend"),
       getOptionalInt("fcm.concurrencyForIndividualSend", 100),
       concurrencyForMessages = getOptionalInt("fcm.concurrencyForMessages", 20),
       httpClientPoolSize = getOptionalInt("fcm.httpClientPoolSize", 10)

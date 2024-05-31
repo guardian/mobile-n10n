@@ -128,10 +128,6 @@ class SenderRequestHandlerSpec extends Specification with Matchers with Mockito 
           deliveryCallsCount += 1
           deliveries
         }
-
-        override def sendBatch(notification: Notification, tokens: List[String]): Stream[IO, Either[DeliveryException, ApnsBatchDeliverySuccess]] = {
-          Stream(Right(ApnsBatchDeliverySuccess(List(), notification.id.toString)))
-        }
       })
 
       override val cleaningClient: CleaningClient = new CleaningClient {
