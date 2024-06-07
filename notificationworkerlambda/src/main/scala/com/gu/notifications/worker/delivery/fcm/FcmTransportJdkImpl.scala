@@ -61,19 +61,19 @@ class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactor
     sink.toByteArray()
   }
 
-  private def parseBody(responseBody: String): Try[FcmResponse] = {
+  private def parseBody(responseBody: String): Try[FcmResponse] = Try {
     val json: JsValue = Json.parse(responseBody)
     json.validate[FcmResponse] match {
-      case JsSuccess(message, _) => Success(message)
-      case JsError(errors)       => Failure(InvalidResponseException(responseBody))
+      case JsSuccess(message, _) => message
+      case JsError(errors)       => throw InvalidResponseException(responseBody)
     }
   }
 
-  private def parseError(responseBody: String): Try[FcmError] = {
+  private def parseError(responseBody: String): Try[FcmError] = Try {
     val json: JsValue = Json.parse(responseBody)
     json.validate[FcmError] match {
-      case JsSuccess(message, _) => Success(message)
-      case JsError(errors)       => Failure(InvalidResponseException(responseBody))
+      case JsSuccess(message, _) => message
+      case JsError(errors)       => throw InvalidResponseException(responseBody)
     }
   }
 
@@ -91,11 +91,11 @@ class FcmTransportJdkImpl(credential: GoogleCredentials, url: String, jsonFactor
   val quotaExceededErrorCodes = Set(
     MessagingErrorCode.QUOTA_EXCEEDED).map(_.name())
 
-  private def handleResponse(response: HttpResponse[String]): Try[FcmResponse] = {
+  private[fcm] def handleResponse(response: HttpResponse[String]): Try[FcmResponse] = {
     if (response.statusCode() == 200)
       parseBody(response.body())
     else
-      parseError(response.body()).flatMap(fcmError => fcmError.error.status match {
+      parseError(response.body()).flatMap(fcmError => fcmError.error.fcmErrorCode.getOrElse(fcmError.error.status) match {
         case code if invalidTokenErrorCodes.contains(code) => Failure(InvalidTokenException(fcmError.error))
         case code if internalServerErrorCodes.contains(code) => Failure(FcmServerException(fcmError.error))
         case code if quotaExceededErrorCodes.contains(code) => Failure(QuotaExceededException(fcmError.error))
