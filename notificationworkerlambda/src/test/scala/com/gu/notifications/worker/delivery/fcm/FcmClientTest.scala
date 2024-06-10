@@ -37,7 +37,7 @@ class FcmClientTest extends Specification with Mockito {
     }
 
     "Parse errors with an invalid token error code as an InvalidToken" in new FcmScope {
-      val fcmException = InvalidTokenException(FcmErrorPayload(500, "Invalid", MessagingErrorCode.INVALID_ARGUMENT.name()))
+      val fcmException = InvalidTokenException(FcmErrorPayload(500, "Invalid", MessagingErrorCode.INVALID_ARGUMENT.name(), None))
       val now = Instant.now()
       val response = fcmClient.parseSendResponse(notification.id, token, Failure(fcmException), now)
 
@@ -45,7 +45,7 @@ class FcmClientTest extends Specification with Mockito {
     }
 
     "Parse errors with NOT_FOUND error code and 'Requested entity was not found.' error message as an InvalidToken" in new FcmScope {
-      val fcmException = InvalidTokenException(FcmErrorPayload(500, "Requested entity was not found.", MessagingErrorCode.UNREGISTERED.name()))
+      val fcmException = InvalidTokenException(FcmErrorPayload(500, "Requested entity was not found.", MessagingErrorCode.UNREGISTERED.name(), None))
 
       val now = Instant.now()
       val response = fcmClient.parseSendResponse(notification.id, token, Failure(fcmException), now)
