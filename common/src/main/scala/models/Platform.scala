@@ -10,6 +10,7 @@ case object Newsstand extends Platform { override def toString: String = "newsst
 case object AndroidEdition extends Platform { override def toString: String = "android-edition"}
 case object IosEdition extends Platform { override def toString: String = "ios-edition"}
 case object AndroidBeta extends Platform { override def toString: String = "android-beta" }
+case object IosFeast extends Platform { override def toString: String = "ios-feast" }
 // only here to parse older notification reports
 case object WindowsMobile extends Platform { override def toString: String = "windows-mobile" }
 
@@ -22,6 +23,7 @@ object Platform {
     case "ios-edition" => IosEdition
     case "android-edition" => AndroidEdition
     case "android-beta" => AndroidBeta
+    case "ios-feast" => IosFeast
   }
 
   implicit val jf: Format[Platform] = new Format[Platform] {

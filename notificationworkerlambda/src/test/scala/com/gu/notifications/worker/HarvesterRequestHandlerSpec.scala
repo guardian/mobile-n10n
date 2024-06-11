@@ -153,7 +153,10 @@ class HarvesterRequestHandlerSpec extends Specification with Matchers {
           deliveriesCount.firebaseEditionSqsDeliveriesCount.incrementAndGet()
           deliveriesCount.firebaseEditionSqsDeliveriesTotal.addAndGet(chunkedTokens.tokens.size)
           sqsDeliveries
-        }
+        },
+        iosFeastDeliveryService = (chunkedTokens: ChunkedTokens) => {
+          sqsDeliveries
+        }        
       )
 
     trait TestHarvesterRequestHandler extends HarvesterRequestHandler {

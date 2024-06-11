@@ -45,6 +45,12 @@ Object {
                 "Arn",
               ],
             },
+            Object {
+              "Fn::GetAtt": Array [
+                "iosfeastSenderSqs7C4A206D",
+                "Arn",
+              ],
+            },
           ],
         ],
       },
@@ -2417,6 +2423,476 @@ Object {
           },
         ],
         "Period": 86400,
+        "Statistic": "Sum",
+        "Threshold": 0,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "iosfeastExecutionRoleBFD08042": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Path": "/",
+        "Policies": Array [
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "logs:CreateLogGroup",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:aws:logs:eu-west-1:",
+                        Object {
+                          "Ref": "AWS::AccountId",
+                        },
+                        ":*",
+                      ],
+                    ],
+                  },
+                },
+                Object {
+                  "Action": Array [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:aws:logs:eu-west-1:",
+                        Object {
+                          "Ref": "AWS::AccountId",
+                        },
+                        ":log-group:/aws/lambda/*:*",
+                      ],
+                    ],
+                  },
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "logs",
+          },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "sqs:*",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::GetAtt": Array [
+                      "iosfeastSenderSqs7C4A206D",
+                      "Arn",
+                    ],
+                  },
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "SQSOutput",
+          },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "sqs:SendMessage",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Ref": "CleanerQueueArnParam",
+                  },
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "SQSInput",
+          },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "ssm:GetParametersByPath",
+                  "Effect": "Allow",
+                  "Resource": Object {
+                    "Fn::Join": Array [
+                      "",
+                      Array [
+                        "arn:aws:ssm:",
+                        Object {
+                          "Ref": "AWS::Region",
+                        },
+                        ":",
+                        Object {
+                          "Ref": "AWS::AccountId",
+                        },
+                        ":parameter/notifications/PROD/workers/ios-feast",
+                      ],
+                    ],
+                  },
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "Conf",
+          },
+          Object {
+            "PolicyDocument": Object {
+              "Statement": Array [
+                Object {
+                  "Action": "cloudwatch:PutMetricData",
+                  "Effect": "Allow",
+                  "Resource": "*",
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "Cloudwatch",
+          },
+        ],
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "ios-feast",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "50.10.3",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "iosfeastSenderDlqC165B3FD": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "ios-feast",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "50.10.3",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "iosfeastSenderErrorAlarmCFFA8871": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if the ios-feast sender lambda errors in PROD.",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "FunctionName",
+            "Value": Object {
+              "Ref": "iosfeastSenderLambdaCtrDD957EC1",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "Errors",
+        "Namespace": "AWS/Lambda",
+        "OKActions": Array [
+          Object {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Period": 360,
+        "Statistic": "Sum",
+        "Threshold": 0,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "iosfeastSenderLambdaCtrDD957EC1": Object {
+      "DependsOn": Array [
+        "iosfeastExecutionRoleBFD08042",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "ImageUri": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                Object {
+                  "Fn::Select": Array [
+                    4,
+                    Object {
+                      "Fn::Split": Array [
+                        ":",
+                        Object {
+                          "Fn::ImportValue": "NotificationLambdaRepositoryArn",
+                        },
+                      ],
+                    },
+                  ],
+                },
+                ".dkr.ecr.",
+                Object {
+                  "Fn::Select": Array [
+                    3,
+                    Object {
+                      "Fn::Split": Array [
+                        ":",
+                        Object {
+                          "Fn::ImportValue": "NotificationLambdaRepositoryArn",
+                        },
+                      ],
+                    },
+                  ],
+                },
+                ".",
+                Object {
+                  "Ref": "AWS::URLSuffix",
+                },
+                "/",
+                Object {
+                  "Fn::ImportValue": "NotificationLambdaRepositoryName",
+                },
+                ":",
+                Object {
+                  "Ref": "BuildId",
+                },
+              ],
+            ],
+          },
+        },
+        "Description": "sends notifications for ios-feast",
+        "Environment": Object {
+          "Variables": Object {
+            "App": "ios-feast",
+            "Platform": "ios-feast",
+            "Stack": "mobile-notifications-workers",
+            "Stage": "PROD",
+          },
+        },
+        "FunctionName": "mobile-notifications-workers-ios-feast-sender-ctr-PROD",
+        "ImageConfig": Object {
+          "Command": Array [
+            "com.gu.notifications.worker.IOSSender::handleChunkTokens",
+          ],
+        },
+        "MemorySize": 10240,
+        "PackageType": "Image",
+        "ReservedConcurrentExecutions": Object {
+          "Ref": "ReservedConcurrency",
+        },
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "iosfeastExecutionRoleBFD08042",
+            "Arn",
+          ],
+        },
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "ios-feast",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "50.10.3",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Timeout": 90,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "iosfeastSenderQueueSSMParameter8A56FD07": Object {
+      "Properties": Object {
+        "DataType": "text",
+        "Name": "/notifications/PROD/workers/harvester/iosFeastSqsCdkUrl",
+        "Tags": Object {
+          "App": "ios-feast",
+          "Stack": "mobile-notifications-workers",
+          "Stage": "PROD",
+          "gu:cdk:version": "50.10.3",
+          "gu:repo": "guardian/mobile-n10n",
+        },
+        "Tier": "Standard",
+        "Type": "String",
+        "Value": Object {
+          "Ref": "iosfeastSenderSqs7C4A206D",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "iosfeastSenderSqs7C4A206D": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "MessageRetentionPeriod": 3600,
+        "RedrivePolicy": Object {
+          "deadLetterTargetArn": Object {
+            "Fn::GetAtt": Array [
+              "iosfeastSenderDlqC165B3FD",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 5,
+        },
+        "Tags": Array [
+          Object {
+            "Key": "App",
+            "Value": "ios-feast",
+          },
+          Object {
+            "Key": "gu:cdk:version",
+            "Value": "50.10.3",
+          },
+          Object {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          Object {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          Object {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "VisibilityTimeout": 100,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "iosfeastSenderSqsEventSourceMapping7AE4425B": Object {
+      "DependsOn": Array [
+        "iosfeastSenderLambdaCtrDD957EC1",
+        "iosfeastSenderSqs7C4A206D",
+      ],
+      "Properties": Object {
+        "BatchSize": 1,
+        "Enabled": true,
+        "EventSourceArn": Object {
+          "Fn::GetAtt": Array [
+            "iosfeastSenderSqs7C4A206D",
+            "Arn",
+          ],
+        },
+        "FunctionName": Object {
+          "Ref": "iosfeastSenderLambdaCtrDD957EC1",
+        },
+        "MaximumBatchingWindowInSeconds": 0,
+      },
+      "Type": "AWS::Lambda::EventSourceMapping",
+    },
+    "iosfeastSenderThrottleAlarm017B7E6B": Object {
+      "Properties": Object {
+        "AlarmActions": Array [
+          Object {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if the ios-feast sender lambda is throttled in PROD.",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "FunctionName",
+            "Value": Object {
+              "Ref": "iosfeastSenderLambdaCtrDD957EC1",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "Throttles",
+        "Namespace": "AWS/Lambda",
+        "OKActions": Array [
+          Object {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Period": 360,
+        "Statistic": "Sum",
+        "Threshold": 0,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "iosfeastSenderTooFewInvocationsAlarm2E87AFE5": Object {
+      "Properties": Object {
+        "ActionsEnabled": true,
+        "AlarmActions": Array [
+          Object {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if the ios-feast sender lambda is not frequently invoked in PROD.",
+        "ComparisonOperator": "LessThanOrEqualToThreshold",
+        "Dimensions": Array [
+          Object {
+            "Name": "FunctionName",
+            "Value": Object {
+              "Ref": "iosfeastSenderLambdaCtrDD957EC1",
+            },
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "Invocations",
+        "Namespace": "AWS/Lambda",
+        "OKActions": Array [
+          Object {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Period": 3600,
         "Statistic": "Sum",
         "Threshold": 0,
         "TreatMissingData": "breaching",

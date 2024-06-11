@@ -24,11 +24,13 @@ object WorkerSqs {
   case object AndroidEditionWorkerSqs extends WorkerSqs
   case object IosWorkerSqs extends WorkerSqs
   case object IosEditionWorkerSqs extends WorkerSqs
+  case object IosFeastWorkerSqs extends WorkerSqs
 }
 
 case class SqsDeliveryStack(
   iosLiveDeliveryService: SqsDeliveryService[IO],
   iosEditionDeliveryService: SqsDeliveryService[IO],
+  iosFeastDeliveryService: SqsDeliveryService[IO],
   androidLiveDeliveryService: SqsDeliveryService[IO],
   androidEditionDeliveryService: SqsDeliveryService[IO],
   androidBetaDeliveryService: SqsDeliveryService[IO]
@@ -79,6 +81,7 @@ trait HarvesterRequestHandler extends Logging {
     case token @ HarvestedToken(_, Android, Some(BuildTier.BETA)) => (WorkerSqs.AndroidBetaWorkerSqs, token)
     case token @ HarvestedToken(_, Android, _) => (WorkerSqs.AndroidWorkerSqs, token)
     case token @ HarvestedToken(_, AndroidEdition, _) => (WorkerSqs.AndroidEditionWorkerSqs, token)
+    case token @ HarvestedToken(_, IosFeast, _) => (WorkerSqs.IosFeastWorkerSqs, token)
   }
 
   def queueShardedNotification(shardedNotifications: Stream[IO, ShardedNotification], tokenService: TokenService[IO]): Stream[IO, Unit] = {
@@ -90,12 +93,13 @@ trait HarvesterRequestHandler extends Logging {
       androidEditionSink = platformSink(shardedNotification, AndroidEdition, WorkerSqs.AndroidEditionWorkerSqs, lambdaServiceSet.androidEditionDeliveryService)
       iosSink = platformSink(shardedNotification, Ios, WorkerSqs.IosWorkerSqs, lambdaServiceSet.iosLiveDeliveryService)
       iosEditionSink = platformSink(shardedNotification, IosEdition, WorkerSqs.IosEditionWorkerSqs, lambdaServiceSet.iosEditionDeliveryService)
+      iosFeastSink = platformSink(shardedNotification, IosFeast, WorkerSqs.IosFeastWorkerSqs, lambdaServiceSet.iosFeastDeliveryService)
       notificationLog = s"(notification: $notificationId ${shardedNotification.range})"
       _ = logger.info(Map("notificationId" -> notificationId), s"Queuing notification $notificationLog...")
       tokens = tokenService.tokens(shardedNotification.notification, shardedNotification.range)
       resp <- tokens
         .collect(routeToSqs)
-        .broadcastTo(androidSink, androidBetaSink, androidEditionSink, iosSink, iosEditionSink)
+        .broadcastTo(androidSink, androidBetaSink, androidEditionSink, iosSink, iosEditionSink, iosFeastSink)
     } yield resp
   }
 
@@ -192,7 +196,8 @@ class Harvester extends HarvesterRequestHandler {
    androidLiveDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidLiveSqsUrl),
    iosEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosEditionSqsUrl),
    androidEditionDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidEditionSqsUrl),
-   androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl)
-  )
+   androidBetaDeliveryService = new SqsDeliveryServiceImpl[IO](config.androidBetaSqsUrl),
+   iosFeastDeliveryService = new SqsDeliveryServiceImpl[IO](config.iosFeastSqsUrl)
+)
 }
     
