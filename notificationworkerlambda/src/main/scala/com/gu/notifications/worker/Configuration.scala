@@ -11,6 +11,7 @@ import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 import software.amazon.awssdk.regions.Region.EU_WEST_1
+import _root_.models.IosFeast
 
 case class HarvesterConfiguration(
   jdbcConfig: JdbcConfig,
@@ -69,7 +70,7 @@ object Configuration {
   def platform: Option[Platform] = Option(System.getenv("Platform")).flatMap(Platform.fromString)
 
   def confPrefixFromPlatform: String = platform match {
-    case Some(p @ (Ios | Android | IosEdition | AndroidEdition | AndroidBeta)) => p.toString
+    case Some(p @ (Ios | Android | IosEdition | AndroidEdition | AndroidBeta | IosFeast)) => p.toString
     case _ => throw new IllegalStateException("No Platform environment variable defined")
   }
 
