@@ -115,6 +115,16 @@ Resources:
                 - ","
                 - "Fn::ImportValue":
                     "Fn::Sub": 'NotificationSenderWorkerQueueArns-${Stage}'
+      - PolicyName: SQSOutputFeast
+        PolicyDocument:
+          Statement:
+            Effect: Allow
+            Action: sqs:*
+            Resource:
+              "Fn::Split":
+                - ","
+                - "Fn::ImportValue":
+                    "Fn::Sub": 'NotificationSenderWorkerFeastQueueArns-${Stage}'
       - PolicyName: VPC
         PolicyDocument:
           Statement:

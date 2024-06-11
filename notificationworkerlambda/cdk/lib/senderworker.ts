@@ -244,8 +244,6 @@ export class SenderWorkerStack extends GuStack {
     addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", false, true)
 
     addWorker("android-beta", "androidBeta", "com.gu.notifications.worker.AndroidSender::handleChunkTokens")
-    addWorker("ios-feast", "iosFeast", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-
     /*
      * each worker has been assigned an SQS queue which, when written to, will
      * trigger it to send its notifications. Here, we export the list of worker
@@ -254,6 +252,13 @@ export class SenderWorkerStack extends GuStack {
      */
     new cdk.CfnOutput(this, "NotificationSenderWorkerQueueArns", {
       exportName: "NotificationSenderWorkerQueueArns-" + this.stage,
+      value: cdk.Fn.join(",", workerQueueArns)
+    })
+
+    workerQueueArns = []
+    addWorker("ios-feast", "iosFeast", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
+    new cdk.CfnOutput(this, "NotificationSenderWorkerFeastQueueArns", {
+      exportName: "NotificationSenderWorkerFeastQueueArns-" + this.stage,
       value: cdk.Fn.join(",", workerQueueArns)
     })
   }

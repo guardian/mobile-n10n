@@ -7,6 +7,17 @@ Object {
     "gu:cdk:version": "50.10.3",
   },
   "Outputs": Object {
+    "NotificationSenderWorkerFeastQueueArns": Object {
+      "Export": Object {
+        "Name": "NotificationSenderWorkerFeastQueueArns-PROD",
+      },
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "iosfeastSenderSqs7C4A206D",
+          "Arn",
+        ],
+      },
+    },
     "NotificationSenderWorkerQueueArns": Object {
       "Export": Object {
         "Name": "NotificationSenderWorkerQueueArns-PROD",
@@ -42,12 +53,6 @@ Object {
             Object {
               "Fn::GetAtt": Array [
                 "androidbetaSenderSqs57513D18",
-                "Arn",
-              ],
-            },
-            Object {
-              "Fn::GetAtt": Array [
-                "iosfeastSenderSqs7C4A206D",
                 "Arn",
               ],
             },
