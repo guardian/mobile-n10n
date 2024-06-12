@@ -58,7 +58,7 @@ jobs:
         run: sbt "project common" "compile" "test" "project registration" "compile" "test" "debian:packageBin"
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v3
+        uses: guardian/actions-riff-raff@v4
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:registration

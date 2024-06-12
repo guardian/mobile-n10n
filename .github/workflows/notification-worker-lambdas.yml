@@ -87,7 +87,7 @@ jobs:
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v3
+        uses: guardian/actions-riff-raff@v4
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:notificationworkerlambda
