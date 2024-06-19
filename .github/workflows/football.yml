@@ -46,6 +46,7 @@ jobs:
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v4
         with:
+          roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:football
           buildNumberOffset: 4147
