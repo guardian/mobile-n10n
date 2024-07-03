@@ -116,7 +116,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
-      "com.gu" %% "mobile-logstash-encoder" % "1.1.8",
+      "com.gu" %% "mobile-logstash-encoder" % "1.1.9",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "io.netty" % "netty-handler" % nettyVersion,
       "io.netty" % "netty-codec" % nettyVersion,
