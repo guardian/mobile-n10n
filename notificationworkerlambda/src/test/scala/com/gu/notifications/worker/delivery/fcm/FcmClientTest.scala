@@ -22,6 +22,10 @@ import java.util.UUID
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success}
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.api.client.json.JsonFactory
+import com.google.firebase.messaging.MessagingErrorCode
+import com.gu.notifications.worker.delivery.fcm.models.payload.FcmErrorPayload
 
 class FcmClientTest extends Specification with Mockito {
   "the FcmClient" should {
@@ -33,87 +37,20 @@ class FcmClientTest extends Specification with Mockito {
     }
 
     "Parse errors with an invalid token error code as an InvalidToken" in new FcmScope {
-      // we have to mock because there is no public method for instantiating an error of this type
-      val mockFirebaseMessagingException = Mockito.mock[FirebaseMessagingException]
-      when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
-      when(mockFirebaseMessagingException.getMessage).thenReturn("invalid")
-
+      val fcmException = InvalidTokenException(FcmErrorPayload(500, "Invalid", MessagingErrorCode.INVALID_ARGUMENT.name(), None))
       val now = Instant.now()
-      val response = fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException), now)
+      val response = fcmClient.parseSendResponse(notification.id, token, Failure(fcmException), now)
 
-      response shouldEqual Left(InvalidToken(notification.id, token, "invalid"))
+      response shouldEqual Left(InvalidToken(notification.id, token, fcmException.getMessage()))
     }
 
     "Parse errors with NOT_FOUND error code and 'Requested entity was not found.' error message as an InvalidToken" in new FcmScope {
-      val mockFirebaseMessagingException = Mockito.mock[FirebaseMessagingException]
-      when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.NOT_FOUND)
-      when(mockFirebaseMessagingException.getMessage).thenReturn("Requested entity was not found.")
+      val fcmException = InvalidTokenException(FcmErrorPayload(500, "Requested entity was not found.", MessagingErrorCode.UNREGISTERED.name(), None))
 
       val now = Instant.now()
-      val response = fcmClient.parseSendResponse(notification.id, token, Failure(mockFirebaseMessagingException), now)
+      val response = fcmClient.parseSendResponse(notification.id, token, Failure(fcmException), now)
 
-      response shouldEqual Left(InvalidToken(notification.id, token, "Requested entity was not found."))
-    }
-
-    "Parse catastrophic errors when sending multicast messages" in new FcmScope {
-      val tokenList: List[String] = List("token1")
-
-      val now = Instant.now()
-      fcmClient.parseBatchSendResponse(notification.id, tokenList, Failure(new Error("catastrophic failure")), now)(onCompleteCb)
-
-      catastrophicBatchSendResponse shouldEqual 1
-    }
-
-    "Parse partially successful multicast messages" in new FcmScope {
-      val tokenList: List[String] = List("token1", "token2", "token3", "token4")
-
-      val mockFirebaseMessagingException = mock[FirebaseMessagingException]
-        when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.INTERNAL)
-
-      val mockSendResponseFailure = mock[SendResponse]
-      when(mockSendResponseFailure.isSuccessful()).thenReturn(false)
-      when(mockSendResponseFailure.getException()).thenReturn(mockFirebaseMessagingException)
-
-      val mockSendResponse = mock[SendResponse]
-      when(mockSendResponse.isSuccessful()).thenReturn(true)
-
-      val batchResponseSuccess: BatchResponse = new BatchResponse {
-        override def getResponses: util.List[SendResponse] = List(mockSendResponse, mockSendResponseFailure, mockSendResponse, mockSendResponseFailure).asJava
-        override def getSuccessCount: Int = 2
-        override def getFailureCount: Int = 2
-      }
-
-      val now = Instant.now()
-      fcmClient.parseBatchSendResponse(notification.id, tokenList, Success(batchResponseSuccess), now)(onCompleteCb)
-
-      failedRequest shouldEqual 2
-    }
-
-    "Parse partially successful multicast messages with invalid tokens" in new FcmScope {
-      val tokenList: List[String] = List("token1", "token2", "token3", "token4")
-
-      val mockFirebaseMessagingException = mock[FirebaseMessagingException]
-      when(mockFirebaseMessagingException.getErrorCode).thenReturn(ErrorCode.PERMISSION_DENIED)
-
-      val mockSendResponseFailure = mock[SendResponse]
-      when(mockSendResponseFailure.isSuccessful()).thenReturn(false)
-      when(mockSendResponseFailure.getException()).thenReturn(mockFirebaseMessagingException)
-
-      val mockSendResponse = mock[SendResponse]
-      when(mockSendResponse.isSuccessful()).thenReturn(true)
-
-      val batchResponseSuccess: BatchResponse = new BatchResponse {
-        override def getResponses: util.List[SendResponse] = List(mockSendResponse, mockSendResponseFailure, mockSendResponse, mockSendResponseFailure).asJava
-        override def getSuccessCount: Int = 2
-        override def getFailureCount: Int = 2
-      }
-
-      val now = Instant.now()
-      fcmClient.parseBatchSendResponse(notification.id, tokenList, Success(batchResponseSuccess), now)(onCompleteCb)
-
-      invalidTokens shouldEqual 2
-      batchInvalidTokens.contains("token2") shouldEqual true
-      batchInvalidTokens.contains("token4") shouldEqual true
+      response shouldEqual Left(InvalidToken(notification.id, token, fcmException.getMessage()))
     }
   }
 }
@@ -170,6 +107,8 @@ trait FcmScope extends Scope {
   val mockFirebaseMessaging = Mockito.mock[FirebaseMessaging]
   val mockApiFuture = Mockito.mock[ApiFuture[String]]
 
-  val config: FcmConfig = FcmConfig("serviceAccountKey")
-  val fcmClient = new FcmClient(mockFirebaseMessaging, app, config)
+  val config: FcmConfig = FcmConfig("serviceAccountKey", 10, 10)
+  val mockCredential = Mockito.mock[GoogleCredentials]
+  val mockJsonFactory = Mockito.mock[JsonFactory]
+  val fcmClient = new FcmClient(mockFirebaseMessaging, app, config, "TEST-PROJECT-ID", mockCredential, mockJsonFactory)
 }

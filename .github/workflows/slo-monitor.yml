@@ -20,6 +20,7 @@ permissions:
   id-token: write
   contents: read
   checks: write
+  pull-requests: write
 
 jobs:
   build:
@@ -45,7 +46,7 @@ jobs:
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
       - name: Compile, test and assembly
-        run: sbt "project slomonitor" "compile" "test" "assembly"
+        run: sbt "project commoneventconsumer" "compile" "test" "project slomonitor" "compile" "test" "assembly"
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -69,8 +70,10 @@ jobs:
           npm run synth
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v2
+        uses: guardian/actions-riff-raff@v4
         with:
+          roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:slomonitor
           buildNumberOffset: 4147
           configPath: slomonitor/riff-raff.yaml

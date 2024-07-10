@@ -1,3 +1,5 @@
+import ReleaseTransformations.*
+import sbtversionpolicy.withsbtrelease.ReleaseVersion
 import play.sbt.PlayImport.specs2
 import sbt.Keys.{libraryDependencies, mainClass}
 import sbtassembly.AssemblyPlugin.autoImport.{assemblyJarName, assemblyMergeStrategy}
@@ -5,35 +7,49 @@ import sbtassembly.MergeStrategy
 import com.typesafe.sbt.packager.docker.{Cmd, ExecCmd}
 
 val projectVersion = "1.0-latest"
-
-organization := "com.gu"
-ThisBuild / scalaVersion := "2.13.11"
+ThisBuild / publish / skip := true
+releaseVersion := ReleaseVersion.fromAggregatedAssessedCompatibilityWithLatestRelease().value
+releaseCrossBuild := true // true if you cross-build the project for multiple Scala versions
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  setNextVersion,
+  commitNextVersion
+)
+ThisBuild / scalaVersion := "2.13.14"
 
 val compilerOptions = Seq(
   "-deprecation",
   "-Xfatal-warnings",
   "-feature",
   "-language:postfixOps",
-  "-language:implicitConversions"
+  "-language:implicitConversions",
+  "-release:11"
 )
 
 ThisBuild / scalacOptions ++= compilerOptions
 
-val playJsonVersion = "2.9.4"
+val playJsonVersion = "3.0.4"
 val specsVersion: String = "4.8.3"
-val awsSdkVersion: String = "1.12.534"
+val awsSdkVersion: String = "1.12.755"
 val doobieVersion: String = "0.13.4"
-val catsVersion: String = "2.10.0"
-val okHttpVersion: String = "4.11.0"
-val paClientVersion: String = "7.0.7"
+val catsVersion: String = "2.12.0"
+val okHttpVersion: String = "4.12.0"
+val paClientVersion: String = "7.0.9"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.15.2"
-val jacksonCbor: String = "2.15.2"
-val jacksonScalaModule: String = "2.15.2"
-val simpleConfigurationVersion: String = "1.5.6"
-val googleOAuthClient: String = "1.34.1"
-val nettyVersion: String = "4.1.96.Final"
+val jacksonDatabind: String = "2.17.1"
+val jacksonCbor: String = "2.17.1"
+val jacksonScalaModule: String = "2.17.1"
+val simpleConfigurationVersion: String = "1.5.7"
+val googleOAuthClient: String = "1.36.0"
+val nettyVersion: String = "4.1.111.Final"
 val slf4jVersion: String = "1.7.36"
+val logbackVersion: String = "1.5.6"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
@@ -45,7 +61,7 @@ val standardSettings = Seq[Setting[_]](
   ),
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.32.0",
-    "com.softwaremill.macwire" %% "macros" % "2.5.8" % "provided",
+    "com.softwaremill.macwire" %% "macros" % "2.5.9" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
@@ -59,7 +75,7 @@ lazy val commoneventconsumer = project
     libraryDependencies ++= Seq(
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.amazonaws" % "aws-java-sdk-athena" % awsSdkVersion,
-      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "org.playframework" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
@@ -87,9 +103,9 @@ lazy val common = project
     libraryDependencies ++= Seq(
       ws,
       "org.typelevel" %% "cats-core" % catsVersion,
-      "joda-time" % "joda-time" % "2.12.5",
-      "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
+      "joda-time" % "joda-time" % "2.12.7",
+      "org.playframework" %% "play-json" % playJsonVersion,
+      "org.playframework" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
@@ -101,14 +117,16 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
-      "com.gu" %% "mobile-logstash-encoder" % "1.1.6",
+      "com.gu" %% "mobile-logstash-encoder" % "1.1.8",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "io.netty" % "netty-handler" % nettyVersion,
       "io.netty" % "netty-codec" % nettyVersion,
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
-      "org.postgresql" % "postgresql" % "42.6.0",
+      "org.postgresql" % "postgresql" % "42.7.3",
+      "ch.qos.logback" % "logback-core" % logbackVersion,
+      "ch.qos.logback" % "logback-classic" % logbackVersion,
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
@@ -152,6 +170,11 @@ lazy val registration = project
       logback,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
+    excludeDependencies ++= Seq(
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
+    ),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -172,6 +195,11 @@ lazy val notification = project
       logback,
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
+    excludeDependencies ++= Seq(
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
+    ),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -191,6 +219,11 @@ lazy val report = project
     libraryDependencies ++= Seq(
       logback
     ),
+    excludeDependencies ++= Seq(
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
+    ),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -201,8 +234,9 @@ lazy val apiModels = {
   import ReleaseStateTransformations._
   Project("api-models", file("api-models")).settings(Seq(
     name := "mobile-notifications-api-models",
+    publish / skip := false,
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "org.playframework" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
@@ -210,39 +244,8 @@ lazy val apiModels = {
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
     ),
     organization := "com.gu",
-    publishTo := sonatypePublishToBundle.value,
-
-    scmInfo := Some(ScmInfo(
-      url("https://github.com/guardian/mobile-n10n"),
-      "scm:git:git@github.com:guardian/mobile-n10n.git"
-    )),
-
-    homepage := Some(url("https://github.com/guardian/mobile-n10n")),
-
-    developers := List(Developer(
-      id = "Guardian",
-      name = "Guardian",
-      email = null,
-      url = url("https://github.com/guardian")
-    )),
     description := "Scala models for the Guardian Push Notifications API",
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    releaseVersionFile := file("api-models/version.sbt"),
-    licenses := Seq("Apache V2" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runClean,
-      runTest,
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      publishArtifacts,
-      releaseStepCommand("sonatypeBundleRelease"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
-    )
+    licenses := Seq(License.Apache2),
   ))
 }
 
@@ -260,7 +263,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "ch.qos.logback" % "logback-classic" % "1.4.11",
+      "ch.qos.logback" % "logback-classic" % logbackVersion,
       "net.logstash.logback" % "logstash-logback-encoder" % "7.4",
       specs2 % Test
     ),
@@ -293,7 +296,10 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
         "io.netty" % "netty-codec-http2" % nettyVersion
       ),
       excludeDependencies ++= Seq(
-        ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
+        ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
+        // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+        // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+        ExclusionRule(organization = "com.typesafe.play")
       ),
     )
   }
@@ -305,7 +311,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "19.3.2",
+      "com.gu" %% "content-api-client-default" % "30.0.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -317,8 +323,11 @@ lazy val football = lambda("football", "football")
       "io.netty" % "netty-common" % nettyVersion,
     ),
     excludeDependencies ++= Seq(
-      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13"),
-      ExclusionRule("software.amazon.awssdk", "ec2")
+      ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
+      ExclusionRule("software.amazon.awssdk", "ec2"),
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
     ),
   )
 
@@ -328,7 +337,7 @@ lazy val eventconsumer = lambda("eventconsumer", "eventconsumer", Some("com.gu.n
     Seq(
       description := "Consumes events produced when an app receives a notification",
       libraryDependencies ++= Seq(
-        "com.typesafe.play" %% "play-json" % playJsonVersion,
+        "org.playframework" %% "play-json" % playJsonVersion,
         "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
         "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2",
         "io.netty" % "netty-codec-http2" % nettyVersion
@@ -342,7 +351,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
     Seq(
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-events" % "3.11.2",
+        "com.amazonaws" % "aws-lambda-java-events" % "3.11.6",
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
         "io.netty" % "netty-codec-http" % nettyVersion,
@@ -408,18 +417,21 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
-      "com.google.firebase" % "firebase-admin" % "9.1.1",
-      "com.google.protobuf" % "protobuf-java" % "3.24.0",
+      "com.google.firebase" % "firebase-admin" % "9.2.0",
+      "com.google.protobuf" % "protobuf-java" % "4.27.2",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
-      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "2.1.1",
+      "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "2.1.3",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
-      "com.typesafe.play" %% "play-json" % playJsonVersion,
+      "org.playframework" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
     ),
     excludeDependencies ++= Seq(
-      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
+      ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
     ),
 )
 
@@ -431,7 +443,10 @@ lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreaking
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
     ),
     excludeDependencies ++= Seq(
-      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
+      ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
     ),
   )
 
@@ -439,6 +454,9 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
   .dependsOn(common)
   .settings(
     excludeDependencies ++= Seq(
-      ExclusionRule("com.typesafe.play", "play-ahc-ws_2.13")
+      ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
     )
   )

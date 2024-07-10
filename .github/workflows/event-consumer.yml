@@ -18,6 +18,7 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 
 jobs:
   build:
@@ -37,14 +38,16 @@ jobs:
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
       - name: Compile, test and assembly
-        run: sbt "project eventconsumer" "compile" "test" "assembly"
+        run: sbt "project commoneventconsumer" "compile" "test" "project eventconsumer" "compile" "test" "assembly"
 
       - name: Copy jar to root
         run: cp eventconsumer/target/scala-*/eventconsumer.jar .
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v2
+        uses: guardian/actions-riff-raff@v4
         with:
+          roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:eventconsumer
           buildNumberOffset: 4147
           configPath: eventconsumer/riff-raff.yaml

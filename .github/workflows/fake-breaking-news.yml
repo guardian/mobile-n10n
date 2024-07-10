@@ -20,6 +20,7 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
 
 jobs:
   build:
@@ -39,14 +40,16 @@ jobs:
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
       - name: Compile, test and assembly
-        run: sbt "project fakebreakingnewslambda" "compile" "test" "assembly"
+        run: sbt "project common" "compile" "test" "project api-models" "compile" "test" "project fakebreakingnewslambda" "compile" "test" "assembly"
 
       - name: Copy jar to root
         run: cp fakebreakingnewslambda/target/scala-*/fakebreakingnewslambda.jar .
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v2
+        uses: guardian/actions-riff-raff@v4
         with:
+          roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:fakebreakingnewslambda
           buildNumberOffset: 4147
           configPath: fakebreakingnewslambda/riff-raff.yaml

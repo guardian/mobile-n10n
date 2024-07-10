@@ -25,12 +25,14 @@ import java.util.UUID
 import scala.jdk.CollectionConverters._
 import java.time.Instant
 import com.gu.notifications.worker.models.PerformanceMetrics
+import com.amazonaws.services.lambda.runtime.Context
+import org.specs2.mock.Mockito
 
-class SenderRequestHandlerSpec extends Specification with Matchers {
+class SenderRequestHandlerSpec extends Specification with Matchers with Mockito  {
 
   "the SenderRequestHandler" should {
     "Send one notification" in new WRHSScope {
-      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
+      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, mockedContext)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -45,7 +47,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           Left(InvalidToken(UUID.randomUUID, "invalid token", "test"))
         )
 
-      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
+      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, mockedContext)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -60,7 +62,7 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
           Right(ApnsDeliverySuccess("token", Instant.now(), dryRun = true))
         )
 
-      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, null)
+      workerRequestHandler.handleChunkTokens(chunkedTokensNotification, mockedContext)
 
       deliveryCallsCount shouldEqual 1
       cloudwatchCallsCount shouldEqual 1
@@ -72,6 +74,9 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
 
 
   trait WRHSScope extends Scope {
+
+    val mockedContext = mock[Context]
+    mockedContext.getAwsRequestId() returns "UNIT-TEST-CONTEXT"
 
     val notification = BreakingNewsNotification(
       id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
@@ -116,15 +121,12 @@ class SenderRequestHandlerSpec extends Specification with Matchers {
     val workerRequestHandler = new SenderRequestHandler[ApnsClient] {
 
       override val maxConcurrency = 100
+      override val batchConcurrency = 100
 
       override def deliveryService: IO[DeliveryService[IO, ApnsClient]] = IO.pure(new DeliveryService[IO, ApnsClient] {
         override def send(notification: Notification, token: String): Stream[IO, Either[DeliveryException, ApnsDeliverySuccess]] = {
           deliveryCallsCount += 1
           deliveries
-        }
-
-        override def sendBatch(notification: Notification, tokens: List[String]): Stream[IO, Either[DeliveryException, ApnsBatchDeliverySuccess]] = {
-          Stream(Right(ApnsBatchDeliverySuccess(List(), notification.id.toString)))
         }
       })
 

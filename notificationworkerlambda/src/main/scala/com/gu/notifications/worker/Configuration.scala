@@ -5,10 +5,12 @@ import com.typesafe.config.Config
 import db.JdbcConfig
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Platform}
-import com.gu.{AppIdentity, AwsIdentity}
+import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
+import software.amazon.awssdk.regions.Region.EU_WEST_1
 
 case class HarvesterConfiguration(
   jdbcConfig: JdbcConfig,
@@ -33,7 +35,9 @@ case class FcmWorkerConfiguration(
   cleaningSqsUrl: String,
   fcmConfig: FcmConfig,
   threadPoolSize: Int,
-  allowedTopicsForBatchSend: List[String],
+  concurrencyForIndividualSend: Int,
+  concurrencyForMessages: Int,
+  httpClientPoolSize: Int,
 ) extends WorkerConfiguration
 
 case class CleanerConfiguration(jdbcConfig: JdbcConfig)
@@ -48,9 +52,16 @@ case class TopicCountsConfiguration (
 object Configuration {
 
   private def fetchConfiguration(workerName: String): Config = {
-    val identity = AppIdentity.whoAmI(defaultAppName = "notification-worker")
+    val defaultAppName = "notification-worker"
+    val identity = Option(System.getenv("MOBILE_LOCAL_DEV")) match {
+      case Some(_) => DevIdentity(defaultAppName)
+      case None =>
+        AppIdentity
+          .whoAmI(defaultAppName, DefaultCredentialsProvider.builder().build())
+          .getOrElse(DevIdentity(defaultAppName))
+    }
     ConfigurationLoader.load(identity) {
-      case AwsIdentity(_, _, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/workers/$workerName")
+      case AwsIdentity(_, _, stage, region) => SSMConfigurationLocation(s"/notifications/$stage/workers/$workerName", region)
     }
   }
 
@@ -103,18 +114,31 @@ object Configuration {
   def fetchFirebase(): FcmWorkerConfiguration = {
     val config = fetchConfiguration(confPrefixFromPlatform)
 
-    def getStringList(path: String): List[String] =
-      config.getString(path).split(",").toList
+    def getStringList(path: String): List[String] = 
+      if (config.hasPath(path))
+        config.getString(path).split(",").toList
+      else
+        List()
+    
+    def getOptionalInt(path: String, defVal: Int): Int =
+      if (config.hasPath(path))
+        config.getInt(path)
+      else
+        defVal
 
     FcmWorkerConfiguration(
       config.getString("cleaningSqsUrl"),
       FcmConfig(
         serviceAccountKey = config.getString("fcm.serviceAccountKey"),
+        connectTimeout = getOptionalInt("fcm.connectTimeout", 10),
+        requestTimeout = getOptionalInt("fcm.requestTimeout", 10),
         debug = config.getBoolean("fcm.debug"),
         dryRun = config.getBoolean("dryrun")
       ),
       config.getInt("fcm.threadPoolSize"),
-      getStringList("fcm.allowedTopicsForBatchSend")
+      getOptionalInt("fcm.concurrencyForIndividualSend", 100),
+      concurrencyForMessages = getOptionalInt("fcm.concurrencyForMessages", 20),
+      httpClientPoolSize = getOptionalInt("fcm.httpClientPoolSize", 10)
     )
   }
 

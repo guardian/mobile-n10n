@@ -2,7 +2,7 @@ package notification
 
 import _root_.controllers.AssetsComponents
 import _root_.models.{NewsstandShardConfig, TopicCount}
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import aws.{AsyncDynamo, TopicCountsS3}
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}

@@ -4,7 +4,7 @@ import java.time.{Clock, Instant}
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClientBuilder
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
-import com.gu.{AppIdentity, AwsIdentity}
+import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import com.gu.notificationschedule.ProcessNotificationScheduleLambda.{lambdaClock, lambdaCloudWatch, lambdaConfig, lambdaOkHttpClient}
 import com.gu.notificationschedule.cloudwatch.{CloudWatch, CloudWatchImpl}
 import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceImpl, NotificationSchedulePersistenceSync, NotificationsScheduleEntry}
@@ -15,6 +15,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 
 
 class NotificationScheduleConfig(ssmConfig: SsmConfig) {
@@ -26,8 +27,17 @@ class NotificationScheduleConfig(ssmConfig: SsmConfig) {
 
 object ProcessNotificationScheduleLambda {
 
+  private def getIdentity(defaultAppName: String): AppIdentity = {
+    Option(System.getenv("MOBILE_LOCAL_DEV")) match {
+      case Some(_) => DevIdentity(defaultAppName)
+      case None =>
+        AppIdentity
+          .whoAmI(defaultAppName, DefaultCredentialsProvider.builder().build())
+          .getOrElse(DevIdentity(defaultAppName))
+    }
+  }
   private lazy val lambdaOkHttpClient = new OkHttpClient.Builder().build()
-  private lazy val lambdaConfig = AppIdentity.whoAmI(defaultAppName = "mobile-notifications-schedule") match {
+  private lazy val lambdaConfig = getIdentity(defaultAppName = "mobile-notifications-schedule") match {
     case _: AwsIdentity => new NotificationScheduleConfig(SsmConfigLoader.load())
     case _ => throw new IllegalStateException("Not in aws")
   }

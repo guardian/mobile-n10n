@@ -8,17 +8,29 @@ import models.{Android, Ios}
 import okhttp3.OkHttpClient
 import org.slf4j.{Logger, LoggerFactory}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
-import com.gu.{AppIdentity, AwsIdentity}
+import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
+import software.amazon.awssdk.regions.Region.EU_WEST_1
 
 class FakeBreakingNewsLambda {
   val iosUuid = UUID.fromString("3bf283d8-35f3-48e6-b377-b862c3f030e3")
   val androidUuid = UUID.fromString("a9b4c7cd-1713-4a56-9ada-aa4279dcf534")
   import scala.concurrent.ExecutionContext.Implicits.global
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  private val config: Config = ConfigurationLoader.load(AppIdentity.whoAmI(defaultAppName = "fake-breaking-news")) {
-    case AwsIdentity(_, _, stage, _) => SSMConfigurationLocation(s"/notifications/$stage/fakebreakingnews")
+  private def getIdentity(defaultAppName: String): AppIdentity = {
+    Option(System.getenv("MOBILE_LOCAL_DEV")) match {
+      case Some(_) => DevIdentity(defaultAppName)
+      case None =>
+        AppIdentity
+          .whoAmI(defaultAppName, DefaultCredentialsProvider.builder().build())
+          .getOrElse(DevIdentity(defaultAppName))
+    }
+  }
+  private val config: Config = ConfigurationLoader.load(getIdentity(defaultAppName = "fake-breaking-news")) {
+    case AwsIdentity(_, _, stage, region) => 
+      SSMConfigurationLocation(s"/notifications/$stage/fakebreakingnews", region)
   }
   val okhttp: OkHttpClient = new OkHttpClient()
   val client = new NotificationClient(

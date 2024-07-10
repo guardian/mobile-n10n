@@ -21,6 +21,7 @@ permissions:
   id-token: write
   contents: read
   checks: write
+  pull-requests: write
 
 jobs:
   build:
@@ -51,7 +52,7 @@ jobs:
           mask-password: 'true'
 
       - name: Compile and test
-        run: sbt "project notificationworkerlambda" "compile" "test"
+        run: sbt "project common" "compile" "test" "project notificationworkerlambda" "compile" "test"
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -97,8 +98,10 @@ jobs:
           role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v2
+        uses: guardian/actions-riff-raff@v4
         with:
+          roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:notificationworkerlambda
           buildNumberOffset: 4147
           configPath: notificationworkerlambda/riff-raff.yaml

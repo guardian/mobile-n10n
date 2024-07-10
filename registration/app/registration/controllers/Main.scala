@@ -1,9 +1,9 @@
 package registration.controllers
 
-import akka.actor.ActorSystem
-import akka.pattern.after
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.pattern.after
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.ByteString
 import cats.data.EitherT
 import error.{NotificationsError, RequestError}
 import models._

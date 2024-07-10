@@ -12,6 +12,10 @@ import play.api.libs.json.Json
 import java.util.UUID
 import scala.jdk.CollectionConverters._
 import java.time.Instant
+import com.amazonaws.services.lambda.runtime.Context
+import com.amazonaws.services.lambda.runtime.CognitoIdentity
+import com.amazonaws.services.lambda.runtime.ClientContext
+import com.amazonaws.services.lambda.runtime.LambdaLogger
 object NotificationWorkerLocalRun extends App {
   val notification = BreakingNewsNotification(
     id = UUID.fromString("068b3d2b-dc9d-482b-a1c9-bd0f5dd8ebd7"),
@@ -27,14 +31,15 @@ object NotificationWorkerLocalRun extends App {
     ),
     imageUrl = None,
     importance = Major,
-    topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"), Topic(Breaking, "europe")),
+    topic = List(Topic(Breaking, "uk")),
+    // topic = List(Topic(Breaking, "uk"), Topic(Breaking, "us"), Topic(Breaking, "au"), Topic(Breaking, "international"), Topic(Breaking, "europe")),
     dryRun = None
   )
 
   val tokens = ChunkedTokens(
     notification = notification,
     range = ShardRange(0, 1),
-    tokens = List("token"),
+    tokens = List.fill(5)("token"),
     metadata = NotificationMetadata(Instant.now(), Some(1234))
   )
 
@@ -43,13 +48,26 @@ object NotificationWorkerLocalRun extends App {
     val sqsMessage = new SQSMessage()
     sqsMessage.setBody(Json.stringify(Json.toJson(tokens)))
     sqsMessage.setAttributes((Map("SentTimestamp" -> s"${Instant.now.toEpochMilli}").asJava))
-    event.setRecords(List(sqsMessage).asJava)
+    event.setRecords(List.fill(4)(sqsMessage).asJava)
     event
+  }
+  val localTestContext: Context = new Context{
+    override def getAwsRequestId(): String = "LOCAL-RUN-REQUEST-ID"
+    override def getLogGroupName(): String = ???
+    override def getLogStreamName(): String = ???
+    override def getFunctionName(): String = ???
+    override def getFunctionVersion(): String = ???
+    override def getInvokedFunctionArn(): String = ???
+    override def getIdentity(): CognitoIdentity = ???
+    override def getClientContext(): ClientContext = ???
+    override def getRemainingTimeInMillis(): Int = ???
+    override def getMemoryLimitInMB(): Int = ???
+    override def getLogger(): LambdaLogger = ???
   }
 
   args.lastOption.map(_.toLowerCase) foreach {
-    case "android" => new AndroidSender().handleChunkTokens(sqsEvent, null)
-    case "ios"     => new IOSSender().handleChunkTokens(sqsEvent, null)
+    case "android" => new AndroidSender().handleChunkTokens(sqsEvent, localTestContext)
+    case "ios"     => new IOSSender().handleChunkTokens(sqsEvent, localTestContext)
     case _         => println("invalid option")
   }
 
