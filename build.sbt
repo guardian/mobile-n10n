@@ -66,7 +66,8 @@ val standardSettings = Seq[Setting[_]](
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
   // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
-  Test / parallelExecution := false
+  Test / parallelExecution := false,
+  Test / testOptions += Tests.Argument(TestFrameworks.Specs2, "junitxml", "console")
 )
 
 lazy val commoneventconsumer = project

@@ -18,6 +18,7 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+  checks: write
   pull-requests: write
 
 jobs:
@@ -39,6 +40,16 @@ jobs:
 
       - name: Compile, test and assembly
         run: sbt "project api-models" "compile" "test" "project football" "compile" "test" "assembly"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Tests
+          path: football/target/test-reports/TEST-*.xml
+          reporter: java-junit
+          only-summary: 'false'
+          fail-on-error: 'true'
 
       - name: Copy jar to root
         run: cp football/target/scala-*/football.jar .

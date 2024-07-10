@@ -20,6 +20,7 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+  checks: write
   pull-requests: write
 
 jobs:
@@ -41,6 +42,16 @@ jobs:
 
       - name: Compile, test and package
         run: sbt "project common" "compile" "test" "project report" "compile" "test" "debian:packageBin"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Tests
+          path: report/target/test-reports/TEST-*.xml
+          reporter: java-junit
+          only-summary: 'false'
+          fail-on-error: 'true'
 
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v4
