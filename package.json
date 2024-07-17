@@ -1,5 +1,9 @@
 {
   "devDependencies": {
     "npm-force-resolutions": "^0.0.10"
+  },
+  "overrides": {
+    "ws": "8.17.1",
+    "micromatch": "4.0.6"
   }
 }
