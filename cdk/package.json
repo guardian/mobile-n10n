@@ -28,7 +28,10 @@
     "typescript": "~4.7.2"
   },
   "overrides": {
-      "ws": "8.18.0"
+    "jest": {
+      "ws": "8.18.0",
+      "micromatch": "4.0.7"
+    }
   },
   "prettier": "@guardian/prettier",
   "jest": {
