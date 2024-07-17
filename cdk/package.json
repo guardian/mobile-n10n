@@ -21,6 +21,7 @@
     "constructs": "10.1.155",
     "eslint": "^8.16.0",
     "jest": "^27.5.1",
+    "npm-force-resolutions": "^0.0.10",
     "prettier": "^2.7.0",
     "source-map-support": "^0.5.20",
     "ts-jest": "^27.1.4",
@@ -29,8 +30,8 @@
   },
   "overrides": {
     "jest": {
-      "ws": "8.18.0",
-      "micromatch": "4.0.7"
+      "ws": "8.17.1",
+      "micromatch": "4.0.6"
     }
   },
   "prettier": "@guardian/prettier",
