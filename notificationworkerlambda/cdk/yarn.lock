@@ -601,10 +601,10 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@guardian/cdk@^59.1.0":
-  version "59.1.0"
-  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-59.1.0.tgz#9a56d512c37c75778667aaff77aa8a326a061871"
-  integrity sha512-6QlI5V7jOetwURkfKZOVvLM/tvPbyg+QNjc0cBqkRsNQhngFhhk73sLiTY9OLORzp/VXVJcIF2fzqdOE0uN41w==
+"@guardian/cdk@^59.2.0":
+  version "59.2.0"
+  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-59.2.0.tgz#afc1ebb5c51f3ee343ebffdd077904504b4b7b38"
+  integrity sha512-RzSNNWRQ7hJQS3cXd7AieGauQ6iecI3XaB9iuy9085ZHCf9fbPnfI1YoSYAkNYLILzlpUl4TR6BUDFBFZBWIog==
   dependencies:
     "@oclif/core" "3.26.6"
     aws-sdk "^2.1649.0"
