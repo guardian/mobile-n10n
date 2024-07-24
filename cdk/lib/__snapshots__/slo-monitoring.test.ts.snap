@@ -1,40 +1,40 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`The SloMonitoring stack matches the snapshot 1`] = `
-Object {
-  "Metadata": Object {
-    "gu:cdk:constructs": Array [
+{
+  "Metadata": {
+    "gu:cdk:constructs": [
       "GuDistributionBucketParameter",
       "GuLambdaFunction",
     ],
     "gu:cdk:version": "TEST",
   },
-  "Parameters": Object {
-    "DistributionBucketName": Object {
+  "Parameters": {
+    "DistributionBucketName": {
       "Default": "/account/services/artifact.bucket",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
   },
-  "Resources": Object {
-    "DeadLetterQueue9F481546": Object {
+  "Resources": {
+    "DeadLetterQueue9F481546": {
       "DeletionPolicy": "Delete",
-      "Properties": Object {
+      "Properties": {
         "QueueName": "notifications-slo-monitoring-dlq-PROD",
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "PROD",
           },
@@ -43,33 +43,33 @@ Object {
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
     },
-    "MessageQueue7A3BF959": Object {
+    "MessageQueue7A3BF959": {
       "DeletionPolicy": "Delete",
-      "Properties": Object {
+      "Properties": {
         "QueueName": "notifications-slo-monitoring-PROD",
-        "RedrivePolicy": Object {
-          "deadLetterTargetArn": Object {
-            "Fn::GetAtt": Array [
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": [
               "DeadLetterQueue9F481546",
               "Arn",
             ],
           },
           "maxReceiveCount": 1,
         },
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "PROD",
           },
@@ -79,12 +79,12 @@ Object {
       "Type": "AWS::SQS::Queue",
       "UpdateReplacePolicy": "Delete",
     },
-    "SenderQueueSSMArnParameter4B75A98E": Object {
-      "Properties": Object {
+    "SenderQueueSSMArnParameter4B75A98E": {
+      "Properties": {
         "DataType": "text",
         "Description": "Arn for the queue for SLO Monitoring service. N.B. this parameter is created via cdk",
         "Name": "/notifications/PROD/mobile-notifications/notifications.queues.sloMonitoringArn",
-        "Tags": Object {
+        "Tags": {
           "Stack": "mobile-notifications",
           "Stage": "PROD",
           "gu:cdk:version": "TEST",
@@ -92,8 +92,8 @@ Object {
         },
         "Tier": "Standard",
         "Type": "String",
-        "Value": Object {
-          "Fn::GetAtt": Array [
+        "Value": {
+          "Fn::GetAtt": [
             "MessageQueue7A3BF959",
             "Arn",
           ],
@@ -101,12 +101,12 @@ Object {
       },
       "Type": "AWS::SSM::Parameter",
     },
-    "SenderQueueSSMParameterD141981E": Object {
-      "Properties": Object {
+    "SenderQueueSSMParameterD141981E": {
+      "Properties": {
         "DataType": "text",
         "Description": "Queue for SLO Monitoring service. N.B. this parameter is created via cdk",
         "Name": "/notifications/PROD/mobile-notifications/notifications.queues.sloMonitoring",
-        "Tags": Object {
+        "Tags": {
           "Stack": "mobile-notifications",
           "Stage": "PROD",
           "gu:cdk:version": "TEST",
@@ -114,26 +114,26 @@ Object {
         },
         "Tier": "Standard",
         "Type": "String",
-        "Value": Object {
+        "Value": {
           "Ref": "MessageQueue7A3BF959",
         },
       },
       "Type": "AWS::SSM::Parameter",
     },
-    "SloMonitor1106EE7E": Object {
-      "DependsOn": Array [
+    "SloMonitor1106EE7E": {
+      "DependsOn": [
         "SloMonitorServiceRoleDefaultPolicy8A58BB27",
         "SloMonitorServiceRole66A7ADCC",
       ],
-      "Properties": Object {
-        "Code": Object {
-          "S3Bucket": Object {
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
             "Ref": "DistributionBucketName",
           },
           "S3Key": "mobile-notifications/PROD/slomonitor/slomonitor.jar",
         },
-        "Environment": Object {
-          "Variables": Object {
+        "Environment": {
+          "Variables": {
             "APP": "slomonitor",
             "STACK": "mobile-notifications",
             "STAGE": "PROD",
@@ -141,32 +141,35 @@ Object {
         },
         "FunctionName": "mobile-notifications-slo-monitor-PROD",
         "Handler": "com.gu.notifications.slos.SloMonitor::handleMessage",
+        "LoggingConfig": {
+          "LogFormat": "JSON",
+        },
         "MemorySize": 1024,
-        "Role": Object {
-          "Fn::GetAtt": Array [
+        "Role": {
+          "Fn::GetAtt": [
             "SloMonitorServiceRole66A7ADCC",
             "Arn",
           ],
         },
         "Runtime": "java11",
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "App",
             "Value": "slomonitor",
           },
-          Object {
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "PROD",
           },
@@ -175,27 +178,27 @@ Object {
       },
       "Type": "AWS::Lambda::Function",
     },
-    "SloMonitorServiceRole66A7ADCC": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
+    "SloMonitorServiceRole66A7ADCC": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
               "Action": "sts:AssumeRole",
               "Effect": "Allow",
-              "Principal": Object {
+              "Principal": {
                 "Service": "lambda.amazonaws.com",
               },
             },
           ],
           "Version": "2012-10-17",
         },
-        "ManagedPolicyArns": Array [
-          Object {
-            "Fn::Join": Array [
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
               "",
-              Array [
+              [
                 "arn:",
-                Object {
+                {
                   "Ref": "AWS::Partition",
                 },
                 ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
@@ -203,24 +206,24 @@ Object {
             ],
           },
         ],
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "App",
             "Value": "slomonitor",
           },
-          Object {
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "PROD",
           },
@@ -228,43 +231,43 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
-    "SloMonitorServiceRoleDefaultPolicy8A58BB27": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
+    "SloMonitorServiceRoleDefaultPolicy8A58BB27": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
                 "s3:GetObject*",
                 "s3:GetBucket*",
                 "s3:List*",
               ],
               "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::Join": Array [
+              "Resource": [
+                {
+                  "Fn::Join": [
                     "",
-                    Array [
+                    [
                       "arn:",
-                      Object {
+                      {
                         "Ref": "AWS::Partition",
                       },
                       ":s3:::",
-                      Object {
+                      {
                         "Ref": "DistributionBucketName",
                       },
                     ],
                   ],
                 },
-                Object {
-                  "Fn::Join": Array [
+                {
+                  "Fn::Join": [
                     "",
-                    Array [
+                    [
                       "arn:",
-                      Object {
+                      {
                         "Ref": "AWS::Partition",
                       },
                       ":s3:::",
-                      Object {
+                      {
                         "Ref": "DistributionBucketName",
                       },
                       "/mobile-notifications/PROD/slomonitor/slomonitor.jar",
@@ -273,19 +276,19 @@ Object {
                 },
               ],
             },
-            Object {
+            {
               "Action": "ssm:GetParametersByPath",
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::Join": Array [
+              "Resource": {
+                "Fn::Join": [
                   "",
-                  Array [
+                  [
                     "arn:aws:ssm:",
-                    Object {
+                    {
                       "Ref": "AWS::Region",
                     },
                     ":",
-                    Object {
+                    {
                       "Ref": "AWS::AccountId",
                     },
                     ":parameter/PROD/mobile-notifications/slomonitor",
@@ -293,22 +296,22 @@ Object {
                 ],
               },
             },
-            Object {
-              "Action": Array [
+            {
+              "Action": [
                 "ssm:GetParameters",
                 "ssm:GetParameter",
               ],
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::Join": Array [
+              "Resource": {
+                "Fn::Join": [
                   "",
-                  Array [
+                  [
                     "arn:aws:ssm:",
-                    Object {
+                    {
                       "Ref": "AWS::Region",
                     },
                     ":",
-                    Object {
+                    {
                       "Ref": "AWS::AccountId",
                     },
                     ":parameter/PROD/mobile-notifications/slomonitor/*",
@@ -316,13 +319,13 @@ Object {
                 ],
               },
             },
-            Object {
+            {
               "Action": "cloudwatch:PutMetricData",
               "Effect": "Allow",
               "Resource": "*",
             },
-            Object {
-              "Action": Array [
+            {
+              "Action": [
                 "athena:StartQueryExecution",
                 "athena:GetQueryExecution",
                 "athena:GetQueryResults",
@@ -330,72 +333,72 @@ Object {
               "Effect": "Allow",
               "Resource": "*",
             },
-            Object {
-              "Action": Array [
+            {
+              "Action": [
                 "glue:GetDatabase",
                 "glue:GetTable",
                 "glue:GetPartitions",
               ],
               "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::Join": Array [
+              "Resource": [
+                {
+                  "Fn::Join": [
                     "",
-                    Array [
+                    [
                       "arn:aws:glue:",
-                      Object {
+                      {
                         "Ref": "AWS::Region",
                       },
                       ":",
-                      Object {
+                      {
                         "Ref": "AWS::AccountId",
                       },
                       ":catalog",
                     ],
                   ],
                 },
-                Object {
-                  "Fn::Join": Array [
+                {
+                  "Fn::Join": [
                     "",
-                    Array [
+                    [
                       "arn:aws:glue:",
-                      Object {
+                      {
                         "Ref": "AWS::Region",
                       },
                       ":",
-                      Object {
+                      {
                         "Ref": "AWS::AccountId",
                       },
                       ":database/default",
                     ],
                   ],
                 },
-                Object {
-                  "Fn::Join": Array [
+                {
+                  "Fn::Join": [
                     "",
-                    Array [
+                    [
                       "arn:aws:glue:",
-                      Object {
+                      {
                         "Ref": "AWS::Region",
                       },
                       ":",
-                      Object {
+                      {
                         "Ref": "AWS::AccountId",
                       },
                       ":database/notifications",
                     ],
                   ],
                 },
-                Object {
-                  "Fn::Join": Array [
+                {
+                  "Fn::Join": [
                     "",
-                    Array [
+                    [
                       "arn:aws:glue:",
-                      Object {
+                      {
                         "Ref": "AWS::Region",
                       },
                       ":",
-                      Object {
+                      {
                         "Ref": "AWS::AccountId",
                       },
                       ":table/notifications/*",
@@ -404,27 +407,27 @@ Object {
                 },
               ],
             },
-            Object {
-              "Action": Array [
+            {
+              "Action": [
                 "s3:Get*",
                 "s3:List*",
               ],
               "Effect": "Allow",
-              "Resource": Array [
+              "Resource": [
                 "arn:aws:s3:::aws-mobile-event-logs-prod",
                 "arn:aws:s3:::aws-mobile-event-logs-prod/*",
               ],
             },
-            Object {
-              "Action": Array [
+            {
+              "Action": [
                 "s3:AbortMultipartUpload",
                 "s3:PutObject",
               ],
               "Effect": "Allow",
               "Resource": "arn:aws:s3:::aws-mobile-event-logs-prod/athena/slo-monitoring/*",
             },
-            Object {
-              "Action": Array [
+            {
+              "Action": [
                 "sqs:ReceiveMessage",
                 "sqs:ChangeMessageVisibility",
                 "sqs:GetQueueUrl",
@@ -432,8 +435,8 @@ Object {
                 "sqs:GetQueueAttributes",
               ],
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
+              "Resource": {
+                "Fn::GetAtt": [
                   "MessageQueue7A3BF959",
                   "Arn",
                 ],
@@ -443,24 +446,24 @@ Object {
           "Version": "2012-10-17",
         },
         "PolicyName": "SloMonitorServiceRoleDefaultPolicy8A58BB27",
-        "Roles": Array [
-          Object {
+        "Roles": [
+          {
             "Ref": "SloMonitorServiceRole66A7ADCC",
           },
         ],
       },
       "Type": "AWS::IAM::Policy",
     },
-    "SloMonitorSqsEventSourceSloMonitoringMessageQueue50CCCDD511949E74": Object {
-      "Properties": Object {
+    "SloMonitorSqsEventSourceSloMonitoringMessageQueue50CCCDD511949E74": {
+      "Properties": {
         "BatchSize": 1,
-        "EventSourceArn": Object {
-          "Fn::GetAtt": Array [
+        "EventSourceArn": {
+          "Fn::GetAtt": [
             "MessageQueue7A3BF959",
             "Arn",
           ],
         },
-        "FunctionName": Object {
+        "FunctionName": {
           "Ref": "SloMonitor1106EE7E",
         },
       },
