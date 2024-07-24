@@ -1,20 +1,20 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`The Registration stack matches the snapshot for CODE 1`] = `
-Object {
+{
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Registration for mobile notifications",
-  "Mappings": Object {
-    "Constants": Object {
-      "App": Object {
+  "Mappings": {
+    "Constants": {
+      "App": {
         "Value": "registration",
       },
-      "Stack": Object {
+      "Stack": {
         "Value": "mobile-notifications",
       },
     },
-    "StageVariables": Object {
-      "CODE": Object {
+    "StageVariables": {
+      "CODE": {
         "CPUAlarmPeriodLower": 300,
         "CPUAlarmPeriodUpper": 1200,
         "CPUAlarmThresholdLower": 20,
@@ -22,7 +22,7 @@ Object {
         "InstanceType": "t4g.small",
         "NotificationAlarmPeriod": 1200,
       },
-      "PROD": Object {
+      "PROD": {
         "CPUAlarmPeriodLower": 300,
         "CPUAlarmPeriodUpper": 60,
         "CPUAlarmThresholdLower": 20,
@@ -32,158 +32,158 @@ Object {
       },
     },
   },
-  "Metadata": Object {
-    "gu:cdk:constructs": Array [],
+  "Metadata": {
+    "gu:cdk:constructs": [],
     "gu:cdk:version": "TEST",
   },
-  "Outputs": Object {
-    "LoadBalancerUrl": Object {
-      "Value": Object {
+  "Outputs": {
+    "LoadBalancerUrl": {
+      "Value": {
         "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
       },
     },
   },
-  "Parameters": Object {
-    "AMI": Object {
+  "Parameters": {
+    "AMI": {
       "Description": "AMI used by the instances",
       "Type": "AWS::EC2::Image::Id",
     },
-    "ASGMaxSize": Object {
+    "ASGMaxSize": {
       "Description": "Maximum size of the autoscaling group",
       "Type": "Number",
     },
-    "ASGMinSize": Object {
+    "ASGMinSize": {
       "Description": "Minimum size of the autoscaling group",
       "Type": "Number",
     },
-    "AlarmTopic": Object {
+    "AlarmTopic": {
       "Description": "The ARN of the SNS topic to send all the cloudwatch alarms to",
       "Type": "String",
     },
-    "CertArn": Object {
+    "CertArn": {
       "Description": "ACM Certificate for app use",
       "Type": "String",
     },
-    "DistBucket": Object {
+    "DistBucket": {
       "Description": "The name of the s3 bucket containing the server artifact",
       "Type": "String",
     },
-    "DomainName": Object {
+    "DomainName": {
       "Description": "The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.",
       "Type": "String",
     },
-    "HostedZone": Object {
+    "HostedZone": {
       "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
       "Type": "String",
     },
-    "NotEnough200sPerDayThreshold": Object {
+    "NotEnough200sPerDayThreshold": {
       "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
       "Type": "Number",
     },
-    "NotEnough200sThreshold": Object {
+    "NotEnough200sThreshold": {
       "Description": "Alarm if less than this many 200s in half an hour",
       "Type": "Number",
     },
-    "PrivateSubnets": Object {
+    "PrivateSubnets": {
       "Description": "The private subnets of the VPC for the autoscaling group",
       "Type": "List<AWS::EC2::Subnet::Id>",
     },
-    "PublicSubnets": Object {
+    "PublicSubnets": {
       "Description": "The public subnets of the VPC for the loadbalancer",
       "Type": "List<AWS::EC2::Subnet::Id>",
     },
-    "RunbookCopy": Object {
+    "RunbookCopy": {
       "Default": "<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
       "Type": "String",
     },
-    "Stage": Object {
-      "AllowedValues": Array [
+    "Stage": {
+      "AllowedValues": [
         "CODE",
         "PROD",
       ],
       "Description": "Environment name",
       "Type": "String",
     },
-    "VPCSecurityGroup": Object {
+    "VPCSecurityGroup": {
       "Description": "The default security group of the VPC",
       "Type": "AWS::EC2::SecurityGroup::Id",
     },
-    "VpcId": Object {
+    "VpcId": {
       "Description": "The VPC",
       "Type": "AWS::EC2::VPC::Id",
     },
   },
-  "Resources": Object {
-    "DistributionInstanceProfile": Object {
-      "Properties": Object {
+  "Resources": {
+    "DistributionInstanceProfile": {
+      "Properties": {
         "Path": "/",
-        "Roles": Array [
-          Object {
+        "Roles": [
+          {
             "Ref": "DistributionRole",
           },
         ],
       },
       "Type": "AWS::IAM::InstanceProfile",
     },
-    "DistributionRole": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
+    "DistributionRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
               "Action": "sts:AssumeRole",
               "Effect": "Allow",
-              "Principal": Object {
+              "Principal": {
                 "Service": "ec2.amazonaws.com",
               },
             },
           ],
         },
-        "ManagedPolicyArns": Array [
-          Object {
+        "ManagedPolicyArns": [
+          {
             "Fn::Sub": "arn:aws:iam::\${AWS::AccountId}:policy/ssm-scala-v1",
           },
         ],
         "Path": "/",
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
                   "Action": "s3:GetObject",
                   "Effect": "Allow",
-                  "Resource": Object {
+                  "Resource": {
                     "Fn::Sub": "arn:aws:s3:::\${DistBucket}/*",
                   },
                 },
-                Object {
+                {
                   "Action": "ec2:DescribeTags",
                   "Effect": "Allow",
                   "Resource": "*",
                 },
-                Object {
-                  "Action": Array [
+                {
+                  "Action": [
                     "cloudwatch:*",
                     "logs:*",
                   ],
                   "Effect": "Allow",
                   "Resource": "*",
                 },
-                Object {
-                  "Action": Array [
+                {
+                  "Action": [
                     "autoscaling:DescribeAutoScalingInstances",
                     "autoscaling:DescribeAutoScalingGroups",
                   ],
                   "Effect": "Allow",
                   "Resource": "*",
                 },
-                Object {
-                  "Action": Array [
+                {
+                  "Action": [
                     "kinesis:PutRecord",
                     "kinesis:PutRecords",
                     "kinesis:DescribeStream",
                   ],
                   "Effect": "Allow",
-                  "Resource": Object {
+                  "Resource": {
                     "Fn::Sub": "arn:aws:kinesis:\${AWS::Region}:\${AWS::AccountId}:stream/mobile-log-aggregation-\${Stage}",
                   },
                 },
@@ -191,18 +191,18 @@ Object {
             },
             "PolicyName": "root",
           },
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
                   "Action": "ssm:GetParametersByPath",
                   "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::Sub": Array [
+                  "Resource": {
+                    "Fn::Sub": [
                       "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/notifications/\${Stage}/\${Stack}",
-                      Object {
-                        "Stack": Object {
-                          "Fn::FindInMap": Array [
+                      {
+                        "Stack": {
+                          "Fn::FindInMap": [
                             "Constants",
                             "Stack",
                             "Value",
@@ -217,20 +217,20 @@ Object {
             "PolicyName": "conf",
           },
         ],
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "CODE",
           },
@@ -238,16 +238,16 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
-    "DnsRecord": Object {
-      "Properties": Object {
-        "HostedZoneName": Object {
+    "DnsRecord": {
+      "Properties": {
+        "HostedZoneName": {
           "Ref": "HostedZone",
         },
-        "Name": Object {
+        "Name": {
           "Ref": "DomainName",
         },
-        "ResourceRecords": Array [
-          Object {
+        "ResourceRecords": [
+          {
             "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
           },
         ],
@@ -256,67 +256,67 @@ Object {
       },
       "Type": "AWS::Route53::RecordSet",
     },
-    "GuardianAccessSecurityGroup": Object {
-      "Properties": Object {
+    "GuardianAccessSecurityGroup": {
+      "Properties": {
         "GroupDescription": "SSH and management server access from Guardian network",
-        "SecurityGroupIngress": Array [
-          Object {
+        "SecurityGroupIngress": [
+          {
             "FromPort": 22,
             "IpProtocol": "tcp",
-            "SourceSecurityGroupId": Object {
+            "SourceSecurityGroupId": {
               "Ref": "VPCSecurityGroup",
             },
             "ToPort": 22,
           },
         ],
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "CODE",
           },
         ],
-        "VpcId": Object {
+        "VpcId": {
           "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "HighCPUAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
+    "HighCPUAlarm": {
+      "Properties": {
+        "AlarmActions": [
+          {
             "Ref": "ScaleUpPolicy",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Sub": Array [
+        "AlarmDescription": {
+          "Fn::Sub": [
             "Scale-Up if CPU is greater than \${CPUAlarmThresholdUpper} % over last \${CPUAlarmPeriodUpper} seconds",
-            Object {
-              "CPUAlarmPeriodUpper": Object {
-                "Fn::FindInMap": Array [
+            {
+              "CPUAlarmPeriodUpper": {
+                "Fn::FindInMap": [
                   "StageVariables",
-                  Object {
+                  {
                     "Ref": "Stage",
                   },
                   "CPUAlarmThresholdUpper",
                 ],
               },
-              "CPUAlarmThresholdUpper": Object {
-                "Fn::FindInMap": Array [
+              "CPUAlarmThresholdUpper": {
+                "Fn::FindInMap": [
                   "StageVariables",
-                  Object {
+                  {
                     "Ref": "Stage",
                   },
                   "CPUAlarmThresholdUpper",
@@ -326,10 +326,10 @@ Object {
           ],
         },
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-        "Dimensions": Array [
-          Object {
+        "Dimensions": [
+          {
             "Name": "AutoScalingGroupName",
-            "Value": Object {
+            "Value": {
               "Ref": "PrivateRegistrationAutoscalingGroup",
             },
           },
@@ -337,20 +337,38 @@ Object {
         "EvaluationPeriods": 1,
         "MetricName": "CPUUtilization",
         "Namespace": "AWS/EC2",
-        "Period": Object {
-          "Fn::FindInMap": Array [
+        "Period": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "CPUAlarmPeriodUpper",
           ],
         },
         "Statistic": "Average",
-        "Threshold": Object {
-          "Fn::FindInMap": Array [
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "CPUAlarmThresholdUpper",
@@ -359,142 +377,142 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "InstanceSecurityGroup": Object {
-      "Properties": Object {
+    "InstanceSecurityGroup": {
+      "Properties": {
         "GroupDescription": "Open up HTTP access to load balancer",
-        "SecurityGroupEgress": Array [
-          Object {
+        "SecurityGroupEgress": [
+          {
             "CidrIp": "0.0.0.0/0",
             "FromPort": 80,
             "IpProtocol": "tcp",
             "ToPort": 80,
           },
-          Object {
+          {
             "CidrIp": "0.0.0.0/0",
             "FromPort": 443,
             "IpProtocol": "tcp",
             "ToPort": 443,
           },
         ],
-        "SecurityGroupIngress": Array [
-          Object {
+        "SecurityGroupIngress": [
+          {
             "FromPort": 9000,
             "IpProtocol": "tcp",
-            "SourceSecurityGroupId": Object {
+            "SourceSecurityGroupId": {
               "Ref": "LoadBalancerSecurityGroup",
             },
             "ToPort": 9000,
           },
         ],
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "CODE",
           },
         ],
-        "VpcId": Object {
+        "VpcId": {
           "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "LoadBalancerSecurityGroup": Object {
-      "Properties": Object {
+    "LoadBalancerSecurityGroup": {
+      "Properties": {
         "GroupDescription": "Open up HTTP access to load balancer",
-        "SecurityGroupEgress": Array [
-          Object {
+        "SecurityGroupEgress": [
+          {
             "CidrIp": "0.0.0.0/0",
             "FromPort": 9000,
             "IpProtocol": "tcp",
             "ToPort": 9000,
           },
         ],
-        "SecurityGroupIngress": Array [
-          Object {
+        "SecurityGroupIngress": [
+          {
             "CidrIp": "0.0.0.0/0",
             "FromPort": 443,
             "IpProtocol": "tcp",
             "ToPort": 443,
           },
         ],
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "CODE",
           },
         ],
-        "VpcId": Object {
+        "VpcId": {
           "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "LoadBalancerToPrivateASG": Object {
-      "Properties": Object {
+    "LoadBalancerToPrivateASG": {
+      "Properties": {
         "CrossZone": true,
-        "HealthCheck": Object {
+        "HealthCheck": {
           "HealthyThreshold": "2",
           "Interval": "30",
           "Target": "HTTP:9000/healthcheck",
           "Timeout": "10",
           "UnhealthyThreshold": "10",
         },
-        "Listeners": Array [
-          Object {
+        "Listeners": [
+          {
             "InstancePort": "9000",
             "LoadBalancerPort": "443",
             "Protocol": "HTTPS",
-            "SSLCertificateId": Object {
+            "SSLCertificateId": {
               "Fn::Sub": "\${CertArn}",
             },
           },
         ],
-        "SecurityGroups": Array [
-          Object {
+        "SecurityGroups": [
+          {
             "Ref": "LoadBalancerSecurityGroup",
           },
         ],
-        "Subnets": Object {
+        "Subnets": {
           "Ref": "PublicSubnets",
         },
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "CODE",
           },
@@ -502,30 +520,30 @@ Object {
       },
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
     },
-    "LowCPUAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
+    "LowCPUAlarm": {
+      "Properties": {
+        "AlarmActions": [
+          {
             "Ref": "ScaleDownPolicy",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Sub": Array [
+        "AlarmDescription": {
+          "Fn::Sub": [
             "Scale-Down if CPU is less than \${CPUAlarmThresholdLower} % over last \${CPUAlarmPeriodLower} seconds",
-            Object {
-              "CPUAlarmPeriodLower": Object {
-                "Fn::FindInMap": Array [
+            {
+              "CPUAlarmPeriodLower": {
+                "Fn::FindInMap": [
                   "StageVariables",
-                  Object {
+                  {
                     "Ref": "Stage",
                   },
                   "CPUAlarmPeriodLower",
                 ],
               },
-              "CPUAlarmThresholdLower": Object {
-                "Fn::FindInMap": Array [
+              "CPUAlarmThresholdLower": {
+                "Fn::FindInMap": [
                   "StageVariables",
-                  Object {
+                  {
                     "Ref": "Stage",
                   },
                   "CPUAlarmThresholdLower",
@@ -535,10 +553,10 @@ Object {
           ],
         },
         "ComparisonOperator": "LessThanOrEqualToThreshold",
-        "Dimensions": Array [
-          Object {
+        "Dimensions": [
+          {
             "Name": "AutoScalingGroupName",
-            "Value": Object {
+            "Value": {
               "Ref": "PrivateRegistrationAutoscalingGroup",
             },
           },
@@ -546,20 +564,38 @@ Object {
         "EvaluationPeriods": 1,
         "MetricName": "CPUUtilization",
         "Namespace": "AWS/EC2",
-        "Period": Object {
-          "Fn::FindInMap": Array [
+        "Period": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "CPUAlarmPeriodLower",
           ],
         },
         "Statistic": "Average",
-        "Threshold": Object {
-          "Fn::FindInMap": Array [
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "CPUAlarmThresholdLower",
@@ -568,21 +604,21 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "NotEnoughHttpCode200sAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
+    "NotEnoughHttpCode200sAlarm": {
+      "Properties": {
+        "AlarmActions": [
+          {
             "Ref": "AlarmTopic",
           },
         ],
-        "AlarmDescription": Object {
+        "AlarmDescription": {
           "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in half an hour. \${RunbookCopy}",
         },
         "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": Array [
-          Object {
+        "Dimensions": [
+          {
             "Name": "LoadBalancerName",
-            "Value": Object {
+            "Value": {
               "Ref": "LoadBalancerToPrivateASG",
             },
           },
@@ -590,35 +626,53 @@ Object {
         "EvaluationPeriods": 1,
         "MetricName": "HTTPCode_Backend_2XX",
         "Namespace": "AWS/ELB",
-        "OKActions": Array [
-          Object {
+        "OKActions": [
+          {
             "Ref": "AlarmTopic",
           },
         ],
         "Period": 1800,
         "Statistic": "Sum",
-        "Threshold": Object {
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": {
           "Ref": "NotEnough200sThreshold",
         },
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "NotEnoughHttpCode200sPerDayAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
+    "NotEnoughHttpCode200sPerDayAlarm": {
+      "Properties": {
+        "AlarmActions": [
+          {
             "Ref": "AlarmTopic",
           },
         ],
-        "AlarmDescription": Object {
+        "AlarmDescription": {
           "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in a whole day. \${RunbookCopy}",
         },
         "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": Array [
-          Object {
+        "Dimensions": [
+          {
             "Name": "LoadBalancerName",
-            "Value": Object {
+            "Value": {
               "Ref": "LoadBalancerToPrivateASG",
             },
           },
@@ -626,139 +680,157 @@ Object {
         "EvaluationPeriods": 1,
         "MetricName": "HTTPCode_Backend_2XX",
         "Namespace": "AWS/ELB",
-        "OKActions": Array [
-          Object {
+        "OKActions": [
+          {
             "Ref": "AlarmTopic",
           },
         ],
         "Period": 86400,
         "Statistic": "Sum",
-        "Threshold": Object {
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": {
           "Ref": "NotEnough200sPerDayThreshold",
         },
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "PrivateRegistrationAutoscalingGroup": Object {
-      "Properties": Object {
-        "AvailabilityZones": Object {
+    "PrivateRegistrationAutoscalingGroup": {
+      "Properties": {
+        "AvailabilityZones": {
           "Fn::GetAZs": "",
         },
         "HealthCheckGracePeriod": 400,
         "HealthCheckType": "ELB",
-        "LaunchConfigurationName": Object {
+        "LaunchConfigurationName": {
           "Ref": "RegistrationLaunchConfig",
         },
-        "LoadBalancerNames": Array [
-          Object {
+        "LoadBalancerNames": [
+          {
             "Ref": "LoadBalancerToPrivateASG",
           },
         ],
-        "MaxSize": Object {
+        "MaxSize": {
           "Ref": "ASGMaxSize",
         },
-        "MinSize": Object {
+        "MinSize": {
           "Ref": "ASGMinSize",
         },
-        "NotificationConfiguration": Object {
-          "NotificationTypes": Array [
+        "NotificationConfiguration": {
+          "NotificationTypes": [
             "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
             "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
           ],
-          "TopicARN": Object {
+          "TopicARN": {
             "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
           },
         },
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "App",
             "PropagateAtLaunch": true,
-            "Value": Object {
-              "Fn::FindInMap": Array [
+            "Value": {
+              "Fn::FindInMap": [
                 "Constants",
                 "App",
                 "Value",
               ],
             },
           },
-          Object {
+          {
             "Key": "gu:cdk:version",
             "PropagateAtLaunch": true,
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "PropagateAtLaunch": true,
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "PropagateAtLaunch": true,
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "PropagateAtLaunch": true,
             "Value": "CODE",
           },
         ],
-        "VPCZoneIdentifier": Object {
+        "VPCZoneIdentifier": {
           "Ref": "PrivateSubnets",
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
     },
-    "RegistrationLaunchConfig": Object {
-      "Properties": Object {
+    "RegistrationLaunchConfig": {
+      "Properties": {
         "AssociatePublicIpAddress": false,
-        "IamInstanceProfile": Object {
+        "IamInstanceProfile": {
           "Ref": "DistributionInstanceProfile",
         },
-        "ImageId": Object {
+        "ImageId": {
           "Ref": "AMI",
         },
-        "InstanceType": Object {
-          "Fn::FindInMap": Array [
+        "InstanceType": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "InstanceType",
           ],
         },
-        "MetadataOptions": Object {
+        "MetadataOptions": {
           "HttpTokens": "required",
         },
-        "SecurityGroups": Array [
-          Object {
+        "SecurityGroups": [
+          {
             "Ref": "InstanceSecurityGroup",
           },
-          Object {
+          {
             "Ref": "GuardianAccessSecurityGroup",
           },
-          Object {
+          {
             "Ref": "VPCSecurityGroup",
           },
         ],
-        "UserData": Object {
-          "Fn::Base64": Object {
-            "Fn::Sub": Array [
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Sub": [
               "#!/bin/bash -ev
 aws --region \${AWS::Region} s3 cp s3://\${DistBucket}/\${Stack}/\${Stage}/\${App}/\${App}_1.0-latest_all.deb /tmp
 dpkg -i /tmp/\${App}_1.0-latest_all.deb
 /opt/aws-kinesis-agent/configure-aws-kinesis-agent \${AWS::Region} mobile-log-aggregation-\${Stage} /var/log/\${App}/application.log
 ",
-              Object {
-                "App": Object {
-                  "Fn::FindInMap": Array [
+              {
+                "App": {
+                  "Fn::FindInMap": [
                     "Constants",
                     "App",
                     "Value",
                   ],
                 },
-                "Stack": Object {
-                  "Fn::FindInMap": Array [
+                "Stack": {
+                  "Fn::FindInMap": [
                     "Constants",
                     "Stack",
                     "Value",
@@ -771,10 +843,10 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
       },
       "Type": "AWS::AutoScaling::LaunchConfiguration",
     },
-    "ScaleDownPolicy": Object {
-      "Properties": Object {
+    "ScaleDownPolicy": {
+      "Properties": {
         "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": Object {
+        "AutoScalingGroupName": {
           "Ref": "PrivateRegistrationAutoscalingGroup",
         },
         "Cooldown": "3600",
@@ -782,10 +854,10 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
       },
       "Type": "AWS::AutoScaling::ScalingPolicy",
     },
-    "ScaleUpPolicy": Object {
-      "Properties": Object {
+    "ScaleUpPolicy": {
+      "Properties": {
         "AdjustmentType": "PercentChangeInCapacity",
-        "AutoScalingGroupName": Object {
+        "AutoScalingGroupName": {
           "Ref": "PrivateRegistrationAutoscalingGroup",
         },
         "Cooldown": "300",
@@ -798,20 +870,20 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
 `;
 
 exports[`The Registration stack matches the snapshot for PROD 1`] = `
-Object {
+{
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Registration for mobile notifications",
-  "Mappings": Object {
-    "Constants": Object {
-      "App": Object {
+  "Mappings": {
+    "Constants": {
+      "App": {
         "Value": "registration",
       },
-      "Stack": Object {
+      "Stack": {
         "Value": "mobile-notifications",
       },
     },
-    "StageVariables": Object {
-      "CODE": Object {
+    "StageVariables": {
+      "CODE": {
         "CPUAlarmPeriodLower": 300,
         "CPUAlarmPeriodUpper": 1200,
         "CPUAlarmThresholdLower": 20,
@@ -819,7 +891,7 @@ Object {
         "InstanceType": "t4g.small",
         "NotificationAlarmPeriod": 1200,
       },
-      "PROD": Object {
+      "PROD": {
         "CPUAlarmPeriodLower": 300,
         "CPUAlarmPeriodUpper": 60,
         "CPUAlarmThresholdLower": 20,
@@ -829,158 +901,158 @@ Object {
       },
     },
   },
-  "Metadata": Object {
-    "gu:cdk:constructs": Array [],
+  "Metadata": {
+    "gu:cdk:constructs": [],
     "gu:cdk:version": "TEST",
   },
-  "Outputs": Object {
-    "LoadBalancerUrl": Object {
-      "Value": Object {
+  "Outputs": {
+    "LoadBalancerUrl": {
+      "Value": {
         "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
       },
     },
   },
-  "Parameters": Object {
-    "AMI": Object {
+  "Parameters": {
+    "AMI": {
       "Description": "AMI used by the instances",
       "Type": "AWS::EC2::Image::Id",
     },
-    "ASGMaxSize": Object {
+    "ASGMaxSize": {
       "Description": "Maximum size of the autoscaling group",
       "Type": "Number",
     },
-    "ASGMinSize": Object {
+    "ASGMinSize": {
       "Description": "Minimum size of the autoscaling group",
       "Type": "Number",
     },
-    "AlarmTopic": Object {
+    "AlarmTopic": {
       "Description": "The ARN of the SNS topic to send all the cloudwatch alarms to",
       "Type": "String",
     },
-    "CertArn": Object {
+    "CertArn": {
       "Description": "ACM Certificate for app use",
       "Type": "String",
     },
-    "DistBucket": Object {
+    "DistBucket": {
       "Description": "The name of the s3 bucket containing the server artifact",
       "Type": "String",
     },
-    "DomainName": Object {
+    "DomainName": {
       "Description": "The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.",
       "Type": "String",
     },
-    "HostedZone": Object {
+    "HostedZone": {
       "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
       "Type": "String",
     },
-    "NotEnough200sPerDayThreshold": Object {
+    "NotEnough200sPerDayThreshold": {
       "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
       "Type": "Number",
     },
-    "NotEnough200sThreshold": Object {
+    "NotEnough200sThreshold": {
       "Description": "Alarm if less than this many 200s in half an hour",
       "Type": "Number",
     },
-    "PrivateSubnets": Object {
+    "PrivateSubnets": {
       "Description": "The private subnets of the VPC for the autoscaling group",
       "Type": "List<AWS::EC2::Subnet::Id>",
     },
-    "PublicSubnets": Object {
+    "PublicSubnets": {
       "Description": "The public subnets of the VPC for the loadbalancer",
       "Type": "List<AWS::EC2::Subnet::Id>",
     },
-    "RunbookCopy": Object {
+    "RunbookCopy": {
       "Default": "<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
       "Type": "String",
     },
-    "Stage": Object {
-      "AllowedValues": Array [
+    "Stage": {
+      "AllowedValues": [
         "CODE",
         "PROD",
       ],
       "Description": "Environment name",
       "Type": "String",
     },
-    "VPCSecurityGroup": Object {
+    "VPCSecurityGroup": {
       "Description": "The default security group of the VPC",
       "Type": "AWS::EC2::SecurityGroup::Id",
     },
-    "VpcId": Object {
+    "VpcId": {
       "Description": "The VPC",
       "Type": "AWS::EC2::VPC::Id",
     },
   },
-  "Resources": Object {
-    "DistributionInstanceProfile": Object {
-      "Properties": Object {
+  "Resources": {
+    "DistributionInstanceProfile": {
+      "Properties": {
         "Path": "/",
-        "Roles": Array [
-          Object {
+        "Roles": [
+          {
             "Ref": "DistributionRole",
           },
         ],
       },
       "Type": "AWS::IAM::InstanceProfile",
     },
-    "DistributionRole": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
+    "DistributionRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
               "Action": "sts:AssumeRole",
               "Effect": "Allow",
-              "Principal": Object {
+              "Principal": {
                 "Service": "ec2.amazonaws.com",
               },
             },
           ],
         },
-        "ManagedPolicyArns": Array [
-          Object {
+        "ManagedPolicyArns": [
+          {
             "Fn::Sub": "arn:aws:iam::\${AWS::AccountId}:policy/ssm-scala-v1",
           },
         ],
         "Path": "/",
-        "Policies": Array [
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
                   "Action": "s3:GetObject",
                   "Effect": "Allow",
-                  "Resource": Object {
+                  "Resource": {
                     "Fn::Sub": "arn:aws:s3:::\${DistBucket}/*",
                   },
                 },
-                Object {
+                {
                   "Action": "ec2:DescribeTags",
                   "Effect": "Allow",
                   "Resource": "*",
                 },
-                Object {
-                  "Action": Array [
+                {
+                  "Action": [
                     "cloudwatch:*",
                     "logs:*",
                   ],
                   "Effect": "Allow",
                   "Resource": "*",
                 },
-                Object {
-                  "Action": Array [
+                {
+                  "Action": [
                     "autoscaling:DescribeAutoScalingInstances",
                     "autoscaling:DescribeAutoScalingGroups",
                   ],
                   "Effect": "Allow",
                   "Resource": "*",
                 },
-                Object {
-                  "Action": Array [
+                {
+                  "Action": [
                     "kinesis:PutRecord",
                     "kinesis:PutRecords",
                     "kinesis:DescribeStream",
                   ],
                   "Effect": "Allow",
-                  "Resource": Object {
+                  "Resource": {
                     "Fn::Sub": "arn:aws:kinesis:\${AWS::Region}:\${AWS::AccountId}:stream/mobile-log-aggregation-\${Stage}",
                   },
                 },
@@ -988,18 +1060,18 @@ Object {
             },
             "PolicyName": "root",
           },
-          Object {
-            "PolicyDocument": Object {
-              "Statement": Array [
-                Object {
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
                   "Action": "ssm:GetParametersByPath",
                   "Effect": "Allow",
-                  "Resource": Object {
-                    "Fn::Sub": Array [
+                  "Resource": {
+                    "Fn::Sub": [
                       "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/notifications/\${Stage}/\${Stack}",
-                      Object {
-                        "Stack": Object {
-                          "Fn::FindInMap": Array [
+                      {
+                        "Stack": {
+                          "Fn::FindInMap": [
                             "Constants",
                             "Stack",
                             "Value",
@@ -1014,20 +1086,20 @@ Object {
             "PolicyName": "conf",
           },
         ],
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "PROD",
           },
@@ -1035,16 +1107,16 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
-    "DnsRecord": Object {
-      "Properties": Object {
-        "HostedZoneName": Object {
+    "DnsRecord": {
+      "Properties": {
+        "HostedZoneName": {
           "Ref": "HostedZone",
         },
-        "Name": Object {
+        "Name": {
           "Ref": "DomainName",
         },
-        "ResourceRecords": Array [
-          Object {
+        "ResourceRecords": [
+          {
             "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
           },
         ],
@@ -1053,67 +1125,67 @@ Object {
       },
       "Type": "AWS::Route53::RecordSet",
     },
-    "GuardianAccessSecurityGroup": Object {
-      "Properties": Object {
+    "GuardianAccessSecurityGroup": {
+      "Properties": {
         "GroupDescription": "SSH and management server access from Guardian network",
-        "SecurityGroupIngress": Array [
-          Object {
+        "SecurityGroupIngress": [
+          {
             "FromPort": 22,
             "IpProtocol": "tcp",
-            "SourceSecurityGroupId": Object {
+            "SourceSecurityGroupId": {
               "Ref": "VPCSecurityGroup",
             },
             "ToPort": 22,
           },
         ],
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "PROD",
           },
         ],
-        "VpcId": Object {
+        "VpcId": {
           "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "HighCPUAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
+    "HighCPUAlarm": {
+      "Properties": {
+        "AlarmActions": [
+          {
             "Ref": "ScaleUpPolicy",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Sub": Array [
+        "AlarmDescription": {
+          "Fn::Sub": [
             "Scale-Up if CPU is greater than \${CPUAlarmThresholdUpper} % over last \${CPUAlarmPeriodUpper} seconds",
-            Object {
-              "CPUAlarmPeriodUpper": Object {
-                "Fn::FindInMap": Array [
+            {
+              "CPUAlarmPeriodUpper": {
+                "Fn::FindInMap": [
                   "StageVariables",
-                  Object {
+                  {
                     "Ref": "Stage",
                   },
                   "CPUAlarmThresholdUpper",
                 ],
               },
-              "CPUAlarmThresholdUpper": Object {
-                "Fn::FindInMap": Array [
+              "CPUAlarmThresholdUpper": {
+                "Fn::FindInMap": [
                   "StageVariables",
-                  Object {
+                  {
                     "Ref": "Stage",
                   },
                   "CPUAlarmThresholdUpper",
@@ -1123,10 +1195,10 @@ Object {
           ],
         },
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-        "Dimensions": Array [
-          Object {
+        "Dimensions": [
+          {
             "Name": "AutoScalingGroupName",
-            "Value": Object {
+            "Value": {
               "Ref": "PrivateRegistrationAutoscalingGroup",
             },
           },
@@ -1134,20 +1206,38 @@ Object {
         "EvaluationPeriods": 1,
         "MetricName": "CPUUtilization",
         "Namespace": "AWS/EC2",
-        "Period": Object {
-          "Fn::FindInMap": Array [
+        "Period": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "CPUAlarmPeriodUpper",
           ],
         },
         "Statistic": "Average",
-        "Threshold": Object {
-          "Fn::FindInMap": Array [
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "CPUAlarmThresholdUpper",
@@ -1156,142 +1246,142 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "InstanceSecurityGroup": Object {
-      "Properties": Object {
+    "InstanceSecurityGroup": {
+      "Properties": {
         "GroupDescription": "Open up HTTP access to load balancer",
-        "SecurityGroupEgress": Array [
-          Object {
+        "SecurityGroupEgress": [
+          {
             "CidrIp": "0.0.0.0/0",
             "FromPort": 80,
             "IpProtocol": "tcp",
             "ToPort": 80,
           },
-          Object {
+          {
             "CidrIp": "0.0.0.0/0",
             "FromPort": 443,
             "IpProtocol": "tcp",
             "ToPort": 443,
           },
         ],
-        "SecurityGroupIngress": Array [
-          Object {
+        "SecurityGroupIngress": [
+          {
             "FromPort": 9000,
             "IpProtocol": "tcp",
-            "SourceSecurityGroupId": Object {
+            "SourceSecurityGroupId": {
               "Ref": "LoadBalancerSecurityGroup",
             },
             "ToPort": 9000,
           },
         ],
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "PROD",
           },
         ],
-        "VpcId": Object {
+        "VpcId": {
           "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "LoadBalancerSecurityGroup": Object {
-      "Properties": Object {
+    "LoadBalancerSecurityGroup": {
+      "Properties": {
         "GroupDescription": "Open up HTTP access to load balancer",
-        "SecurityGroupEgress": Array [
-          Object {
+        "SecurityGroupEgress": [
+          {
             "CidrIp": "0.0.0.0/0",
             "FromPort": 9000,
             "IpProtocol": "tcp",
             "ToPort": 9000,
           },
         ],
-        "SecurityGroupIngress": Array [
-          Object {
+        "SecurityGroupIngress": [
+          {
             "CidrIp": "0.0.0.0/0",
             "FromPort": 443,
             "IpProtocol": "tcp",
             "ToPort": 443,
           },
         ],
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "PROD",
           },
         ],
-        "VpcId": Object {
+        "VpcId": {
           "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "LoadBalancerToPrivateASG": Object {
-      "Properties": Object {
+    "LoadBalancerToPrivateASG": {
+      "Properties": {
         "CrossZone": true,
-        "HealthCheck": Object {
+        "HealthCheck": {
           "HealthyThreshold": "2",
           "Interval": "30",
           "Target": "HTTP:9000/healthcheck",
           "Timeout": "10",
           "UnhealthyThreshold": "10",
         },
-        "Listeners": Array [
-          Object {
+        "Listeners": [
+          {
             "InstancePort": "9000",
             "LoadBalancerPort": "443",
             "Protocol": "HTTPS",
-            "SSLCertificateId": Object {
+            "SSLCertificateId": {
               "Fn::Sub": "\${CertArn}",
             },
           },
         ],
-        "SecurityGroups": Array [
-          Object {
+        "SecurityGroups": [
+          {
             "Ref": "LoadBalancerSecurityGroup",
           },
         ],
-        "Subnets": Object {
+        "Subnets": {
           "Ref": "PublicSubnets",
         },
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "Value": "PROD",
           },
@@ -1299,30 +1389,30 @@ Object {
       },
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
     },
-    "LowCPUAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
+    "LowCPUAlarm": {
+      "Properties": {
+        "AlarmActions": [
+          {
             "Ref": "ScaleDownPolicy",
           },
         ],
-        "AlarmDescription": Object {
-          "Fn::Sub": Array [
+        "AlarmDescription": {
+          "Fn::Sub": [
             "Scale-Down if CPU is less than \${CPUAlarmThresholdLower} % over last \${CPUAlarmPeriodLower} seconds",
-            Object {
-              "CPUAlarmPeriodLower": Object {
-                "Fn::FindInMap": Array [
+            {
+              "CPUAlarmPeriodLower": {
+                "Fn::FindInMap": [
                   "StageVariables",
-                  Object {
+                  {
                     "Ref": "Stage",
                   },
                   "CPUAlarmPeriodLower",
                 ],
               },
-              "CPUAlarmThresholdLower": Object {
-                "Fn::FindInMap": Array [
+              "CPUAlarmThresholdLower": {
+                "Fn::FindInMap": [
                   "StageVariables",
-                  Object {
+                  {
                     "Ref": "Stage",
                   },
                   "CPUAlarmThresholdLower",
@@ -1332,10 +1422,10 @@ Object {
           ],
         },
         "ComparisonOperator": "LessThanOrEqualToThreshold",
-        "Dimensions": Array [
-          Object {
+        "Dimensions": [
+          {
             "Name": "AutoScalingGroupName",
-            "Value": Object {
+            "Value": {
               "Ref": "PrivateRegistrationAutoscalingGroup",
             },
           },
@@ -1343,20 +1433,38 @@ Object {
         "EvaluationPeriods": 1,
         "MetricName": "CPUUtilization",
         "Namespace": "AWS/EC2",
-        "Period": Object {
-          "Fn::FindInMap": Array [
+        "Period": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "CPUAlarmPeriodLower",
           ],
         },
         "Statistic": "Average",
-        "Threshold": Object {
-          "Fn::FindInMap": Array [
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "CPUAlarmThresholdLower",
@@ -1365,21 +1473,21 @@ Object {
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "NotEnoughHttpCode200sAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
+    "NotEnoughHttpCode200sAlarm": {
+      "Properties": {
+        "AlarmActions": [
+          {
             "Ref": "AlarmTopic",
           },
         ],
-        "AlarmDescription": Object {
+        "AlarmDescription": {
           "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in half an hour. \${RunbookCopy}",
         },
         "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": Array [
-          Object {
+        "Dimensions": [
+          {
             "Name": "LoadBalancerName",
-            "Value": Object {
+            "Value": {
               "Ref": "LoadBalancerToPrivateASG",
             },
           },
@@ -1387,35 +1495,53 @@ Object {
         "EvaluationPeriods": 1,
         "MetricName": "HTTPCode_Backend_2XX",
         "Namespace": "AWS/ELB",
-        "OKActions": Array [
-          Object {
+        "OKActions": [
+          {
             "Ref": "AlarmTopic",
           },
         ],
         "Period": 1800,
         "Statistic": "Sum",
-        "Threshold": Object {
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": {
           "Ref": "NotEnough200sThreshold",
         },
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "NotEnoughHttpCode200sPerDayAlarm": Object {
-      "Properties": Object {
-        "AlarmActions": Array [
-          Object {
+    "NotEnoughHttpCode200sPerDayAlarm": {
+      "Properties": {
+        "AlarmActions": [
+          {
             "Ref": "AlarmTopic",
           },
         ],
-        "AlarmDescription": Object {
+        "AlarmDescription": {
           "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in a whole day. \${RunbookCopy}",
         },
         "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": Array [
-          Object {
+        "Dimensions": [
+          {
             "Name": "LoadBalancerName",
-            "Value": Object {
+            "Value": {
               "Ref": "LoadBalancerToPrivateASG",
             },
           },
@@ -1423,139 +1549,157 @@ Object {
         "EvaluationPeriods": 1,
         "MetricName": "HTTPCode_Backend_2XX",
         "Namespace": "AWS/ELB",
-        "OKActions": Array [
-          Object {
+        "OKActions": [
+          {
             "Ref": "AlarmTopic",
           },
         ],
         "Period": 86400,
         "Statistic": "Sum",
-        "Threshold": Object {
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": {
           "Ref": "NotEnough200sPerDayThreshold",
         },
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "PrivateRegistrationAutoscalingGroup": Object {
-      "Properties": Object {
-        "AvailabilityZones": Object {
+    "PrivateRegistrationAutoscalingGroup": {
+      "Properties": {
+        "AvailabilityZones": {
           "Fn::GetAZs": "",
         },
         "HealthCheckGracePeriod": 400,
         "HealthCheckType": "ELB",
-        "LaunchConfigurationName": Object {
+        "LaunchConfigurationName": {
           "Ref": "RegistrationLaunchConfig",
         },
-        "LoadBalancerNames": Array [
-          Object {
+        "LoadBalancerNames": [
+          {
             "Ref": "LoadBalancerToPrivateASG",
           },
         ],
-        "MaxSize": Object {
+        "MaxSize": {
           "Ref": "ASGMaxSize",
         },
-        "MinSize": Object {
+        "MinSize": {
           "Ref": "ASGMinSize",
         },
-        "NotificationConfiguration": Object {
-          "NotificationTypes": Array [
+        "NotificationConfiguration": {
+          "NotificationTypes": [
             "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
             "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
           ],
-          "TopicARN": Object {
+          "TopicARN": {
             "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
           },
         },
-        "Tags": Array [
-          Object {
+        "Tags": [
+          {
             "Key": "App",
             "PropagateAtLaunch": true,
-            "Value": Object {
-              "Fn::FindInMap": Array [
+            "Value": {
+              "Fn::FindInMap": [
                 "Constants",
                 "App",
                 "Value",
               ],
             },
           },
-          Object {
+          {
             "Key": "gu:cdk:version",
             "PropagateAtLaunch": true,
             "Value": "TEST",
           },
-          Object {
+          {
             "Key": "gu:repo",
             "PropagateAtLaunch": true,
             "Value": "guardian/mobile-n10n",
           },
-          Object {
+          {
             "Key": "Stack",
             "PropagateAtLaunch": true,
             "Value": "mobile-notifications",
           },
-          Object {
+          {
             "Key": "Stage",
             "PropagateAtLaunch": true,
             "Value": "PROD",
           },
         ],
-        "VPCZoneIdentifier": Object {
+        "VPCZoneIdentifier": {
           "Ref": "PrivateSubnets",
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
     },
-    "RegistrationLaunchConfig": Object {
-      "Properties": Object {
+    "RegistrationLaunchConfig": {
+      "Properties": {
         "AssociatePublicIpAddress": false,
-        "IamInstanceProfile": Object {
+        "IamInstanceProfile": {
           "Ref": "DistributionInstanceProfile",
         },
-        "ImageId": Object {
+        "ImageId": {
           "Ref": "AMI",
         },
-        "InstanceType": Object {
-          "Fn::FindInMap": Array [
+        "InstanceType": {
+          "Fn::FindInMap": [
             "StageVariables",
-            Object {
+            {
               "Ref": "Stage",
             },
             "InstanceType",
           ],
         },
-        "MetadataOptions": Object {
+        "MetadataOptions": {
           "HttpTokens": "required",
         },
-        "SecurityGroups": Array [
-          Object {
+        "SecurityGroups": [
+          {
             "Ref": "InstanceSecurityGroup",
           },
-          Object {
+          {
             "Ref": "GuardianAccessSecurityGroup",
           },
-          Object {
+          {
             "Ref": "VPCSecurityGroup",
           },
         ],
-        "UserData": Object {
-          "Fn::Base64": Object {
-            "Fn::Sub": Array [
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Sub": [
               "#!/bin/bash -ev
 aws --region \${AWS::Region} s3 cp s3://\${DistBucket}/\${Stack}/\${Stage}/\${App}/\${App}_1.0-latest_all.deb /tmp
 dpkg -i /tmp/\${App}_1.0-latest_all.deb
 /opt/aws-kinesis-agent/configure-aws-kinesis-agent \${AWS::Region} mobile-log-aggregation-\${Stage} /var/log/\${App}/application.log
 ",
-              Object {
-                "App": Object {
-                  "Fn::FindInMap": Array [
+              {
+                "App": {
+                  "Fn::FindInMap": [
                     "Constants",
                     "App",
                     "Value",
                   ],
                 },
-                "Stack": Object {
-                  "Fn::FindInMap": Array [
+                "Stack": {
+                  "Fn::FindInMap": [
                     "Constants",
                     "Stack",
                     "Value",
@@ -1568,10 +1712,10 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
       },
       "Type": "AWS::AutoScaling::LaunchConfiguration",
     },
-    "ScaleDownPolicy": Object {
-      "Properties": Object {
+    "ScaleDownPolicy": {
+      "Properties": {
         "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": Object {
+        "AutoScalingGroupName": {
           "Ref": "PrivateRegistrationAutoscalingGroup",
         },
         "Cooldown": "3600",
@@ -1579,10 +1723,10 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
       },
       "Type": "AWS::AutoScaling::ScalingPolicy",
     },
-    "ScaleUpPolicy": Object {
-      "Properties": Object {
+    "ScaleUpPolicy": {
+      "Properties": {
         "AdjustmentType": "PercentChangeInCapacity",
-        "AutoScalingGroupName": Object {
+        "AutoScalingGroupName": {
           "Ref": "PrivateRegistrationAutoscalingGroup",
         },
         "Cooldown": "300",
