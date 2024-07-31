@@ -5,7 +5,6 @@ import { Registration } from '../lib/registration';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
 import { SloMonitoring } from '../lib/slo-monitoring';
 
-
 const app = new App();
 
 export const registrationCodeProps: GuStackProps = {
