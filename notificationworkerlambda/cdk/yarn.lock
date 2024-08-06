@@ -601,16 +601,16 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@guardian/cdk@^59.1.0":
-  version "59.1.0"
-  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-59.1.0.tgz#9a56d512c37c75778667aaff77aa8a326a061871"
-  integrity sha512-6QlI5V7jOetwURkfKZOVvLM/tvPbyg+QNjc0cBqkRsNQhngFhhk73sLiTY9OLORzp/VXVJcIF2fzqdOE0uN41w==
+"@guardian/cdk@^59.2.2":
+  version "59.2.2"
+  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-59.2.2.tgz#b37625e17869b2d9ecd0fa3cccbf1f70a660e2ca"
+  integrity sha512-UinLUqPaO4Lrz9MJh7SMh3bVUsjS2GrtZi5/ryF9lFx7L/KWFdHKuDl6sydUrdD5LiIo4AV+jICwh4+iIG3m5A==
   dependencies:
     "@oclif/core" "3.26.6"
-    aws-sdk "^2.1649.0"
+    aws-sdk "^2.1665.0"
     chalk "^4.1.2"
     codemaker "^1.101.0"
-    git-url-parse "^14.0.0"
+    git-url-parse "^14.1.0"
     js-yaml "^4.1.0"
     lodash.camelcase "^4.3.0"
     lodash.kebabcase "^4.1.1"
@@ -1186,10 +1186,10 @@ aws-cdk@2.148.0:
   optionalDependencies:
     fsevents "2.3.2"
 
-aws-sdk@^2.1649.0:
-  version "2.1662.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1662.0.tgz#d187d413bdd08a24e9d6142712666d9d29e95b4e"
-  integrity sha512-ISKN3yxjQtjIMOBU2b3zO8Qrxd9UqdYlJlxSQUn5/4jfqCSad/s1mF66Cwzl5UByJtvFn0xoJORIZ7K6BTLuuw==
+aws-sdk@^2.1665.0:
+  version "2.1668.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1668.0.tgz#100fc94f5ab962e7363672857401452a2455e00e"
+  integrity sha512-4Vcg3KjNZDHbvG4DI6jusN0DUPpRy3E/tBb6CA6ojlS2V1X5zljU9tkspICtbxXdY1gPFmKUe5COPc34XHG1RA==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -1901,7 +1901,7 @@ git-up@^7.0.0:
     is-ssh "^1.4.0"
     parse-url "^8.1.0"
 
-git-url-parse@^14.0.0:
+git-url-parse@^14.1.0:
   version "14.1.0"
   resolved "https://registry.yarnpkg.com/git-url-parse/-/git-url-parse-14.1.0.tgz#01cb70000666c11a7230aceec1fd518c416c224c"
   integrity sha512-8xg65dTxGHST3+zGpycMMFZcoTzAdZ2dOtu4vmgIfkTFnVHBxHMzBC2L1k8To7EmrSiHesT8JgPLT91VKw1B5g==
