@@ -4,7 +4,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [],
-    "gu:cdk:version": "59.2.1",
+    "gu:cdk:version": "59.1.0",
   },
   "Outputs": {
     "NotificationSenderWorkerQueueArns": {
@@ -214,7 +214,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -242,7 +242,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -295,7 +295,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -401,7 +401,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -428,7 +428,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           "App": "android",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "59.2.1",
+          "gu:cdk:version": "59.1.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -459,7 +459,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -534,7 +534,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -589,7 +589,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -750,7 +750,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -778,7 +778,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -831,7 +831,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -937,7 +937,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -964,7 +964,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           "App": "android-beta",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "59.2.1",
+          "gu:cdk:version": "59.1.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -995,7 +995,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1070,7 +1070,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1125,7 +1125,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1286,7 +1286,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1314,7 +1314,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1367,7 +1367,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1473,7 +1473,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1500,7 +1500,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           "App": "android-edition",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "59.2.1",
+          "gu:cdk:version": "59.1.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -1531,7 +1531,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1606,7 +1606,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1661,7 +1661,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1822,7 +1822,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1850,7 +1850,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -1903,7 +1903,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2009,7 +2009,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2036,7 +2036,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           "App": "ios",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "59.2.1",
+          "gu:cdk:version": "59.1.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -2067,7 +2067,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2142,7 +2142,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2197,7 +2197,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2358,7 +2358,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2386,7 +2386,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2439,7 +2439,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2545,7 +2545,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2572,7 +2572,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           "App": "ios-edition",
           "Stack": "mobile-notifications-workers",
           "Stage": "PROD",
-          "gu:cdk:version": "59.2.1",
+          "gu:cdk:version": "59.1.0",
           "gu:repo": "guardian/mobile-n10n",
         },
         "Tier": "Standard",
@@ -2624,7 +2624,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2678,7 +2678,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
@@ -2733,7 +2733,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
           },
           {
             "Key": "gu:cdk:version",
-            "Value": "59.2.1",
+            "Value": "59.1.0",
           },
           {
             "Key": "gu:repo",
