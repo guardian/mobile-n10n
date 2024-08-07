@@ -40,7 +40,7 @@ val awsSdkVersion: String = "1.12.767"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.12.0"
 val okHttpVersion: String = "4.12.0"
-val paClientVersion: String = "7.0.10"
+val paClientVersion: String = "7.0.12"
 val apacheThrift: String = "0.15.0"
 val jacksonDatabind: String = "2.17.2"
 val jacksonCbor: String = "2.17.2"
@@ -264,7 +264,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
-      "net.logstash.logback" % "logstash-logback-encoder" % "7.4",
+      "net.logstash.logback" % "logstash-logback-encoder" % "8.0",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
@@ -311,7 +311,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "31.0.3",
+      "com.gu" %% "content-api-client-default" % "31.1.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
