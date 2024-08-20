@@ -18,7 +18,7 @@ It has many uses:
 * [Report](report) - A service to read the state of each notification. Drives an [Ophan Dashboard Page](https://dashboard.ophan.co.uk/notifications)
 * [Event Consumer](eventconsumer) - A lambda that consumes App sent metrics (fastly -> s3 -> lambda) to enrich reporting. This allows us to measure how many devices received a notification, and when.
 * [Schedule Lambda](schedulelambda) - A lambda sending notifications on schedule, based on a plan inserted in dynamo. (polling based)
-* [DB Cleaner](db-cleaner) - A lambda that deletes token that haven't been active in 120 days. This has been implemented in Rust as an experiment.
+* [Expired Registration Cleaner]([db-cleaner](https://github.com/guardian/mobile-n10n/blob/6a6908391f0ef9130fcc59ebf778c4b97f963e28/notificationworkerlambda/src/main/scala/com/gu/notifications/worker/ExpiredRegistrationCleaner.scala)) - A lambda that deletes token that haven't been active in 300 days.
 * [Fake Breaking News](fakebreakingnewslambda) - A lambda that periodically sends a fake ("dry run") breaking news in order to spot any potential misconfiguration, technical issue or regression. The results of the dry run are closely monitored and raise an alarm if anything goes wrong.
 * [Football](football) - A lambda that polls PA and sends football match alerts to Notification
 * [Report Extractor](reportextractor) - A daily lambda to export the metadata of each notification into our datalake.
