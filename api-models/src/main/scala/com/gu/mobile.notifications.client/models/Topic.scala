@@ -41,7 +41,12 @@ object Topic {
   val BreakingNewsSportInternational = Topic(Breaking, "international-sport")
   val BreakingNewsSportEurope = Topic(Breaking, "europe-sport")
   val BreakingNewsElection = Topic(Breaking, "uk-general-election")
-  val BreakingNewsUSElection = Topic(Breaking, "us-election-2020-live")
+  val BreakingNewsUSElectionGlobal = Topic(Breaking, "global-us-election")
+  val BreakingNewsUSElectionUk = Topic(Breaking, "uk-us-election")
+  val BreakingNewsUSElectionUs = Topic(Breaking, "us-us-election")
+  val BreakingNewsUSElectionAu = Topic(Breaking, "au-us-election")
+  val BreakingNewsUSElectionEurope = Topic(Breaking, "europe-us-election")
+  val BreakingNewsUSElectionInternational = Topic(Breaking, "international-us-election")
   val BreakingNewsInternalTest = Topic(Breaking, "internal-test")
   val NewsstandIos = Topic(Newsstand, "newsstandIos")
 }
