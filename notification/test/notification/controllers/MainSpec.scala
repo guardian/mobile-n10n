@@ -60,6 +60,30 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
     }
   }
 
+  "adding a new notification topic" should {
+    "successfully add a new topic and send a notification to it" in new MainScope {
+      val newTopic = Topic(Breaking, "new-topic")
+      val topicsWithNew = validTopics :+ newTopic
+      val request = authenticatedRequest.withBody(breakingNewsNotification(topicsWithNew))
+      val response = main.pushTopics()(request)
+
+      status(response) should equalTo(CREATED)
+      pushSent must beSome.which(_.topic.toSet must beEqualTo(topicsWIthNew.toSet))
+    }
+  }
+
+  "removing a new notification topic" should {
+    "successfully remove a topic and stop sending notifications to it" in new MainScope {
+      val topicToRemove = validTopics.head
+      val remainingTopics = validTopics.tail
+      val request = authenticatedRequest.withBody(breakingNewsNotification(remainingTopics))
+      val response = main.pushTopics()(request)
+
+      status(response) should equalTo(CREATED)
+      pushSent must beSome.which(_.topic.toSet must beEqualTo(remainingTopics.toSet))
+    }
+  }
+
   "Sending correct notification" should {
     "notify reporting repository about added notifications" in new MainScope {
       val request = requestWithValidTopics
