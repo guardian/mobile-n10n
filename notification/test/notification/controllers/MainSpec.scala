@@ -68,7 +68,7 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
       val response = main.pushTopics()(request)
 
       status(response) should equalTo(CREATED)
-      pushSent must beSome.which(_.topic.toSet must beEqualTo(topicsWIthNew.toSet))
+      pushSent must beSome.which(_.topic.toSet must beEqualTo(topicsWithNew.toSet))
     }
   }
 
