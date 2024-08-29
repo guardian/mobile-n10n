@@ -74,7 +74,6 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
   "removing a new notification topic" should {
     "successfully remove a topic and stop sending notifications to it" in new MainScope {
-      val topicToRemove = validTopics.head
       val remainingTopics = validTopics.tail
       val request = authenticatedRequest.withBody(breakingNewsNotification(remainingTopics))
       val response = main.pushTopics()(request)
