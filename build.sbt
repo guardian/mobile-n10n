@@ -49,7 +49,7 @@ val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.36.0"
 val nettyVersion: String = "4.1.112.Final"
 val slf4jVersion: String = "1.7.36"
-val logbackVersion: String = "1.5.6"
+val logbackVersion: String = "1.5.7"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
@@ -124,7 +124,7 @@ lazy val common = project
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
-      "org.postgresql" % "postgresql" % "42.7.3",
+      "org.postgresql" % "postgresql" % "42.7.4",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
     ),
@@ -418,7 +418,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.2.0",
-      "com.google.protobuf" % "protobuf-java" % "4.27.2",
+      "com.google.protobuf" % "protobuf-java" % "4.27.4",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,

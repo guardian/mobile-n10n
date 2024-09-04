@@ -13,11 +13,11 @@ addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.2.0")
 
 addSbtPlugin("com.localytics" % "sbt-dynamodb" % "2.0.3")
 
-libraryDependencies += "org.vafer" % "jdeb" % "1.10" artifacts (Artifact("jdeb", "jar", "jar"))
+libraryDependencies += "org.vafer" % "jdeb" % "1.11" artifacts (Artifact("jdeb", "jar", "jar"))
 
 addSbtPlugin("com.github.sbt" % "sbt-release" % "1.4.0")
 
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.11.1")
+addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.11.3")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 
