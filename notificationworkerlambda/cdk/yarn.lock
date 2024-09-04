@@ -601,16 +601,16 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@guardian/cdk@^59.1.0":
-  version "59.1.0"
-  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-59.1.0.tgz#9a56d512c37c75778667aaff77aa8a326a061871"
-  integrity sha512-6QlI5V7jOetwURkfKZOVvLM/tvPbyg+QNjc0cBqkRsNQhngFhhk73sLiTY9OLORzp/VXVJcIF2fzqdOE0uN41w==
+"@guardian/cdk@^59.2.1":
+  version "59.2.1"
+  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-59.2.1.tgz#9c49148d5a30d8a6e62498982b90052e82b37db2"
+  integrity sha512-ib2hsOwUHgICs/yokTRB+bH4Q4EQ2XPTKR14/Ici0rK4xSTrNftXVgf2fNfyk7yiHoAUYZyH6KlmY2q45zYayQ==
   dependencies:
     "@oclif/core" "3.26.6"
-    aws-sdk "^2.1649.0"
+    aws-sdk "^2.1664.0"
     chalk "^4.1.2"
     codemaker "^1.101.0"
-    git-url-parse "^14.0.0"
+    git-url-parse "^14.1.0"
     js-yaml "^4.1.0"
     lodash.camelcase "^4.3.0"
     lodash.kebabcase "^4.1.1"
@@ -1186,10 +1186,10 @@ aws-cdk@2.148.0:
   optionalDependencies:
     fsevents "2.3.2"
 
-aws-sdk@^2.1649.0:
-  version "2.1662.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1662.0.tgz#d187d413bdd08a24e9d6142712666d9d29e95b4e"
-  integrity sha512-ISKN3yxjQtjIMOBU2b3zO8Qrxd9UqdYlJlxSQUn5/4jfqCSad/s1mF66Cwzl5UByJtvFn0xoJORIZ7K6BTLuuw==
+aws-sdk@^2.1664.0:
+  version "2.1664.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1664.0.tgz#c6fbbf87fa969c2ba547fe3b33f8cd1db1ad00eb"
+  integrity sha512-S2IA1cCGz38d8ZKsuQGwlK3LE+9cXFt7OFsSGQtKX1Mc40xFXpiqQy7jX1r0vZIiy9ZMnxeTcBPM28G/yYu2kA==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -1901,7 +1901,7 @@ git-up@^7.0.0:
     is-ssh "^1.4.0"
     parse-url "^8.1.0"
 
-git-url-parse@^14.0.0:
+git-url-parse@^14.1.0:
   version "14.1.0"
   resolved "https://registry.yarnpkg.com/git-url-parse/-/git-url-parse-14.1.0.tgz#01cb70000666c11a7230aceec1fd518c416c224c"
   integrity sha512-8xg65dTxGHST3+zGpycMMFZcoTzAdZ2dOtu4vmgIfkTFnVHBxHMzBC2L1k8To7EmrSiHesT8JgPLT91VKw1B5g==
@@ -2847,7 +2847,7 @@ merge2@^1.3.0, merge2@^1.4.1:
   integrity sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==
 
 micromatch@^4.0.4:
-  version "4.0.5"
+  version "4.0.6"
   resolved "https://registry.npmjs.org/micromatch/-/micromatch-4.0.5.tgz"
   integrity sha512-DMy+ERcEW2q8Z2Po+WNXuw3c5YaUSFjAO5GsJqfEl7UjvtIuFKO6ZrKvcItdy98dwFI2N1tg3zNIdKaQT+aNdA==
   dependencies:

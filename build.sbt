@@ -36,18 +36,18 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "3.0.4"
 val specsVersion: String = "4.8.3"
-val awsSdkVersion: String = "1.12.761"
+val awsSdkVersion: String = "1.12.767"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.12.0"
 val okHttpVersion: String = "4.12.0"
-val paClientVersion: String = "7.0.10"
+val paClientVersion: String = "7.0.12"
 val apacheThrift: String = "0.15.0"
 val jacksonDatabind: String = "2.17.2"
 val jacksonCbor: String = "2.17.2"
 val jacksonScalaModule: String = "2.17.2"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.36.0"
-val nettyVersion: String = "4.1.111.Final"
+val nettyVersion: String = "4.1.112.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.5.6"
 
@@ -264,7 +264,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
-      "net.logstash.logback" % "logstash-logback-encoder" % "7.4",
+      "net.logstash.logback" % "logstash-logback-encoder" % "8.0",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
@@ -311,7 +311,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "31.0.3",
+      "com.gu" %% "content-api-client-default" % "31.1.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -351,7 +351,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
     Seq(
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-events" % "3.12.0",
+        "com.amazonaws" % "aws-lambda-java-events" % "3.13.0",
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
         "io.netty" % "netty-codec-http" % nettyVersion,
