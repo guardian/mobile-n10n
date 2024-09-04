@@ -45,13 +45,13 @@ jobs:
         with:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-        if: ${{ env.AWS_ROLE_ARN }}
+        if: ${{ secrets.AWS_ROLE_ARN }}
 
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v1
         with:
           mask-password: 'true'
-        if: ${{ env.AWS_ROLE_ARN }}
+        if: ${{ secrets.AWS_ROLE_ARN }}
 
       - name: Compile and test
         run: sbt "project common" "compile" "test" "project notificationworkerlambda" "compile" "test"
@@ -70,7 +70,7 @@ jobs:
         run: sbt docker:publishLocal
 
       - name: Publish docker image
-        if: ${{ env.AWS_ROLE_ARN }}
+        if: ${{ secrets.AWS_ROLE_ARN }}
         run: |
           BUILD_NUMBER_WITH_OFFSET=$(($BUILD_NUMBER+4147))
           docker tag notificationworkerlambda:DEV $NOTIFICATION_LAMBDA_REPOSITORY_URL:$BUILD_NUMBER_WITH_OFFSET
