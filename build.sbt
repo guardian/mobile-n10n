@@ -61,7 +61,7 @@ val standardSettings = Seq[Setting[_]](
   ),
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.32.0",
-    "com.softwaremill.macwire" %% "macros" % "2.5.9" % "provided",
+    "com.softwaremill.macwire" %% "macros" % "2.6.2" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
