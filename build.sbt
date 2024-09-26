@@ -61,7 +61,7 @@ val standardSettings = Seq[Setting[_]](
   ),
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.32.0",
-    "com.softwaremill.macwire" %% "macros" % "2.5.9" % "provided",
+    "com.softwaremill.macwire" %% "macros" % "2.6.2" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
@@ -103,7 +103,7 @@ lazy val common = project
     libraryDependencies ++= Seq(
       ws,
       "org.typelevel" %% "cats-core" % catsVersion,
-      "joda-time" % "joda-time" % "2.12.7",
+      "joda-time" % "joda-time" % "2.13.0",
       "org.playframework" %% "play-json" % playJsonVersion,
       "org.playframework" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
@@ -311,7 +311,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "31.1.0",
+      "com.gu" %% "content-api-client-default" % "32.0.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -418,7 +418,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.2.0",
-      "com.google.protobuf" % "protobuf-java" % "4.28.0",
+      "com.google.protobuf" % "protobuf-java" % "4.28.1",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
