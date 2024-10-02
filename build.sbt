@@ -21,7 +21,7 @@ releaseProcess := Seq[ReleaseStep](
   setNextVersion,
   commitNextVersion
 )
-ThisBuild / scalaVersion := "2.13.14"
+ThisBuild / scalaVersion := "2.13.15"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -42,12 +42,12 @@ val catsVersion: String = "2.12.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.12"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.17.2"
-val jacksonCbor: String = "2.17.2"
-val jacksonScalaModule: String = "2.17.2"
+val jacksonDatabind: String = "2.18.0"
+val jacksonCbor: String = "2.18.0"
+val jacksonScalaModule: String = "2.18.0"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.36.0"
-val nettyVersion: String = "4.1.113.Final"
+val nettyVersion: String = "4.1.114.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.5.8"
 
@@ -60,7 +60,7 @@ val standardSettings = Seq[Setting[_]](
     "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
   ),
   libraryDependencies ++= Seq(
-    "com.github.nscala-time" %% "nscala-time" % "2.32.0",
+    "com.github.nscala-time" %% "nscala-time" % "2.34.0",
     "com.softwaremill.macwire" %% "macros" % "2.6.2" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
