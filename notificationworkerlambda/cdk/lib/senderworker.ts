@@ -10,8 +10,9 @@ import * as cdkcore from 'constructs'
 
 import {SnsAction} from 'aws-cdk-lib/aws-cloudwatch-actions'
 import { GuStack } from "@guardian/cdk/lib/constructs/core"
-import type { App } from "aws-cdk-lib"
+import { Duration, type App } from "aws-cdk-lib"
 import type { GuStackProps } from "@guardian/cdk/lib/constructs/core"
+import { Metric } from 'aws-cdk-lib/aws-cloudwatch'
 
 interface SenderWorkerOpts {
   handler: string,
@@ -25,7 +26,8 @@ interface SenderWorkerOpts {
   platform: string,
   paramPrefix: string,
   isBatchingSqsMessages: boolean,
-  dailyAlarmPeriod: boolean
+  dailyAlarmPeriod: boolean,
+  tooFewNotificationByTypeAlarms: boolean,
 }
 
 class SenderWorker extends cdkcore.Construct  {
@@ -161,6 +163,52 @@ class SenderWorker extends cdkcore.Construct  {
     senderTooFewInvocationsAlarm.addAlarmAction(snsTopicAction)
     senderTooFewInvocationsAlarm.addOkAction(snsTopicAction)
 
+    if (props.tooFewNotificationByTypeAlarms) {
+      const nonBreakingCountMetric = new Metric({
+        namespace: `Notifications/${scope.stage}/workers`,
+        metricName: "worker.notificationProcessingTime",
+        period: Duration.minutes(15),
+        statistic: "SampleCount",
+        dimensionsMap: {
+          platform: id,
+          type: "other",
+        },
+      });
+      const senderTooFewNonBreakingAlarm = new cloudwatch.Alarm(this, 'SenderTooFewNonBreakingAlarm', {
+        alarmDescription: `Triggers if the ${id} sender lambda is not frequently invoked for non-breaking news notification in ${scope.stage}.`,
+        comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
+        evaluationPeriods: 4,
+        threshold: 0,
+        metric: nonBreakingCountMetric,
+        treatMissingData: cloudwatch.TreatMissingData.BREACHING,
+        actionsEnabled: (scope.stage === 'PROD'),
+      })
+      senderTooFewNonBreakingAlarm.addAlarmAction(snsTopicAction)
+      senderTooFewNonBreakingAlarm.addOkAction(snsTopicAction)
+
+      const breakingNewsCountMetric = new Metric({
+        namespace: `Notifications/${scope.stage}/workers`,
+        metricName: "worker.notificationProcessingTime",
+        period: Duration.minutes(15),
+        statistic: "SampleCount",
+        dimensionsMap: {
+          platform: id,
+          type: "breakingNews",
+        },
+      });
+      const senderTooFewBreakingNewsAlarm = new cloudwatch.Alarm(this, 'SenderTooFewBreakingNewsAlarm', {
+        alarmDescription: `Triggers if the ${id} sender lambda is not frequently invoked for breaking news notification in ${scope.stage}.`,
+        comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
+        evaluationPeriods: 24,
+        threshold: 0,
+        metric: breakingNewsCountMetric,
+        treatMissingData: cloudwatch.TreatMissingData.BREACHING,
+        actionsEnabled: (scope.stage === 'PROD'),
+      })
+      senderTooFewBreakingNewsAlarm.addAlarmAction(snsTopicAction)
+      senderTooFewBreakingNewsAlarm.addOkAction(snsTopicAction)
+    }
+
     // this advertises the name of the sender queue to the harvester app
     new ssm.StringParameter(this, 'SenderQueueSSMParameter', {
       parameterName: `/notifications/${scope.stage}/workers/harvester/${props.paramPrefix}SqsCdkUrl`,
@@ -219,7 +267,7 @@ export class SenderWorkerStack extends GuStack {
 
     let workerQueueArns: string[] = []
 
-    const addWorker = (workerName: string, paramPrefix: string, handler: string, isBatchingSqsMessages: boolean = false, dailyAlarmPeriod: boolean = false) => {
+    const addWorker = (workerName: string, paramPrefix: string, handler: string, isBatchingSqsMessages: boolean = false, dailyAlarmPeriod: boolean = false, tooFewNotificationByTypeAlarms: boolean = false) => {
       let worker = new SenderWorker(this, workerName, {
         ...props,
         platform: workerName,
@@ -227,7 +275,8 @@ export class SenderWorkerStack extends GuStack {
         handler: handler,
         isBatchingSqsMessages,
         ...sharedOpts,
-        dailyAlarmPeriod: dailyAlarmPeriod
+        dailyAlarmPeriod: dailyAlarmPeriod,
+        tooFewNotificationByTypeAlarms: tooFewNotificationByTypeAlarms,
       })
       workerQueueArns.push(worker.senderSqs.queueArn)
     }
@@ -237,8 +286,8 @@ export class SenderWorkerStack extends GuStack {
      * platform or app by talking to a different lambda handler function
      */
 
-    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens")
-    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", true)
+    addWorker("ios", "iosLive", "com.gu.notifications.worker.IOSSender::handleChunkTokens", false, false, true)
+    addWorker("android", "androidLive", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", true, false, true)
         // edition apps only send one notification a day in order to get content for that day
     addWorker("ios-edition", "iosEdition", "com.gu.notifications.worker.IOSSender::handleChunkTokens", false, true)
     addWorker("android-edition", "androidEdition", "com.gu.notifications.worker.AndroidSender::handleChunkTokens", false, true)

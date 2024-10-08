@@ -554,6 +554,63 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
+    "androidSenderTooFewBreakingNewsAlarmEE8C7099": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if the android sender lambda is not frequently invoked for breaking news notification in PROD.",
+        "ComparisonOperator": "LessThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "platform",
+            "Value": "android",
+          },
+          {
+            "Name": "type",
+            "Value": "breakingNews",
+          },
+        ],
+        "EvaluationPeriods": 24,
+        "MetricName": "worker.notificationProcessingTime",
+        "Namespace": "Notifications/PROD/workers",
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Period": 900,
+        "Statistic": "SampleCount",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "android",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "59.2.3",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 0,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
     "androidSenderTooFewInvocationsAlarmC306ECD5": {
       "Properties": {
         "ActionsEnabled": true,
@@ -582,6 +639,63 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
         ],
         "Period": 3600,
         "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "android",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "59.2.3",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 0,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androidSenderTooFewNonBreakingAlarm35FD6EBB": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if the android sender lambda is not frequently invoked for non-breaking news notification in PROD.",
+        "ComparisonOperator": "LessThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "platform",
+            "Value": "android",
+          },
+          {
+            "Name": "type",
+            "Value": "other",
+          },
+        ],
+        "EvaluationPeriods": 4,
+        "MetricName": "worker.notificationProcessingTime",
+        "Namespace": "Notifications/PROD/workers",
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Period": 900,
+        "Statistic": "SampleCount",
         "Tags": [
           {
             "Key": "App",
@@ -2162,6 +2276,63 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
+    "iosSenderTooFewBreakingNewsAlarm870D69CB": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if the ios sender lambda is not frequently invoked for breaking news notification in PROD.",
+        "ComparisonOperator": "LessThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "platform",
+            "Value": "ios",
+          },
+          {
+            "Name": "type",
+            "Value": "breakingNews",
+          },
+        ],
+        "EvaluationPeriods": 24,
+        "MetricName": "worker.notificationProcessingTime",
+        "Namespace": "Notifications/PROD/workers",
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Period": 900,
+        "Statistic": "SampleCount",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "ios",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "59.2.3",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 0,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
     "iosSenderTooFewInvocationsAlarm14117FE9": {
       "Properties": {
         "ActionsEnabled": true,
@@ -2190,6 +2361,63 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
         ],
         "Period": 3600,
         "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "ios",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "59.2.3",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 0,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "iosSenderTooFewNonBreakingAlarmC2075137": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if the ios sender lambda is not frequently invoked for non-breaking news notification in PROD.",
+        "ComparisonOperator": "LessThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "platform",
+            "Value": "ios",
+          },
+          {
+            "Name": "type",
+            "Value": "other",
+          },
+        ],
+        "EvaluationPeriods": 4,
+        "MetricName": "worker.notificationProcessingTime",
+        "Namespace": "Notifications/PROD/workers",
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Period": 900,
+        "Statistic": "SampleCount",
         "Tags": [
           {
             "Key": "App",
