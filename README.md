@@ -36,7 +36,7 @@ There are several data visualizations and dashboards available in Grafana relate
 
 
 ## Architecture
-![Architecture Diagram](Notifications-Architecture.jpg)
+![Architecture Diagram](Notifications-Architecture.png)
 
 ## Services
 
