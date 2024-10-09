@@ -49,7 +49,7 @@ val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.36.0"
 val nettyVersion: String = "4.1.114.Final"
 val slf4jVersion: String = "1.7.36"
-val logbackVersion: String = "1.5.8"
+val logbackVersion: String = "1.5.9"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
@@ -61,7 +61,7 @@ val standardSettings = Seq[Setting[_]](
   ),
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.34.0",
-    "com.softwaremill.macwire" %% "macros" % "2.6.2" % "provided",
+    "com.softwaremill.macwire" %% "macros" % "2.6.3" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
