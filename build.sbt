@@ -21,7 +21,7 @@ releaseProcess := Seq[ReleaseStep](
   setNextVersion,
   commitNextVersion
 )
-ThisBuild / scalaVersion := "2.13.15"
+ThisBuild / scalaVersion := "2.13.16"
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -38,7 +38,7 @@ val playJsonVersion = "3.0.4"
 val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.780"
 val doobieVersion: String = "0.13.4"
-val catsVersion: String = "2.12.0"
+val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.12"
 val apacheThrift: String = "0.15.0"
@@ -61,7 +61,7 @@ val standardSettings = Seq[Setting[_]](
   ),
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "3.0.0",
-    "com.softwaremill.macwire" %% "macros" % "2.6.4" % "provided",
+    "com.softwaremill.macwire" %% "macros" % "2.6.5" % "provided",
     specs2 % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsVersion % Test
   ),
