@@ -343,16 +343,16 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@guardian/cdk@^59.1.0":
-  version "59.1.0"
-  resolved "https://registry.npmjs.org/@guardian/cdk/-/cdk-59.1.0.tgz"
-  integrity sha512-6QlI5V7jOetwURkfKZOVvLM/tvPbyg+QNjc0cBqkRsNQhngFhhk73sLiTY9OLORzp/VXVJcIF2fzqdOE0uN41w==
+"@guardian/cdk@^59.5.6":
+  version "59.5.6"
+  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-59.5.6.tgz#116690783ff5db4e76ac806e8da974cd0cbae2f2"
+  integrity sha512-loGd24OlQobhxOLP+KyMs9wDEQS3RhSTqM9i+GNUcwWUIn41+gvGvzXMcXiixX0JOWG63paCEf311vVZ4dnCpw==
   dependencies:
     "@oclif/core" "3.26.6"
-    aws-sdk "^2.1649.0"
+    aws-sdk "^2.1691.0"
     chalk "^4.1.2"
-    codemaker "^1.101.0"
-    git-url-parse "^14.0.0"
+    codemaker "^1.104.0"
+    git-url-parse "^15.0.0"
     js-yaml "^4.1.0"
     lodash.camelcase "^4.3.0"
     lodash.kebabcase "^4.1.1"
@@ -1082,17 +1082,17 @@ aws-cdk-lib@^2.148.0:
     table "^6.8.2"
     yaml "1.10.2"
 
-aws-cdk@^2.148.0:
-  version "2.148.0"
-  resolved "https://registry.npmjs.org/aws-cdk/-/aws-cdk-2.148.0.tgz"
-  integrity sha512-nuCWY8I0xkIz7B2LjIL4h/xLHWTFhINL8i2fdA0BPq8t0byhLaNw5wggvztDjWH5xq5I1DM3laiv4/q5S21Xrg==
+aws-cdk@^2.162.1:
+  version "2.162.1"
+  resolved "https://registry.yarnpkg.com/aws-cdk/-/aws-cdk-2.162.1.tgz#b253bbece7c7c1fb2bd28bdef3c2238d79c031b8"
+  integrity sha512-p9WeiJ7wfiWj0Bpr1HhNdWENf0TxSZN73JtNqvqyaK6SptiLJc+R+ELo0hF3qKT99NWHTCbwWA/JH3BvEXbFxA==
   optionalDependencies:
     fsevents "2.3.2"
 
-aws-sdk@^2.1649.0:
-  version "2.1662.0"
-  resolved "https://registry.npmjs.org/aws-sdk/-/aws-sdk-2.1662.0.tgz"
-  integrity sha512-ISKN3yxjQtjIMOBU2b3zO8Qrxd9UqdYlJlxSQUn5/4jfqCSad/s1mF66Cwzl5UByJtvFn0xoJORIZ7K6BTLuuw==
+aws-sdk@^2.1691.0:
+  version "2.1692.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1692.0.tgz#9dac5f7bfcc5ab45825cc8591b12753aa7d2902c"
+  integrity sha512-x511uiJ/57FIsbgUe5csJ13k3uzu25uWQE+XqfBis/sB0SFoiElJWXRkgEAUh0U6n40eT3ay5Ue4oPkRMu1LYw==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -1339,10 +1339,10 @@ co@^4.6.0:
   resolved "https://registry.npmjs.org/co/-/co-4.6.0.tgz"
   integrity sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==
 
-codemaker@^1.101.0:
-  version "1.101.0"
-  resolved "https://registry.npmjs.org/codemaker/-/codemaker-1.101.0.tgz"
-  integrity sha512-bAg+N4PA8mniJrCpTYFdaFmJA+3fE1Vjgf4o1EnPc07nw6qRcJsr/D9ZZoutEsvw7UM8OmZp4qZxVzpCqRhhQQ==
+codemaker@^1.104.0:
+  version "1.106.0"
+  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.106.0.tgz#c696de48847e7758731b72d89264e972eaceb4d0"
+  integrity sha512-1aLNQCF/3DVxXol6eRqoLZnYulAwWPGq8BMF8pMZu+CaNkR7c0T5otMcbAXcskRLChiFt+BjVWS3JPVeBOHD4w==
   dependencies:
     camelcase "^6.3.0"
     decamelize "^5.0.1"
@@ -2079,10 +2079,10 @@ git-up@^7.0.0:
     is-ssh "^1.4.0"
     parse-url "^8.1.0"
 
-git-url-parse@^14.0.0:
-  version "14.1.0"
-  resolved "https://registry.npmjs.org/git-url-parse/-/git-url-parse-14.1.0.tgz"
-  integrity sha512-8xg65dTxGHST3+zGpycMMFZcoTzAdZ2dOtu4vmgIfkTFnVHBxHMzBC2L1k8To7EmrSiHesT8JgPLT91VKw1B5g==
+git-url-parse@^15.0.0:
+  version "15.0.0"
+  resolved "https://registry.yarnpkg.com/git-url-parse/-/git-url-parse-15.0.0.tgz#207b74d8eb888955b1aaf5dfc5f5778084fa9fa9"
+  integrity sha512-5reeBufLi+i4QD3ZFftcJs9jC26aULFLBU23FeKM/b1rI0K6ofIeAblmDVO7Ht22zTDE9+CkJ3ZVb0CgJmz3UQ==
   dependencies:
     git-up "^7.0.0"
 
