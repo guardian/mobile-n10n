@@ -466,6 +466,28 @@ exports[`The SloMonitoring stack matches the snapshot 1`] = `
         "FunctionName": {
           "Ref": "SloMonitor1106EE7E",
         },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "slomonitor",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
       },
       "Type": "AWS::Lambda::EventSourceMapping",
     },
