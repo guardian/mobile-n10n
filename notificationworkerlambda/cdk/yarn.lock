@@ -609,16 +609,16 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@guardian/cdk@^59.2.3":
-  version "59.2.3"
-  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-59.2.3.tgz#a93d1e3715105c53b704165826f7287423826b8b"
-  integrity sha512-kOjtMKx6TFgxVOgpZ7KEGC1G/iGSKbiYlqq/1W93qIelu+s5eug/c5Nc5GQjc8ABS4uz8uJp34fdUNb19LkqRw==
+"@guardian/cdk@^61.3.0":
+  version "61.3.0"
+  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-61.3.0.tgz#9491f9f0ac916fb97dbe906e050a8c00d48526c2"
+  integrity sha512-AwQfZ1lm+cQnOaJ/S+GIRQ3TQyq4TliP5bgZ3tdmQ89JbIwo2WlJR9abB0cRhr0ANMEKxDO4GN+3SDua1Ok5og==
   dependencies:
     "@oclif/core" "3.26.6"
-    aws-sdk "^2.1670.0"
+    aws-sdk "^2.1692.0"
     chalk "^4.1.2"
-    codemaker "^1.102.0"
-    git-url-parse "^14.1.0"
+    codemaker "^1.106.0"
+    git-url-parse "^16.0.0"
     js-yaml "^4.1.0"
     lodash.camelcase "^4.3.0"
     lodash.kebabcase "^4.1.1"
@@ -1064,6 +1064,11 @@
   resolved "https://registry.npmjs.org/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz"
   integrity sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==
 
+"@types/parse-path@^7.0.0":
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/@types/parse-path/-/parse-path-7.0.3.tgz#cec2da2834ab58eb2eb579122d9a1fc13bd7ef36"
+  integrity sha512-LriObC2+KYZD3FzCrgWGv/qufdUy4eXrxcLgQMfYXgPbLIecKIsVBaQgUPmxSSLcjmYbDTQbMgr6qr6l/eb7Bg==
+
 "@types/stack-utils@^2.0.0":
   version "2.0.1"
   resolved "https://registry.npmjs.org/@types/stack-utils/-/stack-utils-2.0.1.tgz"
@@ -1195,10 +1200,10 @@ aws-cdk@2.178.1:
   optionalDependencies:
     fsevents "2.3.2"
 
-aws-sdk@^2.1670.0:
-  version "2.1673.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1673.0.tgz#08dd3196c0f305457a184ec0e86b15de08026505"
-  integrity sha512-7tcc+y7XmCt2aq3vq46xpJTDMNqukFhJOXsQuuwsMZiydZpGG7l7wbpTOtfFhktieSjLg4V9eyznpnZNz5aooA==
+aws-sdk@^2.1692.0:
+  version "2.1692.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1692.0.tgz#9dac5f7bfcc5ab45825cc8591b12753aa7d2902c"
+  integrity sha512-x511uiJ/57FIsbgUe5csJ13k3uzu25uWQE+XqfBis/sB0SFoiElJWXRkgEAUh0U6n40eT3ay5Ue4oPkRMu1LYw==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -1458,10 +1463,10 @@ co@^4.6.0:
   resolved "https://registry.npmjs.org/co/-/co-4.6.0.tgz"
   integrity sha1-bqa989hTrlTMuOR7+gvz+QMfsYQ=
 
-codemaker@^1.102.0:
-  version "1.102.0"
-  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.102.0.tgz#336dd6a8f7ffd64e02afcee7830c1f8d768f0efe"
-  integrity sha512-lxsbbcSMxCdT+9wUv1AvBH9791andoWDcQ6s7ZK6KsMZ+UkRLO3obzhi7Zm+RIA3lHecqzaGmOKyRnu0Dx/Zew==
+codemaker@^1.106.0:
+  version "1.106.0"
+  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.106.0.tgz#c696de48847e7758731b72d89264e972eaceb4d0"
+  integrity sha512-1aLNQCF/3DVxXol6eRqoLZnYulAwWPGq8BMF8pMZu+CaNkR7c0T5otMcbAXcskRLChiFt+BjVWS3JPVeBOHD4w==
   dependencies:
     camelcase "^6.3.0"
     decamelize "^5.0.1"
@@ -1897,20 +1902,20 @@ get-symbol-description@^1.0.0:
     call-bind "^1.0.2"
     get-intrinsic "^1.1.1"
 
-git-up@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.npmjs.org/git-up/-/git-up-7.0.0.tgz"
-  integrity sha512-ONdIrbBCFusq1Oy0sC71F5azx8bVkvtZtMJAsv+a6lz5YAmbNnLD6HAB4gptHZVLPR8S2/kVN6Gab7lryq5+lQ==
+git-up@^8.0.0:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/git-up/-/git-up-8.0.1.tgz#2a82cfbc77b5eb04074ab1e48593911981654fc7"
+  integrity sha512-2XFu1uNZMSjkyetaF+8rqn6P0XqpMq/C+2ycjI6YwrIKcszZ5/WR4UubxjN0lILOKqLkLaHDaCr2B6fP1cke6g==
   dependencies:
     is-ssh "^1.4.0"
-    parse-url "^8.1.0"
+    parse-url "^9.2.0"
 
-git-url-parse@^14.1.0:
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/git-url-parse/-/git-url-parse-14.1.0.tgz#01cb70000666c11a7230aceec1fd518c416c224c"
-  integrity sha512-8xg65dTxGHST3+zGpycMMFZcoTzAdZ2dOtu4vmgIfkTFnVHBxHMzBC2L1k8To7EmrSiHesT8JgPLT91VKw1B5g==
+git-url-parse@^16.0.0:
+  version "16.0.1"
+  resolved "https://registry.yarnpkg.com/git-url-parse/-/git-url-parse-16.0.1.tgz#8a2b15ceafd29342e42a3d056a771fb9007bf5ae"
+  integrity sha512-mcD36GrhAzX5JVOsIO52qNpgRyFzYWRbU1VSRFCvJt1IJvqfvH427wWw/CFqkWvjVPtdG5VTx4MKUeC5GeFPDQ==
   dependencies:
-    git-up "^7.0.0"
+    git-up "^8.0.0"
 
 glob-parent@^5.1.2:
   version "5.1.2"
@@ -2993,11 +2998,12 @@ parse-path@^7.0.0:
   dependencies:
     protocols "^2.0.0"
 
-parse-url@^8.1.0:
-  version "8.1.0"
-  resolved "https://registry.npmjs.org/parse-url/-/parse-url-8.1.0.tgz"
-  integrity sha512-xDvOoLU5XRrcOZvnI6b8zA6n9O9ejNk/GExuz1yBuWUGn9KA97GI6HTs6u02wKara1CeVmZhH+0TZFdWScR89w==
+parse-url@^9.2.0:
+  version "9.2.0"
+  resolved "https://registry.yarnpkg.com/parse-url/-/parse-url-9.2.0.tgz#d75da32b3bbade66e4eb0763fb4851d27526b97b"
+  integrity sha512-bCgsFI+GeGWPAvAiUv63ZorMeif3/U0zaXABGJbOWt5OH2KCaPHF6S+0ok4aqM9RuIPGyZdx9tR9l13PsW4AYQ==
   dependencies:
+    "@types/parse-path" "^7.0.0"
     parse-path "^7.0.0"
 
 password-prompt@^1.1.3:
