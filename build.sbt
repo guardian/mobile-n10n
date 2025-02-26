@@ -46,10 +46,10 @@ val jacksonDatabind: String = "2.18.2"
 val jacksonCbor: String = "2.18.2"
 val jacksonScalaModule: String = "2.18.2"
 val simpleConfigurationVersion: String = "1.5.7"
-val googleOAuthClient: String = "1.37.0"
-val nettyVersion: String = "4.1.118.Final"
+val googleOAuthClient: String = "1.38.0"
+val nettyVersion: String = "4.1.119.Final"
 val slf4jVersion: String = "1.7.36"
-val logbackVersion: String = "1.5.16"
+val logbackVersion: String = "1.5.17"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
@@ -103,7 +103,7 @@ lazy val common = project
     libraryDependencies ++= Seq(
       ws,
       "org.typelevel" %% "cats-core" % catsVersion,
-      "joda-time" % "joda-time" % "2.13.0",
+      "joda-time" % "joda-time" % "2.13.1",
       "org.playframework" %% "play-json" % playJsonVersion,
       "org.playframework" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
