@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@guardian/cdk": "^61.3.0",
-    "aws-cdk": "2.179.0",
+    "aws-cdk": "2.1000.3",
     "@types/jest": "^29.5.14",
     "aws-cdk-lib": "2.180.0",
     "constructs": "^10.3.0",
