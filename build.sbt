@@ -29,7 +29,7 @@ val compilerOptions = Seq(
   "-feature",
   "-language:postfixOps",
   "-language:implicitConversions",
-  "-release:11"
+  "-release:21"
 )
 
 ThisBuild / scalacOptions ++= compilerOptions
