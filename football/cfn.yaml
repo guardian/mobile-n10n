@@ -86,7 +86,7 @@ Resources:
       Handler: com.gu.mobile.notifications.football.Lambda::handler
       MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
-      Runtime: java11
+      Runtime: java21
       Timeout: 60
 
   MinuteEvent:

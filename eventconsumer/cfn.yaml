@@ -128,7 +128,7 @@ Resources:
       Handler: com.gu.notifications.events.AthenaLambda::handleRequest
       MemorySize: 1024
       Role: !GetAtt ExecutionRole.Arn
-      Runtime: java11
+      Runtime: java21
       Timeout: 120
       Tags:
         - Key: Stage
