@@ -42,11 +42,11 @@ val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.12"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.18.2"
-val jacksonCbor: String = "2.18.2"
-val jacksonScalaModule: String = "2.18.2"
+val jacksonDatabind: String = "2.18.3"
+val jacksonCbor: String = "2.18.3"
+val jacksonScalaModule: String = "2.18.3"
 val simpleConfigurationVersion: String = "1.5.7"
-val googleOAuthClient: String = "1.38.0"
+val googleOAuthClient: String = "1.39.0"
 val nettyVersion: String = "4.1.119.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.5.17"
@@ -418,8 +418,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.2.0",
-      "com.google.protobuf" % "protobuf-java" % "4.29.3",
-      "com.google.protobuf" % "protobuf-java-util" % "4.29.3",
+      "com.google.protobuf" % "protobuf-java" % "4.30.0",
+      "com.google.protobuf" % "protobuf-java-util" % "4.30.0",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
