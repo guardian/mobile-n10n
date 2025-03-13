@@ -46,7 +46,7 @@ jobs:
         run: sbt "project commoneventconsumer" "compile" "test" "project slomonitor" "compile" "test" "assembly"
 
       - name: Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         if: success() || failure()    # run this step even if previous step failed
         with:
           name: Tests
