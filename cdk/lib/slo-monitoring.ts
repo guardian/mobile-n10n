@@ -56,7 +56,7 @@ export class SloMonitoring extends GuStack {
 			functionName: `mobile-notifications-slo-monitor-${props.stage}`,
 			fileName: 'slomonitor.jar',
 			handler: 'com.gu.notifications.slos.SloMonitor::handleMessage',
-			runtime: Runtime.JAVA_11,
+			runtime: Runtime.JAVA_21,
 			app: 'slomonitor',
 			timeout: Duration.minutes(5),
 		});
