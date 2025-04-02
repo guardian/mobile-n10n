@@ -103,7 +103,7 @@ lazy val common = project
     libraryDependencies ++= Seq(
       ws,
       "org.typelevel" %% "cats-core" % catsVersion,
-      "joda-time" % "joda-time" % "2.13.1",
+      "joda-time" % "joda-time" % "2.14.0",
       "org.playframework" %% "play-json" % playJsonVersion,
       "org.playframework" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
