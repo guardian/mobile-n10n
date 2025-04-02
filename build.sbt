@@ -419,7 +419,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.2.0",
       "com.google.protobuf" % "protobuf-java" % "4.30.2",
-      "com.google.protobuf" % "protobuf-java-util" % "4.30.1",
+      "com.google.protobuf" % "protobuf-java-util" % "4.30.2",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
