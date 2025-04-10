@@ -3,7 +3,7 @@
     "@guardian/cdk": "^61.3.0",
     "aws-cdk": "2.1007.0",
     "@types/jest": "^29.5.14",
-    "aws-cdk-lib": "2.188.0",
+    "aws-cdk-lib": "2.189.0",
     "constructs": "^10.4.2",
     "jest": "^29.7",
     "ts-jest": "^29.3.1",
