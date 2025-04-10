@@ -638,16 +638,16 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@guardian/cdk@^61.3.0":
-  version "61.3.0"
-  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-61.3.0.tgz#9491f9f0ac916fb97dbe906e050a8c00d48526c2"
-  integrity sha512-AwQfZ1lm+cQnOaJ/S+GIRQ3TQyq4TliP5bgZ3tdmQ89JbIwo2WlJR9abB0cRhr0ANMEKxDO4GN+3SDua1Ok5og==
+"@guardian/cdk@^61.3.3":
+  version "61.3.3"
+  resolved "https://registry.yarnpkg.com/@guardian/cdk/-/cdk-61.3.3.tgz#04b1e31d8b134244d155b2cbfa5831e7c9f596b3"
+  integrity sha512-v/oC0dGGOfVkEkcMKfWPNwnOkiigAQhHwnHPscC5CObS9O2S/tJKbtBAhq++gEdwlw7HJb/3W5wYVXhGN0eWFQ==
   dependencies:
     "@oclif/core" "3.26.6"
     aws-sdk "^2.1692.0"
     chalk "^4.1.2"
-    codemaker "^1.106.0"
-    git-url-parse "^16.0.0"
+    codemaker "^1.111.0"
+    git-url-parse "^16.0.1"
     js-yaml "^4.1.0"
     lodash.camelcase "^4.3.0"
     lodash.kebabcase "^4.1.1"
@@ -1491,10 +1491,10 @@ co@^4.6.0:
   resolved "https://registry.npmjs.org/co/-/co-4.6.0.tgz"
   integrity sha1-bqa989hTrlTMuOR7+gvz+QMfsYQ=
 
-codemaker@^1.106.0:
-  version "1.106.0"
-  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.106.0.tgz#c696de48847e7758731b72d89264e972eaceb4d0"
-  integrity sha512-1aLNQCF/3DVxXol6eRqoLZnYulAwWPGq8BMF8pMZu+CaNkR7c0T5otMcbAXcskRLChiFt+BjVWS3JPVeBOHD4w==
+codemaker@^1.111.0:
+  version "1.111.0"
+  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.111.0.tgz#3f86ca6fba71c9a75ba47e704d9e3cc814b97237"
+  integrity sha512-roT0x2rjngWUTbyM/mFyLSkh/H8YMZlaj7kSLzzJAZUSLxRjU/4zPd0bvjaRERVONJZMlitrP8ndmqnEjxLoBw==
   dependencies:
     camelcase "^6.3.0"
     decamelize "^5.0.1"
@@ -1938,7 +1938,7 @@ git-up@^8.0.0:
     is-ssh "^1.4.0"
     parse-url "^9.2.0"
 
-git-url-parse@^16.0.0:
+git-url-parse@^16.0.1:
   version "16.0.1"
   resolved "https://registry.yarnpkg.com/git-url-parse/-/git-url-parse-16.0.1.tgz#8a2b15ceafd29342e42a3d056a771fb9007bf5ae"
   integrity sha512-mcD36GrhAzX5JVOsIO52qNpgRyFzYWRbU1VSRFCvJt1IJvqfvH427wWw/CFqkWvjVPtdG5VTx4MKUeC5GeFPDQ==
