@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@guardian/cdk": "^61.3.0",
+    "@guardian/cdk": "^61.4.0",
     "aws-cdk": "2.1007.0",
     "@types/jest": "^29.5.14",
     "aws-cdk-lib": "2.188.0",
