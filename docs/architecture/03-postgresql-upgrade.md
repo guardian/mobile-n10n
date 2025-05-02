@@ -77,13 +77,13 @@ gantt
     dateFormat  HH:mm:ss
     axisFormat  %H:%M:%S
     section Operation
-    Upgrade to postgres13             :crit,active, a1, 00:00:00, 30min
-    Change instance class             :crit,active, a2, after a1, 20min
-    Reindexing and optimizer stats    :crit,active, a3, after a2, 10min
-    Service restored                  :milestone, after a3, 0min
+    Upgrade to postgres13             :crit,active, a1, 00:00:00, 30m
+    Change instance class             :crit,active, a2, after a1, 20m
+    Reindexing and optimizer stats    :crit,active, a3, after a2, 10m
+    Service restored                  :milestone, after a3, 0m
     section Impact 
-    No registration                   :crit, c1a, 00:00:00, 60min
-    No notification                   :crit, c1b, 00:00:00, 60min
+    No registration                   :crit, c1a, 00:00:00, 60m
+    No notification                   :crit, c1b, 00:00:00, 60m
 ```
 
 Rollback:
@@ -106,18 +106,18 @@ gantt
     dateFormat  HH:mm:ss
     axisFormat  %H:%M:%S
     section PROD DB
-    Backup                            :a1, 00:00:00, 5min
+    Backup                            :a1, 00:00:00, 5m
     section PG13 DB
-    Restore                           :b1, after a1, 20min
-    Upgrade to postgres13             :crit,active, b2, after b1, 30min
-    Change instance class             :crit,active, b3, after b2, 20min
-    Reindexing / optimizer stats      :crit,active, b4, after b3, 10min
-    Switchover                        :b5, after b4, 5min
-    Serving notifications             :milestone, after b5, 0min
+    Restore                           :b1, after a1, 20m
+    Upgrade to postgres13             :crit,active, b2, after b1, 30m
+    Change instance class             :crit,active, b3, after b2, 20m
+    Reindexing / optimizer stats      :crit,active, b4, after b3, 10m
+    Switchover                        :b5, after b4, 5m
+    Serving notifications             :milestone, after b5, 0m
     section Impact 
-    Registration lost       :crit, c1a, 00:00:00, 90min
-    Notification available  :done, c1b, 00:00:00, 90min
-    Normal                  :done, c2, after c1a c1b, 5min
+    Registration lost       :crit, c1a, 00:00:00, 90m
+    Notification available  :done, c1b, 00:00:00, 90m
+    Normal                  :done, c2, after c1a c1b, 5m
 ```
 
 Rollback:
@@ -141,21 +141,21 @@ gantt
     dateFormat  HH:mm:ss
     axisFormat  %H:%M:%S
     section PROD DB
-    Backup                            :a1, 00:00:00, 5min
-    Upgrade to postgres13             :crit,active, a2, after b2, 30min
-    Change instance class             :crit,active, a3, after a2, 20min
-    Reindexing / optimizer stats      :crit,active, a4, after a3, 10min
-    Switch back                       :a5, after a4, 5min
-    Serving all                       :milestone, after a5, 0min
+    Backup                            :a1, 00:00:00, 5m
+    Upgrade to postgres13             :crit,active, a2, after b2, 30m
+    Change instance class             :crit,active, a3, after a2, 20m
+    Reindexing / optimizer stats      :crit,active, a4, after a3, 10m
+    Switch back                       :a5, after a4, 5m
+    Serving all                       :milestone, after a5, 0m
     section Temp DB
-    Restore                           :b1, after a1, 20min
-    Switchover lambda workers         :b2, after b1, 5min
-    Serving harvester                 :milestone, after b2, 0min
+    Restore                           :b1, after a1, 20m
+    Switchover lambda workers         :b2, after b1, 5m
+    Serving harvester                 :milestone, after b2, 0m
     section Impact 
-    Normal                  :done, c1, 00:00:00, 30min
-    No registration         :crit, c2b, after c1, 60min
-    Notification available  :done, c2a, after c1, 60min
-    Normal                  :done, c3, after c2a c2b, 5min    
+    Normal                  :done, c1, 00:00:00, 30m
+    No registration         :crit, c2b, after c1, 60m
+    Notification available  :done, c2a, after c1, 60m
+    Normal                  :done, c3, after c2a c2b, 5m
 ```
 
 Rollback:
@@ -183,22 +183,22 @@ gantt
     dateFormat  HH:mm:ss
     axisFormat  %H:%M:%S
     section PROD DB
-    Enable replication                :a1, 00:00:00, 5min
-    Create publication                :a2, after a1, 5min
-    Synchronise                       :a3, after b1, 30min
+    Enable replication                :a1, 00:00:00, 5m
+    Create publication                :a2, after a1, 5m
+    Synchronise                       :a3, after b1, 30m
     section PG13 DB
-    Create subscription               :b1, after a2, 5min
-    Synchronise                       :b2, after b1, 30min
-    Stop subscription                 :b3, after b2, 5min
-    Switchover                        :b4, after b3, 5min
-    Serving all                       :milestone, after b4, 0min
+    Create subscription               :b1, after a2, 5m
+    Synchronise                       :b2, after b1, 30m
+    Stop subscription                 :b3, after b2, 5m
+    Switchover                        :b4, after b3, 5m
+    Serving all                       :milestone, after b4, 0m
     section Impact 
-    No registration                   :crit, c1a, 00:00:00, 5min
-    No notification                   :crit, c1b, 00:00:00, 5min
-    Normal                            :done, c2, after c1a c1b, 45min
-    Registration lost                 :crit, c3a, after b3, 5min
-    Notification available            :done, c3b, after b3, 5min
-    Normal                            :done, c4, after c3a c3b, 5min    
+    No registration                   :crit, c1a, 00:00:00, 5m
+    No notification                   :crit, c1b, 00:00:00, 5m
+    Normal                            :done, c2, after c1a c1b, 45m
+    Registration lost                 :crit, c3a, after b3, 5m
+    Notification available            :done, c3b, after b3, 5m
+    Normal                            :done, c4, after c3a c3b, 5m
 ```
 
 Rollback:
@@ -230,16 +230,16 @@ gantt
     dateFormat  HH:mm:ss
     axisFormat  %H:%M:%S
     section PROD DB
-    Create database dump              :a1, 00:00:00, 25min
+    Create database dump              :a1, 00:00:00, 25m
     section PG13 DB
-    Restore from dump                 :b1, after a1, 25min
-    Reindexing and optimizer stats    :b2, after b1, 10min
-    Switchover                        :b3, after b2, 5min
-    Serving all                       :milestone, after b3, 0min
+    Restore from dump                 :b1, after a1, 25m
+    Reindexing and optimizer stats    :b2, after b1, 10m
+    Switchover                        :b3, after b2, 5m
+    Serving all                       :milestone, after b3, 0m
     section Impact 
-    Registration lost                 :crit, c1a, 00:00:00, 65min
-    Notification available            :done, c1b, 00:00:00, 65min
-    Normal                            :done, c2, after b3, 5min
+    Registration lost                 :crit, c1a, 00:00:00, 65m
+    Notification available            :done, c1b, 00:00:00, 65m
+    Normal                            :done, c2, after b3, 5m
 ```
 
 Rollback:
