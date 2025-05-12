@@ -94,7 +94,6 @@ lazy val commontest = project
     ),
   ))
 
-
 lazy val common = project
   .dependsOn(commoneventconsumer)
   .settings(LocalDynamoDBCommon.settings)
@@ -119,11 +118,6 @@ lazy val common = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
       "com.gu" %% "mobile-logstash-encoder" % "1.1.8",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "io.netty" % "netty-handler" % nettyVersion,
-      "io.netty" % "netty-codec" % nettyVersion,
-      "io.netty" % "netty-codec-http" % nettyVersion,
-      "io.netty" % "netty-codec-http2" % nettyVersion,
-      "io.netty" % "netty-common" % nettyVersion,
       "org.postgresql" % "postgresql" % "42.7.5",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
