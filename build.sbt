@@ -47,7 +47,7 @@ val jacksonCbor: String = "2.18.4"
 val jacksonScalaModule: String = "2.18.4"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.39.0"
-val nettyVersion: String = "4.1.119.Final"
+val nettyVersion: String = "4.1.121.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.5.18"
 
