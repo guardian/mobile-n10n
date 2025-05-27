@@ -93,7 +93,7 @@ Resources:
       - FakeBreakingNewsFunction
     Type: AWS::Events::Rule
     Properties:
-      ScheduleExpression: "cron(5 * * * ? *)"
+      ScheduleExpression: "rate(10 minutes)"
       Targets:
         - Id: !Sub ${Stack}-${App}-${Stage}
           Arn: !GetAtt FakeBreakingNewsFunction.Arn
@@ -122,7 +122,7 @@ Resources:
       EvaluationPeriods: 1
       MetricName: dryrun
       Namespace: !Sub Notifications/${Stage}/workers
-      Period: 7200
+      Period: 600 # 10 minutes
       Statistic: Sum
       Threshold: 1
       TreatMissingData: breaching
@@ -140,7 +140,7 @@ Resources:
       EvaluationPeriods: 1
       MetricName: dryrun
       Namespace: !Sub Notifications/${Stage}/workers
-      Period: 7200
+      Period: 600 # 10 minutes
       Statistic: Sum
       Threshold: 1
       TreatMissingData: breaching
