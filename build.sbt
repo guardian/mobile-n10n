@@ -47,7 +47,7 @@ val jacksonCbor: String = "2.18.3"
 val jacksonScalaModule: String = "2.18.3"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.39.0"
-val nettyVersion: String = "4.1.119.Final"
+val nettyVersion: String = "4.2.0.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.5.18"
 
@@ -118,6 +118,11 @@ lazy val common = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
       "com.gu" %% "mobile-logstash-encoder" % "1.1.8",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+      "io.netty" % "netty-handler" % nettyVersion,
+      "io.netty" % "netty-codec" % nettyVersion,
+      "io.netty" % "netty-codec-http" % nettyVersion,
+      "io.netty" % "netty-codec-http2" % nettyVersion,
+      "io.netty" % "netty-common" % nettyVersion,
       "org.postgresql" % "postgresql" % "42.7.5",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
