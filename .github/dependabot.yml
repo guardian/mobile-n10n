@@ -1,11 +1,26 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: /notificationworkerlambda/cdk
+    directory: "/cdk"
     schedule:
-      interval: daily
+      interval: "monthly"
+    # The version of AWS CDK libraries must match those from @guardian/cdk.
+    ignore:
+      - dependency-name: "aws-cdk"
+      - dependency-name: "aws-cdk-lib"
+      - dependency-name: "constructs"
+      
+  - package-ecosystem: npm
+    directory: "/notificationworkerlambda/cdk"
+    schedule:
+      interval: "monthly"
+    # The version of AWS CDK libraries must match those from @guardian/cdk.
+    ignore:
+      - dependency-name: "aws-cdk"
+      - dependency-name: "aws-cdk-lib"
+      - dependency-name: "constructs"
 
-  - package-ecosystem: github-actions
-    directory: /
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: daily
+      interval: "weekly"
