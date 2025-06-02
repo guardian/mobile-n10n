@@ -80,7 +80,7 @@ Resources:
       MemorySize: 1024
       ReservedConcurrentExecutions: 1
       Role: !GetAtt Role.Arn
-      Runtime: java11
+      Runtime: java21
       Timeout: 60
   EventRule:
     Type: AWS::Events::Rule
