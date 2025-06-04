@@ -24,7 +24,7 @@
     "prettier": "^2.7.0",
     "source-map-support": "^0.5.20",
     "ts-jest": "^29.2.3",
-    "ts-node": "^10.8.1",
+    "ts-node": "^10.9.2",
     "typescript": "~4.7.2"
   },
   "prettier": "@guardian/prettier",
