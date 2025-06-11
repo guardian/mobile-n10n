@@ -42,12 +42,12 @@ val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.12"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.18.3"
-val jacksonCbor: String = "2.18.3"
-val jacksonScalaModule: String = "2.18.3"
+val jacksonDatabind: String = "2.18.4"
+val jacksonCbor: String = "2.18.4"
+val jacksonScalaModule: String = "2.18.4"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.39.0"
-val nettyVersion: String = "4.1.119.Final"
+val nettyVersion: String = "4.1.121.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.5.18"
 
@@ -253,12 +253,12 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.2.3",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.3.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
-      "net.logstash.logback" % "logstash-logback-encoder" % "8.0",
+      "net.logstash.logback" % "logstash-logback-encoder" % "8.1",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
@@ -305,7 +305,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "34.1.0",
+      "com.gu" %% "content-api-client-default" % "34.1.1",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -412,8 +412,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.google.firebase" % "firebase-admin" % "9.2.0",
-      "com.google.protobuf" % "protobuf-java" % "4.30.2",
-      "com.google.protobuf" % "protobuf-java-util" % "4.30.2",
+      "com.google.protobuf" % "protobuf-java" % "4.31.0",
+      "com.google.protobuf" % "protobuf-java-util" % "4.31.0",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
