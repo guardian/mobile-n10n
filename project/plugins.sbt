@@ -13,7 +13,7 @@ addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.3.1")
 
 addSbtPlugin("com.localytics" % "sbt-dynamodb" % "2.0.3")
 
-libraryDependencies += "org.vafer" % "jdeb" % "1.13" artifacts (Artifact("jdeb", "jar", "jar"))
+libraryDependencies += "org.vafer" % "jdeb" % "1.14" artifacts (Artifact("jdeb", "jar", "jar"))
 
 addSbtPlugin("com.github.sbt" % "sbt-release" % "1.4.0")
 
