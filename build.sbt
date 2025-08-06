@@ -45,7 +45,7 @@ val apacheThrift: String = "0.15.0"
 val jacksonDatabind: String = "2.19.1"
 val jacksonCbor: String = "2.19.1"
 val jacksonScalaModule: String = "2.19.1"
-val simpleConfigurationVersion: String = "1.5.7"
+val simpleConfigurationVersion: String = "5.1.2"
 val googleOAuthClient: String = "1.39.0"
 val nettyVersion: String = "4.2.2.Final"
 val slf4jVersion: String = "1.7.36"
@@ -116,7 +116,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-specs2"    % doobieVersion % Test,
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
-      "com.gu" %% "mobile-logstash-encoder" % "1.1.8",
+      "com.gu" %% "mobile-logstash-encoder" % "1.1.19",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "org.postgresql" % "postgresql" % "42.7.7",
       "ch.qos.logback" % "logback-core" % logbackVersion,
