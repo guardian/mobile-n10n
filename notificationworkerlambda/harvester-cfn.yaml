@@ -32,9 +32,6 @@ Parameters:
   VpcSubnets:
     Description: Subnets to use in the VPC
     Type: List<AWS::EC2::Subnet::Id>
-  VPCSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
-    Description: The default security group of the VPC
   AlarmTopic:
     Type: String
     Description: The ARN of the SNS topic to send all the cloudwatch alarms to
@@ -143,7 +140,7 @@ Resources:
           - Action:
             - rds-db:connect
             Effect: Allow
-            Resource: 
+            Resource:
               Fn::ImportValue: !Sub RegistrationsDbProxyId-${Stage}
 
   HarvesterLambdaCtr:
@@ -169,7 +166,7 @@ Resources:
       ReservedConcurrentExecutions: 200
       VpcConfig:
         SecurityGroupIds:
-          - !Ref VPCSecurityGroup
+          - !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
         SubnetIds: !Ref VpcSubnets
       Tags:
         - Key: Stage
