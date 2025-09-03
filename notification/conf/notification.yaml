@@ -52,9 +52,6 @@ Parameters:
   SloSqsQueueArn:
     Description: The sqs queue used to track the SLO
     Type: AWS::SSM::Parameter::Value<String>
-  VPCSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
-    Description: The default security group of the VPC
   AlarmTopic:
     Type: String
     Description: The ARN of the SNS topic to send all the cloudwatch alarms to
@@ -110,7 +107,7 @@ Resources:
     Properties:
       GroupDescription: SSH and management server access from Guardian network
       SecurityGroupIngress:
-      - SourceSecurityGroupId: !Ref VPCSecurityGroup
+      - SourceSecurityGroupId: !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
         FromPort: 22
         IpProtocol: tcp
         ToPort: 22
@@ -344,7 +341,7 @@ Resources:
       SecurityGroups:
       - !Ref InstanceSecurityGroup
       - !Ref GuardianAccessSecurityGroup
-      - !Ref VPCSecurityGroup
+      - !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
       UserData:
         Fn::Base64:
          !Sub

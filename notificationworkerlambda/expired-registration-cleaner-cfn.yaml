@@ -25,9 +25,6 @@ Parameters:
   VpcSubnets:
     Description: Subnets to use in the VPC
     Type: List<AWS::EC2::Subnet::Id>
-  VPCSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
-    Description: The default security group of the VPC
 Resources:
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -80,7 +77,7 @@ Resources:
             - Action:
               - rds-db:connect
               Effect: Allow
-              Resource: 
+              Resource:
                 Fn::ImportValue: !Sub RegistrationsDbProxyId-${Stage}
 
   Lambda:
@@ -103,7 +100,7 @@ Resources:
       Timeout: 60
       VpcConfig:
         SecurityGroupIds:
-          - !Ref VPCSecurityGroup
+          - !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
         SubnetIds: !Ref VpcSubnets
 
   DailyEvent:
