@@ -104,10 +104,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Description": "Environment name",
       "Type": "String",
     },
-    "VPCSecurityGroup": {
-      "Description": "The default security group of the VPC",
-      "Type": "AWS::EC2::SecurityGroup::Id",
-    },
     "VpcId": {
       "Description": "The VPC",
       "Type": "AWS::EC2::VPC::Id",
@@ -264,7 +260,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "FromPort": 22,
             "IpProtocol": "tcp",
             "SourceSecurityGroupId": {
-              "Ref": "VPCSecurityGroup",
+              "Fn::ImportValue": "NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup",
             },
             "ToPort": 22,
           },
@@ -810,7 +806,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "Ref": "GuardianAccessSecurityGroup",
           },
           {
-            "Ref": "VPCSecurityGroup",
+            "Fn::ImportValue": "NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup",
           },
         ],
         "UserData": {
@@ -973,10 +969,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Description": "Environment name",
       "Type": "String",
     },
-    "VPCSecurityGroup": {
-      "Description": "The default security group of the VPC",
-      "Type": "AWS::EC2::SecurityGroup::Id",
-    },
     "VpcId": {
       "Description": "The VPC",
       "Type": "AWS::EC2::VPC::Id",
@@ -1133,7 +1125,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "FromPort": 22,
             "IpProtocol": "tcp",
             "SourceSecurityGroupId": {
-              "Ref": "VPCSecurityGroup",
+              "Fn::ImportValue": "NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup",
             },
             "ToPort": 22,
           },
@@ -1679,7 +1671,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "Ref": "GuardianAccessSecurityGroup",
           },
           {
-            "Ref": "VPCSecurityGroup",
+            "Fn::ImportValue": "NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup",
           },
         ],
         "UserData": {
