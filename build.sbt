@@ -253,7 +253,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.3.0" % Provided,
+      "com.amazonaws" % "aws-lambda-java-core" % "1.3.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
@@ -439,6 +439,7 @@ lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreaking
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
+      ExclusionRule("software.amazon.awssdk", "ec2"),
       // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
       // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
       ExclusionRule(organization = "com.typesafe.play")
