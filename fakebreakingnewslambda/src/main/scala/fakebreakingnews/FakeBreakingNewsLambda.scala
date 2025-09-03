@@ -12,7 +12,6 @@ import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
-import software.amazon.awssdk.regions.Region.EU_WEST_1
 
 class FakeBreakingNewsLambda {
   val iosUuid = UUID.fromString("3bf283d8-35f3-48e6-b377-b862c3f030e3")
