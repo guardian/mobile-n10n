@@ -32,7 +32,7 @@ jobs:
       - name: Setup JDK and sbt
         uses: guardian/setup-scala@v1
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v5
         with:
           cache: npm
           cache-dependency-path: cdk/package-lock.json
