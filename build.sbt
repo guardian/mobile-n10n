@@ -400,6 +400,7 @@ lazy val ecrRepositorySettings =
     case None => Nil
   }
 
+val nettyPushyVersion = "4.1.127.Final"
 lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notificationworkerlambda", Some("com.gu.notifications.worker.TopicCounterLocalRun"))
   .dependsOn(common)
   .enablePlugins(DockerPlugin)
@@ -421,11 +422,11 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "org.playframework" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
-      "io.netty" % "netty-handler" % nettyVersion,
-      "io.netty" % "netty-codec" % nettyVersion,
-      "io.netty" % "netty-codec-http" % nettyVersion,
-      "io.netty" % "netty-codec-http2" % nettyVersion,
-      "io.netty" % "netty-common" % nettyVersion,
+      "io.netty" % "netty-handler" % nettyPushyVersion,
+      "io.netty" % "netty-codec" % nettyPushyVersion,
+      "io.netty" % "netty-codec-http" % nettyPushyVersion,
+      "io.netty" % "netty-codec-http2" % nettyPushyVersion,
+      "io.netty" % "netty-common" % nettyPushyVersion,
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
