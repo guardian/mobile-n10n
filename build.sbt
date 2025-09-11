@@ -421,6 +421,11 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "org.playframework" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
+      "io.netty" % "netty-handler" % nettyVersion,
+      "io.netty" % "netty-codec" % nettyVersion,
+      "io.netty" % "netty-codec-http" % nettyVersion,
+      "io.netty" % "netty-codec-http2" % nettyVersion,
+      "io.netty" % "netty-common" % nettyVersion,
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
