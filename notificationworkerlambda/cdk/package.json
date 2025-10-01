@@ -7,7 +7,7 @@
     "constructs": "^10.4.2",
     "jest": "^29.7",
     "ts-jest": "^29.3.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "license": "ISC",
   "scripts": {
