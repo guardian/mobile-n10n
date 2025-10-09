@@ -29,9 +29,6 @@ Parameters:
   VpcSubnets:
     Description: Subnets to use in the VPC
     Type: List<AWS::EC2::Subnet::Id>
-  VPCSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
-    Description: The default security group of the VPC
   FullyQualifiedHandler:
     Description: The full name of the handler, including path, class name and method
     Type: String
@@ -117,7 +114,7 @@ Resources:
           - Action:
             - rds-db:connect
             Effect: Allow
-            Resource: 
+            Resource:
               Fn::ImportValue: !Sub RegistrationsDbProxyId-${Stage}
 
   LambdaSecurityGroup:
@@ -153,7 +150,7 @@ Resources:
       VpcConfig:
         SecurityGroupIds:
           - !GetAtt LambdaSecurityGroup.GroupId
-          - !Ref VPCSecurityGroup
+          - !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
         SubnetIds: !Ref VpcSubnets
       Tags:
         - Key: Stage
