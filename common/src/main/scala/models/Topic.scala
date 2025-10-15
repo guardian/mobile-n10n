@@ -5,7 +5,7 @@ import play.api.libs.json._
 import cats.syntax.all._
 
 
-case class Topic(`type`: TopicType, name: String) {
+case class Topic(`type`: TopicType, name: String, title: Option[String] = None) {
   override def toString: String = fullName
   def toFirebaseString: String = toString.replaceAll("/", "%")
   lazy val id: String = md5Hex(toString)
