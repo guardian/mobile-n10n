@@ -268,6 +268,14 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             },
             "ToPort": 22,
           },
+          {
+            "FromPort": 22,
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": {
+              "Fn::ImportValue": "NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup",
+            },
+            "ToPort": 22,
+          },
         ],
         "Tags": [
           {
@@ -1134,6 +1142,14 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "IpProtocol": "tcp",
             "SourceSecurityGroupId": {
               "Ref": "VPCSecurityGroup",
+            },
+            "ToPort": 22,
+          },
+          {
+            "FromPort": 22,
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": {
+              "Fn::ImportValue": "NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup",
             },
             "ToPort": 22,
           },

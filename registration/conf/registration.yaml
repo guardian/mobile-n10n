@@ -152,6 +152,10 @@ Resources:
         FromPort: 22
         IpProtocol: tcp
         ToPort: 22
+      - SourceSecurityGroupId: !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
       VpcId: !Ref VpcId
   HighCPUAlarm:
     Type: AWS::CloudWatch::Alarm
