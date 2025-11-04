@@ -380,6 +380,8 @@ lazy val latestVersionOfLambdaSDK = {
   image.getRepoDigests().asScala.head
 }
 
+dockerBaseImage := "eclipse-temurin:8-jdk"
+
 lazy val lambdaDockerCommands = dockerCommands := Seq(
   Cmd    ( "FROM",   latestVersionOfLambdaSDK),
   Cmd    ( "LABEL",  s"sdkBaseVersion=${latestVersionOfLambdaSDK}"),
