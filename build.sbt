@@ -23,6 +23,8 @@ releaseProcess := Seq[ReleaseStep](
 )
 ThisBuild / scalaVersion := "2.13.16"
 
+ThisBuild / dockerBaseImage := "eclipse-temurin:8-jdk"
+
 val compilerOptions = Seq(
   "-deprecation",
   "-Xfatal-warnings",
@@ -377,8 +379,6 @@ lazy val latestVersionOfLambdaSDK = {
 
   image.getRepoDigests().asScala.head
 }
-
-dockerBaseImage := "eclipse-temurin:8-jdk"
 
 lazy val lambdaDockerCommands = dockerCommands := Seq(
   Cmd    ( "FROM",   latestVersionOfLambdaSDK),
