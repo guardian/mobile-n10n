@@ -1,4 +1,14 @@
 GET         /healthcheck                        notification.controllers.Main.healthCheck
+
+# Used by guardian/facia-tool and guardian/mobile-notifications-content
+# See https://github.com/guardian/facia-tool/blob/main/app/updates/BreakingNewsUpdate.scala
+# See https://github.com/guardian/mobile-notifications-content/blob/main/src/main/scala/com/gu/mobile/content/notifications/lib/NotificationsApiClient.scala
 POST        /push/topic                         notification.controllers.Main.pushTopics
+
+# Used by guardian/esd-miscellaneous-tools
+# See https://github.com/guardian/esd-miscellaneous-tools/blob/main/daily_edition/ids_servers/usr/local/bin/notifyiPadUsers.sh
 POST        /push/newsstand                     notification.controllers.Main.pushNewsstand
+
+# Used by guardian/editions
+# See https://github.com/guardian/editions/blob/main/projects/archiver/src/tasks/notification/helpers/device-notifications-helpers.ts
 POST        /push/schedule/:dateString          notification.controllers.Schedule.scheduleNotification(dateString: String)
