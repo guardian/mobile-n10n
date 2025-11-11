@@ -23,8 +23,6 @@ releaseProcess := Seq[ReleaseStep](
 )
 ThisBuild / scalaVersion := "2.13.16"
 
-ThisBuild / dockerBaseImage := "eclipse-temurin:8-jdk"
-
 val compilerOptions = Seq(
   "-deprecation",
   "-Xfatal-warnings",
