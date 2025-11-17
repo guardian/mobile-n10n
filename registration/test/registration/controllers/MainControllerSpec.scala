@@ -49,6 +49,19 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       val Some(register) = route(app, FakeRequest(POST, "/legacy/device/register").withJsonBody(Json.parse(legacyAndroidRegistrationJson)))
       status(register) must equalTo(BAD_REQUEST)
     }
+
+    ////// NEW ENDPOINT ///////
+
+    "new /device/register endpoint returns expected response" in new RegistrationsContext {
+      val Some(result) = route(app, FakeRequest(POST, "/device/register").withJsonBody(Json.parse(newRegistrationJson)))
+      println(Json.prettyPrint(Json.parse(contentAsString(result))))
+
+      status(result) must equalTo(OK)
+      contentAsString(result) must /("provider" -> "Guardian")
+      contentAsString(result) must /("deviceId" ->  "TEST-TOKEN-ID")
+      contentAsString(result) must /("platform" -> "ios")
+      contentAsString(result) must (/("topics") andHave size(4))
+    }
   }
 
   trait RegistrationsContext extends RegistrationsBase with withMockedWSClient {

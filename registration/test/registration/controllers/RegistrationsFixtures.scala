@@ -7,14 +7,12 @@ import cats.syntax.all._
 import com.gu.DevIdentity
 import db.{DatabaseConfig, JdbcConfig, RegistrationService}
 import doobie.util.transactor.Transactor
-import error.NotificationsError
 import models.Provider.Unknown
 import models.TopicTypes.{Breaking, FootballMatch}
 import models._
 import play.api.ApplicationLoader.Context
 import play.api.{BuiltInComponents, Logger, Configuration => PlayConfig}
 import play.api.libs.ws.WSClient
-import providers.ProviderError
 import registration.RegistrationApplicationComponents
 import registration.services.NotificationRegistrar.RegistrarResponse
 import registration.services.topic.{TopicValidator, TopicValidatorError}
@@ -162,6 +160,37 @@ trait RegistrationsJson {
       |		}],
       |		"receiveNewsAlerts": true
       |	}
+      |}
+    """.stripMargin
+
+  val newRegistrationJson =
+    """
+      |{
+      |  "deviceToken": "TEST-TOKEN-ID",
+      |  "platform": "ios",
+      |  "buildTier": "debug",
+      |  "appVersion": "1.0.0",
+      |		"topics": [
+      |      {
+      |        "name": "4501006",
+      |        "title": "Burnley vs Leeds (2025-10-18)",
+      |        "type": "football-match"
+      |      },
+      |      {
+      |        "name": "profile/jane-doe",
+      |        "title": "Jane Doe",
+      |        "type": "tag-contributor"
+      |      },
+      |      {
+      |        "name": "uk-sport",
+      |        "title": "UK sport notifications",
+      |        "type": "breaking"
+      |      },
+      |      {
+      |        "name": "uk",
+      |        "type": "breaking"
+      |      }
+      |		]
       |}
     """.stripMargin
 
