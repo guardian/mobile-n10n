@@ -260,7 +260,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
-      "net.logstash.logback" % "logstash-logback-encoder" % "8.1",
+      "net.logstash.logback" % "logstash-logback-encoder" % "9.0",
       specs2 % Test
     ),
     assemblyJarName := s"$projectName.jar",
