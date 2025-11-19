@@ -32,11 +32,6 @@ jobs:
       - name: Setup JDK and sbt
         uses: guardian/setup-scala@v1
 
-      - uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: eu-west-1
-          role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
-
       - name: Compile, test and package
         run: sbt "project common" "compile" "test" "project commonscheduledynamodb" "compile" "test" "project notification" "compile" "test" "debian:packageBin"
 

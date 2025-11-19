@@ -39,11 +39,6 @@ jobs:
           cache-dependency-path: cdk/package-lock.json
           node-version-file: .nvmrc
 
-      - uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: eu-west-1
-          role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
-
       - name: CDK synth
         run: |
           cd cdk
