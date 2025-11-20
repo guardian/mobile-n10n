@@ -89,11 +89,6 @@ jobs:
           npm test
           npm run synth
 
-      - uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: eu-west-1
-          role-to-assume: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
-
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v4
         with:
