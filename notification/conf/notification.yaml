@@ -86,8 +86,9 @@ Parameters:
     Type: String
     Description: The name of the s3 bucket containing the server artifact
   S3LoggingBucket:
-    Type: String
+    Type: AWS::SSM::Parameter::Value<String>
     Description: The name of the s3 bucket containing the access logs
+    Default: /account/services/access-logging/bucket
   S3TopicCountBucket:
     Type: String
     Description: Name of the bucket storing the persisted topic subscription counts
@@ -166,7 +167,15 @@ Resources:
       Subnets: !Ref PublicSubnets
       AccessLoggingPolicy:
         S3BucketName: !Ref S3LoggingBucket
-        S3BucketPrefix: !Sub elb/${DomainName}
+
+        # This prefix pattern is used by the Athena resources DevX have provisioned in all AWS accounts.
+        # The resources include saved queries to search AWS Load Balancer logs.
+        S3BucketPrefix:
+          !Sub
+          - classic-load-balancer/${Stage}/${Stack}/${App}
+          - Stack: !FindInMap [ Constants, Stack, Value ]
+            App: !FindInMap [ Constants, App, Value ]
+
         Enabled: true
         EmitInterval: 60
 
