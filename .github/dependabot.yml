@@ -11,7 +11,7 @@ updates:
       - dependency-name: "constructs"
       
   - package-ecosystem: npm
-    directory: "/notificationworkerlambda/cdk"
+    directory: "/cdk"
     schedule:
       interval: "monthly"
     # The version of AWS CDK libraries must match those from @guardian/cdk.
