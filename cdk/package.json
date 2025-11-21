@@ -11,9 +11,8 @@
     "synth": "cdk synth --path-metadata false --version-reporting false",
     "diff": "cdk diff --path-metadata false --version-reporting false"
   },
-  "license": "ISC",
   "devDependencies": {
-    "@guardian/cdk": "^61.5.0",
+    "@guardian/cdk": "61.11.1",
     "aws-cdk": "2.1029.1",
     "aws-cdk-lib": "2.214.0",
     "constructs": "^10.4.2",
