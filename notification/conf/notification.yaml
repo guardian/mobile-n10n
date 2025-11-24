@@ -85,7 +85,7 @@ Parameters:
   DistBucket:
     Type: String
     Description: The name of the s3 bucket containing the server artifact
-  S3LoggingBucket:
+  AccessLogsBucket:
     Type: AWS::SSM::Parameter::Value<String>
     Description: The name of the s3 bucket containing the access logs
     Default: /account/services/access-logging/bucket
@@ -166,7 +166,7 @@ Resources:
       - !Ref LoadBalancerSecurityGroup
       Subnets: !Ref PublicSubnets
       AccessLoggingPolicy:
-        S3BucketName: !Ref S3LoggingBucket
+        S3BucketName: !Ref AccessLogsBucket
 
         # This prefix pattern is used by the Athena resources DevX have provisioned in all AWS accounts.
         # The resources include saved queries to search AWS Load Balancer logs.
