@@ -596,7 +596,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
             "Value": "breakingNews",
           },
         ],
-        "EvaluationPeriods": 24,
+        "EvaluationPeriods": 48,
         "MetricName": "worker.notificationProcessingTime",
         "Namespace": "Notifications/PROD/workers",
         "OKActions": [
@@ -2384,7 +2384,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
             "Value": "breakingNews",
           },
         ],
-        "EvaluationPeriods": 24,
+        "EvaluationPeriods": 48,
         "MetricName": "worker.notificationProcessingTime",
         "Namespace": "Notifications/PROD/workers",
         "OKActions": [

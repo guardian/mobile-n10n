@@ -199,7 +199,7 @@ class SenderWorker extends cdkcore.Construct  {
       const senderTooFewBreakingNewsAlarm = new cloudwatch.Alarm(this, 'SenderTooFewBreakingNewsAlarm', {
         alarmDescription: `Triggers if the ${id} sender lambda is not frequently invoked for breaking news notification in ${scope.stage}.`,
         comparisonOperator: cloudwatch.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
-        evaluationPeriods: 24,
+        evaluationPeriods: 48, // 12 hours
         threshold: 0,
         metric: breakingNewsCountMetric,
         treatMissingData: cloudwatch.TreatMissingData.BREACHING,
