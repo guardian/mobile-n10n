@@ -38,7 +38,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 
 val playJsonVersion = "3.0.4"
 val specsVersion: String = "4.8.3"
-val awsSdkVersion: String = "1.12.787"
+val awsSdkVersion: String = "1.12.793"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
@@ -255,7 +255,7 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
       "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     ),
     libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.3.0",
+      "com.amazonaws" % "aws-lambda-java-core" % "1.4.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
@@ -347,7 +347,7 @@ lazy val sloMonitor = lambda("slomonitor", "slomonitor", Some("com.gu.notificati
     Seq(
       description := "Monitors SLO performance for breaking news notifications",
       libraryDependencies ++= Seq(
-        "com.amazonaws" % "aws-lambda-java-events" % "3.16.0",
+        "com.amazonaws" % "aws-lambda-java-events" % "3.16.1",
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
         "io.netty" % "netty-codec" % nettyVersion,
         "io.netty" % "netty-codec-http" % nettyVersion,
