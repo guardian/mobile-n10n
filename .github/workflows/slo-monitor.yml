@@ -31,10 +31,12 @@ jobs:
       - name: Setup JDK and sbt
         uses: guardian/setup-scala@v1
 
+      - run: corepack enable
+
       - uses: actions/setup-node@v6
         with:
-          cache: npm
-          cache-dependency-path: cdk/package-lock.json
+          cache: yarn
+          cache-dependency-path: cdk/yarn.lock
           node-version-file: .nvmrc
 
       - name: Compile, test and assembly
@@ -56,10 +58,10 @@ jobs:
       - name: CDK synth
         run: |
           cd cdk
-          npm install
-          npm run lint
-          npm test
-          npm run synth
+          yarn install --immutable
+          yarn lint
+          yarn test
+          yarn synth
 
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v4
