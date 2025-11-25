@@ -256,51 +256,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::Route53::RecordSet",
     },
-    "GuardianAccessSecurityGroup": {
-      "Properties": {
-        "GroupDescription": "SSH and management server access from Guardian network",
-        "SecurityGroupIngress": [
-          {
-            "FromPort": 22,
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Ref": "VPCSecurityGroup",
-            },
-            "ToPort": 22,
-          },
-          {
-            "FromPort": 22,
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Fn::ImportValue": "NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup",
-            },
-            "ToPort": 22,
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "VpcId": {
-          "Ref": "VpcId",
-        },
-      },
-      "Type": "AWS::EC2::SecurityGroup",
-    },
     "HighCPUAlarm": {
       "Properties": {
         "AlarmActions": [
@@ -1129,51 +1084,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "Type": "CNAME",
       },
       "Type": "AWS::Route53::RecordSet",
-    },
-    "GuardianAccessSecurityGroup": {
-      "Properties": {
-        "GroupDescription": "SSH and management server access from Guardian network",
-        "SecurityGroupIngress": [
-          {
-            "FromPort": 22,
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Ref": "VPCSecurityGroup",
-            },
-            "ToPort": 22,
-          },
-          {
-            "FromPort": 22,
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Fn::ImportValue": "NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup",
-            },
-            "ToPort": 22,
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "VpcId": {
-          "Ref": "VpcId",
-        },
-      },
-      "Type": "AWS::EC2::SecurityGroup",
     },
     "HighCPUAlarm": {
       "Properties": {
