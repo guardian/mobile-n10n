@@ -137,6 +137,28 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "ToPort": 22,
           },
         ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
         "VpcId": {
           "Ref": "VpcId",
         },
@@ -197,6 +219,28 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
           ],
         },
         "Statistic": "Average",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
         "Threshold": {
           "Fn::FindInMap": [
             "StageVariables",
@@ -236,6 +280,28 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "ToPort": 9000,
           },
         ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
         "VpcId": {
           "Ref": "VpcId",
         },
@@ -259,6 +325,28 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "FromPort": 443,
             "IpProtocol": "tcp",
             "ToPort": 443,
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
           },
         ],
         "VpcId": {
@@ -295,6 +383,28 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         "Subnets": {
           "Ref": "PublicSubnets",
         },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
       },
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
     },
@@ -352,6 +462,28 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
           ],
         },
         "Statistic": "Average",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
         "Threshold": {
           "Fn::FindInMap": [
             "StageVariables",
@@ -490,6 +622,28 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "PolicyName": "conf",
           },
         ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
       },
       "Type": "AWS::IAM::Role",
     },
@@ -527,31 +681,27 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
           {
             "Key": "App",
             "PropagateAtLaunch": true,
-            "Value": {
-              "Fn::FindInMap": [
-                "Constants",
-                "App",
-                "Value",
-              ],
-            },
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "PropagateAtLaunch": true,
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "PropagateAtLaunch": true,
+            "Value": "guardian/mobile-n10n",
           },
           {
             "Key": "Stack",
             "PropagateAtLaunch": true,
-            "Value": {
-              "Fn::FindInMap": [
-                "Constants",
-                "Stack",
-                "Value",
-              ],
-            },
+            "Value": "mobile-notifications",
           },
           {
             "Key": "Stage",
             "PropagateAtLaunch": true,
-            "Value": {
-              "Ref": "Stage",
-            },
+            "Value": "CODE",
           },
         ],
         "VPCZoneIdentifier": {
@@ -785,6 +935,28 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "ToPort": 22,
           },
         ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
         "VpcId": {
           "Ref": "VpcId",
         },
@@ -845,6 +1017,28 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
           ],
         },
         "Statistic": "Average",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
         "Threshold": {
           "Fn::FindInMap": [
             "StageVariables",
@@ -884,6 +1078,28 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "ToPort": 9000,
           },
         ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
         "VpcId": {
           "Ref": "VpcId",
         },
@@ -907,6 +1123,28 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "FromPort": 443,
             "IpProtocol": "tcp",
             "ToPort": 443,
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
           },
         ],
         "VpcId": {
@@ -943,6 +1181,28 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         "Subnets": {
           "Ref": "PublicSubnets",
         },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
       },
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
     },
@@ -1000,6 +1260,28 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
           ],
         },
         "Statistic": "Average",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
         "Threshold": {
           "Fn::FindInMap": [
             "StageVariables",
@@ -1138,6 +1420,28 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "PolicyName": "conf",
           },
         ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
       },
       "Type": "AWS::IAM::Role",
     },
@@ -1175,31 +1479,27 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
           {
             "Key": "App",
             "PropagateAtLaunch": true,
-            "Value": {
-              "Fn::FindInMap": [
-                "Constants",
-                "App",
-                "Value",
-              ],
-            },
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "PropagateAtLaunch": true,
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "PropagateAtLaunch": true,
+            "Value": "guardian/mobile-n10n",
           },
           {
             "Key": "Stack",
             "PropagateAtLaunch": true,
-            "Value": {
-              "Fn::FindInMap": [
-                "Constants",
-                "Stack",
-                "Value",
-              ],
-            },
+            "Value": "mobile-notifications",
           },
           {
             "Key": "Stage",
             "PropagateAtLaunch": true,
-            "Value": {
-              "Ref": "Stage",
-            },
+            "Value": "PROD",
           },
         ],
         "VPCZoneIdentifier": {

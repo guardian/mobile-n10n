@@ -72,7 +72,6 @@ export const reportPropsCode: ReportProps = {
 	stack: 'mobile-notifications',
 	stage: 'CODE',
 	app: 'report',
-	withoutTags: true,
 };
 new Report(app, 'Report-CODE', reportPropsCode);
 
@@ -81,6 +80,5 @@ export const reportPropsProd: ReportProps = {
 	stack: 'mobile-notifications',
 	stage: 'PROD',
 	app: 'report',
-	withoutTags: true,
 };
 new Report(app, 'Report-PROD', reportPropsProd);
