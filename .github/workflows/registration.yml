@@ -33,19 +33,21 @@ jobs:
       - name: Setup JDK and sbt
         uses: guardian/setup-scala@v1
 
+      - run: corepack enable
+
       - uses: actions/setup-node@v6
         with:
-          cache: npm
-          cache-dependency-path: cdk/package-lock.json
+          cache: yarn
+          cache-dependency-path: cdk/yarn.lock
           node-version-file: .nvmrc
 
       - name: CDK synth
         run: |
           cd cdk
-          npm install
-          npm run lint
-          npm test
-          npm run synth
+          yarn install --immutable
+          yarn lint
+          yarn test
+          yarn synth
 
       - name: Compile, test and package
         run: sbt "project common" "compile" "test" "project registration" "compile" "test" "debian:packageBin"

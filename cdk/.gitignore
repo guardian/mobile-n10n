@@ -9,3 +9,6 @@ dist
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+# See https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+.yarn/install-state.gz

@@ -21,6 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - run: corepack enable
+
       - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
@@ -28,7 +30,7 @@ jobs:
           cache-dependency-path: cdk/yarn.lock
 
       - name: Install
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
 
       - name: Test
         run: yarn test
