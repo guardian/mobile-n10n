@@ -3,6 +3,7 @@ import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App } from 'aws-cdk-lib';
 import { Registration } from '../lib/registration';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
+import { Report, type ReportProps } from '../lib/report';
 import { SenderWorkerStack } from '../lib/senderworker';
 import { SloMonitoring } from '../lib/slo-monitoring';
 
@@ -65,3 +66,21 @@ new SenderWorkerStack(app, 'SenderWorkerStack-PROD', {
 	stack: 'mobile-notifications-workers',
 	stage: 'PROD',
 });
+
+export const reportPropsCode: ReportProps = {
+	cloudFormationStackName: 'mobile-notifications-report-CODE',
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+	app: 'report',
+	withoutTags: true,
+};
+new Report(app, 'Report-CODE', reportPropsCode);
+
+export const reportPropsProd: ReportProps = {
+	cloudFormationStackName: 'mobile-notifications-report-PROD',
+	stack: 'mobile-notifications',
+	stage: 'PROD',
+	app: 'report',
+	withoutTags: true,
+};
+new Report(app, 'Report-PROD', reportPropsProd);
