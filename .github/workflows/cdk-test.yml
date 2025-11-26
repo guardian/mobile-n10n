@@ -2,7 +2,7 @@ name: cdk test
 
 defaults:
   run:
-    working-directory: notificationworkerlambda/cdk
+    working-directory: cdk
 
 on:
   pull_request:
@@ -25,7 +25,7 @@ jobs:
         with:
           node-version-file: ".nvmrc"
           cache: "yarn"
-          cache-dependency-path: notificationworkerlambda/cdk/yarn.lock
+          cache-dependency-path: cdk/yarn.lock
 
       - name: Install
         run: yarn install --frozen-lockfile

@@ -75,7 +75,7 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
 
       - name: CDK synth (worker lambda cdk directory)
-        working-directory: notificationworkerlambda/cdk
+        working-directory: cdk
         run: |
           yarn install
           yarn test
@@ -101,8 +101,8 @@ jobs:
             mobile-notifications-harvester-cfn:
               - notificationworkerlambda/harvester-cfn.yaml
             mobile-notifications-workers-cfn:
-              - notificationworkerlambda/cdk/cdk.out/SenderWorkerStack-CODE.template.json
-              - notificationworkerlambda/cdk/cdk.out/SenderWorkerStack-PROD.template.json
+              - cdk/cdk.out/SenderWorkerStack-CODE.template.json
+              - cdk/cdk.out/SenderWorkerStack-PROD.template.json
             mobile-notifications-topic-counter-cfn:
               - notificationworkerlambda/topic-counter-cfn.yaml
             mobile-notifications-registration-cleaning-worker-cfn:

@@ -3,6 +3,7 @@ import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App } from 'aws-cdk-lib';
 import { Registration } from '../lib/registration';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
+import { SenderWorkerStack } from '../lib/senderworker';
 import { SloMonitoring } from '../lib/slo-monitoring';
 
 const app = new App();
@@ -51,5 +52,16 @@ new SloMonitoring(app, 'SloMonitor-CODE', {
 
 new SloMonitoring(app, 'SloMonitor-PROD', {
 	stack: 'mobile-notifications',
+	stage: 'PROD',
+});
+
+new SenderWorkerStack(app, 'SenderWorkerStack-CODE', {
+	stack: 'mobile-notifications-workers',
+	stage: 'CODE',
+  cloudFormationStackName: 'notification-sender-workers-cdk-CODE'
+});
+
+new SenderWorkerStack(app, 'SenderWorkerStack-PROD', {
+	stack: 'mobile-notifications-workers',
 	stage: 'PROD',
 });
