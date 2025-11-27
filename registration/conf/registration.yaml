@@ -143,6 +143,8 @@ Resources:
       - !GetAtt LoadBalancerToPrivateASG.DNSName
       TTL: 60
       Type: CNAME
+
+  # TODO remove this resource as it's redundant following adoption of https://github.com/guardian/ssm-scala.
   GuardianAccessSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -290,7 +292,6 @@ Resources:
       InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType]
       SecurityGroups:
       - !Ref InstanceSecurityGroup
-      - !Ref GuardianAccessSecurityGroup
       - !Ref VPCSecurityGroup
       MetadataOptions:
         HttpTokens: required

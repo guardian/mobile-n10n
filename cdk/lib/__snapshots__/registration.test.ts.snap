@@ -815,9 +815,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "Ref": "InstanceSecurityGroup",
           },
           {
-            "Ref": "GuardianAccessSecurityGroup",
-          },
-          {
             "Ref": "VPCSecurityGroup",
           },
         ],
@@ -1690,9 +1687,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "SecurityGroups": [
           {
             "Ref": "InstanceSecurityGroup",
-          },
-          {
-            "Ref": "GuardianAccessSecurityGroup",
           },
           {
             "Ref": "VPCSecurityGroup",
