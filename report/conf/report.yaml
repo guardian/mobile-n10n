@@ -36,9 +36,6 @@ Parameters:
     - CODE
     - PROD
     Description: Environment name
-  VPCSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
-    Description: The default security group of the VPC
   VpcId:
     Type: AWS::EC2::VPC::Id
     Description: The VPC
@@ -268,7 +265,6 @@ Resources:
       InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType]
       SecurityGroups:
       - !Ref InstanceSecurityGroup
-      - !Ref VPCSecurityGroup
       MetadataOptions:
         HttpTokens: required
       UserData:
