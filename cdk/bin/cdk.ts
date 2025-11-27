@@ -58,7 +58,7 @@ new SloMonitoring(app, 'SloMonitor-PROD', {
 new SenderWorkerStack(app, 'SenderWorkerStack-CODE', {
 	stack: 'mobile-notifications-workers',
 	stage: 'CODE',
-  cloudFormationStackName: 'notification-sender-workers-cdk-CODE'
+	cloudFormationStackName: 'notification-sender-workers-cdk-CODE',
 });
 
 new SenderWorkerStack(app, 'SenderWorkerStack-PROD', {
