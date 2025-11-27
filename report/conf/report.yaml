@@ -77,22 +77,6 @@ Resources:
       TTL: 60
       Type: CNAME
 
-  # TODO remove this resource as it's redundant following adoption of https://github.com/guardian/ssm-scala.
-  GuardianAccessSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: SSH and management server access from Guardian network
-      SecurityGroupIngress:
-      - SourceSecurityGroupId: !Ref VPCSecurityGroup
-        FromPort: 22
-        IpProtocol: tcp
-        ToPort: 22
-      - SourceSecurityGroupId: !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
-        FromPort: 22
-        IpProtocol: tcp
-        ToPort: 22
-      VpcId: !Ref VpcId
-
   HighCpuAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
