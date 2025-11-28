@@ -3025,9 +3025,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-cdk-lib@npm:2.214.0":
-  version: 2.214.0
-  resolution: "aws-cdk-lib@npm:2.214.0"
+"aws-cdk-lib@npm:2.219.0":
+  version: 2.219.0
+  resolution: "aws-cdk-lib@npm:2.219.0"
   dependencies:
     "@aws-cdk/asset-awscli-v1": "npm:2.2.242"
     "@aws-cdk/asset-node-proxy-agent-v6": "npm:^2.1.0"
@@ -3045,13 +3045,13 @@ __metadata:
     yaml: "npm:1.10.2"
   peerDependencies:
     constructs: ^10.0.0
-  checksum: 10c0/5f0c14a8a5cab4cdf303db1d280e74fea3deae74f7ab9126da0efbe9b11700e8dff02c7314787df2f8dd517165fc287fecd2350c510913d5ff6ac94acb8753a5
+  checksum: 10c0/05cdd0da87475bedfdae40ab8772110c89af5c278e846e117a98db29df4b169c78f67eb2467e36a3a827531fc38124de6da95f4365f185c7c1419e62ae31f8d2
   languageName: node
   linkType: hard
 
-"aws-cdk@npm:2.1029.1":
-  version: 2.1029.1
-  resolution: "aws-cdk@npm:2.1029.1"
+"aws-cdk@npm:2.1030.0":
+  version: 2.1030.0
+  resolution: "aws-cdk@npm:2.1030.0"
   dependencies:
     fsevents: "npm:2.3.2"
   dependenciesMeta:
@@ -3059,7 +3059,7 @@ __metadata:
       optional: true
   bin:
     cdk: bin/cdk
-  checksum: 10c0/c504d86cfe88bdb8f5966b758920cd8c6b1def5b0c878b4c5d5b7a0501662d5f45c1948c226ab308575d3afe5b8e3e77233dc84870e155522fabed4771a99f93
+  checksum: 10c0/1e95edb1fe33da76e018e574049e79a6e9501bb9753090dad5b8cc5980e5bed9c214bc70ed8f0415603ddce36bf60c8443f5d9cfd75c8e497ae17323cc3842d1
   languageName: node
   linkType: hard
 
@@ -3342,8 +3342,8 @@ __metadata:
     "@guardian/tsconfig": "npm:1.0.1"
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:24.10.1"
-    aws-cdk: "npm:2.1029.1"
-    aws-cdk-lib: "npm:2.214.0"
+    aws-cdk: "npm:2.1030.0"
+    aws-cdk-lib: "npm:2.219.0"
     constructs: "npm:^10.4.2"
     eslint: "npm:9.39.1"
     eslint-plugin-prettier: "npm:5.5.4"
