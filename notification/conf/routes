@@ -1,8 +1,6 @@
 GET         /healthcheck                        notification.controllers.Main.healthCheck
 
-# Used by guardian/facia-tool and guardian/mobile-notifications-content
-# See https://github.com/guardian/facia-tool/blob/main/app/updates/BreakingNewsUpdate.scala
-# See https://github.com/guardian/mobile-notifications-content/blob/main/src/main/scala/com/gu/mobile/content/notifications/lib/NotificationsApiClient.scala
+# Find consumers here: https://github.com/search?q=org%3Aguardian+%2Fpush%2Ftopic++NOT+is%3Aarchived+NOT+language%3AMarkdown&type=code
 POST        /push/topic                         notification.controllers.Main.pushTopics
 
 # Used by guardian/esd-miscellaneous-tools
