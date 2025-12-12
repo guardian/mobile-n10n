@@ -1,12 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Reporting for mobile notifications
 Mappings:
+ # Static values could be inlined. GuCDK will do this.
  Constants:
     App:
       Value: report
     Stack:
       Value: mobile-notifications
 
+ # These values do not vary by stage, so could be inlined.
  StageVariables:
     CODE:
       NotificationAlarmPeriod: 1200
@@ -36,9 +38,12 @@ Parameters:
     - CODE
     - PROD
     Description: Environment name
+
+  # TODO remove as not working as it implies
   VPCSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Description: The default security group of the VPC
+
   VpcId:
     Type: AWS::EC2::VPC::Id
     Description: The VPC
@@ -48,24 +53,36 @@ Parameters:
   PrivateSubnets:
     Type: List<AWS::EC2::Subnet::Id>
     Description: The private subnets of the VPC for the autoscaling group
+
+  # Could be inlined. GuCDK will do this.
   ASGMinSize:
     Type: Number
     Description: Minimum size of the autoscaling group
+  # Could be inlined. GuCDK will do this.
   ASGMaxSize:
     Type: Number
     Description: Maximum size of the autoscaling group
+
+  # TODO read from SSM Parameters. GuCDK will do this.
   DistBucket:
     Type: String
     Description: The name of the s3 bucket containing the server artifact
+
+  # TODO provision this certificate within this stack
   AppCertArn:
     Type: String
     Description: ACM Certificate for app use
+
+  # TODO Stage aware value could be moved to StageVariables. GuCDK will simplify this.
   HostedZone:
     Type: String
     Description:  The HostedZone, should contain the trailing dot zone.example.com.
+
+  # TODO Stage aware value could be moved to StageVariables. GuCDK will simplify this.
   DomainName:
     Type: String
     Description: The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.
+
 Resources:
   DnsRecord:
     Type: AWS::Route53::RecordSet
@@ -77,6 +94,10 @@ Resources:
       TTL: 60
       Type: CNAME
 
+  # Ophan is the only consumer of this service, does it make so many requests that we have to horizontally scale?
+  # The ASG does not have metrics enabled, so cannot see scaling activity.
+  # Alarm history is kept for 30 days - it hasn't fired.
+  # TODO check with MSS and remove
   HighCpuAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -96,6 +117,9 @@ Resources:
       Statistic: Average
       Threshold: !FindInMap [ StageVariables, !Ref Stage, ScalingUpThreshold ]
 
+  # Ophan is the only consumer of this service, does it make so many requests that we have to horizontally scale?
+  # The ASG does not have metrics enabled, so cannot see scaling activity.
+  # Alarm history is kept for 30 days - it hasn't fired.
   LowCpuAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -157,11 +181,16 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Open up HTTP access to load balancer
+
+      # TODO
+      #  - restrict this to the ASG?
+      #  - Check what egress rules CDK would add to the load balancer
       SecurityGroupEgress:
       - CidrIp: 0.0.0.0/0
         FromPort: 9000
         IpProtocol: tcp
         ToPort: 9000
+
       SecurityGroupIngress:
       - CidrIp: 0.0.0.0/0
         FromPort: 443
@@ -192,22 +221,29 @@ Resources:
       - PolicyName: root
         PolicyDocument:
           Statement:
+          # To download the application artifact. GuCDK will tightly scope this.
           - Action: s3:GetObject
             Effect: Allow
             Resource: !Sub arn:aws:s3:::${DistBucket}/*
+
           - Action: ec2:DescribeTags
             Effect: Allow
             Resource: '*'
+
+          # TODO work out how these permissions are used by the application
           - Action:
             - cloudwatch:*
             - logs:*
             Effect: Allow
             Resource: '*'
+
           - Action:
               - autoscaling:DescribeAutoScalingInstances
               - autoscaling:DescribeAutoScalingGroups
             Resource: '*'
             Effect: Allow
+
+          # To ship logs to Central ELK
           - Effect: Allow
             Action:
             - kinesis:PutRecord
@@ -217,11 +253,13 @@ Resources:
       - PolicyName: dynamo
         PolicyDocument:
           Statement:
-          - Action: dynamodb:*
+          - Action: dynamodb:* # TODO tightly scope this (it allows for deletion 😱)
             Effect: Allow
             Resource:
             - !Sub arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-reports-${Stage}
             - !Sub arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/mobile-notifications-reports-${Stage}/index/*
+
+      # To read config from SSM
       - PolicyName: conf
         PolicyDocument:
           Statement:
@@ -243,11 +281,15 @@ Resources:
       - !Ref LoadBalancerToPrivateASG
       MaxSize: !Ref ASGMaxSize
       MinSize: !Ref ASGMinSize
+
+      # These currently go to the MSS team. GuCDK doesn't add this by default.
+      # TODO check if the MSS team use the notifications. If they don't, remove this bit?
       NotificationConfiguration:
         NotificationTypes:
         - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
         - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
         TopicARN: !Sub arn:aws:sns:eu-west-1:${AWS::AccountId}:AutoscalingNotifications${Stage}
+
       Tags:
       - Key: Stage
         PropagateAtLaunch: true
@@ -268,10 +310,15 @@ Resources:
       InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType]
       SecurityGroups:
       - !Ref InstanceSecurityGroup
+
+      # TODO remove this
       - !Ref VPCSecurityGroup
       MetadataOptions:
         HttpTokens: required
       UserData:
+
+        # TODO replace configure-aws-kinesis-agent with devx-logs?
+        # Log stream is stage aware.
         Fn::Base64:
            !Sub
             - |
@@ -281,6 +328,9 @@ Resources:
                 /opt/aws-kinesis-agent/configure-aws-kinesis-agent ${AWS::Region} mobile-log-aggregation-${Stage} /var/log/${App}/application.log
             - Stack: !FindInMap [Constants, Stack, Value]
               App: !FindInMap [Constants, App, Value]
+
+  # If we remove the AWS::CloudWatch::Alarm resources above, these can also be removed.
+  # TODO check with MSS and remove?
   ScaleDownPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
@@ -288,6 +338,9 @@ Resources:
       AutoScalingGroupName: !Ref PrivateReportAutoscalingGroup
       Cooldown: 3600
       ScalingAdjustment: -1
+
+  # If we remove the AWS::CloudWatch::Alarm resources above, these can also be removed.
+  # TODO check with MSS and remove?
   ScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
