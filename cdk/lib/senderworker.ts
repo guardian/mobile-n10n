@@ -238,7 +238,7 @@ class SenderWorker extends Construct {
 					alarmDescription: `Triggers if the ${id} sender lambda is not frequently invoked for non-breaking news notification in ${scope.stage}.`,
 					comparisonOperator:
 						ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
-					evaluationPeriods: 4,
+					evaluationPeriods: 8, // 2 hours
 					threshold: 0,
 					metric: nonBreakingCountMetric,
 					treatMissingData: TreatMissingData.BREACHING,
