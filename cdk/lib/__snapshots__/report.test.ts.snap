@@ -17,18 +17,10 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "CODE": {
         "InstanceType": "t4g.micro",
         "NotificationAlarmPeriod": 1200,
-        "ScalingDownPeriod": 300,
-        "ScalingDownThreshold": 15,
-        "ScalingUpPeriod": 300,
-        "ScalingUpThreshold": 20,
       },
       "PROD": {
         "InstanceType": "t4g.micro",
         "NotificationAlarmPeriod": 1200,
-        "ScalingDownPeriod": 300,
-        "ScalingDownThreshold": 15,
-        "ScalingUpPeriod": 300,
-        "ScalingUpThreshold": 20,
       },
     },
   },
@@ -115,94 +107,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         "Type": "CNAME",
       },
       "Type": "AWS::Route53::RecordSet",
-    },
-    "HighCpuAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "ScaleUpPolicy",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": [
-            "Scale-Up if cpu is greater than \${Threshold}% over last \${Period} seconds",
-            {
-              "Period": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "ScalingUpPeriod",
-                ],
-              },
-              "Threshold": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "ScalingUpThreshold",
-                ],
-              },
-            },
-          ],
-        },
-        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": {
-              "Ref": "PrivateReportAutoscalingGroup",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Period": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "ScalingUpPeriod",
-          ],
-        },
-        "Statistic": "Average",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "report",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "Threshold": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "ScalingUpThreshold",
-          ],
-        },
-      },
-      "Type": "AWS::CloudWatch::Alarm",
     },
     "InstanceSecurityGroup": {
       "Properties": {
@@ -358,94 +262,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         ],
       },
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
-    },
-    "LowCpuAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "ScaleDownPolicy",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": [
-            "Scale-Down if cpu is lower than \${Threshold}% over last \${Period} seconds",
-            {
-              "Period": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "ScalingDownPeriod",
-                ],
-              },
-              "Threshold": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "ScalingDownThreshold",
-                ],
-              },
-            },
-          ],
-        },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": {
-              "Ref": "PrivateReportAutoscalingGroup",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Period": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "ScalingDownPeriod",
-          ],
-        },
-        "Statistic": "Average",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "report",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "Threshold": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "ScalingDownThreshold",
-          ],
-        },
-      },
-      "Type": "AWS::CloudWatch::Alarm",
     },
     "NotificationsReportInstanceProfile": {
       "Properties": {
@@ -719,28 +535,6 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
         },
       },
       "Type": "AWS::AutoScaling::LaunchConfiguration",
-    },
-    "ScaleDownPolicy": {
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": {
-          "Ref": "PrivateReportAutoscalingGroup",
-        },
-        "Cooldown": "3600",
-        "ScalingAdjustment": -1,
-      },
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-    },
-    "ScaleUpPolicy": {
-      "Properties": {
-        "AdjustmentType": "PercentChangeInCapacity",
-        "AutoScalingGroupName": {
-          "Ref": "PrivateReportAutoscalingGroup",
-        },
-        "Cooldown": "300",
-        "ScalingAdjustment": 100,
-      },
-      "Type": "AWS::AutoScaling::ScalingPolicy",
     },
   },
 }
@@ -763,18 +557,10 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "CODE": {
         "InstanceType": "t4g.micro",
         "NotificationAlarmPeriod": 1200,
-        "ScalingDownPeriod": 300,
-        "ScalingDownThreshold": 15,
-        "ScalingUpPeriod": 300,
-        "ScalingUpThreshold": 20,
       },
       "PROD": {
         "InstanceType": "t4g.micro",
         "NotificationAlarmPeriod": 1200,
-        "ScalingDownPeriod": 300,
-        "ScalingDownThreshold": 15,
-        "ScalingUpPeriod": 300,
-        "ScalingUpThreshold": 20,
       },
     },
   },
@@ -861,94 +647,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         "Type": "CNAME",
       },
       "Type": "AWS::Route53::RecordSet",
-    },
-    "HighCpuAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "ScaleUpPolicy",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": [
-            "Scale-Up if cpu is greater than \${Threshold}% over last \${Period} seconds",
-            {
-              "Period": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "ScalingUpPeriod",
-                ],
-              },
-              "Threshold": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "ScalingUpThreshold",
-                ],
-              },
-            },
-          ],
-        },
-        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": {
-              "Ref": "PrivateReportAutoscalingGroup",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Period": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "ScalingUpPeriod",
-          ],
-        },
-        "Statistic": "Average",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "report",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "Threshold": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "ScalingUpThreshold",
-          ],
-        },
-      },
-      "Type": "AWS::CloudWatch::Alarm",
     },
     "InstanceSecurityGroup": {
       "Properties": {
@@ -1104,94 +802,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         ],
       },
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
-    },
-    "LowCpuAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "ScaleDownPolicy",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": [
-            "Scale-Down if cpu is lower than \${Threshold}% over last \${Period} seconds",
-            {
-              "Period": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "ScalingDownPeriod",
-                ],
-              },
-              "Threshold": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "ScalingDownThreshold",
-                ],
-              },
-            },
-          ],
-        },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": {
-              "Ref": "PrivateReportAutoscalingGroup",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Period": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "ScalingDownPeriod",
-          ],
-        },
-        "Statistic": "Average",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "report",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "Threshold": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "ScalingDownThreshold",
-          ],
-        },
-      },
-      "Type": "AWS::CloudWatch::Alarm",
     },
     "NotificationsReportInstanceProfile": {
       "Properties": {
@@ -1465,28 +1075,6 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
         },
       },
       "Type": "AWS::AutoScaling::LaunchConfiguration",
-    },
-    "ScaleDownPolicy": {
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": {
-          "Ref": "PrivateReportAutoscalingGroup",
-        },
-        "Cooldown": "3600",
-        "ScalingAdjustment": -1,
-      },
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-    },
-    "ScaleUpPolicy": {
-      "Properties": {
-        "AdjustmentType": "PercentChangeInCapacity",
-        "AutoScalingGroupName": {
-          "Ref": "PrivateReportAutoscalingGroup",
-        },
-        "Cooldown": "300",
-        "ScalingAdjustment": 100,
-      },
-      "Type": "AWS::AutoScaling::ScalingPolicy",
     },
   },
 }
