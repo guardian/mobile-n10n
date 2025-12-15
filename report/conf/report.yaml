@@ -10,17 +10,9 @@ Mappings:
  StageVariables:
     CODE:
       NotificationAlarmPeriod: 1200
-      ScalingUpPeriod: 300
-      ScalingUpThreshold: 20
-      ScalingDownPeriod: 300
-      ScalingDownThreshold: 15
       InstanceType: "t4g.micro"
     PROD:
       NotificationAlarmPeriod: 1200
-      ScalingUpPeriod: 300
-      ScalingUpThreshold: 20
-      ScalingDownPeriod: 300
-      ScalingDownThreshold: 15
       InstanceType: "t4g.micro"
 Outputs:
   LoadBalancerUrl:
@@ -76,44 +68,6 @@ Resources:
       - !GetAtt LoadBalancerToPrivateASG.DNSName
       TTL: 60
       Type: CNAME
-
-  HighCpuAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions: [!Ref ScaleUpPolicy]
-      AlarmDescription: !Sub
-      - Scale-Up if cpu is greater than ${Threshold}% over last ${Period} seconds
-      - Threshold: !FindInMap [ StageVariables, !Ref Stage, ScalingUpThreshold ]
-        Period: !FindInMap [ StageVariables, !Ref Stage, ScalingUpPeriod ]
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      Dimensions:
-      - Name: AutoScalingGroupName
-        Value: !Ref PrivateReportAutoscalingGroup
-      EvaluationPeriods: 1
-      MetricName: CPUUtilization
-      Namespace: AWS/EC2
-      Period: !FindInMap [ StageVariables, !Ref Stage, ScalingUpPeriod ]
-      Statistic: Average
-      Threshold: !FindInMap [ StageVariables, !Ref Stage, ScalingUpThreshold ]
-
-  LowCpuAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions: [!Ref ScaleDownPolicy]
-      AlarmDescription: !Sub
-      - Scale-Down if cpu is lower than ${Threshold}% over last ${Period} seconds
-      - Threshold: !FindInMap [ StageVariables, !Ref Stage, ScalingDownThreshold ]
-        Period: !FindInMap [ StageVariables, !Ref Stage, ScalingDownPeriod ]
-      ComparisonOperator: LessThanThreshold
-      Dimensions:
-      - Name: AutoScalingGroupName
-        Value: !Ref PrivateReportAutoscalingGroup
-      EvaluationPeriods: 1
-      MetricName: CPUUtilization
-      Namespace: AWS/EC2
-      Period: !FindInMap [ StageVariables, !Ref Stage, ScalingDownPeriod ]
-      Statistic: Average
-      Threshold: !FindInMap [ StageVariables, !Ref Stage, ScalingDownThreshold ]
 
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -281,18 +235,3 @@ Resources:
                 /opt/aws-kinesis-agent/configure-aws-kinesis-agent ${AWS::Region} mobile-log-aggregation-${Stage} /var/log/${App}/application.log
             - Stack: !FindInMap [Constants, Stack, Value]
               App: !FindInMap [Constants, App, Value]
-  ScaleDownPolicy:
-    Type: AWS::AutoScaling::ScalingPolicy
-    Properties:
-      AdjustmentType: ChangeInCapacity
-      AutoScalingGroupName: !Ref PrivateReportAutoscalingGroup
-      Cooldown: 3600
-      ScalingAdjustment: -1
-  ScaleUpPolicy:
-    Type: AWS::AutoScaling::ScalingPolicy
-    Properties:
-      AdjustmentType: PercentChangeInCapacity
-      AutoScalingGroupName: !Ref PrivateReportAutoscalingGroup
-      Cooldown: 300
-      ScalingAdjustment: 100
-
