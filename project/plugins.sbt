@@ -26,7 +26,7 @@ addSbtPlugin("ch.epfl.scala" % "sbt-version-policy" % "3.2.1")
 /*
    Without setting VersionScheme.Always here on `scala-xml`, sbt 1.8.0 will raise fatal 'version conflict' errors when
    used with sbt plugins like `sbt-native-packager`, which currently use sort-of-incompatible versions of the `scala-xml`
-   library. sbt 1.8.0 has upgraded to Scala 2.12.20, which has itself upgraded to `scala-xml` 2.1.0
+   library. sbt 1.8.0 has upgraded to Scala 2.12.21, which has itself upgraded to `scala-xml` 2.1.0
    (see https://github.com/sbt/sbt/releases/tag/v1.8.0), but `sbt-native-packager` is currently using `scala-xml` 1.1.1,
     and the `scala-xml` library declares that it uses specifically 'early-semver' version compatibility (see
     https://www.scala-lang.org/blog/2021/02/16/preventing-version-conflicts-with-versionscheme.html#versionscheme-librarydependencyschemes-and-sbt-150 ),
