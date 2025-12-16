@@ -69,16 +69,28 @@ new SenderWorkerStack(app, 'SenderWorkerStack-PROD', {
 
 export const reportPropsCode: ReportProps = {
 	cloudFormationStackName: 'mobile-notifications-report-CODE',
+	env: { region: 'eu-west-1' },
 	stack: 'mobile-notifications',
 	stage: 'CODE',
 	app: 'report',
+	domainName: 'report.notifications-aws.code.dev-guardianapis.com.',
+	instanceMetricGranularity: '5Minute',
+	hostedZoneId: 'Z1KWCH1OWGPZH9',
+	loggingStreamParameterName: '/account/services/logging.stream.name.code',
+	minAsgSize: 1,
 };
 new Report(app, 'Report-CODE', reportPropsCode);
 
 export const reportPropsProd: ReportProps = {
 	cloudFormationStackName: 'mobile-notifications-report-PROD',
+	env: { region: 'eu-west-1' },
 	stack: 'mobile-notifications',
 	stage: 'PROD',
 	app: 'report',
+	domainName: 'report.notifications-aws.guardianapis.com.',
+	hostedZoneId: 'Z295WGPL9FP7J9',
+	instanceMetricGranularity: '1Minute',
+	loggingStreamParameterName: '/account/services/logging.stream.name',
+	minAsgSize: 3,
 };
 new Report(app, 'Report-PROD', reportPropsProd);

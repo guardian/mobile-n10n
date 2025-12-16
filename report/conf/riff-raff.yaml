@@ -6,15 +6,17 @@ deployments:
     app: report
     parameters:
       amiEncrypted: true
-      amiTags:
-        Recipe: mobile-java11-jammy-ARM
-        AmigoStage: PROD
+      amiParametersToTags:
+        AMIReport:
+          Recipe: mobile-java11-jammy-ARM
+          AmigoStage: PROD
       templateStagePaths:
         CODE: Report-CODE.template.json
         PROD: Report-PROD.template.json
   report:
     type: autoscaling
     parameters:
+      asgMigrationInProgress: true
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
     dependencies: [report-cfn]
