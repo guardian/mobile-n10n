@@ -15,8 +15,9 @@ import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 
 export interface ReportProps extends GuStackProps {
-	domainName: string;
-	hostedZoneId: string;
+	domainName:
+		| 'report.notifications.guardianapis.com'
+		| 'report.notifications.code.dev-guardianapis.com';
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	loggingStreamParameterName:
 		| '/account/services/logging.stream.name'
@@ -42,7 +43,6 @@ export class Report extends GuStack {
 			app,
 			certificateProps: {
 				domainName: props.domainName,
-				hostedZoneId: props.hostedZoneId,
 			},
 			instanceMetricGranularity: props.instanceMetricGranularity,
 			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.MICRO),

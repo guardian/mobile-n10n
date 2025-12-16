@@ -59,6 +59,14 @@ Parameters:
     Type: String
     Description: The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.
 Resources:
+  # There is a CNAME in NS1 which is pointing at this record, so we have
+  #   report.notifications.code.dev-guardianapis.com (NS1) >
+  #   report.notifications-aws.code.dev-guardianapis.com (i.e. this one; defined in Route53) >
+  #   mobile-no-loadbala-oy9k2af3i5g8-1565189307.eu-west-1.elb.amazonaws.com (The AWS ELB DNS name)
+  # As part of the GuCDK migration I think we should be able to drop the middle record entirely and use GuCname to point
+  # the NS1 record (report.notifications.code.dev-guardianapis.com) straight at the new load balancer's DNS name?
+  # There is no CDN involved here, so the load balancer certificate is for 'report.notifications.code.dev-guardianapis.com'
+  # anyway; attempting to connect to 'report.notifications-aws.code.dev-guardianapis.com' results in a privacy/cert error.
   DnsRecord:
     Type: AWS::Route53::RecordSet
     Properties:

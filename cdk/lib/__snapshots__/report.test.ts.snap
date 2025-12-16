@@ -237,13 +237,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
     "CertificateReportE388917B": {
       "DeletionPolicy": "Retain",
       "Properties": {
-        "DomainName": "report.notifications-aws.code.dev-guardianapis.com.",
-        "DomainValidationOptions": [
-          {
-            "DomainName": "report.notifications-aws.code.dev-guardianapis.com.",
-            "HostedZoneId": "Z1KWCH1OWGPZH9",
-          },
-        ],
+        "DomainName": "report.notifications.code.dev-guardianapis.com",
         "Tags": [
           {
             "Key": "App",
@@ -1684,13 +1678,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
     "CertificateReportE388917B": {
       "DeletionPolicy": "Retain",
       "Properties": {
-        "DomainName": "report.notifications-aws.guardianapis.com.",
-        "DomainValidationOptions": [
-          {
-            "DomainName": "report.notifications-aws.guardianapis.com.",
-            "HostedZoneId": "Z295WGPL9FP7J9",
-          },
-        ],
+        "DomainName": "report.notifications.guardianapis.com",
         "Tags": [
           {
             "Key": "App",
