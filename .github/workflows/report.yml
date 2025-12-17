@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - report/**
+      - cdk/**
       - common/**
       - commoneventconsumer/**
       - commontest/**
