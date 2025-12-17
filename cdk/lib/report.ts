@@ -73,8 +73,8 @@ export class Report extends GuStack {
 			scaling: { minimumInstances: props.minAsgSize },
 			userData: {
 				distributable: {
-					fileName: `${app}-_1.0-latest_all.deb`,
-					executionStatement: `dpkg -i ${app}-_1.0-latest_all.deb`,
+					fileName: `${app}_1.0-latest_all.deb`,
+					executionStatement: `dpkg -i /report/${app}_1.0-latest_all.deb`,
 				},
 			},
 		});

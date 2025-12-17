@@ -1380,13 +1380,13 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
                 "",
                 [
                   "#!/bin/bash
-mkdir -p $(dirname '/report/report-_1.0-latest_all.deb')
+mkdir -p $(dirname '/report/report_1.0-latest_all.deb')
 aws s3 cp 's3://",
                   {
                     "Ref": "DistributionBucketName",
                   },
-                  "/mobile-notifications/CODE/report/report-_1.0-latest_all.deb' '/report/report-_1.0-latest_all.deb'
-dpkg -i report-_1.0-latest_all.deb
+                  "/mobile-notifications/CODE/report/report_1.0-latest_all.deb' '/report/report_1.0-latest_all.deb'
+dpkg -i /report/report_1.0-latest_all.deb
 /opt/aws-kinesis-agent/configure-aws-kinesis-agent eu-west-1 mobile-log-aggregation-CODE /var/log/report/application.log",
                 ],
               ],
@@ -2821,13 +2821,13 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
                 "",
                 [
                   "#!/bin/bash
-mkdir -p $(dirname '/report/report-_1.0-latest_all.deb')
+mkdir -p $(dirname '/report/report_1.0-latest_all.deb')
 aws s3 cp 's3://",
                   {
                     "Ref": "DistributionBucketName",
                   },
-                  "/mobile-notifications/PROD/report/report-_1.0-latest_all.deb' '/report/report-_1.0-latest_all.deb'
-dpkg -i report-_1.0-latest_all.deb
+                  "/mobile-notifications/PROD/report/report_1.0-latest_all.deb' '/report/report_1.0-latest_all.deb'
+dpkg -i /report/report_1.0-latest_all.deb
 /opt/aws-kinesis-agent/configure-aws-kinesis-agent eu-west-1 mobile-log-aggregation-PROD /var/log/report/application.log",
                 ],
               ],
