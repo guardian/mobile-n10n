@@ -13,6 +13,7 @@ import { Duration } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
+import { adjustVpcParameters } from './vpc';
 
 export interface ReportProps extends GuStackProps {
 	domainName:
@@ -106,27 +107,7 @@ export class Report extends GuStack {
 		// Once the YAML template has been removed we should be able to drop this override
 		vpcParameter.overrideLogicalId('GuCdkVpcId');
 
-		// https://github.com/guardian/aws-account-setup/blob/67a516b65e2e151d69687fa61a8a1aa914e8b7c0/packages/cdk/lib/__snapshots__/aws-account-setup.test.ts.snap#L27280-L27327
-		const vpcParameterName = '/account/vpc/notifications/id';
-		const privateSubnetsParameterName =
-			'/account/vpc/notifications/subnets/private';
-		const publicSubnetsParameterName =
-			'/account/vpc/notifications/subnets/public';
-
-		vpcParameter.default = vpcParameterName;
-		vpcParameter.allowedValues = [vpcParameterName];
-
-		const vpcSubnetsPrivate = this.parameters['reportPrivateSubnets'];
-		if (vpcSubnetsPrivate) {
-			vpcSubnetsPrivate.default = privateSubnetsParameterName;
-			vpcSubnetsPrivate.allowedValues = [privateSubnetsParameterName];
-		}
-
-		const vpcSubnetsPublic = this.parameters['reportPublicSubnets'];
-		if (vpcSubnetsPublic) {
-			vpcSubnetsPublic.default = publicSubnetsParameterName;
-			vpcSubnetsPublic.allowedValues = [publicSubnetsParameterName];
-		}
+		adjustVpcParameters(this);
 
 		// In the Mobile account there are separate artifact buckets for different groups of applications, so we can't use
 		// the account-wide default
