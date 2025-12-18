@@ -3,7 +3,6 @@ import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuVpcParameter } from '@guardian/cdk/lib/constructs/core';
 import { GuLoggingStreamNameParameter } from '@guardian/cdk/lib/constructs/core';
-import { GuDistributionBucketParameter } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
@@ -11,6 +10,7 @@ import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
+import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
 export interface ReportProps extends GuStackProps {
 	domainName:
@@ -94,34 +94,7 @@ export class Report extends GuStack {
 		// Once the YAML template has been removed we should be able to drop this override
 		vpcParameter.overrideLogicalId('GuCdkVpcId');
 
-		// https://github.com/guardian/aws-account-setup/blob/67a516b65e2e151d69687fa61a8a1aa914e8b7c0/packages/cdk/lib/__snapshots__/aws-account-setup.test.ts.snap#L27280-L27327
-		const vpcParameterName = '/account/vpc/notifications/id';
-		const privateSubnetsParameterName =
-			'/account/vpc/notifications/subnets/private';
-		const publicSubnetsParameterName =
-			'/account/vpc/notifications/subnets/public';
-
-		vpcParameter.default = vpcParameterName;
-		vpcParameter.allowedValues = [vpcParameterName];
-
-		const vpcSubnetsPrivate = this.parameters['reportPrivateSubnets'];
-		if (vpcSubnetsPrivate) {
-			vpcSubnetsPrivate.default = privateSubnetsParameterName;
-			vpcSubnetsPrivate.allowedValues = [privateSubnetsParameterName];
-		}
-
-		const vpcSubnetsPublic = this.parameters['reportPublicSubnets'];
-		if (vpcSubnetsPublic) {
-			vpcSubnetsPublic.default = publicSubnetsParameterName;
-			vpcSubnetsPublic.allowedValues = [publicSubnetsParameterName];
-		}
-
-		// In the Mobile account there are separate artifact buckets for different groups of applications, so we can't use
-		// the account-wide default
-		const distBucketParameterName = '/account/services/artifact.bucket.n10n';
-		const distBucketParameter = GuDistributionBucketParameter.getInstance(this);
-		distBucketParameter.allowedValues = [distBucketParameterName];
-		distBucketParameter.default = distBucketParameterName;
+		adjustCloudformationParameters(this);
 
 		// In the Mobile account there are separate Kinesis streams for CODE and PROD, so we can't use the account-wide
 		// default
