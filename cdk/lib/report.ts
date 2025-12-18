@@ -77,7 +77,21 @@ export class Report extends GuStack {
 					executionStatement: `dpkg -i /report/${app}_1.0-latest_all.deb`,
 				},
 			},
+			// Match existing healthcheck settings for now
+			healthcheck: {
+				healthyThresholdCount: 2,
+				interval: Duration.seconds(30), // This seems unusually high - the default is 10s
+				timeout: Duration.seconds(10), // The default is 5s
+				unhealthyThresholdCount: 10, // This also seems unusually high - the default is 2
+			},
 		});
+
+		//TODO check if this customisation is really necessary (it has been copied across from
+		// the legacy infrastructure. The 30s healthcheck interval (see above) is probably part
+		// of the problem here.
+		const cfnAsg = playApp.autoScalingGroup.node
+			.defaultChild as CfnAutoScalingGroup;
+		cfnAsg.healthCheckGracePeriod = Duration.seconds(400).toSeconds();
 
 		//TODO replace configure-aws-kinesis-agent with devx-logs?
 		playApp.autoScalingGroup.userData.addCommands(
@@ -90,11 +104,6 @@ export class Report extends GuStack {
 
 		// This is needed to dual-stack; it can be removed once the legacy infrastructure is cleaned up
 		Tags.of(playApp.autoScalingGroup).add('gu:riffraff:new-asg', 'true');
-
-		//TODO check if this customisation is really necessary (copied across from YAML for now)
-		const cfnAsg = playApp.autoScalingGroup.node
-			.defaultChild as CfnAutoScalingGroup;
-		cfnAsg.healthCheckGracePeriod = Duration.seconds(400).toSeconds();
 
 		// In the Mobile account there are separate artifact buckets for different groups of applications, so we can't use
 		// the account-wide default

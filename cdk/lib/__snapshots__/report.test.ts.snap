@@ -1234,11 +1234,11 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
     },
     "TargetGroupReport53648E3B": {
       "Properties": {
-        "HealthCheckIntervalSeconds": 10,
+        "HealthCheckIntervalSeconds": 30,
         "HealthCheckPath": "/healthcheck",
         "HealthCheckProtocol": "HTTP",
-        "HealthCheckTimeoutSeconds": 5,
-        "HealthyThresholdCount": 5,
+        "HealthCheckTimeoutSeconds": 10,
+        "HealthyThresholdCount": 2,
         "Port": 9000,
         "Protocol": "HTTP",
         "Tags": [
@@ -1274,7 +1274,7 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
           },
         ],
         "TargetType": "instance",
-        "UnhealthyThresholdCount": 2,
+        "UnhealthyThresholdCount": 10,
         "VpcId": {
           "Ref": "GuCdkVpcId",
         },
@@ -2675,11 +2675,11 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
     },
     "TargetGroupReport53648E3B": {
       "Properties": {
-        "HealthCheckIntervalSeconds": 10,
+        "HealthCheckIntervalSeconds": 30,
         "HealthCheckPath": "/healthcheck",
         "HealthCheckProtocol": "HTTP",
-        "HealthCheckTimeoutSeconds": 5,
-        "HealthyThresholdCount": 5,
+        "HealthCheckTimeoutSeconds": 10,
+        "HealthyThresholdCount": 2,
         "Port": 9000,
         "Protocol": "HTTP",
         "Tags": [
@@ -2715,7 +2715,7 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
           },
         ],
         "TargetType": "instance",
-        "UnhealthyThresholdCount": 2,
+        "UnhealthyThresholdCount": 10,
         "VpcId": {
           "Ref": "GuCdkVpcId",
         },
