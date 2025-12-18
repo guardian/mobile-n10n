@@ -15,6 +15,7 @@ deployments:
   report:
     type: autoscaling
     parameters:
+      asgMigrationInProgress: true # Need this to pass the pre-flight validation checks
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
     dependencies: [report-cfn]
