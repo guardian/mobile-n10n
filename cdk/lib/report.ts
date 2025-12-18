@@ -19,10 +19,6 @@ export interface ReportProps extends GuStackProps {
 	domainName:
 		| 'report.notifications.guardianapis.com'
 		| 'report.notifications.code.dev-guardianapis.com';
-	// This maps to the DnsRecord resource in Route53; we can remove this complexity as part of the DNS switchover
-	intermediateCname:
-		| 'report.notifications-aws.guardianapis.com.'
-		| 'report.notifications-aws.code.dev-guardianapis.com.';
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	loggingStreamParameterName:
 		| '/account/services/logging.stream.name'
@@ -150,9 +146,7 @@ export class Report extends GuStack {
 		new GuCname(this, 'DnsRecordForReport', {
 			app,
 			domainName: props.domainName,
-			// For now we are still routing traffic via the intermediate CNAME, which points at the legacy ELB.
-			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
-			resourceRecord: props.intermediateCname,
+			resourceRecord: playApp.loadBalancer.loadBalancerDnsName,
 			ttl: Duration.seconds(60),
 		});
 	}
