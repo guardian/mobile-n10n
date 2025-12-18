@@ -6,6 +6,7 @@ import { GuVpcParameter } from '@guardian/cdk/lib/constructs/core';
 import { GuLoggingStreamNameParameter } from '@guardian/cdk/lib/constructs/core';
 import { GuDistributionBucketParameter } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
+import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
 import { Tags } from 'aws-cdk-lib';
@@ -18,6 +19,10 @@ export interface ReportProps extends GuStackProps {
 	domainName:
 		| 'report.notifications.guardianapis.com'
 		| 'report.notifications.code.dev-guardianapis.com';
+	// This maps to the DnsRecord resource in Route53; we can remove this complexity as part of the DNS switchover
+	intermediateCname:
+		| 'report.notifications-aws.guardianapis.com.'
+		| 'report.notifications-aws.code.dev-guardianapis.com.';
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	loggingStreamParameterName:
 		| '/account/services/logging.stream.name'
@@ -141,5 +146,14 @@ export class Report extends GuStack {
 			GuLoggingStreamNameParameter.getInstance(this);
 		loggingStreamParameter.allowedValues = [props.loggingStreamParameterName];
 		loggingStreamParameter.default = props.loggingStreamParameterName;
+
+		new GuCname(this, 'DnsRecordForReport', {
+			app,
+			domainName: props.domainName,
+			// For now we are still routing traffic via the intermediate CNAME, which points at the legacy ELB.
+			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
+			resourceRecord: props.intermediateCname,
+			ttl: Duration.seconds(3600),
+		});
 	}
 }
