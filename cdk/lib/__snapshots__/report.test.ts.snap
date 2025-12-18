@@ -110,7 +110,10 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "Type": "String",
     },
     "GuCdkVpcId": {
-      "Default": "/account/vpc/primary/id",
+      "AllowedValues": [
+        "/account/vpc/notifications/id",
+      ],
+      "Default": "/account/vpc/notifications/id",
       "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
@@ -151,12 +154,18 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "Type": "AWS::EC2::VPC::Id",
     },
     "reportPrivateSubnets": {
-      "Default": "/account/vpc/primary/subnets/private",
+      "AllowedValues": [
+        "/account/vpc/notifications/subnets/private",
+      ],
+      "Default": "/account/vpc/notifications/subnets/private",
       "Description": "A list of private subnets",
       "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
     },
     "reportPublicSubnets": {
-      "Default": "/account/vpc/primary/subnets/public",
+      "AllowedValues": [
+        "/account/vpc/notifications/subnets/public",
+      ],
+      "Default": "/account/vpc/notifications/subnets/public",
       "Description": "A list of public subnets",
       "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
     },
@@ -1551,7 +1560,10 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "Type": "String",
     },
     "GuCdkVpcId": {
-      "Default": "/account/vpc/primary/id",
+      "AllowedValues": [
+        "/account/vpc/notifications/id",
+      ],
+      "Default": "/account/vpc/notifications/id",
       "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
@@ -1592,12 +1604,18 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "Type": "AWS::EC2::VPC::Id",
     },
     "reportPrivateSubnets": {
-      "Default": "/account/vpc/primary/subnets/private",
+      "AllowedValues": [
+        "/account/vpc/notifications/subnets/private",
+      ],
+      "Default": "/account/vpc/notifications/subnets/private",
       "Description": "A list of private subnets",
       "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
     },
     "reportPublicSubnets": {
-      "Default": "/account/vpc/primary/subnets/public",
+      "AllowedValues": [
+        "/account/vpc/notifications/subnets/public",
+      ],
+      "Default": "/account/vpc/notifications/subnets/public",
       "Description": "A list of public subnets",
       "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
     },

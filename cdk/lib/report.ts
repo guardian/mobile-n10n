@@ -98,12 +98,35 @@ export class Report extends GuStack {
 			`/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${this.region} mobile-log-aggregation-${this.stage} /var/log/${app}/application.log`,
 		);
 
-		// This is necessary whilst dual-stacking because there is already a parameter called VpcId in the YAML template
-		// Once the YAML template has been removed we should be able to drop this override
-		GuVpcParameter.getInstance(this).overrideLogicalId('GuCdkVpcId');
-
 		// This is needed to dual-stack; it can be removed once the legacy infrastructure is cleaned up
 		Tags.of(playApp.autoScalingGroup).add('gu:riffraff:new-asg', 'true');
+
+		const vpcParameter = GuVpcParameter.getInstance(this);
+		// This is necessary whilst dual-stacking because there is already a parameter called VpcId in the YAML template
+		// Once the YAML template has been removed we should be able to drop this override
+		vpcParameter.overrideLogicalId('GuCdkVpcId');
+
+		// https://github.com/guardian/aws-account-setup/blob/67a516b65e2e151d69687fa61a8a1aa914e8b7c0/packages/cdk/lib/__snapshots__/aws-account-setup.test.ts.snap#L27280-L27327
+		const vpcParameterName = '/account/vpc/notifications/id';
+		const privateSubnetsParameterName =
+			'/account/vpc/notifications/subnets/private';
+		const publicSubnetsParameterName =
+			'/account/vpc/notifications/subnets/public';
+
+		vpcParameter.default = vpcParameterName;
+		vpcParameter.allowedValues = [vpcParameterName];
+
+		const vpcSubnetsPrivate = this.parameters['reportPrivateSubnets'];
+		if (vpcSubnetsPrivate) {
+			vpcSubnetsPrivate.default = privateSubnetsParameterName;
+			vpcSubnetsPrivate.allowedValues = [privateSubnetsParameterName];
+		}
+
+		const vpcSubnetsPublic = this.parameters['reportPublicSubnets'];
+		if (vpcSubnetsPublic) {
+			vpcSubnetsPublic.default = publicSubnetsParameterName;
+			vpcSubnetsPublic.allowedValues = [publicSubnetsParameterName];
+		}
 
 		// In the Mobile account there are separate artifact buckets for different groups of applications, so we can't use
 		// the account-wide default
