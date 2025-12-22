@@ -48,6 +48,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "GuAccessLoggingBucketParameter",
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
+      "GuCname",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -353,6 +354,18 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         "Type": "CNAME",
       },
       "Type": "AWS::Route53::RecordSet",
+    },
+    "DnsRecordForReport": {
+      "Properties": {
+        "Name": "report.notifications.code.dev-guardianapis.com",
+        "RecordType": "CNAME",
+        "ResourceRecords": [
+          "report.notifications-aws.code.dev-guardianapis.com.",
+        ],
+        "Stage": "CODE",
+        "TTL": 3600,
+      },
+      "Type": "Guardian::DNS::RecordSet",
     },
     "DynamoDbAccess14AC0B35": {
       "Properties": {
@@ -1498,6 +1511,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "GuAccessLoggingBucketParameter",
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
+      "GuCname",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -1803,6 +1817,18 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         "Type": "CNAME",
       },
       "Type": "AWS::Route53::RecordSet",
+    },
+    "DnsRecordForReport": {
+      "Properties": {
+        "Name": "report.notifications.guardianapis.com",
+        "RecordType": "CNAME",
+        "ResourceRecords": [
+          "report.notifications-aws.guardianapis.com.",
+        ],
+        "Stage": "PROD",
+        "TTL": 3600,
+      },
+      "Type": "Guardian::DNS::RecordSet",
     },
     "DynamoDbAccess14AC0B35": {
       "Properties": {
