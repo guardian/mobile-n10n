@@ -360,7 +360,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         "Name": "report.notifications.code.dev-guardianapis.com",
         "RecordType": "CNAME",
         "ResourceRecords": [
-          "report.notifications-aws.code.dev-guardianapis.com.",
+          {
+            "Fn::GetAtt": [
+              "LoadBalancerReport58ECD9E7",
+              "DNSName",
+            ],
+          },
         ],
         "Stage": "CODE",
         "TTL": 60,
@@ -1823,7 +1828,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         "Name": "report.notifications.guardianapis.com",
         "RecordType": "CNAME",
         "ResourceRecords": [
-          "report.notifications-aws.guardianapis.com.",
+          {
+            "Fn::GetAtt": [
+              "LoadBalancerReport58ECD9E7",
+              "DNSName",
+            ],
+          },
         ],
         "Stage": "PROD",
         "TTL": 60,

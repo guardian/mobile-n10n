@@ -150,9 +150,7 @@ export class Report extends GuStack {
 		new GuCname(this, 'DnsRecordForReport', {
 			app,
 			domainName: props.domainName,
-			// For now we are still routing traffic via the intermediate CNAME, which points at the legacy ELB.
-			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
-			resourceRecord: props.intermediateCname,
+			resourceRecord: playApp.loadBalancer.loadBalancerDnsName,
 			ttl: Duration.seconds(60),
 		});
 	}
