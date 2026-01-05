@@ -19,6 +19,10 @@ export interface ReportProps extends GuStackProps {
 	domainName:
 		| 'report.notifications.guardianapis.com'
 		| 'report.notifications.code.dev-guardianapis.com';
+	// This maps to the DnsRecord resource in Route53; we can remove this complexity as part of the DNS switchover
+	intermediateCname:
+		| 'report.notifications-aws.guardianapis.com.'
+		| 'report.notifications-aws.code.dev-guardianapis.com.';
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	loggingStreamParameterName:
 		| '/account/services/logging.stream.name'
