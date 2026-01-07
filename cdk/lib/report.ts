@@ -9,7 +9,6 @@ import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
-import { Tags } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
@@ -102,9 +101,6 @@ export class Report extends GuStack {
 		playApp.autoScalingGroup.userData.addCommands(
 			`/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${this.region} mobile-log-aggregation-${this.stage} /var/log/${app}/application.log`,
 		);
-
-		// This is needed to dual-stack; it can be removed once the legacy infrastructure is cleaned up
-		Tags.of(playApp.autoScalingGroup).add('gu:riffraff:new-asg', 'true');
 
 		const vpcParameter = GuVpcParameter.getInstance(this);
 		// This is necessary whilst dual-stacking because there is already a parameter called VpcId in the YAML template

@@ -210,16 +210,6 @@ Resources:
         - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
         - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
         TopicARN: !Sub arn:aws:sns:eu-west-1:${AWS::AccountId}:AutoscalingNotifications${Stage}
-      Tags:
-      - Key: Stage
-        PropagateAtLaunch: true
-        Value: !Ref Stage
-      - Key: Stack
-        PropagateAtLaunch: true
-        Value: !FindInMap [Constants, Stack, Value]
-      - Key: App
-        PropagateAtLaunch: true
-        Value: !FindInMap [Constants, App, Value]
       VPCZoneIdentifier: !Ref PrivateSubnets
   ReportLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
