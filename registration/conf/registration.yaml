@@ -250,11 +250,11 @@ Resources:
       - !Ref LoadBalancerToPrivateASG
       MaxSize: !Ref ASGMaxSize
       MinSize: !Ref ASGMinSize
-      NotificationConfiguration:
-        NotificationTypes:
-         - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
-         - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
-        TopicARN: !Sub arn:aws:sns:eu-west-1:${AWS::AccountId}:AutoscalingNotifications${Stage}
+      NotificationConfigurations:
+        - NotificationTypes:
+           - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
+           - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
+          TopicARN: !Sub arn:aws:sns:eu-west-1:${AWS::AccountId}:AutoscalingNotifications${Stage}
       Tags:
       - Key: Stage
         PropagateAtLaunch: true

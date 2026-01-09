@@ -696,15 +696,17 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "MinSize": {
           "Ref": "ASGMinSize",
         },
-        "NotificationConfiguration": {
-          "NotificationTypes": [
-            "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-            "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
-          ],
-          "TopicARN": {
-            "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
+        "NotificationConfigurations": [
+          {
+            "NotificationTypes": [
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+            ],
+            "TopicARN": {
+              "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
+            },
           },
-        },
+        ],
         "Tags": [
           {
             "Key": "App",
@@ -1525,15 +1527,17 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "MinSize": {
           "Ref": "ASGMinSize",
         },
-        "NotificationConfiguration": {
-          "NotificationTypes": [
-            "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-            "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
-          ],
-          "TopicARN": {
-            "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
+        "NotificationConfigurations": [
+          {
+            "NotificationTypes": [
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+            ],
+            "TopicARN": {
+              "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
+            },
           },
-        },
+        ],
         "Tags": [
           {
             "Key": "App",
