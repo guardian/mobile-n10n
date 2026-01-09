@@ -133,7 +133,7 @@ class SenderWorker extends Construct {
 
 		const codeImage = DockerImageCode.fromEcr(props.imageRepo, {
 			cmd: [props.handler],
-			tag: props.buildId,
+			tagOrDigest: props.buildId,
 		});
 
 		const senderLambdaCtr = new DockerImageFunction(this, 'SenderLambdaCtr', {
