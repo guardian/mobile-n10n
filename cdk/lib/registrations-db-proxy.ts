@@ -11,6 +11,7 @@ import {
 	ProxyTarget,
 } from 'aws-cdk-lib/aws-rds';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
 interface DbProxyStackProps extends GuStackProps {
 	appName: string;
@@ -108,5 +109,7 @@ export class RegistrationsDbProxy extends GuStack {
 				exportName: `RegistrationsDbProxyId-${props.stage}`,
 			});
 		}
+
+		adjustCloudformationParameters(this);
 	}
 }
