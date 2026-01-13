@@ -56,10 +56,31 @@ function adjustArtifactBucketParameter(stack: GuStack) {
 }
 
 /**
+ * In the Mobile account there are separate Kinesis streams for CODE and PROD, so we can't always use the account-wide default
+ */
+function adjustLoggingStreamParameter(stack: GuStack) {
+	if (stack.stage !== 'PROD') {
+		adjustParameter(
+			stack,
+			'/account/services/logging.stream.name',
+			'/account/services/logging.stream.name.code',
+		);
+	} else {
+		// Keep the same value, but explicitly set `allowedValues`
+		adjustParameter(
+			stack,
+			'/account/services/logging.stream.name',
+			'/account/services/logging.stream.name',
+		);
+	}
+}
+
+/**
  * Applications within the `mobile-n10n` stack do not use account (/GuCDK) defaults.
  * This adjusts CloudFormation parameters with values suitable for the `mobile-n10n` stack.
  */
 export function adjustCloudformationParameters(stack: GuStack) {
 	adjustVpcParameters(stack);
 	adjustArtifactBucketParameter(stack);
+	adjustLoggingStreamParameter(stack);
 }
