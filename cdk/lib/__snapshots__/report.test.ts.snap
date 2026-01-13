@@ -718,8 +718,11 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         "Environment": {
           "Variables": {
             "APP": "reportextractor",
+            "App": "reportextractor",
             "STACK": "mobile-notifications",
             "STAGE": "CODE",
+            "Stack": "mobile-notifications",
+            "Stage": "CODE",
           },
         },
         "Handler": "com.gu.notifications.extractor.Lambda",
@@ -1980,8 +1983,11 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         "Environment": {
           "Variables": {
             "APP": "reportextractor",
+            "App": "reportextractor",
             "STACK": "mobile-notifications",
             "STAGE": "PROD",
+            "Stack": "mobile-notifications",
+            "Stage": "PROD",
           },
         },
         "Handler": "com.gu.notifications.extractor.Lambda",

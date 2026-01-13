@@ -142,6 +142,13 @@ export class Report extends GuStack {
 			timeout: Duration.minutes(1),
 			monitoringConfiguration: { noMonitoring: true },
 			loggingFormat: LoggingFormat.TEXT,
+
+			// Although GuCDK provides UPPERCASED env vars for stack, stage, app, simple-configuration reads Title cased env vars.
+			environment: {
+				Stack: stack,
+				Stage: stage,
+				App: reportExtractorApp,
+			},
 		});
 
 		reportExtractor.addToRolePolicy(
