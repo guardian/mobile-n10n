@@ -26,16 +26,20 @@ export interface ReportProps extends GuStackProps {
 export class Report extends GuStack {
 	constructor(scope: App, id: string, props: ReportProps) {
 		super(scope, id, props);
+
+		const { stack, stage, region, account } = this;
+		const { domainName, instanceMetricGranularity, minAsgSize } = props;
+
 		const app = 'report';
-		const playApp = new GuPlayApp(this, {
+		const { autoScalingGroup, loadBalancer } = new GuPlayApp(this, {
 			access: {
 				scope: AccessScope.PUBLIC,
 			},
 			app,
 			certificateProps: {
-				domainName: props.domainName,
+				domainName,
 			},
-			instanceMetricGranularity: props.instanceMetricGranularity,
+			instanceMetricGranularity,
 			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.MICRO),
 			// This matches the YAML stack (i.e. there is no 5XX alarm).
 			// There is no slo-alert config for this service either (presumably due to the traffic level), so we have an
@@ -47,8 +51,8 @@ export class Report extends GuStack {
 						// TODO tightly scope this (it allows for deletion 😱)
 						actions: ['dynamodb:*'],
 						resources: [
-							`arn:aws:dynamodb:${this.region}:${this.account}:table/mobile-notifications-reports-${this.stage}`,
-							`arn:aws:dynamodb:${this.region}:${this.account}:table/mobile-notifications-reports-${this.stage}/index/*`,
+							`arn:aws:dynamodb:${region}:${account}:table/mobile-notifications-reports-${stage}`,
+							`arn:aws:dynamodb:${region}:${account}:table/mobile-notifications-reports-${stage}/index/*`,
 						],
 					}),
 					// The pattern provides parameter store access out of the box, but this service uses a non-standard path
@@ -56,12 +60,12 @@ export class Report extends GuStack {
 					new GuAllowPolicy(this, 'CustomParameterStoreLocationAccess', {
 						actions: ['ssm:GetParametersByPath'],
 						resources: [
-							`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${this.stage}/${this.stack}`,
+							`arn:aws:ssm:${region}:${account}:parameter/notifications/${stage}/${stack}`,
 						],
 					}),
 				],
 			},
-			scaling: { minimumInstances: props.minAsgSize },
+			scaling: { minimumInstances: minAsgSize },
 			userData: {
 				distributable: {
 					fileName: `${app}_1.0-latest_all.deb`,
@@ -80,13 +84,12 @@ export class Report extends GuStack {
 		//TODO check if this customisation is really necessary (it has been copied across from
 		// the legacy infrastructure. The 30s healthcheck interval (see above) is probably part
 		// of the problem here.
-		const cfnAsg = playApp.autoScalingGroup.node
-			.defaultChild as CfnAutoScalingGroup;
+		const cfnAsg = autoScalingGroup.node.defaultChild as CfnAutoScalingGroup;
 		cfnAsg.healthCheckGracePeriod = Duration.seconds(400).toSeconds();
 
 		//TODO replace configure-aws-kinesis-agent with devx-logs?
-		playApp.autoScalingGroup.userData.addCommands(
-			`/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${this.region} mobile-log-aggregation-${this.stage} /var/log/${app}/application.log`,
+		autoScalingGroup.userData.addCommands(
+			`/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${region} mobile-log-aggregation-${stage} /var/log/${app}/application.log`,
 		);
 
 		const vpcParameter = GuVpcParameter.getInstance(this);
@@ -105,8 +108,8 @@ export class Report extends GuStack {
 
 		new GuCname(this, 'DnsRecordForReport', {
 			app,
-			domainName: props.domainName,
-			resourceRecord: playApp.loadBalancer.loadBalancerDnsName,
+			domainName,
+			resourceRecord: loadBalancer.loadBalancerDnsName,
 			ttl: Duration.seconds(60),
 		});
 	}
