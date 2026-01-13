@@ -1,7 +1,6 @@
 import { GuPlayApp, GuScheduledLambda } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
-import { GuVpcParameter } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
@@ -98,11 +97,6 @@ export class Report extends GuStack {
 		autoScalingGroup.userData.addCommands(
 			`/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${region} mobile-log-aggregation-${stage} /var/log/${app}/application.log`,
 		);
-
-		const vpcParameter = GuVpcParameter.getInstance(this);
-		// This is necessary whilst dual-stacking because there is already a parameter called VpcId in the YAML template
-		// Once the YAML template has been removed we should be able to drop this override
-		vpcParameter.overrideLogicalId('GuCdkVpcId');
 
 		adjustCloudformationParameters(this);
 

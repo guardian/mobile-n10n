@@ -60,14 +60,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "GuCdkVpcId": {
-      "AllowedValues": [
-        "/account/vpc/notifications/id",
-      ],
-      "Default": "/account/vpc/notifications/id",
-      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
-    },
     "LoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name.code",
@@ -75,6 +67,14 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "Default": "/account/services/logging.stream.name.code",
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "VpcId": {
+      "AllowedValues": [
+        "/account/vpc/notifications/id",
+      ],
+      "Default": "/account/vpc/notifications/id",
+      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "reportPrivateSubnets": {
       "AllowedValues": [
@@ -430,7 +430,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -663,7 +663,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -1139,7 +1139,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         "TargetType": "instance",
         "UnhealthyThresholdCount": 10,
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
@@ -1364,14 +1364,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "GuCdkVpcId": {
-      "AllowedValues": [
-        "/account/vpc/notifications/id",
-      ],
-      "Default": "/account/vpc/notifications/id",
-      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
-    },
     "LoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name",
@@ -1379,6 +1371,14 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "Default": "/account/services/logging.stream.name",
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "VpcId": {
+      "AllowedValues": [
+        "/account/vpc/notifications/id",
+      ],
+      "Default": "/account/vpc/notifications/id",
+      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "reportPrivateSubnets": {
       "AllowedValues": [
@@ -1734,7 +1734,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -1967,7 +1967,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -2443,7 +2443,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         "TargetType": "instance",
         "UnhealthyThresholdCount": 10,
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
