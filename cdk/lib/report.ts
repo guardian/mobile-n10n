@@ -1,4 +1,4 @@
-import { GuPlayApp } from '@guardian/cdk';
+import { GuPlayApp, GuScheduledLambda } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuVpcParameter } from '@guardian/cdk/lib/constructs/core';
@@ -10,6 +10,8 @@ import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
+import { Schedule } from 'aws-cdk-lib/aws-events';
+import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
 export interface ReportProps extends GuStackProps {
@@ -111,6 +113,26 @@ export class Report extends GuStack {
 			domainName,
 			resourceRecord: loadBalancer.loadBalancerDnsName,
 			ttl: Duration.seconds(60),
+		});
+
+		const reportExtractorApp = 'reportextractor';
+		new GuScheduledLambda(this, 'ReportExtractor', {
+			description: 'Export sent notifications to the datalake',
+			app: reportExtractorApp,
+			fileName: `${reportExtractorApp}.jar`,
+			handler: 'com.gu.notifications.extractor.Lambda',
+			rules: [
+				{
+					// Run at 01:00 AM (UTC) every day.
+					schedule: Schedule.expression('cron(0 1 1/1 * ? *)'),
+				},
+			],
+			runtime: Runtime.JAVA_11,
+			memorySize: 1024,
+			reservedConcurrentExecutions: 1,
+			timeout: Duration.minutes(1),
+			monitoringConfiguration: { noMonitoring: true },
+			loggingFormat: LoggingFormat.TEXT,
 		});
 	}
 }
