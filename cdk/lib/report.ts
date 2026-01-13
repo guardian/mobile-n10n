@@ -9,9 +9,12 @@ import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
+import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { Schedule } from 'aws-cdk-lib/aws-events';
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
 export interface ReportProps extends GuStackProps {
@@ -31,6 +34,12 @@ export class Report extends GuStack {
 
 		const { stack, stage, region, account } = this;
 		const { domainName, instanceMetricGranularity, minAsgSize } = props;
+
+		const dynamoTable = Table.fromTableName(
+			this,
+			'ReportsTable',
+			`mobile-notifications-reports-${stage}`,
+		);
 
 		const app = 'report';
 		const { autoScalingGroup, loadBalancer } = new GuPlayApp(this, {
@@ -53,8 +62,8 @@ export class Report extends GuStack {
 						// TODO tightly scope this (it allows for deletion 😱)
 						actions: ['dynamodb:*'],
 						resources: [
-							`arn:aws:dynamodb:${region}:${account}:table/mobile-notifications-reports-${stage}`,
-							`arn:aws:dynamodb:${region}:${account}:table/mobile-notifications-reports-${stage}/index/*`,
+							dynamoTable.tableArn,
+							`${dynamoTable.tableArn}/index/*`,
 						],
 					}),
 					// The pattern provides parameter store access out of the box, but this service uses a non-standard path
@@ -116,7 +125,7 @@ export class Report extends GuStack {
 		});
 
 		const reportExtractorApp = 'reportextractor';
-		new GuScheduledLambda(this, 'ReportExtractor', {
+		const reportExtractor = new GuScheduledLambda(this, 'ReportExtractor', {
 			description: 'Export sent notifications to the datalake',
 			app: reportExtractorApp,
 			fileName: `${reportExtractorApp}.jar`,
@@ -134,5 +143,41 @@ export class Report extends GuStack {
 			monitoringConfiguration: { noMonitoring: true },
 			loggingFormat: LoggingFormat.TEXT,
 		});
+
+		reportExtractor.addToRolePolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: ['dynamodb:GetItem', 'dynamodb:Query'],
+				resources: [
+					dynamoTable.tableArn,
+					`${dynamoTable.tableArn}/index/sentTime-index`,
+				],
+			}),
+		);
+
+		// TODO push this bucket name to SSM Parameters and remove hardcoding it in the lambda source code (`extractor/Lambda.scala`).
+		const reportExtractorOutputBucket = Bucket.fromBucketArn(
+			this,
+			'ReportExtractorOutputBucket',
+			// This bucket lives in the Ophan account.
+			'arn:aws:s3:::ophan-raw-push-notification',
+		);
+
+		reportExtractor.addToRolePolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: ['s3:PutObject', 's3:PutObjectAcl'],
+
+				/*
+				The lambda writes to the following path:
+					(data|code-data)/date=/notifications.json
+				TODO can we tighten the permissions here?
+				 */
+				resources: [
+					reportExtractorOutputBucket.bucketArn,
+					reportExtractorOutputBucket.arnForObjects('*'),
+				],
+			}),
+		);
 	}
 }

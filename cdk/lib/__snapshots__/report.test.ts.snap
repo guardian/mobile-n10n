@@ -283,7 +283,11 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:dynamodb:eu-west-1:",
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":dynamodb:eu-west-1:",
                       {
                         "Ref": "AWS::AccountId",
                       },
@@ -295,7 +299,11 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:dynamodb:eu-west-1:",
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":dynamodb:eu-west-1:",
                       {
                         "Ref": "AWS::AccountId",
                       },
@@ -945,6 +953,58 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                 ],
               },
             },
+            {
+              "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:Query",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":dynamodb:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-reports-CODE",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":dynamodb:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-reports-CODE/index/sentTime-index",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::ophan-raw-push-notification",
+                "arn:aws:s3:::ophan-raw-push-notification/*",
+              ],
+            },
           ],
           "Version": "2012-10-17",
         },
@@ -1485,7 +1545,11 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:dynamodb:eu-west-1:",
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":dynamodb:eu-west-1:",
                       {
                         "Ref": "AWS::AccountId",
                       },
@@ -1497,7 +1561,11 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                   "Fn::Join": [
                     "",
                     [
-                      "arn:aws:dynamodb:eu-west-1:",
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":dynamodb:eu-west-1:",
                       {
                         "Ref": "AWS::AccountId",
                       },
@@ -2146,6 +2214,58 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                   ],
                 ],
               },
+            },
+            {
+              "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:Query",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":dynamodb:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-reports-PROD",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":dynamodb:eu-west-1:",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-reports-PROD/index/sentTime-index",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::ophan-raw-push-notification",
+                "arn:aws:s3:::ophan-raw-push-notification/*",
+              ],
             },
           ],
           "Version": "2012-10-17",
