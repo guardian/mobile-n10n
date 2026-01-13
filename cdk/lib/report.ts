@@ -2,7 +2,6 @@ import { GuPlayApp, GuScheduledLambda } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuVpcParameter } from '@guardian/cdk/lib/constructs/core';
-import { GuLoggingStreamNameParameter } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
@@ -22,9 +21,6 @@ export interface ReportProps extends GuStackProps {
 		| 'report.notifications.guardianapis.com'
 		| 'report.notifications.code.dev-guardianapis.com';
 	instanceMetricGranularity: '1Minute' | '5Minute';
-	loggingStreamParameterName:
-		| '/account/services/logging.stream.name'
-		| '/account/services/logging.stream.name.code';
 	minAsgSize: number;
 }
 
@@ -109,13 +105,6 @@ export class Report extends GuStack {
 		vpcParameter.overrideLogicalId('GuCdkVpcId');
 
 		adjustCloudformationParameters(this);
-
-		// In the Mobile account there are separate Kinesis streams for CODE and PROD, so we can't use the account-wide
-		// default
-		const loggingStreamParameter =
-			GuLoggingStreamNameParameter.getInstance(this);
-		loggingStreamParameter.allowedValues = [props.loggingStreamParameterName];
-		loggingStreamParameter.default = props.loggingStreamParameterName;
 
 		new GuCname(this, 'DnsRecordForReport', {
 			app,
