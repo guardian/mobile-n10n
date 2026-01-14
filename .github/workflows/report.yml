@@ -93,9 +93,5 @@ jobs:
               - cdk/cdk.out/Report-PROD.template.json
             reportextractor:
               - reportextractor.jar
-            legacy-reportextractor:
-              - reportextractor.jar
-            legacy-reportextractor-cfn:
-              - reportextractor/cfn.yaml
             eventconsumer:
               - eventconsumer.jar
