@@ -85,6 +85,7 @@ Resources:
   EventRule:
     Type: AWS::Events::Rule
     Properties:
+      State: DISABLED # Disabled to favour the GuCDK version
       ScheduleExpression: cron(0 1 1/1 * ? *)
       Targets:
         - Id: EventRuleTarget
