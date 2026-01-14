@@ -20,17 +20,18 @@ deployments:
       bucketSsmKey: /account/services/artifact.bucket.n10n
     dependencies: [report-cfn]
 
-  reportextractor:
+  legacy-reportextractor:
     type: aws-lambda
+    app: reportextractor
     parameters:
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
-      functionNames: [mobile-notifications-reportextractor-]
+      functionNames: [legacy-mobile-notifications-reportextractor-]
       fileName: reportextractor.jar
       prefixStack: false
-    dependencies: [reportextractor-cfn]
+    dependencies: [legacy-reportextractor-cfn]
 
-  reportextractor-cfn:
+  legacy-reportextractor-cfn:
     type: cloud-formation
     app: reportextractor
     parameters:

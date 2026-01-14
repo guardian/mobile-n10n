@@ -42,7 +42,7 @@ Resources:
                 - logs:PutLogEvents
                 - cloudwatch:putMetricData
               Resource:
-                - !Sub arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/${Stack}-${App}-${Stage}:*
+                - !Sub arn:aws:logs:eu-west-1:${AWS::AccountId}:log-group:/aws/lambda/legacy-${Stack}-${App}-${Stage}:*
         - PolicyName: dynamo
           PolicyDocument:
             Statement:
@@ -75,7 +75,7 @@ Resources:
           Stage: !Ref Stage
           Stack: !Ref Stack
           App: !Ref App
-      FunctionName: !Sub ${Stack}-${App}-${Stage}
+      FunctionName: !Sub legacy-${Stack}-${App}-${Stage}
       Handler: com.gu.notifications.extractor.Lambda
       MemorySize: 1024
       ReservedConcurrentExecutions: 1
