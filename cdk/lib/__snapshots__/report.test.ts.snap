@@ -725,6 +725,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Stage": "CODE",
           },
         },
+        "FunctionName": "mobile-notifications-reportextractor-CODE",
         "Handler": "com.gu.notifications.extractor.Lambda",
         "LoggingConfig": {
           "LogFormat": "Text",
@@ -1990,6 +1991,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Stage": "PROD",
           },
         },
+        "FunctionName": "mobile-notifications-reportextractor-PROD",
         "Handler": "com.gu.notifications.extractor.Lambda",
         "LoggingConfig": {
           "LogFormat": "Text",

@@ -149,6 +149,8 @@ export class Report extends GuStack {
 				Stage: stage,
 				App: reportExtractorApp,
 			},
+
+			functionName: [stack, reportExtractorApp, stage].join('-'),
 		});
 
 		reportExtractor.addToRolePolicy(
