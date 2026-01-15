@@ -11,7 +11,7 @@ import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
-import { Schedule } from 'aws-cdk-lib/aws-events';
+import { CfnRule, Schedule } from 'aws-cdk-lib/aws-events';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -225,6 +225,12 @@ export class Report extends GuStack {
 			},
 			functionName: [stack, eventConsumerApp, stage].join('-'),
 		});
+
+		// Disable the schedule rule for testing
+		const eventConsumerRule = eventConsumer.node.findChild(
+			'EventConsumer-cron(2/5 * * * ? *)-0',
+		).node.defaultChild as CfnRule;
+		eventConsumerRule.state = 'DISABLED';
 
 		eventConsumer.addToRolePolicy(
 			new PolicyStatement({
