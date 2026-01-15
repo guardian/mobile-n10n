@@ -28,6 +28,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "GuHttpsApplicationListener",
       "GuCname",
       "GuScheduledLambda",
+      "GuScheduledLambda",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -325,6 +326,92 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
+    "EventConsumer3B06F01D": {
+      "DependsOn": [
+        "EventConsumerServiceRoleDefaultPolicyD7C8AE6F",
+        "EventConsumerServiceRole4DCB1559",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "DistributionBucketName",
+          },
+          "S3Key": "mobile-notifications/CODE/eventconsumer/eventconsumer.jar",
+        },
+        "Description": "Queries Athena to update Notification reports in Dynamodb",
+        "Environment": {
+          "Variables": {
+            "APP": "eventconsumer",
+            "App": "eventconsumer",
+            "AthenaDatabase": "notifications",
+            "AthenaOutputLocation": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "EventConsumerBucketE6EE7609",
+                  },
+                  "/athena",
+                ],
+              ],
+            },
+            "IngestLocation": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "EventConsumerBucketE6EE7609",
+                  },
+                  "/fastly/notifications/received",
+                ],
+              ],
+            },
+            "STACK": "mobile-notifications",
+            "STAGE": "CODE",
+            "Stack": "mobile-notifications",
+            "Stage": "CODE",
+          },
+        },
+        "FunctionName": "mobile-notifications-eventconsumer-CODE",
+        "Handler": "com.gu.notifications.events.AthenaLambda::handleRequest",
+        "LoggingConfig": {
+          "LogFormat": "Text",
+        },
+        "MemorySize": 1024,
+        "ReservedConcurrentExecutions": 1,
+        "Role": {
+          "Fn::GetAtt": [
+            "EventConsumerServiceRole4DCB1559",
+            "Arn",
+          ],
+        },
+        "Runtime": "java11",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "eventconsumer",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Timeout": 120,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
     "EventConsumerBucketE6EE7609": {
       "DeletionPolicy": "Retain",
       "Properties": {
@@ -362,6 +449,283 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::S3::Bucket",
       "UpdateReplacePolicy": "Retain",
+    },
+    "EventConsumerEventConsumercron250211CE5C4": {
+      "Properties": {
+        "ScheduleExpression": "cron(2/5 * * * ? *)",
+        "State": "ENABLED",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "eventconsumer",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "EventConsumer3B06F01D",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "EventConsumerEventConsumercron250AllowEventRuleReportCODEEventConsumer452D1DF3A5443B0F": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "EventConsumer3B06F01D",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "EventConsumerEventConsumercron250211CE5C4",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "EventConsumerServiceRole4DCB1559": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "eventconsumer",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "EventConsumerServiceRoleDefaultPolicyD7C8AE6F": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName",
+                      },
+                      "/mobile-notifications/CODE/eventconsumer/eventconsumer.jar",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/CODE/mobile-notifications/eventconsumer",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/CODE/mobile-notifications/eventconsumer/*",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "athena:StartQueryExecution",
+                "athena:GetQueryResultsStream",
+                "athena:GetNamespace",
+                "athena:GetQueryResults",
+                "athena:GetQueryExecutions",
+                "athena:GetNamedQuery",
+                "athena:GetCatalogs",
+                "athena:GetNamespaces",
+                "athena:GetWorkGroup",
+                "athena:GetExecutionEngine",
+                "athena:GetQueryExecution",
+                "athena:GetExecutionEngines",
+                "athena:GetTables",
+                "athena:GetTable",
+                "athena:BatchGetNamedQuery",
+                "athena:BatchGetQueryExecution",
+                "glue:GetTable",
+                "glue:GetPartition",
+                "glue:GetPartitions",
+                "glue:GetDatabase",
+                "glue:BatchCreatePartition",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": "s3:*",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "EventConsumerBucketE6EE7609",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "EventConsumerBucketE6EE7609",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "dynamodb:*",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":dynamodb:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":table/mobile-notifications-reports-CODE",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "EventConsumerServiceRoleDefaultPolicyD7C8AE6F",
+        "Roles": [
+          {
+            "Ref": "EventConsumerServiceRole4DCB1559",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "GetDistributablePolicyReportA81F1F70": {
       "Properties": {
@@ -1332,6 +1696,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "GuHttpsApplicationListener",
       "GuCname",
       "GuScheduledLambda",
+      "GuScheduledLambda",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -1629,6 +1994,92 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
+    "EventConsumer3B06F01D": {
+      "DependsOn": [
+        "EventConsumerServiceRoleDefaultPolicyD7C8AE6F",
+        "EventConsumerServiceRole4DCB1559",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "DistributionBucketName",
+          },
+          "S3Key": "mobile-notifications/PROD/eventconsumer/eventconsumer.jar",
+        },
+        "Description": "Queries Athena to update Notification reports in Dynamodb",
+        "Environment": {
+          "Variables": {
+            "APP": "eventconsumer",
+            "App": "eventconsumer",
+            "AthenaDatabase": "notifications",
+            "AthenaOutputLocation": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "EventConsumerBucketE6EE7609",
+                  },
+                  "/athena",
+                ],
+              ],
+            },
+            "IngestLocation": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "EventConsumerBucketE6EE7609",
+                  },
+                  "/fastly/notifications/received",
+                ],
+              ],
+            },
+            "STACK": "mobile-notifications",
+            "STAGE": "PROD",
+            "Stack": "mobile-notifications",
+            "Stage": "PROD",
+          },
+        },
+        "FunctionName": "mobile-notifications-eventconsumer-PROD",
+        "Handler": "com.gu.notifications.events.AthenaLambda::handleRequest",
+        "LoggingConfig": {
+          "LogFormat": "Text",
+        },
+        "MemorySize": 1024,
+        "ReservedConcurrentExecutions": 1,
+        "Role": {
+          "Fn::GetAtt": [
+            "EventConsumerServiceRole4DCB1559",
+            "Arn",
+          ],
+        },
+        "Runtime": "java11",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "eventconsumer",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Timeout": 120,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
     "EventConsumerBucketE6EE7609": {
       "DeletionPolicy": "Retain",
       "Properties": {
@@ -1666,6 +2117,283 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       },
       "Type": "AWS::S3::Bucket",
       "UpdateReplacePolicy": "Retain",
+    },
+    "EventConsumerEventConsumercron250211CE5C4": {
+      "Properties": {
+        "ScheduleExpression": "cron(2/5 * * * ? *)",
+        "State": "ENABLED",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "eventconsumer",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "EventConsumer3B06F01D",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "EventConsumerEventConsumercron250AllowEventRuleReportPRODEventConsumer18A565B919F713A8": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "EventConsumer3B06F01D",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "EventConsumerEventConsumercron250211CE5C4",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "EventConsumerServiceRole4DCB1559": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "eventconsumer",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "EventConsumerServiceRoleDefaultPolicyD7C8AE6F": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName",
+                      },
+                      "/mobile-notifications/PROD/eventconsumer/eventconsumer.jar",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications/eventconsumer",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications/eventconsumer/*",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "athena:StartQueryExecution",
+                "athena:GetQueryResultsStream",
+                "athena:GetNamespace",
+                "athena:GetQueryResults",
+                "athena:GetQueryExecutions",
+                "athena:GetNamedQuery",
+                "athena:GetCatalogs",
+                "athena:GetNamespaces",
+                "athena:GetWorkGroup",
+                "athena:GetExecutionEngine",
+                "athena:GetQueryExecution",
+                "athena:GetExecutionEngines",
+                "athena:GetTables",
+                "athena:GetTable",
+                "athena:BatchGetNamedQuery",
+                "athena:BatchGetQueryExecution",
+                "glue:GetTable",
+                "glue:GetPartition",
+                "glue:GetPartitions",
+                "glue:GetDatabase",
+                "glue:BatchCreatePartition",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": "s3:*",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "EventConsumerBucketE6EE7609",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "EventConsumerBucketE6EE7609",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "dynamodb:*",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":dynamodb:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":table/mobile-notifications-reports-PROD",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "EventConsumerServiceRoleDefaultPolicyD7C8AE6F",
+        "Roles": [
+          {
+            "Ref": "EventConsumerServiceRole4DCB1559",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "GetDistributablePolicyReportA81F1F70": {
       "Properties": {
