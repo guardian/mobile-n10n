@@ -189,7 +189,7 @@ export class Report extends GuStack {
 			}),
 		);
 
-		new Bucket(this, 'event-consumer-bucket', {
+		new Bucket(this, 'EventConsumerBucket', {
 			bucketName: `aws-mobile-event-logs-${stage.toLowerCase()}`,
 			removalPolicy: RemovalPolicy.RETAIN,
 			lifecycleRules: [{ expiration: Duration.days(21), enabled: true }],
