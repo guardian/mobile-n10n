@@ -19,6 +19,16 @@ deployments:
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
     dependencies: [report-cfn]
+  reportextractor:
+    type: aws-lambda
+    app: reportextractor
+    parameters:
+      bucketSsmLookup: true
+      bucketSsmKey: /account/services/artifact.bucket.n10n
+      functionNames: [mobile-notifications-reportextractor-] # TODO switch to tag based lookup once the legacy YAML lambda has been deleted
+      fileName: reportextractor.jar
+      prefixStack: false
+    dependencies: [report-cfn]
 
   legacy-reportextractor:
     type: aws-lambda

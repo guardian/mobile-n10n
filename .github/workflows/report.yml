@@ -84,6 +84,8 @@ jobs:
             report-cfn:
               - cdk/cdk.out/Report-CODE.template.json
               - cdk/cdk.out/Report-PROD.template.json
+            reportextractor:
+              - reportextractor.jar
             legacy-reportextractor:
               - reportextractor.jar
             legacy-reportextractor-cfn:
