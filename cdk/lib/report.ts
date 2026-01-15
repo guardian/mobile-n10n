@@ -7,7 +7,7 @@ import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
-import { Duration } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
@@ -188,5 +188,11 @@ export class Report extends GuStack {
 				],
 			}),
 		);
+
+		new Bucket(this, 'event-consumer-bucket', {
+			bucketName:`aws-mobile-event-logs-${stage.toLowerCase()}`,
+			removalPolicy: RemovalPolicy.RETAIN,
+			lifecycleRules: [{expiration: Duration.days(21), enabled: true}]
+		})
 	}
 }
