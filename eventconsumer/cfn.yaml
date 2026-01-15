@@ -138,19 +138,6 @@ Resources:
         - Key: App
           Value: !Ref App
 
-  S3Bucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    Properties:
-      AccessControl: Private
-      BucketName: !Sub
-      - ${BucketNamePrefix}-${BucketStage}
-      - BucketStage: !FindInMap [StageVariables, !Ref Stage, BucketStage]
-      LifecycleConfiguration:
-        Rules:
-          - ExpirationInDays: 21
-            Status: Enabled
-
   AthenaLambdaScheduleEventRule:
     Type: AWS::Events::Rule
     Properties:
