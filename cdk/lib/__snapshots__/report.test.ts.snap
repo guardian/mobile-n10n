@@ -325,6 +325,44 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
+    "EventConsumerBucketE6EE7609": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "BucketName": "aws-mobile-event-logs-code",
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "ExpirationInDays": 21,
+              "Status": "Enabled",
+            },
+          ],
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
+    },
     "GetDistributablePolicyReportA81F1F70": {
       "Properties": {
         "PolicyDocument": {
@@ -1590,6 +1628,44 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         ],
       },
       "Type": "AWS::IAM::Policy",
+    },
+    "EventConsumerBucketE6EE7609": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "BucketName": "aws-mobile-event-logs-prod",
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "ExpirationInDays": 21,
+              "Status": "Enabled",
+            },
+          ],
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
     },
     "GetDistributablePolicyReportA81F1F70": {
       "Properties": {
