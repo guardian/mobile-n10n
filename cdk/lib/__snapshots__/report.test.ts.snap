@@ -348,6 +348,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
               "Fn::Join": [
                 "",
                 [
+                  "s3://",
                   {
                     "Ref": "EventConsumerBucketE6EE7609",
                   },
@@ -359,6 +360,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
               "Fn::Join": [
                 "",
                 [
+                  "s3://",
                   {
                     "Ref": "EventConsumerBucketE6EE7609",
                   },
@@ -2016,6 +2018,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
               "Fn::Join": [
                 "",
                 [
+                  "s3://",
                   {
                     "Ref": "EventConsumerBucketE6EE7609",
                   },
@@ -2027,6 +2030,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
               "Fn::Join": [
                 "",
                 [
+                  "s3://",
                   {
                     "Ref": "EventConsumerBucketE6EE7609",
                   },
