@@ -5,6 +5,7 @@ on:
     paths:
       - report/**
       - reportextractor/**
+      - eventconsumer/**
       - cdk/**
       - common/**
       - commoneventconsumer/**
@@ -60,6 +61,12 @@ jobs:
           echo "Copying reportextractor jar to root directory"
           cp reportextractor/target/scala-*/reportextractor.jar .
 
+      - name: Build project eventconsumer
+        run: |
+          sbt "project commoneventconsumer" "compile" "test" "project eventconsumer" "compile" "test" "assembly"
+          echo "Copying eventconsumer jar to root directory"
+          cp eventconsumer/target/scala-*/eventconsumer.jar .
+
       - name: Test Report
         uses: dorny/test-reporter@v2
         if: success() || failure()    # run this step even if previous step failed
@@ -90,3 +97,7 @@ jobs:
               - reportextractor.jar
             legacy-reportextractor-cfn:
               - reportextractor/cfn.yaml
+            eventconsumer:
+              - eventconsumer.jar
+            eventconsumer-cfn:
+              - eventconsumer/cfn.yaml
