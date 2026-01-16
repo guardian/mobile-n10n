@@ -3,11 +3,6 @@
     <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
-                <timestamp>
-                    <fieldName>timestamp</fieldName>
-                    <pattern>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</pattern>
-                    <timeZone>UTC</timeZone>
-                </timestamp>
                 <message>
                     <fieldName>message</fieldName>
                 </message>
