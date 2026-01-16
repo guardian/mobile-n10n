@@ -513,7 +513,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
     "EventConsumerEventConsumercron250211CE5C4": {
       "Properties": {
         "ScheduleExpression": "cron(2/5 * * * ? *)",
-        "State": "DISABLED",
+        "State": "ENABLED",
         "Tags": [
           {
             "Key": "App",
@@ -2397,7 +2397,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
     "EventConsumerEventConsumercron250211CE5C4": {
       "Properties": {
         "ScheduleExpression": "cron(2/5 * * * ? *)",
-        "State": "DISABLED",
+        "State": "ENABLED",
         "Tags": [
           {
             "Key": "App",
