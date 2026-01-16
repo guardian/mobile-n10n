@@ -213,7 +213,6 @@ export class Report extends GuStack {
 			reservedConcurrentExecutions: 1,
 			timeout: Duration.minutes(2),
 			monitoringConfiguration: { noMonitoring: true },
-			loggingFormat: LoggingFormat.TEXT,
 
 			// Although GuCDK provides UPPERCASED env vars for stack, stage, app, simple-configuration reads Title cased env vars.
 			environment: {

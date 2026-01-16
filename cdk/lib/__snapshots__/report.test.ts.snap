@@ -378,7 +378,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         "FunctionName": "mobile-notifications-eventconsumer-CODE",
         "Handler": "com.gu.notifications.events.AthenaLambda::handleRequest",
         "LoggingConfig": {
-          "LogFormat": "Text",
+          "LogFormat": "JSON",
         },
         "MemorySize": 1024,
         "ReservedConcurrentExecutions": 1,
@@ -2049,7 +2049,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         "FunctionName": "mobile-notifications-eventconsumer-PROD",
         "Handler": "com.gu.notifications.events.AthenaLambda::handleRequest",
         "LoggingConfig": {
-          "LogFormat": "Text",
+          "LogFormat": "JSON",
         },
         "MemorySize": 1024,
         "ReservedConcurrentExecutions": 1,
