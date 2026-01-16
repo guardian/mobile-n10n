@@ -142,6 +142,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties:
       ScheduleExpression: "cron(2/5 * * * ? *)"
+      State: DISABLED
       Targets:
         - Id: AthenaLambdaScheduleEventRuleTarget
           Arn: !GetAtt AthenaLambda.Arn

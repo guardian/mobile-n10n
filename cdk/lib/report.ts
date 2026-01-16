@@ -238,12 +238,6 @@ export class Report extends GuStack {
 			functionName: [stack, eventConsumerApp, stage].join('-'),
 		});
 
-		// Disable the schedule rule for testing
-		const eventConsumerRule = eventConsumer.node.findChild(
-			'EventConsumer-cron(2/5 * * * ? *)-0',
-		).node.defaultChild as CfnRule;
-		eventConsumerRule.state = 'DISABLED';
-
 		eventConsumer.addToRolePolicy(
 			new PolicyStatement({
 				effect: Effect.ALLOW,
