@@ -235,6 +235,7 @@ export class Report extends GuStack {
 				AthenaDatabase: 'notifications',
 			},
 			functionName: [stack, eventConsumerApp, stage].join('-'),
+			loggingFormat: LoggingFormat.TEXT,
 		});
 
 		eventConsumer.addToRolePolicy(
