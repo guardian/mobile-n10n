@@ -234,7 +234,6 @@ export class Report extends GuStack {
 				IngestLocation: `s3://${eventLogsBucket.bucketName}/fastly/notifications/received`,
 				AthenaOutputLocation: `s3://${eventLogsBucket.bucketName}/athena`,
 				AthenaDatabase: 'notifications',
-				AWS_JAVA_V1_DISABLE_DEPRECATION_ANNOUNCEMENT: 'true',
 			},
 			functionName: [stack, eventConsumerApp, stage].join('-'),
 		});
