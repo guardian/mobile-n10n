@@ -342,6 +342,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         "Environment": {
           "Variables": {
             "APP": "eventconsumer",
+            "AWS_JAVA_V1_DISABLE_DEPRECATION_ANNOUNCEMENT": "true",
             "App": "eventconsumer",
             "AthenaDatabase": "notifications",
             "AthenaOutputLocation": {
@@ -2012,6 +2013,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         "Environment": {
           "Variables": {
             "APP": "eventconsumer",
+            "AWS_JAVA_V1_DISABLE_DEPRECATION_ANNOUNCEMENT": "true",
             "App": "eventconsumer",
             "AthenaDatabase": "notifications",
             "AthenaOutputLocation": {
