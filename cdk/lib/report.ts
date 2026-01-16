@@ -7,6 +7,8 @@ import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
+import { Tags } from 'aws-cdk-lib';
+import { CfnParameter } from 'aws-cdk-lib';
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
@@ -32,6 +34,16 @@ export interface ReportProps extends GuStackProps {
 export class Report extends GuStack {
 	constructor(scope: App, id: string, props: ReportProps) {
 		super(scope, id, props);
+
+		// Tag all resources with the current build and deployment ID.
+		// Useful for debugging as the tags should show in Central ELK too.
+		['BuildId', 'RiffRaffDeploymentId'].forEach((metadata) => {
+			const param = new CfnParameter(this, metadata, {
+				type: 'String',
+				description: 'For Riff-Raff to fill in at deploy time',
+			});
+			Tags.of(this).add(metadata, param.valueAsString);
+		});
 
 		const { stack, stage, region, account } = this;
 		const { domainName, instanceMetricGranularity, minAsgSize } = props;
