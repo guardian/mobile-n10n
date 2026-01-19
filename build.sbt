@@ -307,7 +307,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "34.1.1",
+      "com.gu" %% "content-api-client-default" % "35.0.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
