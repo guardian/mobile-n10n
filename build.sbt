@@ -423,12 +423,24 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "org.playframework" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
+      "org.threeten" % "threetenbp" % "1.6.5", // Needed after excluding google-cloud-storage
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
       // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
       // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
-      ExclusionRule(organization = "com.typesafe.play")
+      ExclusionRule(organization = "com.typesafe.play"),
+      
+      // Firebase Admin brings unused Google Cloud services
+      ExclusionRule("com.google.cloud", "google-cloud-storage"),
+      ExclusionRule("com.google.cloud", "google-cloud-firestore"),
+      
+      // gRPC modules not needed for FCM HTTP API
+      ExclusionRule("io.grpc", "grpc-xds"),
+      ExclusionRule("io.grpc", "grpc-alts"),
+      ExclusionRule("io.grpc", "grpc-grpclb"),
+      ExclusionRule("io.grpc", "grpc-netty-shaded"),
+      ExclusionRule("io.grpc", "grpc-netty"),
     ),
 )
 
