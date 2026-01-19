@@ -99,7 +99,3 @@ jobs:
               - reportextractor/cfn.yaml
             eventconsumer:
               - eventconsumer.jar
-            legacy-eventconsumer:
-              - eventconsumer.jar
-            eventconsumer-cfn:
-              - eventconsumer/cfn.yaml

@@ -58,22 +58,3 @@ deployments:
       fileName: eventconsumer.jar
       prefixStack: false
     dependencies: [report-cfn]
-
-  legacy-eventconsumer:
-    type: aws-lambda
-    app: eventconsumer
-    parameters:
-      bucketSsmLookup: true
-      bucketSsmKey: /account/services/artifact.bucket.n10n
-      functionNames:
-        - mobile-notifications-eventconsumer-athena-
-      fileName: eventconsumer.jar
-      prefixStack: false
-    dependencies: [eventconsumer-cfn]
-  eventconsumer-cfn:
-    type: cloud-formation
-    app: eventconsumer
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: eventconsumer
-      templatePath: cfn.yaml
