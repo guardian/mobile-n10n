@@ -257,6 +257,7 @@ export class Report extends GuStack {
 			}),
 		);
 
+		//TODO: these permissions are unnecessarily broad, it would be worth being more specific
 		eventConsumer.addToRolePolicy(
 			new PolicyStatement({
 				effect: Effect.ALLOW,
@@ -268,6 +269,7 @@ export class Report extends GuStack {
 			}),
 		);
 
+		//TODO: these permissions are unnecessarily broad, it would be worth being more specific
 		eventConsumer.addToRolePolicy(
 			new PolicyStatement({
 				effect: Effect.ALLOW,
