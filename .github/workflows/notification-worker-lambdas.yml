@@ -76,14 +76,7 @@ jobs:
           NOTIFICATION_LAMBDA_REPOSITORY_URL: ${{ secrets.NOTIFICATION_LAMBDA_REPOSITORY_URL }}
           BUILD_NUMBER: ${{ github.run_number }}
 
-      - name: CDK synth (worker lambda cdk directory)
-        working-directory: cdk
-        run: |
-          yarn install --immutable
-          yarn test
-          yarn synth
-
-      - name: CDK synth (root cdk directory)
+      - name: CDK synth
         working-directory: cdk
         run: |
           yarn install --immutable
