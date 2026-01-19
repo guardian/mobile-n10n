@@ -53,10 +53,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "Description": "S3 bucket to store your access logs",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "BuildId": {
-      "Description": "For Riff-Raff to fill in at deploy time",
-      "Type": "String",
-    },
     "DistributionBucketName": {
       "AllowedValues": [
         "/account/services/artifact.bucket.n10n",
@@ -80,10 +76,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "Default": "/account/services/logging.stream.name.code",
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
-    },
-    "RiffRaffDeploymentId": {
-      "Description": "For Riff-Raff to fill in at deploy time",
-      "Type": "String",
     },
     "reportPrivateSubnets": {
       "AllowedValues": [
@@ -132,13 +124,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "PropagateAtLaunch": true,
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "PropagateAtLaunch": true,
             "Value": "TEST",
@@ -153,13 +138,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "PropagateAtLaunch": true,
             "Value": {
               "Ref": "LoggingStreamName",
-            },
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "PropagateAtLaunch": true,
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
             },
           },
           {
@@ -194,12 +172,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -210,12 +182,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
           {
             "Key": "Name",
             "Value": "Report-CODE/CertificateReport",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -429,24 +395,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "eventconsumer",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -479,24 +433,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -521,24 +463,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "eventconsumer",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -616,24 +546,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "eventconsumer",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -862,24 +780,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -976,24 +882,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -1081,24 +975,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -1131,24 +1013,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -1280,24 +1150,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "reportextractor",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -1322,24 +1180,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "reportextractor",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -1417,24 +1263,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "reportextractor",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -1643,24 +1477,12 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -1731,12 +1553,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                   "Value": "report",
                 },
                 {
-                  "Key": "BuildId",
-                  "Value": {
-                    "Ref": "BuildId",
-                  },
-                },
-                {
                   "Key": "gu:cdk:version",
                   "Value": "TEST",
                 },
@@ -1747,12 +1563,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                 {
                   "Key": "Name",
                   "Value": "Report-CODE/mobile-notifications-CODE-report",
-                },
-                {
-                  "Key": "RiffRaffDeploymentId",
-                  "Value": {
-                    "Ref": "RiffRaffDeploymentId",
-                  },
                 },
                 {
                   "Key": "Stack",
@@ -1772,12 +1582,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                   "Value": "report",
                 },
                 {
-                  "Key": "BuildId",
-                  "Value": {
-                    "Ref": "BuildId",
-                  },
-                },
-                {
                   "Key": "gu:cdk:version",
                   "Value": "TEST",
                 },
@@ -1788,12 +1592,6 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                 {
                   "Key": "Name",
                   "Value": "Report-CODE/mobile-notifications-CODE-report",
-                },
-                {
-                  "Key": "RiffRaffDeploymentId",
-                  "Value": {
-                    "Ref": "RiffRaffDeploymentId",
-                  },
                 },
                 {
                   "Key": "Stack",
@@ -1834,12 +1632,6 @@ dpkg -i /report/report_1.0-latest_all.deb
                 "Value": "report",
               },
               {
-                "Key": "BuildId",
-                "Value": {
-                  "Ref": "BuildId",
-                },
-              },
-              {
                 "Key": "gu:cdk:version",
                 "Value": "TEST",
               },
@@ -1850,12 +1642,6 @@ dpkg -i /report/report_1.0-latest_all.deb
               {
                 "Key": "Name",
                 "Value": "Report-CODE/mobile-notifications-CODE-report",
-              },
-              {
-                "Key": "RiffRaffDeploymentId",
-                "Value": {
-                  "Ref": "RiffRaffDeploymentId",
-                },
               },
               {
                 "Key": "Stack",
@@ -1938,10 +1724,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "Description": "S3 bucket to store your access logs",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "BuildId": {
-      "Description": "For Riff-Raff to fill in at deploy time",
-      "Type": "String",
-    },
     "DistributionBucketName": {
       "AllowedValues": [
         "/account/services/artifact.bucket.n10n",
@@ -1965,10 +1747,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "Default": "/account/services/logging.stream.name",
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
-    },
-    "RiffRaffDeploymentId": {
-      "Description": "For Riff-Raff to fill in at deploy time",
-      "Type": "String",
     },
     "reportPrivateSubnets": {
       "AllowedValues": [
@@ -2017,13 +1795,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "PropagateAtLaunch": true,
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "PropagateAtLaunch": true,
             "Value": "TEST",
@@ -2038,13 +1809,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "PropagateAtLaunch": true,
             "Value": {
               "Ref": "LoggingStreamName",
-            },
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "PropagateAtLaunch": true,
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
             },
           },
           {
@@ -2079,12 +1843,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -2095,12 +1853,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
           {
             "Key": "Name",
             "Value": "Report-PROD/CertificateReport",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -2314,24 +2066,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "eventconsumer",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -2364,24 +2104,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -2406,24 +2134,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "eventconsumer",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -2501,24 +2217,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "eventconsumer",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -2747,24 +2451,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -2861,24 +2553,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -2966,24 +2646,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -3016,24 +2684,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -3165,24 +2821,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "reportextractor",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -3207,24 +2851,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "reportextractor",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -3302,24 +2934,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "reportextractor",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -3528,24 +3148,12 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
             "Value": "report",
           },
           {
-            "Key": "BuildId",
-            "Value": {
-              "Ref": "BuildId",
-            },
-          },
-          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "RiffRaffDeploymentId",
-            "Value": {
-              "Ref": "RiffRaffDeploymentId",
-            },
           },
           {
             "Key": "Stack",
@@ -3616,12 +3224,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                   "Value": "report",
                 },
                 {
-                  "Key": "BuildId",
-                  "Value": {
-                    "Ref": "BuildId",
-                  },
-                },
-                {
                   "Key": "gu:cdk:version",
                   "Value": "TEST",
                 },
@@ -3632,12 +3234,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                 {
                   "Key": "Name",
                   "Value": "Report-PROD/mobile-notifications-PROD-report",
-                },
-                {
-                  "Key": "RiffRaffDeploymentId",
-                  "Value": {
-                    "Ref": "RiffRaffDeploymentId",
-                  },
                 },
                 {
                   "Key": "Stack",
@@ -3657,12 +3253,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                   "Value": "report",
                 },
                 {
-                  "Key": "BuildId",
-                  "Value": {
-                    "Ref": "BuildId",
-                  },
-                },
-                {
                   "Key": "gu:cdk:version",
                   "Value": "TEST",
                 },
@@ -3673,12 +3263,6 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                 {
                   "Key": "Name",
                   "Value": "Report-PROD/mobile-notifications-PROD-report",
-                },
-                {
-                  "Key": "RiffRaffDeploymentId",
-                  "Value": {
-                    "Ref": "RiffRaffDeploymentId",
-                  },
                 },
                 {
                   "Key": "Stack",
@@ -3719,12 +3303,6 @@ dpkg -i /report/report_1.0-latest_all.deb
                 "Value": "report",
               },
               {
-                "Key": "BuildId",
-                "Value": {
-                  "Ref": "BuildId",
-                },
-              },
-              {
                 "Key": "gu:cdk:version",
                 "Value": "TEST",
               },
@@ -3735,12 +3313,6 @@ dpkg -i /report/report_1.0-latest_all.deb
               {
                 "Key": "Name",
                 "Value": "Report-PROD/mobile-notifications-PROD-report",
-              },
-              {
-                "Key": "RiffRaffDeploymentId",
-                "Value": {
-                  "Ref": "RiffRaffDeploymentId",
-                },
               },
               {
                 "Key": "Stack",
