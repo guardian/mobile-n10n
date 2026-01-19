@@ -172,10 +172,93 @@ export class Report extends GuStack {
 			}),
 		);
 
-		new Bucket(this, 'EventConsumerBucket', {
+		const eventLogsBucket = new Bucket(this, 'EventConsumerBucket', {
 			bucketName: `aws-mobile-event-logs-${stage.toLowerCase()}`,
 			removalPolicy: RemovalPolicy.RETAIN,
 			lifecycleRules: [{ expiration: Duration.days(21), enabled: true }],
 		});
+
+		const eventConsumerApp = 'eventconsumer';
+		const eventConsumer = new GuScheduledLambda(this, 'EventConsumer', {
+			description: 'Queries Athena to update Notification reports in Dynamodb',
+			app: eventConsumerApp,
+			fileName: `${eventConsumerApp}.jar`,
+			handler: 'com.gu.notifications.events.AthenaLambda::handleRequest',
+			rules: [
+				{
+					// Run every 5 minutes, starting at 2 minutes past the hour. (2, 7, 12 etc)
+					schedule: Schedule.expression('cron(2/5 * * * ? *)'),
+				},
+			],
+			runtime: Runtime.JAVA_11,
+			memorySize: 1024,
+			reservedConcurrentExecutions: 1,
+			timeout: Duration.minutes(2),
+			monitoringConfiguration: { noMonitoring: true },
+
+			// Although GuCDK provides UPPERCASED env vars for stack, stage, app, simple-configuration reads Title cased env vars.
+			environment: {
+				Stack: stack,
+				Stage: stage,
+				App: eventConsumerApp,
+				IngestLocation: `s3://${eventLogsBucket.bucketName}/fastly/notifications/received`,
+				AthenaOutputLocation: `s3://${eventLogsBucket.bucketName}/athena`,
+				AthenaDatabase: 'notifications',
+				AWS_JAVA_V1_DISABLE_DEPRECATION_ANNOUNCEMENT: 'true',
+			},
+			functionName: [stack, eventConsumerApp, stage].join('-'),
+			loggingFormat: LoggingFormat.TEXT,
+		});
+
+		eventConsumer.addToRolePolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: [
+					'athena:StartQueryExecution',
+					'athena:GetQueryResultsStream',
+					'athena:GetNamespace',
+					'athena:GetQueryResults',
+					'athena:GetQueryExecutions',
+					'athena:GetNamedQuery',
+					'athena:GetCatalogs',
+					'athena:GetNamespaces',
+					'athena:GetWorkGroup',
+					'athena:GetExecutionEngine',
+					'athena:GetQueryExecution',
+					'athena:GetExecutionEngines',
+					'athena:GetTables',
+					'athena:GetTable',
+					'athena:BatchGetNamedQuery',
+					'athena:BatchGetQueryExecution',
+					'glue:GetTable',
+					'glue:GetPartition',
+					'glue:GetPartitions',
+					'glue:GetDatabase',
+					'glue:BatchCreatePartition',
+				],
+				resources: ['*'],
+			}),
+		);
+
+		//TODO: these permissions are unnecessarily broad, it would be worth being more specific
+		eventConsumer.addToRolePolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: ['s3:*'],
+				resources: [
+					eventLogsBucket.bucketArn,
+					eventLogsBucket.arnForObjects('*'),
+				],
+			}),
+		);
+
+		//TODO: these permissions are unnecessarily broad, it would be worth being more specific
+		eventConsumer.addToRolePolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: ['dynamodb:*'],
+				resources: [dynamoTable.tableArn],
+			}),
+		);
 	}
 }
