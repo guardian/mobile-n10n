@@ -120,7 +120,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
       "com.gu" %% "mobile-logstash-encoder" % "1.1.8",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "software.amazon.awssdk" % "regions" % "2.25.13",
+      // "software.amazon.awssdk" % "regions" % "2.25.13",
       "org.postgresql" % "postgresql" % "42.7.7",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
