@@ -804,7 +804,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
               "#!/bin/bash -ev
 aws --region \${AWS::Region} s3 cp s3://\${DistBucket}/\${Stack}/\${Stage}/\${App}/\${App}_1.0-latest_all.deb /tmp
 dpkg -i /tmp/\${App}_1.0-latest_all.deb
-/opt/aws-kinesis-agent/configure-aws-kinesis-agent \${AWS::Region} mobile-log-aggregation-\${Stage} /var/log/\${App}/application.log
 ",
               {
                 "App": {
@@ -1658,7 +1657,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
               "#!/bin/bash -ev
 aws --region \${AWS::Region} s3 cp s3://\${DistBucket}/\${Stack}/\${Stage}/\${App}/\${App}_1.0-latest_all.deb /tmp
 dpkg -i /tmp/\${App}_1.0-latest_all.deb
-/opt/aws-kinesis-agent/configure-aws-kinesis-agent \${AWS::Region} mobile-log-aggregation-\${Stage} /var/log/\${App}/application.log
 ",
               {
                 "App": {

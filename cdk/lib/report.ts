@@ -97,11 +97,6 @@ export class Report extends GuStack {
 		const cfnAsg = autoScalingGroup.node.defaultChild as CfnAutoScalingGroup;
 		cfnAsg.healthCheckGracePeriod = Duration.seconds(400).toSeconds();
 
-		//TODO replace configure-aws-kinesis-agent with devx-logs?
-		autoScalingGroup.userData.addCommands(
-			`/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${region} mobile-log-aggregation-${stage} /var/log/${app}/application.log`,
-		);
-
 		adjustCloudformationParameters(this);
 
 		new GuCname(this, 'DnsRecordForReport', {
