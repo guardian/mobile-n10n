@@ -125,10 +125,6 @@ lazy val common = project
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
     ),
-    excludeDependencies ++= Seq(
-      ExclusionRule("software.amazon.awssdk", "ec2"),
-      ExclusionRule("software.amazon.awssdk", "autoscaling")
-    ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
     Test / test := (Test / test).dependsOn(startDynamoDBLocal).value,
