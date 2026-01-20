@@ -438,11 +438,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       ExclusionRule("com.google.cloud", "google-cloud-firestore"),
       
       // gRPC modules not needed for FCM HTTP API
-      ExclusionRule("io.grpc", "grpc-xds"),
-      ExclusionRule("io.grpc", "grpc-alts"),
-      ExclusionRule("io.grpc", "grpc-grpclb"),
-      ExclusionRule("io.grpc", "grpc-netty-shaded"),
-      ExclusionRule("io.grpc", "grpc-netty"),
+      ExclusionRule("io.grpc", "grpc-xds"), // 34.24MB
+      ExclusionRule("io.grpc", "grpc-netty"), // 9.28MB
     ),
 )
 
