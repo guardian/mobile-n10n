@@ -120,9 +120,14 @@ lazy val common = project
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
       "com.gu" %% "mobile-logstash-encoder" % "1.1.8",
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+      "software.amazon.awssdk" % "regions" % "2.25.13",
       "org.postgresql" % "postgresql" % "42.7.7",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
+    ),
+    excludeDependencies ++= Seq(
+      ExclusionRule("software.amazon.awssdk", "ec2"),
+      ExclusionRule("software.amazon.awssdk", "autoscaling")
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
@@ -436,6 +441,10 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       // Firebase Admin brings unused Google Cloud services
       ExclusionRule("com.google.cloud", "google-cloud-storage"),
       ExclusionRule("com.google.cloud", "google-cloud-firestore"),
+      
+      // Exclude unnecessary AWS SDK services from simple-configuration-core
+      ExclusionRule("software.amazon.awssdk", "ec2"),
+      ExclusionRule("software.amazon.awssdk", "autoscaling"),
       
       // gRPC modules not needed for FCM HTTP API
       ExclusionRule("io.grpc", "grpc-xds"), // 34.24MB
