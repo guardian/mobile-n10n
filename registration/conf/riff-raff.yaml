@@ -7,7 +7,7 @@ deployments:
     parameters:
       amiEncrypted: true
       amiTags:
-        Recipe: mobile-java11-jammy-ARM
+        Recipe: mobile-java11-jammy-ARM-with-cdk-base
         AmigoStage: PROD
       templateStagePaths:
         CODE: Registration-CODE.template.json
