@@ -424,6 +424,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "org.playframework" %% "play-json" % playJsonVersion,
       "com.google.oauth-client" % "google-oauth-client" % googleOAuthClient,
       "org.threeten" % "threetenbp" % "1.6.5", // Needed after excluding google-cloud-storage
+      "com.google.api-client" % "google-api-client" % "2.0.0", // Required by Firebase Admin SDK
+      "com.google.http-client" % "google-http-client-jackson2" % "1.42.3", // Required for JacksonFactory
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
