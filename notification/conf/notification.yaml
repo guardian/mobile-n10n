@@ -95,7 +95,12 @@ Parameters:
   RunbookCopy:
     Type: String
     Default: <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>
-
+  LoggingStreamName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: SSM parameter containing the Name (not ARN) on the kinesis stream
+    AllowedValues:
+      - /account/services/logging.stream.name.code
+      - /account/services/logging.stream.name
 Resources:
   DnsRecord:
     Type: AWS::Route53::RecordSet
@@ -238,7 +243,9 @@ Resources:
             Resource:
             - !Sub arn:aws:s3:::${DistBucket}/*
             - !Sub arn:aws:s3:::${S3TopicCountBucket}/*
-          - Action: ec2:DescribeTags
+          - Action:
+            - ec2:DescribeTags
+            - ec2:DescribeInstances
             Effect: Allow
             Resource: '*'
           - Action:
@@ -324,6 +331,12 @@ Resources:
         PropagateAtLaunch: true
         Value:
           !FindInMap [Constants, App, Value]
+      - Key: SystemdUnit
+        Value: notification.service
+        PropagateAtLaunch: true
+      - Key: LogKinesisStreamName
+        Value: !Ref LoggingStreamName
+        PropagateAtLaunch: true
       VPCZoneIdentifier: !Ref PrivateSubnets
   NotificationInstanceProfile:
     Type: AWS::IAM::InstanceProfile

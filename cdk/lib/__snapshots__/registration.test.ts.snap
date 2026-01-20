@@ -76,6 +76,14 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
       "Type": "String",
     },
+    "LoggingStreamName": {
+      "AllowedValues": [
+        "/account/services/logging.stream.name.code",
+        "/account/services/logging.stream.name",
+      ],
+      "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
     "NotEnough200sPerDayThreshold": {
       "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
       "Type": "Number",
@@ -156,7 +164,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
                   },
                 },
                 {
-                  "Action": "ec2:DescribeTags",
+                  "Action": [
+                    "ec2:DescribeTags",
+                    "ec2:DescribeInstances",
+                  ],
                   "Effect": "Allow",
                   "Resource": "*",
                 },
@@ -730,6 +741,13 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "Value": "guardian/mobile-n10n",
           },
           {
+            "Key": "LogKinesisStreamName",
+            "PropagateAtLaunch": true,
+            "Value": {
+              "Ref": "LoggingStreamName",
+            },
+          },
+          {
             "Key": "Stack",
             "PropagateAtLaunch": true,
             "Value": "mobile-notifications",
@@ -738,6 +756,11 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "Key": "Stage",
             "PropagateAtLaunch": true,
             "Value": "CODE",
+          },
+          {
+            "Key": "SystemdUnit",
+            "PropagateAtLaunch": true,
+            "Value": "registration.service",
           },
         ],
         "VPCZoneIdentifier": {
@@ -907,6 +930,14 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
       "Type": "String",
     },
+    "LoggingStreamName": {
+      "AllowedValues": [
+        "/account/services/logging.stream.name.code",
+        "/account/services/logging.stream.name",
+      ],
+      "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
     "NotEnough200sPerDayThreshold": {
       "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
       "Type": "Number",
@@ -987,7 +1018,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
                   },
                 },
                 {
-                  "Action": "ec2:DescribeTags",
+                  "Action": [
+                    "ec2:DescribeTags",
+                    "ec2:DescribeInstances",
+                  ],
                   "Effect": "Allow",
                   "Resource": "*",
                 },
@@ -1561,6 +1595,13 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "Value": "guardian/mobile-n10n",
           },
           {
+            "Key": "LogKinesisStreamName",
+            "PropagateAtLaunch": true,
+            "Value": {
+              "Ref": "LoggingStreamName",
+            },
+          },
+          {
             "Key": "Stack",
             "PropagateAtLaunch": true,
             "Value": "mobile-notifications",
@@ -1569,6 +1610,11 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "Key": "Stage",
             "PropagateAtLaunch": true,
             "Value": "PROD",
+          },
+          {
+            "Key": "SystemdUnit",
+            "PropagateAtLaunch": true,
+            "Value": "registration.service",
           },
         ],
         "VPCZoneIdentifier": {

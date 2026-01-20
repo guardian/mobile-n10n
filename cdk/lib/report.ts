@@ -85,6 +85,10 @@ export class Report extends GuStack {
 				timeout: Duration.seconds(10), // The default is 5s
 				unhealthyThresholdCount: 10, // This also seems unusually high - the default is 2
 			},
+			applicationLogging: {
+				enabled: true,
+				systemdUnitName: app,
+			},
 		});
 
 		//TODO check if this customisation is really necessary (it has been copied across from
