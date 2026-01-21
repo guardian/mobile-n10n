@@ -49,6 +49,13 @@ Resources:
       GroupName: !Sub registrations-db-${Stage}
       GroupDescription: !Sub Security group allowing VPC only traffic
       SecurityGroupIngress:
+        # Join PostgresAccessSecurityGroup to allow access to postgres to the registration db
+        - SourceSecurityGroupId: !Ref PostgresAccessSecurityGroup
+          FromPort: 5432
+          IpProtocol: tcp
+          ToPort: 5432
+
+        # TODO Remove this rule once all applications are using the PostgresAccessSecurityGroup
         - SourceSecurityGroupId: !Ref VPCSecurityGroup
           FromPort: 5432
           IpProtocol: tcp
@@ -65,6 +72,27 @@ Resources:
         - Key: App
           Value: registrations-db
       VpcId: !Ref VpcId
+
+  PostgresAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub registrations-db-${Stage}-access
+      GroupDescription: !Sub Security group allowing access to the registrations db
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: mobile-notifications
+        - Key: App
+          Value: registrations-db
+      VpcId: !Ref VpcId
+
+  PostgresAccessSecurityGroupName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${Stage}/mobile-notifications/registrations-db/postgres-access-security-group
+      Type: String
+      Value: !Ref PostgresAccessSecurityGroup
 
   PrivateRegistrationPostgres13DB:
     Type: AWS::RDS::DBInstance
@@ -179,3 +207,4 @@ Resources:
 Outputs:
   DBUrl:
     Value: !GetAtt PrivateRegistrationPostgres13DB.Endpoint.Address
+
