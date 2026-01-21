@@ -80,6 +80,12 @@ Parameters:
   RunbookCopy:
     Type: String
     Default: <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>
+  LoggingStreamName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: SSM parameter containing the Name (not ARN) on the kinesis stream
+    AllowedValues:
+      - /account/services/logging.stream.name.code
+      - /account/services/logging.stream.name
 Resources:
   DistributionInstanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -105,7 +111,9 @@ Resources:
           - Action: s3:GetObject
             Effect: Allow
             Resource: !Sub arn:aws:s3:::${DistBucket}/*
-          - Action: ec2:DescribeTags
+          - Action:
+            - ec2:DescribeTags
+            - ec2:DescribeInstances
             Effect: Allow
             Resource: '*'
           - Action:
@@ -267,6 +275,12 @@ Resources:
         PropagateAtLaunch: true
         Value:
           !FindInMap [Constants, App, Value]
+      - Key: SystemdUnit
+        Value: registration.service
+        PropagateAtLaunch: true
+      - Key: LogKinesisStreamName
+        Value: !Ref LoggingStreamName
+        PropagateAtLaunch: true
       VPCZoneIdentifier: !Ref PrivateSubnets
   RegistrationLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -287,7 +301,6 @@ Resources:
             #!/bin/bash -ev
             aws --region ${AWS::Region} s3 cp s3://${DistBucket}/${Stack}/${Stage}/${App}/${App}_1.0-latest_all.deb /tmp
             dpkg -i /tmp/${App}_1.0-latest_all.deb
-            /opt/aws-kinesis-agent/configure-aws-kinesis-agent ${AWS::Region} mobile-log-aggregation-${Stage} /var/log/${App}/application.log
           - Stack: !FindInMap [Constants, Stack, Value]
             App: !FindInMap [Constants, App, Value]
   ScaleDownPolicy:

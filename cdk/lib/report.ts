@@ -85,6 +85,10 @@ export class Report extends GuStack {
 				timeout: Duration.seconds(10), // The default is 5s
 				unhealthyThresholdCount: 10, // This also seems unusually high - the default is 2
 			},
+			applicationLogging: {
+				enabled: true,
+				systemdUnitName: app,
+			},
 		});
 
 		//TODO check if this customisation is really necessary (it has been copied across from
@@ -92,11 +96,6 @@ export class Report extends GuStack {
 		// of the problem here.
 		const cfnAsg = autoScalingGroup.node.defaultChild as CfnAutoScalingGroup;
 		cfnAsg.healthCheckGracePeriod = Duration.seconds(400).toSeconds();
-
-		//TODO replace configure-aws-kinesis-agent with devx-logs?
-		autoScalingGroup.userData.addCommands(
-			`/opt/aws-kinesis-agent/configure-aws-kinesis-agent ${region} mobile-log-aggregation-${stage} /var/log/${app}/application.log`,
-		);
 
 		adjustCloudformationParameters(this);
 

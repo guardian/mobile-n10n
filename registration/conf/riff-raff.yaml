@@ -7,11 +7,16 @@ deployments:
     parameters:
       amiEncrypted: true
       amiTags:
-        Recipe: mobile-java11-jammy-ARM
+        Recipe: mobile-java11-jammy-ARM-with-cdk-base
         AmigoStage: PROD
       templateStagePaths:
         CODE: Registration-CODE.template.json
         PROD: Registration-PROD.template.json
+      templateStageParameters:
+        CODE:
+          LoggingStreamName: /account/services/logging.stream.name.code
+        PROD:
+          LoggingStreamName: /account/services/logging.stream.name
   registration:
     type: autoscaling
     parameters:

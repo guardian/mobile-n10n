@@ -7,14 +7,16 @@ deployments:
     parameters:
       amiEncrypted: true
       amiTags:
-        Recipe: mobile-java11-jammy-ARM
+        Recipe: mobile-java11-jammy-ARM-with-cdk-base
         AmigoStage: PROD
       templatePath: notification.yaml
       templateStageParameters:
         CODE:
           SloSqsQueueArn: /notifications/CODE/mobile-notifications/notifications.queues.sloMonitoringArn
+          LoggingStreamName: /account/services/logging.stream.name.code
         PROD:
           SloSqsQueueArn: /notifications/PROD/mobile-notifications/notifications.queues.sloMonitoringArn
+          LoggingStreamName: /account/services/logging.stream.name
   notification:
     type: autoscaling
     parameters:
