@@ -16,6 +16,6 @@ class MobileAwsCredentialsProvider extends AWSCredentialsProviderChain(
 object MobileAwsCredentialsProvider {
   val mobileAwsCredentialsProviderv2 = AwsCredentialsProviderChainV2.of(
     ProfileCredentialsProviderV2.builder.profileName("mobile").build,
-    DefaultCredentialsProviderV2.create
+    DefaultCredentialsProviderV2.builder().build()
   )
 }

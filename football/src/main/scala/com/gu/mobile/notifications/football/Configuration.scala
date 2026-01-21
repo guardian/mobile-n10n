@@ -17,7 +17,7 @@ class Configuration extends Logging {
 
   val credentialsv2 = AwsCredentialsProviderChainV2.of(
     ProfileCredentialsProviderV2.builder.profileName("mobile").build,
-    DefaultCredentialsProviderV2.create
+    DefaultCredentialsProviderV2.builder().build()
   )
 
   val appName = Option(System.getenv("App")).getOrElse(sys.error("No app name set. Lambda will not run"))
