@@ -76,3 +76,5 @@ jobs:
             registration-cfn:
               - cdk/cdk.out/Registration-CODE.template.json
               - cdk/cdk.out/Registration-PROD.template.json
+            registrations-db-cfn:
+              - registration-db.yaml

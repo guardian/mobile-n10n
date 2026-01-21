@@ -1,0 +1,181 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Registration for mobile notifications
+
+Parameters:
+  Stage:
+    Type: String
+    AllowedValues:
+      - CODE
+      - PROD
+    Description: Environment name
+  Postgres13InstanceType:
+    Type: String
+    Description: The instance type of Postgres13 database
+  AllocatedStorage:
+    Type: String
+    Description: The amount of storage to allocate in GiB
+  VpcId:
+    Description: ID of the Notification VPC
+    Type: AWS::EC2::VPC::Id
+  PrivateVpcSubnets:
+    Description: Private Subnets to use in VPC
+    Type: List<AWS::EC2::Subnet::Id>
+  VPCSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The default security group of the VPC
+  MasterUserName:
+    Type: String
+    Description: The root user name to create in the database
+  MasterPasswordReference:
+    Type: String
+    Description: The SSM key and version of the parameter i.e /notifications/CODE/registration.db.masterpassword:1
+  AlarmTopic:
+    Type: String
+    Description: The ARN of the SNS topic to send all the cloudwatch alarms to
+
+Mappings:
+  StageVariables:
+    CODE:
+      AlarmActionsEnabled: FALSE
+      LowerCaseStage: code
+    PROD:
+      AlarmActionsEnabled: TRUE
+      LowerCaseStage: prod
+
+Resources:
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub registrations-db-${Stage}
+      GroupDescription: !Sub Security group allowing VPC only traffic
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref VPCSecurityGroup
+          FromPort: 5432
+          IpProtocol: tcp
+          ToPort: 5432
+        - SourceSecurityGroupId: !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
+          FromPort: 5432
+          IpProtocol: tcp
+          ToPort: 5432
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: mobile-notifications
+        - Key: App
+          Value: registrations-db
+      VpcId: !Ref VpcId
+
+  PrivateRegistrationPostgres13DB:
+    Type: AWS::RDS::DBInstance
+    DependsOn: PrivateRegistrationDBSubnetGroup
+    DeletionPolicy: Retain
+    Properties:
+      AllocatedStorage: !Ref AllocatedStorage
+      AutoMinorVersionUpgrade: True
+      CACertificateIdentifier: rds-ca-rsa2048-g1
+      CopyTagsToSnapshot: True
+      DBInstanceClass: !Ref Postgres13InstanceType
+      DBInstanceIdentifier: !Sub notifications-registrations-db-private-pg13-${Stage}
+      DBName: !Sub registrations${Stage}
+      DBSubnetGroupName: !Sub notifications-registrations-db-subnet-group-private-${Stage}
+      Engine: postgres
+      EngineVersion: 13.6
+      MasterUsername: !Ref MasterUserName
+      MasterUserPassword: !Sub "{{resolve:ssm-secure:${MasterPasswordReference}}}"
+      MultiAZ: True
+      Port: 5432
+      PreferredMaintenanceWindow: Sun:03:45-Sun:04:30
+      PubliclyAccessible: False
+      StorageEncrypted: True
+      StorageType: gp2
+      Tags:
+        - Key: Stage
+          Value: !Ref Stage
+        - Key: Stack
+          Value: mobile-notifications
+        - Key: App
+          Value: registrations-db
+        - Key: devx-backup-enabled
+          Value: true
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+
+  PrivateRegistrationDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: !Sub notifications-registrations-db-subnet-group-private-${Stage}
+      DBSubnetGroupDescription: Access to the notification VPC
+      SubnetIds: !Ref PrivateVpcSubnets
+
+  DiskspaceAlarmAlert:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+      AlarmName:
+        !Sub notifications-registrations-db-private-${Stage}-alarm-low-diskspace-alert
+      AlarmDescription: Notifications registrations rds database has gone below the storage threshold
+      Namespace: AWS/RDS
+      MetricName: FreeStorageSpace
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Sub
+            - 'notifications-registrations-db-private-pg13-${LowerCaseStage}'
+            - LowerCaseStage: !FindInMap [StageVariables, !Ref Stage, LowerCaseStage]
+      Statistic: Minimum
+      ComparisonOperator: LessThanOrEqualToThreshold
+      Threshold: 26843545600 #this is measured in bytes so equates to 26.8GB
+      Period: 60
+      EvaluationPeriods: 1
+      TreatMissingData: missing
+      ActionsEnabled: !FindInMap [StageVariables, !Ref Stage, AlarmActionsEnabled]
+
+  RAMAlarmAlert:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+      AlarmName:
+        !Sub notifications-registrations-db-private-${Stage}-alarm-low-ram-alert
+      AlarmDescription: Notifications registrations rds database has gone below the freeable memory threshold
+      Namespace: AWS/RDS
+      MetricName: FreeableMemory
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Sub
+            - 'notifications-registrations-db-private-pg13-${LowerCaseStage}'
+            - LowerCaseStage: !FindInMap [StageVariables, !Ref Stage, LowerCaseStage]
+      Statistic: Minimum
+      ComparisonOperator: LessThanOrEqualToThreshold
+      Threshold: 250000000 #this is measured in bytes so equates to 250MB
+      Period: 60
+      EvaluationPeriods: 1
+      TreatMissingData: missing
+      ActionsEnabled: !FindInMap [StageVariables, !Ref Stage, AlarmActionsEnabled]
+
+  BurstBalanceAlarmAlert:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName:
+        !Sub notifications-registrations-db-private-${Stage}-alarm-low-burst-balance-alert
+      AlarmDescription: The burst balance for the notifications registrations rds database has gone below the threshold, please think about scaling the database to allow for recovery time.
+      Namespace: AWS/RDS
+      MetricName: BurstBalance
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Sub
+            - 'notifications-registrations-db-private-pg13-${LowerCaseStage}'
+            - LowerCaseStage: !FindInMap [StageVariables, !Ref Stage, LowerCaseStage]
+      Statistic: Average
+      ComparisonOperator: LessThanOrEqualToThreshold
+      Threshold: 30 #this unit is percentage
+      Period: 60
+      EvaluationPeriods: 1
+      AlarmActions: [!Ref AlarmTopic]
+      OKActions: [!Ref AlarmTopic]
+      ActionsEnabled: !FindInMap [StageVariables, !Ref Stage, AlarmActionsEnabled]
+
+Outputs:
+  DBUrl:
+    Value: !GetAtt PrivateRegistrationPostgres13DB.Endpoint.Address

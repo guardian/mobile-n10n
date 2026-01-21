@@ -4,6 +4,7 @@ deployments:
   registration-cfn:
     type: cloud-formation
     app: registration
+    dependencies: [ registrations-db-cfn ]
     parameters:
       amiEncrypted: true
       amiTags:
@@ -23,4 +24,11 @@ deployments:
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
     dependencies: [registration-cfn]
+  registrations-db-cfn:
+    type: cloud-formation
+    app: registrations-db
+    parameters:
+      templatePath: registration-db.yaml
+      cloudFormationStackByTags: true
+
 
