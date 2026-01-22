@@ -64,6 +64,14 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Description": "ACM Certificate for app use",
       "Type": "String",
     },
+    "DatabaseAccessSecurityGroup": {
+      "AllowedValues": [
+        "/CODE/mobile-notifications/registrations-db/postgres-access-security-group",
+        "/PROD/mobile-notifications/registrations-db/postgres-access-security-group",
+      ],
+      "Description": "The security group that allows access to the database",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>",
+    },
     "DistBucket": {
       "Description": "The name of the s3 bucket containing the server artifact",
       "Type": "String",
@@ -111,10 +119,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       ],
       "Description": "Environment name",
       "Type": "String",
-    },
-    "VPCSecurityGroup": {
-      "Description": "The default security group of the VPC",
-      "Type": "AWS::EC2::SecurityGroup::Id",
     },
     "VpcId": {
       "Description": "The VPC",
@@ -795,7 +799,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "Ref": "InstanceSecurityGroup",
           },
           {
-            "Ref": "VPCSecurityGroup",
+            "Ref": "DatabaseAccessSecurityGroup",
           },
         ],
         "UserData": {
@@ -917,6 +921,14 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Description": "ACM Certificate for app use",
       "Type": "String",
     },
+    "DatabaseAccessSecurityGroup": {
+      "AllowedValues": [
+        "/CODE/mobile-notifications/registrations-db/postgres-access-security-group",
+        "/PROD/mobile-notifications/registrations-db/postgres-access-security-group",
+      ],
+      "Description": "The security group that allows access to the database",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>",
+    },
     "DistBucket": {
       "Description": "The name of the s3 bucket containing the server artifact",
       "Type": "String",
@@ -964,10 +976,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       ],
       "Description": "Environment name",
       "Type": "String",
-    },
-    "VPCSecurityGroup": {
-      "Description": "The default security group of the VPC",
-      "Type": "AWS::EC2::SecurityGroup::Id",
     },
     "VpcId": {
       "Description": "The VPC",
@@ -1648,7 +1656,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "Ref": "InstanceSecurityGroup",
           },
           {
-            "Ref": "VPCSecurityGroup",
+            "Ref": "DatabaseAccessSecurityGroup",
           },
         ],
         "UserData": {
