@@ -29,25 +29,6 @@ deployments:
       fileName: reportextractor.jar
       prefixStack: false
     dependencies: [report-cfn]
-
-  legacy-reportextractor:
-    type: aws-lambda
-    app: reportextractor
-    parameters:
-      bucketSsmLookup: true
-      bucketSsmKey: /account/services/artifact.bucket.n10n
-      functionNames: [legacy-mobile-notifications-reportextractor-]
-      fileName: reportextractor.jar
-      prefixStack: false
-    dependencies: [legacy-reportextractor-cfn]
-
-  legacy-reportextractor-cfn:
-    type: cloud-formation
-    app: reportextractor
-    parameters:
-      prependStackToCloudFormationStackName: true
-      cloudFormationStackName: reportextractor
-      templatePath: cfn.yaml
   eventconsumer:
     type: aws-lambda
     parameters:
