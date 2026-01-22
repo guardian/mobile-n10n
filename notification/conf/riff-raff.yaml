@@ -9,7 +9,9 @@ deployments:
       amiTags:
         Recipe: mobile-java11-jammy-ARM-with-cdk-base
         AmigoStage: PROD
-      templatePath: notification.yaml
+      templateStagePaths:
+        CODE: Notification-CODE.template.json
+        PROD: Notification-PROD.template.json
       templateStageParameters:
         CODE:
           SloSqsQueueArn: /notifications/CODE/mobile-notifications/notifications.queues.sloMonitoringArn
