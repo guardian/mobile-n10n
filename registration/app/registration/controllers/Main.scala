@@ -33,16 +33,25 @@ final class Main(
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def healthCheck: Action[AnyContent] = Action {
-    // This forces Play to close the connection rather than allowing
-    // keep-alive (because the content length is unknown)
-    Ok.sendEntity(
-      HttpEntity.Streamed(
-        data =  Source(Array(ByteString("Good")).toVector),
-        contentLength = None,
-        contentType = Some("text/plain")
-      )
-    )
+
+  def healthCheck: Action[AnyContent] = Action.async {
+    // Check if we can talk to the registration database
+    registrar.dbHealthCheck()
+      .map(_ => {
+        // This forces Play to close the connection rather than allowing
+        // keep-alive (because the content length is unknown)
+        Ok.sendEntity(
+          HttpEntity.Streamed(
+            data =  Source(Array(ByteString("Good")).toVector),
+            contentLength = None,
+            contentType = Some("text/plain")
+          )
+        )
+      })
+      .recover { _ => {
+        logger.error("Failing to connect to database")
+        InternalServerError
+      } }
   }
 
   def newsstandRegister: Action[LegacyNewsstandRegistration] =
