@@ -1,6 +1,7 @@
 import 'source-map-support/register';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App } from 'aws-cdk-lib';
+import { Notification } from '../lib/notification';
 import { Registration } from '../lib/registration';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
 import { Report, type ReportProps } from '../lib/report';
@@ -8,6 +9,19 @@ import { SenderWorkerStack } from '../lib/senderworker';
 import { SloMonitoring } from '../lib/slo-monitoring';
 
 const app = new App();
+
+export const notificationCodeProps: GuStackProps = {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+};
+
+export const notificationProdProps: GuStackProps = {
+	stack: 'mobile-notifications',
+	stage: 'PROD',
+};
+
+new Notification(app, 'Notification-CODE', notificationCodeProps);
+new Notification(app, 'Notification-PROD', notificationProdProps);
 
 export const registrationCodeProps: GuStackProps = {
 	stack: 'mobile-notifications',
