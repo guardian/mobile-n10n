@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App } from 'aws-cdk-lib';
-import { Notification } from '../lib/notification';
+import { Notification, type NotificationProps } from '../lib/notification';
 import { Registration } from '../lib/registration';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
 import { Report, type ReportProps } from '../lib/report';
@@ -10,14 +10,34 @@ import { SloMonitoring } from '../lib/slo-monitoring';
 
 const app = new App();
 
-export const notificationCodeProps: GuStackProps = {
+export const notificationCodeProps: NotificationProps = {
 	stack: 'mobile-notifications',
 	stage: 'CODE',
+	env: { region: 'eu-west-1' },
+	domainName: 'notification.notifications.code.dev-guardianapis.com',
+	instanceMetricGranularity: '5Minute',
+	workerSqsQueueArn:
+		'arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-harvester-CODE-Sqs-1R9TBA4F2C6TG',
+	s3TopicCountBucket: 'mobile-notifications-topics',
+	alarmTopicArn: 'arn:aws:sns:eu-west-1:201359054765:mobile-server-side',
+	minAsgSize: 1,
+	maxAsgSize: 2,
+	dailyNewsstandPushCount: 0,
 };
 
-export const notificationProdProps: GuStackProps = {
+export const notificationProdProps: NotificationProps = {
 	stack: 'mobile-notifications',
 	stage: 'PROD',
+	env: { region: 'eu-west-1' },
+	domainName: 'notification.notifications.guardianapis.com',
+	instanceMetricGranularity: '1Minute',
+	workerSqsQueueArn:
+		'arn:aws:sqs:eu-west-1:201359054765:mobile-notifications-harvester-PROD-Sqs-NPP9X15G7WAO',
+	s3TopicCountBucket: 'mobile-notifications-topics',
+	alarmTopicArn: 'arn:aws:sns:eu-west-1:201359054765:mobile-server-side',
+	minAsgSize: 3,
+	maxAsgSize: 6,
+	dailyNewsstandPushCount: 1,
 };
 
 new Notification(app, 'Notification-CODE', notificationCodeProps);
