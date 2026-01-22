@@ -11,9 +11,6 @@ export class Notification extends GuStack {
 			__dirname,
 			'../../notification/conf/notification.yaml',
 		);
-		// Until this project has been fully migrated to GuCDK you should update the 'old' infrastructure by modifying
-		// the YAML file and then re-running the snapshot tests to confirm that the changes are being pulled through by
-		// CDK
 		new CfnInclude(this, 'YamlTemplate', {
 			templateFile: yamlTemplateFilePath,
 		});
