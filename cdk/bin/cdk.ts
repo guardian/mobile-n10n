@@ -24,8 +24,7 @@ export const notificationProdProps: NotificationProps = {
 new Notification(app, 'Notification-CODE', notificationCodeProps);
 new Notification(app, 'Notification-PROD', notificationProdProps);
 export const registrationCodeProps: RegistrationProps = {
-	
-stack: 'mobile-notifications',
+	stack: 'mobile-notifications',
 	stage: 'CODE',
 	app: 'registration',
 };
