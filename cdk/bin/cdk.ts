@@ -102,6 +102,7 @@ export const reportPropsCode: ReportProps = {
 	domainName: 'report.notifications.code.dev-guardianapis.com',
 	instanceMetricGranularity: '5Minute',
 	minAsgSize: 1,
+	buildIdentifier: process.env.GITHUB_RUN_NUMBER ?? 'DEV',
 };
 new Report(app, 'Report-CODE', reportPropsCode);
 
@@ -114,5 +115,6 @@ export const reportPropsProd: ReportProps = {
 	domainName: 'report.notifications.guardianapis.com',
 	instanceMetricGranularity: '1Minute',
 	minAsgSize: 3,
+	buildIdentifier: process.env.GITHUB_RUN_NUMBER ?? 'DEV',
 };
 new Report(app, 'Report-PROD', reportPropsProd);

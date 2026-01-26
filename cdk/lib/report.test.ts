@@ -6,13 +6,19 @@ import { Report } from './report';
 describe('The Report stack', () => {
 	it('matches the snapshot for CODE', () => {
 		const app = new App();
-		const stack = new Report(app, 'Report-CODE', reportPropsCode);
+		const stack = new Report(app, 'Report-CODE', {
+			...reportPropsCode,
+			buildIdentifier: 'TEST',
+		});
 		const template = Template.fromStack(stack);
 		expect(template.toJSON()).toMatchSnapshot();
 	});
 	it('matches the snapshot for PROD', () => {
 		const app = new App();
-		const stack = new Report(app, 'Report-PROD', reportPropsProd);
+		const stack = new Report(app, 'Report-PROD', {
+			...reportPropsProd,
+			buildIdentifier: 'TEST',
+		});
 		const template = Template.fromStack(stack);
 		expect(template.toJSON()).toMatchSnapshot();
 	});

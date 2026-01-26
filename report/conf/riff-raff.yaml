@@ -4,6 +4,8 @@ deployments:
   report-cfn:
     type: cloud-formation
     app: report
+    dependencies:
+      - report
     parameters:
       amiEncrypted: true
       amiParametersToTags:
@@ -15,10 +17,11 @@ deployments:
         PROD: Report-PROD.template.json
   report:
     type: autoscaling
+    actions:
+      - uploadArtifacts
     parameters:
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
-    dependencies: [report-cfn]
   reportextractor:
     type: aws-lambda
     app: reportextractor
