@@ -1,5 +1,7 @@
 import 'source-map-support/register';
 import { App } from 'aws-cdk-lib';
+import type { NotificationProps } from '../lib/notification';
+import { Notification } from '../lib/notification';
 import type { RegistrationProps } from '../lib/registration';
 import { Registration } from '../lib/registration';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
@@ -9,6 +11,18 @@ import { SloMonitoring } from '../lib/slo-monitoring';
 
 const app = new App();
 
+export const notificationCodeProps: NotificationProps = {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+};
+
+export const notificationProdProps: NotificationProps = {
+	stack: 'mobile-notifications',
+	stage: 'PROD',
+};
+
+new Notification(app, 'Notification-CODE', notificationCodeProps);
+new Notification(app, 'Notification-PROD', notificationProdProps);
 export const registrationCodeProps: RegistrationProps = {
 	stack: 'mobile-notifications',
 	stage: 'CODE',
