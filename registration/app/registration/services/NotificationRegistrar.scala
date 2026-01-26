@@ -22,6 +22,7 @@ trait NotificationRegistrar {
   import NotificationRegistrar.RegistrarResponse
   val providerIdentifier: String
   def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse]
+  def dbHealthCheck(): Future[List[TopicCount]]
 }
 
 object NotificationRegistrar {

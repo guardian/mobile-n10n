@@ -38,9 +38,12 @@ Parameters:
     - CODE
     - PROD
     Description: Environment name
-  VPCSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
-    Description: The default security group of the VPC
+  DatabaseAccessSecurityGroup:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>
+    Description: The security group that allows access to the database
+    AllowedValues:
+      - /CODE/mobile-notifications/registrations-db/postgres-access-security-group
+      - /PROD/mobile-notifications/registrations-db/postgres-access-security-group
   AlarmTopic:
     Type: String
     Description: The ARN of the SNS topic to send all the cloudwatch alarms to
@@ -291,7 +294,7 @@ Resources:
       InstanceType: !FindInMap [StageVariables, !Ref Stage, InstanceType]
       SecurityGroups:
       - !Ref InstanceSecurityGroup
-      - !Ref VPCSecurityGroup
+      - !Ref DatabaseAccessSecurityGroup
       MetadataOptions:
         HttpTokens: required
       UserData:

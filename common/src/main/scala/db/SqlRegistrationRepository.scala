@@ -77,6 +77,23 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
         .transact(xa)
   }
 
+  /**
+   * Used to verify that the DB connection is healthy.
+   * We just select one topic and a constant value as this is sufficient to check connectivity (we don't care about what data is returned).
+   */
+  override def simpleSelectForHealthCheck(): Stream[F, TopicCount] = {
+    logger.info("Performing a query to check DB connectivity")
+    sql"""
+         SELECT  topic
+                , 1
+         FROM   registrations
+         LIMIT  1
+      """
+      .query[TopicCount]
+      .stream
+      .transact(xa)
+  }
+
   override def findTokens(topics: NonEmptyList[String], shardRange: Option[Range]): Stream[F, HarvestedToken] = {
     val queryStatement = (sql"""
         SELECT token, platform, buildTier

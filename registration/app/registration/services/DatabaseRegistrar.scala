@@ -8,7 +8,6 @@ import fs2.Stream
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import metrics.{MetricDataPoint, Metrics}
 
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -16,6 +15,12 @@ class DatabaseRegistrar(
   registrationService: RegistrationService[IO, Stream],
   metrics: Metrics
 )(implicit ec: ExecutionContext) extends NotificationRegistrar {
+  def dbHealthCheck(): Future[List[TopicCount]] = {
+    val simpleSelect = registrationService.simpleSelectForHealthCheck()
+    simpleSelect.compile.toList.unsafeToFuture()
+  }
+
+
   override val providerIdentifier: String = "DatabaseRegistrar"
 
   override def register(deviceToken: DeviceToken, registration: Registration): RegistrarResponse[RegistrationResponse] = {

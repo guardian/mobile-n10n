@@ -16,8 +16,10 @@ deployments:
       templateStageParameters:
         CODE:
           LoggingStreamName: /account/services/logging.stream.name.code
+          DatabaseAccessSecurityGroup: /CODE/mobile-notifications/registrations-db/postgres-access-security-group
         PROD:
           LoggingStreamName: /account/services/logging.stream.name
+          DatabaseAccessSecurityGroup: /PROD/mobile-notifications/registrations-db/postgres-access-security-group
   registration:
     type: autoscaling
     parameters:

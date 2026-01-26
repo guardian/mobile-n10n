@@ -35,6 +35,9 @@ trait DelayedRegistrationsBase extends RegistrationsBase {
         provider = Unknown
       ))
     }
+
+    // Not needed for tests
+    override def dbHealthCheck(): Future[List[TopicCount]] = Future.successful(List.empty)
   }
 }
 
@@ -71,6 +74,8 @@ trait RegistrationsBase extends WithPlayApp with RegistrationsJson {
       ))
     }
 
+    // Not needed for tests
+    override def dbHealthCheck(): Future[List[TopicCount]] = Future.successful(List.empty)
   }
 
 

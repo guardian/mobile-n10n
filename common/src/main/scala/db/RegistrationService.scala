@@ -44,6 +44,8 @@ class RegistrationService[F[_]: Async, S[_[_], _]](repository: RegistrationRepos
   }
 
   def topicCounts(countThreshold: Int): S[F, TopicCount] = repository.topicCounts(countThreshold)
+
+  def simpleSelectForHealthCheck(): S[F, TopicCount] = repository.simpleSelectForHealthCheck()
 }
 
 
