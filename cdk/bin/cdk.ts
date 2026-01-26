@@ -14,15 +14,30 @@ const app = new App();
 export const notificationCodeProps: NotificationProps = {
 	stack: 'mobile-notifications',
 	stage: 'CODE',
+	env: { region: 'eu-west-1' },
+	domainName: 'notification.notifications.code.dev-guardianapis.com',
+	instanceMetricGranularity: '5Minute',
+	workerSqsQueueName: 'mobile-notifications-harvester-CODE-Sqs-1R9TBA4F2C6TG',
+	sloMonitoringQueueName: 'notifications-slo-monitoring-CODE',
+	minAsgSize: 1,
+	maxAsgSize: 2,
 };
 
 export const notificationProdProps: NotificationProps = {
 	stack: 'mobile-notifications',
 	stage: 'PROD',
+	env: { region: 'eu-west-1' },
+	domainName: 'notification.notifications.guardianapis.com',
+	instanceMetricGranularity: '1Minute',
+	workerSqsQueueName: 'mobile-notifications-harvester-PROD-Sqs-NPP9X15G7WAO',
+	sloMonitoringQueueName: 'notifications-slo-monitoring-PROD',
+	minAsgSize: 3,
+	maxAsgSize: 6,
 };
 
 new Notification(app, 'Notification-CODE', notificationCodeProps);
 new Notification(app, 'Notification-PROD', notificationProdProps);
+
 export const registrationCodeProps: RegistrationProps = {
 	stack: 'mobile-notifications',
 	stage: 'CODE',
