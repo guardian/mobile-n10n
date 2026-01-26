@@ -82,6 +82,7 @@ class SqlRegistrationRepository[F[_]: Async](xa: Transactor[F])
    * We just select one topic and a constant value as this is sufficient to check connectivity (we don't care about what data is returned).
    */
   override def simpleSelectForHealthCheck(): Stream[F, TopicCount] = {
+    logger.info("Performing a query to check DB connectivity")
     sql"""
          SELECT  topic
                 , 1

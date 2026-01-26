@@ -33,10 +33,11 @@ final class Main(
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
+  // Check if we can talk to the registration database
+  private lazy val dbConnectivityCheck = registrar.dbHealthCheck()
 
   def healthCheck: Action[AnyContent] = Action.async {
-    // Check if we can talk to the registration database
-    registrar.dbHealthCheck()
+    dbConnectivityCheck
       .map(_ => {
         // This forces Play to close the connection rather than allowing
         // keep-alive (because the content length is unknown)
