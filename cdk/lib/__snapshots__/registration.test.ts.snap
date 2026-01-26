@@ -234,6 +234,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         ],
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -327,6 +331,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "Statistic": "Average",
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -384,6 +392,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         ],
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -426,6 +438,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
           },
         ],
         "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
           {
             "Key": "gu:cdk:version",
             "Value": "TEST",
@@ -478,6 +494,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
           "Ref": "PublicSubnets",
         },
         "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
           {
             "Key": "gu:cdk:version",
             "Value": "TEST",
@@ -554,6 +574,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "Statistic": "Average",
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -613,6 +637,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "Statistic": "Sum",
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -666,6 +694,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "Period": 86400,
         "Statistic": "Sum",
         "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
           {
             "Key": "gu:cdk:version",
             "Value": "TEST",
@@ -726,13 +758,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
           {
             "Key": "App",
             "PropagateAtLaunch": true,
-            "Value": {
-              "Fn::FindInMap": [
-                "Constants",
-                "App",
-                "Value",
-              ],
-            },
+            "Value": "registration",
           },
           {
             "Key": "gu:cdk:version",
@@ -1091,6 +1117,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         ],
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -1184,6 +1214,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "Statistic": "Average",
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -1241,6 +1275,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         ],
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -1283,6 +1321,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
           },
         ],
         "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
           {
             "Key": "gu:cdk:version",
             "Value": "TEST",
@@ -1335,6 +1377,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
           "Ref": "PublicSubnets",
         },
         "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
           {
             "Key": "gu:cdk:version",
             "Value": "TEST",
@@ -1411,6 +1457,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "Statistic": "Average",
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -1470,6 +1520,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "Statistic": "Sum",
         "Tags": [
           {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
             "Key": "gu:cdk:version",
             "Value": "TEST",
           },
@@ -1523,6 +1577,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "Period": 86400,
         "Statistic": "Sum",
         "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
           {
             "Key": "gu:cdk:version",
             "Value": "TEST",
@@ -1583,13 +1641,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
           {
             "Key": "App",
             "PropagateAtLaunch": true,
-            "Value": {
-              "Fn::FindInMap": [
-                "Constants",
-                "App",
-                "Value",
-              ],
-            },
+            "Value": "registration",
           },
           {
             "Key": "gu:cdk:version",
