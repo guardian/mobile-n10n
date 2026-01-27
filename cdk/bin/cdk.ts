@@ -30,7 +30,7 @@ export const registrationCodeProps: RegistrationProps = {
 	app: 'registration',
 	env: { region: 'eu-west-1' },
 	instanceMetricGranularity: '5Minute',
-	minAsgSize: 1,
+	minAsgSize: 0,
 };
 
 export const registrationProdProps: RegistrationProps = {
@@ -39,8 +39,8 @@ export const registrationProdProps: RegistrationProps = {
 	app: 'registration',
 	env: { region: 'eu-west-1' },
 	instanceMetricGranularity: '1Minute',
-	maxAsgSize: 12,
-	minAsgSize: 1,
+	maxAsgSize: 0,
+	minAsgSize: 0,
 };
 
 new Registration(app, 'Registration-CODE', registrationCodeProps);
