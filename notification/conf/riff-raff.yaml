@@ -7,6 +7,9 @@ deployments:
     parameters:
       amiEncrypted: true
       amiParametersToTags:
+        AMI:
+          Recipe: mobile-java11-jammy-ARM-with-cdk-base
+          AmigoStage: PROD
         AMINotification:
           Recipe: mobile-java11-jammy-ARM-with-cdk-base
           AmigoStage: PROD
