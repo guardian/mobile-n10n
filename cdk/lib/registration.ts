@@ -1,11 +1,17 @@
 import { join } from 'path';
+import { GuEc2App } from '@guardian/cdk';
+import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import type { App } from 'aws-cdk-lib';
+import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 
 export interface RegistrationProps extends GuStackProps {
 	app: string;
+	instanceMetricGranularity: '1Minute' | '5Minute';
+	minAsgSize: number;
+	maxAsgSize?: number;
 }
 
 export class Registration extends GuStack {
@@ -20,6 +26,30 @@ export class Registration extends GuStack {
 		// CDK
 		new CfnInclude(this, 'YamlTemplate', {
 			templateFile: yamlTemplateFilePath,
+		});
+
+		const { app, instanceMetricGranularity, minAsgSize, maxAsgSize } = props;
+
+		new GuEc2App(this, {
+			app,
+			access: {
+				scope: AccessScope.PUBLIC,
+			},
+			applicationPort: 9000,
+			instanceMetricGranularity,
+			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
+
+			// This matches the YAML stack (i.e. there is no 5XX alarm).
+			monitoringConfiguration: { noMonitoring: true },
+
+			scaling: { minimumInstances: minAsgSize, maximumInstances: maxAsgSize },
+
+			userData: {
+				distributable: {
+					fileName: `${app}_1.0-latest_all.deb`,
+					executionStatement: `dpkg -i /${app}/${app}_1.0-latest_all.deb`,
+				},
+			},
 		});
 	}
 }

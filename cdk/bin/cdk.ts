@@ -23,16 +23,24 @@ export const notificationProdProps: NotificationProps = {
 
 new Notification(app, 'Notification-CODE', notificationCodeProps);
 new Notification(app, 'Notification-PROD', notificationProdProps);
+
 export const registrationCodeProps: RegistrationProps = {
 	stack: 'mobile-notifications',
 	stage: 'CODE',
 	app: 'registration',
+	env: { region: 'eu-west-1' },
+	instanceMetricGranularity: '5Minute',
+	minAsgSize: 1,
 };
 
 export const registrationProdProps: RegistrationProps = {
 	stack: 'mobile-notifications',
 	stage: 'PROD',
 	app: 'registration',
+	env: { region: 'eu-west-1' },
+	instanceMetricGranularity: '1Minute',
+	maxAsgSize: 12,
+	minAsgSize: 1,
 };
 
 new Registration(app, 'Registration-CODE', registrationCodeProps);
