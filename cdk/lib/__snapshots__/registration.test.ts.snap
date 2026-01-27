@@ -288,6 +288,21 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
     },
+    "AutoScalingGroupRegistrationScalingPolicyCpuScalingPolicyC9925B96": {
+      "Properties": {
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroupRegistrationASG07AD2A4F",
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization",
+          },
+          "TargetValue": 20,
+        },
+      },
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
     "CloudWatchLogsAccess4E8A6C17": {
       "Properties": {
         "PolicyDocument": {
@@ -2053,6 +2068,21 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "AutoScalingGroupRegistrationScalingPolicyCpuScalingPolicyC9925B96": {
+      "Properties": {
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroupRegistrationASG07AD2A4F",
+        },
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization",
+          },
+          "TargetValue": 20,
+        },
+      },
+      "Type": "AWS::AutoScaling::ScalingPolicy",
     },
     "CloudWatchLogsAccess4E8A6C17": {
       "Properties": {

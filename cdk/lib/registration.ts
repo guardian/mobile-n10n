@@ -110,6 +110,10 @@ export class Registration extends GuStack {
 			),
 		);
 
+		autoScalingGroup.scaleOnCpuUtilization('CpuScalingPolicy', {
+			targetUtilizationPercent: 20,
+		});
+
 		adjustCloudformationParameters(this);
 	}
 }
