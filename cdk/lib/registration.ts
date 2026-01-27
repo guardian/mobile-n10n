@@ -4,13 +4,20 @@ import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuParameter, GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
-import { type App, Tags } from 'aws-cdk-lib';
+import { type App, Duration, Tags } from 'aws-cdk-lib';
+import {
+	ComparisonOperator,
+	TreatMissingData,
+} from 'aws-cdk-lib/aws-cloudwatch';
+import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
 import {
 	InstanceClass,
 	InstanceSize,
 	InstanceType,
 	SecurityGroup,
 } from 'aws-cdk-lib/aws-ec2';
+import { HttpCodeTarget } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import { Topic } from 'aws-cdk-lib/aws-sns';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
@@ -19,6 +26,8 @@ export interface RegistrationProps extends GuStackProps {
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	minAsgSize: number;
 	maxAsgSize?: number;
+	low2xxIn30MinutesThreshold: number;
+	low2xxIn24HoursThreshold: number;
 }
 
 export class Registration extends GuStack {
@@ -42,11 +51,13 @@ export class Registration extends GuStack {
 			instanceMetricGranularity,
 			minAsgSize,
 			maxAsgSize,
+			low2xxIn30MinutesThreshold,
+			low2xxIn24HoursThreshold,
 		} = props;
 
 		const { account, region } = this;
 
-		const { autoScalingGroup } = new GuEc2App(this, {
+		const { autoScalingGroup, loadBalancer } = new GuEc2App(this, {
 			app,
 			access: {
 				scope: AccessScope.PUBLIC,
@@ -113,6 +124,50 @@ export class Registration extends GuStack {
 		autoScalingGroup.scaleOnCpuUtilization('CpuScalingPolicy', {
 			targetUtilizationPercent: 20,
 		});
+
+		const runbookCopy =
+			'<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>';
+
+		const alarmTopic = Topic.fromTopicArn(
+			this,
+			'AlarmTopic',
+			`arn:aws:sns:${region}:${account}:mobile-server-side`,
+		);
+		const snsAction = new SnsAction(alarmTopic);
+
+		const low2xxIn30Minutes = loadBalancer.metrics
+			.httpCodeTarget(HttpCodeTarget.TARGET_2XX_COUNT, {
+				period: Duration.minutes(30),
+				statistic: 'Sum',
+			})
+			.createAlarm(this, 'Low2XXIn30Minutes', {
+				actionsEnabled: false,
+				alarmDescription: `Triggers if load balancer in ${stage} does not have enough 200s in half an hour. ${runbookCopy}`,
+				comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
+				evaluationPeriods: 1,
+				threshold: low2xxIn30MinutesThreshold,
+				treatMissingData: TreatMissingData.BREACHING,
+			});
+
+		low2xxIn30Minutes.addAlarmAction(snsAction);
+		low2xxIn30Minutes.addOkAction(snsAction);
+
+		const low2xxIn24Hours = loadBalancer.metrics
+			.httpCodeTarget(HttpCodeTarget.TARGET_2XX_COUNT, {
+				period: Duration.hours(24),
+				statistic: 'Sum',
+			})
+			.createAlarm(this, 'Low2XXIn24Hours', {
+				actionsEnabled: false,
+				alarmDescription: `Triggers if load balancer in ${stage} does not have enough 200s in a whole day. ${runbookCopy}`,
+				comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
+				evaluationPeriods: 1,
+				threshold: low2xxIn24HoursThreshold,
+				treatMissingData: TreatMissingData.BREACHING,
+			});
+
+		low2xxIn24Hours.addAlarmAction(snsAction);
+		low2xxIn24Hours.addOkAction(snsAction);
 
 		adjustCloudformationParameters(this);
 	}
