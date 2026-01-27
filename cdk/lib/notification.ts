@@ -57,7 +57,7 @@ export class Notification extends GuStack {
 
 		const app = 'notification';
 
-		const s3TopicCountBucketName = `/${app}/${this.stage}/${this.stack}/notifications.topicCounts.bucket`;
+		const s3TopicCountBucketName = `/notifications/${this.stage}/${this.stack}/notifications.topicCounts.bucket`;
 		const s3TopicCountBucket = new GuStringParameter(this, 'TopicCountBucket', {
 			description:
 				'SSM parameter containing the bucket name containing topic counts',

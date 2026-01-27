@@ -200,9 +200,9 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
     },
     "TopicCountBucket": {
       "AllowedValues": [
-        "/notification/CODE/mobile-notifications/notifications.topicCounts.bucket",
+        "/notifications/CODE/mobile-notifications/notifications.topicCounts.bucket",
       ],
-      "Default": "/notification/CODE/mobile-notifications/notifications.topicCounts.bucket",
+      "Default": "/notifications/CODE/mobile-notifications/notifications.topicCounts.bucket",
       "Description": "SSM parameter containing the bucket name containing topic counts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
@@ -2389,9 +2389,9 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
     },
     "TopicCountBucket": {
       "AllowedValues": [
-        "/notification/PROD/mobile-notifications/notifications.topicCounts.bucket",
+        "/notifications/PROD/mobile-notifications/notifications.topicCounts.bucket",
       ],
-      "Default": "/notification/PROD/mobile-notifications/notifications.topicCounts.bucket",
+      "Default": "/notifications/PROD/mobile-notifications/notifications.topicCounts.bucket",
       "Description": "SSM parameter containing the bucket name containing topic counts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
