@@ -138,7 +138,7 @@ export class Notification extends GuStack {
 				],
 			},
 			scaling: {
-				minimumInstances: minAsgSize
+				minimumInstances: minAsgSize,
 			},
 			userData: {
 				distributable: {
