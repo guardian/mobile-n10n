@@ -31,6 +31,7 @@ export const registrationCodeProps: RegistrationProps = {
 	env: { region: 'eu-west-1' },
 	instanceMetricGranularity: '5Minute',
 	minAsgSize: 0,
+	cloudFormationStackName: 'mobile-notifications-registration-CODE',
 };
 
 export const registrationProdProps: RegistrationProps = {
@@ -41,6 +42,7 @@ export const registrationProdProps: RegistrationProps = {
 	instanceMetricGranularity: '1Minute',
 	maxAsgSize: 0,
 	minAsgSize: 0,
+	cloudFormationStackName: 'mobile-notifications-registration-PROD',
 };
 
 new Registration(app, 'Registration-CODE', registrationCodeProps);
