@@ -53,22 +53,24 @@ jobs:
         run: sbt "project common" "compile" "test"
 
       - name: Build project report
-        run: |
-          sbt "project report" "compile" "test" "debian:packageBin"
-          mkdir -p dist/report
-          mv report/target/report_1.0-latest_all.deb dist/report/report-$GITHUB_RUN_NUMBER.deb
+        run: sbt "project report" "compile" "test" "debian:packageBin"
 
       - name: Build project reportextractor
-        run: |
-          sbt "project reportextractor" "compile" "test" "assembly"
-          echo "Copying reportextractor jar to root directory"
-          cp reportextractor/target/scala-*/reportextractor.jar .
+        run: sbt "project reportextractor" "compile" "test" "assembly"
 
       - name: Build project eventconsumer
+        run: sbt "project commoneventconsumer" "compile" "test" "project eventconsumer" "compile" "test" "assembly"
+
+      - name: Move artifacts for easier discovery
         run: |
-          sbt "project commoneventconsumer" "compile" "test" "project eventconsumer" "compile" "test" "assembly"
-          echo "Copying eventconsumer jar to root directory"
-          cp eventconsumer/target/scala-*/eventconsumer.jar .
+          mkdir -p dist/report
+          mv report/target/report_1.0-latest_all.deb dist/report/report-$GITHUB_RUN_NUMBER.deb
+          
+          mkdir -p dist/reportextractor
+          mv reportextractor/target/scala-*/reportextractor.jar dist/reportextractor/reportextractor.jar
+          
+          mkdir -p dist/eventconsumer
+          mv eventconsumer/target/scala-*/eventconsumer.jar dist/eventconsumer/eventconsumer.jar
 
       - name: Test Report
         uses: dorny/test-reporter@v2
@@ -95,6 +97,6 @@ jobs:
               - cdk/cdk.out/Report-CODE.template.json
               - cdk/cdk.out/Report-PROD.template.json
             reportextractor:
-              - reportextractor.jar
+              - dist/reportextractor
             eventconsumer:
-              - eventconsumer.jar
+              - dist/eventconsumer
