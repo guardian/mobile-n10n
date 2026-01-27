@@ -7,6 +7,7 @@ on:
       - common/**
       - commoneventconsumer/**
       - commonscheduleddynamodb/**
+      - cdk/**
       - project/**
       - build.sbt
       - .github/workflows/notification.yml
@@ -27,10 +28,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.1
+      - uses: actions/checkout@v6.0.2
 
       - name: Setup JDK and sbt
         uses: guardian/setup-scala@v1
+
+      - run: corepack enable
+
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 #v6.2.0
+        with:
+          cache: yarn
+          cache-dependency-path: cdk/yarn.lock
+          node-version-file: .nvmrc
+
+      - name: CDK synth
+        run: |
+          cd cdk
+          yarn install --immutable
+          yarn lint
+          yarn test
+          yarn synth
 
       - name: Compile, test and package
         run: sbt "project common" "compile" "test" "project commonscheduledynamodb" "compile" "test" "project notification" "compile" "test" "debian:packageBin"
@@ -57,4 +74,5 @@ jobs:
             notification:
               - notification/target/notification_1.0-latest_all.deb
             notification-cfn:
-              - notification/conf/notification.yaml
+              - cdk/cdk.out/Notification-CODE.template.json
+              - cdk/cdk.out/Notification-PROD.template.json
