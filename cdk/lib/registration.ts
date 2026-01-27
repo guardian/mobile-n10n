@@ -2,9 +2,14 @@ import { join } from 'path';
 import { GuEc2App } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
-import { GuStack } from '@guardian/cdk/lib/constructs/core';
+import { GuParameter, GuStack } from '@guardian/cdk/lib/constructs/core';
 import { type App, Tags } from 'aws-cdk-lib';
-import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
+import {
+	InstanceClass,
+	InstanceSize,
+	InstanceType,
+	SecurityGroup,
+} from 'aws-cdk-lib/aws-ec2';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
@@ -29,7 +34,14 @@ export class Registration extends GuStack {
 			templateFile: yamlTemplateFilePath,
 		});
 
-		const { app, instanceMetricGranularity, minAsgSize, maxAsgSize } = props;
+		const {
+			app,
+			stage,
+			stack,
+			instanceMetricGranularity,
+			minAsgSize,
+			maxAsgSize,
+		} = props;
 
 		const { autoScalingGroup } = new GuEc2App(this, {
 			app,
@@ -54,6 +66,28 @@ export class Registration extends GuStack {
 		});
 
 		Tags.of(autoScalingGroup).add('gu:riffraff:new-asg', 'true');
+
+		const databaseAccessParamPath = `/${stage}/${stack}/registrations-db/postgres-access-security-group`;
+		const databaseSecurityGroupId = new GuParameter(
+			this,
+			'RegistrationsDatabaseAccessSecurityGroup',
+			{
+				default: databaseAccessParamPath,
+				allowedValues: [databaseAccessParamPath],
+				type: 'AWS::EC2::SecurityGroup::Id',
+				fromSSM: true,
+				description:
+					'SSM parameter path for the security group that allows access to the registrations database',
+			},
+		).valueAsString;
+
+		autoScalingGroup.connections.addSecurityGroup(
+			SecurityGroup.fromSecurityGroupId(
+				this,
+				'DatabaseAccessSecurityGroup',
+				databaseSecurityGroupId,
+			),
+		);
 
 		adjustCloudformationParameters(this);
 	}

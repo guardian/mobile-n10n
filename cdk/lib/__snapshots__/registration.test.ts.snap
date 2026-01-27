@@ -53,6 +53,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "GuAccessLoggingBucketParameter",
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
+      "GuParameter",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -167,6 +168,14 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Description": "The public subnets of the VPC for the loadbalancer",
       "Type": "List<AWS::EC2::Subnet::Id>",
     },
+    "RegistrationsDatabaseAccessSecurityGroup": {
+      "AllowedValues": [
+        "/CODE/mobile-notifications/registrations-db/postgres-access-security-group",
+      ],
+      "Default": "/CODE/mobile-notifications/registrations-db/postgres-access-security-group",
+      "Description": "SSM parameter path for the security group that allows access to the registrations database",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>",
+    },
     "RunbookCopy": {
       "Default": "<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
       "Type": "String",
@@ -276,6 +285,24 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "DatabaseAccessSecurityGroupfromRegistrationCODELoadBalancerRegistrationSecurityGroup61D8AED29000FDD07AB3": {
+      "Properties": {
+        "Description": "Load balancer to target",
+        "FromPort": 9000,
+        "GroupId": {
+          "Ref": "RegistrationsDatabaseAccessSecurityGroup",
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "LoadBalancerRegistrationSecurityGroupD34C5510",
+            "GroupId",
+          ],
+        },
+        "ToPort": 9000,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
     },
     "DescribeEC2PolicyFF5F9295": {
       "Properties": {
@@ -882,6 +909,24 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
+    },
+    "LoadBalancerRegistrationSecurityGrouptoRegistrationCODEDatabaseAccessSecurityGroup7E4CE76F90003D7681AD": {
+      "Properties": {
+        "Description": "Load balancer to target",
+        "DestinationSecurityGroupId": {
+          "Ref": "RegistrationsDatabaseAccessSecurityGroup",
+        },
+        "FromPort": 9000,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "LoadBalancerRegistrationSecurityGroupD34C5510",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "ToPort": 9000,
+      },
+      "Type": "AWS::EC2::SecurityGroupEgress",
     },
     "LoadBalancerRegistrationSecurityGrouptoRegistrationCODEGuHttpsEgressSecurityGroupRegistration0B68A74890003951EF62": {
       "Properties": {
@@ -1533,6 +1578,9 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
                 "GroupId",
               ],
             },
+            {
+              "Ref": "RegistrationsDatabaseAccessSecurityGroup",
+            },
           ],
           "TagSpecifications": [
             {
@@ -1713,6 +1761,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "GuAccessLoggingBucketParameter",
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
+      "GuParameter",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -1827,6 +1876,14 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Description": "The public subnets of the VPC for the loadbalancer",
       "Type": "List<AWS::EC2::Subnet::Id>",
     },
+    "RegistrationsDatabaseAccessSecurityGroup": {
+      "AllowedValues": [
+        "/PROD/mobile-notifications/registrations-db/postgres-access-security-group",
+      ],
+      "Default": "/PROD/mobile-notifications/registrations-db/postgres-access-security-group",
+      "Description": "SSM parameter path for the security group that allows access to the registrations database",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>",
+    },
     "RunbookCopy": {
       "Default": "<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
       "Type": "String",
@@ -1936,6 +1993,24 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "DatabaseAccessSecurityGroupfromRegistrationPRODLoadBalancerRegistrationSecurityGroup6424695D9000BAC6414B": {
+      "Properties": {
+        "Description": "Load balancer to target",
+        "FromPort": 9000,
+        "GroupId": {
+          "Ref": "RegistrationsDatabaseAccessSecurityGroup",
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "LoadBalancerRegistrationSecurityGroupD34C5510",
+            "GroupId",
+          ],
+        },
+        "ToPort": 9000,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
     },
     "DescribeEC2PolicyFF5F9295": {
       "Properties": {
@@ -2542,6 +2617,24 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
+    },
+    "LoadBalancerRegistrationSecurityGrouptoRegistrationPRODDatabaseAccessSecurityGroup39CCFB3A9000FE8BA7FA": {
+      "Properties": {
+        "Description": "Load balancer to target",
+        "DestinationSecurityGroupId": {
+          "Ref": "RegistrationsDatabaseAccessSecurityGroup",
+        },
+        "FromPort": 9000,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "LoadBalancerRegistrationSecurityGroupD34C5510",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "ToPort": 9000,
+      },
+      "Type": "AWS::EC2::SecurityGroupEgress",
     },
     "LoadBalancerRegistrationSecurityGrouptoRegistrationPRODGuHttpsEgressSecurityGroupRegistrationE0FB5BA090000D8353AD": {
       "Properties": {
@@ -3192,6 +3285,9 @@ dpkg -i /tmp/\${App}_1.0-latest_all.deb
                 "GuHttpsEgressSecurityGroupRegistration92BD47C4",
                 "GroupId",
               ],
+            },
+            {
+              "Ref": "RegistrationsDatabaseAccessSecurityGroup",
             },
           ],
           "TagSpecifications": [
