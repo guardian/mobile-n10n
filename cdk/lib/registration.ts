@@ -3,7 +3,7 @@ import { GuEc2App } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
-import type { App } from 'aws-cdk-lib';
+import { type App, Tags } from 'aws-cdk-lib';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 
@@ -30,7 +30,7 @@ export class Registration extends GuStack {
 
 		const { app, instanceMetricGranularity, minAsgSize, maxAsgSize } = props;
 
-		new GuEc2App(this, {
+		const { autoScalingGroup } = new GuEc2App(this, {
 			app,
 			access: {
 				scope: AccessScope.PUBLIC,
@@ -51,5 +51,7 @@ export class Registration extends GuStack {
 				},
 			},
 		});
+
+		Tags.of(autoScalingGroup).add('gu:riffraff:new-asg', 'true');
 	}
 }
