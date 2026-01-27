@@ -84,13 +84,18 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
       "Type": "String",
     },
-    "LoggingStreamName": {
+    "LegacyLoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name.code",
         "/account/services/logging.stream.name",
       ],
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "LegacyVpcId": {
+      "Default": "/account/vpc/notifications/id",
+      "Description": "The VPC",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "NotEnough200sPerDayThreshold": {
       "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
@@ -119,10 +124,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       ],
       "Description": "Environment name",
       "Type": "String",
-    },
-    "VpcId": {
-      "Description": "The VPC",
-      "Type": "AWS::EC2::VPC::Id",
     },
   },
   "Resources": {
@@ -413,7 +414,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "VpcId",
+          "Ref": "LegacyVpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -460,7 +461,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "VpcId",
+          "Ref": "LegacyVpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -774,7 +775,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "Key": "LogKinesisStreamName",
             "PropagateAtLaunch": true,
             "Value": {
-              "Ref": "LoggingStreamName",
+              "Ref": "LegacyLoggingStreamName",
             },
           },
           {
@@ -967,13 +968,18 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
       "Type": "String",
     },
-    "LoggingStreamName": {
+    "LegacyLoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name.code",
         "/account/services/logging.stream.name",
       ],
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "LegacyVpcId": {
+      "Default": "/account/vpc/notifications/id",
+      "Description": "The VPC",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "NotEnough200sPerDayThreshold": {
       "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
@@ -1002,10 +1008,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       ],
       "Description": "Environment name",
       "Type": "String",
-    },
-    "VpcId": {
-      "Description": "The VPC",
-      "Type": "AWS::EC2::VPC::Id",
     },
   },
   "Resources": {
@@ -1296,7 +1298,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "VpcId",
+          "Ref": "LegacyVpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -1343,7 +1345,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "VpcId",
+          "Ref": "LegacyVpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -1657,7 +1659,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "Key": "LogKinesisStreamName",
             "PropagateAtLaunch": true,
             "Value": {
-              "Ref": "LoggingStreamName",
+              "Ref": "LegacyLoggingStreamName",
             },
           },
           {
