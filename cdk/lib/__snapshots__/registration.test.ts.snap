@@ -115,7 +115,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Type": "String",
     },
     "DistributionBucketName": {
-      "Default": "/account/services/artifact.bucket",
+      "AllowedValues": [
+        "/account/services/artifact.bucket.n10n",
+      ],
+      "Default": "/account/services/artifact.bucket.n10n",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
@@ -141,7 +144,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "LoggingStreamName": {
-      "Default": "/account/services/logging.stream.name",
+      "AllowedValues": [
+        "/account/services/logging.stream.name.code",
+      ],
+      "Default": "/account/services/logging.stream.name.code",
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
@@ -174,17 +180,26 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Type": "String",
     },
     "VpcId": {
-      "Default": "/account/vpc/primary/id",
+      "AllowedValues": [
+        "/account/vpc/notifications/id",
+      ],
+      "Default": "/account/vpc/notifications/id",
       "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "registrationPrivateSubnets": {
-      "Default": "/account/vpc/primary/subnets/private",
+      "AllowedValues": [
+        "/account/vpc/notifications/subnets/private",
+      ],
+      "Default": "/account/vpc/notifications/subnets/private",
       "Description": "A list of private subnets",
       "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
     },
     "registrationPublicSubnets": {
-      "Default": "/account/vpc/primary/subnets/public",
+      "AllowedValues": [
+        "/account/vpc/notifications/subnets/public",
+      ],
+      "Default": "/account/vpc/notifications/subnets/public",
       "Description": "A list of public subnets",
       "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
     },
@@ -1760,7 +1775,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Type": "String",
     },
     "DistributionBucketName": {
-      "Default": "/account/services/artifact.bucket",
+      "AllowedValues": [
+        "/account/services/artifact.bucket.n10n",
+      ],
+      "Default": "/account/services/artifact.bucket.n10n",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
@@ -1786,6 +1804,9 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "LoggingStreamName": {
+      "AllowedValues": [
+        "/account/services/logging.stream.name",
+      ],
       "Default": "/account/services/logging.stream.name",
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
@@ -1819,17 +1840,26 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Type": "String",
     },
     "VpcId": {
-      "Default": "/account/vpc/primary/id",
+      "AllowedValues": [
+        "/account/vpc/notifications/id",
+      ],
+      "Default": "/account/vpc/notifications/id",
       "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "registrationPrivateSubnets": {
-      "Default": "/account/vpc/primary/subnets/private",
+      "AllowedValues": [
+        "/account/vpc/notifications/subnets/private",
+      ],
+      "Default": "/account/vpc/notifications/subnets/private",
       "Description": "A list of private subnets",
       "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
     },
     "registrationPublicSubnets": {
-      "Default": "/account/vpc/primary/subnets/public",
+      "AllowedValues": [
+        "/account/vpc/notifications/subnets/public",
+      ],
+      "Default": "/account/vpc/notifications/subnets/public",
       "Description": "A list of public subnets",
       "Type": "AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>",
     },

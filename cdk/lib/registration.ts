@@ -6,6 +6,7 @@ import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { type App, Tags } from 'aws-cdk-lib';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
+import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
 export interface RegistrationProps extends GuStackProps {
 	app: string;
@@ -53,5 +54,7 @@ export class Registration extends GuStack {
 		});
 
 		Tags.of(autoScalingGroup).add('gu:riffraff:new-asg', 'true');
+
+		adjustCloudformationParameters(this);
 	}
 }
