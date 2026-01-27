@@ -6,10 +6,17 @@ deployments:
     app: registration
     dependencies: [ registrations-db-cfn ]
     parameters:
-      amiEncrypted: true
-      amiTags:
-        Recipe: mobile-java11-jammy-ARM-with-cdk-base
-        AmigoStage: PROD
+      amiParametersToTags:
+        # AMI from YAML stack
+        AMI:
+          Recipe: mobile-java11-jammy-ARM-with-cdk-base
+          AmigoStage: PROD
+          Encrypted: 'true'
+        # AMI from GuCDK stack
+        AMIRegistration:
+          Recipe: mobile-java11-jammy-ARM-with-cdk-base
+          AmigoStage: PROD
+          Encrypted: 'true'
       templateStagePaths:
         CODE: Registration-CODE.template.json
         PROD: Registration-PROD.template.json
@@ -23,6 +30,7 @@ deployments:
   registration:
     type: autoscaling
     parameters:
+      asgMigrationInProgress: true
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
     dependencies: [registration-cfn]
