@@ -30,7 +30,6 @@ export interface NotificationProps extends GuStackProps {
 	workerSqsQueueName: string;
 	sloMonitoringQueueName: string;
 	minAsgSize: number;
-	maxAsgSize: number;
 }
 
 export class Notification extends GuStack {
@@ -44,7 +43,6 @@ export class Notification extends GuStack {
 			workerSqsQueueName,
 			sloMonitoringQueueName,
 			minAsgSize,
-			maxAsgSize,
 		} = props;
 
 		const yamlTemplateFilePath = join(
@@ -140,8 +138,7 @@ export class Notification extends GuStack {
 				],
 			},
 			scaling: {
-				minimumInstances: minAsgSize,
-				maximumInstances: maxAsgSize,
+				minimumInstances: minAsgSize
 			},
 			userData: {
 				distributable: {

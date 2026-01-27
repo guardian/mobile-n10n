@@ -20,7 +20,6 @@ export const notificationCodeProps: NotificationProps = {
 	workerSqsQueueName: 'mobile-notifications-harvester-CODE-Sqs-1R9TBA4F2C6TG',
 	sloMonitoringQueueName: 'notifications-slo-monitoring-CODE',
 	minAsgSize: 1,
-	maxAsgSize: 2,
 };
 
 export const notificationProdProps: NotificationProps = {
@@ -32,7 +31,6 @@ export const notificationProdProps: NotificationProps = {
 	workerSqsQueueName: 'mobile-notifications-harvester-PROD-Sqs-NPP9X15G7WAO',
 	sloMonitoringQueueName: 'notifications-slo-monitoring-PROD',
 	minAsgSize: 3,
-	maxAsgSize: 6,
 };
 
 new Notification(app, 'Notification-CODE', notificationCodeProps);
