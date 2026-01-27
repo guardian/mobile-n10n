@@ -9,7 +9,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "GuVpcParameter",
       "GuSubnetListParameter",
       "GuSubnetListParameter",
-      "GuPlayApp",
+      "GuEc2AppExperimental",
       "GuDistributionBucketParameter",
       "GuCertificate",
       "GuInstanceRole",
@@ -26,6 +26,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "GuAccessLoggingBucketParameter",
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
+      "GuRiffRaffDeploymentIdParameter",
       "GuCname",
       "GuScheduledLambda",
       "GuScheduledLambda",
@@ -69,6 +70,10 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
+    "RiffRaffDeploymentId": {
+      "Description": "Used by Riff-Raff to inject the deployment ID.",
+      "Type": "String",
+    },
     "VpcId": {
       "AllowedValues": [
         "/account/vpc/notifications/id",
@@ -95,8 +100,49 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
     },
   },
   "Resources": {
-    "AutoScalingGroupReportASG10642FDD": {
+    "AsgRollingUpdatePolicy2A1DDC6F": {
       "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "cloudformation:SignalResource",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "AWS::StackId",
+              },
+            },
+            {
+              "Action": "elasticloadbalancing:DescribeTargetHealth",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "AsgRollingUpdatePolicy2A1DDC6F",
+        "Roles": [
+          {
+            "Ref": "InstanceRoleReport42223080",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "AutoScalingGroupReportASG10642FDD": {
+      "CreationPolicy": {
+        "AutoScalingCreationPolicy": {
+          "MinSuccessfulInstancesPercent": 100,
+        },
+        "ResourceSignal": {
+          "Count": 1,
+          "Timeout": "PT7M40S",
+        },
+      },
+      "DependsOn": [
+        "AsgRollingUpdatePolicy2A1DDC6F",
+      ],
+      "Properties": {
+        "DesiredCapacity": "1",
         "HealthCheckGracePeriod": 400,
         "HealthCheckType": "ELB",
         "LaunchTemplate": {
@@ -166,6 +212,23 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MaxBatchSize": 2,
+          "MinInstancesInService": 1,
+          "MinSuccessfulInstancesPercent": 100,
+          "PauseTime": "PT7M40S",
+          "SuspendProcesses": [
+            "AlarmNotification",
+            "AZRebalance",
+            "HealthCheck",
+            "InstanceRefresh",
+            "ReplaceUnhealthy",
+            "ScheduledActions",
+          ],
+          "WaitOnResourceSignals": true,
+        },
+      },
     },
     "CertificateReportE388917B": {
       "DeletionPolicy": "Retain",
@@ -1558,6 +1621,10 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                   "Value": "report",
                 },
                 {
+                  "Key": "gu:build-identifier",
+                  "Value": "TEST",
+                },
+                {
                   "Key": "gu:cdk:version",
                   "Value": "TEST",
                 },
@@ -1585,6 +1652,10 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                 {
                   "Key": "App",
                   "Value": "report",
+                },
+                {
+                  "Key": "gu:build-identifier",
+                  "Value": "TEST",
                 },
                 {
                   "Key": "gu:cdk:version",
@@ -1615,13 +1686,53 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                 "",
                 [
                   "#!/bin/bash
-mkdir -p $(dirname '/report/report_1.0-latest_all.deb')
+function exitTrap(){
+exitCode=$?
+
+        cfn-signal --stack ",
+                  {
+                    "Ref": "AWS::StackId",
+                  },
+                  "           --resource AutoScalingGroupReportASG10642FDD           --region eu-west-1           --exit-code $exitCode || echo 'Failed to send Cloudformation Signal'
+        
+}
+trap exitTrap EXIT
+mkdir -p $(dirname '/report/report-TEST.deb')
 aws s3 cp 's3://",
                   {
                     "Ref": "DistributionBucketName",
                   },
-                  "/mobile-notifications/CODE/report/report_1.0-latest_all.deb' '/report/report_1.0-latest_all.deb'
-dpkg -i /report/report_1.0-latest_all.deb",
+                  "/mobile-notifications/CODE/report/report-TEST.deb' '/report/report-TEST.deb'
+dpkg -i /report/report-TEST.deb
+echo "Launch template last updated by Riff-Raff deployment ID: ",
+                  {
+                    "Ref": "RiffRaffDeploymentId",
+                  },
+                  ""
+# GuEc2AppExperimental Instance Health Check Start
+
+      TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+      INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/instance-id")
+
+      STATE=$(aws elbv2 describe-target-health         --target-group-arn ",
+                  {
+                    "Ref": "TargetGroupReport53648E3B",
+                  },
+                  "         --region eu-west-1         --targets Id=$INSTANCE_ID,Port=9000         --query "TargetHealthDescriptions[0].TargetHealth.State")
+
+      until [ "$STATE" == "\\"healthy\\"" ]; do
+        echo "Instance running build TEST not yet healthy within target group. Current state $STATE. Sleeping..."
+        sleep 5
+        STATE=$(aws elbv2 describe-target-health           --target-group-arn ",
+                  {
+                    "Ref": "TargetGroupReport53648E3B",
+                  },
+                  "           --region eu-west-1           --targets Id=$INSTANCE_ID,Port=9000           --query "TargetHealthDescriptions[0].TargetHealth.State")
+      done
+
+      echo "Instance running build TEST is healthy in target group."
+      
+# GuEc2AppExperimental Instance Health Check End",
                 ],
               ],
             },
@@ -1634,6 +1745,10 @@ dpkg -i /report/report_1.0-latest_all.deb",
               {
                 "Key": "App",
                 "Value": "report",
+              },
+              {
+                "Key": "gu:build-identifier",
+                "Value": "TEST",
               },
               {
                 "Key": "gu:cdk:version",
@@ -1684,7 +1799,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "GuVpcParameter",
       "GuSubnetListParameter",
       "GuSubnetListParameter",
-      "GuPlayApp",
+      "GuEc2AppExperimental",
       "GuDistributionBucketParameter",
       "GuCertificate",
       "GuInstanceRole",
@@ -1701,6 +1816,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "GuAccessLoggingBucketParameter",
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
+      "GuRiffRaffDeploymentIdParameter",
       "GuCname",
       "GuScheduledLambda",
       "GuScheduledLambda",
@@ -1744,6 +1860,10 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
+    "RiffRaffDeploymentId": {
+      "Description": "Used by Riff-Raff to inject the deployment ID.",
+      "Type": "String",
+    },
     "VpcId": {
       "AllowedValues": [
         "/account/vpc/notifications/id",
@@ -1770,8 +1890,49 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
     },
   },
   "Resources": {
-    "AutoScalingGroupReportASG10642FDD": {
+    "AsgRollingUpdatePolicy2A1DDC6F": {
       "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "cloudformation:SignalResource",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "AWS::StackId",
+              },
+            },
+            {
+              "Action": "elasticloadbalancing:DescribeTargetHealth",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "AsgRollingUpdatePolicy2A1DDC6F",
+        "Roles": [
+          {
+            "Ref": "InstanceRoleReport42223080",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "AutoScalingGroupReportASG10642FDD": {
+      "CreationPolicy": {
+        "AutoScalingCreationPolicy": {
+          "MinSuccessfulInstancesPercent": 100,
+        },
+        "ResourceSignal": {
+          "Count": 3,
+          "Timeout": "PT7M40S",
+        },
+      },
+      "DependsOn": [
+        "AsgRollingUpdatePolicy2A1DDC6F",
+      ],
+      "Properties": {
+        "DesiredCapacity": "3",
         "HealthCheckGracePeriod": 400,
         "HealthCheckType": "ELB",
         "LaunchTemplate": {
@@ -1841,6 +2002,23 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MaxBatchSize": 6,
+          "MinInstancesInService": 3,
+          "MinSuccessfulInstancesPercent": 100,
+          "PauseTime": "PT7M40S",
+          "SuspendProcesses": [
+            "AlarmNotification",
+            "AZRebalance",
+            "HealthCheck",
+            "InstanceRefresh",
+            "ReplaceUnhealthy",
+            "ScheduledActions",
+          ],
+          "WaitOnResourceSignals": true,
+        },
+      },
     },
     "CertificateReportE388917B": {
       "DeletionPolicy": "Retain",
@@ -3233,6 +3411,10 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                   "Value": "report",
                 },
                 {
+                  "Key": "gu:build-identifier",
+                  "Value": "TEST",
+                },
+                {
                   "Key": "gu:cdk:version",
                   "Value": "TEST",
                 },
@@ -3260,6 +3442,10 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                 {
                   "Key": "App",
                   "Value": "report",
+                },
+                {
+                  "Key": "gu:build-identifier",
+                  "Value": "TEST",
                 },
                 {
                   "Key": "gu:cdk:version",
@@ -3290,13 +3476,53 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                 "",
                 [
                   "#!/bin/bash
-mkdir -p $(dirname '/report/report_1.0-latest_all.deb')
+function exitTrap(){
+exitCode=$?
+
+        cfn-signal --stack ",
+                  {
+                    "Ref": "AWS::StackId",
+                  },
+                  "           --resource AutoScalingGroupReportASG10642FDD           --region eu-west-1           --exit-code $exitCode || echo 'Failed to send Cloudformation Signal'
+        
+}
+trap exitTrap EXIT
+mkdir -p $(dirname '/report/report-TEST.deb')
 aws s3 cp 's3://",
                   {
                     "Ref": "DistributionBucketName",
                   },
-                  "/mobile-notifications/PROD/report/report_1.0-latest_all.deb' '/report/report_1.0-latest_all.deb'
-dpkg -i /report/report_1.0-latest_all.deb",
+                  "/mobile-notifications/PROD/report/report-TEST.deb' '/report/report-TEST.deb'
+dpkg -i /report/report-TEST.deb
+echo "Launch template last updated by Riff-Raff deployment ID: ",
+                  {
+                    "Ref": "RiffRaffDeploymentId",
+                  },
+                  ""
+# GuEc2AppExperimental Instance Health Check Start
+
+      TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+      INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/instance-id")
+
+      STATE=$(aws elbv2 describe-target-health         --target-group-arn ",
+                  {
+                    "Ref": "TargetGroupReport53648E3B",
+                  },
+                  "         --region eu-west-1         --targets Id=$INSTANCE_ID,Port=9000         --query "TargetHealthDescriptions[0].TargetHealth.State")
+
+      until [ "$STATE" == "\\"healthy\\"" ]; do
+        echo "Instance running build TEST not yet healthy within target group. Current state $STATE. Sleeping..."
+        sleep 5
+        STATE=$(aws elbv2 describe-target-health           --target-group-arn ",
+                  {
+                    "Ref": "TargetGroupReport53648E3B",
+                  },
+                  "           --region eu-west-1           --targets Id=$INSTANCE_ID,Port=9000           --query "TargetHealthDescriptions[0].TargetHealth.State")
+      done
+
+      echo "Instance running build TEST is healthy in target group."
+      
+# GuEc2AppExperimental Instance Health Check End",
                 ],
               ],
             },
@@ -3309,6 +3535,10 @@ dpkg -i /report/report_1.0-latest_all.deb",
               {
                 "Key": "App",
                 "Value": "report",
+              },
+              {
+                "Key": "gu:build-identifier",
+                "Value": "TEST",
               },
               {
                 "Key": "gu:cdk:version",
