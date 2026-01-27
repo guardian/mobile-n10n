@@ -76,6 +76,12 @@ export class Registration extends GuStack {
 							`arn:aws:ssm:${region}:${account}:parameter/notifications/${stage}/${stack}`,
 						],
 					}),
+
+					// TODO: is this needed?
+					new GuAllowPolicy(this, 'CloudWatchLogsAccess', {
+						actions: ['cloudwatch:*', 'logs:*'],
+						resources: ['*'],
+					}),
 				],
 			},
 		});

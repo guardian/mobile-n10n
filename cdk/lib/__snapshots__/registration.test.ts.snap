@@ -35,6 +35,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuAllowPolicy",
+      "GuAllowPolicy",
       "GuVpcParameter",
       "GuSubnetListParameter",
       "GuSubnetListParameter",
@@ -286,6 +287,30 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "CloudWatchLogsAccess4E8A6C17": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "cloudwatch:*",
+                "logs:*",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "CloudWatchLogsAccess4E8A6C17",
+        "Roles": [
+          {
+            "Ref": "InstanceRoleRegistrationF217DF71",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "CustomParameterStoreAccessBFD248C1": {
       "Properties": {
@@ -1776,6 +1801,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuAllowPolicy",
+      "GuAllowPolicy",
       "GuVpcParameter",
       "GuSubnetListParameter",
       "GuSubnetListParameter",
@@ -2027,6 +2053,30 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "CloudWatchLogsAccess4E8A6C17": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "cloudwatch:*",
+                "logs:*",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "CloudWatchLogsAccess4E8A6C17",
+        "Roles": [
+          {
+            "Ref": "InstanceRoleRegistrationF217DF71",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "CustomParameterStoreAccessBFD248C1": {
       "Properties": {
