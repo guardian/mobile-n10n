@@ -1122,7 +1122,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
     },
-    "Low2XXIn24Hours04FC9138": {
+    "Low2XXIn1dayE630C03B": {
       "Properties": {
         "ActionsEnabled": false,
         "AlarmActions": [
@@ -1139,7 +1139,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             ],
           },
         ],
-        "AlarmDescription": "Triggers if load balancer in CODE does not have enough 200s in a whole day. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmDescription": "Triggers if load balancer in CODE does not have enough 200s in 1 day. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
         "ComparisonOperator": "LessThanThreshold",
         "Dimensions": [
           {
@@ -1198,7 +1198,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "Low2XXIn30Minutes4275AF7F": {
+    "Low2XXIn30minutesE2E53BDD": {
       "Properties": {
         "ActionsEnabled": false,
         "AlarmActions": [
@@ -1215,7 +1215,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             ],
           },
         ],
-        "AlarmDescription": "Triggers if load balancer in CODE does not have enough 200s in half an hour. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmDescription": "Triggers if load balancer in CODE does not have enough 200s in 30 minutes. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
         "ComparisonOperator": "LessThanThreshold",
         "Dimensions": [
           {
@@ -3055,7 +3055,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       },
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
     },
-    "Low2XXIn24Hours04FC9138": {
+    "Low2XXIn1dayE630C03B": {
       "Properties": {
         "ActionsEnabled": false,
         "AlarmActions": [
@@ -3072,7 +3072,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             ],
           },
         ],
-        "AlarmDescription": "Triggers if load balancer in PROD does not have enough 200s in a whole day. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmDescription": "Triggers if load balancer in PROD does not have enough 200s in 1 day. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
         "ComparisonOperator": "LessThanThreshold",
         "Dimensions": [
           {
@@ -3131,7 +3131,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "Low2XXIn30Minutes4275AF7F": {
+    "Low2XXIn30minutesE2E53BDD": {
       "Properties": {
         "ActionsEnabled": false,
         "AlarmActions": [
@@ -3148,7 +3148,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             ],
           },
         ],
-        "AlarmDescription": "Triggers if load balancer in PROD does not have enough 200s in half an hour. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmDescription": "Triggers if load balancer in PROD does not have enough 200s in 30 minutes. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
         "ComparisonOperator": "LessThanThreshold",
         "Dimensions": [
           {

@@ -1,5 +1,5 @@
 import 'source-map-support/register';
-import { App } from 'aws-cdk-lib';
+import { App, Duration } from 'aws-cdk-lib';
 import type { NotificationProps } from '../lib/notification';
 import { Notification } from '../lib/notification';
 import type { RegistrationProps } from '../lib/registration';
@@ -31,8 +31,10 @@ export const registrationCodeProps: RegistrationProps = {
 	env: { region: 'eu-west-1' },
 	instanceMetricGranularity: '5Minute',
 	minAsgSize: 0,
-	low2xxIn30MinutesThreshold: 0,
-	low2xxIn24HoursThreshold: 1,
+	low2xxAlarms: [
+		{ period: Duration.minutes(30), threshold: 0 },
+		{ period: Duration.hours(24), threshold: 1 },
+	],
 	cloudFormationStackName: 'mobile-notifications-registration-CODE',
 };
 
@@ -44,8 +46,10 @@ export const registrationProdProps: RegistrationProps = {
 	instanceMetricGranularity: '1Minute',
 	maxAsgSize: 0,
 	minAsgSize: 0,
-	low2xxIn30MinutesThreshold: 1_000,
-	low2xxIn24HoursThreshold: 150_000,
+	low2xxAlarms: [
+		{ period: Duration.minutes(30), threshold: 1_000 },
+		{ period: Duration.hours(24), threshold: 150_000 },
+	],
 	cloudFormationStackName: 'mobile-notifications-registration-PROD',
 };
 

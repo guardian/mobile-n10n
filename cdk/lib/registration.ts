@@ -4,7 +4,8 @@ import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuParameter, GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
-import { type App, Duration, Tags } from 'aws-cdk-lib';
+import type { Duration } from 'aws-cdk-lib';
+import { type App, Tags } from 'aws-cdk-lib';
 import {
 	ComparisonOperator,
 	TreatMissingData,
@@ -26,8 +27,7 @@ export interface RegistrationProps extends GuStackProps {
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	minAsgSize: number;
 	maxAsgSize?: number;
-	low2xxIn30MinutesThreshold: number;
-	low2xxIn24HoursThreshold: number;
+	low2xxAlarms: Array<{ period: Duration; threshold: number }>;
 }
 
 export class Registration extends GuStack {
@@ -51,8 +51,7 @@ export class Registration extends GuStack {
 			instanceMetricGranularity,
 			minAsgSize,
 			maxAsgSize,
-			low2xxIn30MinutesThreshold,
-			low2xxIn24HoursThreshold,
+			low2xxAlarms,
 		} = props;
 
 		const { account, region } = this;
@@ -135,39 +134,25 @@ export class Registration extends GuStack {
 		);
 		const snsAction = new SnsAction(alarmTopic);
 
-		const low2xxIn30Minutes = loadBalancer.metrics
-			.httpCodeTarget(HttpCodeTarget.TARGET_2XX_COUNT, {
-				period: Duration.minutes(30),
-				statistic: 'Sum',
-			})
-			.createAlarm(this, 'Low2XXIn30Minutes', {
-				actionsEnabled: false,
-				alarmDescription: `Triggers if load balancer in ${stage} does not have enough 200s in half an hour. ${runbookCopy}`,
-				comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
-				evaluationPeriods: 1,
-				threshold: low2xxIn30MinutesThreshold,
-				treatMissingData: TreatMissingData.BREACHING,
-			});
+		low2xxAlarms.forEach(({ period, threshold }) => {
+			const humanPeriod = period.toHumanString();
+			const alarm = loadBalancer.metrics
+				.httpCodeTarget(HttpCodeTarget.TARGET_2XX_COUNT, {
+					period,
+					statistic: 'Sum',
+				})
+				.createAlarm(this, `Low2XXIn${humanPeriod}`, {
+					actionsEnabled: false,
+					alarmDescription: `Triggers if load balancer in ${stage} does not have enough 200s in ${humanPeriod}. ${runbookCopy}`,
+					comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
+					evaluationPeriods: 1,
+					threshold,
+					treatMissingData: TreatMissingData.BREACHING,
+				});
 
-		low2xxIn30Minutes.addAlarmAction(snsAction);
-		low2xxIn30Minutes.addOkAction(snsAction);
-
-		const low2xxIn24Hours = loadBalancer.metrics
-			.httpCodeTarget(HttpCodeTarget.TARGET_2XX_COUNT, {
-				period: Duration.hours(24),
-				statistic: 'Sum',
-			})
-			.createAlarm(this, 'Low2XXIn24Hours', {
-				actionsEnabled: false,
-				alarmDescription: `Triggers if load balancer in ${stage} does not have enough 200s in a whole day. ${runbookCopy}`,
-				comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
-				evaluationPeriods: 1,
-				threshold: low2xxIn24HoursThreshold,
-				treatMissingData: TreatMissingData.BREACHING,
-			});
-
-		low2xxIn24Hours.addAlarmAction(snsAction);
-		low2xxIn24Hours.addOkAction(snsAction);
+			alarm.addAlarmAction(snsAction);
+			alarm.addOkAction(snsAction);
+		});
 
 		adjustCloudformationParameters(this);
 	}
