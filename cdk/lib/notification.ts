@@ -11,7 +11,7 @@ import {
 } from '@guardian/cdk/lib/constructs/core';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
-import { Duration } from 'aws-cdk-lib';
+import { Duration, Tags } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
@@ -165,6 +165,8 @@ export class Notification extends GuStack {
 		// Match existing healthcheck grace period
 		const cfnAsg = autoScalingGroup.node.defaultChild as CfnAutoScalingGroup;
 		cfnAsg.healthCheckGracePeriod = Duration.seconds(400).toSeconds();
+
+		Tags.of(autoScalingGroup).add('gu:riffraff:new-asg', 'true');
 
 		adjustCloudformationParameters(this);
 
