@@ -45,6 +45,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuStringParameter",
+      "GuCname",
       "GuAllowPolicy",
       "GuAllowPolicy",
       "GuAllowPolicy",
@@ -447,6 +448,18 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
         "Type": "CNAME",
       },
       "Type": "AWS::Route53::RecordSet",
+    },
+    "DnsRecordForNotification": {
+      "Properties": {
+        "Name": "notification.notifications.code.dev-guardianapis.com",
+        "RecordType": "CNAME",
+        "ResourceRecords": [
+          "notification.notifications-aws.code.dev-guardianapis.com.",
+        ],
+        "Stage": "CODE",
+        "TTL": 3600,
+      },
+      "Type": "Guardian::DNS::RecordSet",
     },
     "DynamoDbReportsAccessD5A9D3BB": {
       "Properties": {
@@ -2234,6 +2247,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuStringParameter",
+      "GuCname",
       "GuAllowPolicy",
       "GuAllowPolicy",
       "GuAllowPolicy",
@@ -2636,6 +2650,18 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
         "Type": "CNAME",
       },
       "Type": "AWS::Route53::RecordSet",
+    },
+    "DnsRecordForNotification": {
+      "Properties": {
+        "Name": "notification.notifications.guardianapis.com",
+        "RecordType": "CNAME",
+        "ResourceRecords": [
+          "notification.notifications-aws.guardianapis.com.",
+        ],
+        "Stage": "PROD",
+        "TTL": 3600,
+      },
+      "Type": "Guardian::DNS::RecordSet",
     },
     "DynamoDbReportsAccessD5A9D3BB": {
       "Properties": {
