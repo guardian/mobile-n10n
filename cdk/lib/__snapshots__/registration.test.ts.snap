@@ -34,6 +34,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
   },
   "Metadata": {
     "gu:cdk:constructs": [
+      "GuAllowPolicy",
       "GuVpcParameter",
       "GuSubnetListParameter",
       "GuSubnetListParameter",
@@ -285,6 +286,38 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "CustomParameterStoreAccessBFD248C1": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/notifications/CODE/mobile-notifications",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "CustomParameterStoreAccessBFD248C1",
+        "Roles": [
+          {
+            "Ref": "InstanceRoleRegistrationF217DF71",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "DatabaseAccessSecurityGroupfromRegistrationCODELoadBalancerRegistrationSecurityGroup61D8AED29000FDD07AB3": {
       "Properties": {
@@ -1742,6 +1775,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
   },
   "Metadata": {
     "gu:cdk:constructs": [
+      "GuAllowPolicy",
       "GuVpcParameter",
       "GuSubnetListParameter",
       "GuSubnetListParameter",
@@ -1993,6 +2027,38 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "CustomParameterStoreAccessBFD248C1": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:eu-west-1:",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/notifications/PROD/mobile-notifications",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "CustomParameterStoreAccessBFD248C1",
+        "Roles": [
+          {
+            "Ref": "InstanceRoleRegistrationF217DF71",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "DatabaseAccessSecurityGroupfromRegistrationPRODLoadBalancerRegistrationSecurityGroup6424695D9000BAC6414B": {
       "Properties": {

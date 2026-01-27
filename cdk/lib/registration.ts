@@ -3,6 +3,7 @@ import { GuEc2App } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuParameter, GuStack } from '@guardian/cdk/lib/constructs/core';
+import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import { type App, Tags } from 'aws-cdk-lib';
 import {
 	InstanceClass,
@@ -43,6 +44,8 @@ export class Registration extends GuStack {
 			maxAsgSize,
 		} = props;
 
+		const { account, region } = this;
+
 		const { autoScalingGroup } = new GuEc2App(this, {
 			app,
 			access: {
@@ -62,6 +65,18 @@ export class Registration extends GuStack {
 					fileName: `${app}_1.0-latest_all.deb`,
 					executionStatement: `dpkg -i /${app}/${app}_1.0-latest_all.deb`,
 				},
+			},
+
+			roleConfiguration: {
+				additionalPolicies: [
+					// Unfortunately the path used by the app does not match the path the pattern expects
+					new GuAllowPolicy(this, 'CustomParameterStoreAccess', {
+						actions: ['ssm:GetParametersByPath'],
+						resources: [
+							`arn:aws:ssm:${region}:${account}:parameter/notifications/${stage}/${stack}`,
+						],
+					}),
+				],
 			},
 		});
 
