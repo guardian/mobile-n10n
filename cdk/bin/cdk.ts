@@ -31,7 +31,7 @@ export const registrationCodeProps: RegistrationProps = {
 	env: { region: 'eu-west-1' },
 	domainName: 'notifications.code.dev-guardianapis.com',
 	instanceMetricGranularity: '5Minute',
-	minAsgSize: 0,
+	minAsgSize: 1,
 	low2xxAlarms: [
 		{ period: Duration.minutes(30), threshold: 0 },
 		{ period: Duration.hours(24), threshold: 1 },
@@ -46,8 +46,8 @@ export const registrationProdProps: RegistrationProps = {
 	env: { region: 'eu-west-1' },
 	domainName: 'notifications.guardianapis.com',
 	instanceMetricGranularity: '1Minute',
-	maxAsgSize: 0,
-	minAsgSize: 0,
+	maxAsgSize: 12,
+	minAsgSize: 3,
 	low2xxAlarms: [
 		{ period: Duration.minutes(30), threshold: 1_000 },
 		{ period: Duration.hours(24), threshold: 150_000 },

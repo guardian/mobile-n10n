@@ -232,13 +232,13 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             ],
           },
         },
-        "MaxSize": "0",
+        "MaxSize": "2",
         "MetricsCollection": [
           {
             "Granularity": "1Minute",
           },
         ],
-        "MinSize": "0",
+        "MinSize": "1",
         "Tags": [
           {
             "Key": "App",
@@ -2218,13 +2218,13 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             ],
           },
         },
-        "MaxSize": "0",
+        "MaxSize": "12",
         "MetricsCollection": [
           {
             "Granularity": "1Minute",
           },
         ],
-        "MinSize": "0",
+        "MinSize": "3",
         "Tags": [
           {
             "Key": "App",
