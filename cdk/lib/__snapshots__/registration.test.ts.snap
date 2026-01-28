@@ -41,6 +41,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "GuSubnetListParameter",
       "GuEc2App",
       "GuDistributionBucketParameter",
+      "GuCertificate",
       "GuInstanceRole",
       "GuSsmSshPolicy",
       "GuDescribeEC2Policy",
@@ -302,6 +303,41 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
+    "CertificateRegistration0D626DD2": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "DomainName": "notifications.code.dev-guardianapis.com",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Name",
+            "Value": "Registration-CODE/CertificateRegistration",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "ValidationMethod": "DNS",
+      },
+      "Type": "AWS::CertificateManager::Certificate",
+      "UpdateReplacePolicy": "Retain",
     },
     "CloudWatchLogsAccess4E8A6C17": {
       "Properties": {
@@ -868,6 +904,13 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
     },
     "ListenerRegistration1652F707": {
       "Properties": {
+        "Certificates": [
+          {
+            "CertificateArn": {
+              "Ref": "CertificateRegistration0D626DD2",
+            },
+          },
+        ],
         "DefaultActions": [
           {
             "TargetGroupArn": {
@@ -879,8 +922,9 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "LoadBalancerArn": {
           "Ref": "LoadBalancerRegistration79F7817E",
         },
-        "Port": 8080,
-        "Protocol": "HTTP",
+        "Port": 443,
+        "Protocol": "HTTPS",
+        "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
       },
       "Type": "AWS::ElasticLoadBalancingV2::Listener",
     },
@@ -955,6 +999,15 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
     "LoadBalancerRegistrationSecurityGroupD34C5510": {
       "Properties": {
         "GroupDescription": "Automatically created Security Group for ELB RegistrationCODELoadBalancerRegistration9559BF78",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow from anyone on port 443",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443,
+          },
+        ],
         "Tags": [
           {
             "Key": "App",
@@ -1974,6 +2027,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "GuSubnetListParameter",
       "GuEc2App",
       "GuDistributionBucketParameter",
+      "GuCertificate",
       "GuInstanceRole",
       "GuSsmSshPolicy",
       "GuDescribeEC2Policy",
@@ -2235,6 +2289,41 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         },
       },
       "Type": "AWS::AutoScaling::ScalingPolicy",
+    },
+    "CertificateRegistration0D626DD2": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "DomainName": "notifications.guardianapis.com",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Name",
+            "Value": "Registration-PROD/CertificateRegistration",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "ValidationMethod": "DNS",
+      },
+      "Type": "AWS::CertificateManager::Certificate",
+      "UpdateReplacePolicy": "Retain",
     },
     "CloudWatchLogsAccess4E8A6C17": {
       "Properties": {
@@ -2801,6 +2890,13 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
     },
     "ListenerRegistration1652F707": {
       "Properties": {
+        "Certificates": [
+          {
+            "CertificateArn": {
+              "Ref": "CertificateRegistration0D626DD2",
+            },
+          },
+        ],
         "DefaultActions": [
           {
             "TargetGroupArn": {
@@ -2812,8 +2908,9 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "LoadBalancerArn": {
           "Ref": "LoadBalancerRegistration79F7817E",
         },
-        "Port": 8080,
-        "Protocol": "HTTP",
+        "Port": 443,
+        "Protocol": "HTTPS",
+        "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
       },
       "Type": "AWS::ElasticLoadBalancingV2::Listener",
     },
@@ -2888,6 +2985,15 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
     "LoadBalancerRegistrationSecurityGroupD34C5510": {
       "Properties": {
         "GroupDescription": "Automatically created Security Group for ELB RegistrationPRODLoadBalancerRegistration6F39C0FC",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow from anyone on port 443",
+            "FromPort": 443,
+            "IpProtocol": "tcp",
+            "ToPort": 443,
+          },
+        ],
         "Tags": [
           {
             "Key": "App",

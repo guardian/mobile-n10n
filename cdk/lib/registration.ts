@@ -24,6 +24,9 @@ import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
 export interface RegistrationProps extends GuStackProps {
 	app: string;
+	domainName:
+		| 'notifications.guardianapis.com'
+		| 'notifications.code.dev-guardianapis.com';
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	minAsgSize: number;
 	maxAsgSize?: number;
@@ -48,6 +51,7 @@ export class Registration extends GuStack {
 			app,
 			stage,
 			stack,
+			domainName,
 			instanceMetricGranularity,
 			minAsgSize,
 			maxAsgSize,
@@ -62,6 +66,9 @@ export class Registration extends GuStack {
 				scope: AccessScope.PUBLIC,
 			},
 			applicationPort: 9000,
+			certificateProps: {
+				domainName,
+			},
 			instanceMetricGranularity,
 			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
 

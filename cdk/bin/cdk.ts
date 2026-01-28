@@ -29,6 +29,7 @@ export const registrationCodeProps: RegistrationProps = {
 	stage: 'CODE',
 	app: 'registration',
 	env: { region: 'eu-west-1' },
+	domainName: 'notifications.code.dev-guardianapis.com',
 	instanceMetricGranularity: '5Minute',
 	minAsgSize: 0,
 	low2xxAlarms: [
@@ -43,6 +44,7 @@ export const registrationProdProps: RegistrationProps = {
 	stage: 'PROD',
 	app: 'registration',
 	env: { region: 'eu-west-1' },
+	domainName: 'notifications.guardianapis.com',
 	instanceMetricGranularity: '1Minute',
 	maxAsgSize: 0,
 	minAsgSize: 0,
