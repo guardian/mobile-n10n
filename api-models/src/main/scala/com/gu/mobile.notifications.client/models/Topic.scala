@@ -48,14 +48,12 @@ object Topic {
   val BreakingNewsUsElectionEurope = Topic(Breaking, "europe-us-election")
   val BreakingNewsUsElectionInternational = Topic(Breaking, "international-us-election")
   // Editors Picks
-  val EditorsPicksGlobal = Topic(Breaking, "global-editors-picks")
   val EditorsPicksUk = Topic(Breaking, "uk-editors-picks")
   val EditorsPicksUs = Topic(Breaking, "us-editors-picks")
   val EditorsPicksAu = Topic(Breaking, "au-editors-picks")
   val EditorsPicksEurope = Topic(Breaking, "europe-editors-picks")
   val EditorsPicksInternational = Topic(Breaking, "international-editors-picks")
   // One Not To Miss
-  val OneNotToMissGlobal = Topic(Breaking, "global-one-not-to-miss")
   val OneNotToMissUk = Topic(Breaking, "uk-one-not-to-miss")
   val OneNotToMissUs = Topic(Breaking, "us-one-not-to-miss")
   val OneNotToMissAu = Topic(Breaking, "au-one-not-to-miss")
