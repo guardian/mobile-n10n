@@ -277,6 +277,11 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "PropagateAtLaunch": true,
             "Value": "CODE",
           },
+          {
+            "Key": "SystemdUnit",
+            "PropagateAtLaunch": true,
+            "Value": "registration.service",
+          },
         ],
         "TargetGroupARNs": [
           {
@@ -2262,6 +2267,11 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "Key": "Stage",
             "PropagateAtLaunch": true,
             "Value": "PROD",
+          },
+          {
+            "Key": "SystemdUnit",
+            "PropagateAtLaunch": true,
+            "Value": "registration.service",
           },
         ],
         "TargetGroupARNs": [

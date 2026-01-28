@@ -66,6 +66,9 @@ export class Registration extends GuStack {
 				scope: AccessScope.PUBLIC,
 			},
 			applicationPort: 9000,
+			applicationLogging: {
+				enabled: true,
+			},
 			certificateProps: {
 				domainName,
 			},
