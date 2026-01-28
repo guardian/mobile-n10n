@@ -7,7 +7,7 @@ import org.apache.pekko.util.ByteString
 import cats.data.EitherT
 import error.{NotificationsError, RequestError}
 import models._
-import play.api.libs.json.{Format, Json, Writes}
+import play.api.libs.json.{Format, JsObject, Json, Writes}
 import play.api.mvc._
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
 import registration.services._
@@ -18,6 +18,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import play.api.http.HttpEntity
 import providers.ProviderError
 
+import scala.io.{Source => IOSource}
 import scala.util.{Success, Try}
 
 final class Main(
@@ -36,7 +37,30 @@ final class Main(
   // Check if we can talk to the registration database
   private lazy val dbConnectivityCheck = registrar.dbHealthCheck()
 
+  // TODO remove with the legacy infrastructure
+  private val cdkTag = "gu:riffraff:new-asg"
+  private lazy val isGuCdkInstance: Boolean = {
+    /*
+    This file is created by https://github.com/guardian/instance-tag-discovery,
+    which is part of the `cdk-base` AMIgo role.
+     */
+    val filename = "/etc/config/tags.json"
+    try {
+      logger.info(s"Attempting to read $filename")
+      val content = IOSource.fromFile(filename)
+      val tags = try content.mkString finally content.close()
+      val tagsJson = Json.parse(tags).as[JsObject]
+      tagsJson.keys.contains(cdkTag)
+    } catch {
+      case _: Throwable =>
+        logger.error(s"Failed to read $filename")
+        false
+    }
+  }
+
   def healthCheck: Action[AnyContent] = Action.async {
+    val headers = (s"X-${cdkTag.replaceAll(":", "-")}", isGuCdkInstance.toString)
+
     dbConnectivityCheck
       .map(_ => {
         // This forces Play to close the connection rather than allowing
@@ -47,11 +71,11 @@ final class Main(
             contentLength = None,
             contentType = Some("text/plain")
           )
-        )
+        ).withHeaders(headers)
       })
       .recover { _ => {
         logger.error("Failing to connect to database")
-        InternalServerError
+        InternalServerError.withHeaders(headers)
       } }
   }
 
