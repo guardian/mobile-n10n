@@ -99,7 +99,12 @@ export class Notification extends GuStack {
 			instanceMetricGranularity,
 			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
 			monitoringConfiguration: {
-				noMonitoring: true,
+				http5xxAlarm: {
+					tolerated5xxPercentage: 5,
+					numberOfMinutesAboveThresholdBeforeAlarm: 10,
+				},
+				unhealthyInstancesAlarm: true,
+				snsTopicName: 'mobile-server-side',
 			},
 			roleConfiguration: {
 				additionalPolicies: [
@@ -169,6 +174,10 @@ export class Notification extends GuStack {
 				enabled: true,
 				systemdUnitName: app,
 			},
+		});
+
+		autoScalingGroup.scaleOnCpuUtilization('CpuScalingPolicy', {
+			targetUtilizationPercent: 20,
 		});
 
 		// Match existing healthcheck grace period
