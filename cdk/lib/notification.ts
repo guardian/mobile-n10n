@@ -9,6 +9,7 @@ import {
 	GuStringParameter,
 	GuVpcParameter,
 } from '@guardian/cdk/lib/constructs/core';
+import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
 import { Duration, Tags } from 'aws-cdk-lib';
@@ -22,7 +23,9 @@ export interface NotificationProps extends GuStackProps {
 	domainName:
 		| 'notification.notifications.guardianapis.com'
 		| 'notification.notifications.code.dev-guardianapis.com';
-
+	intermediateCname:
+		| 'notification.notifications-aws.guardianapis.com.'
+		| 'notification.notifications-aws.code.dev-guardianapis.com.';
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	/**
 	 * The ARN of the SQS queue consumed by the workers (harvester).
@@ -63,6 +66,15 @@ export class Notification extends GuStack {
 			allowedValues: [s3TopicCountBucketName],
 			fromSSM: true,
 		}).valueAsString;
+
+		new GuCname(this, 'DnsRecordForNotification', {
+			app,
+			domainName: props.domainName,
+			// For now we are still routing traffic via the intermediate CNAME, which points at the legacy ELB.
+			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
+			resourceRecord: props.intermediateCname,
+			ttl: Duration.seconds(3600),
+		});
 
 		const reportsTable = Table.fromTableName(
 			this,

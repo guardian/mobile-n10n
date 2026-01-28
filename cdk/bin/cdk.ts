@@ -16,6 +16,8 @@ export const notificationCodeProps: NotificationProps = {
 	stage: 'CODE',
 	env: { region: 'eu-west-1' },
 	domainName: 'notification.notifications.code.dev-guardianapis.com',
+	intermediateCname:
+		'notification.notifications-aws.code.dev-guardianapis.com.',
 	instanceMetricGranularity: '5Minute',
 	workerSqsQueueName: 'mobile-notifications-harvester-CODE-Sqs-1R9TBA4F2C6TG',
 	sloMonitoringQueueName: 'notifications-slo-monitoring-CODE',
@@ -27,6 +29,7 @@ export const notificationProdProps: NotificationProps = {
 	stage: 'PROD',
 	env: { region: 'eu-west-1' },
 	domainName: 'notification.notifications.guardianapis.com',
+	intermediateCname: 'notification.notifications-aws.guardianapis.com.',
 	instanceMetricGranularity: '1Minute',
 	workerSqsQueueName: 'mobile-notifications-harvester-PROD-Sqs-NPP9X15G7WAO',
 	sloMonitoringQueueName: 'notifications-slo-monitoring-PROD',
