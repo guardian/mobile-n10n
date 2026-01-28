@@ -1,9 +1,21 @@
 stacks: [mobile-notifications]
 regions: [eu-west-1]
 deployments:
+  report-artifact-upload:
+    type: autoscaling
+    app: report
+    contentDirectory: report
+    actions:
+      - uploadArtifacts
+    parameters:
+      bucketSsmLookup: true
+      bucketSsmKey: /account/services/artifact.bucket.n10n
+      prefixApp: true
   report-cfn:
     type: cloud-formation
     app: report
+    dependencies:
+      - report-artifact-upload
     parameters:
       amiEncrypted: true
       amiParametersToTags:
@@ -13,12 +25,6 @@ deployments:
       templateStagePaths:
         CODE: Report-CODE.template.json
         PROD: Report-PROD.template.json
-  report:
-    type: autoscaling
-    parameters:
-      bucketSsmLookup: true
-      bucketSsmKey: /account/services/artifact.bucket.n10n
-    dependencies: [report-cfn]
   reportextractor:
     type: aws-lambda
     app: reportextractor

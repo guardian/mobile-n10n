@@ -1,6 +1,8 @@
 import 'source-map-support/register';
-import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App } from 'aws-cdk-lib';
+import type { NotificationProps } from '../lib/notification';
+import { Notification } from '../lib/notification';
+import type { RegistrationProps } from '../lib/registration';
 import { Registration } from '../lib/registration';
 import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
 import { Report, type ReportProps } from '../lib/report';
@@ -9,14 +11,38 @@ import { SloMonitoring } from '../lib/slo-monitoring';
 
 const app = new App();
 
-export const registrationCodeProps: GuStackProps = {
+export const notificationCodeProps: NotificationProps = {
 	stack: 'mobile-notifications',
 	stage: 'CODE',
 };
 
-export const registrationProdProps: GuStackProps = {
+export const notificationProdProps: NotificationProps = {
 	stack: 'mobile-notifications',
 	stage: 'PROD',
+};
+
+new Notification(app, 'Notification-CODE', notificationCodeProps);
+new Notification(app, 'Notification-PROD', notificationProdProps);
+
+export const registrationCodeProps: RegistrationProps = {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+	app: 'registration',
+	env: { region: 'eu-west-1' },
+	instanceMetricGranularity: '5Minute',
+	minAsgSize: 0,
+	cloudFormationStackName: 'mobile-notifications-registration-CODE',
+};
+
+export const registrationProdProps: RegistrationProps = {
+	stack: 'mobile-notifications',
+	stage: 'PROD',
+	app: 'registration',
+	env: { region: 'eu-west-1' },
+	instanceMetricGranularity: '1Minute',
+	maxAsgSize: 0,
+	minAsgSize: 0,
+	cloudFormationStackName: 'mobile-notifications-registration-PROD',
 };
 
 new Registration(app, 'Registration-CODE', registrationCodeProps);
@@ -76,6 +102,7 @@ export const reportPropsCode: ReportProps = {
 	domainName: 'report.notifications.code.dev-guardianapis.com',
 	instanceMetricGranularity: '5Minute',
 	minAsgSize: 1,
+	buildIdentifier: process.env.BUILD_NUMBER ?? 'DEV',
 };
 new Report(app, 'Report-CODE', reportPropsCode);
 
@@ -88,5 +115,6 @@ export const reportPropsProd: ReportProps = {
 	domainName: 'report.notifications.guardianapis.com',
 	instanceMetricGranularity: '1Minute',
 	minAsgSize: 3,
+	buildIdentifier: process.env.BUILD_NUMBER ?? 'DEV',
 };
 new Report(app, 'Report-PROD', reportPropsProd);

@@ -1,9 +1,10 @@
-import { GuPlayApp, GuScheduledLambda } from '@guardian/cdk';
+import { GuScheduledLambda } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
+import { GuEc2AppExperimental } from '@guardian/cdk/lib/experimental/patterns/ec2-app';
 import type { App } from 'aws-cdk-lib';
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
@@ -21,6 +22,12 @@ export interface ReportProps extends GuStackProps {
 		| 'report.notifications.code.dev-guardianapis.com';
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	minAsgSize: number;
+
+	/**
+	 * Which application build to run.
+	 * This will typically match the build number provided by CI.
+	 */
+	buildIdentifier: string;
 }
 
 export class Report extends GuStack {
@@ -28,7 +35,12 @@ export class Report extends GuStack {
 		super(scope, id, props);
 
 		const { stack, stage, region, account } = this;
-		const { domainName, instanceMetricGranularity, minAsgSize } = props;
+		const {
+			domainName,
+			instanceMetricGranularity,
+			minAsgSize,
+			buildIdentifier,
+		} = props;
 
 		const dynamoTable = Table.fromTableName(
 			this,
@@ -37,7 +49,9 @@ export class Report extends GuStack {
 		);
 
 		const app = 'report';
-		const { autoScalingGroup, loadBalancer } = new GuPlayApp(this, {
+		const { autoScalingGroup, loadBalancer } = new GuEc2AppExperimental(this, {
+			buildIdentifier,
+			applicationPort: 9000,
 			access: {
 				scope: AccessScope.PUBLIC,
 			},
@@ -74,8 +88,8 @@ export class Report extends GuStack {
 			scaling: { minimumInstances: minAsgSize },
 			userData: {
 				distributable: {
-					fileName: `${app}_1.0-latest_all.deb`,
-					executionStatement: `dpkg -i /report/${app}_1.0-latest_all.deb`,
+					fileName: `${app}-${buildIdentifier}.deb`,
+					executionStatement: `dpkg -i /${app}/${app}-${buildIdentifier}.deb`,
 				},
 			},
 			// Match existing healthcheck settings for now
