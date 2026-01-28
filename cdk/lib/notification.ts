@@ -73,7 +73,7 @@ export class Notification extends GuStack {
 			// For now we are still routing traffic via the intermediate CNAME, which points at the legacy ELB.
 			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
 			resourceRecord: props.intermediateCname,
-			ttl: Duration.seconds(3600),
+			ttl: Duration.seconds(60),
 		});
 
 		const reportsTable = Table.fromTableName(
