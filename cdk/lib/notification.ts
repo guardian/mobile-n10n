@@ -23,9 +23,6 @@ export interface NotificationProps extends GuStackProps {
 	domainName:
 		| 'notification.notifications.guardianapis.com'
 		| 'notification.notifications.code.dev-guardianapis.com';
-	intermediateCname:
-		| 'notification.notifications-aws.guardianapis.com.'
-		| 'notification.notifications-aws.code.dev-guardianapis.com.';
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	/**
 	 * The ARN of the SQS queue consumed by the workers (harvester).
