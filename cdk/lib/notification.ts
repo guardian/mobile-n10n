@@ -100,7 +100,7 @@ export class Notification extends GuStack {
 			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
 			monitoringConfiguration: {
 				http5xxAlarm: {
-					tolerated5xxPercentage: 5,
+					tolerated5xxPercentage: 0,
 					numberOfMinutesAboveThresholdBeforeAlarm: 10,
 				},
 				unhealthyInstancesAlarm: true,
