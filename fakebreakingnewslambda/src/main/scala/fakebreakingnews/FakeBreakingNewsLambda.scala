@@ -40,7 +40,8 @@ class FakeBreakingNewsLambda {
     .hostnameVerifier(new HostnameVerifier() {
       override def verify(hostname: String, session: SSLSession): Boolean = hostname.toLowerCase match {
         // Trust the ALB's DNS name for testing purposes
-        case "mobile-loadb-02xt267ga6y8-1312305848.eu-west-1.elb.amazonaws.com" => true
+        case "mobile-loadb-02xt267ga6y8-1312305848.eu-west-1.elb.amazonaws.com" => true // CODE
+        case "mobile-loadb-vv0gvmydrkop-56640827.eu-west-1.elb.amazonaws.com" => true // PROD
         case _ => false
       }
     })
