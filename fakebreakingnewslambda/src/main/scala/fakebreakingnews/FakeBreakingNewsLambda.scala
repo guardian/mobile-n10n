@@ -2,17 +2,19 @@ package fakebreakingnews
 
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-
 import com.typesafe.config.Config
 import models.{Android, Ios}
 import okhttp3.OkHttpClient
 import org.slf4j.{Logger, LoggerFactory}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
+
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 import software.amazon.awssdk.regions.Region.EU_WEST_1
+
+import javax.net.ssl.{HostnameVerifier, SSLSession}
 
 class FakeBreakingNewsLambda {
   val iosUuid = UUID.fromString("3bf283d8-35f3-48e6-b377-b862c3f030e3")
@@ -29,12 +31,22 @@ class FakeBreakingNewsLambda {
     }
   }
   private val config: Config = ConfigurationLoader.load(getIdentity(defaultAppName = "fake-breaking-news")) {
-    case AwsIdentity(_, _, stage, region) => 
+    case AwsIdentity(_, _, stage, region) =>
       SSMConfigurationLocation(s"/notifications/$stage/fakebreakingnews", region)
   }
-  val okhttp: OkHttpClient = new OkHttpClient()
+  val okhttp = new OkHttpClient()
+  val notificationApiOkHttp: OkHttpClient = new OkHttpClient()
+    .newBuilder()
+    .hostnameVerifier(new HostnameVerifier() {
+      override def verify(hostname: String, session: SSLSession): Boolean = hostname.toLowerCase match {
+        // Trust the ALB's DNS name for testing purposes
+        case "mobile-loadb-02xt267ga6y8-1312305848.eu-west-1.elb.amazonaws.com" => true
+        case _ => false
+      }
+    })
+    .build()
   val client = new NotificationClient(
-    okhttp = okhttp,
+    okhttp = notificationApiOkHttp,
     host = config.getString("notification.notificationHost"),
     apiKey = config.getString("notification.fakeBreakingNewsApiKey")
   )
