@@ -45,7 +45,6 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuStringParameter",
-      "GuCname",
       "GuAllowPolicy",
       "GuAllowPolicy",
       "GuAllowPolicy",
@@ -75,6 +74,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
       "GuHttpsApplicationListener",
       "GuAlb5xxPercentageAlarm",
       "GuUnhealthyInstancesAlarm",
+      "GuCname",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -471,7 +471,12 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
         "Name": "notification.notifications.code.dev-guardianapis.com",
         "RecordType": "CNAME",
         "ResourceRecords": [
-          "notification.notifications-aws.code.dev-guardianapis.com.",
+          {
+            "Fn::GetAtt": [
+              "LoadBalancerNotification8DE16E11",
+              "DNSName",
+            ],
+          },
         ],
         "Stage": "CODE",
         "TTL": 60,
@@ -2500,7 +2505,6 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
   "Metadata": {
     "gu:cdk:constructs": [
       "GuStringParameter",
-      "GuCname",
       "GuAllowPolicy",
       "GuAllowPolicy",
       "GuAllowPolicy",
@@ -2530,6 +2534,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
       "GuHttpsApplicationListener",
       "GuAlb5xxPercentageAlarm",
       "GuUnhealthyInstancesAlarm",
+      "GuCname",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -2926,7 +2931,12 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
         "Name": "notification.notifications.guardianapis.com",
         "RecordType": "CNAME",
         "ResourceRecords": [
-          "notification.notifications-aws.guardianapis.com.",
+          {
+            "Fn::GetAtt": [
+              "LoadBalancerNotification8DE16E11",
+              "DNSName",
+            ],
+          },
         ],
         "Stage": "PROD",
         "TTL": 60,
