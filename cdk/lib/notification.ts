@@ -23,9 +23,6 @@ export interface NotificationProps extends GuStackProps {
 	domainName:
 		| 'notification.notifications.guardianapis.com'
 		| 'notification.notifications.code.dev-guardianapis.com';
-	intermediateCname:
-		| 'notification.notifications-aws.guardianapis.com.'
-		| 'notification.notifications-aws.code.dev-guardianapis.com.';
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	/**
 	 * The ARN of the SQS queue consumed by the workers (harvester).
@@ -67,15 +64,6 @@ export class Notification extends GuStack {
 			fromSSM: true,
 		}).valueAsString;
 
-		new GuCname(this, 'DnsRecordForNotification', {
-			app,
-			domainName: props.domainName,
-			// For now we are still routing traffic via the intermediate CNAME, which points at the legacy ELB.
-			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
-			resourceRecord: props.intermediateCname,
-			ttl: Duration.seconds(60),
-		});
-
 		const reportsTable = Table.fromTableName(
 			this,
 			'ReportsTable',
@@ -88,7 +76,7 @@ export class Notification extends GuStack {
 			`schedule-${stage}-mobile-notifications`,
 		);
 
-		const { autoScalingGroup } = new GuPlayApp(this, {
+		const { autoScalingGroup, loadBalancer } = new GuPlayApp(this, {
 			access: {
 				scope: AccessScope.PUBLIC,
 			},
@@ -174,6 +162,13 @@ export class Notification extends GuStack {
 				enabled: true,
 				systemdUnitName: app,
 			},
+		});
+
+		new GuCname(this, 'DnsRecordForNotification', {
+			app,
+			domainName: props.domainName,
+			resourceRecord: loadBalancer.loadBalancerDnsName,
+			ttl: Duration.seconds(60),
 		});
 
 		autoScalingGroup.scaleOnCpuUtilization('CpuScalingPolicy', {
