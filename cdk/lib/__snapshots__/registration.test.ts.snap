@@ -600,7 +600,12 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "Name": "notifications.code.dev-guardianapis.com",
         "RecordType": "CNAME",
         "ResourceRecords": [
-          "registration.notifications.code.dev-guardianapis.com.",
+          {
+            "Fn::GetAtt": [
+              "LoadBalancerToPrivateASG",
+              "DNSName",
+            ],
+          },
         ],
         "Stage": "CODE",
         "TTL": 60,
@@ -2619,7 +2624,12 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "Name": "notifications.guardianapis.com",
         "RecordType": "CNAME",
         "ResourceRecords": [
-          "registration.notifications.guardianapis.com.",
+          {
+            "Fn::GetAtt": [
+              "LoadBalancerToPrivateASG",
+              "DNSName",
+            ],
+          },
         ],
         "Stage": "PROD",
         "TTL": 60,

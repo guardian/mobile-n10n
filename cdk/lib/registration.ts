@@ -18,6 +18,7 @@ import {
 	InstanceType,
 	SecurityGroup,
 } from 'aws-cdk-lib/aws-ec2';
+import type { CfnLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancing';
 import { HttpCodeTarget } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
@@ -48,7 +49,7 @@ export class Registration extends GuStack {
 		// Until this project has been fully migrated to GuCDK you should update the 'old' infrastructure by modifying
 		// the YAML file and then re-running the snapshot tests to confirm that the changes are being pulled through by
 		// CDK
-		new CfnInclude(this, 'YamlTemplate', {
+		const template = new CfnInclude(this, 'YamlTemplate', {
 			templateFile: yamlTemplateFilePath,
 		});
 
@@ -171,13 +172,17 @@ export class Registration extends GuStack {
 
 		adjustCloudformationParameters(this);
 
+		const legacyLoadBalancer = template.getResource(
+			'LoadBalancerToPrivateASG',
+		) as CfnLoadBalancer;
+
 		// This CNAME represents the public URL for the registration service.
 		new GuCname(this, 'DnsRecordForRegistration', {
 			app,
 			domainName: props.domainName,
-			// For now we are still routing traffic via the intermediate CNAME, which points at the legacy ELB.
-			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
-			resourceRecord: props.intermediateCname,
+			// For now we are still routing traffic to the legacy ELB.
+			// To complete the migration, we'll update to point at playApp.loadBalancer.loadBalancerDnsName.
+			resourceRecord: legacyLoadBalancer.attrDnsName,
 
 			// Intentionally low TTL for faster DNS changes
 			// TODO increase this to 7200 (2 hours) after the migration is complete
