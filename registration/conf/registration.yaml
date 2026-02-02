@@ -309,6 +309,7 @@ Resources:
   NotEnoughHttpCode200sAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      ActionsEnabled: FALSE
       AlarmActions: [!Ref AlarmTopic]
       OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if load balancer in ${Stage} does not have enough 200s in half an hour. ${RunbookCopy}
@@ -328,6 +329,7 @@ Resources:
   NotEnoughHttpCode200sPerDayAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      ActionsEnabled: FALSE
       AlarmActions: [!Ref AlarmTopic]
       OKActions: [!Ref AlarmTopic]
       AlarmDescription: !Sub Triggers if load balancer in ${Stage} does not have enough 200s in a whole day. ${RunbookCopy}
