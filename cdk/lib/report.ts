@@ -14,7 +14,6 @@ import {
 	BillingMode,
 	ProjectionType,
 	StreamViewType,
-	Table,
 } from 'aws-cdk-lib/aws-dynamodb';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { Schedule } from 'aws-cdk-lib/aws-events';
@@ -49,7 +48,7 @@ export class Report extends GuStack {
 			buildIdentifier,
 		} = props;
 
-		const table = new GuDynamoTable(this, 'ReportsTable', {
+		const dynamoTable = new GuDynamoTable(this, 'ReportsTable', {
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			devXBackups: { enabled: true },
 			partitionKey: { name: 'id', type: AttributeType.STRING },
@@ -60,23 +59,16 @@ export class Report extends GuStack {
 		});
 
 		// Remove DeletionProtectionEnabled property to match YAML defined version of the table
-		(table.node.defaultChild as CfnResource).addPropertyDeletionOverride(
+		(dynamoTable.node.defaultChild as CfnResource).addPropertyDeletionOverride(
 			'DeletionProtectionEnabled',
 		);
 
-		table.addGlobalSecondaryIndex({
+		dynamoTable.addGlobalSecondaryIndex({
 			indexName: 'sentTime-index',
 			partitionKey: { name: 'type', type: AttributeType.STRING },
 			sortKey: { name: 'sentTime', type: AttributeType.STRING },
 			projectionType: ProjectionType.ALL,
 		});
-
-		// TODO remove this variable once the Dynamo table created above has been migrated to this CFN stack
-		const dynamoTable = Table.fromTableName(
-			this,
-			'LegacyReportsTable',
-			`mobile-notifications-reports-${stage}`,
-		);
 
 		const app = 'report';
 		const { autoScalingGroup, loadBalancer } = new GuEc2AppExperimental(this, {
