@@ -350,34 +350,22 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-CODE",
-                    ],
+                  "Fn::GetAtt": [
+                    "ReportsTable282F2283",
+                    "Arn",
                   ],
                 },
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:",
                       {
-                        "Ref": "AWS::Partition",
+                        "Fn::GetAtt": [
+                          "ReportsTable282F2283",
+                          "Arn",
+                        ],
                       },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-CODE/index/*",
+                      "/index/*",
                     ],
                   ],
                 },
@@ -771,19 +759,9 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
               "Action": "dynamodb:*",
               "Effect": "Allow",
               "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:",
-                    {
-                      "Ref": "AWS::Partition",
-                    },
-                    ":dynamodb:eu-west-1:",
-                    {
-                      "Ref": "AWS::AccountId",
-                    },
-                    ":table/mobile-notifications-reports-CODE",
-                  ],
+                "Fn::GetAtt": [
+                  "ReportsTable282F2283",
+                  "Arn",
                 ],
               },
             },
@@ -1439,34 +1417,22 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-CODE",
-                    ],
+                  "Fn::GetAtt": [
+                    "ReportsTable282F2283",
+                    "Arn",
                   ],
                 },
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:",
                       {
-                        "Ref": "AWS::Partition",
+                        "Fn::GetAtt": [
+                          "ReportsTable282F2283",
+                          "Arn",
+                        ],
                       },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-CODE/index/sentTime-index",
+                      "/index/sentTime-index",
                     ],
                   ],
                 },
@@ -2221,34 +2187,22 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-PROD",
-                    ],
+                  "Fn::GetAtt": [
+                    "ReportsTable282F2283",
+                    "Arn",
                   ],
                 },
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:",
                       {
-                        "Ref": "AWS::Partition",
+                        "Fn::GetAtt": [
+                          "ReportsTable282F2283",
+                          "Arn",
+                        ],
                       },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-PROD/index/*",
+                      "/index/*",
                     ],
                   ],
                 },
@@ -2642,19 +2596,9 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
               "Action": "dynamodb:*",
               "Effect": "Allow",
               "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:",
-                    {
-                      "Ref": "AWS::Partition",
-                    },
-                    ":dynamodb:eu-west-1:",
-                    {
-                      "Ref": "AWS::AccountId",
-                    },
-                    ":table/mobile-notifications-reports-PROD",
-                  ],
+                "Fn::GetAtt": [
+                  "ReportsTable282F2283",
+                  "Arn",
                 ],
               },
             },
@@ -3310,34 +3254,22 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-PROD",
-                    ],
+                  "Fn::GetAtt": [
+                    "ReportsTable282F2283",
+                    "Arn",
                   ],
                 },
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:",
                       {
-                        "Ref": "AWS::Partition",
+                        "Fn::GetAtt": [
+                          "ReportsTable282F2283",
+                          "Arn",
+                        ],
                       },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-PROD/index/sentTime-index",
+                      "/index/sentTime-index",
                     ],
                   ],
                 },
