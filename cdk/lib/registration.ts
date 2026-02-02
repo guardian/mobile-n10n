@@ -172,6 +172,7 @@ export class Registration extends GuStack {
 
 		adjustCloudformationParameters(this);
 
+		// This CNAME represents the public URL for the registration service.
 		new GuCname(this, 'DnsRecordForRegistration', {
 			app,
 			domainName: props.domainName,
@@ -179,6 +180,53 @@ export class Registration extends GuStack {
 			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
 			resourceRecord: props.intermediateCname,
 			ttl: Duration.seconds(props.intermediateCnameTTLInSeconds),
+		});
+
+		this.addLegacyCname(props);
+	}
+
+	/**
+	 * Using `dig` we can see the following DNS setup:
+	 *
+	 * ```bash
+	 * ❯ dig +nocmd +noall +answer notifications.guardianapis.com
+	 * notifications.guardianapis.com.	7200 IN	CNAME	registration.notifications.guardianapis.com.
+	 * registration.notifications.guardianapis.com. 3600 IN CNAME registration.notifications-aws.guardianapis.com.
+	 * registration.notifications-aws.guardianapis.com. 60 IN CNAME mobile-no-loadbala-1oljehvjszyof-880073426.eu-west-1.elb.amazonaws.com.
+	 * ```
+	 *
+	 * That is:
+	 * 1. `notifications.guardianapis.com.` is in NS1
+	 * 2. `registration.notifications.guardianapis.com.` is in NS1
+	 * 3. `registration.notifications-aws.guardianapis.com.` is in Route53
+	 * 4. `mobile-no-loadbala-1oljehvjszyof-880073426.eu-west-1.elb.amazonaws.com.` is the AWS Load Balancer
+	 *
+	 * After the GuCDK migration, we'll simplify DNS to have:
+	 *
+	 * `notifications.guardianapis.com.` (NS1) -> AWS Load Balancer
+	 *
+	 * That is 1 -> 4.
+	 *
+	 * This resource represents the CNAME for 2 -> 3.
+	 * Defining it here means we can delete it later via a CloudFormation update.
+	 *
+	 * @todo Remove this once the GuCDK-defined load balancer is being used
+	 *
+	 * @see https://metrics.gutools.co.uk/goto/zF4xr1HvR?orgId=1
+	 */
+	private addLegacyCname({ app, intermediateCname }: RegistrationProps) {
+		// The YAML template defines this parameter
+		const route53Domain = this.parameters['DomainName'];
+
+		if (!route53Domain) {
+			throw new Error('Unable to locate CloudFormation parameter "DomainName"');
+		}
+
+		new GuCname(this, 'NS1ToRoute53Record', {
+			app,
+			domainName: intermediateCname.slice(0, -1), // Remove trailing dot to exactly match CNAME in NS1
+			resourceRecord: route53Domain.valueAsString,
+			ttl: Duration.seconds(3600),
 		});
 	}
 }

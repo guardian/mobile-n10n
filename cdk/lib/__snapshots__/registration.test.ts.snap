@@ -58,6 +58,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "GuHttpsApplicationListener",
       "GuParameter",
       "GuCname",
+      "GuCname",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -1433,6 +1434,20 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
+    "NS1ToRoute53Record": {
+      "Properties": {
+        "Name": "registration.notifications.code.dev-guardianapis.com",
+        "RecordType": "CNAME",
+        "ResourceRecords": [
+          {
+            "Ref": "DomainName",
+          },
+        ],
+        "Stage": "CODE",
+        "TTL": 3600,
+      },
+      "Type": "Guardian::DNS::RecordSet",
+    },
     "NotEnoughHttpCode200sAlarm": {
       "Properties": {
         "AlarmActions": [
@@ -2061,6 +2076,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
       "GuParameter",
+      "GuCname",
       "GuCname",
     ],
     "gu:cdk:version": "TEST",
@@ -3436,6 +3452,20 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         },
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "NS1ToRoute53Record": {
+      "Properties": {
+        "Name": "registration.notifications.guardianapis.com",
+        "RecordType": "CNAME",
+        "ResourceRecords": [
+          {
+            "Ref": "DomainName",
+          },
+        ],
+        "Stage": "PROD",
+        "TTL": 3600,
+      },
+      "Type": "Guardian::DNS::RecordSet",
     },
     "NotEnoughHttpCode200sAlarm": {
       "Properties": {
