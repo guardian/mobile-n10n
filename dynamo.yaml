@@ -9,6 +9,10 @@ Parameters:
       - PROD
 Resources:
   mobileNotificationsReports:
+    # Required to move resource between CloudFormation stacks without deletion.
+    # See https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/refactor-stacks.html.
+    DeletionPolicy: Retain
+
     Type: 'AWS::DynamoDB::Table'
     Properties:
       TableName: !Sub 'mobile-notifications-reports-${Stage}'
