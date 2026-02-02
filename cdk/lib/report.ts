@@ -6,7 +6,7 @@ import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuDynamoTable } from '@guardian/cdk/lib/constructs/dynamodb';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import { GuEc2AppExperimental } from '@guardian/cdk/lib/experimental/patterns/ec2-app';
-import type { App, CfnResource } from 'aws-cdk-lib';
+import type { App } from 'aws-cdk-lib';
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import {
@@ -57,11 +57,6 @@ export class Report extends GuStack {
 			tableName: `mobile-notifications-reports-${stage}`,
 			timeToLiveAttribute: 'ttl',
 		});
-
-		// Remove DeletionProtectionEnabled property to match YAML defined version of the table
-		(dynamoTable.node.defaultChild as CfnResource).addPropertyDeletionOverride(
-			'DeletionProtectionEnabled',
-		);
 
 		dynamoTable.addGlobalSecondaryIndex({
 			indexName: 'sentTime-index',
