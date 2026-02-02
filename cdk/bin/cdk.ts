@@ -53,7 +53,6 @@ export const registrationCodeProps: RegistrationProps = {
 	],
 	cloudFormationStackName: 'mobile-notifications-registration-CODE',
 	intermediateCname: 'registration.notifications.code.dev-guardianapis.com.',
-	intermediateCnameTTLInSeconds: 7200,
 };
 
 export const registrationProdProps: RegistrationProps = {
@@ -71,7 +70,6 @@ export const registrationProdProps: RegistrationProps = {
 	],
 	cloudFormationStackName: 'mobile-notifications-registration-PROD',
 	intermediateCname: 'registration.notifications.guardianapis.com.',
-	intermediateCnameTTLInSeconds: 7200,
 };
 
 new Registration(app, 'Registration-CODE', registrationCodeProps);

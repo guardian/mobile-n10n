@@ -32,7 +32,6 @@ export interface RegistrationProps extends GuStackProps {
 	intermediateCname:
 		| 'registration.notifications.guardianapis.com.'
 		| 'registration.notifications.code.dev-guardianapis.com.';
-	intermediateCnameTTLInSeconds: 7200;
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	minAsgSize: number;
 	maxAsgSize?: number;
@@ -179,7 +178,10 @@ export class Registration extends GuStack {
 			// For now we are still routing traffic via the intermediate CNAME, which points at the legacy ELB.
 			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
 			resourceRecord: props.intermediateCname,
-			ttl: Duration.seconds(props.intermediateCnameTTLInSeconds),
+
+			// Intentionally low TTL for faster DNS changes
+			// TODO increase this to 7200 (2 hours) after the migration is complete
+			ttl: Duration.minutes(1),
 		});
 
 		this.addLegacyCname(props);
