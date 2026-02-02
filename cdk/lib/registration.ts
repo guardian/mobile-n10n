@@ -3,8 +3,9 @@ import { GuEc2App } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuParameter, GuStack } from '@guardian/cdk/lib/constructs/core';
+import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
-import type { Duration } from 'aws-cdk-lib';
+import { Duration } from 'aws-cdk-lib';
 import { type App, Tags } from 'aws-cdk-lib';
 import {
 	ComparisonOperator,
@@ -27,6 +28,11 @@ export interface RegistrationProps extends GuStackProps {
 	domainName:
 		| 'notifications.guardianapis.com'
 		| 'notifications.code.dev-guardianapis.com';
+	// This maps to the DnsRecord resource in Route53; we can remove this complexity as part of the DNS switchover
+	intermediateCname:
+		| 'registration.notifications.guardianapis.com.'
+		| 'registration.notifications.code.dev-guardianapis.com.';
+	intermediateCnameTTLInSeconds: 7200;
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	minAsgSize: number;
 	maxAsgSize?: number;
@@ -165,5 +171,14 @@ export class Registration extends GuStack {
 		});
 
 		adjustCloudformationParameters(this);
+
+		new GuCname(this, 'DnsRecordForRegistration', {
+			app,
+			domainName: props.domainName,
+			// For now we are still routing traffic via the intermediate CNAME, which points at the legacy ELB.
+			// To complete the migration, we'll remove this intermediate CNAME and point at playApp.loadBalancer.loadBalancerDnsName.
+			resourceRecord: props.intermediateCname,
+			ttl: Duration.seconds(props.intermediateCnameTTLInSeconds),
+		});
 	}
 }

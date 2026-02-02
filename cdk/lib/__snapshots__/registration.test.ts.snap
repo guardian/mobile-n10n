@@ -57,6 +57,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
       "GuParameter",
+      "GuCname",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -592,6 +593,18 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "Type": "CNAME",
       },
       "Type": "AWS::Route53::RecordSet",
+    },
+    "DnsRecordForRegistration": {
+      "Properties": {
+        "Name": "notifications.code.dev-guardianapis.com",
+        "RecordType": "CNAME",
+        "ResourceRecords": [
+          "registration.notifications.code.dev-guardianapis.com.",
+        ],
+        "Stage": "CODE",
+        "TTL": 7200,
+      },
+      "Type": "Guardian::DNS::RecordSet",
     },
     "GetDistributablePolicyRegistration3ED73EF5": {
       "Properties": {
@@ -2048,6 +2061,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "GuApplicationTargetGroup",
       "GuHttpsApplicationListener",
       "GuParameter",
+      "GuCname",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -2583,6 +2597,18 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "Type": "CNAME",
       },
       "Type": "AWS::Route53::RecordSet",
+    },
+    "DnsRecordForRegistration": {
+      "Properties": {
+        "Name": "notifications.guardianapis.com",
+        "RecordType": "CNAME",
+        "ResourceRecords": [
+          "registration.notifications.guardianapis.com.",
+        ],
+        "Stage": "PROD",
+        "TTL": 7200,
+      },
+      "Type": "Guardian::DNS::RecordSet",
     },
     "GetDistributablePolicyRegistration3ED73EF5": {
       "Properties": {
