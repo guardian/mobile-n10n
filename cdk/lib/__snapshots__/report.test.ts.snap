@@ -1479,6 +1479,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
           },
         ],
         "BillingMode": "PAY_PER_REQUEST",
+        "DeletionProtectionEnabled": true,
         "GlobalSecondaryIndexes": [
           {
             "IndexName": "sentTime-index",
@@ -3316,6 +3317,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
           },
         ],
         "BillingMode": "PAY_PER_REQUEST",
+        "DeletionProtectionEnabled": true,
         "GlobalSecondaryIndexes": [
           {
             "IndexName": "sentTime-index",
