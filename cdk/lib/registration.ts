@@ -30,9 +30,9 @@ export interface RegistrationProps extends GuStackProps {
 		| 'notifications.code.dev-guardianapis.com';
 	// This maps to the DnsRecord resource in Route53; we can remove this complexity as part of the DNS switchover
 	intermediateCname:
-		| 'registration.notifications-aws.guardianapis.com.'
-		| 'registration.notifications-aws.code.dev-guardianapis.com.';
-	intermediateCnameTTLInSeconds: 3600 | 7200;
+		| 'registration.notifications.guardianapis.com.'
+		| 'registration.notifications.code.dev-guardianapis.com.';
+	intermediateCnameTTLInSeconds: 7200;
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	minAsgSize: number;
 	maxAsgSize?: number;

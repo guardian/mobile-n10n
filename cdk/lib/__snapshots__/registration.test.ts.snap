@@ -599,7 +599,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "Name": "notifications.code.dev-guardianapis.com",
         "RecordType": "CNAME",
         "ResourceRecords": [
-          "registration.notifications-aws.code.dev-guardianapis.com.",
+          "registration.notifications.code.dev-guardianapis.com.",
         ],
         "Stage": "CODE",
         "TTL": 7200,
@@ -2603,10 +2603,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "Name": "notifications.guardianapis.com",
         "RecordType": "CNAME",
         "ResourceRecords": [
-          "registration.notifications-aws.guardianapis.com.",
+          "registration.notifications.guardianapis.com.",
         ],
         "Stage": "PROD",
-        "TTL": 3600,
+        "TTL": 7200,
       },
       "Type": "Guardian::DNS::RecordSet",
     },
