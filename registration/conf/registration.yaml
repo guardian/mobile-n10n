@@ -69,12 +69,6 @@ Parameters:
   DistBucket:
     Type: String
     Description: The name of the s3 bucket containing the server artifact
-  HostedZone:
-    Type: String
-    Description:  The HostedZone, should contain the trailing dot zone.example.com.
-  DomainName:
-    Type: String
-    Description: The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.
   NotEnough200sThreshold:
     Type: Number
     Description: Alarm if less than this many 200s in half an hour
@@ -145,16 +139,6 @@ Resources:
               !Sub
                 - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/notifications/${Stage}/${Stack}
                 - Stack: !FindInMap [Constants, Stack, Value]
-
-  DnsRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneName: !Ref HostedZone
-      Name: !Ref DomainName
-      ResourceRecords:
-      - !GetAtt LoadBalancerToPrivateASG.DNSName
-      TTL: 60
-      Type: CNAME
 
   HighCPUAlarm:
     Type: AWS::CloudWatch::Alarm
