@@ -93,6 +93,7 @@ Resources:
       - FakeBreakingNewsFunction
     Type: AWS::Events::Rule
     Properties:
+      #State: DISABLED  Disable in favour of the GuCDK version
       ScheduleExpression: "cron(5 * * * ? *)"
       Targets:
         - Id: !Sub ${Stack}-${App}-${Stage}

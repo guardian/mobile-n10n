@@ -1,5 +1,7 @@
 import 'source-map-support/register';
+import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App, Duration } from 'aws-cdk-lib';
+import { FakeBreakingNewsLambda } from '../lib/fakebreakingnewslambda';
 import type { NotificationProps } from '../lib/notification';
 import { Notification } from '../lib/notification';
 import type { RegistrationProps } from '../lib/registration';
@@ -140,3 +142,26 @@ export const reportPropsProd: ReportProps = {
 	buildIdentifier: process.env.BUILD_NUMBER ?? 'DEV',
 };
 new Report(app, 'Report-PROD', reportPropsProd);
+
+export const fakeBreakingNewsCodeProps: GuStackProps = {
+	app: 'fakebreakingnews',
+	stack: 'mobile-notifications-fake-breaking-news',
+	stage: 'CODE',
+};
+
+export const fakeBreakingNewsProdProps: GuStackProps = {
+	app: 'fakebreakingnews',
+	stack: 'mobile-notifications-fake-breaking-news',
+	stage: 'PROD',
+};
+
+new FakeBreakingNewsLambda(
+	app,
+	'FakeBreakingNewsLambda-CODE',
+	fakeBreakingNewsCodeProps,
+);
+new FakeBreakingNewsLambda(
+	app,
+	'FakeBreakingNewsLambda-PROD',
+	fakeBreakingNewsProdProps,
+);

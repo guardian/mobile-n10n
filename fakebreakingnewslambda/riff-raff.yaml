@@ -8,12 +8,14 @@ deployments:
     parameters:
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
-      functionNames: [mobile-notifications-fakebreakingnews-]
+      functionNames: [mobile-notifications-fakebreakingnews-] # TODO switch to tag based lookup once the legacy YAML lambda has been deleted
       fileName: fakebreakingnewslambda.jar
       prefixStack: false
   fakebreakingnewslambda-cfn:
     type: cloud-formation
     app: fakebreakingnewslambda
     parameters:
-      templatePath: fakebreakingnewslambda-cfn.yaml
+      templateStagePaths:
+        CODE: FakeBreakingNewsLambda-CODE.template.json
+        PROD: FakeBreakingNewsLambda-PROD.template.json
 
