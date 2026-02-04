@@ -127,14 +127,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "DomainName": {
-      "Description": "The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.",
-      "Type": "String",
-    },
-    "HostedZone": {
-      "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
-      "Type": "String",
-    },
     "LegacyLoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name.code",
@@ -575,24 +567,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         ],
       },
       "Type": "AWS::IAM::Role",
-    },
-    "DnsRecord": {
-      "Properties": {
-        "HostedZoneName": {
-          "Ref": "HostedZone",
-        },
-        "Name": {
-          "Ref": "DomainName",
-        },
-        "ResourceRecords": [
-          {
-            "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
-          },
-        ],
-        "TTL": "60",
-        "Type": "CNAME",
-      },
-      "Type": "AWS::Route53::RecordSet",
     },
     "DnsRecordForRegistration": {
       "Properties": {
@@ -2136,14 +2110,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "DomainName": {
-      "Description": "The domain name of the ELB, should contain the trailing dot stuff.zone.example.com.",
-      "Type": "String",
-    },
-    "HostedZone": {
-      "Description": "The HostedZone, should contain the trailing dot zone.example.com.",
-      "Type": "String",
-    },
     "LegacyLoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name.code",
@@ -2584,24 +2550,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         ],
       },
       "Type": "AWS::IAM::Role",
-    },
-    "DnsRecord": {
-      "Properties": {
-        "HostedZoneName": {
-          "Ref": "HostedZone",
-        },
-        "Name": {
-          "Ref": "DomainName",
-        },
-        "ResourceRecords": [
-          {
-            "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
-          },
-        ],
-        "TTL": "60",
-        "Type": "CNAME",
-      },
-      "Type": "AWS::Route53::RecordSet",
     },
     "DnsRecordForRegistration": {
       "Properties": {
