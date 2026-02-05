@@ -3,12 +3,18 @@ import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
+import { GuDynamoTable } from '@guardian/cdk/lib/constructs/dynamodb';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import { GuEc2AppExperimental } from '@guardian/cdk/lib/experimental/patterns/ec2-app';
 import type { App } from 'aws-cdk-lib';
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
-import { Table } from 'aws-cdk-lib/aws-dynamodb';
+import {
+	AttributeType,
+	BillingMode,
+	ProjectionType,
+	StreamViewType,
+} from 'aws-cdk-lib/aws-dynamodb';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
 import { Schedule } from 'aws-cdk-lib/aws-events';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -42,11 +48,22 @@ export class Report extends GuStack {
 			buildIdentifier,
 		} = props;
 
-		const dynamoTable = Table.fromTableName(
-			this,
-			'ReportsTable',
-			`mobile-notifications-reports-${stage}`,
-		);
+		const dynamoTable = new GuDynamoTable(this, 'ReportsTable', {
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			devXBackups: { enabled: true },
+			partitionKey: { name: 'id', type: AttributeType.STRING },
+			removalPolicy: RemovalPolicy.RETAIN,
+			stream: StreamViewType.NEW_IMAGE,
+			tableName: `mobile-notifications-reports-${stage}`,
+			timeToLiveAttribute: 'ttl',
+		});
+
+		dynamoTable.addGlobalSecondaryIndex({
+			indexName: 'sentTime-index',
+			partitionKey: { name: 'type', type: AttributeType.STRING },
+			sortKey: { name: 'sentTime', type: AttributeType.STRING },
+			projectionType: ProjectionType.ALL,
+		});
 
 		const app = 'report';
 		const { autoScalingGroup, loadBalancer } = new GuEc2AppExperimental(this, {
