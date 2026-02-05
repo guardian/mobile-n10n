@@ -147,11 +147,13 @@ export const reportPropsProd: ReportProps = {
 new Report(app, 'Report-PROD', reportPropsProd);
 
 export const fakeBreakingNewsCodeProps: GuStackProps = {
+	app: 'fakebreakingnews',
 	stack: 'mobile-notifications-fake-breaking-news',
 	stage: 'CODE',
 };
 
 export const fakeBreakingNewsProdProps: GuStackProps = {
+	app: 'fakebreakingnews',
 	stack: 'mobile-notifications-fake-breaking-news',
 	stage: 'PROD',
 };
