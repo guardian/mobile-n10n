@@ -2815,12 +2815,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.10.1":
-  version: 24.10.1
-  resolution: "@types/node@npm:24.10.1"
+"@types/node@npm:25.2.1":
+  version: 25.2.1
+  resolution: "@types/node@npm:25.2.1"
   dependencies:
     undici-types: "npm:~7.16.0"
-  checksum: 10c0/d6bca7a78f550fbb376f236f92b405d676003a8a09a1b411f55920ef34286ee3ee51f566203920e835478784df52662b5b2af89159d9d319352e9ea21801c002
+  checksum: 10c0/ce42fa07495093c55b6398e3c4346d644a61b8c4f59d2e0c0ed152ea0e4327c60a41d5fdfa3e0fc4f4776eb925e2b783b6b942501fc044328a44980bc2de4dc6
   languageName: node
   linkType: hard
 
@@ -3862,7 +3862,7 @@ __metadata:
     "@guardian/prettier": "npm:10.0.0"
     "@guardian/tsconfig": "npm:1.0.1"
     "@types/jest": "npm:^30.0.0"
-    "@types/node": "npm:24.10.1"
+    "@types/node": "npm:25.2.1"
     aws-cdk: "npm:2.1030.0"
     aws-cdk-lib: "npm:2.219.0"
     constructs: "npm:^10.4.2"
