@@ -69,7 +69,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:registration
           buildNumberOffset: 4147
-          configPath: registration/conf/riff-raff.yaml
+          configPath: cdk/cdk.out/mobile-n10n:registration/riff-raff.yaml
           contentDirectories: |
             registration:
               - registration/target/registration_1.0-latest_all.deb

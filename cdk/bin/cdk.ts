@@ -1,4 +1,7 @@
 import 'source-map-support/register';
+import path from 'node:path';
+import type { GuStack } from '@guardian/cdk/lib/constructs/core';
+import { RiffRaffYamlFile } from '@guardian/cdk/lib/riff-raff-yaml-file';
 import { App, Duration } from 'aws-cdk-lib';
 import type { NotificationProps } from '../lib/notification';
 import { Notification } from '../lib/notification';
@@ -8,6 +11,12 @@ import { RegistrationsDbProxy } from '../lib/registrations-db-proxy';
 import { Report, type ReportProps } from '../lib/report';
 import { SenderWorkerStack } from '../lib/senderworker';
 import { SloMonitoring } from '../lib/slo-monitoring';
+
+/**
+ * A map of Riff-Raff project name to the stacks that should be deployed by it.
+ * This is used to generate the `riff-raff.yaml` file for each project.
+ */
+const riffRaffProjects = new Map<string, GuStack[]>();
 
 const app = new App();
 
@@ -36,8 +45,10 @@ export const notificationProdProps: NotificationProps = {
 	minAsgSize: 3,
 };
 
-new Notification(app, 'Notification-CODE', notificationCodeProps);
-new Notification(app, 'Notification-PROD', notificationProdProps);
+riffRaffProjects.set('mobile-n10n:notification', [
+	new Notification(app, 'Notification-CODE', notificationCodeProps),
+	new Notification(app, 'Notification-PROD', notificationProdProps),
+]);
 
 export const registrationCodeProps: RegistrationProps = {
 	stack: 'mobile-notifications',
@@ -70,8 +81,10 @@ export const registrationProdProps: RegistrationProps = {
 	cloudFormationStackName: 'mobile-notifications-registration-PROD',
 };
 
-new Registration(app, 'Registration-CODE', registrationCodeProps);
-new Registration(app, 'Registration-PROD', registrationProdProps);
+riffRaffProjects.set('mobile-n10n:registration', [
+	new Registration(app, 'Registration-CODE', registrationCodeProps),
+	new Registration(app, 'Registration-PROD', registrationProdProps),
+]);
 
 export const dbProxyCodeProps = {
 	stack: 'mobile-notifications',
@@ -129,7 +142,6 @@ export const reportPropsCode: ReportProps = {
 	minAsgSize: 1,
 	buildIdentifier: process.env.BUILD_NUMBER ?? 'DEV',
 };
-new Report(app, 'Report-CODE', reportPropsCode);
 
 export const reportPropsProd: ReportProps = {
 	cloudFormationStackName: 'mobile-notifications-report-PROD',
@@ -142,4 +154,12 @@ export const reportPropsProd: ReportProps = {
 	minAsgSize: 3,
 	buildIdentifier: process.env.BUILD_NUMBER ?? 'DEV',
 };
-new Report(app, 'Report-PROD', reportPropsProd);
+
+riffRaffProjects.set('mobile-n10n:report', [
+	new Report(app, 'Report-CODE', reportPropsCode),
+	new Report(app, 'Report-PROD', reportPropsProd),
+]);
+
+for (const [project, stacks] of riffRaffProjects) {
+	RiffRaffYamlFile.fromStacks(stacks, path.join(app.outdir, project)).synth();
+}

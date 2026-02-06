@@ -106,6 +106,11 @@ export class Registration extends GuStack {
 					}),
 				],
 			},
+			imageRecipe: {
+				Recipe: 'mobile-java11-jammy-ARM-with-cdk-base',
+				Encrypted: true,
+				AmigoStage: 'PROD',
+			},
 		});
 
 		Tags.of(autoScalingGroup).add('gu:riffraff:new-asg', 'true');

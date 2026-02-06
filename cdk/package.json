@@ -12,7 +12,7 @@
     "diff": "cdk diff --path-metadata false --version-reporting false"
   },
   "devDependencies": {
-    "@guardian/cdk": "62.3.2",
+    "@guardian/cdk": "github:guardian/cdk#multiple-riff-raff.yaml",
     "@guardian/eslint-config": "12.0.1",
     "@guardian/prettier": "10.0.0",
     "@guardian/tsconfig": "1.0.1",

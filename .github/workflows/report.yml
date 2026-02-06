@@ -96,7 +96,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:report
           buildNumber: ${{ env.BUILD_NUMBER }}
-          configPath: report/conf/riff-raff.yaml
+          configPath: cdk/cdk.out/mobile-n10n:report/riff-raff.yaml
           contentDirectories: |
             report:
               - dist/report

@@ -69,7 +69,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectName: mobile-n10n:notification
           buildNumberOffset: 4147
-          configPath: notification/conf/riff-raff.yaml
+          configPath: cdk/cdk.out/mobile-n10n:notification/riff-raff.yaml
           contentDirectories: |
             notification:
               - notification/target/notification_1.0-latest_all.deb

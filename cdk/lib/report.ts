@@ -103,6 +103,11 @@ export class Report extends GuStack {
 				enabled: true,
 				systemdUnitName: app,
 			},
+			imageRecipe: {
+				Recipe: 'mobile-java11-jammy-ARM-with-cdk-base',
+				Encrypted: true,
+				AmigoStage: 'PROD',
+			},
 		});
 
 		//TODO check if this customisation is really necessary (it has been copied across from

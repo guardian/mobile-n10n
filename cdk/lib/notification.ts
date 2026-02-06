@@ -174,6 +174,11 @@ export class Notification extends GuStack {
 				enabled: true,
 				systemdUnitName: app,
 			},
+			imageRecipe: {
+				Recipe: 'mobile-java11-jammy-ARM-with-cdk-base',
+				Encrypted: true,
+				AmigoStage: 'PROD',
+			},
 		});
 
 		autoScalingGroup.scaleOnCpuUtilization('CpuScalingPolicy', {
