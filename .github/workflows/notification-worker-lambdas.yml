@@ -40,7 +40,7 @@ jobs:
           cache-dependency-path: cdk/yarn.lock
           node-version-file: .nvmrc
 
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
