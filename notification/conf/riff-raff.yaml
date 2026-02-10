@@ -7,9 +7,6 @@ deployments:
     parameters:
       amiEncrypted: true
       amiParametersToTags:
-        AMI:
-          Recipe: mobile-java11-jammy-ARM-with-cdk-base
-          AmigoStage: PROD
         AMINotification:
           Recipe: mobile-java11-jammy-ARM-with-cdk-base
           AmigoStage: PROD
@@ -26,7 +23,6 @@ deployments:
   notification:
     type: autoscaling
     parameters:
-      asgMigrationInProgress: true
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
     dependencies: [notification-cfn]

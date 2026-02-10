@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { GuPlayApp } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
@@ -12,11 +11,10 @@ import {
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
-import { Duration, Tags } from 'aws-cdk-lib';
+import { Duration } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
-import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
 export interface NotificationProps extends GuStackProps {
@@ -44,14 +42,6 @@ export class Notification extends GuStack {
 			sloMonitoringQueueName,
 			minAsgSize,
 		} = props;
-
-		const yamlTemplateFilePath = join(
-			__dirname,
-			'../../notification/conf/notification.yaml',
-		);
-		new CfnInclude(this, 'YamlTemplate', {
-			templateFile: yamlTemplateFilePath,
-		});
 
 		const app = 'notification';
 
@@ -178,8 +168,6 @@ export class Notification extends GuStack {
 		// Match existing healthcheck grace period
 		const cfnAsg = autoScalingGroup.node.defaultChild as CfnAutoScalingGroup;
 		cfnAsg.healthCheckGracePeriod = Duration.seconds(400).toSeconds();
-
-		Tags.of(autoScalingGroup).add('gu:riffraff:new-asg', 'true');
 
 		adjustCloudformationParameters(this);
 
