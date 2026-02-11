@@ -158,7 +158,7 @@ export class Notification extends GuStack {
 			app,
 			domainName: props.domainName,
 			resourceRecord: loadBalancer.loadBalancerDnsName,
-			ttl: Duration.seconds(60),
+			ttl: Duration.seconds(3600),
 		});
 
 		autoScalingGroup.scaleOnCpuUtilization('CpuScalingPolicy', {
