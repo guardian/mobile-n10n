@@ -117,7 +117,7 @@ export class Report extends GuStack {
 			app,
 			domainName,
 			resourceRecord: loadBalancer.loadBalancerDnsName,
-			ttl: Duration.seconds(60),
+			ttl: Duration.seconds(3600),
 		});
 
 		const reportExtractorApp = 'reportextractor';
