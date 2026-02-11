@@ -42,7 +42,7 @@ val awsSdkVersion: String = "1.12.797"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
-val paClientVersion: String = "7.0.12"
+val paClientVersion: String = "7.0.13"
 val apacheThrift: String = "0.15.0"
 val jacksonDatabind: String = "2.19.4"
 val jacksonCbor: String = "2.19.4"
@@ -307,7 +307,7 @@ lazy val football = lambda("football", "football")
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
-      "com.gu" %% "content-api-client-default" % "35.0.0",
+      "com.gu" %% "content-api-client-default" % "41.0.0",
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
