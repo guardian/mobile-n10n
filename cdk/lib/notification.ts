@@ -1,13 +1,7 @@
 import { GuPlayApp } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
-import {
-	GuDistributionBucketParameter,
-	GuLoggingStreamNameParameter,
-	GuStack,
-	GuStringParameter,
-	GuVpcParameter,
-} from '@guardian/cdk/lib/constructs/core';
+import { GuStack, GuStringParameter } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
@@ -170,19 +164,5 @@ export class Notification extends GuStack {
 		cfnAsg.healthCheckGracePeriod = Duration.seconds(400).toSeconds();
 
 		adjustCloudformationParameters(this);
-
-		// This is necessary whilst dual-stacking because there is already a parameter called VpcId in the YAML template
-		// Once the YAML template has been removed we should be able to drop this override
-		const vpcParameter = GuVpcParameter.getInstance(this);
-		vpcParameter.overrideLogicalId('GuCdkVpcId');
-
-		// Similarly, override LoggingStreamName to avoid conflict with YAML template
-		const loggingStreamParameter =
-			GuLoggingStreamNameParameter.getInstance(this);
-		loggingStreamParameter.overrideLogicalId('GuCdkLoggingStreamName');
-
-		// Similarly, override DistributionBucketName to avoid conflict with YAML template's DistBucket
-		const distBucketParameter = GuDistributionBucketParameter.getInstance(this);
-		distBucketParameter.overrideLogicalId('GuCdkDistributionBucketName');
 	}
 }

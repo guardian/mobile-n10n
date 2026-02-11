@@ -59,7 +59,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
       "Description": "S3 bucket to store your access logs",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "GuCdkDistributionBucketName": {
+    "DistributionBucketName": {
       "AllowedValues": [
         "/account/services/artifact.bucket.n10n",
       ],
@@ -67,21 +67,13 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "GuCdkLoggingStreamName": {
+    "LoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name.code",
       ],
       "Default": "/account/services/logging.stream.name.code",
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
-    },
-    "GuCdkVpcId": {
-      "AllowedValues": [
-        "/account/vpc/notifications/id",
-      ],
-      "Default": "/account/vpc/notifications/id",
-      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "TopicCountBucket": {
       "AllowedValues": [
@@ -90,6 +82,14 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
       "Default": "/notifications/CODE/mobile-notifications/notifications.topicCounts.bucket",
       "Description": "SSM parameter containing the bucket name containing topic counts",
       "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "VpcId": {
+      "AllowedValues": [
+        "/account/vpc/notifications/id",
+      ],
+      "Default": "/account/vpc/notifications/id",
+      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "notificationPrivateSubnets": {
       "AllowedValues": [
@@ -151,7 +151,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
             "Key": "LogKinesisStreamName",
             "PropagateAtLaunch": true,
             "Value": {
-              "Ref": "GuCdkLoggingStreamName",
+              "Ref": "LoggingStreamName",
             },
           },
           {
@@ -451,7 +451,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
                   [
                     "arn:aws:s3:::",
                     {
-                      "Ref": "GuCdkDistributionBucketName",
+                      "Ref": "DistributionBucketName",
                     },
                     "/mobile-notifications/CODE/notification/*",
                   ],
@@ -505,7 +505,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -551,7 +551,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
                     },
                     ":stream/",
                     {
-                      "Ref": "GuCdkLoggingStreamName",
+                      "Ref": "LoggingStreamName",
                     },
                   ],
                 ],
@@ -859,7 +859,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -1080,7 +1080,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
         "TargetType": "instance",
         "UnhealthyThresholdCount": 10,
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
@@ -1334,7 +1334,7 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
 mkdir -p $(dirname '/notification/notification_1.0-latest_all.deb')
 aws s3 cp 's3://",
                   {
-                    "Ref": "GuCdkDistributionBucketName",
+                    "Ref": "DistributionBucketName",
                   },
                   "/mobile-notifications/CODE/notification/notification_1.0-latest_all.deb' '/notification/notification_1.0-latest_all.deb'
 dpkg -i /notification/notification_1.0-latest_all.deb",
@@ -1450,7 +1450,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
       "Description": "S3 bucket to store your access logs",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "GuCdkDistributionBucketName": {
+    "DistributionBucketName": {
       "AllowedValues": [
         "/account/services/artifact.bucket.n10n",
       ],
@@ -1458,21 +1458,13 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "GuCdkLoggingStreamName": {
+    "LoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name",
       ],
       "Default": "/account/services/logging.stream.name",
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
-    },
-    "GuCdkVpcId": {
-      "AllowedValues": [
-        "/account/vpc/notifications/id",
-      ],
-      "Default": "/account/vpc/notifications/id",
-      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "TopicCountBucket": {
       "AllowedValues": [
@@ -1481,6 +1473,14 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
       "Default": "/notifications/PROD/mobile-notifications/notifications.topicCounts.bucket",
       "Description": "SSM parameter containing the bucket name containing topic counts",
       "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "VpcId": {
+      "AllowedValues": [
+        "/account/vpc/notifications/id",
+      ],
+      "Default": "/account/vpc/notifications/id",
+      "Description": "Virtual Private Cloud to run EC2 instances within. Should NOT be the account default VPC.",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
     },
     "notificationPrivateSubnets": {
       "AllowedValues": [
@@ -1542,7 +1542,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
             "Key": "LogKinesisStreamName",
             "PropagateAtLaunch": true,
             "Value": {
-              "Ref": "GuCdkLoggingStreamName",
+              "Ref": "LoggingStreamName",
             },
           },
           {
@@ -1842,7 +1842,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
                   [
                     "arn:aws:s3:::",
                     {
-                      "Ref": "GuCdkDistributionBucketName",
+                      "Ref": "DistributionBucketName",
                     },
                     "/mobile-notifications/PROD/notification/*",
                   ],
@@ -1896,7 +1896,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -1942,7 +1942,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
                     },
                     ":stream/",
                     {
-                      "Ref": "GuCdkLoggingStreamName",
+                      "Ref": "LoggingStreamName",
                     },
                   ],
                 ],
@@ -2250,7 +2250,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
           },
         ],
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
@@ -2471,7 +2471,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
         "TargetType": "instance",
         "UnhealthyThresholdCount": 10,
         "VpcId": {
-          "Ref": "GuCdkVpcId",
+          "Ref": "VpcId",
         },
       },
       "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
@@ -2725,7 +2725,7 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
 mkdir -p $(dirname '/notification/notification_1.0-latest_all.deb')
 aws s3 cp 's3://",
                   {
-                    "Ref": "GuCdkDistributionBucketName",
+                    "Ref": "DistributionBucketName",
                   },
                   "/mobile-notifications/PROD/notification/notification_1.0-latest_all.deb' '/notification/notification_1.0-latest_all.deb'
 dpkg -i /notification/notification_1.0-latest_all.deb",
