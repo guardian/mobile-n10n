@@ -575,7 +575,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         "ResourceRecords": [
           {
             "Fn::GetAtt": [
-              "LoadBalancerToPrivateASG",
+              "LoadBalancerRegistration79F7817E",
               "DNSName",
             ],
           },
@@ -1174,7 +1174,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
     },
     "Low2XXIn1dayE630C03B": {
       "Properties": {
-        "ActionsEnabled": false,
+        "ActionsEnabled": true,
         "AlarmActions": [
           {
             "Fn::Join": [
@@ -1250,7 +1250,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
     },
     "Low2XXIn30minutesE2E53BDD": {
       "Properties": {
-        "ActionsEnabled": false,
+        "ActionsEnabled": true,
         "AlarmActions": [
           {
             "Fn::Join": [
@@ -1414,6 +1414,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
     },
     "NotEnoughHttpCode200sAlarm": {
       "Properties": {
+        "ActionsEnabled": false,
         "AlarmActions": [
           {
             "Ref": "AlarmTopic",
@@ -1472,6 +1473,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
     },
     "NotEnoughHttpCode200sPerDayAlarm": {
       "Properties": {
+        "ActionsEnabled": false,
         "AlarmActions": [
           {
             "Ref": "AlarmTopic",
@@ -2558,7 +2560,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "ResourceRecords": [
           {
             "Fn::GetAtt": [
-              "LoadBalancerToPrivateASG",
+              "LoadBalancerRegistration79F7817E",
               "DNSName",
             ],
           },
@@ -3157,7 +3159,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
     },
     "Low2XXIn1dayE630C03B": {
       "Properties": {
-        "ActionsEnabled": false,
+        "ActionsEnabled": true,
         "AlarmActions": [
           {
             "Fn::Join": [
@@ -3233,7 +3235,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
     },
     "Low2XXIn30minutesE2E53BDD": {
       "Properties": {
-        "ActionsEnabled": false,
+        "ActionsEnabled": true,
         "AlarmActions": [
           {
             "Fn::Join": [
@@ -3397,6 +3399,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
     },
     "NotEnoughHttpCode200sAlarm": {
       "Properties": {
+        "ActionsEnabled": false,
         "AlarmActions": [
           {
             "Ref": "AlarmTopic",
@@ -3455,6 +3458,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
     },
     "NotEnoughHttpCode200sPerDayAlarm": {
       "Properties": {
+        "ActionsEnabled": false,
         "AlarmActions": [
           {
             "Ref": "AlarmTopic",
