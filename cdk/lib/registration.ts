@@ -152,7 +152,6 @@ export class Registration extends GuStack {
 
 		adjustCloudformationParameters(this);
 
-		// This CNAME represents the public URL for the registration service.
 		new GuCname(this, 'DnsRecordForRegistration', {
 			app,
 			domainName: props.domainName,
