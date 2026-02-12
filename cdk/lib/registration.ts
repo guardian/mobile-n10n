@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { GuEc2App } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
@@ -6,7 +5,7 @@ import { GuParameter, GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import { Duration } from 'aws-cdk-lib';
-import { type App, Tags } from 'aws-cdk-lib';
+import type { App } from 'aws-cdk-lib';
 import {
 	ComparisonOperator,
 	TreatMissingData,
@@ -20,7 +19,6 @@ import {
 } from 'aws-cdk-lib/aws-ec2';
 import { HttpCodeTarget } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Topic } from 'aws-cdk-lib/aws-sns';
-import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
 export interface RegistrationProps extends GuStackProps {
@@ -37,17 +35,6 @@ export interface RegistrationProps extends GuStackProps {
 export class Registration extends GuStack {
 	constructor(scope: App, id: string, props: RegistrationProps) {
 		super(scope, id, props);
-		const yamlTemplateFilePath = join(
-			__dirname,
-			'../../registration/conf/registration.yaml',
-		);
-		// Until this project has been fully migrated to GuCDK you should update the 'old' infrastructure by modifying
-		// the YAML file and then re-running the snapshot tests to confirm that the changes are being pulled through by
-		// CDK
-		new CfnInclude(this, 'YamlTemplate', {
-			templateFile: yamlTemplateFilePath,
-		});
-
 		const {
 			app,
 			stage,
@@ -76,7 +63,8 @@ export class Registration extends GuStack {
 			instanceMetricGranularity,
 			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
 
-			// This matches the YAML stack (i.e. there is no 5XX alarm).
+			// We use slo-alerts to capture a high rate of 5XX errors: https://github.com/guardian/slo-alerts/blob/main/cdk/lib/mobile/mobile-slos.ts
+			// We also have a bespoke alarm for low number of 2XXs defined below
 			monitoringConfiguration: { noMonitoring: true },
 
 			scaling: { minimumInstances: minAsgSize, maximumInstances: maxAsgSize },
@@ -106,8 +94,6 @@ export class Registration extends GuStack {
 				],
 			},
 		});
-
-		Tags.of(autoScalingGroup).add('gu:riffraff:new-asg', 'true');
 
 		const databaseAccessParamPath = `/${stage}/${stack}/registrations-db/postgres-access-security-group`;
 		const databaseSecurityGroupId = new GuParameter(
@@ -167,15 +153,11 @@ export class Registration extends GuStack {
 
 		adjustCloudformationParameters(this);
 
-		// This CNAME represents the public URL for the registration service.
 		new GuCname(this, 'DnsRecordForRegistration', {
 			app,
 			domainName: props.domainName,
 			resourceRecord: loadBalancer.loadBalancerDnsName,
-
-			// Intentionally low TTL for faster DNS changes
-			// TODO increase this to 7200 (2 hours) after the migration is complete
-			ttl: Duration.minutes(1),
+			ttl: Duration.hours(1),
 		});
 	}
 }

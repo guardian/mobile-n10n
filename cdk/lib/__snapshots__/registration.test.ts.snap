@@ -2,36 +2,6 @@
 
 exports[`The Registration stack matches the snapshot for CODE 1`] = `
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Registration for mobile notifications",
-  "Mappings": {
-    "Constants": {
-      "App": {
-        "Value": "registration",
-      },
-      "Stack": {
-        "Value": "mobile-notifications",
-      },
-    },
-    "StageVariables": {
-      "CODE": {
-        "CPUAlarmPeriodLower": 300,
-        "CPUAlarmPeriodUpper": 1200,
-        "CPUAlarmThresholdLower": 20,
-        "CPUAlarmThresholdUpper": 50,
-        "InstanceType": "t4g.small",
-        "NotificationAlarmPeriod": 1200,
-      },
-      "PROD": {
-        "CPUAlarmPeriodLower": 300,
-        "CPUAlarmPeriodUpper": 60,
-        "CPUAlarmThresholdLower": 20,
-        "CPUAlarmThresholdUpper": 50,
-        "InstanceType": "t4g.small",
-        "NotificationAlarmPeriod": 1200,
-      },
-    },
-  },
   "Metadata": {
     "gu:cdk:constructs": [
       "GuAllowPolicy",
@@ -71,53 +41,16 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         ],
       },
     },
-    "LoadBalancerUrl": {
-      "Value": {
-        "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
-      },
-    },
   },
   "Parameters": {
-    "AMI": {
-      "Description": "AMI used by the instances",
-      "Type": "AWS::EC2::Image::Id",
-    },
     "AMIRegistration": {
       "Description": "Amazon Machine Image ID for the app registration. Use this in conjunction with AMIgo to keep AMIs up to date.",
       "Type": "AWS::EC2::Image::Id",
-    },
-    "ASGMaxSize": {
-      "Description": "Maximum size of the autoscaling group",
-      "Type": "Number",
-    },
-    "ASGMinSize": {
-      "Description": "Minimum size of the autoscaling group",
-      "Type": "Number",
     },
     "AccessLoggingBucket": {
       "Default": "/account/services/access-logging/bucket",
       "Description": "S3 bucket to store your access logs",
       "Type": "AWS::SSM::Parameter::Value<String>",
-    },
-    "AlarmTopic": {
-      "Description": "The ARN of the SNS topic to send all the cloudwatch alarms to",
-      "Type": "String",
-    },
-    "CertArn": {
-      "Description": "ACM Certificate for app use",
-      "Type": "String",
-    },
-    "DatabaseAccessSecurityGroup": {
-      "AllowedValues": [
-        "/CODE/mobile-notifications/registrations-db/postgres-access-security-group",
-        "/PROD/mobile-notifications/registrations-db/postgres-access-security-group",
-      ],
-      "Description": "The security group that allows access to the database",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>",
-    },
-    "DistBucket": {
-      "Description": "The name of the s3 bucket containing the server artifact",
-      "Type": "String",
     },
     "DistributionBucketName": {
       "AllowedValues": [
@@ -127,19 +60,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "LegacyLoggingStreamName": {
-      "AllowedValues": [
-        "/account/services/logging.stream.name.code",
-        "/account/services/logging.stream.name",
-      ],
-      "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
-      "Type": "AWS::SSM::Parameter::Value<String>",
-    },
-    "LegacyVpcId": {
-      "Default": "/account/vpc/notifications/id",
-      "Description": "The VPC",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
-    },
     "LoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name.code",
@@ -148,22 +68,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "NotEnough200sPerDayThreshold": {
-      "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
-      "Type": "Number",
-    },
-    "NotEnough200sThreshold": {
-      "Description": "Alarm if less than this many 200s in half an hour",
-      "Type": "Number",
-    },
-    "PrivateSubnets": {
-      "Description": "The private subnets of the VPC for the autoscaling group",
-      "Type": "List<AWS::EC2::Subnet::Id>",
-    },
-    "PublicSubnets": {
-      "Description": "The public subnets of the VPC for the loadbalancer",
-      "Type": "List<AWS::EC2::Subnet::Id>",
-    },
     "RegistrationsDatabaseAccessSecurityGroup": {
       "AllowedValues": [
         "/CODE/mobile-notifications/registrations-db/postgres-access-security-group",
@@ -171,18 +75,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       "Default": "/CODE/mobile-notifications/registrations-db/postgres-access-security-group",
       "Description": "SSM parameter path for the security group that allows access to the registrations database",
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>",
-    },
-    "RunbookCopy": {
-      "Default": "<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
-      "Type": "String",
-    },
-    "Stage": {
-      "AllowedValues": [
-        "CODE",
-        "PROD",
-      ],
-      "Description": "Environment name",
-      "Type": "String",
     },
     "VpcId": {
       "AllowedValues": [
@@ -247,11 +139,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "Key": "gu:repo",
             "PropagateAtLaunch": true,
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "gu:riffraff:new-asg",
-            "PropagateAtLaunch": true,
-            "Value": "true",
           },
           {
             "Key": "LogKinesisStreamName",
@@ -437,137 +324,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
-    "DistributionInstanceProfile": {
-      "Properties": {
-        "Path": "/",
-        "Roles": [
-          {
-            "Ref": "DistributionRole",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::InstanceProfile",
-    },
-    "DistributionRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "ec2.amazonaws.com",
-              },
-            },
-          ],
-        },
-        "ManagedPolicyArns": [
-          {
-            "Fn::Sub": "arn:aws:iam::\${AWS::AccountId}:policy/ssm-scala-v1",
-          },
-        ],
-        "Path": "/",
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": "s3:GetObject",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": "arn:aws:s3:::\${DistBucket}/*",
-                  },
-                },
-                {
-                  "Action": [
-                    "ec2:DescribeTags",
-                    "ec2:DescribeInstances",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "cloudwatch:*",
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "autoscaling:DescribeAutoScalingInstances",
-                    "autoscaling:DescribeAutoScalingGroups",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "kinesis:PutRecord",
-                    "kinesis:PutRecords",
-                    "kinesis:DescribeStream",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": "arn:aws:kinesis:\${AWS::Region}:\${AWS::AccountId}:stream/mobile-log-aggregation-\${Stage}",
-                  },
-                },
-              ],
-            },
-            "PolicyName": "root",
-          },
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": "ssm:GetParametersByPath",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": [
-                      "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/notifications/\${Stage}/\${Stack}",
-                      {
-                        "Stack": {
-                          "Fn::FindInMap": [
-                            "Constants",
-                            "Stack",
-                            "Value",
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "conf",
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
     "DnsRecordForRegistration": {
       "Properties": {
         "Name": "notifications.code.dev-guardianapis.com",
@@ -581,7 +337,7 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
           },
         ],
         "Stage": "CODE",
-        "TTL": 60,
+        "TTL": 3600,
       },
       "Type": "Guardian::DNS::RecordSet",
     },
@@ -716,94 +472,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
-    "HighCPUAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "ScaleUpPolicy",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": [
-            "Scale-Up if CPU is greater than \${CPUAlarmThresholdUpper} % over last \${CPUAlarmPeriodUpper} seconds",
-            {
-              "CPUAlarmPeriodUpper": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "CPUAlarmThresholdUpper",
-                ],
-              },
-              "CPUAlarmThresholdUpper": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "CPUAlarmThresholdUpper",
-                ],
-              },
-            },
-          ],
-        },
-        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": {
-              "Ref": "PrivateRegistrationAutoscalingGroup",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Period": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "CPUAlarmPeriodUpper",
-          ],
-        },
-        "Statistic": "Average",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "Threshold": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "CPUAlarmThresholdUpper",
-          ],
-        },
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
     "InstanceRoleRegistrationF217DF71": {
       "Properties": {
         "AssumeRolePolicyDocument": {
@@ -843,61 +511,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         ],
       },
       "Type": "AWS::IAM::Role",
-    },
-    "InstanceSecurityGroup": {
-      "Properties": {
-        "GroupDescription": "Open up HTTP access to load balancer",
-        "SecurityGroupEgress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": 80,
-            "IpProtocol": "tcp",
-            "ToPort": 80,
-          },
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": 443,
-            "IpProtocol": "tcp",
-            "ToPort": 443,
-          },
-        ],
-        "SecurityGroupIngress": [
-          {
-            "FromPort": 9000,
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Ref": "LoadBalancerSecurityGroup",
-            },
-            "ToPort": 9000,
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "VpcId": {
-          "Ref": "LegacyVpcId",
-        },
-      },
-      "Type": "AWS::EC2::SecurityGroup",
     },
     "ListenerRegistration1652F707": {
       "Properties": {
@@ -1072,106 +685,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::EC2::SecurityGroupEgress",
     },
-    "LoadBalancerSecurityGroup": {
-      "Properties": {
-        "GroupDescription": "Open up HTTP access to load balancer",
-        "SecurityGroupEgress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": 9000,
-            "IpProtocol": "tcp",
-            "ToPort": 9000,
-          },
-        ],
-        "SecurityGroupIngress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": 443,
-            "IpProtocol": "tcp",
-            "ToPort": 443,
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "VpcId": {
-          "Ref": "LegacyVpcId",
-        },
-      },
-      "Type": "AWS::EC2::SecurityGroup",
-    },
-    "LoadBalancerToPrivateASG": {
-      "Properties": {
-        "CrossZone": true,
-        "HealthCheck": {
-          "HealthyThreshold": "2",
-          "Interval": "30",
-          "Target": "HTTP:9000/healthcheck",
-          "Timeout": "10",
-          "UnhealthyThreshold": "10",
-        },
-        "Listeners": [
-          {
-            "InstancePort": "9000",
-            "LoadBalancerPort": "443",
-            "Protocol": "HTTPS",
-            "SSLCertificateId": {
-              "Fn::Sub": "\${CertArn}",
-            },
-          },
-        ],
-        "SecurityGroups": [
-          {
-            "Ref": "LoadBalancerSecurityGroup",
-          },
-        ],
-        "Subnets": {
-          "Ref": "PublicSubnets",
-        },
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-      },
-      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
-    },
     "Low2XXIn1dayE630C03B": {
       "Properties": {
         "ActionsEnabled": true,
@@ -1324,212 +837,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "LowCPUAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "ScaleDownPolicy",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": [
-            "Scale-Down if CPU is less than \${CPUAlarmThresholdLower} % over last \${CPUAlarmPeriodLower} seconds",
-            {
-              "CPUAlarmPeriodLower": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "CPUAlarmPeriodLower",
-                ],
-              },
-              "CPUAlarmThresholdLower": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "CPUAlarmThresholdLower",
-                ],
-              },
-            },
-          ],
-        },
-        "ComparisonOperator": "LessThanOrEqualToThreshold",
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": {
-              "Ref": "PrivateRegistrationAutoscalingGroup",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Period": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "CPUAlarmPeriodLower",
-          ],
-        },
-        "Statistic": "Average",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "Threshold": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "CPUAlarmThresholdLower",
-          ],
-        },
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "NotEnoughHttpCode200sAlarm": {
-      "Properties": {
-        "ActionsEnabled": false,
-        "AlarmActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in half an hour. \${RunbookCopy}",
-        },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "LoadBalancerName",
-            "Value": {
-              "Ref": "LoadBalancerToPrivateASG",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "HTTPCode_Backend_2XX",
-        "Namespace": "AWS/ELB",
-        "OKActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "Period": 1800,
-        "Statistic": "Sum",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "Threshold": {
-          "Ref": "NotEnough200sThreshold",
-        },
-        "TreatMissingData": "breaching",
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "NotEnoughHttpCode200sPerDayAlarm": {
-      "Properties": {
-        "ActionsEnabled": false,
-        "AlarmActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in a whole day. \${RunbookCopy}",
-        },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "LoadBalancerName",
-            "Value": {
-              "Ref": "LoadBalancerToPrivateASG",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "HTTPCode_Backend_2XX",
-        "Namespace": "AWS/ELB",
-        "OKActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "Period": 86400,
-        "Statistic": "Sum",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "Threshold": {
-          "Ref": "NotEnough200sPerDayThreshold",
-        },
-        "TreatMissingData": "breaching",
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
     "ParameterStoreReadRegistration056D6427": {
       "Properties": {
         "PolicyDocument": {
@@ -1580,163 +887,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
         ],
       },
       "Type": "AWS::IAM::Policy",
-    },
-    "PrivateRegistrationAutoscalingGroup": {
-      "Properties": {
-        "AvailabilityZones": {
-          "Fn::GetAZs": "",
-        },
-        "HealthCheckGracePeriod": 400,
-        "HealthCheckType": "ELB",
-        "LaunchConfigurationName": {
-          "Ref": "RegistrationLaunchConfig",
-        },
-        "LoadBalancerNames": [
-          {
-            "Ref": "LoadBalancerToPrivateASG",
-          },
-        ],
-        "MaxSize": {
-          "Ref": "ASGMaxSize",
-        },
-        "MinSize": {
-          "Ref": "ASGMinSize",
-        },
-        "NotificationConfigurations": [
-          {
-            "NotificationTypes": [
-              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
-            ],
-            "TopicARN": {
-              "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
-            },
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "App",
-            "PropagateAtLaunch": true,
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "PropagateAtLaunch": true,
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "PropagateAtLaunch": true,
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "LogKinesisStreamName",
-            "PropagateAtLaunch": true,
-            "Value": {
-              "Ref": "LegacyLoggingStreamName",
-            },
-          },
-          {
-            "Key": "Stack",
-            "PropagateAtLaunch": true,
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "PropagateAtLaunch": true,
-            "Value": "CODE",
-          },
-          {
-            "Key": "SystemdUnit",
-            "PropagateAtLaunch": true,
-            "Value": "registration.service",
-          },
-        ],
-        "VPCZoneIdentifier": {
-          "Ref": "PrivateSubnets",
-        },
-      },
-      "Type": "AWS::AutoScaling::AutoScalingGroup",
-    },
-    "RegistrationLaunchConfig": {
-      "Properties": {
-        "AssociatePublicIpAddress": false,
-        "IamInstanceProfile": {
-          "Ref": "DistributionInstanceProfile",
-        },
-        "ImageId": {
-          "Ref": "AMI",
-        },
-        "InstanceType": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "InstanceType",
-          ],
-        },
-        "MetadataOptions": {
-          "HttpTokens": "required",
-        },
-        "SecurityGroups": [
-          {
-            "Ref": "InstanceSecurityGroup",
-          },
-          {
-            "Ref": "DatabaseAccessSecurityGroup",
-          },
-        ],
-        "UserData": {
-          "Fn::Base64": {
-            "Fn::Sub": [
-              "#!/bin/bash -ev
-aws --region \${AWS::Region} s3 cp s3://\${DistBucket}/\${Stack}/\${Stage}/\${App}/\${App}_1.0-latest_all.deb /tmp
-dpkg -i /tmp/\${App}_1.0-latest_all.deb
-",
-              {
-                "App": {
-                  "Fn::FindInMap": [
-                    "Constants",
-                    "App",
-                    "Value",
-                  ],
-                },
-                "Stack": {
-                  "Fn::FindInMap": [
-                    "Constants",
-                    "Stack",
-                    "Value",
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      },
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-    },
-    "ScaleDownPolicy": {
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": {
-          "Ref": "PrivateRegistrationAutoscalingGroup",
-        },
-        "Cooldown": "3600",
-        "ScalingAdjustment": -1,
-      },
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-    },
-    "ScaleUpPolicy": {
-      "Properties": {
-        "AdjustmentType": "PercentChangeInCapacity",
-        "AutoScalingGroupName": {
-          "Ref": "PrivateRegistrationAutoscalingGroup",
-        },
-        "Cooldown": "300",
-        "ScalingAdjustment": 100,
-      },
-      "Type": "AWS::AutoScaling::ScalingPolicy",
     },
     "SsmSshPolicy4CFC977E": {
       "Properties": {
@@ -1987,36 +1137,6 @@ dpkg -i /registration/registration_1.0-latest_all.deb",
 
 exports[`The Registration stack matches the snapshot for PROD 1`] = `
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Registration for mobile notifications",
-  "Mappings": {
-    "Constants": {
-      "App": {
-        "Value": "registration",
-      },
-      "Stack": {
-        "Value": "mobile-notifications",
-      },
-    },
-    "StageVariables": {
-      "CODE": {
-        "CPUAlarmPeriodLower": 300,
-        "CPUAlarmPeriodUpper": 1200,
-        "CPUAlarmThresholdLower": 20,
-        "CPUAlarmThresholdUpper": 50,
-        "InstanceType": "t4g.small",
-        "NotificationAlarmPeriod": 1200,
-      },
-      "PROD": {
-        "CPUAlarmPeriodLower": 300,
-        "CPUAlarmPeriodUpper": 60,
-        "CPUAlarmThresholdLower": 20,
-        "CPUAlarmThresholdUpper": 50,
-        "InstanceType": "t4g.small",
-        "NotificationAlarmPeriod": 1200,
-      },
-    },
-  },
   "Metadata": {
     "gu:cdk:constructs": [
       "GuAllowPolicy",
@@ -2056,53 +1176,16 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         ],
       },
     },
-    "LoadBalancerUrl": {
-      "Value": {
-        "Fn::GetAtt": "LoadBalancerToPrivateASG.DNSName",
-      },
-    },
   },
   "Parameters": {
-    "AMI": {
-      "Description": "AMI used by the instances",
-      "Type": "AWS::EC2::Image::Id",
-    },
     "AMIRegistration": {
       "Description": "Amazon Machine Image ID for the app registration. Use this in conjunction with AMIgo to keep AMIs up to date.",
       "Type": "AWS::EC2::Image::Id",
-    },
-    "ASGMaxSize": {
-      "Description": "Maximum size of the autoscaling group",
-      "Type": "Number",
-    },
-    "ASGMinSize": {
-      "Description": "Minimum size of the autoscaling group",
-      "Type": "Number",
     },
     "AccessLoggingBucket": {
       "Default": "/account/services/access-logging/bucket",
       "Description": "S3 bucket to store your access logs",
       "Type": "AWS::SSM::Parameter::Value<String>",
-    },
-    "AlarmTopic": {
-      "Description": "The ARN of the SNS topic to send all the cloudwatch alarms to",
-      "Type": "String",
-    },
-    "CertArn": {
-      "Description": "ACM Certificate for app use",
-      "Type": "String",
-    },
-    "DatabaseAccessSecurityGroup": {
-      "AllowedValues": [
-        "/CODE/mobile-notifications/registrations-db/postgres-access-security-group",
-        "/PROD/mobile-notifications/registrations-db/postgres-access-security-group",
-      ],
-      "Description": "The security group that allows access to the database",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>",
-    },
-    "DistBucket": {
-      "Description": "The name of the s3 bucket containing the server artifact",
-      "Type": "String",
     },
     "DistributionBucketName": {
       "AllowedValues": [
@@ -2112,19 +1195,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "LegacyLoggingStreamName": {
-      "AllowedValues": [
-        "/account/services/logging.stream.name.code",
-        "/account/services/logging.stream.name",
-      ],
-      "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
-      "Type": "AWS::SSM::Parameter::Value<String>",
-    },
-    "LegacyVpcId": {
-      "Default": "/account/vpc/notifications/id",
-      "Description": "The VPC",
-      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>",
-    },
     "LoggingStreamName": {
       "AllowedValues": [
         "/account/services/logging.stream.name",
@@ -2133,22 +1203,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Description": "SSM parameter containing the Name (not ARN) on the kinesis stream",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "NotEnough200sPerDayThreshold": {
-      "Description": "Alarm if less than too many 200s. This value was based on just below 2 standard deviations from the mean over 6 weeks of data.",
-      "Type": "Number",
-    },
-    "NotEnough200sThreshold": {
-      "Description": "Alarm if less than this many 200s in half an hour",
-      "Type": "Number",
-    },
-    "PrivateSubnets": {
-      "Description": "The private subnets of the VPC for the autoscaling group",
-      "Type": "List<AWS::EC2::Subnet::Id>",
-    },
-    "PublicSubnets": {
-      "Description": "The public subnets of the VPC for the loadbalancer",
-      "Type": "List<AWS::EC2::Subnet::Id>",
-    },
     "RegistrationsDatabaseAccessSecurityGroup": {
       "AllowedValues": [
         "/PROD/mobile-notifications/registrations-db/postgres-access-security-group",
@@ -2156,18 +1210,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       "Default": "/PROD/mobile-notifications/registrations-db/postgres-access-security-group",
       "Description": "SSM parameter path for the security group that allows access to the registrations database",
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>",
-    },
-    "RunbookCopy": {
-      "Default": "<<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
-      "Type": "String",
-    },
-    "Stage": {
-      "AllowedValues": [
-        "CODE",
-        "PROD",
-      ],
-      "Description": "Environment name",
-      "Type": "String",
     },
     "VpcId": {
       "AllowedValues": [
@@ -2232,11 +1274,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "Key": "gu:repo",
             "PropagateAtLaunch": true,
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "gu:riffraff:new-asg",
-            "PropagateAtLaunch": true,
-            "Value": "true",
           },
           {
             "Key": "LogKinesisStreamName",
@@ -2422,137 +1459,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
-    "DistributionInstanceProfile": {
-      "Properties": {
-        "Path": "/",
-        "Roles": [
-          {
-            "Ref": "DistributionRole",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::InstanceProfile",
-    },
-    "DistributionRole": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "ec2.amazonaws.com",
-              },
-            },
-          ],
-        },
-        "ManagedPolicyArns": [
-          {
-            "Fn::Sub": "arn:aws:iam::\${AWS::AccountId}:policy/ssm-scala-v1",
-          },
-        ],
-        "Path": "/",
-        "Policies": [
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": "s3:GetObject",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": "arn:aws:s3:::\${DistBucket}/*",
-                  },
-                },
-                {
-                  "Action": [
-                    "ec2:DescribeTags",
-                    "ec2:DescribeInstances",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "cloudwatch:*",
-                    "logs:*",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "autoscaling:DescribeAutoScalingInstances",
-                    "autoscaling:DescribeAutoScalingGroups",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": "*",
-                },
-                {
-                  "Action": [
-                    "kinesis:PutRecord",
-                    "kinesis:PutRecords",
-                    "kinesis:DescribeStream",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": "arn:aws:kinesis:\${AWS::Region}:\${AWS::AccountId}:stream/mobile-log-aggregation-\${Stage}",
-                  },
-                },
-              ],
-            },
-            "PolicyName": "root",
-          },
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": "ssm:GetParametersByPath",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": [
-                      "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/notifications/\${Stage}/\${Stack}",
-                      {
-                        "Stack": {
-                          "Fn::FindInMap": [
-                            "Constants",
-                            "Stack",
-                            "Value",
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-            "PolicyName": "conf",
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
     "DnsRecordForRegistration": {
       "Properties": {
         "Name": "notifications.guardianapis.com",
@@ -2566,7 +1472,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
           },
         ],
         "Stage": "PROD",
-        "TTL": 60,
+        "TTL": 3600,
       },
       "Type": "Guardian::DNS::RecordSet",
     },
@@ -2701,94 +1607,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
-    "HighCPUAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "ScaleUpPolicy",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": [
-            "Scale-Up if CPU is greater than \${CPUAlarmThresholdUpper} % over last \${CPUAlarmPeriodUpper} seconds",
-            {
-              "CPUAlarmPeriodUpper": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "CPUAlarmThresholdUpper",
-                ],
-              },
-              "CPUAlarmThresholdUpper": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "CPUAlarmThresholdUpper",
-                ],
-              },
-            },
-          ],
-        },
-        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": {
-              "Ref": "PrivateRegistrationAutoscalingGroup",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Period": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "CPUAlarmPeriodUpper",
-          ],
-        },
-        "Statistic": "Average",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "Threshold": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "CPUAlarmThresholdUpper",
-          ],
-        },
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
     "InstanceRoleRegistrationF217DF71": {
       "Properties": {
         "AssumeRolePolicyDocument": {
@@ -2828,61 +1646,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         ],
       },
       "Type": "AWS::IAM::Role",
-    },
-    "InstanceSecurityGroup": {
-      "Properties": {
-        "GroupDescription": "Open up HTTP access to load balancer",
-        "SecurityGroupEgress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": 80,
-            "IpProtocol": "tcp",
-            "ToPort": 80,
-          },
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": 443,
-            "IpProtocol": "tcp",
-            "ToPort": 443,
-          },
-        ],
-        "SecurityGroupIngress": [
-          {
-            "FromPort": 9000,
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Ref": "LoadBalancerSecurityGroup",
-            },
-            "ToPort": 9000,
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "VpcId": {
-          "Ref": "LegacyVpcId",
-        },
-      },
-      "Type": "AWS::EC2::SecurityGroup",
     },
     "ListenerRegistration1652F707": {
       "Properties": {
@@ -3057,106 +1820,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       },
       "Type": "AWS::EC2::SecurityGroupEgress",
     },
-    "LoadBalancerSecurityGroup": {
-      "Properties": {
-        "GroupDescription": "Open up HTTP access to load balancer",
-        "SecurityGroupEgress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": 9000,
-            "IpProtocol": "tcp",
-            "ToPort": 9000,
-          },
-        ],
-        "SecurityGroupIngress": [
-          {
-            "CidrIp": "0.0.0.0/0",
-            "FromPort": 443,
-            "IpProtocol": "tcp",
-            "ToPort": 443,
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "VpcId": {
-          "Ref": "LegacyVpcId",
-        },
-      },
-      "Type": "AWS::EC2::SecurityGroup",
-    },
-    "LoadBalancerToPrivateASG": {
-      "Properties": {
-        "CrossZone": true,
-        "HealthCheck": {
-          "HealthyThreshold": "2",
-          "Interval": "30",
-          "Target": "HTTP:9000/healthcheck",
-          "Timeout": "10",
-          "UnhealthyThreshold": "10",
-        },
-        "Listeners": [
-          {
-            "InstancePort": "9000",
-            "LoadBalancerPort": "443",
-            "Protocol": "HTTPS",
-            "SSLCertificateId": {
-              "Fn::Sub": "\${CertArn}",
-            },
-          },
-        ],
-        "SecurityGroups": [
-          {
-            "Ref": "LoadBalancerSecurityGroup",
-          },
-        ],
-        "Subnets": {
-          "Ref": "PublicSubnets",
-        },
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-      },
-      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
-    },
     "Low2XXIn1dayE630C03B": {
       "Properties": {
         "ActionsEnabled": true,
@@ -3309,212 +1972,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "LowCPUAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "ScaleDownPolicy",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": [
-            "Scale-Down if CPU is less than \${CPUAlarmThresholdLower} % over last \${CPUAlarmPeriodLower} seconds",
-            {
-              "CPUAlarmPeriodLower": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "CPUAlarmPeriodLower",
-                ],
-              },
-              "CPUAlarmThresholdLower": {
-                "Fn::FindInMap": [
-                  "StageVariables",
-                  {
-                    "Ref": "Stage",
-                  },
-                  "CPUAlarmThresholdLower",
-                ],
-              },
-            },
-          ],
-        },
-        "ComparisonOperator": "LessThanOrEqualToThreshold",
-        "Dimensions": [
-          {
-            "Name": "AutoScalingGroupName",
-            "Value": {
-              "Ref": "PrivateRegistrationAutoscalingGroup",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "CPUUtilization",
-        "Namespace": "AWS/EC2",
-        "Period": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "CPUAlarmPeriodLower",
-          ],
-        },
-        "Statistic": "Average",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "Threshold": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "CPUAlarmThresholdLower",
-          ],
-        },
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "NotEnoughHttpCode200sAlarm": {
-      "Properties": {
-        "ActionsEnabled": false,
-        "AlarmActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in half an hour. \${RunbookCopy}",
-        },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "LoadBalancerName",
-            "Value": {
-              "Ref": "LoadBalancerToPrivateASG",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "HTTPCode_Backend_2XX",
-        "Namespace": "AWS/ELB",
-        "OKActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "Period": 1800,
-        "Statistic": "Sum",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "Threshold": {
-          "Ref": "NotEnough200sThreshold",
-        },
-        "TreatMissingData": "breaching",
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "NotEnoughHttpCode200sPerDayAlarm": {
-      "Properties": {
-        "ActionsEnabled": false,
-        "AlarmActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": "Triggers if load balancer in \${Stage} does not have enough 200s in a whole day. \${RunbookCopy}",
-        },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "LoadBalancerName",
-            "Value": {
-              "Ref": "LoadBalancerToPrivateASG",
-            },
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "HTTPCode_Backend_2XX",
-        "Namespace": "AWS/ELB",
-        "OKActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "Period": 86400,
-        "Statistic": "Sum",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "Threshold": {
-          "Ref": "NotEnough200sPerDayThreshold",
-        },
-        "TreatMissingData": "breaching",
-      },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
     "ParameterStoreReadRegistration056D6427": {
       "Properties": {
         "PolicyDocument": {
@@ -3565,163 +2022,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         ],
       },
       "Type": "AWS::IAM::Policy",
-    },
-    "PrivateRegistrationAutoscalingGroup": {
-      "Properties": {
-        "AvailabilityZones": {
-          "Fn::GetAZs": "",
-        },
-        "HealthCheckGracePeriod": 400,
-        "HealthCheckType": "ELB",
-        "LaunchConfigurationName": {
-          "Ref": "RegistrationLaunchConfig",
-        },
-        "LoadBalancerNames": [
-          {
-            "Ref": "LoadBalancerToPrivateASG",
-          },
-        ],
-        "MaxSize": {
-          "Ref": "ASGMaxSize",
-        },
-        "MinSize": {
-          "Ref": "ASGMinSize",
-        },
-        "NotificationConfigurations": [
-          {
-            "NotificationTypes": [
-              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
-            ],
-            "TopicARN": {
-              "Fn::Sub": "arn:aws:sns:eu-west-1:\${AWS::AccountId}:AutoscalingNotifications\${Stage}",
-            },
-          },
-        ],
-        "Tags": [
-          {
-            "Key": "App",
-            "PropagateAtLaunch": true,
-            "Value": "registration",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "PropagateAtLaunch": true,
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "PropagateAtLaunch": true,
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "LogKinesisStreamName",
-            "PropagateAtLaunch": true,
-            "Value": {
-              "Ref": "LegacyLoggingStreamName",
-            },
-          },
-          {
-            "Key": "Stack",
-            "PropagateAtLaunch": true,
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "PropagateAtLaunch": true,
-            "Value": "PROD",
-          },
-          {
-            "Key": "SystemdUnit",
-            "PropagateAtLaunch": true,
-            "Value": "registration.service",
-          },
-        ],
-        "VPCZoneIdentifier": {
-          "Ref": "PrivateSubnets",
-        },
-      },
-      "Type": "AWS::AutoScaling::AutoScalingGroup",
-    },
-    "RegistrationLaunchConfig": {
-      "Properties": {
-        "AssociatePublicIpAddress": false,
-        "IamInstanceProfile": {
-          "Ref": "DistributionInstanceProfile",
-        },
-        "ImageId": {
-          "Ref": "AMI",
-        },
-        "InstanceType": {
-          "Fn::FindInMap": [
-            "StageVariables",
-            {
-              "Ref": "Stage",
-            },
-            "InstanceType",
-          ],
-        },
-        "MetadataOptions": {
-          "HttpTokens": "required",
-        },
-        "SecurityGroups": [
-          {
-            "Ref": "InstanceSecurityGroup",
-          },
-          {
-            "Ref": "DatabaseAccessSecurityGroup",
-          },
-        ],
-        "UserData": {
-          "Fn::Base64": {
-            "Fn::Sub": [
-              "#!/bin/bash -ev
-aws --region \${AWS::Region} s3 cp s3://\${DistBucket}/\${Stack}/\${Stage}/\${App}/\${App}_1.0-latest_all.deb /tmp
-dpkg -i /tmp/\${App}_1.0-latest_all.deb
-",
-              {
-                "App": {
-                  "Fn::FindInMap": [
-                    "Constants",
-                    "App",
-                    "Value",
-                  ],
-                },
-                "Stack": {
-                  "Fn::FindInMap": [
-                    "Constants",
-                    "Stack",
-                    "Value",
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      },
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
-    },
-    "ScaleDownPolicy": {
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": {
-          "Ref": "PrivateRegistrationAutoscalingGroup",
-        },
-        "Cooldown": "3600",
-        "ScalingAdjustment": -1,
-      },
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-    },
-    "ScaleUpPolicy": {
-      "Properties": {
-        "AdjustmentType": "PercentChangeInCapacity",
-        "AutoScalingGroupName": {
-          "Ref": "PrivateRegistrationAutoscalingGroup",
-        },
-        "Cooldown": "300",
-        "ScalingAdjustment": 100,
-      },
-      "Type": "AWS::AutoScaling::ScalingPolicy",
     },
     "SsmSshPolicy4CFC977E": {
       "Properties": {
