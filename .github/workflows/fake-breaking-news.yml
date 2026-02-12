@@ -3,6 +3,7 @@ name: Fake breaking news lambda
 on:
   push:
     paths:
+      - cdk/**
       - fakebreakingnewslambda/**
       - common/**
       - commoneventconsumer/**
@@ -37,6 +38,22 @@ jobs:
       - name: Copy jar to root
         run: cp fakebreakingnewslambda/target/scala-*/fakebreakingnewslambda.jar .
 
+      - run: corepack enable
+
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 #v6.2.0
+        with:
+          cache: yarn
+          cache-dependency-path: cdk/yarn.lock
+          node-version-file: .nvmrc
+
+      - name: CDK synth
+        run: |
+          cd cdk
+          yarn install --immutable
+          yarn lint
+          yarn test
+          yarn synth  
+
       - name: Upload to riff-raff
         uses: guardian/actions-riff-raff@v4
         with:
@@ -45,8 +62,10 @@ jobs:
           projectName: mobile-n10n:fakebreakingnewslambda
           buildNumberOffset: 4147
           configPath: fakebreakingnewslambda/riff-raff.yaml
+
           contentDirectories: |
             fakebreakingnewslambda:
               - fakebreakingnewslambda.jar
             fakebreakingnewslambda-cfn:
-              - fakebreakingnewslambda/fakebreakingnewslambda-cfn.yaml
+              - cdk/cdk.out/FakeBreakingNewsLambda-CODE.template.json
+              - cdk/cdk.out/FakeBreakingNewsLambda-PROD.template.json
