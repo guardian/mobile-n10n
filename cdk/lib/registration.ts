@@ -5,7 +5,7 @@ import { GuParameter, GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import { Duration } from 'aws-cdk-lib';
-import { type App, Tags } from 'aws-cdk-lib';
+import type { App } from 'aws-cdk-lib';
 import {
 	ComparisonOperator,
 	TreatMissingData,
@@ -93,8 +93,6 @@ export class Registration extends GuStack {
 				],
 			},
 		});
-
-		Tags.of(autoScalingGroup).add('gu:riffraff:new-asg', 'true');
 
 		const databaseAccessParamPath = `/${stage}/${stack}/registrations-db/postgres-access-security-group`;
 		const databaseSecurityGroupId = new GuParameter(

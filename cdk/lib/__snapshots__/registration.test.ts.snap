@@ -141,11 +141,6 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "Value": "guardian/mobile-n10n",
           },
           {
-            "Key": "gu:riffraff:new-asg",
-            "PropagateAtLaunch": true,
-            "Value": "true",
-          },
-          {
             "Key": "LogKinesisStreamName",
             "PropagateAtLaunch": true,
             "Value": {
@@ -1279,11 +1274,6 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             "Key": "gu:repo",
             "PropagateAtLaunch": true,
             "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "gu:riffraff:new-asg",
-            "PropagateAtLaunch": true,
-            "Value": "true",
           },
           {
             "Key": "LogKinesisStreamName",
