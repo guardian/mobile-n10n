@@ -17,7 +17,6 @@ deployments:
   registration:
     type: autoscaling
     parameters:
-      asgMigrationInProgress: true
       bucketSsmLookup: true
       bucketSsmKey: /account/services/artifact.bucket.n10n
     dependencies: [registration-cfn]
