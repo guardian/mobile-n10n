@@ -157,10 +157,7 @@ export class Registration extends GuStack {
 			app,
 			domainName: props.domainName,
 			resourceRecord: loadBalancer.loadBalancerDnsName,
-
-			// Intentionally low TTL for faster DNS changes
-			// TODO increase this to 7200 (2 hours) after the migration is complete
-			ttl: Duration.minutes(1),
+			ttl: Duration.hours(1),
 		});
 	}
 }
