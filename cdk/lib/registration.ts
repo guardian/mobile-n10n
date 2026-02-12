@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { GuEc2App } from '@guardian/cdk';
 import { AccessScope } from '@guardian/cdk/lib/constants';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
@@ -20,7 +19,6 @@ import {
 } from 'aws-cdk-lib/aws-ec2';
 import { HttpCodeTarget } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Topic } from 'aws-cdk-lib/aws-sns';
-import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 import { adjustCloudformationParameters } from './mobile-n10n-compatibility';
 
 export interface RegistrationProps extends GuStackProps {
@@ -37,17 +35,6 @@ export interface RegistrationProps extends GuStackProps {
 export class Registration extends GuStack {
 	constructor(scope: App, id: string, props: RegistrationProps) {
 		super(scope, id, props);
-		const yamlTemplateFilePath = join(
-			__dirname,
-			'../../registration/conf/registration.yaml',
-		);
-		// Until this project has been fully migrated to GuCDK you should update the 'old' infrastructure by modifying
-		// the YAML file and then re-running the snapshot tests to confirm that the changes are being pulled through by
-		// CDK
-		new CfnInclude(this, 'YamlTemplate', {
-			templateFile: yamlTemplateFilePath,
-		});
-
 		const {
 			app,
 			stage,
