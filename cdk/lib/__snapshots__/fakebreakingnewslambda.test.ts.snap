@@ -2,109 +2,62 @@
 
 exports[`The FakeBreakingNewsLambda stack matches the snapshot for CODE 1`] = `
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Emits fake breaking news",
   "Metadata": {
-    "gu:cdk:constructs": [],
+    "gu:cdk:constructs": [
+      "GuDistributionBucketParameter",
+      "GuScheduledLambda",
+      "GuAlarm",
+      "GuAlarm",
+    ],
     "gu:cdk:version": "TEST",
   },
   "Parameters": {
-    "AlarmTopic": {
-      "Description": "The ARN of the SNS topic to send all the cloudwatch alarms to",
-      "Type": "String",
-    },
-    "App": {
+    "DistributionBucketName": {
       "AllowedValues": [
-        "fakebreakingnews",
+        "/account/services/artifact.bucket.n10n",
       ],
-      "Default": "fakebreakingnews",
-      "Description": "App name",
-      "Type": "String",
-    },
-    "DeployBucket": {
-      "Default": "mobile-notifications-dist",
-      "Description": "Bucket where RiffRaff uploads artifacts on deploy",
-      "Type": "String",
-    },
-    "Stack": {
-      "Default": "mobile-notifications",
-      "Description": "Stack name",
-      "Type": "String",
-    },
-    "Stage": {
-      "AllowedValues": [
-        "CODE",
-        "PROD",
-      ],
-      "Default": "CODE",
-      "Description": "Stage name",
-      "Type": "String",
+      "Default": "/account/services/artifact.bucket.n10n",
+      "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
+      "Type": "AWS::SSM::Parameter::Value<String>",
     },
   },
   "Resources": {
-    "ExecutionRole": {
+    "NotEnoughAndroidFakeBreakingNewsAlarm2714F480": {
       "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Path": "/",
-        "Policies": [
+        "ActionsEnabled": true,
+        "AlarmActions": [
           {
-            "PolicyDocument": {
-              "Statement": [
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
                 {
-                  "Action": "logs:CreateLogGroup",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": "arn:aws:logs:eu-west-1:\${AWS::AccountId}:*",
-                  },
+                  "Ref": "AWS::Region",
                 },
+                ":",
                 {
-                  "Action": [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": [
-                    {
-                      "Fn::Sub": "arn:aws:logs:eu-west-1:\${AWS::AccountId}:log-group:/aws/lambda/\${Stack}-\${App}-\${Stage}:*",
-                    },
-                  ],
+                  "Ref": "AWS::AccountId",
                 },
+                ":mobile-server-side",
               ],
-            },
-            "PolicyName": "logs",
-          },
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": "ssm:GetParametersByPath",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/notifications/\${Stage}/fakebreakingnews",
-                  },
-                },
-              ],
-            },
-            "PolicyName": "Conf",
+            ],
           },
         ],
-        "Tags": [
+        "AlarmDescription": "Triggers if not enough Android dry run notifications are happening on CODE",
+        "AlarmName": "NotEnoughAndroidFakeBreakingNewsAlarm-CODE",
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": [
           {
-            "Key": "App",
-            "Value": "fakebreakingnews",
+            "Name": "platform",
+            "Value": "android",
           },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "dryrun",
+        "Namespace": "Notifications/CODE/workers",
+        "Period": 7200,
+        "Statistic": "Sum",
+        "Tags": [
           {
             "Key": "gu:cdk:version",
             "Value": "TEST",
@@ -115,56 +68,116 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for CODE 1`] = `
           },
           {
             "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
+            "Value": "mobile-notifications",
           },
           {
             "Key": "Stage",
             "Value": "CODE",
           },
         ],
+        "Threshold": 1,
+        "TreatMissingData": "breaching",
       },
-      "Type": "AWS::IAM::Role",
+      "Type": "AWS::CloudWatch::Alarm",
     },
-    "FakeBreakingNewsFunction": {
+    "NotEnoughIosFakeBreakingNewsAlarmDC45D752": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if not enough Ios dry run notifications are happening on CODE",
+        "AlarmName": "NotEnoughIosFakeBreakingNewsAlarm-CODE",
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": [
+          {
+            "Name": "platform",
+            "Value": "ios",
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "dryrun",
+        "Namespace": "Notifications/CODE/workers",
+        "Period": 7200,
+        "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": 1,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "fakebreakingnewslambdaLambda07FB7319": {
       "DependsOn": [
-        "ExecutionRole",
+        "fakebreakingnewslambdaLambdaServiceRoleDefaultPolicy29518A93",
+        "fakebreakingnewslambdaLambdaServiceRole8B23CCD5",
       ],
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "DeployBucket",
+            "Ref": "DistributionBucketName",
           },
-          "S3Key": {
-            "Fn::Sub": "\${Stack}/\${Stage}/fakebreakingnewslambda/fakebreakingnewslambda.jar",
-          },
+          "S3Key": "mobile-notifications/CODE/fakebreakingnewslambda/fakebreakingnewslambda.jar",
         },
         "Description": "Sends a fake breaking news",
         "Environment": {
           "Variables": {
-            "App": {
-              "Ref": "App",
-            },
-            "Stack": {
-              "Ref": "Stack",
-            },
-            "Stage": {
-              "Ref": "Stage",
-            },
+            "APP": "fakebreakingnewslambda",
+            "App": "fakebreakingnewslambda",
+            "STACK": "mobile-notifications",
+            "STAGE": "CODE",
+            "Stack": "mobile-notifications",
+            "Stage": "CODE",
           },
         },
-        "FunctionName": {
-          "Fn::Sub": "\${Stack}-\${App}-\${Stage}",
-        },
+        "FunctionName": "mobile-notifications-fakebreakingnewslambda-CODE",
         "Handler": "fakebreakingnews.FakeBreakingNewsLambda::handleRequest",
+        "LoggingConfig": {
+          "LogFormat": "Text",
+        },
         "MemorySize": 1024,
         "Role": {
-          "Fn::GetAtt": "ExecutionRole.Arn",
+          "Fn::GetAtt": [
+            "fakebreakingnewslambdaLambdaServiceRole8B23CCD5",
+            "Arn",
+          ],
         },
         "Runtime": "java11",
         "Tags": [
           {
             "Key": "App",
-            "Value": "fakebreakingnews",
+            "Value": "fakebreakingnewslambda",
           },
           {
             "Key": "gu:cdk:version",
@@ -176,7 +189,7 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for CODE 1`] = `
           },
           {
             "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
+            "Value": "mobile-notifications",
           },
           {
             "Key": "Stage",
@@ -187,33 +200,38 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::Lambda::Function",
     },
-    "FakeBreakingNewsScheduleEventPermission": {
-      "DependsOn": [
-        "FakeBreakingNewsFunction",
-        "FakeBreakingNewsScheduleEventRule",
-      ],
+    "fakebreakingnewslambdaLambdaServiceRole8B23CCD5": {
       "Properties": {
-        "Action": "lambda:InvokeFunction",
-        "FunctionName": {
-          "Fn::GetAtt": "FakeBreakingNewsFunction.Arn",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
         },
-        "Principal": "events.amazonaws.com",
-        "SourceArn": {
-          "Fn::GetAtt": "FakeBreakingNewsScheduleEventRule.Arn",
-        },
-      },
-      "Type": "AWS::Lambda::Permission",
-    },
-    "FakeBreakingNewsScheduleEventRule": {
-      "DependsOn": [
-        "FakeBreakingNewsFunction",
-      ],
-      "Properties": {
-        "ScheduleExpression": "cron(5 * * * ? *)",
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
         "Tags": [
           {
             "Key": "App",
-            "Value": "fakebreakingnews",
+            "Value": "fakebreakingnewslambda",
           },
           {
             "Key": "gu:cdk:version",
@@ -225,7 +243,156 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for CODE 1`] = `
           },
           {
             "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "fakebreakingnewslambdaLambdaServiceRoleDefaultPolicy29518A93": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName",
+                      },
+                      "/mobile-notifications/CODE/fakebreakingnewslambda/fakebreakingnewslambda.jar",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/CODE/mobile-notifications/fakebreakingnewslambda",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/CODE/mobile-notifications/fakebreakingnewslambda/*",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/notifications/CODE/fakebreakingnews",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "fakebreakingnewslambdaLambdaServiceRoleDefaultPolicy29518A93",
+        "Roles": [
+          {
+            "Ref": "fakebreakingnewslambdaLambdaServiceRole8B23CCD5",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "fakebreakingnewslambdaLambdafakebreakingnewslambdaLambdacron500BA1A9C2": {
+      "Properties": {
+        "ScheduleExpression": "cron(5 * * * ? *)",
+        "State": "ENABLED",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "fakebreakingnewslambda",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
           },
           {
             "Key": "Stage",
@@ -235,127 +402,35 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for CODE 1`] = `
         "Targets": [
           {
             "Arn": {
-              "Fn::GetAtt": "FakeBreakingNewsFunction.Arn",
+              "Fn::GetAtt": [
+                "fakebreakingnewslambdaLambda07FB7319",
+                "Arn",
+              ],
             },
-            "Id": {
-              "Fn::Sub": "\${Stack}-\${App}-\${Stage}",
-            },
+            "Id": "Target0",
           },
         ],
       },
       "Type": "AWS::Events::Rule",
     },
-    "NotEnoughAndroidFakeBreakingNewsAlarm": {
+    "fakebreakingnewslambdaLambdafakebreakingnewslambdaLambdacron50AllowEventRuleFakeBreakingNewsLambdaCODEfakebreakingnewslambdaLambdaE1E58EF34C0EDAAD": {
       "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": "Triggers if not enough Android dry run notifications are happening on \${Stage}",
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "fakebreakingnewslambdaLambda07FB7319",
+            "Arn",
+          ],
         },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "platform",
-            "Value": "android",
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "dryrun",
-        "Namespace": {
-          "Fn::Sub": "Notifications/\${Stage}/workers",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "fakebreakingnewslambdaLambdafakebreakingnewslambdaLambdacron500BA1A9C2",
+            "Arn",
+          ],
         },
-        "OKActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "Period": 7200,
-        "Statistic": "Sum",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "fakebreakingnews",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "Threshold": 1,
-        "TreatMissingData": "breaching",
       },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "NotEnoughIosFakeBreakingNewsAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": "Triggers if not enough Ios dry run notifications are happening on \${Stage}",
-        },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "platform",
-            "Value": "ios",
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "dryrun",
-        "Namespace": {
-          "Fn::Sub": "Notifications/\${Stage}/workers",
-        },
-        "OKActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "Period": 7200,
-        "Statistic": "Sum",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "fakebreakingnews",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-        "Threshold": 1,
-        "TreatMissingData": "breaching",
-      },
-      "Type": "AWS::CloudWatch::Alarm",
+      "Type": "AWS::Lambda::Permission",
     },
   },
 }
@@ -363,109 +438,62 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for CODE 1`] = `
 
 exports[`The FakeBreakingNewsLambda stack matches the snapshot for PROD 1`] = `
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Emits fake breaking news",
   "Metadata": {
-    "gu:cdk:constructs": [],
+    "gu:cdk:constructs": [
+      "GuDistributionBucketParameter",
+      "GuScheduledLambda",
+      "GuAlarm",
+      "GuAlarm",
+    ],
     "gu:cdk:version": "TEST",
   },
   "Parameters": {
-    "AlarmTopic": {
-      "Description": "The ARN of the SNS topic to send all the cloudwatch alarms to",
-      "Type": "String",
-    },
-    "App": {
+    "DistributionBucketName": {
       "AllowedValues": [
-        "fakebreakingnews",
+        "/account/services/artifact.bucket.n10n",
       ],
-      "Default": "fakebreakingnews",
-      "Description": "App name",
-      "Type": "String",
-    },
-    "DeployBucket": {
-      "Default": "mobile-notifications-dist",
-      "Description": "Bucket where RiffRaff uploads artifacts on deploy",
-      "Type": "String",
-    },
-    "Stack": {
-      "Default": "mobile-notifications",
-      "Description": "Stack name",
-      "Type": "String",
-    },
-    "Stage": {
-      "AllowedValues": [
-        "CODE",
-        "PROD",
-      ],
-      "Default": "CODE",
-      "Description": "Stage name",
-      "Type": "String",
+      "Default": "/account/services/artifact.bucket.n10n",
+      "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
+      "Type": "AWS::SSM::Parameter::Value<String>",
     },
   },
   "Resources": {
-    "ExecutionRole": {
+    "NotEnoughAndroidFakeBreakingNewsAlarm2714F480": {
       "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                ],
-              },
-            },
-          ],
-        },
-        "Path": "/",
-        "Policies": [
+        "ActionsEnabled": true,
+        "AlarmActions": [
           {
-            "PolicyDocument": {
-              "Statement": [
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
                 {
-                  "Action": "logs:CreateLogGroup",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": "arn:aws:logs:eu-west-1:\${AWS::AccountId}:*",
-                  },
+                  "Ref": "AWS::Region",
                 },
+                ":",
                 {
-                  "Action": [
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents",
-                  ],
-                  "Effect": "Allow",
-                  "Resource": [
-                    {
-                      "Fn::Sub": "arn:aws:logs:eu-west-1:\${AWS::AccountId}:log-group:/aws/lambda/\${Stack}-\${App}-\${Stage}:*",
-                    },
-                  ],
+                  "Ref": "AWS::AccountId",
                 },
+                ":mobile-server-side",
               ],
-            },
-            "PolicyName": "logs",
-          },
-          {
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Action": "ssm:GetParametersByPath",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Sub": "arn:aws:ssm:\${AWS::Region}:\${AWS::AccountId}:parameter/notifications/\${Stage}/fakebreakingnews",
-                  },
-                },
-              ],
-            },
-            "PolicyName": "Conf",
+            ],
           },
         ],
-        "Tags": [
+        "AlarmDescription": "Triggers if not enough Android dry run notifications are happening on PROD",
+        "AlarmName": "NotEnoughAndroidFakeBreakingNewsAlarm-PROD",
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": [
           {
-            "Key": "App",
-            "Value": "fakebreakingnews",
+            "Name": "platform",
+            "Value": "android",
           },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "dryrun",
+        "Namespace": "Notifications/PROD/workers",
+        "Period": 7200,
+        "Statistic": "Sum",
+        "Tags": [
           {
             "Key": "gu:cdk:version",
             "Value": "TEST",
@@ -476,56 +504,116 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for PROD 1`] = `
           },
           {
             "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
+            "Value": "mobile-notifications",
           },
           {
             "Key": "Stage",
             "Value": "PROD",
           },
         ],
+        "Threshold": 1,
+        "TreatMissingData": "breaching",
       },
-      "Type": "AWS::IAM::Role",
+      "Type": "AWS::CloudWatch::Alarm",
     },
-    "FakeBreakingNewsFunction": {
+    "NotEnoughIosFakeBreakingNewsAlarmDC45D752": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if not enough Ios dry run notifications are happening on PROD",
+        "AlarmName": "NotEnoughIosFakeBreakingNewsAlarm-PROD",
+        "ComparisonOperator": "LessThanThreshold",
+        "Dimensions": [
+          {
+            "Name": "platform",
+            "Value": "ios",
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "dryrun",
+        "Namespace": "Notifications/PROD/workers",
+        "Period": 7200,
+        "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 1,
+        "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "fakebreakingnewslambdaLambda07FB7319": {
       "DependsOn": [
-        "ExecutionRole",
+        "fakebreakingnewslambdaLambdaServiceRoleDefaultPolicy29518A93",
+        "fakebreakingnewslambdaLambdaServiceRole8B23CCD5",
       ],
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "DeployBucket",
+            "Ref": "DistributionBucketName",
           },
-          "S3Key": {
-            "Fn::Sub": "\${Stack}/\${Stage}/fakebreakingnewslambda/fakebreakingnewslambda.jar",
-          },
+          "S3Key": "mobile-notifications/PROD/fakebreakingnewslambda/fakebreakingnewslambda.jar",
         },
         "Description": "Sends a fake breaking news",
         "Environment": {
           "Variables": {
-            "App": {
-              "Ref": "App",
-            },
-            "Stack": {
-              "Ref": "Stack",
-            },
-            "Stage": {
-              "Ref": "Stage",
-            },
+            "APP": "fakebreakingnewslambda",
+            "App": "fakebreakingnewslambda",
+            "STACK": "mobile-notifications",
+            "STAGE": "PROD",
+            "Stack": "mobile-notifications",
+            "Stage": "PROD",
           },
         },
-        "FunctionName": {
-          "Fn::Sub": "\${Stack}-\${App}-\${Stage}",
-        },
+        "FunctionName": "mobile-notifications-fakebreakingnewslambda-PROD",
         "Handler": "fakebreakingnews.FakeBreakingNewsLambda::handleRequest",
+        "LoggingConfig": {
+          "LogFormat": "Text",
+        },
         "MemorySize": 1024,
         "Role": {
-          "Fn::GetAtt": "ExecutionRole.Arn",
+          "Fn::GetAtt": [
+            "fakebreakingnewslambdaLambdaServiceRole8B23CCD5",
+            "Arn",
+          ],
         },
         "Runtime": "java11",
         "Tags": [
           {
             "Key": "App",
-            "Value": "fakebreakingnews",
+            "Value": "fakebreakingnewslambda",
           },
           {
             "Key": "gu:cdk:version",
@@ -537,7 +625,7 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for PROD 1`] = `
           },
           {
             "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
+            "Value": "mobile-notifications",
           },
           {
             "Key": "Stage",
@@ -548,33 +636,38 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for PROD 1`] = `
       },
       "Type": "AWS::Lambda::Function",
     },
-    "FakeBreakingNewsScheduleEventPermission": {
-      "DependsOn": [
-        "FakeBreakingNewsFunction",
-        "FakeBreakingNewsScheduleEventRule",
-      ],
+    "fakebreakingnewslambdaLambdaServiceRole8B23CCD5": {
       "Properties": {
-        "Action": "lambda:InvokeFunction",
-        "FunctionName": {
-          "Fn::GetAtt": "FakeBreakingNewsFunction.Arn",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
         },
-        "Principal": "events.amazonaws.com",
-        "SourceArn": {
-          "Fn::GetAtt": "FakeBreakingNewsScheduleEventRule.Arn",
-        },
-      },
-      "Type": "AWS::Lambda::Permission",
-    },
-    "FakeBreakingNewsScheduleEventRule": {
-      "DependsOn": [
-        "FakeBreakingNewsFunction",
-      ],
-      "Properties": {
-        "ScheduleExpression": "cron(5 * * * ? *)",
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
         "Tags": [
           {
             "Key": "App",
-            "Value": "fakebreakingnews",
+            "Value": "fakebreakingnewslambda",
           },
           {
             "Key": "gu:cdk:version",
@@ -586,7 +679,156 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for PROD 1`] = `
           },
           {
             "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "fakebreakingnewslambdaLambdaServiceRoleDefaultPolicy29518A93": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName",
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "DistributionBucketName",
+                      },
+                      "/mobile-notifications/PROD/fakebreakingnewslambda/fakebreakingnewslambda.jar",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications/fakebreakingnewslambda",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/PROD/mobile-notifications/fakebreakingnewslambda/*",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/notifications/PROD/fakebreakingnews",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "fakebreakingnewslambdaLambdaServiceRoleDefaultPolicy29518A93",
+        "Roles": [
+          {
+            "Ref": "fakebreakingnewslambdaLambdaServiceRole8B23CCD5",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "fakebreakingnewslambdaLambdafakebreakingnewslambdaLambdacron500BA1A9C2": {
+      "Properties": {
+        "ScheduleExpression": "cron(5 * * * ? *)",
+        "State": "ENABLED",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "fakebreakingnewslambda",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
           },
           {
             "Key": "Stage",
@@ -596,127 +838,35 @@ exports[`The FakeBreakingNewsLambda stack matches the snapshot for PROD 1`] = `
         "Targets": [
           {
             "Arn": {
-              "Fn::GetAtt": "FakeBreakingNewsFunction.Arn",
+              "Fn::GetAtt": [
+                "fakebreakingnewslambdaLambda07FB7319",
+                "Arn",
+              ],
             },
-            "Id": {
-              "Fn::Sub": "\${Stack}-\${App}-\${Stage}",
-            },
+            "Id": "Target0",
           },
         ],
       },
       "Type": "AWS::Events::Rule",
     },
-    "NotEnoughAndroidFakeBreakingNewsAlarm": {
+    "fakebreakingnewslambdaLambdafakebreakingnewslambdaLambdacron50AllowEventRuleFakeBreakingNewsLambdaPRODfakebreakingnewslambdaLambdaA17F336D07109D2C": {
       "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": "Triggers if not enough Android dry run notifications are happening on \${Stage}",
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "fakebreakingnewslambdaLambda07FB7319",
+            "Arn",
+          ],
         },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "platform",
-            "Value": "android",
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "dryrun",
-        "Namespace": {
-          "Fn::Sub": "Notifications/\${Stage}/workers",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "fakebreakingnewslambdaLambdafakebreakingnewslambdaLambdacron500BA1A9C2",
+            "Arn",
+          ],
         },
-        "OKActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "Period": 7200,
-        "Statistic": "Sum",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "fakebreakingnews",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "Threshold": 1,
-        "TreatMissingData": "breaching",
       },
-      "Type": "AWS::CloudWatch::Alarm",
-    },
-    "NotEnoughIosFakeBreakingNewsAlarm": {
-      "Properties": {
-        "AlarmActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "AlarmDescription": {
-          "Fn::Sub": "Triggers if not enough Ios dry run notifications are happening on \${Stage}",
-        },
-        "ComparisonOperator": "LessThanThreshold",
-        "Dimensions": [
-          {
-            "Name": "platform",
-            "Value": "ios",
-          },
-        ],
-        "EvaluationPeriods": 1,
-        "MetricName": "dryrun",
-        "Namespace": {
-          "Fn::Sub": "Notifications/\${Stage}/workers",
-        },
-        "OKActions": [
-          {
-            "Ref": "AlarmTopic",
-          },
-        ],
-        "Period": 7200,
-        "Statistic": "Sum",
-        "Tags": [
-          {
-            "Key": "App",
-            "Value": "fakebreakingnews",
-          },
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications-fake-breaking-news",
-          },
-          {
-            "Key": "Stage",
-            "Value": "PROD",
-          },
-        ],
-        "Threshold": 1,
-        "TreatMissingData": "breaching",
-      },
-      "Type": "AWS::CloudWatch::Alarm",
+      "Type": "AWS::Lambda::Permission",
     },
   },
 }
