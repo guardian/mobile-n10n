@@ -44,9 +44,8 @@ jobs:
         with:
           aws-region: eu-west-1
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          mask-aws-account-id: true
 
-      - name: Login to ECR
+      - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: 'true'
