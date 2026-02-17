@@ -55,7 +55,7 @@ jobs:
           yarn synth  
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v4
+        uses: guardian/actions-riff-raff@15470ef41f5d3b967f2f2d07b74b0653931413ca # https://github.com/guardian/actions-riff-raff/pull/282
         with:
           roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
