@@ -2,7 +2,7 @@ stacks: [mobile-notifications]
 regions: [eu-west-1]
 
 deployments:
-  fakebreakingnewslambda:
+  fakebreakingnewslambda-upload:
     type: aws-lambda
     app: fakebreakingnewslambda
     parameters:
@@ -11,6 +11,8 @@ deployments:
       lookupByTags: true
       fileName: fakebreakingnewslambda.jar
       prefixStack: false
+    actions:
+      - uploadLambda
   fakebreakingnewslambda-cfn:
     type: cloud-formation
     app: fakebreakingnewslambda
@@ -18,4 +20,18 @@ deployments:
       templateStagePaths:
         CODE: FakeBreakingNewsLambda-CODE.template.json
         PROD: FakeBreakingNewsLambda-PROD.template.json
-
+    dependencies:
+      - fakebreakingnewslambda-upload
+  fakebreakingnewslambda-update:
+    type: aws-lambda
+    app: fakebreakingnewslambda
+    parameters:
+      bucketSsmLookup: true
+      bucketSsmKey: /account/services/artifact.bucket.n10n
+      lookupByTags: true
+      fileName: fakebreakingnewslambda.jar
+      prefixStack: false
+    actions:
+      - updateLambda
+    dependencies:
+      - fakebreakingnewslambda-cfn

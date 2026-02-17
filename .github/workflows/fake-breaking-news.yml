@@ -55,7 +55,7 @@ jobs:
           yarn synth  
 
       - name: Upload to riff-raff
-        uses: guardian/actions-riff-raff@v4
+        uses: guardian/actions-riff-raff@ja-validate-deployment-contentdirs # https://github.com/guardian/actions-riff-raff/pull/282
         with:
           roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
