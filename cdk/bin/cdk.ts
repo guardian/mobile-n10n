@@ -1,6 +1,6 @@
-import 'source-map-support/register';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App, Duration } from 'aws-cdk-lib';
+import 'source-map-support/register';
 import { FakeBreakingNewsLambda } from '../lib/fakebreakingnewslambda';
 import type { NotificationProps } from '../lib/notification';
 import { Notification } from '../lib/notification';
@@ -144,14 +144,12 @@ export const reportPropsProd: ReportProps = {
 new Report(app, 'Report-PROD', reportPropsProd);
 
 export const fakeBreakingNewsCodeProps: GuStackProps = {
-	app: 'fakebreakingnews',
-	stack: 'mobile-notifications-fake-breaking-news',
+	stack: 'mobile-notifications',
 	stage: 'CODE',
 };
 
 export const fakeBreakingNewsProdProps: GuStackProps = {
-	app: 'fakebreakingnews',
-	stack: 'mobile-notifications-fake-breaking-news',
+	stack: 'mobile-notifications',
 	stage: 'PROD',
 };
 
