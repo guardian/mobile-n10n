@@ -64,7 +64,7 @@ jobs:
           configPath: fakebreakingnewslambda/riff-raff.yaml
 
           contentDirectories: |
-            fakebreakingnewslambda:
+            fakebreakingnewslambda-upload:
               - fakebreakingnewslambda.jar
             fakebreakingnewslambda-cfn:
               - cdk/cdk.out/FakeBreakingNewsLambda-CODE.template.json
