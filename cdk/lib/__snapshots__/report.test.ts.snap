@@ -4,6 +4,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [
+      "GuDynamoTable",
       "GuAllowPolicy",
       "GuAllowPolicy",
       "GuVpcParameter",
@@ -349,34 +350,22 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-CODE",
-                    ],
+                  "Fn::GetAtt": [
+                    "ReportsTable282F2283",
+                    "Arn",
                   ],
                 },
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:",
                       {
-                        "Ref": "AWS::Partition",
+                        "Fn::GetAtt": [
+                          "ReportsTable282F2283",
+                          "Arn",
+                        ],
                       },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-CODE/index/*",
+                      "/index/*",
                     ],
                   ],
                 },
@@ -770,19 +759,9 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
               "Action": "dynamodb:*",
               "Effect": "Allow",
               "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:",
-                    {
-                      "Ref": "AWS::Partition",
-                    },
-                    ":dynamodb:eu-west-1:",
-                    {
-                      "Ref": "AWS::AccountId",
-                    },
-                    ":table/mobile-notifications-reports-CODE",
-                  ],
+                "Fn::GetAtt": [
+                  "ReportsTable282F2283",
+                  "Arn",
                 ],
               },
             },
@@ -1438,34 +1417,22 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-CODE",
-                    ],
+                  "Fn::GetAtt": [
+                    "ReportsTable282F2283",
+                    "Arn",
                   ],
                 },
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:",
                       {
-                        "Ref": "AWS::Partition",
+                        "Fn::GetAtt": [
+                          "ReportsTable282F2283",
+                          "Arn",
+                        ],
                       },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-CODE/index/sentTime-index",
+                      "/index/sentTime-index",
                     ],
                   ],
                 },
@@ -1493,6 +1460,87 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         ],
       },
       "Type": "AWS::IAM::Policy",
+    },
+    "ReportsTable282F2283": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "type",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "sentTime",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "DeletionProtectionEnabled": true,
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "sentTime-index",
+            "KeySchema": [
+              {
+                "AttributeName": "type",
+                "KeyType": "HASH",
+              },
+              {
+                "AttributeName": "sentTime",
+                "KeyType": "RANGE",
+              },
+            ],
+            "Projection": {
+              "ProjectionType": "ALL",
+            },
+          },
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH",
+          },
+        ],
+        "StreamSpecification": {
+          "StreamViewType": "NEW_IMAGE",
+        },
+        "TableName": "mobile-notifications-reports-CODE",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "devx-backup-enabled",
+            "Value": "true",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "TimeToLiveSpecification": {
+          "AttributeName": "ttl",
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
     },
     "SsmSshPolicy4CFC977E": {
       "Properties": {
@@ -1794,6 +1842,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [
+      "GuDynamoTable",
       "GuAllowPolicy",
       "GuAllowPolicy",
       "GuVpcParameter",
@@ -2139,34 +2188,22 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-PROD",
-                    ],
+                  "Fn::GetAtt": [
+                    "ReportsTable282F2283",
+                    "Arn",
                   ],
                 },
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:",
                       {
-                        "Ref": "AWS::Partition",
+                        "Fn::GetAtt": [
+                          "ReportsTable282F2283",
+                          "Arn",
+                        ],
                       },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-PROD/index/*",
+                      "/index/*",
                     ],
                   ],
                 },
@@ -2560,19 +2597,9 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
               "Action": "dynamodb:*",
               "Effect": "Allow",
               "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:",
-                    {
-                      "Ref": "AWS::Partition",
-                    },
-                    ":dynamodb:eu-west-1:",
-                    {
-                      "Ref": "AWS::AccountId",
-                    },
-                    ":table/mobile-notifications-reports-PROD",
-                  ],
+                "Fn::GetAtt": [
+                  "ReportsTable282F2283",
+                  "Arn",
                 ],
               },
             },
@@ -3228,34 +3255,22 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-PROD",
-                    ],
+                  "Fn::GetAtt": [
+                    "ReportsTable282F2283",
+                    "Arn",
                   ],
                 },
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:",
                       {
-                        "Ref": "AWS::Partition",
+                        "Fn::GetAtt": [
+                          "ReportsTable282F2283",
+                          "Arn",
+                        ],
                       },
-                      ":dynamodb:eu-west-1:",
-                      {
-                        "Ref": "AWS::AccountId",
-                      },
-                      ":table/mobile-notifications-reports-PROD/index/sentTime-index",
+                      "/index/sentTime-index",
                     ],
                   ],
                 },
@@ -3283,6 +3298,87 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         ],
       },
       "Type": "AWS::IAM::Policy",
+    },
+    "ReportsTable282F2283": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "type",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "sentTime",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "DeletionProtectionEnabled": true,
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "sentTime-index",
+            "KeySchema": [
+              {
+                "AttributeName": "type",
+                "KeyType": "HASH",
+              },
+              {
+                "AttributeName": "sentTime",
+                "KeyType": "RANGE",
+              },
+            ],
+            "Projection": {
+              "ProjectionType": "ALL",
+            },
+          },
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH",
+          },
+        ],
+        "StreamSpecification": {
+          "StreamViewType": "NEW_IMAGE",
+        },
+        "TableName": "mobile-notifications-reports-PROD",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "devx-backup-enabled",
+            "Value": "true",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "TimeToLiveSpecification": {
+          "AttributeName": "ttl",
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
     },
     "SsmSshPolicy4CFC977E": {
       "Properties": {
