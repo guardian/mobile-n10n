@@ -2,6 +2,7 @@ import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App, Duration } from 'aws-cdk-lib';
 import 'source-map-support/register';
 import { FakeBreakingNewsLambda } from '../lib/fakebreakingnewslambda';
+import { FootballNotificationsLambda } from '../lib/footballnotificationslambda';
 import type { NotificationProps } from '../lib/notification';
 import { Notification } from '../lib/notification';
 import type { RegistrationProps } from '../lib/registration';
@@ -162,4 +163,26 @@ new FakeBreakingNewsLambda(
 	app,
 	'FakeBreakingNewsLambda-PROD',
 	fakeBreakingNewsProdProps,
+);
+
+export const footballNotificationsCodeProps: GuStackProps = {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+};
+
+export const footballNotificationsProdProps: GuStackProps = {
+	stack: 'mobile-notifications',
+	stage: 'PROD',
+};
+
+new FootballNotificationsLambda(
+	app,
+	'FootballNotificationsLambda-CODE',
+	footballNotificationsCodeProps,
+);
+
+new FootballNotificationsLambda(
+	app,
+	'FootballNotificationsLambda-PROD',
+	footballNotificationsProdProps,
 );

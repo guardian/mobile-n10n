@@ -92,6 +92,7 @@ Resources:
   MinuteEvent:
     Type: AWS::Events::Rule
     Properties:
+      #State: DISABLED  Disable in favour of the GuCDK version
       Description: Event sent to poll PA for match events
       ScheduleExpression: cron(* * * * ? *)
       Targets:

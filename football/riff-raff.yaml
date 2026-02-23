@@ -6,13 +6,14 @@ deployments:
     type: aws-lambda
     parameters:
       bucketSsmLookup: true
-      functionNames: [-football-]
+      functionNames: [mobile-notifications-football-]
       fileName: football.jar
+      prefixStack: false
     dependencies: [mobile-notifications-football-cfn]
   mobile-notifications-football-cfn:
     type: cloud-formation
     app: football
     parameters:
-      prependStackToCloudFormationStackName: true
-      cloudFormationStackName: football
-      templatePath: cfn.yaml
+      templateStagePaths:
+        CODE: FootballNotificationsLambda-CODE.template.json
+        PROD: FootballNotificationsLambda-PROD.template.json
