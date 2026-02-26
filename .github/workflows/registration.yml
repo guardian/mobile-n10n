@@ -3,6 +3,7 @@ name: Registration
 on:
   push:
     paths:
+      - registration-db.yaml
       - registration/**
       - common/**
       - commoneventconsumer/**
