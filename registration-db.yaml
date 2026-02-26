@@ -91,6 +91,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub /${Stage}/mobile-notifications/registrations-db/postgres-access-security-group
+      Description: Joining this security group allows clients to access the registrations RDS instance (either directly or via the RDS proxy)
       Type: String
       Value: !Ref PostgresAccessSecurityGroup
 
