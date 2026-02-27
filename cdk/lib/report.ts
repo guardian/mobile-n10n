@@ -78,10 +78,13 @@ export class Report extends GuStack {
 			},
 			instanceMetricGranularity,
 			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.MICRO),
-			// This matches the YAML stack (i.e. there is no 5XX alarm).
-			// There is no slo-alert config for this service either (presumably due to the traffic level), so we have an
-			// observability gap here.
-			monitoringConfiguration: { noMonitoring: true },
+			monitoringConfiguration: {
+				// There is no slo-alert config for this service either (presumably due to the traffic level), so we have an observability gap here.
+				// TODO Configure 5XX alarms
+				http5xxAlarm: false,
+				unhealthyInstancesAlarm: true,
+				snsTopicName: 'mobile-server-side',
+			},
 			roleConfiguration: {
 				additionalPolicies: [
 					new GuAllowPolicy(this, 'DynamoDbAccess', {
