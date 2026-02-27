@@ -1,3 +1,4 @@
+import { join } from 'path';
 import { GuScheduledLambda } from '@guardian/cdk';
 import { GuAlarm } from '@guardian/cdk/lib/constructs/cloudwatch';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
@@ -15,7 +16,6 @@ import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, MetricFilter } from 'aws-cdk-lib/aws-logs';
 import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
-import { join } from 'path';
 
 export class FootballNotificationsLambda extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
