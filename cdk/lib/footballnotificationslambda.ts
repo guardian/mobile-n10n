@@ -149,7 +149,7 @@ export class FootballNotificationsLambda extends GuStack {
 			},
 		);
 
-		const footballNotificationLambdaLogGroupName = `/aws/lambda/mobile-notifications-football-CODE`;
+		const footballNotificationLambdaLogGroupName = `/aws/lambda/${footballnotificationslambda.functionName}`;
 		const footballNotificationLambdaLogGroup = LogGroup.fromLogGroupName(
 			this,
 			'FootballLambdaLogGroup',

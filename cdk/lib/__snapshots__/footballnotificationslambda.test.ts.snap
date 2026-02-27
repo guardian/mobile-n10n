@@ -102,7 +102,17 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
     "ErrorEventMetricFilter9872E3AE": {
       "Properties": {
         "FilterPattern": "Error",
-        "LogGroupName": "/aws/lambda/mobile-notifications-football-CODE",
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "footballLambdaAE03EC83",
+              },
+            ],
+          ],
+        },
         "MetricTransformations": [
           {
             "MetricName": "error",
@@ -116,7 +126,17 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
     "GoalEventMetricFilterAD6B9DEF": {
       "Properties": {
         "FilterPattern": "successfully sent",
-        "LogGroupName": "/aws/lambda/mobile-notifications-football-CODE",
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "footballLambdaAE03EC83",
+              },
+            ],
+          ],
+        },
         "MetricTransformations": [
           {
             "MetricName": "goal-success",
@@ -669,7 +689,17 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
     "ErrorEventMetricFilter9872E3AE": {
       "Properties": {
         "FilterPattern": "Error",
-        "LogGroupName": "/aws/lambda/mobile-notifications-football-CODE",
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "footballLambdaAE03EC83",
+              },
+            ],
+          ],
+        },
         "MetricTransformations": [
           {
             "MetricName": "error",
@@ -683,7 +713,17 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
     "GoalEventMetricFilterAD6B9DEF": {
       "Properties": {
         "FilterPattern": "successfully sent",
-        "LogGroupName": "/aws/lambda/mobile-notifications-football-CODE",
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "footballLambdaAE03EC83",
+              },
+            ],
+          ],
+        },
         "MetricTransformations": [
           {
             "MetricName": "goal-success",
