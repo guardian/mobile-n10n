@@ -36,7 +36,7 @@ export class FootballNotificationsLambda extends GuStack {
 				app: app,
 				description: 'Send Goal Alert notifications',
 				handler: 'com.gu.mobile.notifications.football.Lambda::handler',
-				functionName: [stack, app, stage].join('-'),
+				functionName: [app, stage].join('-'),
 				fileName: `${app}.jar`,
 				monitoringConfiguration: { noMonitoring: true },
 				loggingFormat: LoggingFormat.TEXT,

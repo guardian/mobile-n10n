@@ -288,7 +288,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
             "Stage": "CODE",
           },
         },
-        "FunctionName": "mobile-notifications-football-CODE",
+        "FunctionName": "football-CODE",
         "Handler": "com.gu.mobile.notifications.football.Lambda::handler",
         "LoggingConfig": {
           "LogFormat": "Text",
@@ -875,7 +875,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
             "Stage": "PROD",
           },
         },
-        "FunctionName": "mobile-notifications-football-PROD",
+        "FunctionName": "football-PROD",
         "Handler": "com.gu.mobile.notifications.football.Lambda::handler",
         "LoggingConfig": {
           "LogFormat": "Text",
