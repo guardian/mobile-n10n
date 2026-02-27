@@ -108,7 +108,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
             [
               "/aws/lambda/",
               {
-                "Ref": "footballnotificationslambdaLambda45CD1697",
+                "Ref": "footballLambdaAE03EC83",
               },
             ],
           ],
@@ -132,7 +132,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
             [
               "/aws/lambda/",
               {
-                "Ref": "footballnotificationslambdaLambda45CD1697",
+                "Ref": "footballLambdaAE03EC83",
               },
             ],
           ],
@@ -265,30 +265,30 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "footballnotificationslambdaLambda45CD1697": {
+    "footballLambdaAE03EC83": {
       "DependsOn": [
-        "footballnotificationslambdaLambdaServiceRoleDefaultPolicyC7DC4E99",
-        "footballnotificationslambdaLambdaServiceRoleC49AFD41",
+        "footballLambdaServiceRoleDefaultPolicy4B4F2D3A",
+        "footballLambdaServiceRole7F4891E5",
       ],
       "Properties": {
         "Code": {
           "S3Bucket": {
             "Ref": "DistributionBucketName",
           },
-          "S3Key": "mobile-notifications/CODE/footballnotificationslambda/footballnotificationslambda.jar",
+          "S3Key": "mobile-notifications/CODE/football/football.jar",
         },
         "Description": "Send Goal Alert notifications",
         "Environment": {
           "Variables": {
-            "APP": "footballnotificationslambda",
-            "App": "footballnotificationslambda",
+            "APP": "football",
+            "App": "football",
             "STACK": "mobile-notifications",
             "STAGE": "CODE",
             "Stack": "mobile-notifications",
             "Stage": "CODE",
           },
         },
-        "FunctionName": "mobile-notifications-footballnotificationslambda-CODE",
+        "FunctionName": "mobile-notifications-football-CODE",
         "Handler": "com.gu.mobile.notifications.football.Lambda::handler",
         "LoggingConfig": {
           "LogFormat": "Text",
@@ -296,7 +296,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
         "MemorySize": 1024,
         "Role": {
           "Fn::GetAtt": [
-            "footballnotificationslambdaLambdaServiceRoleC49AFD41",
+            "footballLambdaServiceRole7F4891E5",
             "Arn",
           ],
         },
@@ -304,7 +304,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
         "Tags": [
           {
             "Key": "App",
-            "Value": "footballnotificationslambda",
+            "Value": "football",
           },
           {
             "Key": "gu:cdk:version",
@@ -327,7 +327,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       },
       "Type": "AWS::Lambda::Function",
     },
-    "footballnotificationslambdaLambdaServiceRoleC49AFD41": {
+    "footballLambdaServiceRole7F4891E5": {
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [
@@ -358,7 +358,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
         "Tags": [
           {
             "Key": "App",
-            "Value": "footballnotificationslambda",
+            "Value": "football",
           },
           {
             "Key": "gu:cdk:version",
@@ -380,7 +380,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       },
       "Type": "AWS::IAM::Role",
     },
-    "footballnotificationslambdaLambdaServiceRoleDefaultPolicyC7DC4E99": {
+    "footballLambdaServiceRoleDefaultPolicy4B4F2D3A": {
       "Properties": {
         "PolicyDocument": {
           "Statement": [
@@ -419,7 +419,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                       {
                         "Ref": "DistributionBucketName",
                       },
-                      "/mobile-notifications/CODE/footballnotificationslambda/footballnotificationslambda.jar",
+                      "/mobile-notifications/CODE/football/football.jar",
                     ],
                   ],
                 },
@@ -440,7 +440,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                     {
                       "Ref": "AWS::AccountId",
                     },
-                    ":parameter/CODE/mobile-notifications/footballnotificationslambda",
+                    ":parameter/CODE/mobile-notifications/football",
                   ],
                 ],
               },
@@ -463,7 +463,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                     {
                       "Ref": "AWS::AccountId",
                     },
-                    ":parameter/CODE/mobile-notifications/footballnotificationslambda/*",
+                    ":parameter/CODE/mobile-notifications/football/*",
                   ],
                 ],
               },
@@ -483,7 +483,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                     {
                       "Ref": "AWS::AccountId",
                     },
-                    ":parameter/footballnotificationslambda/CODE/mobile-notifications",
+                    ":parameter/football/CODE/mobile-notifications",
                   ],
                 ],
               },
@@ -515,23 +515,23 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
           ],
           "Version": "2012-10-17",
         },
-        "PolicyName": "footballnotificationslambdaLambdaServiceRoleDefaultPolicyC7DC4E99",
+        "PolicyName": "footballLambdaServiceRoleDefaultPolicy4B4F2D3A",
         "Roles": [
           {
-            "Ref": "footballnotificationslambdaLambdaServiceRoleC49AFD41",
+            "Ref": "footballLambdaServiceRole7F4891E5",
           },
         ],
       },
       "Type": "AWS::IAM::Policy",
     },
-    "footballnotificationslambdaLambdafootballnotificationslambdaLambdacron04F9F42CE": {
+    "footballLambdafootballLambdacron01F98ABE1": {
       "Properties": {
         "ScheduleExpression": "cron(* * * * ? *)",
         "State": "ENABLED",
         "Tags": [
           {
             "Key": "App",
-            "Value": "footballnotificationslambda",
+            "Value": "football",
           },
           {
             "Key": "gu:cdk:version",
@@ -554,7 +554,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
           {
             "Arn": {
               "Fn::GetAtt": [
-                "footballnotificationslambdaLambda45CD1697",
+                "footballLambdaAE03EC83",
                 "Arn",
               ],
             },
@@ -564,19 +564,19 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       },
       "Type": "AWS::Events::Rule",
     },
-    "footballnotificationslambdaLambdafootballnotificationslambdaLambdacron0AllowEventRuleFootballNotificationsLambdaCODEfootballnotificationslambdaLambda450F0F04C6E5C922": {
+    "footballLambdafootballLambdacron0AllowEventRuleFootballNotificationsLambdaCODEfootballLambda61B450106E28F268": {
       "Properties": {
         "Action": "lambda:InvokeFunction",
         "FunctionName": {
           "Fn::GetAtt": [
-            "footballnotificationslambdaLambda45CD1697",
+            "footballLambdaAE03EC83",
             "Arn",
           ],
         },
         "Principal": "events.amazonaws.com",
         "SourceArn": {
           "Fn::GetAtt": [
-            "footballnotificationslambdaLambdafootballnotificationslambdaLambdacron04F9F42CE",
+            "footballLambdafootballLambdacron01F98ABE1",
             "Arn",
           ],
         },
@@ -695,7 +695,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
             [
               "/aws/lambda/",
               {
-                "Ref": "footballnotificationslambdaLambda45CD1697",
+                "Ref": "footballLambdaAE03EC83",
               },
             ],
           ],
@@ -719,7 +719,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
             [
               "/aws/lambda/",
               {
-                "Ref": "footballnotificationslambdaLambda45CD1697",
+                "Ref": "footballLambdaAE03EC83",
               },
             ],
           ],
@@ -852,30 +852,30 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "footballnotificationslambdaLambda45CD1697": {
+    "footballLambdaAE03EC83": {
       "DependsOn": [
-        "footballnotificationslambdaLambdaServiceRoleDefaultPolicyC7DC4E99",
-        "footballnotificationslambdaLambdaServiceRoleC49AFD41",
+        "footballLambdaServiceRoleDefaultPolicy4B4F2D3A",
+        "footballLambdaServiceRole7F4891E5",
       ],
       "Properties": {
         "Code": {
           "S3Bucket": {
             "Ref": "DistributionBucketName",
           },
-          "S3Key": "mobile-notifications/PROD/footballnotificationslambda/footballnotificationslambda.jar",
+          "S3Key": "mobile-notifications/PROD/football/football.jar",
         },
         "Description": "Send Goal Alert notifications",
         "Environment": {
           "Variables": {
-            "APP": "footballnotificationslambda",
-            "App": "footballnotificationslambda",
+            "APP": "football",
+            "App": "football",
             "STACK": "mobile-notifications",
             "STAGE": "PROD",
             "Stack": "mobile-notifications",
             "Stage": "PROD",
           },
         },
-        "FunctionName": "mobile-notifications-footballnotificationslambda-PROD",
+        "FunctionName": "mobile-notifications-football-PROD",
         "Handler": "com.gu.mobile.notifications.football.Lambda::handler",
         "LoggingConfig": {
           "LogFormat": "Text",
@@ -883,7 +883,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
         "MemorySize": 1024,
         "Role": {
           "Fn::GetAtt": [
-            "footballnotificationslambdaLambdaServiceRoleC49AFD41",
+            "footballLambdaServiceRole7F4891E5",
             "Arn",
           ],
         },
@@ -891,7 +891,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
         "Tags": [
           {
             "Key": "App",
-            "Value": "footballnotificationslambda",
+            "Value": "football",
           },
           {
             "Key": "gu:cdk:version",
@@ -914,7 +914,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       },
       "Type": "AWS::Lambda::Function",
     },
-    "footballnotificationslambdaLambdaServiceRoleC49AFD41": {
+    "footballLambdaServiceRole7F4891E5": {
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [
@@ -945,7 +945,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
         "Tags": [
           {
             "Key": "App",
-            "Value": "footballnotificationslambda",
+            "Value": "football",
           },
           {
             "Key": "gu:cdk:version",
@@ -967,7 +967,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       },
       "Type": "AWS::IAM::Role",
     },
-    "footballnotificationslambdaLambdaServiceRoleDefaultPolicyC7DC4E99": {
+    "footballLambdaServiceRoleDefaultPolicy4B4F2D3A": {
       "Properties": {
         "PolicyDocument": {
           "Statement": [
@@ -1006,7 +1006,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                       {
                         "Ref": "DistributionBucketName",
                       },
-                      "/mobile-notifications/PROD/footballnotificationslambda/footballnotificationslambda.jar",
+                      "/mobile-notifications/PROD/football/football.jar",
                     ],
                   ],
                 },
@@ -1027,7 +1027,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                     {
                       "Ref": "AWS::AccountId",
                     },
-                    ":parameter/PROD/mobile-notifications/footballnotificationslambda",
+                    ":parameter/PROD/mobile-notifications/football",
                   ],
                 ],
               },
@@ -1050,7 +1050,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                     {
                       "Ref": "AWS::AccountId",
                     },
-                    ":parameter/PROD/mobile-notifications/footballnotificationslambda/*",
+                    ":parameter/PROD/mobile-notifications/football/*",
                   ],
                 ],
               },
@@ -1070,7 +1070,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                     {
                       "Ref": "AWS::AccountId",
                     },
-                    ":parameter/footballnotificationslambda/PROD/mobile-notifications",
+                    ":parameter/football/PROD/mobile-notifications",
                   ],
                 ],
               },
@@ -1102,23 +1102,23 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
           ],
           "Version": "2012-10-17",
         },
-        "PolicyName": "footballnotificationslambdaLambdaServiceRoleDefaultPolicyC7DC4E99",
+        "PolicyName": "footballLambdaServiceRoleDefaultPolicy4B4F2D3A",
         "Roles": [
           {
-            "Ref": "footballnotificationslambdaLambdaServiceRoleC49AFD41",
+            "Ref": "footballLambdaServiceRole7F4891E5",
           },
         ],
       },
       "Type": "AWS::IAM::Policy",
     },
-    "footballnotificationslambdaLambdafootballnotificationslambdaLambdacron04F9F42CE": {
+    "footballLambdafootballLambdacron01F98ABE1": {
       "Properties": {
         "ScheduleExpression": "cron(* * * * ? *)",
         "State": "ENABLED",
         "Tags": [
           {
             "Key": "App",
-            "Value": "footballnotificationslambda",
+            "Value": "football",
           },
           {
             "Key": "gu:cdk:version",
@@ -1141,7 +1141,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
           {
             "Arn": {
               "Fn::GetAtt": [
-                "footballnotificationslambdaLambda45CD1697",
+                "footballLambdaAE03EC83",
                 "Arn",
               ],
             },
@@ -1151,19 +1151,19 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       },
       "Type": "AWS::Events::Rule",
     },
-    "footballnotificationslambdaLambdafootballnotificationslambdaLambdacron0AllowEventRuleFootballNotificationsLambdaPRODfootballnotificationslambdaLambda966AAB8E246F768A": {
+    "footballLambdafootballLambdacron0AllowEventRuleFootballNotificationsLambdaPRODfootballLambda8E9BAD03D7DD3077": {
       "Properties": {
         "Action": "lambda:InvokeFunction",
         "FunctionName": {
           "Fn::GetAtt": [
-            "footballnotificationslambdaLambda45CD1697",
+            "footballLambdaAE03EC83",
             "Arn",
           ],
         },
         "Principal": "events.amazonaws.com",
         "SourceArn": {
           "Fn::GetAtt": [
-            "footballnotificationslambdaLambdafootballnotificationslambdaLambdacron04F9F42CE",
+            "footballLambdafootballLambdacron01F98ABE1",
             "Arn",
           ],
         },

@@ -22,7 +22,7 @@ export class FootballNotificationsLambda extends GuStack {
 		super(scope, id, props);
 
 		const { stack, stage, region, account } = this;
-		const app = 'footballnotificationslambda';
+		const app = 'football';
 
 		const yamlTemplateFilePath = join(__dirname, '../../football/cfn.yaml');
 		new CfnInclude(this, 'YamlTemplate', {
