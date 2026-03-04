@@ -3,7 +3,7 @@ import { GuAlarm } from '@guardian/cdk/lib/constructs/cloudwatch';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import type { App } from 'aws-cdk-lib';
-import { RemovalPolicy, Tags } from 'aws-cdk-lib';
+import { Tags } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
 import {
 	ComparisonOperator,
@@ -72,8 +72,12 @@ export class FootballNotificationsLambda extends GuStack {
 			readCapacity: 3,
 			writeCapacity: 3,
 			timeToLiveAttribute: 'ttl',
-			removalPolicy: RemovalPolicy.RETAIN,
 		});
+		this.overrideLogicalId(dynamoTable, {
+			logicalId: 'DynamoTable',
+			reason: 'Retaining a stateful resource previously defined in YAML',
+		});
+
 		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
 		footballnotificationslambda.addToRolePolicy(

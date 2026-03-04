@@ -19,7 +19,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
     },
   },
   "Resources": {
-    "DynamoTableB2B22E15": {
+    "DynamoTable": {
       "DeletionPolicy": "Retain",
       "Properties": {
         "AttributeDefinitions": [
@@ -576,7 +576,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
     },
   },
   "Resources": {
-    "DynamoTableB2B22E15": {
+    "DynamoTable": {
       "DeletionPolicy": "Retain",
       "Properties": {
         "AttributeDefinitions": [
