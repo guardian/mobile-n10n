@@ -84,7 +84,7 @@ export class FootballNotificationsLambda extends GuStack {
 		// Read Throttle Events Alarm
 		new GuAlarm(this, 'MobileNotificationsFootballConsumedReadThrottleEvents', {
 			app,
-			alarmName: 'MobileNotificationsFootballConsumedReadThrottleEvents',
+			alarmName: `MobileNotificationsFootballConsumedReadThrottleEvents-${stage}`,
 			alarmDescription:
 				'Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes',
 			snsTopicName: 'dynamodb',
@@ -108,7 +108,7 @@ export class FootballNotificationsLambda extends GuStack {
 			'MobileNotificationsFootballConsumedWriteThrottleEvents',
 			{
 				app,
-				alarmName: 'MobileNotificationsFootballConsumedWriteThrottleEvents',
+				alarmName: `MobileNotificationsFootballConsumedWriteThrottleEvents-${stage}`,
 				alarmDescription:
 					'Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes',
 				snsTopicName: 'dynamodb',
