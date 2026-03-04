@@ -20,9 +20,6 @@ Parameters:
   PrivateVpcSubnets:
     Description: Private Subnets to use in VPC
     Type: List<AWS::EC2::Subnet::Id>
-  VPCSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
-    Description: The default security group of the VPC
   MasterUserName:
     Type: String
     Description: The root user name to create in the database
@@ -51,16 +48,6 @@ Resources:
       SecurityGroupIngress:
         # Join PostgresAccessSecurityGroup to allow access to postgres to the registration db
         - SourceSecurityGroupId: !Ref PostgresAccessSecurityGroup
-          FromPort: 5432
-          IpProtocol: tcp
-          ToPort: 5432
-
-        # TODO Remove this rule once all applications are using the PostgresAccessSecurityGroup
-        - SourceSecurityGroupId: !Ref VPCSecurityGroup
-          FromPort: 5432
-          IpProtocol: tcp
-          ToPort: 5432
-        - SourceSecurityGroupId: !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
           FromPort: 5432
           IpProtocol: tcp
           ToPort: 5432
