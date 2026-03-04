@@ -81,27 +81,6 @@ export class FootballNotificationsLambda extends GuStack {
 			}),
 		);
 
-		// const dynamoTable = new Table(this, 'DynamoTable', {
-		// 	tableName: dynamoTableName,
-		// 	partitionKey: { name: 'notificationId', type: AttributeType.STRING },
-		// 	billingMode: BillingMode.PROVISIONED,
-		// 	readCapacity: 3,
-		// 	writeCapacity: 3,
-		// 	timeToLiveAttribute: 'ttl',
-		// 	removalPolicy: RemovalPolicy.RETAIN,
-		// });
-		// Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
-		//
-		// footballnotificationslambda.addToRolePolicy(
-		// 	new PolicyStatement({
-		// 		actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
-		// 		effect: Effect.ALLOW,
-		// 		resources: [
-		// 			`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
-		// 		],
-		// 	}),
-		// );
-
 		// Read Throttle Events Alarm
 		new GuAlarm(this, 'MobileNotificationsFootballConsumedReadThrottleEvents', {
 			app,
