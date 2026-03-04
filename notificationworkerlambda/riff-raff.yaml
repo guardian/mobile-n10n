@@ -56,6 +56,11 @@ deployments:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: expired-registration-cleaner-cfn
       templatePath: expired-registration-cleaner-cfn.yaml
+      templateStageParameters:
+        CODE:
+          DbAccessSecurityGroup: /CODE/mobile-notifications/registrations-db/postgres-access-security-group
+        PROD:
+          DbAccessSecurityGroup: /PROD/mobile-notifications/registrations-db/postgres-access-security-group
   registrations-db-proxy-cfn:
     type: cloud-formation
     app: registrations-db-proxy

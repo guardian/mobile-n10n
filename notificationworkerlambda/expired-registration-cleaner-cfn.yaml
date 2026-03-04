@@ -25,6 +25,12 @@ Parameters:
   VpcSubnets:
     Description: Subnets to use in the VPC
     Type: List<AWS::EC2::Subnet::Id>
+  DbAccessSecurityGroup:
+    Description: Security group which grants access to Postgres (the stage-specific parameter store name is injected by Riff-Raff)
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::SecurityGroup::Id>
+    AllowedValues:
+      - /CODE/mobile-notifications/registrations-db/postgres-access-security-group
+      - /PROD/mobile-notifications/registrations-db/postgres-access-security-group
 Resources:
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -100,7 +106,7 @@ Resources:
       Timeout: 60
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue NotificationsDefaultSecurityGroup-NotificationsMainSecurityGroup
+          - !Ref DbAccessSecurityGroup
         SubnetIds: !Ref VpcSubnets
 
   DailyEvent:
