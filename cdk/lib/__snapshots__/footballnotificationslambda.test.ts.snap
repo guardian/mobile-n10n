@@ -169,7 +169,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
           },
         ],
         "AlarmDescription": "Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes",
-        "AlarmName": "MobileNotificationsFootballConsumedReadThrottleEvents",
+        "AlarmName": "MobileNotificationsFootballConsumedReadThrottleEvents-CODE",
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": [
           {
@@ -228,7 +228,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
           },
         ],
         "AlarmDescription": "Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes",
-        "AlarmName": "MobileNotificationsFootballConsumedWriteThrottleEvents",
+        "AlarmName": "MobileNotificationsFootballConsumedWriteThrottleEvents-CODE",
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": [
           {
@@ -756,7 +756,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
           },
         ],
         "AlarmDescription": "Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes",
-        "AlarmName": "MobileNotificationsFootballConsumedReadThrottleEvents",
+        "AlarmName": "MobileNotificationsFootballConsumedReadThrottleEvents-PROD",
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": [
           {
@@ -815,7 +815,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
           },
         ],
         "AlarmDescription": "Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes",
-        "AlarmName": "MobileNotificationsFootballConsumedWriteThrottleEvents",
+        "AlarmName": "MobileNotificationsFootballConsumedWriteThrottleEvents-PROD",
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": [
           {
