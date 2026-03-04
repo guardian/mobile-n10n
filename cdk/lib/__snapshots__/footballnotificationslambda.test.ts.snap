@@ -2,8 +2,6 @@
 
 exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`] = `
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "mobile-notifications-football",
   "Metadata": {
     "gu:cdk:constructs": [
       "GuDistributionBucketParameter",
@@ -14,42 +12,15 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
     "gu:cdk:version": "TEST",
   },
   "Parameters": {
-    "App": {
-      "Default": "football",
-      "Description": "Application name",
-      "Type": "String",
-    },
-    "DeployBucket": {
-      "Default": "mobile-dist",
-      "Description": "Bucket where RiffRaff uploads artifacts on deploy",
-      "Type": "String",
-    },
     "DistributionBucketName": {
       "Default": "/account/services/artifact.bucket",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "DynamoNotificationTopic": {
-      "Description": "SNS topic to notify when there's a dynamo throttling event",
-      "Type": "String",
-    },
-    "Stack": {
-      "Default": "mobile-notifications",
-      "Description": "Stack name",
-      "Type": "String",
-    },
-    "Stage": {
-      "AllowedValues": [
-        "CODE",
-        "PROD",
-      ],
-      "Default": "CODE",
-      "Description": "Stage name",
-      "Type": "String",
-    },
   },
   "Resources": {
-    "DynamoTable": {
+    "DynamoTableB2B22E15": {
+      "DeletionPolicy": "Retain",
       "Properties": {
         "AttributeDefinitions": [
           {
@@ -67,9 +38,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
           "ReadCapacityUnits": 3,
           "WriteCapacityUnits": 3,
         },
-        "TableName": {
-          "Fn::Sub": "\${Stack}-\${App}-notifications-\${Stage}",
-        },
+        "TableName": "mobile-notifications-football-notifications-CODE",
         "Tags": [
           {
             "Key": "devx-backup-enabled",
@@ -98,6 +67,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
         },
       },
       "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
     },
     "ErrorEventMetricFilter9872E3AE": {
       "Properties": {
@@ -589,8 +559,6 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
 
 exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`] = `
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "mobile-notifications-football",
   "Metadata": {
     "gu:cdk:constructs": [
       "GuDistributionBucketParameter",
@@ -601,42 +569,15 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
     "gu:cdk:version": "TEST",
   },
   "Parameters": {
-    "App": {
-      "Default": "football",
-      "Description": "Application name",
-      "Type": "String",
-    },
-    "DeployBucket": {
-      "Default": "mobile-dist",
-      "Description": "Bucket where RiffRaff uploads artifacts on deploy",
-      "Type": "String",
-    },
     "DistributionBucketName": {
       "Default": "/account/services/artifact.bucket",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "DynamoNotificationTopic": {
-      "Description": "SNS topic to notify when there's a dynamo throttling event",
-      "Type": "String",
-    },
-    "Stack": {
-      "Default": "mobile-notifications",
-      "Description": "Stack name",
-      "Type": "String",
-    },
-    "Stage": {
-      "AllowedValues": [
-        "CODE",
-        "PROD",
-      ],
-      "Default": "CODE",
-      "Description": "Stage name",
-      "Type": "String",
-    },
   },
   "Resources": {
-    "DynamoTable": {
+    "DynamoTableB2B22E15": {
+      "DeletionPolicy": "Retain",
       "Properties": {
         "AttributeDefinitions": [
           {
@@ -654,9 +595,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
           "ReadCapacityUnits": 3,
           "WriteCapacityUnits": 3,
         },
-        "TableName": {
-          "Fn::Sub": "\${Stack}-\${App}-notifications-\${Stage}",
-        },
+        "TableName": "mobile-notifications-football-notifications-PROD",
         "Tags": [
           {
             "Key": "devx-backup-enabled",
@@ -685,6 +624,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
         },
       },
       "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
     },
     "ErrorEventMetricFilter9872E3AE": {
       "Properties": {

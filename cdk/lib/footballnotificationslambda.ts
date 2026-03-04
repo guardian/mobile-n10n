@@ -1,9 +1,9 @@
-import { join } from 'path';
 import { GuScheduledLambda } from '@guardian/cdk';
 import { GuAlarm } from '@guardian/cdk/lib/constructs/cloudwatch';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import type { App } from 'aws-cdk-lib';
+import { RemovalPolicy, Tags } from 'aws-cdk-lib';
 import { Duration } from 'aws-cdk-lib';
 import {
 	ComparisonOperator,
@@ -11,11 +11,11 @@ import {
 	TreatMissingData,
 	Unit,
 } from 'aws-cdk-lib/aws-cloudwatch';
+import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { Schedule } from 'aws-cdk-lib/aws-events';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, MetricFilter } from 'aws-cdk-lib/aws-logs';
-import { CfnInclude } from 'aws-cdk-lib/cloudformation-include';
 
 export class FootballNotificationsLambda extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
@@ -23,11 +23,6 @@ export class FootballNotificationsLambda extends GuStack {
 
 		const { stack, stage, region, account } = this;
 		const app = 'football';
-
-		const yamlTemplateFilePath = join(__dirname, '../../football/cfn.yaml');
-		new CfnInclude(this, 'YamlTemplate', {
-			templateFile: yamlTemplateFilePath,
-		});
 
 		const footballnotificationslambda = new GuScheduledLambda(
 			this,
@@ -68,8 +63,28 @@ export class FootballNotificationsLambda extends GuStack {
 			}),
 		);
 
-		// Keep dynoma table defition in the yaml for now
 		const dynamoTableName = `${stack}-football-notifications-${stage}`;
+
+		const dynamoTable = new Table(this, 'DynamoTable', {
+			tableName: dynamoTableName,
+			partitionKey: { name: 'notificationId', type: AttributeType.STRING },
+			billingMode: BillingMode.PROVISIONED,
+			readCapacity: 3,
+			writeCapacity: 3,
+			timeToLiveAttribute: 'ttl',
+			removalPolicy: RemovalPolicy.RETAIN,
+		});
+		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
+
+		footballnotificationslambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
+				effect: Effect.ALLOW,
+				resources: [
+					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
+				],
+			}),
+		);
 
 		footballnotificationslambda.addToRolePolicy(
 			new PolicyStatement({
