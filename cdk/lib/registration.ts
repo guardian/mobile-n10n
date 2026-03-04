@@ -63,9 +63,13 @@ export class Registration extends GuStack {
 			instanceMetricGranularity,
 			instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.SMALL),
 
-			// We use slo-alerts to capture a high rate of 5XX errors: https://github.com/guardian/slo-alerts/blob/main/cdk/lib/mobile/mobile-slos.ts
-			// We also have a bespoke alarm for low number of 2XXs defined below
-			monitoringConfiguration: { noMonitoring: true },
+			monitoringConfiguration: {
+				// We use slo-alerts to capture a high rate of 5XX errors: https://github.com/guardian/slo-alerts/blob/main/cdk/lib/mobile/mobile-slos.ts
+				// We also have a bespoke alarm for low number of 2XXs defined below
+				http5xxAlarm: false,
+				unhealthyInstancesAlarm: true,
+				snsTopicName: 'mobile-server-side',
+			},
 
 			scaling: { minimumInstances: minAsgSize, maximumInstances: maxAsgSize },
 

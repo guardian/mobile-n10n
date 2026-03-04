@@ -33,6 +33,11 @@ deployments:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: topic-counter-cfn
       templatePath: topic-counter-cfn.yaml
+      templateStageParameters:
+        CODE:
+          DbAccessSecurityGroup: /CODE/mobile-notifications/registrations-db/postgres-access-security-group
+        PROD:
+          DbAccessSecurityGroup: /PROD/mobile-notifications/registrations-db/postgres-access-security-group
   mobile-notifications-registration-cleaning-worker-cfn:
     type: cloud-formation
     app: registration-cleaning-worker
@@ -42,6 +47,11 @@ deployments:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: registration-cleaning-worker-cfn
       templatePath: registration-cleaning-worker-cfn.yaml
+      templateStageParameters:
+        CODE:
+          DbAccessSecurityGroup: /CODE/mobile-notifications/registrations-db/postgres-access-security-group
+        PROD:
+          DbAccessSecurityGroup: /PROD/mobile-notifications/registrations-db/postgres-access-security-group
   mobile-notifications-expired-registration-cleaner-cfn:
     type: cloud-formation
     app: expired-registration-cleaner
@@ -51,6 +61,11 @@ deployments:
       prependStackToCloudFormationStackName: false
       cloudFormationStackName: expired-registration-cleaner-cfn
       templatePath: expired-registration-cleaner-cfn.yaml
+      templateStageParameters:
+        CODE:
+          DbAccessSecurityGroup: /CODE/mobile-notifications/registrations-db/postgres-access-security-group
+        PROD:
+          DbAccessSecurityGroup: /PROD/mobile-notifications/registrations-db/postgres-access-security-group
   registrations-db-proxy-cfn:
     type: cloud-formation
     app: registrations-db-proxy
