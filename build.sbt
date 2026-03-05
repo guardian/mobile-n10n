@@ -29,12 +29,20 @@ ThisBuild / dockerBaseImage := "eclipse-temurin:8-jdk"
 * play-test pulls in both org.seleniumhq.selenium:htmlunit-driver and
 * io.fluentlenium:fluentlenium-core, which transitively bring in
 * net.sourceforge.htmlunit:htmlunit:2.70.0 with known security vulnerabilities.
-
 * Override to a patched version. This can be removed once Play Framework upgrades
 * to versions of these libraries that no longer depend on a vulnerable htmlunit
 * (see https://github.com/playframework/playframework/releases).
 */
-ThisBuild / dependencyOverrides += "org.htmlunit" % "htmlunit" % "4.21.0" % Test
+
+ThisBuild / excludeDependencies ++= Seq(
+  "net.sourceforge.htmlunit" % "htmlunit",
+  "org.seleniumhq.selenium" % "htmlunit-driver"
+)
+
+ThisBuild / libraryDependencies ++= Seq(
+  "org.htmlunit" % "htmlunit" % "4.21.0" % Test,
+  "org.seleniumhq.selenium" % "htmlunit3-driver" % "4.27.0" % Test
+)
 
 val compilerOptions = Seq(
   "-deprecation",
