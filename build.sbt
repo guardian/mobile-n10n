@@ -34,7 +34,7 @@ ThisBuild / dockerBaseImage := "eclipse-temurin:8-jdk"
 * to versions of these libraries that no longer depend on a vulnerable htmlunit
 * (see https://github.com/playframework/playframework/releases).
 */
-ThisBuild / dependencyOverrides += "net.sourceforge.htmlunit" % "htmlunit" % "3.0.0" % Test
+ThisBuild / dependencyOverrides += "org.htmlunit" % "htmlunit" % "4.21.0" % Test
 
 val compilerOptions = Seq(
   "-deprecation",
