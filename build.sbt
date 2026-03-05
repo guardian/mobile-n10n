@@ -26,19 +26,18 @@ ThisBuild / scalaVersion := "2.13.18"
 ThisBuild / dockerBaseImage := "eclipse-temurin:8-jdk"
 
 /*
-* play-test pulls in both org.seleniumhq.selenium:htmlunit-driver and
-* io.fluentlenium:fluentlenium-core, which transitively bring in
-* net.sourceforge.htmlunit:htmlunit:2.70.0 with known security vulnerabilities.
-* Override to a patched version. This can be removed once Play Framework upgrades
-* to versions of these libraries that no longer depend on a vulnerable htmlunit
-* (see https://github.com/playframework/playframework/releases).
+  * play-test pulls in org.seleniumhq.selenium:htmlunit-driver:4.13.0, which
+  * transitively brings in net.sourceforge.htmlunit:htmlunit:2.70.0 with known
+  * security vulnerabilities. We exclude the old driver and vulnerable htmlunit,
+  * and replace them with htmlunit3-driver:4.27.0 and org.htmlunit:htmlunit:4.21.0
+  * which use the patched org.htmlunit group.
+  * This can be removed once Play Framework upgrades its Selenium dependency
+  * (see https://github.com/playframework/playframework/releases).
 */
-
 ThisBuild / excludeDependencies ++= Seq(
   "net.sourceforge.htmlunit" % "htmlunit",
   "org.seleniumhq.selenium" % "htmlunit-driver"
 )
-
 ThisBuild / libraryDependencies ++= Seq(
   "org.htmlunit" % "htmlunit" % "4.21.0" % Test,
   "org.seleniumhq.selenium" % "htmlunit3-driver" % "4.27.0" % Test
