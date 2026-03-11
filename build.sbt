@@ -463,6 +463,7 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(
     libraryDependencies ++= Seq(
+      "com.turo" % "pushy" % "0.13.10",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
     ),
     excludeDependencies ++= Seq(
