@@ -457,3 +457,18 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
       ExclusionRule(organization = "com.typesafe.play")
     )
   )
+
+lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.gu.liveactivities.LambdaLocalRun"))
+  .dependsOn(common)
+  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
+    ),
+    excludeDependencies ++= Seq(
+      ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
+    ),
+  )
