@@ -23,8 +23,10 @@ class ChannelApiClient {
   private val charSet = StandardCharsets.UTF_8
 
   private val mediaType = "application/json; charset=UTF-8"
+
+  private val bundleId = "uk.co.guardian.iphone2.debug"
   
-  private val url = "https://api-manage-broadcast.sandbox.push.apple.com:2195/1/apps/<bundleId>/channels"
+  private val url = s"https://api-manage-broadcast.sandbox.push.apple.com:2195/1/apps/$bundleId/channels"
 
   private val message = "{\"message-storage-policy\": 1, \"push-type\": \"LiveActivity\"}"
 
@@ -34,9 +36,9 @@ class ChannelApiClient {
 
   private def generateToken(): String = {
     val signingKey = ApnsSigningKey.loadFromPkcs8File(
-      new java.io.File("src/main/resources/AuthKey_XXXXXXXXXX.p8"),
-      "TEAMID",
-      "KEYID"
+      new java.io.File("liveactivities/src/main/resources/AuthKey_N9MYT8RFH4.p8"),
+      "998P9U5NGJ",
+      "N9MYT8RFH4"
     )
     val authenticationToken = new AuthenticationToken(signingKey, new Date())
     return authenticationToken.getAuthorizationHeader().toString()
@@ -44,10 +46,12 @@ class ChannelApiClient {
 
   def createChannel(): Future[String] = {
     println("Creating channel")
+    val authToken = generateToken()
+    println(s"Generated auth token: $authToken")
 
     val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
       .version(HttpClient.Version.HTTP_2)
-      .header("Authorization", "Bearer " + getAccessToken())
+      .header("Authorization", authToken)
       .header("Content-Type", mediaType)
       .POST(HttpRequest.BodyPublishers.ofString(message, charSet))
       .timeout(Duration.ofSeconds(60))
