@@ -13,7 +13,6 @@ import com.turo.pushy.apns.auth.ApnsSigningKey;
 import com.turo.pushy.apns.auth.AuthenticationToken;
 import java.time.Instant
 import java.util.Date
-import scala.concurrent.duration.DurationInt
 
 class BroadcastApiClient {
   
@@ -27,7 +26,7 @@ class BroadcastApiClient {
 
   private val bundleId = "uk.co.guardian.iphone2.debug"
   
-  private val url = s"https://api.sandbox.push.apple.com:443//4/broadcasts/apps/$bundleId"
+  private val url = s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
 
   private val message = 
     """{ 
@@ -78,15 +77,23 @@ class BroadcastApiClient {
       .header("apns-expiration", expiration.getOrElse(Instant.now().plusSeconds(5 * 60)).getEpochSecond.toString)
       .header("apns-priority", priority.map(_.toString).getOrElse("1"))
       .header("apns-push-type", "Liveactivity")
+      .header("apns-channel-id", channelId)
       .POST(HttpRequest.BodyPublishers.ofString(message, charSet))
       .timeout(Duration.ofSeconds(60))
       .build()
     val p = Promise[String]()
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
-      if (response == null) {
+
+      println(s"Received response: $response, error: $err")
+
+      if (err != null) {
         p.failure(err)
+      } else if (response.statusCode() != 200) {
+        p.failure(new RuntimeException(s"Failed to send broadcast with status code ${response.statusCode()} and body ${response.body()}"))
       } else {
-        println(s"Received response with status code ${response.statusCode()} and body ${response.body()}")
+        val apnsUniqueId = response.headers().firstValue("apns-unique-id").orElse("not found") // SANDBOX only header for debugging
+        println(s"Received response with status code ${response.statusCode()} and apns-unique-id ${apnsUniqueId}")
+
         p.success(response.body())
       }
     })
