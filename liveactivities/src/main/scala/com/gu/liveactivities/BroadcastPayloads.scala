@@ -104,6 +104,50 @@ object FootballMatchContentState {
 
 // BROADCAST PAYLOADS //////////////////////////////////////////////////
 
+// Start Live Activity (via broadcast)
+sealed trait ActivityAttributesType { val `type`: String }
+case object FootballMatchAttributesType extends ActivityAttributesType { val `type` = "FootballMatchAttributes" }
+
+object ActivityAttributesTypes {
+  implicit val format: Format[ActivityAttributesType] = Format(
+    Reads {
+      case JsString(s) => s match {
+        case "FootballMatchAttributes"  => JsSuccess(FootballMatchAttributesType)
+        case other                      => JsError(s"Unknown match status: $other")
+      }
+      case _ => JsError("Expected a JSON string for ActitivyAttributes")
+    },
+    Writes(ms => JsString(ms.`type`))
+  )
+}
+
+sealed trait ActivityAttributes
+case class FootballMatchAttributes(matchId: String) extends ActivityAttributes
+object FootballMatchAttributes {
+  implicit val jf: OFormat[FootballMatchAttributes] = Json.format[FootballMatchAttributes]
+}
+
+// Update Live Activity (broadcast)
+case class BroadcastStartAps(
+                               timestamp: Long,
+                               event: String = "start",
+                               `content-state`: ContentState,
+                               `attributes-type`: ActivityAttributesType,
+                               `attributes`: ActivityAttributes
+                             )
+object BroadcastStartAps {
+  implicit val jf: OFormat[BroadcastStartAps] = Json.format[BroadcastStartAps]
+}
+
+
+case class BroadcastStartBody(
+                                aps: BroadcastUpdateAps
+                              )
+object BroadcastStartBody {
+  implicit val jf: OFormat[BroadcastStartBody] = Json.format[BroadcastStartBody]
+}
+
+
 // Update Live Activity (broadcast)
 case class BroadcastUpdateAps(
                       timestamp: Long,
