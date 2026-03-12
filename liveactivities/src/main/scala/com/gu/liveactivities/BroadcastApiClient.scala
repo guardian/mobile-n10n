@@ -8,9 +8,11 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import scala.concurrent.Future
 import scala.concurrent.Promise
+import com.turo.pushy.apns.auth.ApnsSigningKey
+import com.turo.pushy.apns.auth.AuthenticationToken
+import play.api.libs.json.Json
+import com.gu.liveactivities.BroadcastFixtures._
 
-import com.turo.pushy.apns.auth.ApnsSigningKey;
-import com.turo.pushy.apns.auth.AuthenticationToken;
 import java.time.Instant
 import java.util.Date
 
@@ -51,6 +53,8 @@ class BroadcastApiClient {
     |  }
     }"""
 
+  private val startPayload: String = Json.stringify(Json.toJson(broadcastStartBodyFixture))
+
   private def getAccessToken(): String = {
     return "invalid-token-for-testing"
   }
@@ -77,13 +81,16 @@ class BroadcastApiClient {
       .header("apns-expiration", expiration.getOrElse(Instant.now().plusSeconds(5 * 60)).getEpochSecond.toString)
       .header("apns-priority", priority.map(_.toString).getOrElse("1"))
       .header("apns-push-type", "Liveactivity")
+
+      // add channel id
       .header("apns-channel-id", channelId)
-      .POST(HttpRequest.BodyPublishers.ofString(message, charSet))
+      .POST(HttpRequest.BodyPublishers.ofString(startPayload, charSet))
+
       .timeout(Duration.ofSeconds(60))
       .build()
+
     val p = Promise[String]()
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
-
       println(s"Received response: $response, error: $err")
 
       if (err != null) {

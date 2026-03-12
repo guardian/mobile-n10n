@@ -107,21 +107,36 @@ object FootballMatchContentState {
 // Start Live Activity (via broadcast)
 sealed trait ActivityAttributesType { val `type`: String }
 case object FootballMatchAttributesType extends ActivityAttributesType { val `type` = "FootballMatchAttributes" }
-
-object ActivityAttributesTypes {
+object ActivityAttributesType {
   implicit val format: Format[ActivityAttributesType] = Format(
     Reads {
       case JsString(s) => s match {
         case "FootballMatchAttributes"  => JsSuccess(FootballMatchAttributesType)
         case other                      => JsError(s"Unknown match status: $other")
       }
-      case _ => JsError("Expected a JSON string for ActitivyAttributes")
+      case _ => JsError("Expected a JSON string for ActivityAttributes")
     },
     Writes(ms => JsString(ms.`type`))
   )
 }
 
 sealed trait ActivityAttributes
+object ActivityAttributes {
+  implicit val format: OFormat[ActivityAttributes] = new OFormat[ActivityAttributes] {
+    def writes(a: ActivityAttributes): JsObject = a match {
+      case f: FootballMatchAttributes =>
+        FootballMatchAttributes.jf.writes(f).as[JsObject] + ("type" -> JsString("football"))
+      // Add cases for other ActivityAttributes subtypes here
+    }
+    def reads(json: JsValue): JsResult[ActivityAttributes] = {
+      (json \ "type").validate[String].flatMap {
+        case "football" => FootballMatchAttributes.jf.reads(json)
+        // Add cases for other ActivityAttributes subtypes here
+        case other      => JsError(s"Unknown ActivityAttributes type: $other")
+      }
+    }
+  }
+}
 case class FootballMatchAttributes(matchId: String) extends ActivityAttributes
 object FootballMatchAttributes {
   implicit val jf: OFormat[FootballMatchAttributes] = Json.format[FootballMatchAttributes]
@@ -141,7 +156,7 @@ object BroadcastStartAps {
 
 
 case class BroadcastStartBody(
-                                aps: BroadcastUpdateAps
+                                aps: BroadcastStartAps
                               )
 object BroadcastStartBody {
   implicit val jf: OFormat[BroadcastStartBody] = Json.format[BroadcastStartBody]
