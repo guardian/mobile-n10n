@@ -56,7 +56,15 @@ class BroadcastApiClient {
   private val startPayload: String = Json.stringify(Json.toJson(broadcastStartBodyFixture))
 
   private def getAccessToken(): String = {
-    return "invalid-token-for-testing"
+    ChannelApiClient.authenticationToken match {
+      case Some(token) => token
+      case None => {
+        val authenticationToken = generateToken()
+        ChannelApiClient.authenticationToken = Some(authenticationToken)
+        ChannelApiClient.issueDate = Some(new Date())
+        authenticationToken
+      }
+    }
   }
 
   private def generateToken(): String = {
@@ -71,19 +79,17 @@ class BroadcastApiClient {
 
   def sendToChannel(channelId: String, expiration: Option[Instant], priority: Option[Int]): Future[String] = {
     println(s"Broadcasting to channel $channelId")
-    val authToken = generateToken()
+    val authToken = getAccessToken()
     println(s"Generated auth token: $authToken")
 
     val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
       .header("Content-Type", mediaType)
+      .header("apns-channel-id", channelId)
       .header("apns-expiration", expiration.getOrElse(Instant.now().plusSeconds(5 * 60)).getEpochSecond.toString)
       .header("apns-priority", priority.map(_.toString).getOrElse("1"))
       .header("apns-push-type", "Liveactivity")
-
-      // add channel id
-      .header("apns-channel-id", channelId)
       .POST(HttpRequest.BodyPublishers.ofString(startPayload, charSet))
 
       .timeout(Duration.ofSeconds(60))

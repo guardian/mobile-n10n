@@ -13,6 +13,14 @@ import com.turo.pushy.apns.auth.ApnsSigningKey;
 import com.turo.pushy.apns.auth.AuthenticationToken;
 import java.time.Instant
 import java.util.Date
+import com.gu.liveactivities.ChannelApiClient.authenticationToken
+
+object ChannelApiClient {
+
+  var authenticationToken: Option[String] = None
+
+  var issueDate: Option[Date] = None
+}
 
 class ChannelApiClient {
   
@@ -31,7 +39,15 @@ class ChannelApiClient {
   private val message = "{\"message-storage-policy\": 1, \"push-type\": \"LiveActivity\"}"
 
   private def getAccessToken(): String = {
-    return "invalid-token-for-testing"
+    ChannelApiClient.authenticationToken match {
+      case Some(token) => token
+      case None => {
+        val authenticationToken = generateToken()
+        ChannelApiClient.authenticationToken = Some(authenticationToken)
+        ChannelApiClient.issueDate = Some(new Date())
+        authenticationToken
+      }
+    }
   }
 
   private def generateToken(): String = {
@@ -46,9 +62,7 @@ class ChannelApiClient {
 
   def createChannel(): Future[String] = {
     println("Creating channel")
-    val authToken = generateToken()
-    println(s"Generated auth token: $authToken")
-
+    val authToken = getAccessToken()
     val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
@@ -60,11 +74,46 @@ class ChannelApiClient {
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
       if (response == null) {
         p.failure(err)
+      } else if (response.statusCode() >= 200 && 
+                response.statusCode() < 300 && 
+                response.headers().firstValue("apns-channel-id").isPresent()) {
+        val channelId = response.headers().firstValue("apns-channel-id").get()
+        println(s"Channel created successfully with channel ID $channelId")
+        p.success(channelId)
       } else {
-        println(s"Received response with status code ${response.statusCode()} and body ${response.body()}")
-        p.success(response.body())
+        println(s"Failed to create channel with status code ${response.statusCode()} and body ${response.body()}")
+        p.failure(new Exception(s"Failed to create channel with status code ${response.statusCode()} and body ${response.body()}"))
       }
     })
     p.future
   }
+
+  def closeChannel(channelId: String): Future[Unit] = {
+    println(s"Closing channel $channelId")
+    val authToken = getAccessToken()
+    val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
+      .version(HttpClient.Version.HTTP_2)
+      .header("Authorization", authToken)
+      .header("Content-Type", mediaType)
+      .header("apns-channel-id", channelId)
+      .DELETE()
+      .timeout(Duration.ofSeconds(60))
+      .build()
+    val p = Promise[Unit]()
+    httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
+      if (response == null) {
+        println(s"Failed to close channel $channelId due to error ${err.getMessage}")
+        p.failure(err)
+      } else if (response.statusCode() >= 200 && 
+                response.statusCode() < 300) {
+        println(s"Channel closed successfully with channel ID $channelId")
+        p.success(())
+      } else {
+        println(s"Failed to close channel with status code ${response.statusCode()} and body ${response.body()}")
+        p.failure(new Exception(s"Failed to close channel with status code ${response.statusCode()} and body ${response.body()}"))
+      }
+    })
+    p.future
+  } 
+
 }
