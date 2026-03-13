@@ -12,6 +12,7 @@ import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.auth.AuthenticationToken
 import play.api.libs.json.Json
 import com.gu.liveactivities.BroadcastFixtures._
+import com.gu.liveactivities.BroadcastJsonFormats._
 
 import java.time.Instant
 import java.util.Date
@@ -53,7 +54,10 @@ class BroadcastApiClient {
     |  }
     }"""
 
-  private val startPayload: String = Json.stringify(Json.toJson(broadcastStartBodyFixture))
+  private val startPayload: String = Json.stringify(Json.toJson(broadcastStartBodyFixture)(BroadcastJsonFormats.broadcastStartBodyFormat))
+  private val updatePayload: String = Json.stringify(Json.toJson(broadcastUpdateBodyFixture)(BroadcastJsonFormats.broadcastUpdateBodyFormat))
+  private val endPayload: String = Json.stringify(Json.toJson(broadcastEndBodyFixture)(BroadcastJsonFormats.broadcastEndBodyFormat))
+
 
   private def getAccessToken(): String = {
     ChannelApiClient.authenticationToken match {
@@ -90,7 +94,7 @@ class BroadcastApiClient {
       .header("apns-expiration", expiration.getOrElse(Instant.now().plusSeconds(5 * 60)).getEpochSecond.toString)
       .header("apns-priority", priority.map(_.toString).getOrElse("1"))
       .header("apns-push-type", "Liveactivity")
-      .POST(HttpRequest.BodyPublishers.ofString(startPayload, charSet))
+      .POST(HttpRequest.BodyPublishers.ofString(updatePayload, charSet))
 
       .timeout(Duration.ofSeconds(60))
       .build()
