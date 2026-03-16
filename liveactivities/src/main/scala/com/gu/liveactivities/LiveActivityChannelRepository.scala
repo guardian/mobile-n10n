@@ -9,7 +9,6 @@ import play.api.libs.json._
 import tracking.Repository.RepositoryResult
 import tracking.RepositoryError
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
@@ -42,8 +41,8 @@ object LiveActivityData {
 }
 
 case class LiveActivityMapping(
-                                liveActivityId: UUID,
-                                channelId: UUID,
+                                liveActivityId: String,
+                                channelId: String,
                                 data: Option[LiveActivityData]
                               )
 object LiveActivityMapping {
@@ -56,9 +55,9 @@ object LiveActivityMapping {
 
 trait ChannelMappingsRepository {
   def saveMapping(mapping: LiveActivityMapping): Future[RepositoryResult[Unit]]
-  def deleteMappingByActivityId(id: UUID): Future[RepositoryResult[Unit]]
+  def deleteMappingByActivityId(id: String): Future[RepositoryResult[Unit]]
   def getMappingByActivityId(
-      uuid: UUID
+      id: String
   ): Future[RepositoryResult[LiveActivityMapping]]
 }
 
@@ -74,10 +73,10 @@ class LiveActivityChannelRepository(client: AsyncDynamo, tableName: String)(
     client.putItem(putItemRequest) map { _ => Right(()) }
   }
 
-  override def getMappingByActivityId(uuid: UUID): Future[RepositoryResult[LiveActivityMapping]] = {
+  override def getMappingByActivityId(id: String): Future[RepositoryResult[LiveActivityMapping]] = {
     val getItemRequest = new GetItemRequest()
       .withTableName(tableName)
-      .withKey(Map(IdField -> new AttributeValue().withS(uuid.toString)).asJava)
+      .withKey(Map(IdField -> new AttributeValue().withS(id)).asJava)
       .withConsistentRead(true)
 
     client.get(getItemRequest) map { result =>
@@ -88,10 +87,10 @@ class LiveActivityChannelRepository(client: AsyncDynamo, tableName: String)(
     }
   }
 
-  override def deleteMappingByActivityId(uuid: UUID): Future[RepositoryResult[Unit]] = {
+  override def deleteMappingByActivityId(id: String): Future[RepositoryResult[Unit]] = {
     val deleteItemRequest = new DeleteItemRequest()
       .withTableName(tableName)
-      .withKey(Map(IdField -> new AttributeValue().withS(uuid.toString)).asJava)
+      .withKey(Map(IdField -> new AttributeValue().withS(id)).asJava)
     client.deleteItem(deleteItemRequest) map { _ => Right(()) }
   }
 
