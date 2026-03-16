@@ -15,7 +15,7 @@ object BroadcastFixtures {
         kickOffTimestamp = fifteenMinutesFromNowEpochSeconds,
         homeTeam = TeamState(
           name = "Brentford",
-          score = 0,
+          score = 1,
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
@@ -23,7 +23,7 @@ object BroadcastFixtures {
         ),
         awayTeam = TeamState(
           name = "Wolverhampton",
-          score = 0,
+          score = 1,
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
@@ -57,7 +57,7 @@ object BroadcastFixtures {
         kickOffTimestamp = 1742131800L, // 2025-03-16T13:30:00 as epoch seconds
         homeTeam = TeamState(
           name = "Arsenal",
-          score = 0,
+          score = 2,
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
@@ -65,7 +65,7 @@ object BroadcastFixtures {
         ),
         awayTeam = TeamState(
           name = "Chelsea",
-          score = 0,
+          score = 2,
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
@@ -95,7 +95,7 @@ object BroadcastFixtures {
         kickOffTimestamp = 1742131800L, // 2025-03-16T13:30:00 as epoch seconds
         homeTeam = TeamState(
           name = "Arsenal",
-          score = 1,
+          score = 3,
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
@@ -103,7 +103,7 @@ object BroadcastFixtures {
         ),
         awayTeam = TeamState(
           name = "Chelsea",
-          score = 0,
+          score = 3,
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
@@ -120,7 +120,7 @@ object BroadcastFixtures {
         currentPeriodStartTime = None,
         articleUrl = None
       ),
-      `dismissal-date` = nowEpochSeconds + 3600 // 1 hour from now
+      `dismissal-date` = nowEpochSeconds + 60 // 1 min from now
     )
   )
 }
