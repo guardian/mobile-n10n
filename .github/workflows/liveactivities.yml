@@ -77,4 +77,3 @@ jobs:
               - liveactivities.jar
             mobile-notifications-liveactivities-cfn:
               - cdk/cdk.out/LiveActivities-CODE.template.json
-              - cdk/cdk.out/LiveActivities-PROD.template.json
