@@ -1,0 +1,80 @@
+name: Live activities
+
+on:
+  push:
+    paths:
+      - cdk/**
+      - liveactivities/**
+      - api-models/**
+      - project/**
+      - build.sbt
+      - .github/workflows/liveactivities.yml
+  workflow_dispatch:
+
+# allow queued workflows to interrupt previous runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Setup JDK and sbt
+        uses: guardian/setup-scala@v1
+
+      - name: Compile, test and assembly
+        run: sbt "project api-models" "compile" "test" "project liveactivities" "compile" "test" "assembly"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Tests
+          path: liveactivities/target/test-reports/TEST-*.xml
+          reporter: java-junit
+          only-summary: 'false'
+          fail-on-error: 'true'
+
+      - name: Copy jar to root
+        run: cp liveactivities/target/scala-*/liveactivities.jar .
+
+      - run: corepack enable
+
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 #v6.2.0
+        with:
+          cache: yarn
+          cache-dependency-path: cdk/yarn.lock
+          node-version-file: .nvmrc
+
+      - name: CDK synth
+        run: |
+          cd cdk
+          yarn install --immutable
+          yarn lint
+          yarn test
+          yarn synth
+
+      - name: Upload to riff-raff
+        uses: guardian/actions-riff-raff@v4
+        with:
+          roleArn: ${{ secrets.GU_RIFF_RAFF_ROLE_ARN }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectName: mobile-n10n:liveactivities
+          buildNumberOffset: 4147
+          configPath: liveactivities/riff-raff.yaml
+
+          contentDirectories: |
+            liveactivities:
+              - liveactivities.jar
+            mobile-notifications-liveactivities-cfn:
+              - cdk/cdk.out/LiveActivities-CODE.template.json
+              - cdk/cdk.out/LiveActivities-PROD.template.json
