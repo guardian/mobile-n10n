@@ -7,8 +7,7 @@ object LocalDynamoDBLiveActivities {
   val settings: Seq[Setting[_]] = DynamoDBLocalKeys.baseDynamoDBSettings ++ Seq(
     dynamoDBLocalDownloadDir := file("dynamodb-local-live-activities"),
     dynamoDBLocalInMemory := true,
-    dynamoDBLocalVersion := "latest",
-//    dynamoDBLocalSharedDB := true, // Add this line
+    dynamoDBLocalVersion := "2018-04-11",
     dynamoDBLocalPort := 8002
   )
 }

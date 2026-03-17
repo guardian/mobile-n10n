@@ -24,7 +24,7 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll {
 
   def createTableRequest: CreateTableRequest
 
-  val TestEndpoint = "http://localhost:8002"
+  val TestEndpoint = "http://localhost:8000"
 
   override def beforeAll(): Unit = {
     awsClient.createTable(createTableRequest)
@@ -39,9 +39,8 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll {
       override def refresh(): Unit = {}
 
       override def getCredentials: AWSCredentials = new AWSCredentials {
-        override def getAWSAccessKeyId: String = ""
-
-        override def getAWSSecretKey: String = ""
+        override def getAWSAccessKeyId: String = "testid"
+        override def getAWSSecretKey: String = "testkey"
       }
     })
 
