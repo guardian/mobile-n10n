@@ -1,5 +1,7 @@
 package com.gu.liveactivities
 
+import com.gu.liveactivities.service.{ChannelApiClient, BroadcastApiClient, Authentication}
+
 object ChannelManagerLambda {
 
 

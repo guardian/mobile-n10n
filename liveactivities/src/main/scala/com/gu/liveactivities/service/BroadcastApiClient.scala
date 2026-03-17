@@ -1,4 +1,4 @@
-package com.gu.liveactivities
+package com.gu.liveactivities.service
 
 import java.net.http.HttpClient
 import java.time.Duration
@@ -12,10 +12,11 @@ import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.auth.AuthenticationToken
 import play.api.libs.json.Json
 import com.gu.liveactivities.BroadcastFixtures._
-import com.gu.liveactivities.BroadcastJsonFormats._
+import com.gu.liveactivities.models.BroadcastJsonFormats._
 
 import java.time.Instant
 import java.util.Date
+import com.gu.liveactivities.models.BroadcastJsonFormats
 
 class BroadcastApiClient {
   
@@ -58,32 +59,9 @@ class BroadcastApiClient {
   private val updatePayload: String = Json.stringify(Json.toJson(broadcastUpdateBodyFixture)(BroadcastJsonFormats.broadcastUpdateBodyFormat))
   private val endPayload: String = Json.stringify(Json.toJson(broadcastEndBodyFixture)(BroadcastJsonFormats.broadcastEndBodyFormat))
 
-
-  private def getAccessToken(): String = {
-    ChannelApiClient.authenticationToken match {
-      case Some(token) => token
-      case None => {
-        val authenticationToken = generateToken()
-        ChannelApiClient.authenticationToken = Some(authenticationToken)
-        ChannelApiClient.issueDate = Some(new Date())
-        authenticationToken
-      }
-    }
-  }
-
-  private def generateToken(): String = {
-    val signingKey = ApnsSigningKey.loadFromPkcs8File(
-      new java.io.File("liveactivities/src/main/resources/AuthKey_N9MYT8RFH4.p8"),
-      "998P9U5NGJ",
-      "N9MYT8RFH4"
-    )
-    val authenticationToken = new AuthenticationToken(signingKey, new Date())
-    return authenticationToken.getAuthorizationHeader().toString()
-  }
-
   def sendToChannel(channelId: String, expiration: Option[Instant], priority: Option[Int]): Future[String] = {
     println(s"Broadcasting to channel $channelId")
-    val authToken = getAccessToken()
+    val authToken = Authentication.getAccessToken()
     println(s"Generated auth token: $authToken")
 
     val request: HttpRequest = HttpRequest.newBuilder(new URI(url))

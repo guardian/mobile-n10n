@@ -1,5 +1,7 @@
 package com.gu.liveactivities
 
+import com.gu.liveactivities.service.BroadcastApiClient
+
 object BroadcastLambda {
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global

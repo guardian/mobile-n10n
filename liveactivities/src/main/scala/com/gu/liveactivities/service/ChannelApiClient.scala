@@ -1,4 +1,4 @@
-package com.gu.liveactivities
+package com.gu.liveactivities.service
 
 import java.net.http.HttpClient
 import java.time.Duration
@@ -13,7 +13,6 @@ import com.turo.pushy.apns.auth.ApnsSigningKey;
 import com.turo.pushy.apns.auth.AuthenticationToken;
 import java.time.Instant
 import java.util.Date
-import com.gu.liveactivities.ChannelApiClient.authenticationToken
 
 object ChannelApiClient {
 
@@ -38,31 +37,9 @@ class ChannelApiClient {
 
   private val message = "{\"message-storage-policy\": 1, \"push-type\": \"LiveActivity\"}"
 
-  private def getAccessToken(): String = {
-    ChannelApiClient.authenticationToken match {
-      case Some(token) => token
-      case None => {
-        val authenticationToken = generateToken()
-        ChannelApiClient.authenticationToken = Some(authenticationToken)
-        ChannelApiClient.issueDate = Some(new Date())
-        authenticationToken
-      }
-    }
-  }
-
-  private def generateToken(): String = {
-    val signingKey = ApnsSigningKey.loadFromPkcs8File(
-      new java.io.File("liveactivities/src/main/resources/AuthKey_N9MYT8RFH4.p8"),
-      "998P9U5NGJ",
-      "N9MYT8RFH4"
-    )
-    val authenticationToken = new AuthenticationToken(signingKey, new Date())
-    return authenticationToken.getAuthorizationHeader().toString()
-  }
-
   def createChannel(): Future[String] = {
     println("Creating channel")
-    val authToken = getAccessToken()
+    val authToken = Authentication.getAccessToken()
     val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
@@ -90,7 +67,7 @@ class ChannelApiClient {
 
   def closeChannel(channelId: String): Future[Unit] = {
     println(s"Closing channel $channelId")
-    val authToken = getAccessToken()
+    val authToken = Authentication.getAccessToken()
     val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
