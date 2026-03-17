@@ -1,0 +1,10 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+
+deployments:
+  mobile-notifications-liveactivities-cfn:
+    type: cloud-formation
+    app: liveactivities
+    parameters:
+      templateStagePaths:
+        CODE: LiveActivities-CODE.template.json
