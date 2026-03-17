@@ -24,7 +24,7 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll {
 
   def createTableRequest: CreateTableRequest
 
-  val TestEndpoint = "http://localhost:8000"
+  val TestEndpoint = "http://localhost:8002"
 
   override def beforeAll(): Unit = {
     awsClient.createTable(createTableRequest)
