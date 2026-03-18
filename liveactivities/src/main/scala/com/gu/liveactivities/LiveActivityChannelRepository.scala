@@ -44,7 +44,7 @@ object LiveActivityData {
 }
 
 case class LiveActivityMapping(
-    liveActivityId: String,
+    id: String,
     channelId: String,
     data: Option[LiveActivityData]
 )
@@ -68,7 +68,7 @@ class LiveActivityChannelRepository(client: AsyncDynamo, tableName: String)(
 ) extends ChannelMappingsRepository {
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  private val IdField = "liveActivityId"
+  private val IdField = "id"
 
   override def saveMapping(
       mapping: LiveActivityMapping
