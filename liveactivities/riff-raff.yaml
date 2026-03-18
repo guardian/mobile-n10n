@@ -2,6 +2,14 @@ stacks: [mobile-notifications]
 regions: [eu-west-1]
 
 deployments:
+  liveactivities-lambda:
+    type: aws-lambda
+    parameters:
+      bucketSsmLookup: true
+      functionNames: [liveactivities-]
+      fileName: liveactivities.jar
+      prefixStack: false
+    dependencies: [mobile-notifications-liveactivities-cfn]
   mobile-notifications-liveactivities-cfn:
     type: cloud-formation
     app: liveactivities
