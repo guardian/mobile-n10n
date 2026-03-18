@@ -73,7 +73,7 @@ jobs:
           configPath: liveactivities/riff-raff.yaml
 
           contentDirectories: |
-            liveactivities-lambda:
+            liveactivities:
               - liveactivities.jar
             mobile-notifications-liveactivities-cfn:
               - cdk/cdk.out/LiveActivities-CODE.template.json

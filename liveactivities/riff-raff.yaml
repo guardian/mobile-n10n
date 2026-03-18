@@ -2,7 +2,7 @@ stacks: [mobile-notifications]
 regions: [eu-west-1]
 
 deployments:
-  liveactivities-lambda:
+  liveactivities:
     type: aws-lambda
     parameters:
       bucketSsmLookup: true
