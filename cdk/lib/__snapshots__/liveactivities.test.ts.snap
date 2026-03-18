@@ -42,7 +42,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
             "Stage": "CODE",
           },
         },
-        "FunctionName": "liveactivities-CODE-broadcast",
+        "FunctionName": "liveactivities-broadcast-CODE",
         "Handler": "com.gu.liveactivities.BroadcastLambda::handleRequest",
         "LoggingConfig": {
           "LogFormat": "JSON",
@@ -272,7 +272,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
             "Stage": "CODE",
           },
         },
-        "FunctionName": "liveactivities-CODE-channel-manager",
+        "FunctionName": "liveactivities-channel-manager-CODE",
         "Handler": "com.gu.liveactivities.ChannelManagerLambda::handleRequest",
         "LoggingConfig": {
           "LogFormat": "JSON",
