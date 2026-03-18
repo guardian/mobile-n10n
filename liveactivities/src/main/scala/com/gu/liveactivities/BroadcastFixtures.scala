@@ -1,5 +1,6 @@
 package com.gu.liveactivities
 
+import com.gu.liveactivities.models._
 
 object BroadcastFixtures {
   def fifteenMinutesFromNowEpochSeconds: Long = (System.currentTimeMillis() / 1000L) + 15 * 60

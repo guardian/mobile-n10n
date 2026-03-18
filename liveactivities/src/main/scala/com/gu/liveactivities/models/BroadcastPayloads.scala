@@ -1,4 +1,4 @@
-package com.gu.liveactivities
+package com.gu.liveactivities.models
 
 import play.api.libs.json._
 
