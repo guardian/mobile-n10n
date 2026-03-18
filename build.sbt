@@ -461,6 +461,7 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
 lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.gu.liveactivities.LambdaLocalRun"))
   .dependsOn(common)
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
+  .settings(LocalDynamoDBLiveActivities.settings)
   .settings(
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
@@ -472,4 +473,10 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
       ExclusionRule(organization = "com.typesafe.play")
     ),
+    fork := true,
+    startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
+    Test / test := (Test / test).dependsOn(startDynamoDBLocal).value,
+    Test / testOnly := (Test / testOnly).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testQuick := (Test / testQuick).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testOptions += dynamoDBLocalTestCleanup.value,
   )
