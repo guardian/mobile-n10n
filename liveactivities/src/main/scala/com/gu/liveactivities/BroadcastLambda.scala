@@ -5,17 +5,19 @@ import scala.concurrent.Await
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import com.amazonaws.services.lambda.runtime.RequestHandler
+import com.amazonaws.services.lambda.runtime.Context
 
 // TODO - we should get the channel ID by looking up the match ID in the datastore
 case class BroadcastRequest(matchId: String, channelId: String, payload: String)
 
-object BroadcastLambda {
+object BroadcastLambda extends RequestHandler[BroadcastRequest, Unit]{
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
   val broadcastApiClient = new BroadcastApiClient()
 
-  def handleRequest(request: BroadcastRequest): Unit = {
+  def handleRequest(request: BroadcastRequest, context: Context): Unit = {
     // TODO - determine expiry time and priority
     val broadcastFuture = broadcastApiClient.sendToChannel(request.channelId, None, None)
     // TODO - the timeout value
