@@ -8,8 +8,7 @@ import org.checkerframework.checker.units.qual.A
 
 object Authentication {
 
-  private val authenticationToken2 : AtomicReference[Option[AuthenticationToken]] = new AtomicReference[Option[AuthenticationToken]](None)
-  private var authenticationToken: Option[AuthenticationToken] = None
+  private val authenticationToken : AtomicReference[Option[AuthenticationToken]] = new AtomicReference[Option[AuthenticationToken]](None)
 
   private def refreshToken(): String = {
     val signingKey = ApnsSigningKey.loadFromPkcs8File(
@@ -18,12 +17,12 @@ object Authentication {
       "N9MYT8RFH4"
     )
     val newToken = new AuthenticationToken(signingKey, new Date())
-    this.authenticationToken = Some(newToken)
+    this.authenticationToken.set(Some(newToken))
     newToken.getAuthorizationHeader().toString()
   }
 
   def getAccessToken(): String = {
-    authenticationToken match {
+    authenticationToken.get() match {
       case Some(token) if Date.from(token.getIssuedAt().toInstant().plusSeconds(30 * 60)).after(new Date()) => 
         token.getAuthorizationHeader().toString()
       case _ => refreshToken()
