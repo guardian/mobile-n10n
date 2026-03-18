@@ -1,6 +1,7 @@
 package com.gu.liveactivities
 
 import com.gu.liveactivities.service.BroadcastApiClient
+import com.gu.liveactivities.util.{Configuration, IosConfiguration}
 import scala.concurrent.Await
 import scala.util.Try
 import scala.util.Success
@@ -14,6 +15,7 @@ import java.io.{InputStream, OutputStream}
 import play.api.libs.json.JsSuccess
 import play.api.libs.json.JsError
 import java.nio.charset.StandardCharsets
+import com.gu.liveactivities.service.Authentication
 
 // TODO - we should get the channel ID by looking up the match ID in the datastore
 case class BroadcastRequest(matchId: String, channelId: String, payload: String)
@@ -26,7 +28,11 @@ object BroadcastLambda extends RequestStreamHandler{
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  val broadcastApiClient = new BroadcastApiClient()
+  val config: IosConfiguration = Configuration.fetchIos()
+
+  val authentication = new Authentication(config.teamId, config.keyId, config.certificate)
+
+  val broadcastApiClient = new BroadcastApiClient(authentication, config.bundleId, config.sendingToProdServer)
 
   def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     Json.parse(input).validate[BroadcastRequest] match {

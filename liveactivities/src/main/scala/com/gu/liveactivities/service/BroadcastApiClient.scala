@@ -18,7 +18,7 @@ import java.time.Instant
 import java.util.Date
 import com.gu.liveactivities.models.BroadcastJsonFormats
 
-class BroadcastApiClient {
+class BroadcastApiClient(authentication: Authentication, bundleId: String, sendingToProdServer: Boolean) {
   
   private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build()
 
@@ -27,10 +27,12 @@ class BroadcastApiClient {
   private val charSet = StandardCharsets.UTF_8
 
   private val mediaType = "application/json; charset=UTF-8"
-
-  private val bundleId = "uk.co.guardian.iphone2.debug"
   
-  private val url = s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
+  // TODO - to check
+  private val serviceEndpoint = if (sendingToProdServer) 
+    s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
+  else
+    s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
 
   private val message = 
     """{ 
@@ -61,10 +63,10 @@ class BroadcastApiClient {
 
   def sendToChannel(channelId: String, expiration: Option[Instant], priority: Option[Int]): Future[String] = {
     println(s"Broadcasting to channel $channelId")
-    val authToken = Authentication.getAccessToken()
+    val authToken = authentication.getAccessToken()
     println(s"Generated auth token: $authToken")
 
-    val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
+    val request: HttpRequest = HttpRequest.newBuilder(new URI(serviceEndpoint))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
       .header("Content-Type", mediaType)

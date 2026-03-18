@@ -14,14 +14,7 @@ import com.turo.pushy.apns.auth.AuthenticationToken;
 import java.time.Instant
 import java.util.Date
 
-object ChannelApiClient {
-
-  var authenticationToken: Option[String] = None
-
-  var issueDate: Option[Date] = None
-}
-
-class ChannelApiClient {
+class ChannelApiClient(authentication: Authentication, bundleId: String, sendingToProdServer: Boolean) {
   
   private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build()
 
@@ -30,16 +23,19 @@ class ChannelApiClient {
   private val charSet = StandardCharsets.UTF_8
 
   private val mediaType = "application/json; charset=UTF-8"
+ 
+  // TODO - to check
+  private val url = if (sendingToProdServer)
+    s"https://api-manage-broadcast.sandbox.push.apple.com:2195/1/apps/$bundleId/channels"
+  else
+    s"https://api-manage-broadcast.sandbox.push.apple.com:2195/1/apps/$bundleId/channels"
 
-  private val bundleId = "uk.co.guardian.iphone2.debug"
-  
-  private val url = s"https://api-manage-broadcast.sandbox.push.apple.com:2195/1/apps/$bundleId/channels"
 
   private val message = "{\"message-storage-policy\": 1, \"push-type\": \"LiveActivity\"}"
 
   def createChannel(): Future[String] = {
     println("Creating channel")
-    val authToken = Authentication.getAccessToken()
+    val authToken = authentication.getAccessToken()
     val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
@@ -67,7 +63,7 @@ class ChannelApiClient {
 
   def closeChannel(channelId: String): Future[Unit] = {
     println(s"Closing channel $channelId")
-    val authToken = Authentication.getAccessToken()
+    val authToken = authentication.getAccessToken()
     val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)

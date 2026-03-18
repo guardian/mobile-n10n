@@ -1,6 +1,7 @@
 package com.gu.liveactivities
 
 import com.gu.liveactivities.service.{ChannelApiClient, BroadcastApiClient, Authentication}
+import com.gu.liveactivities.util.{Configuration, IosConfiguration}
 import scala.concurrent.Await
 import scala.util.Success
 import scala.util.Failure
@@ -25,8 +26,11 @@ object ChannelManagerLambda extends RequestStreamHandler {
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  val channelApiClient = new ChannelApiClient()
-  val broadcastApiClient = new BroadcastApiClient()
+  val config: IosConfiguration = Configuration.fetchIos()
+
+  val authentication = new Authentication(config.teamId, config.keyId, config.certificate)
+
+  val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer)
 
   def onChannelCreated(matchId: String, channelId: String): String = {
     // TODO - update dynamo table

@@ -5,17 +5,31 @@ import java.util.concurrent.atomic._
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.auth.AuthenticationToken
 import org.checkerframework.checker.units.qual.A
+import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
 
-object Authentication {
+class Authentication(teamId: String, keyId: String, maybeCertificate: Option[String]) {
 
   private val authenticationToken : AtomicReference[Option[AuthenticationToken]] = new AtomicReference[Option[AuthenticationToken]](None)
 
+  private def getSigningKey(): ApnsSigningKey = {
+    maybeCertificate match {
+      case Some(cert) => getSigningKeyFromString(cert)
+      case None => getSigningKeyFromKeyFile()
+    }
+  }
+
+  private def getSigningKeyFromKeyFile(): ApnsSigningKey = ApnsSigningKey.loadFromPkcs8File(
+    new java.io.File("liveactivities/src/main/resources/AuthKey_N9MYT8RFH4.p8"), teamId, keyId)
+
+  private def getSigningKeyFromString(certificate: String): ApnsSigningKey = ApnsSigningKey.loadFromInputStream(
+			new ByteArrayInputStream(certificate.getBytes(StandardCharsets.UTF_8)),
+			teamId,
+			keyId
+		)
+
   private def refreshToken(): String = {
-    val signingKey = ApnsSigningKey.loadFromPkcs8File(
-      new java.io.File("liveactivities/src/main/resources/AuthKey_N9MYT8RFH4.p8"),
-      "998P9U5NGJ",
-      "N9MYT8RFH4"
-    )
+    val signingKey = getSigningKey()
     val newToken = new AuthenticationToken(signingKey, new Date())
     this.authenticationToken.set(Some(newToken))
     newToken.getAuthorizationHeader().toString()
