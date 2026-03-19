@@ -12,7 +12,7 @@ case class IosConfiguration(
   teamId: String,
   bundleId: String,
   keyId: String,
-  certificate: Option[String],
+  certificate: String,
   sendingToProdServer: Boolean = false,
 )
 
@@ -39,7 +39,7 @@ object Configuration extends Logging {
       teamId = config.getString("apns.teamId"),
       bundleId = config.getString("apns.bundleId"),
       keyId = config.getString("apns.keyId"),
-      certificate = if (config.hasPath("apns.certificate")) Some(config.getString("apns.certificate")) else None,
+      certificate = config.getString("apns.certificate"),
       sendingToProdServer = config.getBoolean("apns.sendingToProdServer")
     )
   }

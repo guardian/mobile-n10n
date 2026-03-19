@@ -9,21 +9,11 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import com.gu.liveactivities.util.Logging
 
-class Authentication(teamId: String, keyId: String, maybeCertificate: Option[String]) extends Logging {
+class Authentication(teamId: String, keyId: String, certificate: String) extends Logging {
 
   private val authenticationToken : AtomicReference[Option[AuthenticationToken]] = new AtomicReference[Option[AuthenticationToken]](None)
 
-  private def getSigningKey(): ApnsSigningKey = {
-    maybeCertificate match {
-      case Some(cert) => getSigningKeyFromString(cert)
-      case None => getSigningKeyFromKeyFile()
-    }
-  }
-
-  private def getSigningKeyFromKeyFile(): ApnsSigningKey = ApnsSigningKey.loadFromPkcs8File(
-    new java.io.File("resources/AuthKey_N9MYT8RFH4.p8"), teamId, keyId)
-
-  private def getSigningKeyFromString(certificate: String): ApnsSigningKey = ApnsSigningKey.loadFromInputStream(
+  private def getSigningKey(): ApnsSigningKey = ApnsSigningKey.loadFromInputStream(
 			new ByteArrayInputStream(certificate.getBytes(StandardCharsets.UTF_8)),
 			teamId,
 			keyId
