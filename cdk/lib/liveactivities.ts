@@ -51,6 +51,15 @@ export class LiveActivities extends GuStack {
 				resources: [dynamoTable.tableArn],
 			}),
 		);
+		channelLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['ssm:GetParametersByPath'],
+				effect: Effect.ALLOW,
+				resources: [
+					`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${this.stage}/liveactivities/ios`,
+				],
+			}),
+		);
 
 		const broadcastLambda = new GuLambdaFunction(
 			this,
@@ -78,6 +87,15 @@ export class LiveActivities extends GuStack {
 				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
 				effect: Effect.ALLOW,
 				resources: [dynamoTable.tableArn],
+			}),
+		);
+		broadcastLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['ssm:GetParametersByPath'],
+				effect: Effect.ALLOW,
+				resources: [
+					`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${this.stage}/liveactivities/ios`,
+				],
 			}),
 		);
 	}

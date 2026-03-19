@@ -236,6 +236,26 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
                 ],
               },
             },
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/notifications/CODE/liveactivities/ios",
+                  ],
+                ],
+              },
+            },
           ],
           "Version": "2012-10-17",
         },
@@ -463,6 +483,26 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
                 "Fn::GetAtt": [
                   "liveactivitiesdynamotable87F336D2",
                   "Arn",
+                ],
+              },
+            },
+            {
+              "Action": "ssm:GetParametersByPath",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/notifications/CODE/liveactivities/ios",
+                  ],
                 ],
               },
             },
