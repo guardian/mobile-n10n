@@ -7,8 +7,9 @@ import com.turo.pushy.apns.auth.AuthenticationToken
 import org.checkerframework.checker.units.qual.A
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
+import com.gu.liveactivities.util.Logging
 
-class Authentication(teamId: String, keyId: String, maybeCertificate: Option[String]) {
+class Authentication(teamId: String, keyId: String, maybeCertificate: Option[String]) extends Logging {
 
   private val authenticationToken : AtomicReference[Option[AuthenticationToken]] = new AtomicReference[Option[AuthenticationToken]](None)
 
@@ -20,7 +21,7 @@ class Authentication(teamId: String, keyId: String, maybeCertificate: Option[Str
   }
 
   private def getSigningKeyFromKeyFile(): ApnsSigningKey = ApnsSigningKey.loadFromPkcs8File(
-    new java.io.File("liveactivities/src/main/resources/AuthKey_N9MYT8RFH4.p8"), teamId, keyId)
+    new java.io.File("resources/AuthKey_N9MYT8RFH4.p8"), teamId, keyId)
 
   private def getSigningKeyFromString(certificate: String): ApnsSigningKey = ApnsSigningKey.loadFromInputStream(
 			new ByteArrayInputStream(certificate.getBytes(StandardCharsets.UTF_8)),

@@ -16,7 +16,7 @@ case class IosConfiguration(
   sendingToProdServer: Boolean = false,
 )
 
-object Configuration {
+object Configuration extends Logging {
 
   private def fetchConfiguration(platform: String): Config = {
     val defaultAppName = s"liveactivities-$platform"
@@ -27,6 +27,7 @@ object Configuration {
           .whoAmI(defaultAppName, DefaultCredentialsProvider.builder().build())
           .getOrElse(DevIdentity(defaultAppName))
     }
+    logger.info(s"Fetching configuration for ${identity}")
     ConfigurationLoader.load(identity) {
       case AwsIdentity(_, _, stage, region) => SSMConfigurationLocation(s"/notifications/$stage/liveactivities/$platform", region)
     }

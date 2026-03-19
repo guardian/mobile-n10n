@@ -13,16 +13,17 @@ import com.turo.pushy.apns.auth.AuthenticationToken
 import play.api.libs.json.Json
 import com.gu.liveactivities.BroadcastFixtures._
 import com.gu.liveactivities.models.BroadcastJsonFormats._
+import com.gu.liveactivities.util.Logging
 
 import java.time.Instant
 import java.util.Date
 import com.gu.liveactivities.models.BroadcastJsonFormats
 
-class BroadcastApiClient(authentication: Authentication, bundleId: String, sendingToProdServer: Boolean) {
+class BroadcastApiClient(authentication: Authentication, bundleId: String, sendingToProdServer: Boolean) extends Logging {
   
   private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build()
 
-  println("HttpClient in BroadcastApiClient is instantiated")
+  logger.info("HttpClient in BroadcastApiClient is instantiated")
 
   private val charSet = StandardCharsets.UTF_8
 
@@ -62,10 +63,8 @@ class BroadcastApiClient(authentication: Authentication, bundleId: String, sendi
   private val endPayload: String = Json.stringify(Json.toJson(broadcastEndBodyFixture)(BroadcastJsonFormats.broadcastEndBodyFormat))
 
   def sendToChannel(channelId: String, expiration: Option[Instant], priority: Option[Int]): Future[String] = {
-    println(s"Broadcasting to channel $channelId")
+    logger.info(s"Broadcasting to channel $channelId")
     val authToken = authentication.getAccessToken()
-    println(s"Generated auth token: $authToken")
-
     val request: HttpRequest = HttpRequest.newBuilder(new URI(serviceEndpoint))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
@@ -81,15 +80,17 @@ class BroadcastApiClient(authentication: Authentication, bundleId: String, sendi
 
     val p = Promise[String]()
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
-      println(s"Received response: $response, error: $err")
+      logger.info(s"Received response: $response, error: $err")
 
       if (err != null) {
+        logger.error("Error occurred while sending broadcast", err)
         p.failure(err)
       } else if (response.statusCode() != 200) {
+        logger.error(s"Failed to send broadcast with status code ${response.statusCode()} and body ${response.body()}")
         p.failure(new RuntimeException(s"Failed to send broadcast with status code ${response.statusCode()} and body ${response.body()}"))
       } else {
         val apnsUniqueId = response.headers().firstValue("apns-unique-id").orElse("not found") // SANDBOX only header for debugging
-        println(s"Received response with status code ${response.statusCode()} and apns-unique-id ${apnsUniqueId}")
+        logger.info(s"Received response with status code ${response.statusCode()} and apns-unique-id ${apnsUniqueId}")
 
         p.success(response.body())
       }
