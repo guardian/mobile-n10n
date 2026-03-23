@@ -4,8 +4,11 @@ import { GuLambdaFunction } from '@guardian/cdk/lib/constructs/lambda';
 import type { App } from 'aws-cdk-lib';
 import { Duration, Tags } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { EventBus, Rule } from 'aws-cdk-lib/aws-events';
+import { SqsQueue } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
 
 export class LiveActivities extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
@@ -61,14 +64,15 @@ export class LiveActivities extends GuStack {
 			}),
 		);
 
-		const broadcastLambda = new GuLambdaFunction(
+		//////////// PA POLLING INFRASTRUCTURE //////////////
+		const liveGamesPaPollingLambda = new GuLambdaFunction(
 			this,
-			`${app}-broadcast-lambda`,
+			`${app}-live-games-pa-polling-lambda`,
 			{
 				app: app,
-				description: 'Broadcasts messages for live activities',
-				handler: 'com.gu.liveactivities.BroadcastLambda::handleRequest',
-				functionName: `${app}-broadcast-${stage}`,
+				description:
+				handler: 'com.gu.liveactivities.PollingLiveGamesDataLambda::handleRequest', // TODO
+				functionName: `${app}-live-games-pa-polling-${stage}`,
 				fileName: `${app}.jar`,
 				runtime: Runtime.JAVA_11,
 				memorySize: 1024,
@@ -77,26 +81,42 @@ export class LiveActivities extends GuStack {
 					Stack: stack,
 					Stage: stage,
 					App: app,
-					DYNAMODB_TABLE_NAME: dynamoTableName,
 				},
 			},
 		);
 
-		broadcastLambda.addToRolePolicy(
-			new PolicyStatement({
-				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
-				effect: Effect.ALLOW,
-				resources: [dynamoTable.tableArn],
-			}),
+    const eventBus = new EventBus(this, 'Events', {
+			eventBusName: `${app}-eventbus-${scope.stage}`,
+			description: `${scope.stage} event routing for live activities`,
+		});
+
+    liveGamesPaPollingLambda.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['events:PutEvents'],
+        resources: [eventBus.eventBusArn],
+      })
+    );
+
+		// Development SQS to capture and inspect events from PA polling during development
+		const liveGameTestingQueue = new Queue(
+			this,
+			`${app}-football-live-games-${scope.stage}`,
+			{
+				queueName: `${app}-football-live-games-${scope.stage}`,
+				retentionPeriod: Duration.days(7),
+			},
 		);
-		broadcastLambda.addToRolePolicy(
-			new PolicyStatement({
-				actions: ['ssm:GetParametersByPath'],
-				effect: Effect.ALLOW,
-				resources: [
-					`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${this.stage}/liveactivities/ios`,
-				],
-			}),
-		);
-	}
+
+		new Rule(this, 'liveGameEventsTargeting', {
+			eventBus: eventBus,
+			description: `Deliver live game events from PA polling lambda ${scope.stage} to liveGameTestingQueue`,
+			eventPattern: {
+				source: ['pa-live-game-updates'],
+			},
+			enabled: false, // only enable if we want to inspect events in the testDevQueue
+			targets: [new SqsQueue(liveGameTestingQueue)],
+		})
+
+
+  }
 }
