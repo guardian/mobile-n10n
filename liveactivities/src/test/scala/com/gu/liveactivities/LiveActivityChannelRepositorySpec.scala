@@ -6,6 +6,9 @@ import org.specs2.mock.Mockito
 import tracking.Repository.RepositoryResult
 import tracking.RepositoryError
 import scala.jdk.CollectionConverters._
+import com.gu.liveactivities.service.LiveActivityChannelRepository
+import com.gu.liveactivities.models.FootballLiveActivity
+import com.gu.liveactivities.models.LiveActivityMapping
 
 class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
     extends DynamodbSpecification
