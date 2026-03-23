@@ -70,8 +70,9 @@ export class LiveActivities extends GuStack {
 			`${app}-live-games-pa-polling-lambda`,
 			{
 				app: app,
-				description:
-				handler: 'com.gu.liveactivities.PollingLiveGamesDataLambda::handleRequest', // TODO
+				description: 'Polls PA for live game updates and routes to event bus',
+				handler:
+					'com.gu.liveactivities.PollingLiveGamesDataLambda::handleRequest',
 				functionName: `${app}-live-games-pa-polling-${stage}`,
 				fileName: `${app}.jar`,
 				runtime: Runtime.JAVA_11,
@@ -85,17 +86,17 @@ export class LiveActivities extends GuStack {
 			},
 		);
 
-    const eventBus = new EventBus(this, 'Events', {
+		const eventBus = new EventBus(this, 'Events', {
 			eventBusName: `${app}-eventbus-${scope.stage}`,
 			description: `${scope.stage} event routing for live activities`,
 		});
 
-    liveGamesPaPollingLambda.addToRolePolicy(
-      new PolicyStatement({
-        actions: ['events:PutEvents'],
-        resources: [eventBus.eventBusArn],
-      })
-    );
+		liveGamesPaPollingLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['events:PutEvents'],
+				resources: [eventBus.eventBusArn],
+			}),
+		);
 
 		// Development SQS to capture and inspect events from PA polling during development
 		const liveGameTestingQueue = new Queue(
@@ -113,10 +114,8 @@ export class LiveActivities extends GuStack {
 			eventPattern: {
 				source: ['pa-live-game-updates'],
 			},
-			enabled: false, // only enable if we want to inspect events in the testDevQueue
+			enabled: false, // only enable if we want to inspect events in the development queue
 			targets: [new SqsQueue(liveGameTestingQueue)],
-		})
-
-
-  }
+		});
+	}
 }
