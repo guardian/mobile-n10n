@@ -1,20 +1,24 @@
 package com.gu.liveactivities
 
-import com.amazonaws.services.lambda.runtime.Context
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient
-import software.amazon.awssdk.services.eventbridge.model.{
-  PutEventsRequest,
-  PutEventsRequestEntry
-}
+import software.amazon.awssdk.services.eventbridge.model.{PutEventsRequest, PutEventsRequestEntry}
 
 import scala.util.Try
+
+class PollingLiveGamesDataLambda extends RequestHandler[java.util.Map[String, Any], Unit] {
+
+  override def handleRequest(input: java.util.Map[String, Any], context: Context): Unit =
+    PollingLiveGamesDataLambda.handleRequest()
+}
+
 
 object PollingLiveGamesDataLambda {
 
   private val eventBusName = "liveactivities-eventbus-CODE" // TODO - move to config
   private val eventBridgeClient = EventBridgeClient.builder().build() // credentials? is cdk policy roll enough?
 
-  def handleRequest(context: Context): Unit = {
+  def handleRequest(): Unit = {
 
     // TODO
     // schedule lambda to run every 15seconds via cdk.
