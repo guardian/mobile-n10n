@@ -10,7 +10,7 @@ import tracking.RepositoryError
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
-import com.gu.liveactivities.models.LiveActivityMapping
+import com.gu.liveactivities.models.{LiveActivityData, LiveActivityMapping, RepositoryException, LiveActivityDataException}
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import com.gu.liveactivities.util.Logging
@@ -18,28 +18,27 @@ import com.gu.liveactivities.util.FutureUtils._
 import scala.util.Failure
 import com.gu.liveactivities.util.DynamoJsonConversions.toAttributeMap
 import com.gu.liveactivities.util.DynamoJsonConversions.fromAttributeMap
-
-class ChannelMappingDataException(id: String, message: String) extends Exception(s"Channel mapping data error for id $id: $message")
-
-class RepositoryException(cause: Throwable, message: String) extends Exception(message, cause)
+import com.gu.liveactivities
 
 trait ChannelMappingsRepository {
 
-  type Result[T] = Either[Exception, T]
+  def containMapping(id: String): Future[Boolean]
 
-  def containMapping(id: String): Future[Result[Boolean]] 
+  def createMapping(		
+    id: String,
+		channelId: String,
+		eventData: Option[LiveActivityData],
+    competitionId: Option[String]): Future[Unit]
 
-  def createMapping(mapping: LiveActivityMapping): Future[Result[Unit]]
-
-  def getMappingById(id: String): Future[Result[LiveActivityMapping]]
+  def getMappingById(id: String): Future[LiveActivityMapping]
   
-  def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Result[Unit]]
+  def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit]
 
-  def updateMappingLiveEvent(id: String, isLive: Boolean): Future[Result[Unit]]
+  def updateMappingLiveEvent(id: String, isLive: Boolean): Future[Unit]
 
-  def updateMappingLastEvent(id: String, lastEventId: String, lastEventUpdate: ZonedDateTime): Future[Result[Unit]]
+  def updateMappingLastEvent(id: String, lastEventId: String, lastEventUpdate: ZonedDateTime): Future[Unit]
   
-  def deleteMappingById(id: String): Future[Result[Unit]]
+  def deleteMappingById(id: String): Future[Unit]
 }
 
 class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: String)(
@@ -59,7 +58,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     lastModifiedAtKeyName -> AttributeValue.builder().s(t.format(iso8601formatter)).build(),
   )
 
-  def containMapping(id: String): Future[Result[Boolean]] = {
+  def containMapping(id: String): Future[Boolean] = {
     val keyToGet = Map(idField -> AttributeValue.builder().s(id).build())
     val request = GetItemRequest
       .builder()
@@ -69,21 +68,35 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     client
       .getItem(request)
       .toScala
-      .map(resp => Right(resp.hasItem()))
-      .recover { case ex: Exception =>
-        logger.error("Error checking if live activity mapping exists", ex)
-        Left(new RepositoryException(ex, "Error checking if live activity mapping exists"))
-      }
+      .transform(
+        resp => resp.hasItem(),
+        ex => {
+          logger.error("Error checking if live activity mapping exists", ex)
+          throw new RepositoryException(ex, "Error checking if live activity mapping exists")
+        }
+      )
   }
 
   override def createMapping(
-      mapping: LiveActivityMapping
-  ): Future[Result[Unit]] = {
+		id: String,
+		channelId: String,
+		eventData: Option[LiveActivityData],
+    competitionId: Option[String],
+  ): Future[Unit] = {
     val createdAt = ZonedDateTime.now()
+    val newItem = new LiveActivityMapping(
+      id = id, 
+      channelId = channelId, 
+      isChannelActive = true, 
+      isEventLive = false, 
+      eventData = eventData, 
+      competitionId = competitionId,
+      lastEventId = None,
+      lastEventUpdate = None)
     val putItemRequest =
       PutItemRequest.builder()
         .tableName(tableName)
-        .item((toAttributeMap(mapping) ++ createdAtAttr(createdAt) ++ lastModifiedAtAttr(
+        .item((toAttributeMap(newItem) ++ createdAtAttr(createdAt) ++ lastModifiedAtAttr(
           createdAt,
         )).asJava)
         .conditionExpression(s"attribute_not_exists($idField)")
@@ -91,11 +104,10 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     client
       .putItem(putItemRequest)
       .toScala
-      .map(_ => Right(()))
-      .recover { case ex: Exception =>
+      .transform(_ => (), ex => {
         logger.error("Error saving live activity mapping", ex)
-        Left(new RepositoryException(ex, "Error saving live activity mapping"))
-      }
+        throw new RepositoryException(ex, "Error saving live activity mapping")
+      })
   }
 
   private def updateMappingById(
@@ -104,7 +116,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       isEventLive: Option[Boolean] = None, 
       lastEventId: Option[String] = None, 
       lastEventUpdate: Option[ZonedDateTime] = None
-  ): Future[Result[Unit]] = {
+  ): Future[Unit] = {
     val itemKey = Map(idField-> AttributeValue.fromS(id))
     val modifiedAt = ZonedDateTime.now()
     val updateValues = Map(
@@ -152,28 +164,27 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       client
       .updateItem(request)
       .toScala
-      .map(_ => Right(()))
-      .recover { case ex: Exception =>
+      .transform(_ => (), ex => {
         logger.error("Error updating live activity mapping", ex)
-        Left(new RepositoryException(ex, "Error updating live activity mapping"))
-      }
+        throw new RepositoryException(ex, "Error updating live activity mapping")
+      })
   }
 
-  override def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Result[Unit]] = {
+  override def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit] = {
     updateMappingById(id, isChannelActive = Some(isActive))
   }
 
-  override def updateMappingLiveEvent(id: String, isLive: Boolean): Future[Result[Unit]] = {
+  override def updateMappingLiveEvent(id: String, isLive: Boolean): Future[Unit] = {
     updateMappingById(id, isEventLive = Some(isLive))
   }
 
-  override def updateMappingLastEvent(id: String, lastEventId: String, lastEventUpdate: ZonedDateTime): Future[Result[Unit]] = {
+  override def updateMappingLastEvent(id: String, lastEventId: String, lastEventUpdate: ZonedDateTime): Future[Unit] = {
     updateMappingById(id, lastEventId = Some(lastEventId), lastEventUpdate = Some(lastEventUpdate))
   }
 
   override def getMappingById(
       id: String
-  ): Future[Result[LiveActivityMapping]] = {
+  ): Future[LiveActivityMapping] = {
     val getItemRequest = GetItemRequest.builder()
       .tableName(tableName)
       .key(Map(idField -> AttributeValue.fromS(id)).asJava)
@@ -182,28 +193,28 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     client
       .getItem(getItemRequest)
       .toScala
-      .map { result =>
+      .flatMap { result =>
         if (result.hasItem()) {
           val parsed = fromAttributeMap[LiveActivityMapping](result.item().asScala.toMap)
           parsed match {
-            case JsSuccess(mapping, _) => Right(mapping)
+            case JsSuccess(mapping, _) => Future.successful(mapping)
             case JsError(errors) =>
               logger.error(s"Error parsing live activity mapping: $errors")
-              Left(new ChannelMappingDataException(id, "Unable to parse live activity mapping"))
+              Future.failed(new LiveActivityDataException(id, "Unable to parse live activity mapping"))
           } 
         } else {
-          Left(new ChannelMappingDataException(id, "Live Activity mapping not found"))
+          Future.failed(new LiveActivityDataException(id, "Live Activity mapping not found"))
         }
       }
-      .recover({ case ex: Exception =>
+      .transform(identity, ex => {
         logger.error("Error getting live activity mapping", ex)
-        Left(new RepositoryException(ex, "Error getting live activity mapping"))
+        throw new RepositoryException(ex, "Error getting live activity mapping")
       })
   }
 
   override def deleteMappingById(
       id: String
-  ): Future[Result[Unit]] = {
+  ): Future[Unit] = {
     val deleteItemRequest = DeleteItemRequest.builder()
       .tableName(tableName)
       .key(Map(idField -> AttributeValue.fromS(id)).asJava)
@@ -211,10 +222,9 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     client
       .deleteItem(deleteItemRequest)
       .toScala
-      .map(_ => Right(()))
-      .recover({ case ex: Exception =>
+      .transform(_ => (), ex => {
         logger.error("Error deleting live activity mapping", ex)
-        Left(new RepositoryException(ex, "Error deleting live activity mapping"))
+        throw new RepositoryException(ex, "Error deleting live activity mapping")
       })
   }
 
