@@ -87,8 +87,8 @@ export class LiveActivities extends GuStack {
 		);
 
 		const eventBus = new EventBus(this, 'Events', {
-			eventBusName: `${app}-eventbus-${scope.stage}`,
-			description: `${scope.stage} event routing for live activities`,
+			eventBusName: `${app}-eventbus-${stage}`,
+			description: `${stage} event routing for live activities`,
 		});
 
 		liveGamesPaPollingLambda.addToRolePolicy(
@@ -101,16 +101,16 @@ export class LiveActivities extends GuStack {
 		// Development SQS to capture and inspect events from PA polling during development
 		const liveGameTestingQueue = new Queue(
 			this,
-			`${app}-football-live-games-${scope.stage}`,
+			`${app}-football-live-games-${stage}`,
 			{
-				queueName: `${app}-football-live-games-${scope.stage}`,
+				queueName: `${app}-football-live-games-${stage}`,
 				retentionPeriod: Duration.days(7),
 			},
 		);
 
 		new Rule(this, 'liveGameEventsTargeting', {
 			eventBus: eventBus,
-			description: `Deliver live game events from PA polling lambda ${scope.stage} to liveGameTestingQueue`,
+			description: `Deliver live game events from PA polling lambda ${stage} to liveGameTestingQueue`,
 			eventPattern: {
 				source: ['pa-live-game-updates'],
 			},
