@@ -1,6 +1,7 @@
 package com.gu.liveactivities.models
 
 import play.api.libs.json._
+import java.time.ZonedDateTime
 
 sealed trait LiveActivityData
 
@@ -35,7 +36,12 @@ object LiveActivityData {
 case class LiveActivityMapping(
 		id: String,
 		channelId: String,
-		data: Option[LiveActivityData]
+    isChannelActive: Boolean,
+    isEventLive: Boolean,
+		eventData: Option[LiveActivityData],
+    competitionId: Option[String],
+    lastEventId: Option[String],
+    lastEventUpdate: Option[ZonedDateTime]
 )
 object LiveActivityMapping {
 	implicit val format: OFormat[LiveActivityMapping] =
