@@ -2,21 +2,31 @@ package com.gu.liveactivities
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient
-import software.amazon.awssdk.services.eventbridge.model.{PutEventsRequest, PutEventsRequestEntry}
+import software.amazon.awssdk.services.eventbridge.model.{
+  PutEventsRequest,
+  PutEventsRequestEntry
+}
 
 import scala.util.Try
 
-class PollingLiveGamesDataLambda extends RequestHandler[java.util.Map[String, Any], Unit] {
+class PollingLiveGamesDataLambda
+    extends RequestHandler[java.util.Map[String, Any], Unit] {
 
-  override def handleRequest(input: java.util.Map[String, Any], context: Context): Unit =
+  override def handleRequest(
+      input: java.util.Map[String, Any],
+      context: Context
+  ): Unit =
     PollingLiveGamesDataLambda.handleRequest()
 }
 
-
 object PollingLiveGamesDataLambda {
 
-  private val eventBusName = "liveactivities-eventbus-CODE" // TODO - move to config
-  private val eventBridgeClient = EventBridgeClient.builder().build() // credentials? is cdk policy roll enough?
+  private val eventBusName =
+    "liveactivities-eventbus-CODE" // TODO - move to config
+  private val eventBridgeClient =
+    EventBridgeClient
+      .builder()
+      .build() // credentials? is cdk policy roll enough?
 
   def handleRequest(): Unit = {
 
@@ -31,6 +41,7 @@ object PollingLiveGamesDataLambda {
     // - send event to eventbus with match id and channel id.
 
     // iteration:  tbc diff pa events to check if we need to send event or not??
+    println("running PollingLiveGamesDataLambda -------------------")
 
     val result = Try {
 
