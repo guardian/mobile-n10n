@@ -14,7 +14,7 @@ export class LiveActivities extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
 		super(scope, id, props);
 
-		const { stack, stage } = this;
+		const { stack, stage, region, account } = this;
 		const app = 'liveactivities';
 
 		const dynamoTableName = `${stack}-liveactivities-${stage}`;
@@ -59,7 +59,45 @@ export class LiveActivities extends GuStack {
 				actions: ['ssm:GetParametersByPath'],
 				effect: Effect.ALLOW,
 				resources: [
-					`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${this.stage}/liveactivities/ios`,
+					`arn:aws:ssm:${region}:${account}:parameter/notifications/${stage}/liveactivities/ios`,
+				],
+			}),
+		);
+
+		const broadcastLambda = new GuLambdaFunction(
+			this,
+			`${app}-broadcast-lambda`,
+			{
+				app: app,
+				description: 'Broadcasts messages for live activities',
+				handler: 'com.gu.liveactivities.BroadcastLambda::handleRequest',
+				functionName: `${app}-broadcast-${stage}`,
+				fileName: `${app}.jar`,
+				runtime: Runtime.JAVA_11,
+				memorySize: 1024,
+				timeout: Duration.seconds(120),
+				environment: {
+					Stack: stack,
+					Stage: stage,
+					App: app,
+					DYNAMODB_TABLE_NAME: dynamoTableName,
+				},
+			},
+		);
+
+		broadcastLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
+				effect: Effect.ALLOW,
+				resources: [dynamoTable.tableArn],
+			}),
+		);
+		broadcastLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['ssm:GetParametersByPath'],
+				effect: Effect.ALLOW,
+				resources: [
+					`arn:aws:ssm:${region}:${account}:parameter/notifications/${stage}/liveactivities/ios`,
 				],
 			}),
 		);
