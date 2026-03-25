@@ -39,6 +39,7 @@ class LiveActivityPusher extends Logging {
 
   def pushToEventbus(matchDataList: List[MatchDataWithArticle]) = {
 
+    println("Try to push events to eventbus")
     matchDataList.map(matchData => {
 
       val result = Try {
