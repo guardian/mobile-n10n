@@ -50,9 +50,6 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
           "Ref": "EventsD32975C2",
         },
         "EventPattern": {
-          "detail-type": [
-            "football-match-events-with-articleId",
-          ],
           "source": [
             "football-lambda",
           ],
