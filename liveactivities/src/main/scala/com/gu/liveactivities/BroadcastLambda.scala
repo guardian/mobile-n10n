@@ -21,7 +21,7 @@ import scala.concurrent.Future
 import com.gu.liveactivities.models.LiveActivityInvalidStateException
 
 // TODO - we should get the channel ID by looking up the match ID in the datastore
-case class BroadcastRequest(matchId: String, channelId: String, payload: String)
+case class BroadcastRequest(matchId: String, payload: String)
 
 object BroadcastRequest {
 	implicit val jf: Format[BroadcastRequest] = Json.format[BroadcastRequest]

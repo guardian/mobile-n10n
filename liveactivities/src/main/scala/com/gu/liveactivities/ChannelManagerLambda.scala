@@ -23,7 +23,7 @@ import scala.concurrent.Future
 import com.gu.liveactivities.models.LiveActivityInvalidStateException
 
 // TODO - we should get the channel ID by looking up the match ID in the datastore
-case class ChannelRequest(matchId: String, channelId: String, toCreate: Boolean)
+case class ChannelRequest(matchId: String, competitionId: Option[String], eventData: Option[LiveActivityData], toCreate: Boolean)
 
 object ChannelRequest {
   implicit val jf: Format[ChannelRequest] = Json.format[ChannelRequest]
@@ -33,7 +33,7 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
 
   val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer)
 
-  def processCreateChannelRequest(matchId: String, eventData: Option[LiveActivityData], competitionId: Option[String]): Future[String] = {
+  def processCreateChannelRequest(matchId: String, competitionId: Option[String], eventData: Option[LiveActivityData]): Future[String] = {
     logger.info(s"Received request to create channel for match ID ${matchId}")
     return for {
       mappingExists <- repository.containMapping(matchId)
@@ -76,7 +76,7 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
   def processRequest(request: ChannelRequest, context: Context): Unit = {
     val channelFuture = 
       if (request.toCreate)
-        processCreateChannelRequest(request.matchId, None, None)
+        processCreateChannelRequest(request.matchId, request.competitionId, request.eventData)
       else
         processCloseChannelRequest(request.matchId)
 
