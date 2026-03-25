@@ -6,7 +6,7 @@ deployments:
     type: aws-lambda
     parameters:
       bucketSsmLookup: true
-      functionNames: [liveactivities-channel-manager-, liveactivities-broadcast-, liveactivities-live-games-pa-polling-]
+      functionNames: [liveactivities-channel-manager-, liveactivities-broadcast-]
       fileName: liveactivities.jar
       prefixStack: false
     dependencies: [mobile-notifications-liveactivities-cfn]

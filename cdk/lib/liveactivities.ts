@@ -102,39 +102,12 @@ export class LiveActivities extends GuStack {
 			}),
 		);
 
-		//////////// PA POLLING INFRASTRUCTURE //////////////
-		const liveGamesPaPollingLambda = new GuLambdaFunction(
-			this,
-			`${app}-live-games-pa-polling-lambda`,
-			{
-				app: app,
-				description: 'Polls PA for live game updates and routes to event bus',
-				handler:
-					'com.gu.liveactivities.PollingLiveGamesDataLambda::handleRequest',
-				functionName: `${app}-live-games-pa-polling-${stage}`,
-				fileName: `${app}.jar`,
-				runtime: Runtime.JAVA_11,
-				memorySize: 1024,
-				timeout: Duration.seconds(120),
-				environment: {
-					Stack: stack,
-					Stage: stage,
-					App: app,
-				},
-			},
-		);
+		//////////// EVENTBUS INFRASTRUCTURE //////////////
 
 		const eventBus = new EventBus(this, 'Events', {
 			eventBusName: `${app}-eventbus-${stage}`,
 			description: `${stage} event routing for live activities`,
 		});
-
-		liveGamesPaPollingLambda.addToRolePolicy(
-			new PolicyStatement({
-				actions: ['events:PutEvents'],
-				resources: [eventBus.eventBusArn],
-			}),
-		);
 
 		// Development SQS to capture and inspect events from PA polling during development
 		const liveGameTestingQueue = new Queue(
@@ -148,9 +121,9 @@ export class LiveActivities extends GuStack {
 
 		new Rule(this, 'liveGameEventsTargeting', {
 			eventBus: eventBus,
-			description: `Deliver live game events from PA polling lambda ${stage} to liveGameTestingQueue`,
+			description: `Deliver live match events in ${stage} to liveGameTestingQueue`,
 			eventPattern: {
-				source: ['pa-live-game-updates'],
+				source: ['pa-live-updates'],
 			},
 			enabled: false, // only enable if we want to inspect events in the development queue
 			targets: [new SqsQueue(liveGameTestingQueue)],
