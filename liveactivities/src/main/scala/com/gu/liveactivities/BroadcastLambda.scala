@@ -31,8 +31,6 @@ case class BroadcastRequest(
     eventTime: Option[ZonedDateTime])
 
 object BroadcastRequest {
-	implicit val jf: Format[BroadcastRequest] = Json.format[BroadcastRequest]
-
   implicit val reads: Reads[BroadcastRequest] = (
     (JsPath \ "matchId").read[String] and
     (JsPath \ "payload").read[String] and
