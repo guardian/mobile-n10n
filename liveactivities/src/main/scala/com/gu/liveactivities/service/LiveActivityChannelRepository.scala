@@ -37,7 +37,7 @@ trait ChannelMappingsRepository {
 
   def updateMappingLiveEvent(id: String, isLive: Boolean): Future[Unit]
 
-  def updateMappingLastEvent(id: String, lastEventId: String, lastEventUpdate: ZonedDateTime): Future[Unit]
+  def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
   
   def deleteMappingById(id: String): Future[Unit]
 }
@@ -117,57 +117,62 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       lastEventId: Option[String] = None, 
       lastEventAt: Option[ZonedDateTime] = None
   ): Future[Unit] = {
-    val itemKey = Map(idField-> AttributeValue.fromS(id))
-    val modifiedAt = ZonedDateTime.now()
-    val updateValues = Map(
-      "isChannelActive" -> isChannelActive.map {v =>
-        AttributeValueUpdate
-          .builder()
-          .action(AttributeAction.PUT)
-          .value(AttributeValue.fromBool(v))
+    if (Seq(isChannelActive, isEventLive, lastEventId, lastEventAt).forall(_.isEmpty)) {
+      logger.warn(s"No fields to update for live activity mapping with id $id")
+      Future.successful(())
+    } else {
+      val itemKey = Map(idField-> AttributeValue.fromS(id))
+      val modifiedAt = ZonedDateTime.now()
+      val updateValues = Map(
+        "isChannelActive" -> isChannelActive.map {v =>
+          AttributeValueUpdate
+            .builder()
+            .action(AttributeAction.PUT)
+            .value(AttributeValue.fromBool(v))
+            .build()
+        },
+        "isEventLive" -> isEventLive.map {v =>
+          AttributeValueUpdate
+            .builder()
+            .action(AttributeAction.PUT)
+            .value(AttributeValue.fromBool(v))
+            .build()
+        },
+        "lastEventId" -> lastEventId.map { v =>
+          AttributeValueUpdate
+            .builder()
+            .action(AttributeAction.PUT)
+            .value(AttributeValue.fromS(v))
+            .build()
+        },
+        "lastEventAt" -> lastEventAt.map { v =>
+          AttributeValueUpdate
+            .builder()          
+            .action(AttributeAction.PUT)
+            .value(AttributeValue.fromS(dateTimeToString(v)))
+            .build()
+        },
+        lastModifiedAtKeyName -> Some(
+          AttributeValueUpdate
+            .builder()
+            .value(AttributeValue.fromS(dateTimeToString(modifiedAt)))
+            .action(AttributeAction.PUT)
+            .build()),
+        ).collect { case (k, Some(v)) => k -> v }
+      val request =
+        UpdateItemRequest.builder()
+          .tableName(tableName)
+          .key(itemKey.asJava)
+          .attributeUpdates(updateValues.asJava)
           .build()
-      },
-      "isEventLive" -> isEventLive.map {v =>
-        AttributeValueUpdate
-          .builder()
-          .action(AttributeAction.PUT)
-          .value(AttributeValue.fromBool(v))
-          .build()
-      },
-      "lastEventId" -> lastEventId.map { v =>
-        AttributeValueUpdate
-          .builder()
-          .action(AttributeAction.PUT)
-          .value(AttributeValue.fromS(v))
-          .build()
-      },
-      "lastEventAt" -> lastEventAt.map { v =>
-        AttributeValueUpdate
-          .builder()          
-          .action(AttributeAction.PUT)
-          .value(AttributeValue.fromS(dateTimeToString(v)))
-          .build()
-      },
-      lastModifiedAtKeyName -> Some(
-        AttributeValueUpdate
-          .builder()
-          .value(AttributeValue.fromS(dateTimeToString(modifiedAt)))
-          .action(AttributeAction.PUT)
-          .build()),
-      ).collect { case (k, Some(v)) => k -> v }
-    val request =
-      UpdateItemRequest.builder()
-        .tableName(tableName)
-        .key(itemKey.asJava)
-        .attributeUpdates(updateValues.asJava)
-        .build()
-      client
-      .updateItem(request)
-      .toScala
-      .transform(_ => (), ex => {
-        logger.error("Error updating live activity mapping", ex)
-        throw new RepositoryException(ex, "Error updating live activity mapping")
-      })
+        client
+        .updateItem(request)
+        .toScala
+        .transform(_ => (), ex => {
+          logger.error("Error updating live activity mapping", ex)
+          throw new RepositoryException(ex, "Error updating live activity mapping")
+        })
+    }
   }
 
   override def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit] = {
@@ -178,8 +183,8 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     updateMappingById(id, isEventLive = Some(isLive))
   }
 
-  override def updateMappingLastEvent(id: String, lastEventId: String, lastEventAt: ZonedDateTime): Future[Unit] = {
-    updateMappingById(id, lastEventId = Some(lastEventId), lastEventAt = Some(lastEventAt))
+  override def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventAt: Option[ZonedDateTime]): Future[Unit] = {
+    updateMappingById(id, lastEventId = lastEventId, lastEventAt = lastEventAt)
   }
 
   override def getMappingById(

@@ -85,6 +85,8 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       // TODO - determine expiry time and priority
       _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None)
       _ = logger.info(s"Broadcast sent successfully for match ID ${request.matchId} with channel ID ${mapping.channelId}")
+      _ <- repository.updateMappingLastEvent(request.matchId, request.eventId, request.eventTime)
+      _ = logger.info(s"Record updated successfully for match ID ${request.matchId}")
     } yield mapping.channelId
 
     // TODO - the timeout value
