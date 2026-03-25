@@ -39,7 +39,7 @@ class LiveActivityPusher extends Logging {
 
   def pushToEventbus(matchDataList: List[MatchDataWithArticle]) = {
 
-    println("Try to push events to eventbus")
+    println("Try to push events to eventbus, number of events: " + matchDataList.size)
     matchDataList.map(matchData => {
 
       val result = Try {
@@ -48,7 +48,8 @@ class LiveActivityPusher extends Logging {
           .builder()
           .source("football-lambda")
           .detailType("football-match-events-with-articleId")
-          .detail(Json.toJson(matchData).toString())
+          .detail("""{"message":"Hello World"}""")
+//          .detail(Json.toJson(matchData).toString())
           .eventBusName(eventBusName)
           .build()
 
