@@ -1,20 +1,19 @@
 package com.gu.liveactivities
 
-import aws.AsyncDynamo
-import com.amazonaws.auth.{
-  AWSCredentials,
-  AWSCredentialsProvider,
-  AWSCredentialsProviderChain
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
+import software.amazon.awssdk.auth.credentials.{
+	AwsCredentialsProviderChain,
+	ProfileCredentialsProvider,
+	DefaultCredentialsProvider,
 }
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
-import com.amazonaws.services.dynamodbv2.model.{
-  CreateTableRequest,
-  DeleteTableRequest
-}
+import software.amazon.awssdk.regions.Region.EU_WEST_1
 import org.specs2.mutable.Specification
 import org.specs2.specification.{BeforeAfterAll, Scope}
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.services.dynamodb.model._
+import java.net.URI
+import software.amazon.awssdk.regions.Region
 
 trait DynamodbSpecification extends Specification with BeforeAfterAll {
 
@@ -27,32 +26,21 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll {
   val TestEndpoint = "http://localhost:8002"
 
   override def beforeAll(): Unit = {
-    awsClient.createTable(createTableRequest)
+    awsClient.createTable(createTableRequest).join()
   }
 
   override def afterAll(): Unit = {
-    awsClient.deleteTable(new DeleteTableRequest(TableName))
+    awsClient.deleteTable(DeleteTableRequest.builder().tableName(TableName).build()).join()
   }
 
-  private def awsClient = {
-    val chain = new AWSCredentialsProviderChain(new AWSCredentialsProvider {
-      override def refresh(): Unit = {}
-
-      override def getCredentials: AWSCredentials = new AWSCredentials {
-        override def getAWSAccessKeyId: String = "testid"
-        override def getAWSSecretKey: String = "testkey"
-      }
-    })
-
-    val client = AmazonDynamoDBAsyncClientBuilder.standard()
-      .withCredentials(chain)
-      .withEndpointConfiguration( new EndpointConfiguration(TestEndpoint, Regions.EU_WEST_1.getName) )
-      .build
-
-    client
-  }
+  private def awsClient = DynamoDbAsyncClient
+      .builder()
+      .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("TEST", "TEST")))
+      .region(Region.EU_WEST_1)
+      .endpointOverride(URI.create(TestEndpoint))
+      .build()
 
   trait AsyncDynamoScope extends Scope {
-    val asyncClient = new AsyncDynamo(awsClient)
+    val asyncClient = awsClient
   }
 }
