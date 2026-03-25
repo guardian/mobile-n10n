@@ -28,7 +28,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       repository.createMapping(
         footballMapping.id, 
         footballMapping.channelId, 
-        footballMapping.eventData, 
+        footballMapping.data, 
         footballMapping.competitionId).flatMap { _ =>
         repository.getMappingById(footballMapping.id)
       } must beEqualTo(footballMapping).await
@@ -39,11 +39,11 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       val footballMapping = createFootballMappingWithId("football-0004")
       repository.createMapping(footballMapping.id, 
         footballMapping.channelId, 
-        footballMapping.eventData, 
+        footballMapping.data, 
         footballMapping.competitionId).flatMap { _ =>
         repository.createMapping(footballMapping.id, 
           footballMapping.channelId, 
-          footballMapping.eventData, 
+          footballMapping.data, 
           footballMapping.competitionId)
       } must throwA[RepositoryException].await
     }
@@ -54,7 +54,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       repository.createMapping(
         footballMapping.id, 
         footballMapping.channelId, 
-        footballMapping.eventData, 
+        footballMapping.data, 
         footballMapping.competitionId).flatMap { _ =>
         repository.deleteMappingById(footballMapping.id)
       } must beEqualTo(()).await
@@ -66,7 +66,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       repository.createMapping(
         footballMapping.id, 
         footballMapping.channelId, 
-        footballMapping.eventData, 
+        footballMapping.data, 
         footballMapping.competitionId).flatMap { _ =>
         repository.getMappingById(footballMapping.id)
       } must beEqualTo(footballMapping).await
@@ -89,10 +89,10 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       channelId = "test-channel-id",
       isChannelActive = true,
       isEventLive = true,     
-      eventData = Some(footballData),
+      data = Some(footballData),
       competitionId = Some("test-competition-id"),
       lastEventId = None,
-      lastEventUpdate = None,
+      lastEventAt = None,
     )
 
     def createFootballMappingWithId(id: String): LiveActivityMapping = {

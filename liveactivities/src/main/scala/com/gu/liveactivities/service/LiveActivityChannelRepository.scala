@@ -19,6 +19,7 @@ import scala.util.Failure
 import com.gu.liveactivities.util.DynamoJsonConversions.toAttributeMap
 import com.gu.liveactivities.util.DynamoJsonConversions.fromAttributeMap
 import com.gu.liveactivities
+import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromString, dateTimeToString}
 
 trait ChannelMappingsRepository {
 
@@ -48,14 +49,13 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   private val idField = "id"
   private val createdAtKeyName = "createdAt"
   private val lastModifiedAtKeyName = "lastModifiedAt"
-  private val iso8601formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
 
   def createdAtAttr(t: ZonedDateTime) = Map(
-    createdAtKeyName -> AttributeValue.builder().s(t.format(iso8601formatter)).build(),
+    createdAtKeyName -> AttributeValue.builder().s(dateTimeToString(t)).build(),
   )
 
   def lastModifiedAtAttr(t: ZonedDateTime) = Map(
-    lastModifiedAtKeyName -> AttributeValue.builder().s(t.format(iso8601formatter)).build(),
+    lastModifiedAtKeyName -> AttributeValue.builder().s(dateTimeToString(t)).build(),
   )
 
   def containMapping(id: String): Future[Boolean] = {
@@ -89,10 +89,10 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       channelId = channelId, 
       isChannelActive = true, 
       isEventLive = true, 
-      eventData = eventData, 
+      data = eventData, 
       competitionId = competitionId,
       lastEventId = None,
-      lastEventUpdate = None)
+      lastEventAt = None)
     val putItemRequest =
       PutItemRequest.builder()
         .tableName(tableName)
@@ -115,7 +115,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       isChannelActive: Option[Boolean] = None, 
       isEventLive: Option[Boolean] = None, 
       lastEventId: Option[String] = None, 
-      lastEventUpdate: Option[ZonedDateTime] = None
+      lastEventAt: Option[ZonedDateTime] = None
   ): Future[Unit] = {
     val itemKey = Map(idField-> AttributeValue.fromS(id))
     val modifiedAt = ZonedDateTime.now()
@@ -141,17 +141,17 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
           .value(AttributeValue.fromS(v))
           .build()
       },
-      "lastEventUpdate" -> lastEventUpdate.map { v =>
+      "lastEventAt" -> lastEventAt.map { v =>
         AttributeValueUpdate
           .builder()          
           .action(AttributeAction.PUT)
-          .value(AttributeValue.fromS(v.format(iso8601formatter)))
+          .value(AttributeValue.fromS(dateTimeToString(v)))
           .build()
       },
       lastModifiedAtKeyName -> Some(
         AttributeValueUpdate
           .builder()
-          .value(AttributeValue.fromS(modifiedAt.format(iso8601formatter)))
+          .value(AttributeValue.fromS(dateTimeToString(modifiedAt)))
           .action(AttributeAction.PUT)
           .build()),
       ).collect { case (k, Some(v)) => k -> v }
@@ -178,8 +178,8 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     updateMappingById(id, isEventLive = Some(isLive))
   }
 
-  override def updateMappingLastEvent(id: String, lastEventId: String, lastEventUpdate: ZonedDateTime): Future[Unit] = {
-    updateMappingById(id, lastEventId = Some(lastEventId), lastEventUpdate = Some(lastEventUpdate))
+  override def updateMappingLastEvent(id: String, lastEventId: String, lastEventAt: ZonedDateTime): Future[Unit] = {
+    updateMappingById(id, lastEventId = Some(lastEventId), lastEventAt = Some(lastEventAt))
   }
 
   override def getMappingById(
