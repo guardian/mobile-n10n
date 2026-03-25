@@ -44,14 +44,16 @@ class LiveActivityPusher extends Logging {
       "Eventbus pusher: Try to push events to eventbus, number of events: " + matchDataList.size
     )
     matchDataList.map(matchData => {
+      println(s"Eventbus pusher: Processing event for match with article id ${matchData.articleId}")
 
       val jsonDetail = Json.toJson(matchData).toString()
       if (jsonDetail.isEmpty || jsonDetail == "{}") {
-        println(s"Eventbus pusher: Skipping empty event for ${matchData.matchDay.id}")
+        println(
+          s"Eventbus pusher: Skipping empty event for ${matchData.matchDay.id}"
+        )
       } else {
 
         val result = Try {
-          println(s"Eventbus pusher: Try publishing event for match ${matchData.matchDay.id}")
           val entry = PutEventsRequestEntry
             .builder()
             .source("football-lambda")
@@ -67,12 +69,12 @@ class LiveActivityPusher extends Logging {
 
           val response = eventBridgeClient.putEvents(request)
           println(
-            s"Event published. Failed entry count: ${response.failedEntryCount()}"
+            s"Eventbus pusher: Event published. Failed entry count: ${response.failedEntryCount()}"
           )
         }
 
         result.failed.foreach(e =>
-          println(s"Failed to publish event: ${e.getMessage}")
+          println(s"Eventbus pusher: Failed to publish event: ${e.getMessage}")
         )
 
       }
