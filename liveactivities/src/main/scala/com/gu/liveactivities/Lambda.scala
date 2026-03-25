@@ -2,6 +2,7 @@ package com.gu.liveactivities
 
 import com.gu.liveactivities.service.Authentication
 import com.gu.liveactivities.service.ChannelApiClient
+import com.gu.liveactivities.service.LiveActivityChannelRepository
 import com.gu.liveactivities.util.Configuration
 import com.gu.liveactivities.util.IosConfiguration
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
@@ -10,7 +11,7 @@ import software.amazon.awssdk.auth.credentials.{
 	ProfileCredentialsProvider,
 	DefaultCredentialsProvider,
 }
-import software.amazon.awssdk.regions.Region.EU_WEST_1
+import software.amazon.awssdk.regions.Region
 
 trait Lambda {
 
@@ -29,8 +30,8 @@ trait Lambda {
     DynamoDbAsyncClient
       .builder()
       .credentialsProvider(credentialsv2)
-      .region(EU_WEST_1)
+      .region(Region.of(config.region))
       .build()
 
-  val repository = new service.LiveActivityChannelRepository(dynamoDbClient, "LiveActivityChannels")
+  val repository = new LiveActivityChannelRepository(dynamoDbClient, s"mobile-notifications-liveactivities-${config.stage}")
 }
