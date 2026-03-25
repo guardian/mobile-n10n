@@ -10,11 +10,6 @@ import scala.util.Failure
 import scala.util.Try
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler
-import software.amazon.awssdk.auth.credentials.{
-  AwsCredentialsProviderChain => AwsCredentialsProviderChainV2,
-  ProfileCredentialsProvider => ProfileCredentialsProviderV2,
-  DefaultCredentialsProvider => DefaultCredentialsProviderV2,
-}
 import java.io.{InputStream, OutputStream}
 import play.api.libs.json.Json
 import play.api.libs.json.Format
@@ -34,29 +29,9 @@ object ChannelRequest {
   implicit val jf: Format[ChannelRequest] = Json.format[ChannelRequest]
 }
 
-object ChannelManagerLambda extends RequestStreamHandler with Logging {
-
-  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-
-  val config: IosConfiguration = Configuration.fetchIos()
-
-  val authentication = new Authentication(config.teamId, config.keyId, config.certificate)
+object ChannelManagerLambda extends RequestStreamHandler with Lambda with Logging {
 
   val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer)
-
-  val credentialsv2 = AwsCredentialsProviderChainV2.of(
-    ProfileCredentialsProviderV2.builder.profileName("mobile").build,
-    DefaultCredentialsProviderV2.builder.build(),
-  )
-
-  val dynamoDbClient =
-    DynamoDbAsyncClient
-      .builder()
-      .credentialsProvider(credentialsv2)
-      .region(EU_WEST_1)
-      .build()
-
-  val repository = new service.LiveActivityChannelRepository(dynamoDbClient, "LiveActivityChannels")
 
   def processCreateChannelRequest(matchId: String, eventData: Option[LiveActivityData], competitionId: Option[String]): Future[String] = {
     logger.info(s"Received request to create channel for match ID ${matchId}")
@@ -92,6 +67,7 @@ object ChannelManagerLambda extends RequestStreamHandler with Logging {
         processRequest(request, context)
       }
       case JsError(errors) => {
+        logger.error(s"Failed to parse request: $errors")
         throw new Exception(s"Invalid request: $errors")
       }
     }

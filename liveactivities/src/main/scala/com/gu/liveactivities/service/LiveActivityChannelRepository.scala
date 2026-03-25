@@ -88,7 +88,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       id = id, 
       channelId = channelId, 
       isChannelActive = true, 
-      isEventLive = false, 
+      isEventLive = true, 
       eventData = eventData, 
       competitionId = competitionId,
       lastEventId = None,
@@ -171,7 +171,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   }
 
   override def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit] = {
-    updateMappingById(id, isChannelActive = Some(isActive))
+    updateMappingById(id, isChannelActive = Some(isActive), isEventLive = Some(isActive))
   }
 
   override def updateMappingLiveEvent(id: String, isLive: Boolean): Future[Unit] = {
