@@ -48,8 +48,7 @@ class LiveActivityPusher extends Logging {
           .builder()
           .source("football-lambda")
           .detailType("football-match-events-with-articleId")
-          .detail("""{"message":"Hello World"}""")
-//          .detail(Json.toJson(matchData).toString())
+          .detail(Json.toJson(matchData).toString())
           .eventBusName(eventBusName)
           .build()
 
