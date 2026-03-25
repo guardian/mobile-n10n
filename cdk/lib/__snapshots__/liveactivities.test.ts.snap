@@ -293,6 +293,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
             },
             {
               "Action": [
+                "dynamodb:GetItem",
                 "dynamodb:PutItem",
                 "dynamodb:UpdateItem",
                 "dynamodb:Query",
@@ -543,6 +544,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
             },
             {
               "Action": [
+                "dynamodb:GetItem",
                 "dynamodb:PutItem",
                 "dynamodb:UpdateItem",
                 "dynamodb:Query",

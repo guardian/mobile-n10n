@@ -49,7 +49,12 @@ export class LiveActivities extends GuStack {
 
 		channelLambda.addToRolePolicy(
 			new PolicyStatement({
-				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
+				actions: [
+					'dynamodb:GetItem',
+					'dynamodb:PutItem',
+					'dynamodb:UpdateItem',
+					'dynamodb:Query',
+				],
 				effect: Effect.ALLOW,
 				resources: [dynamoTable.tableArn],
 			}),
@@ -87,7 +92,12 @@ export class LiveActivities extends GuStack {
 
 		broadcastLambda.addToRolePolicy(
 			new PolicyStatement({
-				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
+				actions: [
+					'dynamodb:GetItem',
+					'dynamodb:PutItem',
+					'dynamodb:UpdateItem',
+					'dynamodb:Query',
+				],
 				effect: Effect.ALLOW,
 				resources: [dynamoTable.tableArn],
 			}),
