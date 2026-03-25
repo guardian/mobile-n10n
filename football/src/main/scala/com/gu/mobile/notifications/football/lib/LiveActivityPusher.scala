@@ -17,7 +17,8 @@ import MatchDataWithArticleJson._
 object MatchDataWithArticleJson {
   implicit val writesStage: Writes[Stage] = Json.writes[Stage]
   implicit val writesRound: Writes[Round] = Json.writes[Round]
-  implicit val writesMatchDayTeam: Writes[MatchDayTeam] = Json.writes[MatchDayTeam]
+  implicit val writesMatchDayTeam: Writes[MatchDayTeam] =
+    Json.writes[MatchDayTeam]
   implicit val writesOfficial: Writes[Official] = Json.writes[Official]
   implicit val writesVenue: Writes[Venue] = Json.writes[Venue]
   implicit val writesPlayer: Writes[Player] = Json.writes[Player]
@@ -39,35 +40,42 @@ class LiveActivityPusher extends Logging {
 
   def pushToEventbus(matchDataList: List[MatchDataWithArticle]) = {
 
-    println("Try to push events to eventbus, number of events: " + matchDataList.size)
+    println(
+      "Eventbus pusher: Try to push events to eventbus, number of events: " + matchDataList.size
+    )
     matchDataList.map(matchData => {
 
-      val result = Try {
+      val jsonDetail = Json.toJson(matchData).toString()
+      if (jsonDetail.isEmpty || jsonDetail == "{}") {
+        println(s"Eventbus pusher: Skipping empty event for ${matchData.matchDay.id}")
+      } else {
 
-        val entry = PutEventsRequestEntry
-          .builder()
-          .source("football-lambda")
-          .detailType("football-match-events-with-articleId")
-          .detail(Json.toJson(matchData).toString())
-          .eventBusName(eventBusName)
-          .build()
+        val result = Try {
+          println(s"Eventbus pusher: Try publishing event for match ${matchData.matchDay.id}")
+          val entry = PutEventsRequestEntry
+            .builder()
+            .source("football-lambda")
+            .detailType("football-match-events-with-articleId")
+            .detail(Json.toJson(matchData).toString())
+            .eventBusName(eventBusName)
+            .build()
 
-        val request = PutEventsRequest
-          .builder()
-          .entries(entry)
-          .build()
+          val request = PutEventsRequest
+            .builder()
+            .entries(entry)
+            .build()
 
-        val response = eventBridgeClient.putEvents(request)
-        println(
-          s"Event published. Failed entry count: ${response.failedEntryCount()}"
+          val response = eventBridgeClient.putEvents(request)
+          println(
+            s"Event published. Failed entry count: ${response.failedEntryCount()}"
+          )
+        }
+
+        result.failed.foreach(e =>
+          println(s"Failed to publish event: ${e.getMessage}")
         )
+
       }
-
-      result.failed.foreach(e =>
-        println(s"Failed to publish event: ${e.getMessage}")
-      )
-
     })
   }
-
 }
