@@ -123,7 +123,8 @@ export class LiveActivities extends GuStack {
 			eventBus: eventBus,
 			description: `Deliver live match events in ${stage} to liveGameTestingQueue`,
 			eventPattern: {
-				source: ['pa-live-updates'],
+				source: ['football-lambda'],
+				detailType: ['football-match-events-with-articleId'],
 			},
 			enabled: false, // only enable if we want to inspect events in the development queue
 			targets: [new SqsQueue(liveGameTestingQueue)],

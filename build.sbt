@@ -317,6 +317,7 @@ lazy val football = lambda("football", "football")
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
+      "software.amazon.awssdk" % "eventbridge" % "2.20.0"
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),

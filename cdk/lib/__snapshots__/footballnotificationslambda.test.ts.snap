@@ -459,6 +459,26 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
               },
             },
             {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:events:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":event-bus/liveactivities-eventbus-CODE",
+                  ],
+                ],
+              },
+            },
+            {
               "Action": [
                 "dynamodb:PutItem",
                 "dynamodb:UpdateItem",
@@ -1011,6 +1031,26 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                       "Ref": "AWS::AccountId",
                     },
                     ":parameter/football/PROD/mobile-notifications",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:events:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":event-bus/liveactivities-eventbus-PROD",
                   ],
                 ],
               },
