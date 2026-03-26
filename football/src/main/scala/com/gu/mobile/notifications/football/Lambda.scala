@@ -6,8 +6,8 @@ import java.util.concurrent.TimeUnit
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
-import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, EventConsumer, EventFilter, FootballData, LiveActivityPusher, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
-import com.gu.mobile.notifications.football.notificationbuilders.MatchStatusNotificationBuilder
+import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, EventConsumer, LiveActivityEventConsumer, EventFilter, FootballData, LiveActivityPusher, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
+import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import play.api.libs.json.Json
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,8 +52,6 @@ object Lambda extends Logging {
 
   lazy val matchStatusNotificationBuilder = new MatchStatusNotificationBuilder(configuration.mapiHost)
 
-  lazy val liveActivityPusher = new LiveActivityPusher()
-
   lazy val eventConsumer = new EventConsumer(matchStatusNotificationBuilder)
 
   lazy val distinctCheck = new DynamoDistinctCheck(dynamoDBClient, tableName)
@@ -63,6 +61,11 @@ object Lambda extends Logging {
   lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator)
 
   lazy val articleSearcher = new ArticleSearcher(capiClient)
+
+  // live activities //
+  lazy val liveActivityPusher = new LiveActivityPusher()
+  lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder(configuration.mapiHost)
+  lazy val liveActivityEventConsumer = new LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder)
 
   def getZonedDateTime(): ZonedDateTime = {
     val zonedDateTime = if (configuration.stage == "CODE") {
@@ -92,9 +95,10 @@ object Lambda extends Logging {
     val processing = for {
       footballDataResult <- footballData.pollFootballData(getZonedDateTime())
       articleMatches <- articleSearcher.tryToMatchWithCapiArticle(footballDataResult)
-      _ = liveActivityPusher.pushToEventbus(articleMatches)
+      liveActivities = articleMatches.flatMap(liveActivityEventConsumer.eventsToLiveActivityPayload)
+      _ = liveActivityPusher.pushToEventbus(liveActivities) // TODO this should eventually push Filtered Live Activity Payloads
       notifications = articleMatches.flatMap(eventConsumer.eventsToNotifications)
-      filteredNotifications <- eventFilter.filterNotifications(notifications) // todo what filtering is happening.
+      filteredNotifications <- eventFilter.filterNotifications(notifications) // todo what filtering is happening exactly?
       result <- notificationSender.sendNotifications(filteredNotifications)
     } yield result
 
