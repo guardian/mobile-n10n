@@ -18,6 +18,75 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
     },
   },
   "Resources": {
+    "EventsD32975C2": {
+      "Properties": {
+        "Description": "CODE event routing for live activities",
+        "Name": "liveactivities-eventbus-CODE",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::Events::EventBus",
+    },
+    "liveGameEventsTargetingA85C7B8B": {
+      "Properties": {
+        "Description": "Deliver live match events in CODE to liveGameTestingQueue",
+        "EventBusName": {
+          "Ref": "EventsD32975C2",
+        },
+        "EventPattern": {
+          "source": [
+            "football-lambda",
+          ],
+        },
+        "State": "DISABLED",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "liveactivitiesfootballlivegamesCODE6EBEFF14",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
     "liveactivitiesbroadcastlambdaC288C367": {
       "DependsOn": [
         "liveactivitiesbroadcastlambdaServiceRoleDefaultPolicyB2BCF85A",
@@ -560,6 +629,75 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::DynamoDB::Table",
       "UpdateReplacePolicy": "Retain",
+    },
+    "liveactivitiesfootballlivegamesCODE6EBEFF14": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "MessageRetentionPeriod": 604800,
+        "QueueName": "liveactivities-football-live-games-CODE",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "liveactivitiesfootballlivegamesCODEPolicy00A91D6E": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sqs:SendMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+              ],
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {
+                    "Fn::GetAtt": [
+                      "liveGameEventsTargetingA85C7B8B",
+                      "Arn",
+                    ],
+                  },
+                },
+              },
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com",
+              },
+              "Resource": {
+                "Fn::GetAtt": [
+                  "liveactivitiesfootballlivegamesCODE6EBEFF14",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Queues": [
+          {
+            "Ref": "liveactivitiesfootballlivegamesCODE6EBEFF14",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::QueuePolicy",
     },
   },
 }

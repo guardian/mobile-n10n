@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
-import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, EventConsumer, EventFilter, FootballData, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
+import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, EventConsumer, EventFilter, FootballData, LiveActivityPusher, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.notificationbuilders.MatchStatusNotificationBuilder
 import play.api.libs.json.Json
 
@@ -52,6 +52,8 @@ object Lambda extends Logging {
 
   lazy val matchStatusNotificationBuilder = new MatchStatusNotificationBuilder(configuration.mapiHost)
 
+  lazy val liveActivityPusher = new LiveActivityPusher()
+
   lazy val eventConsumer = new EventConsumer(matchStatusNotificationBuilder)
 
   lazy val distinctCheck = new DynamoDistinctCheck(dynamoDBClient, tableName)
@@ -87,11 +89,14 @@ object Lambda extends Logging {
 
     logContainer()
 
-    val processing = footballData.pollFootballData(getZonedDateTime())
-      .flatMap(articleSearcher.tryToMatchWithCapiArticle)
-      .map(_.flatMap(eventConsumer.eventsToNotifications))
-      .flatMap(eventFilter.filterNotifications)
-      .flatMap(notificationSender.sendNotifications)
+    val processing = for {
+      footballDataResult <- footballData.pollFootballData(getZonedDateTime())
+      articleMatches <- articleSearcher.tryToMatchWithCapiArticle(footballDataResult)
+      _ = liveActivityPusher.pushToEventbus(articleMatches)
+      notifications = articleMatches.flatMap(eventConsumer.eventsToNotifications)
+      filteredNotifications <- eventFilter.filterNotifications(notifications) // todo what filtering is happening.
+      result <- notificationSender.sendNotifications(filteredNotifications)
+    } yield result
 
     // we're in a lambda so we do need to block the main thread until processing is finished
     val result = Await.ready(processing, Duration(40, TimeUnit.SECONDS))

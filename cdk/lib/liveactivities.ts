@@ -4,14 +4,17 @@ import { GuLambdaFunction } from '@guardian/cdk/lib/constructs/lambda';
 import type { App } from 'aws-cdk-lib';
 import { Duration, Tags } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { EventBus, Rule } from 'aws-cdk-lib/aws-events';
+import { SqsQueue } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
 
 export class LiveActivities extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
 		super(scope, id, props);
 
-		const { stack, stage } = this;
+		const { stack, stage, region, account } = this;
 		const app = 'liveactivities';
 
 		const dynamoTableName = `${stack}-liveactivities-${stage}`;
@@ -56,7 +59,7 @@ export class LiveActivities extends GuStack {
 				actions: ['ssm:GetParametersByPath'],
 				effect: Effect.ALLOW,
 				resources: [
-					`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${this.stage}/liveactivities/ios`,
+					`arn:aws:ssm:${region}:${account}:parameter/notifications/${stage}/liveactivities/ios`,
 				],
 			}),
 		);
@@ -94,9 +97,37 @@ export class LiveActivities extends GuStack {
 				actions: ['ssm:GetParametersByPath'],
 				effect: Effect.ALLOW,
 				resources: [
-					`arn:aws:ssm:${this.region}:${this.account}:parameter/notifications/${this.stage}/liveactivities/ios`,
+					`arn:aws:ssm:${region}:${account}:parameter/notifications/${stage}/liveactivities/ios`,
 				],
 			}),
 		);
+
+		//////////// EVENTBUS INFRASTRUCTURE //////////////
+
+		const eventBus = new EventBus(this, 'Events', {
+			eventBusName: `${app}-eventbus-${stage}`,
+			description: `${stage} event routing for live activities`,
+		});
+
+		// Development SQS to capture and inspect events from PA polling during development
+		const liveGameTestingQueue = new Queue(
+			this,
+			`${app}-football-live-games-${stage}`,
+			{
+				queueName: `${app}-football-live-games-${stage}`,
+				retentionPeriod: Duration.days(7),
+			},
+		);
+
+		new Rule(this, 'liveGameEventsTargeting', {
+			eventBus: eventBus,
+			description: `Deliver live match events in ${stage} to liveGameTestingQueue`,
+			eventPattern: {
+				source: ['football-lambda'],
+				// detailType: ['football-match-events-with-articleId'],
+			},
+			enabled: false, // only enable if we want to inspect events in the development queue
+			targets: [new SqsQueue(liveGameTestingQueue)],
+		});
 	}
 }
