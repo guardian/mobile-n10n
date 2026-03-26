@@ -70,7 +70,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
           logger.error(s"Channel not active for match ID ${request.matchId}")
           Future.failed(new LiveActivityInvalidStateException(request.matchId, "Channel not active"))
         } else Future.successful(())
-      _ <- if (!mapping.isEventLive) {
+      _ <- if (!mapping.isLive) {
           logger.error(s"Event not live for match ID ${request.matchId}")
           Future.failed(new LiveActivityInvalidStateException(request.matchId, "Event not live"))
         } else Future.successful(())

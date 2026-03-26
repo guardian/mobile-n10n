@@ -35,7 +35,7 @@ trait ChannelMappingsRepository {
   
   def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit]
 
-  def updateMappingLiveEvent(id: String, isLive: Boolean): Future[Unit]
+  def updateMappingSetLive(id: String, isLive: Boolean): Future[Unit]
 
   def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
   
@@ -88,7 +88,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       id = id, 
       channelId = channelId, 
       isChannelActive = true, 
-      isEventLive = true, 
+      isLive = true, 
       data = eventData, 
       competitionId = competitionId,
       lastEventId = None,
@@ -113,11 +113,11 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   private def updateMappingById(
       id: String, 
       isChannelActive: Option[Boolean] = None, 
-      isEventLive: Option[Boolean] = None, 
+      isLive: Option[Boolean] = None, 
       lastEventId: Option[String] = None, 
       lastEventAt: Option[ZonedDateTime] = None
   ): Future[Unit] = {
-    if (Seq(isChannelActive, isEventLive, lastEventId, lastEventAt).forall(_.isEmpty)) {
+    if (Seq(isChannelActive, isLive, lastEventId, lastEventAt).forall(_.isEmpty)) {
       logger.warn(s"No fields to update for live activity mapping with id $id")
       Future.successful(())
     } else {
@@ -131,7 +131,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
             .value(AttributeValue.fromBool(v))
             .build()
         },
-        "isEventLive" -> isEventLive.map {v =>
+        "isLive" -> isLive.map {v =>
           AttributeValueUpdate
             .builder()
             .action(AttributeAction.PUT)
@@ -176,11 +176,11 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   }
 
   override def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit] = {
-    updateMappingById(id, isChannelActive = Some(isActive), isEventLive = Some(isActive))
+    updateMappingById(id, isChannelActive = Some(isActive), isLive = Some(isActive))
   }
 
-  override def updateMappingLiveEvent(id: String, isLive: Boolean): Future[Unit] = {
-    updateMappingById(id, isEventLive = Some(isLive))
+  override def updateMappingSetLive(id: String, isLive: Boolean): Future[Unit] = {
+    updateMappingById(id, isLive = Some(isLive))
   }
 
   override def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventAt: Option[ZonedDateTime]): Future[Unit] = {

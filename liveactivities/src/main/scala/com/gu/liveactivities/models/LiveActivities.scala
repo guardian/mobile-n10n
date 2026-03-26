@@ -42,7 +42,7 @@ case class LiveActivityMapping(
 		id: String,
 		channelId: String,
     isChannelActive: Boolean,
-    isEventLive: Boolean,
+    isLive: Boolean,
 		data: Option[LiveActivityData],
     competitionId: Option[String],
     lastEventId: Option[String],
@@ -53,7 +53,7 @@ object LiveActivityMapping {
     (JsPath \ "id").read[String] and
     (JsPath \ "channelId").read[String] and
     (JsPath \ "isChannelActive").read[Boolean] and
-    (JsPath \ "isEventLive").read[Boolean] and
+    (JsPath \ "isLive").read[Boolean] and
     (JsPath \ "data").readNullable[LiveActivityData] and
     (JsPath \ "competitionId").readNullable[String] and
     (JsPath \ "lastEventId").readNullable[String] and
@@ -64,10 +64,10 @@ object LiveActivityMapping {
     (JsPath \ "id").write[String] and
     (JsPath \ "channelId").write[String] and
     (JsPath \ "isChannelActive").write[Boolean] and
-    (JsPath \ "isEventLive").write[Boolean] and
+    (JsPath \ "isLive").write[Boolean] and
     (JsPath \ "data").writeNullable[LiveActivityData] and
     (JsPath \ "competitionId").writeNullable[String] and
     (JsPath \ "lastEventId").writeNullable[String] and
     (JsPath \ "lastEventAt").writeNullable[String]
-  )(r => (r.id, r.channelId, r.isChannelActive, r.isEventLive, r.data, r.competitionId, r.lastEventId, r.lastEventAt.map(dateTimeToString)))
+  )(r => (r.id, r.channelId, r.isChannelActive, r.isLive, r.data, r.competitionId, r.lastEventId, r.lastEventAt.map(dateTimeToString)))
 }
