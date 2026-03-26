@@ -1,14 +1,7 @@
 package com.gu.mobile.notifications.football.notificationbuilders
 
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.client.models.liveActitivites.{
-  FootballLiveActivity,
-  FootballMatchContentState,
-  LiveActivityPayload,
-  Scheduled,
-  TeamState,
-  Competition
-}
+import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, Scheduled, TeamState, UpdateLiveActivity}
 import com.gu.mobile.notifications.football.models._
 import pa.MatchDay
 
@@ -67,7 +60,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       articleUrl = articleId.map(id => s"$mapiHost/items/$id")
     )
 
-    val liveActivityEventType = ???
+    val liveActivityEventType = UpdateLiveActivity // todo
 
     LiveActivityPayload(
       eventType = liveActivityEventType, // start stop etc
