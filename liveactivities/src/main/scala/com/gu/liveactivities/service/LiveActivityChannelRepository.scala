@@ -35,7 +35,7 @@ trait ChannelMappingsRepository {
   
   def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit]
 
-  def updateMappingSetLive(id: String, isLive: Boolean): Future[Unit]
+  def updateMappingLive(id: String, isLive: Boolean): Future[Unit]
 
   def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
   
