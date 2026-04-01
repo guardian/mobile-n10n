@@ -46,7 +46,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     implicit ec: ExecutionContext
 ) extends ChannelMappingsRepository with Logging {
 
-  private val idField = "id"
+  private val idKeyName = "id"
   private val createdAtKeyName = "createdAt"
   private val lastModifiedAtKeyName = "lastModifiedAt"
 
@@ -59,7 +59,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   )
 
   def containMapping(id: String): Future[Boolean] = {
-    val keyToGet = Map(idField -> AttributeValue.builder().s(id).build())
+    val keyToGet = Map(idKeyName -> AttributeValue.builder().s(id).build())
     val request = GetItemRequest
       .builder()
       .tableName(tableName)
@@ -99,7 +99,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
         .item((toAttributeMap(newItem) ++ createdAtAttr(createdAt) ++ lastModifiedAtAttr(
           createdAt,
         )).asJava)
-        .conditionExpression(s"attribute_not_exists($idField)")
+        .conditionExpression(s"attribute_not_exists($idKeyName)")
         .build()
     client
       .putItem(putItemRequest)
@@ -121,7 +121,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       logger.warn(s"No fields to update for live activity mapping with id $id")
       Future.successful(())
     } else {
-      val itemKey = Map(idField-> AttributeValue.fromS(id))
+      val itemKey = Map(idKeyName-> AttributeValue.fromS(id))
       val modifiedAt = ZonedDateTime.now()
       val updateValues = Map(
         "isChannelActive" -> isChannelActive.map {v =>
@@ -179,7 +179,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     updateMappingById(id, isChannelActive = Some(isActive), isLive = Some(isActive))
   }
 
-  override def updateMappingSetLive(id: String, isLive: Boolean): Future[Unit] = {
+  override def updateMappingLive(id: String, isLive: Boolean): Future[Unit] = {
     updateMappingById(id, isLive = Some(isLive))
   }
 
@@ -192,7 +192,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   ): Future[LiveActivityMapping] = {
     val getItemRequest = GetItemRequest.builder()
       .tableName(tableName)
-      .key(Map(idField -> AttributeValue.fromS(id)).asJava)
+      .key(Map(idKeyName -> AttributeValue.fromS(id)).asJava)
       .consistentRead(true)
       .build()
     client
@@ -222,7 +222,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   ): Future[Unit] = {
     val deleteItemRequest = DeleteItemRequest.builder()
       .tableName(tableName)
-      .key(Map(idField -> AttributeValue.fromS(id)).asJava)
+      .key(Map(idKeyName -> AttributeValue.fromS(id)).asJava)
       .build()
     client
       .deleteItem(deleteItemRequest)
