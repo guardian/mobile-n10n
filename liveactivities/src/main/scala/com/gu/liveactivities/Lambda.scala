@@ -7,9 +7,9 @@ import com.gu.liveactivities.util.Configuration
 import com.gu.liveactivities.util.IosConfiguration
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.auth.credentials.{
-	AwsCredentialsProviderChain,
-	ProfileCredentialsProvider,
-	DefaultCredentialsProvider,
+  AwsCredentialsProviderChain,
+  ProfileCredentialsProvider,
+  DefaultCredentialsProvider,
 }
 import software.amazon.awssdk.regions.Region
 

@@ -22,7 +22,6 @@ import com.gu.liveactivities.util.Logging
 import scala.concurrent.Future
 import com.gu.liveactivities.models.LiveActivityInvalidStateException
 
-// TODO - we should get the channel ID by looking up the match ID in the datastore
 case class ChannelRequest(matchId: String, competitionId: Option[String], eventData: Option[LiveActivityData], toCreate: Boolean)
 
 object ChannelRequest {
@@ -53,7 +52,7 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
       mapping <- repository.getMappingById(matchId)
       _ <- if (!mapping.isChannelActive) {
           logger.error(s"Channel not active for match ID ${matchId}")
-	        Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
+          Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
         } else Future.successful(())
       _ <- channelApiClient.closeChannel(mapping.channelId)
       _ <- repository.updateMappingActiveChannel(matchId, false)

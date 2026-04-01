@@ -11,39 +11,39 @@ import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromString, dateTimeTo
 sealed trait LiveActivityData
 
 case class FootballLiveActivity(
-		homeTeam: String,
-		awayTeam: String,
-		articleUrl: String
+    homeTeam: String,
+    awayTeam: String,
+    articleUrl: String
 ) extends LiveActivityData
 
 object FootballLiveActivity {
-	implicit val format: OFormat[FootballLiveActivity] =
-		Json.format[FootballLiveActivity]
+  implicit val format: OFormat[FootballLiveActivity] =
+    Json.format[FootballLiveActivity]
 }
 
 object LiveActivityData {
-	implicit val format: OFormat[LiveActivityData] =
-		new OFormat[LiveActivityData] {
-			def writes(data: LiveActivityData): JsObject = data match {
-				case f: FootballLiveActivity =>
-					FootballLiveActivity.format.writes(f) + ("type" -> JsString(
-						"football"
-					))
-			}
-			def reads(json: JsValue): JsResult[LiveActivityData] =
-				(json \ "type").validate[String].flatMap {
-					case "football" => FootballLiveActivity.format.reads(json)
-					case other      => JsError(s"Unknown LiveActivityData type: $other")
-				}
-		}
+  implicit val format: OFormat[LiveActivityData] =
+    new OFormat[LiveActivityData] {
+      def writes(data: LiveActivityData): JsObject = data match {
+        case f: FootballLiveActivity =>
+          FootballLiveActivity.format.writes(f) + ("type" -> JsString(
+            "football"
+          ))
+      }
+      def reads(json: JsValue): JsResult[LiveActivityData] =
+        (json \ "type").validate[String].flatMap {
+          case "football" => FootballLiveActivity.format.reads(json)
+          case other      => JsError(s"Unknown LiveActivityData type: $other")
+        }
+    }
 }
 
 case class LiveActivityMapping(
-		id: String,
-		channelId: String,
+    id: String,
+    channelId: String,
     isChannelActive: Boolean,
     isLive: Boolean,
-		data: Option[LiveActivityData],
+    data: Option[LiveActivityData],
     competitionId: Option[String],
     lastEventId: Option[String],
     lastEventAt: Option[ZonedDateTime]
@@ -60,7 +60,7 @@ object LiveActivityMapping {
     (JsPath \ "lastEventAt").readNullable[String].map(_.map(dateTimeFromString))
   )(LiveActivityMapping.apply _)
 
-	implicit val writes: OWrites[LiveActivityMapping] = (
+  implicit val writes: OWrites[LiveActivityMapping] = (
     (JsPath \ "id").write[String] and
     (JsPath \ "channelId").write[String] and
     (JsPath \ "isChannelActive").write[Boolean] and

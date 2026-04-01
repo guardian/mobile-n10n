@@ -25,10 +25,10 @@ trait ChannelMappingsRepository {
 
   def containMapping(id: String): Future[Boolean]
 
-  def createMapping(		
+  def createMapping(    
     id: String,
-		channelId: String,
-		eventData: Option[LiveActivityData],
+    channelId: String,
+    eventData: Option[LiveActivityData],
     competitionId: Option[String]): Future[Unit]
 
   def getMappingById(id: String): Future[LiveActivityMapping]
@@ -78,9 +78,9 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   }
 
   override def createMapping(
-		id: String,
-		channelId: String,
-		eventData: Option[LiveActivityData],
+    id: String,
+    channelId: String,
+    eventData: Option[LiveActivityData],
     competitionId: Option[String],
   ): Future[Unit] = {
     val createdAt = ZonedDateTime.now()
