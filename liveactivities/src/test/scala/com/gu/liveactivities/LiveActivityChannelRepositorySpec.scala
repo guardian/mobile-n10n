@@ -12,13 +12,22 @@ import com.gu.liveactivities.service.ChannelMappingsRepository
 import java.time.ZonedDateTime
 import com.gu.liveactivities.models.RepositoryException
 import com.gu.liveactivities.models.LiveActivityInvalidStateException
-
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType._
 
 class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
     extends DynamodbSpecification
     with Mockito {
 
   override val TableName = "test-table"
+
+  // This matcher adapts the existing `be_<=` matcher to a matcher applicable to `Any`
+  def beEqualToExcludingMetaData(expected: LiveActivityMapping) = 
+    beEqualTo(expected) ^^
+    { (t: LiveActivityMapping) => t.copy(
+        createdAt = expected.createdAt,
+        lastModifiedAt = expected.lastModifiedAt
+      )
+    }
 
   "LiveActivityChannelRepository" should {
 
@@ -31,7 +40,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
         footballMapping.data, 
         footballMapping.competitionId).flatMap { _ =>
         repository.getMappingById(footballMapping.id)
-      } must beEqualTo(footballMapping).await
+      } must beEqualToExcludingMetaData(footballMapping).await
     }
 
     "Error if trying to save a new channel mapping for an id that already exists" in new RepositoryScope
@@ -69,7 +78,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
         footballMapping.data, 
         footballMapping.competitionId).flatMap { _ =>
         repository.getMappingById(footballMapping.id)
-      } must beEqualTo(footballMapping).await
+      } must beEqualToExcludingMetaData(footballMapping).await
     }
   }
 
@@ -93,6 +102,8 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       competitionId = Some("test-competition-id"),
       lastEventId = None,
       lastEventAt = None,
+      createdAt = ZonedDateTime.now(),
+      lastModifiedAt = ZonedDateTime.now()
     )
 
     def createFootballMappingWithId(id: String): LiveActivityMapping = {
@@ -100,29 +111,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
     }
   }
 
-  override def createTableRequest: CreateTableRequest = {
-    val IdField = "id"
-
-    val attrs: List[AttributeDefinition] = List(
-      AttributeDefinition
-        .builder()
-        .attributeName(IdField)
-        .attributeType(ScalarAttributeType.S)
-        .build(),
-    )
-    val keySchema: List[KeySchemaElement] = List(
-      KeySchemaElement.builder().attributeName(IdField).keyType(KeyType.HASH).build(),
-    )
-
-    CreateTableRequest
-      .builder()
-      .tableName(TableName)
-      .keySchema(keySchema.asJava)
-      .attributeDefinitions(attrs.asJava)
-      .provisionedThroughput(
-        ProvisionedThroughput.builder().readCapacityUnits(5L).writeCapacityUnits(5L).build(),
-      )
-      .build();
-  }
-
+  override def targetTableAttributes: Seq[(String, ScalarAttributeType)] = Seq(
+    "id" -> S
+  )
 }

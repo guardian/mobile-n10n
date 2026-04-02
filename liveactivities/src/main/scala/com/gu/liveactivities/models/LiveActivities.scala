@@ -7,6 +7,8 @@ import play.api.libs.functional.syntax._
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromString, dateTimeToString}
+import org.scanamo.DynamoFormat
+import org.scanamo.generic.semiauto._
 
 sealed trait LiveActivityData
 
@@ -19,6 +21,8 @@ case class FootballLiveActivity(
 object FootballLiveActivity {
   implicit val format: OFormat[FootballLiveActivity] =
     Json.format[FootballLiveActivity]
+
+  implicit val dynamoFormat: DynamoFormat[FootballLiveActivity] = deriveDynamoFormat[FootballLiveActivity]
 }
 
 object LiveActivityData {
@@ -36,6 +40,8 @@ object LiveActivityData {
           case other      => JsError(s"Unknown LiveActivityData type: $other")
         }
     }
+
+  implicit val dynamoFormat: DynamoFormat[LiveActivityData] = deriveDynamoFormat[LiveActivityData]
 }
 
 case class LiveActivityMapping(
@@ -46,28 +52,21 @@ case class LiveActivityMapping(
     data: Option[LiveActivityData],
     competitionId: Option[String],
     lastEventId: Option[String],
-    lastEventAt: Option[ZonedDateTime]
+    lastEventAt: Option[ZonedDateTime],
+		createdAt: ZonedDateTime,
+    lastModifiedAt: ZonedDateTime
 )
-object LiveActivityMapping {
-  implicit val reads: Reads[LiveActivityMapping] = (
-    (JsPath \ "id").read[String] and
-    (JsPath \ "channelId").read[String] and
-    (JsPath \ "isChannelActive").read[Boolean] and
-    (JsPath \ "isLive").read[Boolean] and
-    (JsPath \ "data").readNullable[LiveActivityData] and
-    (JsPath \ "competitionId").readNullable[String] and
-    (JsPath \ "lastEventId").readNullable[String] and
-    (JsPath \ "lastEventAt").readNullable[String].map(_.map(dateTimeFromString))
-  )(LiveActivityMapping.apply _)
 
-  implicit val writes: OWrites[LiveActivityMapping] = (
-    (JsPath \ "id").write[String] and
-    (JsPath \ "channelId").write[String] and
-    (JsPath \ "isChannelActive").write[Boolean] and
-    (JsPath \ "isLive").write[Boolean] and
-    (JsPath \ "data").writeNullable[LiveActivityData] and
-    (JsPath \ "competitionId").writeNullable[String] and
-    (JsPath \ "lastEventId").writeNullable[String] and
-    (JsPath \ "lastEventAt").writeNullable[String]
-  )(r => (r.id, r.channelId, r.isChannelActive, r.isLive, r.data, r.competitionId, r.lastEventId, r.lastEventAt.map(dateTimeToString)))
+object LiveActivityMapping {
+
+  import com.gu.liveactivities.util.DateTimeHelper.zonedDateTimeFormat
+
+  implicit val zonedDateTimeFormat: DynamoFormat[ZonedDateTime] = DynamoFormat.coercedXmap[ZonedDateTime, String, IllegalArgumentException](
+    dateTimeFromString,
+    dateTimeToString
+  )
+
+  implicit val dynamoFormat: DynamoFormat[LiveActivityMapping] = deriveDynamoFormat[LiveActivityMapping]
+  
+  implicit val format: Format[LiveActivityMapping] = Json.format[LiveActivityMapping]
 }

@@ -469,7 +469,9 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       "com.turo" % "pushy" % "0.13.10",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
-      "software.amazon.awssdk" % "eventbridge" % "2.20.0"
+      "software.amazon.awssdk" % "eventbridge" % "2.20.0",
+      "org.scanamo" %% "scanamo" % "6.0.0",
+      "org.scanamo" %% "scanamo-testkit" % "6.0.0" % "test"
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),

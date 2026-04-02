@@ -14,31 +14,33 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.services.dynamodb.model._
 import java.net.URI
 import software.amazon.awssdk.regions.Region
+import org.scanamo.ScanamoAsync
+import scala.concurrent.ExecutionContext
+import org.scanamo.LocalDynamoDB
 
 trait DynamodbSpecification extends Specification with BeforeAfterAll {
 
   sequential
 
+  implicit val ec: ExecutionContext = ExecutionContext.global
+
   val TableName: String
 
-  def createTableRequest: CreateTableRequest
+  def targetTableAttributes: Seq[(String, ScalarAttributeType)]
 
   val TestEndpoint = "http://localhost:8002"
 
   override def beforeAll(): Unit = {
-    awsClient.createTable(createTableRequest).join()
+    LocalDynamoDB.createTable(awsClient)(TableName)(targetTableAttributes: _*)   
   }
 
   override def afterAll(): Unit = {
-    awsClient.deleteTable(DeleteTableRequest.builder().tableName(TableName).build()).join()
+    LocalDynamoDB.deleteTable(awsClient)(TableName)
   }
 
-  private def awsClient = DynamoDbAsyncClient
-      .builder()
-      .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("TEST", "TEST")))
-      .region(Region.EU_WEST_1)
-      .endpointOverride(URI.create(TestEndpoint))
-      .build()
+  private def awsClient = LocalDynamoDB.client(8002)
+
+  private def scanamo = ScanamoAsync(awsClient)
 
   trait AsyncDynamoScope extends Scope {
     val asyncClient = awsClient
