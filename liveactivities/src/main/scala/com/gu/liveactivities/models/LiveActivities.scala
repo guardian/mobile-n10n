@@ -59,12 +59,9 @@ case class LiveActivityMapping(
 
 object LiveActivityMapping {
 
-  import com.gu.liveactivities.util.DateTimeHelper.zonedDateTimeFormat
+  import com.gu.liveactivities.util.DateTimeHelper.zonedDateTimeJsonFormat
 
-  implicit val zonedDateTimeFormat: DynamoFormat[ZonedDateTime] = DynamoFormat.coercedXmap[ZonedDateTime, String, IllegalArgumentException](
-    dateTimeFromString,
-    dateTimeToString
-  )
+  import com.gu.liveactivities.util.DateTimeHelper.zonedDateTimeDynamoFormat
 
   implicit val dynamoFormat: DynamoFormat[LiveActivityMapping] = deriveDynamoFormat[LiveActivityMapping]
   

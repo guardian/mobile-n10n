@@ -33,7 +33,7 @@ case class BroadcastRequest(
 
 object BroadcastRequest {
 
-  import com.gu.liveactivities.util.DateTimeHelper.zonedDateTimeFormat
+  import com.gu.liveactivities.util.DateTimeHelper.zonedDateTimeJsonFormat
 
   implicit val format: Format[BroadcastRequest] = Json.format[BroadcastRequest]
 }
