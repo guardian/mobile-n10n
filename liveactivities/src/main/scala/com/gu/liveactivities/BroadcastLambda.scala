@@ -22,8 +22,9 @@ import com.gu.liveactivities.models.LiveActivityInvalidStateException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeToString, dateTimeFromString}
+import com.gu.liveactivities.models.LiveActivityMapping
+import org.scanamo.DynamoFormat
 
-// TODO - we should get the channel ID by looking up the match ID in the datastore
 case class BroadcastRequest(
     matchId: String, 
     payload: String, 
@@ -31,19 +32,10 @@ case class BroadcastRequest(
     eventTime: Option[ZonedDateTime])
 
 object BroadcastRequest {
-  implicit val reads: Reads[BroadcastRequest] = (
-    (JsPath \ "matchId").read[String] and
-    (JsPath \ "payload").read[String] and
-    (JsPath \ "eventId").readNullable[String] and
-    (JsPath \ "eventTime").readNullable[String].map(_.map(dateTimeFromString))
-  )(BroadcastRequest.apply _)
 
-  implicit val writes: OWrites[BroadcastRequest] = (
-    (JsPath \ "matchId").write[String] and
-    (JsPath \ "payload").write[String] and
-    (JsPath \ "eventId").writeNullable[String] and
-    (JsPath \ "eventTime").writeNullable[String]
-  )(r => (r.matchId, r.payload, r.eventId, r.eventTime.map(dateTimeToString)))
+  import com.gu.liveactivities.util.DateTimeHelper.zonedDateTimeFormat
+
+  implicit val format: Format[BroadcastRequest] = Json.format[BroadcastRequest]
 }
 
 object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
