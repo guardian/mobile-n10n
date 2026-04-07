@@ -70,6 +70,9 @@ class LiveActivityPusher extends Logging {
           logger.info(
             s"Eventbus pusher: Event published. Failed entry count: ${response.failedEntryCount()}"
           )
+          logger.info(
+            Json.toJson(payload).toString()
+          )
         }
 
         result.failed.foreach(e =>
