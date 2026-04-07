@@ -71,7 +71,7 @@ class LiveActivityPusher extends Logging {
             s"Eventbus pusher: Event published. Failed entry count: ${response.failedEntryCount()}"
           )
           logger.info(
-            Json.toJson(payload).toString()
+            s"Eventbus pusher: Event details: ${Json.toJson(payload).toString()}"
           )
         }
 
