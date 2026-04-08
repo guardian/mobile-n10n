@@ -1,11 +1,18 @@
 package com.gu.liveactivities
 
-import com.amazonaws.services.dynamodbv2.model._
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
-import tracking.Repository.RepositoryResult
-import tracking.RepositoryError
+import software.amazon.awssdk.services.dynamodb.model._
 import scala.jdk.CollectionConverters._
+import com.gu.liveactivities.service.LiveActivityChannelRepository
+import com.gu.liveactivities.models.FootballLiveActivity
+import com.gu.liveactivities.models.LiveActivityMapping
+import com.gu.liveactivities.models.LiveActivityData
+import com.gu.liveactivities.service.ChannelMappingsRepository
+import java.time.ZonedDateTime
+import com.gu.liveactivities.models.RepositoryException
+import com.gu.liveactivities.models.LiveActivityInvalidStateException
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType._
 
 class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
     extends DynamodbSpecification
@@ -13,43 +20,65 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
 
   override val TableName = "test-table"
 
-  "LiveActivityChannelRepository" should {
-    "connect to local DynamoDB and create table" in new RepositoryScope {
-      // This test will pass if the table is created successfully in beforeAll()
-      1 must beEqualTo(1)
+  // This matcher adapts the existing `be_<=` matcher to a matcher applicable to `Any`
+  def beEqualToExcludingMetaData(expected: LiveActivityMapping) = 
+    beEqualTo(expected) ^^
+    { (t: LiveActivityMapping) => t.copy(
+        createdAt = expected.createdAt,
+        lastModifiedAt = expected.lastModifiedAt
+      )
     }
+
+  "LiveActivityChannelRepository" should {
 
     "save a new channel mapping for an id if it does not exist" in new RepositoryScope
       with ExampleData {
-      repository.saveMapping(footballMapping).flatMap { _ =>
-        repository.getMappingByActivityId(footballMapping.id)
-      } must beEqualTo(Right(footballMapping)).await
+      val footballMapping = createFootballMappingWithId("football-0001")
+      repository.createMapping(
+        footballMapping.id, 
+        footballMapping.channelId, 
+        footballMapping.data, 
+        footballMapping.competitionId).flatMap { _ =>
+        repository.getMappingById(footballMapping.id)
+      } must beEqualToExcludingMetaData(footballMapping).await
     }
 
     "Error if trying to save a new channel mapping for an id that already exists" in new RepositoryScope
       with ExampleData {
-      repository.saveMapping(footballMapping).flatMap { _ =>
-        repository.saveMapping(footballMapping)
-      } must beLike[RepositoryResult[Unit]] {
-        case Left(RepositoryError(msg))
-            if msg.contains("ConditionalCheckFailed") =>
-          ok
-      }.await
+      val footballMapping = createFootballMappingWithId("football-0004")
+      repository.createMapping(footballMapping.id, 
+        footballMapping.channelId, 
+        footballMapping.data, 
+        footballMapping.competitionId).flatMap { _ =>
+        repository.createMapping(footballMapping.id, 
+          footballMapping.channelId, 
+          footballMapping.data, 
+          footballMapping.competitionId)
+      } must throwA[RepositoryException].await
     }
 
     "delete a channel mapping for an activity id if it exists" in new RepositoryScope
       with ExampleData {
-
-      repository.saveMapping(footballMapping).flatMap { _ =>
-        repository.deleteMappingByActivityId(footballMapping.id)
-      } must beEqualTo(Right(())).await
+      val footballMapping = createFootballMappingWithId("football-0002")
+      repository.createMapping(
+        footballMapping.id, 
+        footballMapping.channelId, 
+        footballMapping.data, 
+        footballMapping.competitionId).flatMap { _ =>
+        repository.deleteMappingById(footballMapping.id)
+      } must beEqualTo(()).await
     }
 
     "get a channel mapping for an activity id if it exists" in new RepositoryScope
       with ExampleData {
-      repository.saveMapping(footballMapping).flatMap { _ =>
-        repository.getMappingByActivityId(footballMapping.id)
-      } must beEqualTo(Right(footballMapping)).await
+      val footballMapping = createFootballMappingWithId("football-0003")
+      repository.createMapping(
+        footballMapping.id, 
+        footballMapping.channelId, 
+        footballMapping.data, 
+        footballMapping.competitionId).flatMap { _ =>
+        repository.getMappingById(footballMapping.id)
+      } must beEqualToExcludingMetaData(footballMapping).await
     }
   }
 
@@ -64,26 +93,25 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       articleUrl = "https://www.theguardian.com/football/test-article-id"
     )
 
-    val footballMapping = LiveActivityMapping(
+    val footballMappingTemplate = LiveActivityMapping(
       id = "football-1234567",
       channelId = "test-channel-id",
-      data = Some(footballData)
+      isChannelActive = true,
+      isLive = true,     
+      data = Some(footballData),
+      competitionId = Some("test-competition-id"),
+      lastEventId = None,
+      lastEventAt = None,
+      createdAt = ZonedDateTime.now(),
+      lastModifiedAt = ZonedDateTime.now()
     )
+
+    def createFootballMappingWithId(id: String): LiveActivityMapping = {
+      footballMappingTemplate.copy(id = id)
+    }
   }
 
-  override def createTableRequest: CreateTableRequest = {
-    val IdField = "id"
-
-    new CreateTableRequest(
-      TableName,
-      List(new KeySchemaElement(IdField, KeyType.HASH)).asJava
-    )
-      .withAttributeDefinitions(
-        List(
-          new AttributeDefinition(IdField, ScalarAttributeType.S)
-        ).asJava
-      )
-      .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
-  }
-
+  override def targetTableAttributes: Seq[(String, ScalarAttributeType)] = Seq(
+    "id" -> S
+  )
 }

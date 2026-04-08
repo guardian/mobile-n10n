@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 object LambdaLocalRun extends App {
 
   println("Start running ChannelManagerLambda locally")
-  val createChannelJson = Json.toJson(ChannelRequest("match123", "channel123", toCreate = true)).toString()
+  val createChannelJson = Json.toJson(ChannelRequest("match123", Some("competiton-001"), None, toCreate = true)).toString()
 
   val createRequestStream = new java.io.ByteArrayInputStream(createChannelJson.getBytes(StandardCharsets.UTF_8))
 
@@ -16,7 +16,7 @@ object LambdaLocalRun extends App {
 
   val channelId = Json.parse(createResponseStream.toString()).as[String]
 
-  val closeRequest = ChannelRequest("match123", channelId, toCreate = false)
+  val closeRequest = ChannelRequest("match123", None, None, toCreate = false)
 
   val closeRequestStream = new java.io.ByteArrayInputStream(Json.toJson(closeRequest).toString().getBytes(StandardCharsets.UTF_8))
 

@@ -39,6 +39,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 val playJsonVersion = "3.0.6"
 val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.797"
+val awsSdk2Version: String = "2.42.18"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
@@ -467,7 +468,10 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
-      "software.amazon.awssdk" % "eventbridge" % "2.20.0"
+      "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
+      "software.amazon.awssdk" % "eventbridge" % "2.20.0",
+      "org.scanamo" %% "scanamo" % "6.0.0",
+      "org.scanamo" %% "scanamo-testkit" % "6.0.0" % "test"
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
