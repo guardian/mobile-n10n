@@ -63,9 +63,9 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
     val liveActivityEventType = UpdateLiveActivity // todo
 
     LiveActivityPayload(
+      id =
+        UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes),
       eventType = liveActivityEventType, // start stop etc
-      eventId =
-        UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
       liveActivityType = FootballLiveActivity,
       liveActivityID =
         matchInfo.id, // Match ID in the case of football, tbc for other sports/events

@@ -2,6 +2,8 @@ package com.gu.mobile.notifications.client.models.liveActitivites
 
 import com.gu.mobile.notifications.client.models.Topic
 import play.api.libs.json.{JsString, Json, Writes}
+import java.util.UUID
+import com.gu.mobile.notifications.client.models.Payload
 
 ///
 /*
@@ -48,8 +50,8 @@ case class dynamoData(
 //lastModifiedAt	timestamp when the record was last modified. Not directly used by the application.D
 
 case class LiveActivityPayload(
+    id: UUID,
     eventType: LiveActivityEventType,
-    eventId: String, // tbc uuid?
     liveActivityType: LiveActivityType,
     liveActivityID: String, // Match ID in the case of football, tbc for other sports/events
     dynamoStoreData: Option[
@@ -58,7 +60,7 @@ case class LiveActivityPayload(
     broadcastContentStateData: Option[ContentState],
     eventTimestamp: Long,
     topics: List[Topic] // we will need to know topics for push to start
-)
+) extends Payload
 
 object LiveActivityPayload {
   implicit val liveActivityEventTypeWrites: Writes[LiveActivityEventType] =
