@@ -112,37 +112,31 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       lastEventId: Option[String] = None, 
       lastEventAt: Option[ZonedDateTime] = None
   ): Future[Unit] = {
-    if (Seq(isChannelActive, isLive, lastEventId, lastEventAt).forall(_.isEmpty)) {
-      logger.warn(s"No fields to update for live activity mapping with id $id")
-      Future.successful(())
-    } else {
+  val updates: List[UpdateExpression] = List(
+      isChannelActive.map(c => set("isChannelActive", c)),
+      isLive.map(l => set("isLive", l)),
+      lastEventId.map(eventId => set("lastEventId", eventId)),
+      lastEventAt.map(eventAt => set("lastEventAt", dateTimeToString(eventAt))),
+    ).flatten
 
-      val modifiedAt = ZonedDateTime.now()
-      val updates: List[UpdateExpression] = List(
-          isChannelActive.map(c => set("isChannelActive", c)),
-          isLive.map(l => set("isLive", l)),
-          lastEventId.map(eventId => set("lastEventId", eventId)),
-          lastEventAt.map(eventAt => set("lastEventAt", dateTimeToString(eventAt))),
-          Some(set("lastModifiedAt", dateTimeToString(modifiedAt)))
-        ).flatten
-      val result = scanamo.exec {
-        NonEmptyList.fromList(updates).map(ups =>
-          table.update(idKeyName === id, ups.reduce[UpdateExpression](_ and _))
-        ).sequence
-      }
-      result.flatMap(_ match {
-        case Some(Right(_)) => Future.successful(())
-        case None => {
-          val errorMsg = s"Live activity mapping for id $id not found for update"
-          logger.error(errorMsg)
-          Future.failed(new LiveActivityDataException(id, errorMsg))
+    NonEmptyList.fromList(updates) match {
+      case None =>
+        logger.warn(s"No fields to update for live activity mapping with id $id")
+        Future.successful(())
+      case Some(ups) =>
+        val result = scanamo.exec {
+          val modifiedAt = ZonedDateTime.now()
+          val upsWithLastModified = set("lastModifiedAt", dateTimeToString(modifiedAt)) :: ups
+          table.update(idKeyName === id, upsWithLastModified.reduce[UpdateExpression](_ and _))
         }
-        case Some(Left(ex)) => {
-          val errorMsg = s"Error updating live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
-          logger.error(errorMsg)
-          Future.failed(new RepositoryException(errorMsg))
-        }
-      })
+
+        result.flatMap(_ match {
+          case Right(_) => Future.successful(())
+          case Left(ex) =>
+            val errorMsg = s"Error updating live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
+            logger.error(errorMsg)
+            Future.failed(new RepositoryException(errorMsg))
+        })
     }
   }
 
