@@ -16,8 +16,6 @@ import java.time.format.DateTimeFormatter
 import com.gu.liveactivities.util.Logging
 import com.gu.liveactivities.util.FutureUtils._
 import scala.util.Failure
-import com.gu.liveactivities.util.DynamoJsonConversions.toAttributeMap
-import com.gu.liveactivities.util.DynamoJsonConversions.fromAttributeMap
 import com.gu.liveactivities
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromString, dateTimeToString}
 import org.scanamo.{ScanamoAsync, Table, DynamoReadError, ScanamoError, ConditionNotMet}
