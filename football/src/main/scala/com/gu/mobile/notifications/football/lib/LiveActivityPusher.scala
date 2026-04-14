@@ -1,33 +1,23 @@
 package com.gu.mobile.notifications.football.lib
 
+import com.gu.mobile.notifications.client.models.liveActitivites._
 import com.gu.mobile.notifications.football.Logging
 import com.gu.mobile.notifications.football.models.MatchDataWithArticle
 import play.api.libs.json.Json
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient
 import software.amazon.awssdk.services.eventbridge.model.{
   PutEventsRequest,
-  PutEventsRequestEntry
+  PutEventsRequestEntry,
+  PutEventsResponse
 }
-
 import scala.util.Try
 
-import play.api.libs.json.{Json, Writes}
-import pa._
-import MatchDataWithArticleJson._
-object MatchDataWithArticleJson {
-  implicit val writesStage: Writes[Stage] = Json.writes[Stage]
-  implicit val writesRound: Writes[Round] = Json.writes[Round]
-  implicit val writesMatchDayTeam: Writes[MatchDayTeam] =
-    Json.writes[MatchDayTeam]
-  implicit val writesOfficial: Writes[Official] = Json.writes[Official]
-  implicit val writesVenue: Writes[Venue] = Json.writes[Venue]
-  implicit val writesPlayer: Writes[Player] = Json.writes[Player]
-  implicit val writesCompetition: Writes[Competition] = Json.writes[Competition]
-  implicit val writesMatchDay: Writes[MatchDay] = Json.writes[MatchDay]
-  implicit val writesMatchEvent: Writes[MatchEvent] = Json.writes[MatchEvent]
-  implicit val writesMatchDataWithArticle: Writes[MatchDataWithArticle] =
-    Json.writes[MatchDataWithArticle]
-}
+// Temporary json formatters to test pushing match data - will be replaced once we know what we want to send.
+import play.api.libs.json.Writes
+import scala.concurrent.Future
+import scala.util.Success
+import scala.util.Failure
+import scala.concurrent.ExecutionContext
 
 class LiveActivityPusher extends Logging {
 
@@ -38,46 +28,74 @@ class LiveActivityPusher extends Logging {
       .builder()
       .build()
 
-  def pushToEventbus(matchDataList: List[MatchDataWithArticle]) = {
+  def pushEvents(events: List[LiveActivityPayload])(implicit ec: ExecutionContext): Future[Unit] = {
 
-    println(
-      "Eventbus pusher: Try to push events to eventbus, number of events: " + matchDataList.size
+    logger.info(
+      "Eventbus pusher: number of events to push: " + events.size
     )
-    matchDataList.map(matchData => {
-      println(s"Eventbus pusher: Processing event for match with article id ${matchData.articleId}")
+    Future.traverse(events)(pushToEventbus).map(_ => ())
+  }
 
-      val jsonDetail = Json.toJson(matchData).toString()
-      if (jsonDetail.isEmpty || jsonDetail == "{}") {
-        println(
-          s"Eventbus pusher: Skipping empty event for ${matchData.matchDay.id}"
-        )
-      } else {
+  def pushToEventbus(payload: LiveActivityPayload)(implicit ec: ExecutionContext): Future[Unit] = {
 
-        val result = Try {
-          val entry = PutEventsRequestEntry
-            .builder()
-            .source("football-lambda")
-            .detailType("football-match-events-with-articleId")
-            .detail(Json.toJson(matchData).toString())
-            .eventBusName(eventBusName)
-            .build()
+    logger.info(
+      s"Eventbus pusher: Processing event with id ${payload.id}"
+    )
+    val jsonDetail = Json.toJson(payload).toString()
+    if (jsonDetail.isEmpty || jsonDetail == "{}") {
+      logger.info(
+        s"Eventbus pusher: Skipping empty event for ${payload.id}"
+      )
+      Future.successful(())
+    } else {
 
-          val request = PutEventsRequest
-            .builder()
-            .entries(entry)
-            .build()
-
-          val response = eventBridgeClient.putEvents(request)
-          println(
-            s"Eventbus pusher: Event published. Failed entry count: ${response.failedEntryCount()}"
-          )
-        }
-
-        result.failed.foreach(e =>
-          println(s"Eventbus pusher: Failed to publish event: ${e.getMessage}")
-        )
-
+      // TODO for the eventbus to direct the event to the right place
+      val activityType = payload.eventType match {
+        case CreateChannel      => "channel-create"
+        case StartLiveActivity  => "broadcast-start"
+        case UpdateLiveActivity => "broadcast-update"
+        case EndLiveActivity    => "broadcast-end"
+        case DeleteChannel      => "channel-delete"
+        case _ => "unknown"
       }
-    })
+
+      val result = Try {
+        val entry = PutEventsRequestEntry
+          .builder()
+          .source("football-lambda")
+          .detailType(activityType)
+          .detail(Json.toJson(payload).toString())
+          .eventBusName(eventBusName)
+          .build()
+
+        val request = PutEventsRequest
+          .builder()
+          .entries(entry)
+          .build()
+
+        val response: PutEventsResponse = eventBridgeClient.putEvents(request)
+        logger.info(
+          s"Eventbus pusher: Event published. Failed entry count: ${response.failedEntryCount()}"
+        )
+        logger.info(
+          s"Eventbus pusher: Event details: ${Json.toJson(payload).toString()}"
+        )
+      }
+
+      result match {
+        case Success(_) => {
+          logger.info(
+            s"Eventbus pusher: Successfully processed event with id ${payload.id}"
+          )
+          Future.successful(())
+        }
+        case Failure(e) => {
+          logger.error(
+            s"Eventbus pusher: Failed to publish event with id ${payload.id}: ${e.getMessage}"
+          )
+          Future.failed(e)
+        }
+      }
+    }
   }
 }
