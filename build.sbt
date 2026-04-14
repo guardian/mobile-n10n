@@ -57,10 +57,6 @@ val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
   // For now this isn't considered an issue due to the compatability between 1.2.x and 2.1.x of the library
   libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
-  resolvers ++= Seq(
-    "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
-    "Guardian GitHub Snapshots" at "https://guardian.github.com/maven/repo-snapshots"
-  ),
   libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "3.0.0",
     "com.softwaremill.macwire" %% "macros" % "2.6.7" % "provided",
@@ -102,7 +98,6 @@ lazy val common = project
   .settings(standardSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      ws,
       "org.typelevel" %% "cats-core" % catsVersion,
       "joda-time" % "joda-time" % "2.14.0",
       "org.playframework" %% "play-json" % playJsonVersion,
@@ -134,6 +129,14 @@ lazy val common = project
     Test / testOptions += Tests.Argument(TestFrameworks.Specs2, "sequential", "true")
   )
 
+lazy val commonplay = project
+  .dependsOn(common, commontest % "test->test").settings(
+    libraryDependencies ++= Seq(
+      ws,
+      "org.playframework" %% "play" % "3.0.7"
+    )
+  )
+
 lazy val commonscheduledynamodb = project
   .settings(LocalDynamoDBScheduleLambda.settings)
   .settings(List(
@@ -152,7 +155,7 @@ lazy val commonscheduledynamodb = project
   ))
 
 lazy val registration = project
-  .dependsOn(common, commontest % "test->test")
+  .dependsOn(commonplay, commontest % "test->test")
   .enablePlugins(SystemdPlugin, PlayScala, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
@@ -171,7 +174,7 @@ lazy val registration = project
   )
 
 lazy val notification = project
-  .dependsOn(common)
+  .dependsOn(commonplay)
   .dependsOn(commonscheduledynamodb)
   .enablePlugins(SystemdPlugin, PlayScala, JDebPackaging)
   .settings(standardSettings: _*)
@@ -191,7 +194,7 @@ lazy val notification = project
   )
 
 lazy val report = project
-  .dependsOn(common, commontest % "test->test")
+  .dependsOn(commonplay, commontest % "test->test")
   .enablePlugins(SystemdPlugin, PlayScala, JDebPackaging)
   .settings(standardSettings: _*)
   .settings(
@@ -235,10 +238,6 @@ def lambda(projectName: String, directoryName: String, mainClassName: Option[Str
   .enablePlugins(AssemblyPlugin)
   .settings(
     organization := "com.gu",
-    resolvers ++= Seq(
-      "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
-      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
-    ),
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-lambda-java-core" % "1.4.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
@@ -285,7 +284,6 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
 lazy val football = lambda("football", "football")
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(
-    resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
       "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
       "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",

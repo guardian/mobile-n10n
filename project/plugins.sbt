@@ -3,8 +3,6 @@ libraryDependencies ++= Seq(
   "com.github.docker-java" % "docker-java-transport-httpclient5" % "3.5.3"
 )
 
-resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
-
 addSbtPlugin("org.playframework" % "sbt-plugin" % "3.0.7")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.8.1")

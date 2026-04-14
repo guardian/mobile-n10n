@@ -2,11 +2,11 @@ package com.gu.notifications.worker
 
 import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
 import com.typesafe.config.Config
-import db.JdbcConfig
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 import _root_.models.{Android, AndroidBeta, AndroidEdition, Ios, IosEdition, Platform}
 import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
+import db.JdbcConfig
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider

@@ -7,7 +7,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.gu.notifications.worker.tokens._
 import com.gu.notifications.worker.utils.{Cloudwatch, CloudwatchImpl, Logging, NotificationParser}
 import com.zaxxer.hikari.HikariDataSource
-import db._
+import db.{DatabaseConfig, JdbcConfig, RegistrationService, _}
 import doobie.util.transactor.Transactor
 import fs2.{Pipe, Stream}
 import org.slf4j.{Logger, LoggerFactory}

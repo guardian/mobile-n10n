@@ -2,7 +2,6 @@ package com.gu.notifications.worker
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
-
 import _root_.models.Importance._
 import _root_.models.Link._
 import _root_.models.TopicTypes._
@@ -13,7 +12,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.gu.notifications.worker.models.SendingResults
 import com.gu.notifications.worker.tokens.{ChunkedTokens, SqsDeliveryService, TokenService}
 import com.gu.notifications.worker.utils.Cloudwatch
-import db.{HarvestedToken, JdbcConfig}
+import db.{BuildTier, HarvestedToken, JdbcConfig}
 import fs2.{Pipe, Stream}
 import org.specs2.matcher.Matchers
 import org.specs2.mutable.Specification
@@ -21,7 +20,6 @@ import org.specs2.specification.Scope
 import play.api.libs.json.Json
 
 import scala.jdk.CollectionConverters._
-import db.BuildTier
 import java.time.Instant
 import com.gu.notifications.worker.models.PerformanceMetrics
 

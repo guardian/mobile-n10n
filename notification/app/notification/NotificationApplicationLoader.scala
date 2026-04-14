@@ -15,7 +15,7 @@ import notification.authentication.NotificationAuthAction
 import notification.controllers.{Main, Schedule}
 import notification.data.{CachingDataStore, S3DataStore}
 import notification.services.guardian.{GuardianNotificationSender, ReportTopicRegistrationCounter, TopicRegistrationCounter}
-import notification.services.{NewsstandSender, _}
+import notification.services._
 import play.api.ApplicationLoader.Context
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
