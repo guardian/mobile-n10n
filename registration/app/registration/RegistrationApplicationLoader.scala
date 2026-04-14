@@ -3,12 +3,17 @@ package registration
 import _root_.controllers.AssetsComponents
 import _root_.models.NewsstandShardConfig
 import org.apache.pekko.actor.ActorSystem
-import cats.effect.IO
+import cats.effect.{Async, ContextShift, IO}
 import com.gu.AppIdentity
 import com.softwaremill.macwire._
+import db.DatabaseConfig.transactorAndDataSource
+import db.{DatabaseConfig, JdbcConfig, RegistrationService, RegistrationService => apply}
+import doobie.Transactor
+import fs2.Stream
 import metrics.{CloudWatchMetrics, Metrics}
 import play.api.ApplicationLoader.Context
 import play.api.http.HttpErrorHandler
+import play.api.inject.ApplicationLifecycle
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
 import play.api.routing.Router
@@ -22,6 +27,8 @@ import registration.services._
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
 import router.Routes
 import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class RegistrationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new RegistrationApplicationComponents(identity, context)
@@ -55,7 +62,30 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
   lazy val legacyNewsstandRegistrationConverterConfig: NewsstandShardConfig = NewsstandShardConfig(appConfig.newsstandShards)
   lazy val legacyNewsstandRegistrationConverter: LegacyNewsstandRegistrationConverter = wire[LegacyNewsstandRegistrationConverter]
 
-  lazy val registrationDbService: db.RegistrationService[IO, fs2.Stream] = db.RegistrationService.fromConfig(configuration, applicationLifecycle)
+  def registrationServiceFromConfig(config: play.api.Configuration, applicationLifecycle: ApplicationLifecycle)(implicit ec: ExecutionContext): RegistrationService[IO, Stream] = {
+
+    def transactor[F[_] : Async](config: JdbcConfig, applicationLifecycle: ApplicationLifecycle)(implicit cs: ContextShift[F]): Transactor[F] = {
+      // manually creating the transactor to avoid having it wrapped in a Resource. Resources don't play well with
+      // Play's way of handling lifecycle
+      val (transactor, dataSource) = transactorAndDataSource(config)
+      applicationLifecycle.addStopHook(() => Future.successful(dataSource.close()))
+      transactor
+    }
+
+    implicit val contextShift: ContextShift[IO] = IO.contextShift(ec)
+
+    val masterUrl = config.get[String]("registration.db.url")
+    val user = config.get[String]("registration.db.user")
+    val password = config.get[String]("registration.db.password")
+    val threads = config.get[Int]("registration.db.maxConnectionPoolSize")
+
+    val masterJdbcConfig = JdbcConfig("org.postgresql.Driver", masterUrl, user, password, threads)
+    val masterTransactor = transactor[IO](masterJdbcConfig, applicationLifecycle)
+
+    RegistrationService(masterTransactor)
+  }
+
+  lazy val registrationDbService: RegistrationService[IO, fs2.Stream] = registrationServiceFromConfig(configuration, applicationLifecycle)
   lazy val databaseRegistrar: NotificationRegistrar = new DatabaseRegistrar(registrationDbService, metrics)
 
   lazy val mainController = new Main(databaseRegistrar, topicValidator, legacyRegistrationConverter, legacyNewsstandRegistrationConverter, appConfig, controllerComponents)

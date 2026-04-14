@@ -1,11 +1,11 @@
 package registration.services
 
 import cats.effect.IO
-import db.RegistrationService
 import models._
 import registration.services.NotificationRegistrar.RegistrarResponse
 import fs2.Stream
 import com.amazonaws.services.cloudwatch.model.StandardUnit
+import db.RegistrationService
 import metrics.{MetricDataPoint, Metrics}
 
 import scala.concurrent.{ExecutionContext, Future}

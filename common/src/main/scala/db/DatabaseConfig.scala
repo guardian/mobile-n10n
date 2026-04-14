@@ -1,13 +1,11 @@
 package db
 
-import java.util.concurrent.Executors
-
 import cats.effect.{Async, Blocker, ContextShift, IO}
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import doobie.Transactor
-import play.api.inject.ApplicationLifecycle
 
-import scala.concurrent.{ExecutionContext, Future}
+import java.util.concurrent.Executors
+import scala.concurrent.ExecutionContext
 
 case class JdbcConfig(
   driverClassName: String,
@@ -45,14 +43,6 @@ object DatabaseConfig {
 
   def transactor[F[_] : Async](config: JdbcConfig)(implicit cs: ContextShift[F]): Transactor[F] = {
     val (transactor, _) = transactorAndDataSource(config)
-    transactor
-  }
-
-  def transactor[F[_] : Async](config: JdbcConfig, applicationLifecycle: ApplicationLifecycle)(implicit cs: ContextShift[F]): Transactor[F] = {
-    // manually creating the transactor to avoid having it wrapped in a Resource. Resources don't play well with
-    // Play's way of handling lifecycle
-    val (transactor, dataSource) = transactorAndDataSource(config)
-    applicationLifecycle.addStopHook(() => Future.successful(dataSource.close()))
     transactor
   }
 }
