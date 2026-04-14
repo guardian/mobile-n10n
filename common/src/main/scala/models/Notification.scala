@@ -3,8 +3,8 @@ package models
 import java.net.URI
 import java.util.UUID
 
-import ai.x.play.json.Encoders.encoder
-import ai.x.play.json.Jsonx
+import com.gu.ai.x.play.json.Encoders.encoder
+import com.gu.ai.x.play.json.Jsonx
 import models.NotificationType._
 import play.api.libs.json._
 
