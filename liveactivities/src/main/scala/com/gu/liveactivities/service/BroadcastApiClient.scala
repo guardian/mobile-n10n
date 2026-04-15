@@ -62,9 +62,21 @@ class BroadcastApiClient(authentication: Authentication, bundleId: String, sendi
   private val updatePayload: String = Json.stringify(Json.toJson(broadcastUpdateBodyFixture)(BroadcastJsonFormats.broadcastUpdateBodyFormat))
   private val endPayload: String = Json.stringify(Json.toJson(broadcastEndBodyFixture)(BroadcastJsonFormats.broadcastEndBodyFormat))
 
-  def sendToChannel(channelId: String, expiration: Option[Instant], priority: Option[Int]): Future[String] = {
+
+
+
+  // TODO the payload will be received from the request, here we just use a fixture for testing purpose
+  def sendToChannel(channelId: String, expiration: Option[Instant], payload: String, priority: Option[Int]): Future[String] = {
     logger.info(s"Broadcasting to channel $channelId")
     val authToken = authentication.getAccessToken()
+
+    val payloadToSend = payload match {
+      case "start" => startPayload
+      case "update" => updatePayload
+      case "end" => endPayload
+      case _ => updatePayload
+    }
+
     val request: HttpRequest = HttpRequest.newBuilder(new URI(serviceEndpoint))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
@@ -73,7 +85,7 @@ class BroadcastApiClient(authentication: Authentication, bundleId: String, sendi
       .header("apns-expiration", expiration.getOrElse(Instant.now().plusSeconds(5 * 60)).getEpochSecond.toString)
       .header("apns-priority", priority.map(_.toString).getOrElse("1"))
       .header("apns-push-type", "Liveactivity")
-      .POST(HttpRequest.BodyPublishers.ofString(updatePayload, charSet))
+      .POST(HttpRequest.BodyPublishers.ofString(payloadToSend, charSet))
 
       .timeout(Duration.ofSeconds(60))
       .build()

@@ -55,7 +55,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
   }
 
   def processRequest(request: BroadcastRequest, context: Context): Unit = {
-    logger.info(s"Received request to create channel for match ID ${request.matchId}")
+   logger.info(s"Received request to broadcast payload for match ID ${request.matchId}")
     val broadcastFuture = for {
       mapping <- repository.getMappingById(request.matchId)
       _ <- if (!mapping.isChannelActive) {
@@ -75,7 +75,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
           Future.failed(new LiveActivityInvalidStateException(request.matchId, "Out of order event time"))
         } else Future.successful(())
       // TODO - determine expiry time and priority
-      _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None)
+      _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, request.payload, None)
       _ = logger.info(s"Broadcast sent successfully for match ID ${request.matchId} with channel ID ${mapping.channelId}")
       _ <- repository.updateMappingLastEvent(request.matchId, request.eventId, request.eventTime)
       _ = logger.info(s"Record updated successfully for match ID ${request.matchId}")
