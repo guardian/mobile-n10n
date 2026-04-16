@@ -20,10 +20,18 @@ class EventConsumer(
   def eventsToNotifications(
       matchData: MatchDataWithArticle
   ): List[NotificationPayload] = {
-    matchData.allEvents.flatMap { event =>
+
+    /**
+     * We have added synthetic events for live activities which we don't want
+     * to generate push notifications for, so we filter those out here.
+     */
+    val liveActivityEventTypes = List("create-channel", "start-live-activity", "end-live-activity")
+    val filteredMatchData = matchData.copy(allEvents = matchData.allEvents.filterNot(e => liveActivityEventTypes.contains(e.eventType)))
+
+    filteredMatchData.allEvents.flatMap { event =>
       receiveEvent(
         matchData.matchDay,
-        matchData.allEvents,
+        filteredMatchData.allEvents,
         event,
         matchData.articleId
       )

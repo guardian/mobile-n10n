@@ -28,13 +28,12 @@ object Score {
 case class Score(home: Int, away: Int)
 
 case class Dismissal(
-  eventId: String,
-  playerName: String,
-  team: pa.MatchDayTeam,
-  minute: Int,
-  addedTime: Option[String]
-) extends FootballMatchEvent {
-}
+    eventId: String,
+    playerName: String,
+    team: pa.MatchDayTeam,
+    minute: Int,
+    addedTime: Option[String]
+) extends FootballMatchEvent {}
 object Dismissal {
   def fromEvent(homeTeam: pa.MatchDayTeam, awayTeam: pa.MatchDayTeam)(event: pa.MatchEvent): Option[Dismissal] = {
     condOpt(event.eventType) {
@@ -51,7 +50,7 @@ object Dismissal {
           eventMinute,
           event.addedTime.filterNot(_ == "0:00")
       )
-      }
+    }
   }.flatten
 }
 
@@ -93,6 +92,12 @@ object Goal {
   }
 }
 
+case class GoalContext(
+    home: pa.MatchDayTeam,
+    away: pa.MatchDayTeam,
+    matchId: String,
+    score: Score
+)
 
 trait MatchPhaseEvent extends FootballMatchEvent
 
@@ -101,9 +106,12 @@ object MatchPhaseEvent {
     val eventId = event.id.getOrElse("")
     condOpt(event.eventType) {
       case "timeline" if event.matchTime.contains("0:00") => KickOff(eventId)
-      case "full-time" => FullTime(eventId)
-      case "half-time" => HalfTime(eventId)
-      case "second-half" => SecondHalf(eventId)
+      case "full-time"                                    => FullTime(eventId) // todo use this to end activity?
+      case "half-time"                                    => HalfTime(eventId)
+      case "second-half"                                  => SecondHalf(eventId)
+      case "create-channel"                               => CreateChannel(eventId)
+      case "start-live-activity"                          => StartLiveActivity(eventId)
+      case "end-live-activity"                            => EndLiveActivity(eventId)
     }
   }
 }
@@ -112,10 +120,7 @@ case class KickOff(eventId: String) extends MatchPhaseEvent
 case class FullTime(eventId: String) extends MatchPhaseEvent
 case class HalfTime(eventId: String) extends MatchPhaseEvent
 case class SecondHalf(eventId: String) extends MatchPhaseEvent
+case class CreateChannel(eventId: String) extends MatchPhaseEvent
+case class StartLiveActivity(eventId: String) extends MatchPhaseEvent
+case class EndLiveActivity(eventId: String) extends MatchPhaseEvent
 
-case class GoalContext(
-  home: pa.MatchDayTeam,
-  away: pa.MatchDayTeam,
-  matchId: String,
-  score: Score
-)
