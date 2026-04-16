@@ -71,4 +71,19 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
       generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true)).drop(1).head.eventType mustEqual "full-time"
     }
   }
+
+  "A SyntheticMatchEvent generator supporting Live Activities" should {
+    "Add a createChannel event if match kick off is within 2 hrs" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator()
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusHours(1))).drop(1).head.eventType mustEqual "create-channel"
+    }
+    "Add a startLiveActivity event if match kick off is within 20min" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator()
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15))).drop(1).head.eventType mustEqual "start-live-activity"
+    }
+    "Add an endLiveActivity event if match info contains result" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator()
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true)).drop(2).head.eventType mustEqual "end-live-activity"
+    }
+  }
 }
