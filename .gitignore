@@ -24,6 +24,7 @@ dynamodb-local-schedule-lambda/
 **.DS_Store
 
 .metals/
+metals.sbt
 .vscode/
 .bloop/
 project/.bloop/
