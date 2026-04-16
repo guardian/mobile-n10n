@@ -147,9 +147,9 @@ class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDy
 
   lazy val liveActivityPusher = new LiveActivityPusher()
 
-	lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder(configuration.mapiHost)
+  lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder(configuration.mapiHost)
 
-	lazy val liveActivityEventConsumer = new LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder)
+  lazy val liveActivityEventConsumer = new LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder)
 
   lazy val distinctCheck = new DynamoDistinctCheck[LiveActivityPayload](dynamoDBClient, tableName)
 
