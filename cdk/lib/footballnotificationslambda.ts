@@ -88,15 +88,18 @@ export class FootballNotificationsLambda extends GuStack {
 
 		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
-		footballnotificationslambda.addToRolePolicy(
-			new PolicyStatement({
-				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
-				effect: Effect.ALLOW,
-				resources: [
-					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
-				],
-			}),
-		);
+		// Live Activity DynamoDB Table
+		const liveActivityDynamoTableName = `${stack}-football-live-activity-${stage}`;
+
+		const liveActivityDynamoTable = new Table(this, 'LiveActivityDynamoTable', {
+			tableName: liveActivityDynamoTableName,
+			partitionKey: { name: 'liveActivityId', type: AttributeType.STRING },
+			billingMode: BillingMode.PROVISIONED,
+			readCapacity: 3,
+			writeCapacity: 3,
+			timeToLiveAttribute: 'ttl',
+		});
+		Tags.of(liveActivityDynamoTable).add('devx-backup-enabled', 'true');
 
 		footballnotificationslambda.addToRolePolicy(
 			new PolicyStatement({
@@ -104,6 +107,7 @@ export class FootballNotificationsLambda extends GuStack {
 				effect: Effect.ALLOW,
 				resources: [
 					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
+					`arn:aws:dynamodb:${region}:${account}:table/${liveActivityDynamoTableName}`,
 				],
 			}),
 		);
@@ -155,6 +159,48 @@ export class FootballNotificationsLambda extends GuStack {
 			},
 		);
 
+		// Read Throttle Events Alarm
+		new GuAlarm(this, 'MobileLiveActivityFootballConsumedReadThrottleEvents', {
+			app,
+			alarmName: `MobileLiveActivityFootballConsumedReadThrottleEvents-${stage}`,
+			alarmDescription:
+				'Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes',
+			snsTopicName: 'dynamodb',
+			metric: new Metric({
+				namespace: 'AWS/DynamoDB',
+				metricName: 'ReadThrottleEvents',
+				dimensionsMap: { TableName: liveActivityDynamoTableName },
+				period: Duration.minutes(5),
+				statistic: 'sum',
+				unit: Unit.COUNT,
+			}),
+			threshold: 10,
+			evaluationPeriods: 1,
+			comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+			treatMissingData: TreatMissingData.NOT_BREACHING,
+		});
+
+		// Write Throttle Events Alarm
+		new GuAlarm(this, 'MobileLiveActivityFootballConsumedWriteThrottleEvents', {
+			app,
+			alarmName: `MobileLiveActivityFootballConsumedWriteThrottleEvents-${stage}`,
+			alarmDescription:
+				'Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes',
+			snsTopicName: 'dynamodb',
+			metric: new Metric({
+				namespace: 'AWS/DynamoDB',
+				metricName: 'WriteThrottleEvents',
+				dimensionsMap: { TableName: liveActivityDynamoTableName },
+				period: Duration.minutes(5),
+				statistic: 'sum',
+				unit: Unit.COUNT,
+			}),
+			threshold: 10,
+			evaluationPeriods: 1,
+			comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+			treatMissingData: TreatMissingData.NOT_BREACHING,
+		});
+
 		const footballNotificationLambdaLogGroupName = `/aws/lambda/${footballnotificationslambda.functionName}`;
 		const footballNotificationLambdaLogGroup = LogGroup.fromLogGroupName(
 			this,
@@ -174,8 +220,30 @@ export class FootballNotificationsLambda extends GuStack {
 		// ErrorEvent MetricFilter
 		new MetricFilter(this, 'ErrorEventMetricFilter', {
 			logGroup: footballNotificationLambdaLogGroup,
-			filterPattern: { logPatternString: 'Error' },
+			filterPattern: { logPatternString: 'Error sending match status' },
 			metricNamespace: `${stage}/football-notifications`,
+			metricName: 'error',
+			metricValue: '1',
+		});
+
+		// GoalEvent MetricFilter
+		new MetricFilter(this, 'SuccessLiveActivityEventMetricFilter', {
+			logGroup: footballNotificationLambdaLogGroup,
+			filterPattern: {
+				logPatternString: 'Eventbus pusher: Successfully processed event',
+			},
+			metricNamespace: `${stage}/football-live-activity`,
+			metricName: 'success',
+			metricValue: '1',
+		});
+
+		// ErrorEvent MetricFilter
+		new MetricFilter(this, 'ErrorLiveActivityEventMetricFilter', {
+			logGroup: footballNotificationLambdaLogGroup,
+			filterPattern: {
+				logPatternString: 'Eventbus pusher: Failed to publish event',
+			},
+			metricNamespace: `${stage}/football-live-activity`,
 			metricName: 'error',
 			metricValue: '1',
 		});
