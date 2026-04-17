@@ -5,15 +5,9 @@ import play.api.libs.json.{JsString, Json, Writes}
 import java.util.UUID
 import com.gu.mobile.notifications.client.models.Payload
 
-///
-/*
-1. event type e.g. START CHANNEL, START MATCH, MATCH UPDATE, REMOVE CHANNEL
-2. event ID
-3. live activity type - "football" in our case
-4. match ID
-5. data we want to keep in the datastore
-6. data we need to build the payload for broadcast messages
-7. event timestamp
+/**
+ * These are the models for eventbus payloads shared between live activity services
+ * They are emitted by the Football lambda and consumed by the Live Activity Channel Manager and Broadcast lambdas.
  */
 
 // life cycle of a live activity:
@@ -36,19 +30,8 @@ case class dynamoData(
     lastEventId: Option[String],
     lastEventAt: Option[Long]
 )
-//
-//Column name	Description
-//id	Primary key. The match ID in the football context.
-//  channelId	the channel ID that has been created via Apple API for this live activity
-//isChannelActive	indicate whether the channel is still active or has been closed.
-//isLive	indicate whether the live activity is live i.e. the football match is taking place.
-//  data	data specific to the live activity
-//competitionId	competition ID of the match
-//lastEventId	event ID of the last message to the live activity
-//lastEventAt	timestamp of the event of the last message
-//createdAt	timestamp when the record was inserted. Not directly used by the application.
-//lastModifiedAt	timestamp when the record was last modified. Not directly used by the application.D
 
+// TODO - match request consumption models of live activity lambdas.
 case class LiveActivityPayload(
     id: UUID,
     eventType: LiveActivityEventType,

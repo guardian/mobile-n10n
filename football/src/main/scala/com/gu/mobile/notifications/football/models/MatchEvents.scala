@@ -27,6 +27,16 @@ object Score {
 
 case class Score(home: Int, away: Int)
 
+object RedCards {
+  def fromDismissals(homeTeam: pa.MatchDayTeam, awayTeam: pa.MatchDayTeam, dismisals: List[Dismissal]): RedCards = {
+    val home = dismisals.count(_.team == homeTeam)
+    val away = dismisals.count(_.team == awayTeam)
+
+    RedCards(home, away)
+  }
+}
+case class RedCards(home: Int, away: Int)
+
 case class Dismissal(
   eventId: String,
   playerName: String,

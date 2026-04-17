@@ -2,6 +2,11 @@ package com.gu.mobile.notifications.client.models.liveActitivites
 
 import play.api.libs.json._
 
+
+/**
+ * These are the models for sending live activity updates to Apple APNS service.
+**/
+
 // GENERIC CONTENT STATE //////////////////////////////////////////////////
 
 sealed trait ContentState
@@ -69,11 +74,11 @@ case class Competition(
 
 case class TeamState(
     name: String,
-    score: Int,
+    score: Int = 0,
     logoAssetName: Option[String] = None,
     teamUrl: Option[String] = None,
     penaltyScore: Option[Int] = None,
-    redCards: Option[Int] = None
+    redCards: Int = 0
 )
 
 //object TeamState {
