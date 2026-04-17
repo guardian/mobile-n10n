@@ -21,12 +21,16 @@ class EventConsumer(
       matchData: MatchDataWithArticle
   ): List[NotificationPayload] = {
 
-    /**
-     * We have added synthetic events for live activities which we don't want
-     * to generate push notifications for, so we filter those out here.
-     */
-    val liveActivityEventTypes = List("create-channel", "start-live-activity", "end-live-activity")
-    val filteredMatchData = matchData.copy(allEvents = matchData.allEvents.filterNot(e => liveActivityEventTypes.contains(e.eventType)))
+    /** We have added synthetic events for live activities which we don't want
+      * to generate push notifications for, so we filter those out here.
+      */
+    val liveActivityEventTypes =
+      List("create-channel", "start-live-activity", "end-live-activity")
+    val filteredMatchData = matchData.copy(allEvents =
+      matchData.allEvents.filterNot(e =>
+        liveActivityEventTypes.contains(e.eventType)
+      )
+    )
 
     filteredMatchData.allEvents.flatMap { event =>
       receiveEvent(
@@ -44,7 +48,8 @@ class EventConsumer(
       event: MatchEvent,
       articleId: Option[String]
   ): List[NotificationPayload] = {
-    logger.debug(s"Processing event $event for match ${matchDay.id}")
+
+//  logger.debug(s"Processing event $event for match ${matchDay.id}")
     val previousEvents = events.takeWhile(_ != event)
     FootballMatchEvent.fromPaMatchEvent(matchDay.homeTeam, matchDay.awayTeam)(
       event
@@ -87,9 +92,9 @@ class LiveActivityEventConsumer(
       event: MatchEvent,
       articleId: Option[String]
   ): List[LiveActivityPayload] = {
-    logger.debug(
-      s"Processing live activity event $event for match ${matchDay.id}"
-    )
+//    logger.debug(
+//      s"Processing live activity event $event for match ${matchDay.id}"
+//    )
 
     val previousEvents = events.takeWhile(_ != event)
 
