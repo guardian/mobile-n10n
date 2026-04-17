@@ -7,6 +7,7 @@ import pa.{MatchDay, MatchEvent}
 class SyntheticMatchEventGenerator {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
+    // TODO becuase we filter out duplicates don't think it matters that create channel and start activity events show up after. When they are first generated, no other timeline events exist. This needs to be verified e2e
     events.map(enhanceTimelineEvents(id)) ++ generators.flatMap(_.apply(matchDay, events)) // order is important here
   }
 
