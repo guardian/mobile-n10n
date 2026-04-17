@@ -85,13 +85,13 @@ class LiveActivityPusher extends Logging {
       result match {
         case Success(_) => {
           logger.info(
-            s"Eventbus pusher: Successfully processed event with id ${payload.id}"
+            s"Eventbus pusher: Successfully processed live activities event with id ${payload.id}"
           )
           Future.successful(())
         }
         case Failure(e) => {
           logger.error(
-            s"Eventbus pusher: Failed to publish event with id ${payload.id}: ${e.getMessage}"
+            s"Eventbus pusher: Failed to publish live activities event with id ${payload.id}: ${e.getMessage}"
           )
           Future.failed(e)
         }

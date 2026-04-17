@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
-import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, EventConsumer, LiveActivityEventConsumer, EventFilter, FootballData, LiveActivityPusher, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
+import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, LiveActivityPusher, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import play.api.libs.json.Json
 
@@ -19,12 +19,14 @@ import com.gu.mobile.notifications.client.models.NotificationPayload
 import com.gu.mobile.notifications.client.models.liveActitivites.LiveActivityPayload
 import com.gu.mobile.notifications.football.models.MatchDataWithArticle
 import scala.concurrent.Future
+import org.scanamo.generic.auto._
 
 object Lambda extends Logging {
 
   var cachedLambda: Boolean = false
 
   def tableName = s"mobile-notifications-football-notifications-${configuration.stage}"
+  def liveActivitiesTableName = s"mobile-notifications-liveactivities-payload-${configuration.stage}"
 
   lazy val configuration: Configuration = {
     logger.debug("Creating configuration")
@@ -58,7 +60,7 @@ object Lambda extends Logging {
 
   lazy val notificationHandler = new NotificationHandler(configuration, apiClient, dynamoDBClient, tableName)
 
-  lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, tableName)
+  lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, liveActivitiesTableName)
 
   // live activities //
   lazy val liveActivityPusher = new LiveActivityPusher()
@@ -100,6 +102,7 @@ object Lambda extends Logging {
 
     // we're in a lambda so we do need to block the main thread until processing is finished
     val result = Await.ready(Future.sequence(List(notificationsProcessing, liveActivitiesProcessing)), Duration(40, TimeUnit.SECONDS))
+//    val result = Await.ready(articlesMatches, Duration(40, TimeUnit.SECONDS))
 
     result.value match {
       case Some(Failure(e: TimeoutException)) => logger.error("Task timed out", e)
@@ -119,7 +122,6 @@ object Lambda extends Logging {
       Thread.sleep(10000)
     }
   }
-
 }
 
 class NotificationHandler(configuration: Configuration, apiClient: NotificationsApiClient, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
@@ -130,14 +132,18 @@ class NotificationHandler(configuration: Configuration, apiClient: Notifications
 
   lazy val eventConsumer = new EventConsumer(matchStatusNotificationBuilder)
 
-  lazy val distinctCheck = new DynamoDistinctCheck[NotificationPayload](dynamoDBClient, tableName)
-
-  lazy val eventFilter = new EventFilter[NotificationPayload](distinctCheck)
+  lazy val distinctCheck = new DynamoDistinctCheck[NotificationPayload, DynamoMatchNotification](
+    client = dynamoDBClient,
+    tableName = tableName,
+    partitionKeyName = "notificationId",
+    toDynamoModel = payload => DynamoMatchNotification(payload)
+  )
+  lazy val eventFilter = new EventFilter[NotificationPayload, DynamoMatchNotification](distinctCheck)
 
   def process(rawEvents: List[MatchDataWithArticle]): Future[Unit] = {
     val notifications = rawEvents.flatMap(eventConsumer.eventsToNotifications)
     for {
-      filteredNotifications <- eventFilter.filterNotifications(notifications) // todo what filtering is happening exactly?
+      filteredNotifications <- eventFilter.filterDynamoEvents(notifications) // todo what filtering is happening exactly?
       result <- notificationSender.sendNotifications(filteredNotifications)
     } yield result
   }  
@@ -147,19 +153,23 @@ class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDy
 
   lazy val liveActivityPusher = new LiveActivityPusher()
 
-	lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder(configuration.mapiHost)
+  lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder(configuration.mapiHost)
 
-	lazy val liveActivityEventConsumer = new LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder)
+  lazy val liveActivityEventConsumer = new LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder)
 
-  lazy val distinctCheck = new DynamoDistinctCheck[LiveActivityPayload](dynamoDBClient, tableName)
-
-  lazy val eventFilter = new EventFilter[LiveActivityPayload](distinctCheck)
+  lazy val liveActivityDistinctCheck = new DynamoDistinctCheck[LiveActivityPayload, DynamoMatchLiveActivity](
+    client = dynamoDBClient,
+    tableName = tableName,
+    partitionKeyName = "id",
+    toDynamoModel = payload => DynamoMatchLiveActivity(payload)
+  )
+  lazy val liveActivityEventFilter = new EventFilter[LiveActivityPayload, DynamoMatchLiveActivity](liveActivityDistinctCheck)
 
   def process(rawEvents: List[MatchDataWithArticle]): Future[Unit] = {
     val liveActivities = rawEvents.flatMap(liveActivityEventConsumer.eventsToLiveActivityPayload)
     for {
-      // filteredLiveActivities <- eventFilter.filterNotifications(liveActivities) // todo what filtering is happening exactly?
-      result <- liveActivityPusher.pushEvents(liveActivities) // TODO this should eventually push Filtered Live Activity Payloads
+      filteredLiveActivities <- liveActivityEventFilter.filterDynamoEvents(liveActivities)
+      result <- liveActivityPusher.pushEvents(filteredLiveActivities)
     } yield result
   }  
 }
