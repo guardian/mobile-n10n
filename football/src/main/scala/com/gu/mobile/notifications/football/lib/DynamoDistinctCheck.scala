@@ -2,21 +2,21 @@ package com.gu.mobile.notifications.football.lib
 
 import scala.concurrent.{ExecutionContext, Future}
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
-import com.gu.mobile.notifications.client.models.{FootballMatchStatusPayload, NotificationPayload}
+import com.gu.mobile.notifications.client.models.{FootballMatchStatusPayload, Payload}
 import org.scanamo.{ScanamoAsync, Table}
 import DynamoDistinctCheck.{Distinct, DistinctStatus, Duplicate, Unknown}
 import com.gu.mobile.notifications.football.Logging
 import play.api.libs.json.Json
 
 case class DynamoMatchNotification(
-  notificationId: String,
-  matchId: Option[String],
-  notification: String,
-  ttl: Long
-)
+                                    notificationId: String,
+                                    matchId: Option[String],
+                                    notification: String,
+                                    ttl: Long
+                                  )
 
 object DynamoMatchNotification {
-  def apply(notification: NotificationPayload): DynamoMatchNotification = {
+  def apply[A <: Payload](notification: A)(implicit writes: play.api.libs.json.Writes[A]): DynamoMatchNotification = {
     val matchId = PartialFunction.condOpt(notification) {
       case p: FootballMatchStatusPayload => p.matchId
     }
@@ -37,8 +37,8 @@ object DynamoDistinctCheck {
   case object Unknown extends DistinctStatus
 }
 
-class DynamoDistinctCheck(client: AmazonDynamoDBAsync, tableName: String) extends Logging {
-  def insertNotification(notification: NotificationPayload)(implicit ec: ExecutionContext): Future[DistinctStatus] = {
+class DynamoDistinctCheck[A <: Payload](client: AmazonDynamoDBAsync, tableName: String) extends Logging {
+  def insertNotification(notification: A)(implicit ec: ExecutionContext, writes: play.api.libs.json.Writes[A]): Future[DistinctStatus] = {
     import org.scanamo.syntax._
     import org.scanamo.generic.auto._
 
