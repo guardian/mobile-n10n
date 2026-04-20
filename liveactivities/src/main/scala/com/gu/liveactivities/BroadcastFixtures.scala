@@ -17,19 +17,19 @@ object BroadcastFixtures {
         kickOffTimestamp = fifteenMinutesFromNowEpochSeconds,
         homeTeam = TeamState(
           name = "Brentford",
-          score = 1,
+          score = 0,
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = None
+          redCards = 0,
         ),
         awayTeam = TeamState(
           name = "Wolverhampton",
-          score = 1,
+          score = 0,
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = None
+          redCards = 0
         ),
         competition = Competition(
           id = "100",
@@ -63,15 +63,15 @@ object BroadcastFixtures {
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = Some(0)
+          redCards = 0
         ),
         awayTeam = TeamState(
           name = "Chelsea",
-          score = 2,
+          score = 3,
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = Some(0)
+          redCards = 1,
         ),
         competition = Competition(
           id = "100",
@@ -101,7 +101,7 @@ object BroadcastFixtures {
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = Some(0)
+          redCards = 2,
         ),
         awayTeam = TeamState(
           name = "Chelsea",
@@ -109,7 +109,7 @@ object BroadcastFixtures {
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = Some(1)
+          redCards = 1,
         ),
         competition = Competition(
           id = "100",
