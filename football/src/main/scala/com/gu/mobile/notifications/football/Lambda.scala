@@ -26,6 +26,7 @@ object Lambda extends Logging {
   var cachedLambda: Boolean = false
 
   def tableName = s"mobile-notifications-football-notifications-${configuration.stage}"
+  def liveActivitiesTableName = s"mobile-notifications-liveactivities-payload-${configuration.stage}"
 
   lazy val configuration: Configuration = {
     logger.debug("Creating configuration")
@@ -59,7 +60,7 @@ object Lambda extends Logging {
 
   lazy val notificationHandler = new NotificationHandler(configuration, apiClient, dynamoDBClient, tableName)
 
-  lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, tableName)
+  lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, liveActivitiesTableName)
 
   // live activities //
   lazy val liveActivityPusher = new LiveActivityPusher()
