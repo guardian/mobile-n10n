@@ -94,9 +94,7 @@ export class FootballNotificationsLambda extends GuStack {
 		const liveActivityDynamoTable = new Table(this, 'LiveActivityDynamoTable', {
 			tableName: liveActivityDynamoTableName,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
-			billingMode: BillingMode.PROVISIONED,
-			readCapacity: 3,
-			writeCapacity: 3,
+			billingMode: BillingMode.PAY_PER_REQUEST,
 			timeToLiveAttribute: 'ttl',
 		});
 		Tags.of(liveActivityDynamoTable).add('devx-backup-enabled', 'true');

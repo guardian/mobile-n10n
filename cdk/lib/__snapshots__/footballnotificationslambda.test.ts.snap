@@ -165,16 +165,13 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
             "AttributeType": "S",
           },
         ],
+        "BillingMode": "PAY_PER_REQUEST",
         "KeySchema": [
           {
             "AttributeName": "id",
             "KeyType": "HASH",
           },
         ],
-        "ProvisionedThroughput": {
-          "ReadCapacityUnits": 3,
-          "WriteCapacityUnits": 3,
-        },
         "TableName": "mobile-notifications-football-live-activity-CODE",
         "Tags": [
           {
@@ -983,16 +980,13 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
             "AttributeType": "S",
           },
         ],
+        "BillingMode": "PAY_PER_REQUEST",
         "KeySchema": [
           {
             "AttributeName": "id",
             "KeyType": "HASH",
           },
         ],
-        "ProvisionedThroughput": {
-          "ReadCapacityUnits": 3,
-          "WriteCapacityUnits": 3,
-        },
         "TableName": "mobile-notifications-football-live-activity-PROD",
         "Tags": [
           {
