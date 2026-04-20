@@ -97,7 +97,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
     },
     "ErrorLiveActivityEventMetricFilter29FE6682": {
       "Properties": {
-        "FilterPattern": "Eventbus pusher: Failed to publish event",
+        "FilterPattern": "Failed to publish live activity event",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -431,7 +431,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
     },
     "SuccessLiveActivityEventMetricFilterAC2EA51C": {
       "Properties": {
-        "FilterPattern": "Eventbus pusher: Successfully processed event",
+        "FilterPattern": "Successfully processed live activity event",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -910,7 +910,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
     },
     "ErrorLiveActivityEventMetricFilter29FE6682": {
       "Properties": {
-        "FilterPattern": "Eventbus pusher: Failed to publish event",
+        "FilterPattern": "Failed to publish live activity event",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -1244,7 +1244,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
     },
     "SuccessLiveActivityEventMetricFilterAC2EA51C": {
       "Properties": {
-        "FilterPattern": "Eventbus pusher: Successfully processed event",
+        "FilterPattern": "Successfully processed live activity event",
         "LogGroupName": {
           "Fn::Join": [
             "",

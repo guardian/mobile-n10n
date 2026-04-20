@@ -230,7 +230,7 @@ export class FootballNotificationsLambda extends GuStack {
 		new MetricFilter(this, 'SuccessLiveActivityEventMetricFilter', {
 			logGroup: footballNotificationLambdaLogGroup,
 			filterPattern: {
-				logPatternString: 'Eventbus pusher: Successfully processed event',
+				logPatternString: 'Successfully processed live activity event',
 			},
 			metricNamespace: `${stage}/football-live-activity`,
 			metricName: 'success',
@@ -241,7 +241,7 @@ export class FootballNotificationsLambda extends GuStack {
 		new MetricFilter(this, 'ErrorLiveActivityEventMetricFilter', {
 			logGroup: footballNotificationLambdaLogGroup,
 			filterPattern: {
-				logPatternString: 'Eventbus pusher: Failed to publish event',
+				logPatternString: 'Failed to publish live activity event',
 			},
 			metricNamespace: `${stage}/football-live-activity`,
 			metricName: 'error',
