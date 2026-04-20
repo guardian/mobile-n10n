@@ -88,16 +88,21 @@ export class FootballNotificationsLambda extends GuStack {
 
 		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
-		// Live Activity DynamoDB Table
-		const liveActivityDynamoTableName = `${stack}-football-live-activity-${stage}`;
+		// Live Activities DynamoDB Table
+		const liveActivitiesAppName = 'liveactivities';
+		const liveActivitiesDynamoTableName = `${stack}-${liveActivitiesAppName}-payload-${stage}`;
 
-		const liveActivityDynamoTable = new Table(this, 'LiveActivityDynamoTable', {
-			tableName: liveActivityDynamoTableName,
-			partitionKey: { name: 'id', type: AttributeType.STRING },
-			billingMode: BillingMode.PAY_PER_REQUEST,
-			timeToLiveAttribute: 'ttl',
-		});
-		Tags.of(liveActivityDynamoTable).add('devx-backup-enabled', 'true');
+		const liveActivitiesDynamoTable = new Table(
+			this,
+			'LiveActivitiesDynamoTable',
+			{
+				tableName: liveActivitiesDynamoTableName,
+				partitionKey: { name: 'id', type: AttributeType.STRING },
+				billingMode: BillingMode.PAY_PER_REQUEST,
+				timeToLiveAttribute: 'ttl',
+			},
+		);
+		Tags.of(liveActivitiesDynamoTable).add('devx-backup-enabled', 'true');
 
 		footballnotificationslambda.addToRolePolicy(
 			new PolicyStatement({
@@ -105,7 +110,7 @@ export class FootballNotificationsLambda extends GuStack {
 				effect: Effect.ALLOW,
 				resources: [
 					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
-					`arn:aws:dynamodb:${region}:${account}:table/${liveActivityDynamoTableName}`,
+					`arn:aws:dynamodb:${region}:${account}:table/${liveActivitiesDynamoTableName}`,
 				],
 			}),
 		);
@@ -158,46 +163,56 @@ export class FootballNotificationsLambda extends GuStack {
 		);
 
 		// Read Throttle Events Alarm
-		new GuAlarm(this, 'MobileLiveActivityFootballConsumedReadThrottleEvents', {
-			app,
-			alarmName: `MobileLiveActivityFootballConsumedReadThrottleEvents-${stage}`,
-			alarmDescription:
-				'Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes',
-			snsTopicName: 'dynamodb',
-			metric: new Metric({
-				namespace: 'AWS/DynamoDB',
-				metricName: 'ReadThrottleEvents',
-				dimensionsMap: { TableName: liveActivityDynamoTableName },
-				period: Duration.minutes(5),
-				statistic: 'sum',
-				unit: Unit.COUNT,
-			}),
-			threshold: 10,
-			evaluationPeriods: 1,
-			comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-			treatMissingData: TreatMissingData.NOT_BREACHING,
-		});
+		new GuAlarm(
+			this,
+			'MobileLiveActivitiesFootballConsumedReadThrottleEvents',
+			{
+				app,
+				alarmName: `MobileLiveActivitiesFootballConsumedReadThrottleEvents-${stage}`,
+				alarmDescription:
+					'Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes',
+				snsTopicName: 'dynamodb',
+				metric: new Metric({
+					namespace: 'AWS/DynamoDB',
+					metricName: 'ReadThrottleEvents',
+					dimensionsMap: { TableName: liveActivitiesDynamoTableName },
+					period: Duration.minutes(5),
+					statistic: 'sum',
+					unit: Unit.COUNT,
+				}),
+				threshold: 10,
+				evaluationPeriods: 1,
+				comparisonOperator:
+					ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+				treatMissingData: TreatMissingData.NOT_BREACHING,
+			},
+		);
 
 		// Write Throttle Events Alarm
-		new GuAlarm(this, 'MobileLiveActivityFootballConsumedWriteThrottleEvents', {
-			app,
-			alarmName: `MobileLiveActivityFootballConsumedWriteThrottleEvents-${stage}`,
-			alarmDescription:
-				'Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes',
-			snsTopicName: 'dynamodb',
-			metric: new Metric({
-				namespace: 'AWS/DynamoDB',
-				metricName: 'WriteThrottleEvents',
-				dimensionsMap: { TableName: liveActivityDynamoTableName },
-				period: Duration.minutes(5),
-				statistic: 'sum',
-				unit: Unit.COUNT,
-			}),
-			threshold: 10,
-			evaluationPeriods: 1,
-			comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-			treatMissingData: TreatMissingData.NOT_BREACHING,
-		});
+		new GuAlarm(
+			this,
+			'MobileLiveActivitiesFootballConsumedWriteThrottleEvents',
+			{
+				app,
+				alarmName: `MobileLiveActivitiesFootballConsumedWriteThrottleEvents-${stage}`,
+				alarmDescription:
+					'Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes',
+				snsTopicName: 'dynamodb',
+				metric: new Metric({
+					namespace: 'AWS/DynamoDB',
+					metricName: 'WriteThrottleEvents',
+					dimensionsMap: { TableName: liveActivitiesDynamoTableName },
+					period: Duration.minutes(5),
+					statistic: 'sum',
+					unit: Unit.COUNT,
+				}),
+				threshold: 10,
+				evaluationPeriods: 1,
+				comparisonOperator:
+					ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+				treatMissingData: TreatMissingData.NOT_BREACHING,
+			},
+		);
 
 		const footballNotificationLambdaLogGroupName = `/aws/lambda/${footballnotificationslambda.functionName}`;
 		const footballNotificationLambdaLogGroup = LogGroup.fromLogGroupName(
@@ -225,23 +240,23 @@ export class FootballNotificationsLambda extends GuStack {
 		});
 
 		// GoalEvent MetricFilter
-		new MetricFilter(this, 'SuccessLiveActivityEventMetricFilter', {
+		new MetricFilter(this, 'SuccessLiveActivitiesEventMetricFilter', {
 			logGroup: footballNotificationLambdaLogGroup,
 			filterPattern: {
-				logPatternString: 'Successfully processed live activity event',
+				logPatternString: 'Successfully processed live activities event',
 			},
-			metricNamespace: `${stage}/football-live-activity`,
+			metricNamespace: `${stage}/${liveActivitiesAppName}-payload`,
 			metricName: 'success',
 			metricValue: '1',
 		});
 
 		// ErrorEvent MetricFilter
-		new MetricFilter(this, 'ErrorLiveActivityEventMetricFilter', {
+		new MetricFilter(this, 'ErrorLiveActivitiesEventMetricFilter', {
 			logGroup: footballNotificationLambdaLogGroup,
 			filterPattern: {
-				logPatternString: 'Failed to publish live activity event',
+				logPatternString: 'Failed to publish live activities event',
 			},
-			metricNamespace: `${stage}/football-live-activity`,
+			metricNamespace: `${stage}/${liveActivitiesAppName}-payload`,
 			metricName: 'error',
 			metricValue: '1',
 		});

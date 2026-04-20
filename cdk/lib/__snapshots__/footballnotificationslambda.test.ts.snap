@@ -95,9 +95,9 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       },
       "Type": "AWS::Logs::MetricFilter",
     },
-    "ErrorLiveActivityEventMetricFilter29FE6682": {
+    "ErrorLiveActivitiesEventMetricFilterB40B00CE": {
       "Properties": {
-        "FilterPattern": "Failed to publish live activity event",
+        "FilterPattern": "Failed to publish live activities event",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -112,7 +112,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
         "MetricTransformations": [
           {
             "MetricName": "error",
-            "MetricNamespace": "CODE/football-live-activity",
+            "MetricNamespace": "CODE/liveactivities-payload",
             "MetricValue": "1",
           },
         ],
@@ -143,7 +143,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       },
       "Type": "AWS::Logs::MetricFilter",
     },
-    "LiveActivityDynamoTable97250FD8": {
+    "LiveActivitiesDynamoTable655B0994": {
       "DeletionPolicy": "Retain",
       "Properties": {
         "AttributeDefinitions": [
@@ -159,7 +159,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
             "KeyType": "HASH",
           },
         ],
-        "TableName": "mobile-notifications-football-live-activity-CODE",
+        "TableName": "mobile-notifications-liveactivities-payload-CODE",
         "Tags": [
           {
             "Key": "devx-backup-enabled",
@@ -190,7 +190,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       "Type": "AWS::DynamoDB::Table",
       "UpdateReplacePolicy": "Retain",
     },
-    "MobileLiveActivityFootballConsumedReadThrottleEvents3401E3F1": {
+    "MobileLiveActivitiesFootballConsumedReadThrottleEventsC09E6745": {
       "Properties": {
         "ActionsEnabled": true,
         "AlarmActions": [
@@ -212,12 +212,12 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
           },
         ],
         "AlarmDescription": "Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes",
-        "AlarmName": "MobileLiveActivityFootballConsumedReadThrottleEvents-CODE",
+        "AlarmName": "MobileLiveActivitiesFootballConsumedReadThrottleEvents-CODE",
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": [
           {
             "Name": "TableName",
-            "Value": "mobile-notifications-football-live-activity-CODE",
+            "Value": "mobile-notifications-liveactivities-payload-CODE",
           },
         ],
         "EvaluationPeriods": 1,
@@ -249,7 +249,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "MobileLiveActivityFootballConsumedWriteThrottleEventsD48F011A": {
+    "MobileLiveActivitiesFootballConsumedWriteThrottleEvents28E4A6AF": {
       "Properties": {
         "ActionsEnabled": true,
         "AlarmActions": [
@@ -271,12 +271,12 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
           },
         ],
         "AlarmDescription": "Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes",
-        "AlarmName": "MobileLiveActivityFootballConsumedWriteThrottleEvents-CODE",
+        "AlarmName": "MobileLiveActivitiesFootballConsumedWriteThrottleEvents-CODE",
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": [
           {
             "Name": "TableName",
-            "Value": "mobile-notifications-football-live-activity-CODE",
+            "Value": "mobile-notifications-liveactivities-payload-CODE",
           },
         ],
         "EvaluationPeriods": 1,
@@ -426,9 +426,9 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "SuccessLiveActivityEventMetricFilterAC2EA51C": {
+    "SuccessLiveActivitiesEventMetricFilter6C8ACAEF": {
       "Properties": {
-        "FilterPattern": "Successfully processed live activity event",
+        "FilterPattern": "Successfully processed live activities event",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -443,7 +443,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
         "MetricTransformations": [
           {
             "MetricName": "success",
-            "MetricNamespace": "CODE/football-live-activity",
+            "MetricNamespace": "CODE/liveactivities-payload",
             "MetricValue": "1",
           },
         ],
@@ -729,7 +729,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                       {
                         "Ref": "AWS::AccountId",
                       },
-                      ":table/mobile-notifications-football-live-activity-CODE",
+                      ":table/mobile-notifications-liveactivities-payload-CODE",
                     ],
                   ],
                 },
@@ -905,9 +905,9 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       },
       "Type": "AWS::Logs::MetricFilter",
     },
-    "ErrorLiveActivityEventMetricFilter29FE6682": {
+    "ErrorLiveActivitiesEventMetricFilterB40B00CE": {
       "Properties": {
-        "FilterPattern": "Failed to publish live activity event",
+        "FilterPattern": "Failed to publish live activities event",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -922,7 +922,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
         "MetricTransformations": [
           {
             "MetricName": "error",
-            "MetricNamespace": "PROD/football-live-activity",
+            "MetricNamespace": "PROD/liveactivities-payload",
             "MetricValue": "1",
           },
         ],
@@ -953,7 +953,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       },
       "Type": "AWS::Logs::MetricFilter",
     },
-    "LiveActivityDynamoTable97250FD8": {
+    "LiveActivitiesDynamoTable655B0994": {
       "DeletionPolicy": "Retain",
       "Properties": {
         "AttributeDefinitions": [
@@ -969,7 +969,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
             "KeyType": "HASH",
           },
         ],
-        "TableName": "mobile-notifications-football-live-activity-PROD",
+        "TableName": "mobile-notifications-liveactivities-payload-PROD",
         "Tags": [
           {
             "Key": "devx-backup-enabled",
@@ -1000,7 +1000,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       "Type": "AWS::DynamoDB::Table",
       "UpdateReplacePolicy": "Retain",
     },
-    "MobileLiveActivityFootballConsumedReadThrottleEvents3401E3F1": {
+    "MobileLiveActivitiesFootballConsumedReadThrottleEventsC09E6745": {
       "Properties": {
         "ActionsEnabled": true,
         "AlarmActions": [
@@ -1022,12 +1022,12 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
           },
         ],
         "AlarmDescription": "Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes",
-        "AlarmName": "MobileLiveActivityFootballConsumedReadThrottleEvents-PROD",
+        "AlarmName": "MobileLiveActivitiesFootballConsumedReadThrottleEvents-PROD",
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": [
           {
             "Name": "TableName",
-            "Value": "mobile-notifications-football-live-activity-PROD",
+            "Value": "mobile-notifications-liveactivities-payload-PROD",
           },
         ],
         "EvaluationPeriods": 1,
@@ -1059,7 +1059,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "MobileLiveActivityFootballConsumedWriteThrottleEventsD48F011A": {
+    "MobileLiveActivitiesFootballConsumedWriteThrottleEvents28E4A6AF": {
       "Properties": {
         "ActionsEnabled": true,
         "AlarmActions": [
@@ -1081,12 +1081,12 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
           },
         ],
         "AlarmDescription": "Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes",
-        "AlarmName": "MobileLiveActivityFootballConsumedWriteThrottleEvents-PROD",
+        "AlarmName": "MobileLiveActivitiesFootballConsumedWriteThrottleEvents-PROD",
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "Dimensions": [
           {
             "Name": "TableName",
-            "Value": "mobile-notifications-football-live-activity-PROD",
+            "Value": "mobile-notifications-liveactivities-payload-PROD",
           },
         ],
         "EvaluationPeriods": 1,
@@ -1236,9 +1236,9 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
-    "SuccessLiveActivityEventMetricFilterAC2EA51C": {
+    "SuccessLiveActivitiesEventMetricFilter6C8ACAEF": {
       "Properties": {
-        "FilterPattern": "Successfully processed live activity event",
+        "FilterPattern": "Successfully processed live activities event",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -1253,7 +1253,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
         "MetricTransformations": [
           {
             "MetricName": "success",
-            "MetricNamespace": "PROD/football-live-activity",
+            "MetricNamespace": "PROD/liveactivities-payload",
             "MetricValue": "1",
           },
         ],
@@ -1539,7 +1539,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                       {
                         "Ref": "AWS::AccountId",
                       },
-                      ":table/mobile-notifications-football-live-activity-PROD",
+                      ":table/mobile-notifications-liveactivities-payload-PROD",
                     ],
                   ],
                 },
