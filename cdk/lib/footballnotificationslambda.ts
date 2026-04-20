@@ -93,7 +93,7 @@ export class FootballNotificationsLambda extends GuStack {
 
 		const liveActivityDynamoTable = new Table(this, 'LiveActivityDynamoTable', {
 			tableName: liveActivityDynamoTableName,
-			partitionKey: { name: 'liveActivityId', type: AttributeType.STRING },
+			partitionKey: { name: 'id', type: AttributeType.STRING },
 			billingMode: BillingMode.PROVISIONED,
 			readCapacity: 3,
 			writeCapacity: 3,

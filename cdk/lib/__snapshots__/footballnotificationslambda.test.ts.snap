@@ -148,13 +148,13 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       "Properties": {
         "AttributeDefinitions": [
           {
-            "AttributeName": "liveActivityId",
+            "AttributeName": "id",
             "AttributeType": "S",
           },
         ],
         "KeySchema": [
           {
-            "AttributeName": "liveActivityId",
+            "AttributeName": "id",
             "KeyType": "HASH",
           },
         ],
@@ -961,13 +961,13 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       "Properties": {
         "AttributeDefinitions": [
           {
-            "AttributeName": "liveActivityId",
+            "AttributeName": "id",
             "AttributeType": "S",
           },
         ],
         "KeySchema": [
           {
-            "AttributeName": "liveActivityId",
+            "AttributeName": "id",
             "KeyType": "HASH",
           },
         ],
