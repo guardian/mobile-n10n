@@ -75,15 +75,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       "Properties": {
         "FilterPattern": "Error sending match status",
         "LogGroupName": {
-          "Fn::Join": [
-            "",
-            [
-              "/aws/lambda/",
-              {
-                "Ref": "footballLambdaAE03EC83",
-              },
-            ],
-          ],
+          "Ref": "FootballLambdaLogGroup40C3C1BF",
         },
         "MetricTransformations": [
           {
@@ -99,15 +91,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       "Properties": {
         "FilterPattern": "Failed to publish live activity event",
         "LogGroupName": {
-          "Fn::Join": [
-            "",
-            [
-              "/aws/lambda/",
-              {
-                "Ref": "footballLambdaAE03EC83",
-              },
-            ],
-          ],
+          "Ref": "FootballLambdaLogGroup40C3C1BF",
         },
         "MetricTransformations": [
           {
@@ -119,9 +103,9 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       },
       "Type": "AWS::Logs::MetricFilter",
     },
-    "GoalEventMetricFilterAD6B9DEF": {
+    "FootballLambdaLogGroup40C3C1BF": {
+      "DeletionPolicy": "Retain",
       "Properties": {
-        "FilterPattern": "successfully sent",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -132,6 +116,35 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
               },
             ],
           ],
+        },
+        "RetentionInDays": 731,
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "GoalEventMetricFilterAD6B9DEF": {
+      "Properties": {
+        "FilterPattern": "successfully sent",
+        "LogGroupName": {
+          "Ref": "FootballLambdaLogGroup40C3C1BF",
         },
         "MetricTransformations": [
           {
@@ -433,15 +446,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       "Properties": {
         "FilterPattern": "Successfully processed live activity event",
         "LogGroupName": {
-          "Fn::Join": [
-            "",
-            [
-              "/aws/lambda/",
-              {
-                "Ref": "footballLambdaAE03EC83",
-              },
-            ],
-          ],
+          "Ref": "FootballLambdaLogGroup40C3C1BF",
         },
         "MetricTransformations": [
           {
@@ -888,15 +893,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       "Properties": {
         "FilterPattern": "Error sending match status",
         "LogGroupName": {
-          "Fn::Join": [
-            "",
-            [
-              "/aws/lambda/",
-              {
-                "Ref": "footballLambdaAE03EC83",
-              },
-            ],
-          ],
+          "Ref": "FootballLambdaLogGroup40C3C1BF",
         },
         "MetricTransformations": [
           {
@@ -912,15 +909,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       "Properties": {
         "FilterPattern": "Failed to publish live activity event",
         "LogGroupName": {
-          "Fn::Join": [
-            "",
-            [
-              "/aws/lambda/",
-              {
-                "Ref": "footballLambdaAE03EC83",
-              },
-            ],
-          ],
+          "Ref": "FootballLambdaLogGroup40C3C1BF",
         },
         "MetricTransformations": [
           {
@@ -932,9 +921,9 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       },
       "Type": "AWS::Logs::MetricFilter",
     },
-    "GoalEventMetricFilterAD6B9DEF": {
+    "FootballLambdaLogGroup40C3C1BF": {
+      "DeletionPolicy": "Retain",
       "Properties": {
-        "FilterPattern": "successfully sent",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -945,6 +934,35 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
               },
             ],
           ],
+        },
+        "RetentionInDays": 731,
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "GoalEventMetricFilterAD6B9DEF": {
+      "Properties": {
+        "FilterPattern": "successfully sent",
+        "LogGroupName": {
+          "Ref": "FootballLambdaLogGroup40C3C1BF",
         },
         "MetricTransformations": [
           {
@@ -1246,15 +1264,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       "Properties": {
         "FilterPattern": "Successfully processed live activity event",
         "LogGroupName": {
-          "Fn::Join": [
-            "",
-            [
-              "/aws/lambda/",
-              {
-                "Ref": "footballLambdaAE03EC83",
-              },
-            ],
-          ],
+          "Ref": "FootballLambdaLogGroup40C3C1BF",
         },
         "MetricTransformations": [
           {

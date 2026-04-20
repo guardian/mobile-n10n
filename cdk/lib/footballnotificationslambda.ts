@@ -202,10 +202,12 @@ export class FootballNotificationsLambda extends GuStack {
 		});
 
 		const footballNotificationLambdaLogGroupName = `/aws/lambda/${footballnotificationslambda.functionName}`;
-		const footballNotificationLambdaLogGroup = LogGroup.fromLogGroupName(
+		const footballNotificationLambdaLogGroup = new LogGroup(
 			this,
 			'FootballLambdaLogGroup',
-			footballNotificationLambdaLogGroupName,
+			{
+				logGroupName: footballNotificationLambdaLogGroupName,
+			},
 		);
 
 		// GoalEvent MetricFilter
