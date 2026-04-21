@@ -3,6 +3,7 @@ package com.gu.liveactivities
 import com.gu.liveactivities.models._
 import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, FootballMatchContentState, FullTime, Scheduled, SecondHalf, TeamState}
 
+// TODO these are for dev purposes only and should be deleted.
 object BroadcastFixtures {
   def fifteenMinutesFromNowEpochSeconds: Long = (System.currentTimeMillis() / 1000L) + 15 * 60
   def nowEpochSeconds: Long = System.currentTimeMillis() / 1000L
@@ -32,9 +33,8 @@ object BroadcastFixtures {
           redCards = None
         ),
         competition = Competition(
-          id = "100",
-          name = "League 1",
-          round = Some("1")
+          name = "FIFA World Cup 2026",
+          round = Some("Group A")
         ),
         commentary = None,
         lineupsAvailable = Some(false),
@@ -74,9 +74,8 @@ object BroadcastFixtures {
           redCards = Some(0)
         ),
         competition = Competition(
-          id = "100",
-          name = "League 1",
-          round = Some("1")
+          name = "FIFA World Cup 2026",
+          round = Some("Group A")
         ),
         commentary = Some("A closely fought match so far..."),
         lineupsAvailable = Some(true),
@@ -112,9 +111,8 @@ object BroadcastFixtures {
           redCards = Some(1)
         ),
         competition = Competition(
-          id = "100",
-          name = "League 1",
-          round = Some("1")
+          name = "FIFA World Cup 2026",
+          round = Some("Group A")
         ),
         commentary = Some("Arsenal takes the win thanks to a late goal."),
         lineupsAvailable = Some(true),
