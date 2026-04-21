@@ -81,10 +81,10 @@ export class FootballNotificationsLambda extends GuStack {
 			writeCapacity: 3,
 			timeToLiveAttribute: 'ttl',
 		});
-		this.overrideLogicalId(dynamoTable, {
-			logicalId: 'DynamoTable',
-			reason: 'Retaining a stateful resource previously defined in YAML',
-		});
+		// this.overrideLogicalId(dynamoTable, {
+		// 	logicalId: 'DynamoTable',
+		// 	reason: 'Retaining a stateful resource previously defined in YAML',
+		// });
 
 		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
