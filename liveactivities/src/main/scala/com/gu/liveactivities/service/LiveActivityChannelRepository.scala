@@ -139,7 +139,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   }
 
   override def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit] = {
-    updateMappingById(id, isChannelActive = Some(isActive), isLive = Some(isActive))
+    updateMappingById(id, isChannelActive = Some(isActive), isLive = Some(isActive)) // defaults to isLive true on mapping creation
   }
 
   override def updateMappingLive(id: String, isLive: Boolean): Future[Unit] = {
