@@ -1,16 +1,8 @@
 import { GuScheduledLambda } from '@guardian/cdk';
-import { GuAlarm } from '@guardian/cdk/lib/constructs/cloudwatch';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import type { App } from 'aws-cdk-lib';
-import { Duration, Tags } from 'aws-cdk-lib';
-import {
-	ComparisonOperator,
-	Metric,
-	TreatMissingData,
-	Unit,
-} from 'aws-cdk-lib/aws-cloudwatch';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { Duration } from 'aws-cdk-lib';
 import { Schedule } from 'aws-cdk-lib/aws-events';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -71,89 +63,89 @@ export class FootballNotificationsLambda extends GuStack {
 			}),
 		);
 
-		const dynamoTableName = `${stack}-football-notifications-${stage}`;
+		// const dynamoTableName = `${stack}-football-notifications-${stage}`;
 
-		const dynamoTable = new Table(this, 'DynamoTable', {
-			tableName: dynamoTableName,
-			partitionKey: { name: 'notificationId', type: AttributeType.STRING },
-			billingMode: BillingMode.PROVISIONED,
-			readCapacity: 3,
-			writeCapacity: 3,
-			timeToLiveAttribute: 'ttl',
-		});
-		this.overrideLogicalId(dynamoTable, {
-			logicalId: 'DynamoTable',
-			reason: 'Retaining a stateful resource previously defined in YAML',
-		});
+		// const dynamoTable = new Table(this, 'DynamoTable', {
+		// 	tableName: dynamoTableName,
+		// 	partitionKey: { name: 'notificationId', type: AttributeType.STRING },
+		// 	billingMode: BillingMode.PROVISIONED,
+		// 	readCapacity: 3,
+		// 	writeCapacity: 3,
+		// 	timeToLiveAttribute: 'ttl',
+		// });
+		// this.overrideLogicalId(dynamoTable, {
+		// 	logicalId: 'DynamoTable',
+		// 	reason: 'Retaining a stateful resource previously defined in YAML',
+		// });
 
-		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
+		// Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
-		footballnotificationslambda.addToRolePolicy(
-			new PolicyStatement({
-				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
-				effect: Effect.ALLOW,
-				resources: [
-					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
-				],
-			}),
-		);
+		// footballnotificationslambda.addToRolePolicy(
+		// 	new PolicyStatement({
+		// 		actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
+		// 		effect: Effect.ALLOW,
+		// 		resources: [
+		// 			`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
+		// 		],
+		// 	}),
+		// );
 
-		footballnotificationslambda.addToRolePolicy(
-			new PolicyStatement({
-				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
-				effect: Effect.ALLOW,
-				resources: [
-					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
-				],
-			}),
-		);
+		// footballnotificationslambda.addToRolePolicy(
+		// 	new PolicyStatement({
+		// 		actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
+		// 		effect: Effect.ALLOW,
+		// 		resources: [
+		// 			`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
+		// 		],
+		// 	}),
+		// );
 
-		// Read Throttle Events Alarm
-		new GuAlarm(this, 'MobileNotificationsFootballConsumedReadThrottleEvents', {
-			app,
-			alarmName: `MobileNotificationsFootballConsumedReadThrottleEvents-${stage}`,
-			alarmDescription:
-				'Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes',
-			snsTopicName: 'dynamodb',
-			metric: new Metric({
-				namespace: 'AWS/DynamoDB',
-				metricName: 'ReadThrottleEvents',
-				dimensionsMap: { TableName: dynamoTableName },
-				period: Duration.minutes(5),
-				statistic: 'sum',
-				unit: Unit.COUNT,
-			}),
-			threshold: 10,
-			evaluationPeriods: 1,
-			comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-			treatMissingData: TreatMissingData.NOT_BREACHING,
-		});
+		// // Read Throttle Events Alarm
+		// new GuAlarm(this, 'MobileNotificationsFootballConsumedReadThrottleEvents', {
+		// 	app,
+		// 	alarmName: `MobileNotificationsFootballConsumedReadThrottleEvents-${stage}`,
+		// 	alarmDescription:
+		// 		'Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes',
+		// 	snsTopicName: 'dynamodb',
+		// 	metric: new Metric({
+		// 		namespace: 'AWS/DynamoDB',
+		// 		metricName: 'ReadThrottleEvents',
+		// 		dimensionsMap: { TableName: dynamoTableName },
+		// 		period: Duration.minutes(5),
+		// 		statistic: 'sum',
+		// 		unit: Unit.COUNT,
+		// 	}),
+		// 	threshold: 10,
+		// 	evaluationPeriods: 1,
+		// 	comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+		// 	treatMissingData: TreatMissingData.NOT_BREACHING,
+		// });
 
-		// Write Throttle Events Alarm
-		new GuAlarm(
-			this,
-			'MobileNotificationsFootballConsumedWriteThrottleEvents',
-			{
-				app,
-				alarmName: `MobileNotificationsFootballConsumedWriteThrottleEvents-${stage}`,
-				alarmDescription:
-					'Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes',
-				snsTopicName: 'dynamodb',
-				metric: new Metric({
-					namespace: 'AWS/DynamoDB',
-					metricName: 'WriteThrottleEvents',
-					dimensionsMap: { TableName: dynamoTableName },
-					period: Duration.minutes(5),
-					statistic: 'sum',
-					unit: Unit.COUNT,
-				}),
-				threshold: 10,
-				evaluationPeriods: 1,
-				comparisonOperator:
-					ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-				treatMissingData: TreatMissingData.NOT_BREACHING,
-			},
-		);
+		// // Write Throttle Events Alarm
+		// new GuAlarm(
+		// 	this,
+		// 	'MobileNotificationsFootballConsumedWriteThrottleEvents',
+		// 	{
+		// 		app,
+		// 		alarmName: `MobileNotificationsFootballConsumedWriteThrottleEvents-${stage}`,
+		// 		alarmDescription:
+		// 			'Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes',
+		// 		snsTopicName: 'dynamodb',
+		// 		metric: new Metric({
+		// 			namespace: 'AWS/DynamoDB',
+		// 			metricName: 'WriteThrottleEvents',
+		// 			dimensionsMap: { TableName: dynamoTableName },
+		// 			period: Duration.minutes(5),
+		// 			statistic: 'sum',
+		// 			unit: Unit.COUNT,
+		// 		}),
+		// 		threshold: 10,
+		// 		evaluationPeriods: 1,
+		// 		comparisonOperator:
+		// 			ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+		// 		treatMissingData: TreatMissingData.NOT_BREACHING,
+		// 	},
+		// );
 
 		const footballNotificationLambdaLogGroupName = `/aws/lambda/${footballnotificationslambda.functionName}`;
 		const footballNotificationLambdaLogGroup = LogGroup.fromLogGroupName(
