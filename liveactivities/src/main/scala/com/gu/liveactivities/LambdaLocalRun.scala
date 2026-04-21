@@ -3,9 +3,13 @@ package com.gu.liveactivities
 import play.api.libs.json.Json
 import java.nio.charset.StandardCharsets
 
+/**
+ *  Local run creates and closes a channel on the APNS Sandbox env for the iOS debug app.
+ */
 object LambdaLocalRun extends App {
 
   println("Start running ChannelManagerLambda locally")
+
   val createChannelJson = Json.toJson(ChannelRequest("match123", Some("competiton-001"), None, toCreate = true)).toString()
 
   val createRequestStream = new java.io.ByteArrayInputStream(createChannelJson.getBytes(StandardCharsets.UTF_8))

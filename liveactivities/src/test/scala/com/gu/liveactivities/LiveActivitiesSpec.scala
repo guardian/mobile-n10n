@@ -8,6 +8,7 @@ import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
 
 class LiveActivitiesSpec extends Specification {
 
+  // todo
   "A LiveActivities" should {
 
     "create a channel" in {

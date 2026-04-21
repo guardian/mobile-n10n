@@ -41,5 +41,4 @@ class AsyncDynamo(val client: AmazonDynamoDBAsync) {
   def query(request: QueryRequest): Future[QueryResult] = wrapAsyncMethod(client.queryAsync, request)
   def get(request: GetItemRequest): Future[GetItemResult] = wrapAsyncMethod(client.getItemAsync, request)
   def updateItem(request: UpdateItemRequest): Future[UpdateItemResult] = wrapAsyncMethod(client.updateItemAsync, request)
-  def deleteItem(request: DeleteItemRequest): Future[DeleteItemResult] = wrapAsyncMethod(client.deleteItemAsync, request)
 }

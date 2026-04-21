@@ -2,8 +2,16 @@ package com.gu.mobile.notifications.client.models.liveActitivites
 
 import play.api.libs.json._
 
-// GENERIC CONTENT STATE //////////////////////////////////////////////////
 
+
+/**
+ * These are the Live Activity Content models used for sending live activity
+ * updates to Apple APNS service.
+ **/
+
+
+
+// GENERIC CONTENT STATE //////////////////////////////////////////////////
 sealed trait ContentState
 object ContentState {
   import FootballContentJsonFormats._
@@ -76,13 +84,6 @@ case class TeamState(
     redCards: Option[Int] = None
 )
 
-//object TeamState {
-//  def fromPaMatchDayTeam(t: MatchDayTeam): TeamState = TeamState(
-//    name = t.name,
-//    score = t.score.getOrElse(0)
-//  )
-//}
-
 case class FootballMatchContentState(
     matchStatus: MatchStatus,
     kickOffTimestamp: Long,
@@ -96,29 +97,6 @@ case class FootballMatchContentState(
     articleUrl: Option[String] = None
 ) extends ContentState
 
-//object FootballMatchContentState {
-//
-//  /// todo
-//  // competition is not on LiveMatch — pass it in from the surrounding context (e.g. MatchDay)
-//  def apply(
-//      paLiveMatch: LiveMatch,
-//      paCompetition: pa.Competition
-//  ): FootballMatchContentState = {
-//    FootballMatchContentState(
-//      matchStatus = MatchStatus.fromString(paLiveMatch.status),
-//      kickOffTimestamp = paLiveMatch.date.toEpochSecond,
-//      homeTeam = TeamState.fromPaMatchDayTeam(paLiveMatch.homeTeam),
-//      awayTeam = TeamState.fromPaMatchDayTeam(paLiveMatch.awayTeam),
-//      competition =
-//        Competition(id = paCompetition.id, name = paCompetition.name),
-//      commentary = paLiveMatch.comments,
-//      lineupsAvailable = None, // Booliean   // not available on LiveMatch
-//      currentMinute = None, // not available on LiveMatch
-//      currentPeriodStartTime = None,
-//      articleUrl = None // not available on LiveMatch from CAPI
-//    )
-//  }
-//}
 
 object FootballContentJsonFormats {
   // MatchStatus format must be defined first since FootballMatchContentState depends on it

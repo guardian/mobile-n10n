@@ -72,6 +72,8 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
     }
   }
 
+  // todo - consider error case: where a channel is created in APNS but the record update in Dynamo fails - consider cleanup mechanism for orphaned APNS channels.
+  // todo - consider error case: where channel created in APNS fails, how do we handle retries for upcoming live activities.
   def processRequest(request: ChannelRequest, context: Context): Unit = {
     val channelFuture = 
       if (request.toCreate)
