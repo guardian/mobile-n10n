@@ -50,7 +50,6 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         redCards = None // tbc
       ),
       competition = Competition(
-        id = matchInfo.competition.map(_.id).getOrElse(""),
         name = matchInfo.competition.map(_.name).getOrElse("")
       ),
       commentary = matchInfo.comments,
