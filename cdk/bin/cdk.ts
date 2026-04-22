@@ -3,6 +3,7 @@ import { App, Duration } from 'aws-cdk-lib';
 import 'source-map-support/register';
 import { FakeBreakingNewsLambda } from '../lib/fakebreakingnewslambda';
 import { FootballNotificationsLambda } from '../lib/footballnotificationslambda';
+import { LiveActivities } from '../lib/liveactivities';
 import type { NotificationProps } from '../lib/notification';
 import { Notification } from '../lib/notification';
 import type { RegistrationProps } from '../lib/registration';
@@ -186,3 +187,10 @@ new FootballNotificationsLambda(
 	'FootballNotificationsLambda-PROD',
 	footballNotificationsProdProps,
 );
+
+export const liveActivitiesCodeProps: GuStackProps = {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+};
+
+new LiveActivities(app, 'LiveActivities-CODE', liveActivitiesCodeProps);

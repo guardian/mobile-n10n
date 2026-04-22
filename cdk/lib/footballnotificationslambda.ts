@@ -3,8 +3,7 @@ import { GuAlarm } from '@guardian/cdk/lib/constructs/cloudwatch';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import type { App } from 'aws-cdk-lib';
-import { Tags } from 'aws-cdk-lib';
-import { Duration } from 'aws-cdk-lib';
+import { Duration, Tags } from 'aws-cdk-lib';
 import {
 	ComparisonOperator,
 	Metric,
@@ -59,6 +58,15 @@ export class FootballNotificationsLambda extends GuStack {
 				effect: Effect.ALLOW,
 				resources: [
 					`arn:aws:ssm:${region}:${account}:parameter/${app}/${stage}/${stack}`,
+				],
+			}),
+		);
+
+		footballnotificationslambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['events:PutEvents'],
+				resources: [
+					`arn:aws:events:${region}:${account}:event-bus/liveactivities-eventbus-${stage}`,
 				],
 			}),
 		);

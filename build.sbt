@@ -39,6 +39,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 val playJsonVersion = "3.0.6"
 val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.797"
+val awsSdk2Version: String = "2.42.18"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
@@ -317,6 +318,7 @@ lazy val football = lambda("football", "football")
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
+      "software.amazon.awssdk" % "eventbridge" % "2.20.0"
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
@@ -456,4 +458,31 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
       // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
       ExclusionRule(organization = "com.typesafe.play")
     )
+  )
+
+lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.gu.liveactivities.LambdaLocalRun"))
+  .dependsOn(common)
+  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
+  .settings(LocalDynamoDBLiveActivities.settings)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.turo" % "pushy" % "0.13.10",
+      "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
+      "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
+      "software.amazon.awssdk" % "eventbridge" % "2.20.0",
+      "org.scanamo" %% "scanamo" % "6.0.0",
+      "org.scanamo" %% "scanamo-testkit" % "6.0.0" % "test"
+    ),
+    excludeDependencies ++= Seq(
+      ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
+      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
+      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
+      ExclusionRule(organization = "com.typesafe.play")
+    ),
+    fork := true,
+    startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
+    Test / test := (Test / test).dependsOn(startDynamoDBLocal).value,
+    Test / testOnly := (Test / testOnly).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testQuick := (Test / testQuick).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testOptions += dynamoDBLocalTestCleanup.value,
   )

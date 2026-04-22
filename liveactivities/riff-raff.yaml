@@ -1,0 +1,18 @@
+stacks: [mobile-notifications]
+regions: [eu-west-1]
+
+deployments:
+  liveactivities:
+    type: aws-lambda
+    parameters:
+      bucketSsmLookup: true
+      functionNames: [liveactivities-channel-manager-, liveactivities-broadcast-]
+      fileName: liveactivities.jar
+      prefixStack: false
+    dependencies: [mobile-notifications-liveactivities-cfn]
+  mobile-notifications-liveactivities-cfn:
+    type: cloud-formation
+    app: liveactivities
+    parameters:
+      templateStagePaths:
+        CODE: LiveActivities-CODE.template.json

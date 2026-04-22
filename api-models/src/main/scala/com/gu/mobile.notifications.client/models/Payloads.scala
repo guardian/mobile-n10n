@@ -60,8 +60,11 @@ object GoalType {
   }
 }
 
-sealed trait NotificationPayload {
+trait Payload {
   def id: UUID
+}
+
+sealed trait NotificationPayload extends Payload {
   def title: Option[String]
   def `type`: NotificationPayloadType
   def message: Option[String]
