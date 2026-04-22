@@ -63,11 +63,6 @@ object Lambda extends Logging {
 
   lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, liveActivitiesTableName)
 
-  // live activities //
-  lazy val liveActivityPusher = new LiveActivityPusher()
-  lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder(configuration.mapiHost)
-  lazy val liveActivityEventConsumer = new LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder)
-
   def getZonedDateTime(): ZonedDateTime = {
     val zonedDateTime = if (configuration.stage == "CODE") {
       val is = URI.create("https://hdjq4n85yi.execute-api.eu-west-1.amazonaws.com/Prod/getTime").toURL.openStream()
