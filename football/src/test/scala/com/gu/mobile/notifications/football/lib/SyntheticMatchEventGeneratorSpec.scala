@@ -85,7 +85,6 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
 
     "Add id to first timeline event" in new TestScope {
       val generator = new SyntheticMatchEventGenerator()
-      println(generator.generate(List(timelineEvent), "match-id", matchInfo.copy(date = ZonedDateTime.now())))
       generator.generate(List(timelineEvent), "match-id", matchInfo.copy(date = ZonedDateTime.now())) mustEqual List(timelineEvent.copy(id = Some(kickoffId)))
     }
 
