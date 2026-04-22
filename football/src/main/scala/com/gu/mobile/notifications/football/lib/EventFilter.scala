@@ -10,7 +10,7 @@ import com.gu.mobile.notifications.football.Logging
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class EventFilter[A <: Payload](distinctCheck: DynamoDistinctCheck[A]) extends Logging {
+class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) extends Logging {
   private val processedEvents = new AtomicReference[Set[UUID]](Set.empty)
 
   private def cache(eventId: UUID): Unit = {
@@ -19,24 +19,24 @@ class EventFilter[A <: Payload](distinctCheck: DynamoDistinctCheck[A]) extends L
     })
   }
 
-  private def filterNotification(notification: A)(implicit ec: ExecutionContext, writes: play.api.libs.json.Writes[A]): Future[Option[A]] = {
-    if (!processedEvents.get.contains(notification.id)) {
-      distinctCheck.insertNotification(notification).map {
+  private def filterDynamoEvent(item: A)(implicit ec: ExecutionContext): Future[Option[A]] = {
+    if (!processedEvents.get.contains(item.id)) {
+      distinctCheck.insertNotification(item).map {
         case Distinct =>
-          cache(notification.id)
-          Some(notification)
+          cache(item.id)
+          Some(item)
         case Duplicate =>
-          cache(notification.id)
+          cache(item.id)
           None
         case _ => None
       }
     } else {
-      logger.debug(s"Event ${notification.id} already exists in local cache or does not have an id - discarding")
+      logger.debug(s"Event ${item.id} already exists in local cache or does not have an id - discarding")
       Future.successful(None)
     }
   }
 
-  def filterNotifications(notifications: List[A])(implicit ec: ExecutionContext, writes: play.api.libs.json.Writes[A]): Future[List[A]] = {
-    Future.traverse(notifications)(filterNotification).map(_.flatten)
+  def filterDynamoEvents(notifications: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
+    Future.traverse(notifications)(filterDynamoEvent).map(_.flatten)
   }
 }
