@@ -157,9 +157,14 @@ class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDy
 
   def process(rawEvents: List[MatchDataWithArticle]): Future[Unit] = {
     val liveActivities = rawEvents.flatMap(liveActivityEventConsumer.eventsToLiveActivityPayload)
+
     for {
       // filteredLiveActivities <- eventFilter.filterNotifications(liveActivities)
-      result <- liveActivityPusher.pushEvents(liveActivities) // TODO this should eventually push Filtered Live Activity Payloads
+      result <- if (configuration.stage != "PROD") {
+        liveActivityPusher.pushEvents(liveActivities)
+      } else {
+        Future.successful(())
+      }
     } yield result
   }
 }
