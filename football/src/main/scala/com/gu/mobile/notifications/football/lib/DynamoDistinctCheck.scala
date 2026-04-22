@@ -67,9 +67,9 @@ class DynamoDistinctCheck[A <: Payload, D: DynamoFormat](
 
     lazy val scanamoAsync: ScanamoAsync = ScanamoAsync(client)
     lazy val notificationsTable = Table[D](tableName)
-    val dynamoModel = toDynamoModel(item)
+    val dynamoPayload = toDynamoModel(item)
 
-    val putResult = scanamoAsync.exec(notificationsTable.given(not(attributeExists(partitionKeyName))).put(dynamoModel))
+    val putResult = scanamoAsync.exec(notificationsTable.given(not(attributeExists(partitionKeyName))).put(dynamoPayload))
     putResult map {
       case Right(_) =>
         logger.info(s"Distinct event ${item.id} written to dynamodb $tableName")
