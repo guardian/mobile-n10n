@@ -74,11 +74,10 @@ class LiveActivityPusher extends Logging {
           .build()
 
         val response: PutEventsResponse = eventBridgeClient.putEvents(request)
+
+        // todo - alert for failed entry counts?
         logger.info(
-          s"Eventbus pusher: Event published. Failed entry count: ${response.failedEntryCount()}"
-        )
-        logger.info(
-          s"Eventbus pusher: Event details: ${Json.toJson(payload).toString()}"
+          s"Eventbus pusher: Event published with event is ${payload.id}. Failed entry count: ${response.failedEntryCount()}"
         )
       }
 

@@ -137,7 +137,7 @@ class NotificationHandler(configuration: Configuration, apiClient: Notifications
   def process(rawEvents: List[MatchDataWithArticle]): Future[Unit] = {
     val notifications = rawEvents.flatMap(eventConsumer.eventsToNotifications)
     for {
-      filteredNotifications <- eventFilter.filterNotifications(notifications) // todo what filtering is happening exactly?
+      filteredNotifications <- eventFilter.filterNotifications(notifications)
       result <- notificationSender.sendNotifications(filteredNotifications)
     } yield result
   }
