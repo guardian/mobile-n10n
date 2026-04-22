@@ -83,7 +83,7 @@ class LiveActivityEventConsumer(
       event: MatchEvent,
       articleId: Option[String]
   ): List[LiveActivityPayload] = {
-//    logger.debug(s"Processing live activity event $event for match ${matchDay.id}")
+    logger.debug(s"Processing live activity event $event for match ${matchDay.id}")
 
     val previousEvents = events.takeWhile(_ != event)
 
