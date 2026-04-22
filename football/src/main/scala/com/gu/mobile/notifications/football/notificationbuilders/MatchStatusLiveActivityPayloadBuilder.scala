@@ -10,11 +10,11 @@ import java.util.{Date, UUID}
 class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
 
   def build(
-             triggeringEvent: FootballMatchEvent,
-             matchInfo: MatchDay,
-             previousEvents: List[FootballMatchEvent],
-             articleId: Option[String]
-           ): LiveActivityPayload = {
+      triggeringEvent: FootballMatchEvent,
+      matchInfo: MatchDay,
+      previousEvents: List[FootballMatchEvent],
+      articleId: Option[String]
+  ): LiveActivityPayload = {
 
     val topics = List(
       Topic(TopicTypes.FootballTeam, matchInfo.homeTeam.id),
@@ -25,7 +25,8 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
     val allEvents = triggeringEvent :: previousEvents
     val goals = allEvents.collect { case g: Goal => g }
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
-    //    val dismissals = ??? // todo needs to be calcualted from Dismissal events
+    val dismissals = allEvents.collect { case d: Dismissal => d }
+    val redCards = RedCards.fromDismissals(matchInfo.homeTeam, matchInfo.awayTeam, dismissals)
 
     val dynamoData = ""
 
@@ -39,7 +40,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         logoAssetName = None, // tbc
         teamUrl = None, // tbc
         penaltyScore = None, // tbc
-        redCards = None // tbc
+        redCards = redCards.home
       ),
       awayTeam = TeamState(
         name = transformTeamName(matchInfo.awayTeam.name),
@@ -47,13 +48,14 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         logoAssetName = None, // tbc
         teamUrl = None, // tbc
         penaltyScore = None, // tbc
-        redCards = None // tbc
+        redCards = redCards.away
       ),
       competition = Competition(
-        name = matchInfo.competition.map(_.name).getOrElse("")
+        name = matchInfo.competition.map(_.name).getOrElse(""),
+        round = matchInfo.round.name // World Cup Group
       ),
       commentary = matchInfo.comments,
-      lineupsAvailable = None, // Booliean   // not available on LiveMatch
+      lineupsAvailable = None, // Boolean   // not available on LiveMatch
       currentMinute = None, // not available on LiveMatch
       currentPeriodStartTime = None,
       articleUrl = articleId.map(id => s"$mapiHost/items/$id")
