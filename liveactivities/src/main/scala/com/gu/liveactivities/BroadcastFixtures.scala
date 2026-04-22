@@ -22,7 +22,7 @@ object BroadcastFixtures {
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = None
+          redCards = 0
         ),
         awayTeam = TeamState(
           name = "Wolverhampton",
@@ -30,7 +30,7 @@ object BroadcastFixtures {
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = None
+          redCards = 0
         ),
         competition = Competition(
           name = "FIFA World Cup 2026",
@@ -63,7 +63,7 @@ object BroadcastFixtures {
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = Some(0)
+          redCards = 0
         ),
         awayTeam = TeamState(
           name = "Chelsea",
@@ -71,7 +71,7 @@ object BroadcastFixtures {
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = Some(0)
+          redCards = 1
         ),
         competition = Competition(
           name = "FIFA World Cup 2026",
@@ -100,7 +100,7 @@ object BroadcastFixtures {
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = Some(0)
+          redCards = 1
         ),
         awayTeam = TeamState(
           name = "Chelsea",
@@ -108,7 +108,7 @@ object BroadcastFixtures {
           logoAssetName = None,
           teamUrl = None,
           penaltyScore = None,
-          redCards = Some(1)
+          redCards = 2
         ),
         competition = Competition(
           name = "FIFA World Cup 2026",
