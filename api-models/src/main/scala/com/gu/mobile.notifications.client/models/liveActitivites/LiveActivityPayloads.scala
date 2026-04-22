@@ -14,11 +14,11 @@ import com.gu.mobile.notifications.client.models.Payload
 
 // life cycle of a live activity:
 sealed trait LiveActivityEventType
-case object CreateChannel extends LiveActivityEventType
-case object StartLiveActivity extends LiveActivityEventType
-case object UpdateLiveActivity extends LiveActivityEventType
-case object EndLiveActivity extends LiveActivityEventType
-case object DeleteChannel extends LiveActivityEventType
+case object CreateChannelEvent extends LiveActivityEventType
+case object StartLiveActivityEvent extends LiveActivityEventType
+case object UpdateLiveActivityEvent extends LiveActivityEventType
+case object EndLiveActivityEvent extends LiveActivityEventType
+case object DeleteChannelEvent extends LiveActivityEventType
 
 sealed trait LiveActivityType
 case object FootballLiveActivity extends LiveActivityType
@@ -49,11 +49,11 @@ case class LiveActivityPayload(
 object LiveActivityPayload {
   implicit val liveActivityEventTypeWrites: Writes[LiveActivityEventType] =
     Writes {
-      case CreateChannel      => JsString("CreateChannel")
-      case StartLiveActivity  => JsString("StartLiveActivity")
-      case UpdateLiveActivity => JsString("UpdateLiveActivity")
-      case EndLiveActivity    => JsString("EndLiveActivity")
-      case DeleteChannel      => JsString("DeleteChannel")
+      case CreateChannelEvent     => JsString("CreateChannel")
+      case StartLiveActivityEvent  => JsString("StartLiveActivity")
+      case UpdateLiveActivityEvent => JsString("UpdateLiveActivity")
+      case EndLiveActivityEvent    => JsString("EndLiveActivity")
+      case DeleteChannelEvent      => JsString("DeleteChannel")
     }
 
   implicit val liveActivityTypeWrites: Writes[LiveActivityType] = Writes {

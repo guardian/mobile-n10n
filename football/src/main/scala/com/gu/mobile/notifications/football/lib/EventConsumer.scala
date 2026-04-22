@@ -11,15 +11,42 @@ import com.gu.mobile.notifications.football.notificationbuilders.{
 import pa.{MatchDay, MatchEvent}
 
 class EventConsumer(
-  matchStatusNotificationBuilder: MatchStatusNotificationBuilder
+    matchStatusNotificationBuilder: MatchStatusNotificationBuilder
 ) extends Logging {
 
-  def eventsToNotifications(matchData: MatchDataWithArticle): List[NotificationPayload] = {
-    matchData.allEvents.flatMap { event =>
-      receiveEvent(matchData.matchDay, matchData.allEvents, event, matchData.articleId)
+  def eventsToNotifications(
+      matchData: MatchDataWithArticle
+  ): List[NotificationPayload] = {
+
+    /** We have added synthetic events for live activities which we don't want
+      * to generate push notifications for, so we filter those out here.
+      */
+      // todo can we capture these strings in union type?
+    val liveActivityEventTypes =
+      List("create-channel", "start-live-activity", "end-live-activity")
+
+    val filteredMatchData = matchData.copy(allEvents =
+      matchData.allEvents.filterNot(e =>
+        liveActivityEventTypes.contains(e.eventType)
+      )
+    )
+
+    filteredMatchData.allEvents.flatMap { event =>
+      receiveEvent(
+        matchData.matchDay,
+        filteredMatchData.allEvents,
+        event,
+        matchData.articleId
+      )
     }
   }
-  def receiveEvent(matchDay: MatchDay, events: List[MatchEvent], event: MatchEvent, articleId: Option[String]): List[NotificationPayload] = {
+
+  def receiveEvent(
+      matchDay: MatchDay,
+      events: List[MatchEvent],
+      event: MatchEvent,
+      articleId: Option[String]
+  ): List[NotificationPayload] = {
     logger.debug(s"Processing event $event for match ${matchDay.id}")
     val previousEvents = events.takeWhile(_ != event)
     FootballMatchEvent.fromPaMatchEvent(matchDay.homeTeam, matchDay.awayTeam)(event) map { ev =>
@@ -33,10 +60,12 @@ class EventConsumer(
   }
 }
 
-class LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder: MatchStatusLiveActivityPayloadBuilder) extends Logging {
+class LiveActivityEventConsumer(
+    matchStatusLiveActivityPayloadBuilder: MatchStatusLiveActivityPayloadBuilder
+) extends Logging {
 
   def eventsToLiveActivityPayload(
-    matchData: MatchDataWithArticle
+      matchData: MatchDataWithArticle
   ): List[LiveActivityPayload] = {
     matchData.allEvents.flatMap { event =>
       processForLiveActivities(
@@ -49,14 +78,12 @@ class LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder: MatchStat
   }
 
   def processForLiveActivities(
-    matchDay: MatchDay,
-    events: List[MatchEvent],
-    event: MatchEvent,
-    articleId: Option[String]
+      matchDay: MatchDay,
+      events: List[MatchEvent],
+      event: MatchEvent,
+      articleId: Option[String]
   ): List[LiveActivityPayload] = {
-    logger.debug(
-      s"Processing live activity event $event for match ${matchDay.id}"
-    )
+//    logger.debug(s"Processing live activity event $event for match ${matchDay.id}")
 
     val previousEvents = events.takeWhile(_ != event)
 
