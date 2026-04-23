@@ -56,7 +56,6 @@ class LiveActivityPusher extends Logging {
         case UpdateLiveActivityEvent => "broadcast-update"
         case EndLiveActivityEvent    => "broadcast-end"
         case DeleteChannelEvent      => "channel-delete"
-        case _ => "unknown"
       }
 
       val result = Try {

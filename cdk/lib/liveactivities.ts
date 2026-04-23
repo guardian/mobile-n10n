@@ -5,7 +5,7 @@ import type { App } from 'aws-cdk-lib';
 import { Duration, Tags } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { EventBus, Rule } from 'aws-cdk-lib/aws-events';
-import { SqsQueue } from 'aws-cdk-lib/aws-events-targets';
+import { LambdaFunction, SqsQueue } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
@@ -117,6 +117,24 @@ export class LiveActivities extends GuStack {
 		const eventBus = new EventBus(this, 'Events', {
 			eventBusName: `${app}-eventbus-${stage}`,
 			description: `${stage} event routing for live activities`,
+		});
+
+		new Rule(this, 'ChannelRule', {
+			eventBus: eventBus,
+			eventPattern: {
+				source: ['football-lambda'],
+				detailType: ['channel-create', 'channel-delete'],
+			},
+			targets: [new LambdaFunction(channelLambda)],
+		});
+
+		new Rule(this, 'BroadcastRule', {
+			eventBus: eventBus,
+			eventPattern: {
+				source: ['football-lambda'],
+				detailType: ['broadcast-start', 'broadcast-update', 'broadcast-end'],
+			},
+			targets: [new LambdaFunction(broadcastLambda)],
 		});
 
 		// Development SQS to capture and inspect events from PA polling during development
