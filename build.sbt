@@ -45,9 +45,9 @@ val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.12"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.19.4"
-val jacksonCbor: String = "2.19.4"
-val jacksonScalaModule: String = "2.19.4"
+val jacksonDatabind: String = "2.21.2"
+val jacksonCbor: String = "2.21.2"
+val jacksonScalaModule: String = "2.21.2"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.39.0"
 val nettyVersion: String = "4.2.2.Final"
@@ -112,7 +112,7 @@ lazy val common = project
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
-      "ai.x" %% "play-json-extensions" % "0.42.0",
+      "com.gu" %% "play-json-extensions" % "1.0.6",
       "org.tpolecat" %% "doobie-core"      % doobieVersion,
       "org.tpolecat" %% "doobie-hikari"    % doobieVersion,
       "org.tpolecat" %% "doobie-postgres"  % doobieVersion,
@@ -167,11 +167,6 @@ lazy val registration = project
       logback,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test
     ),
-    excludeDependencies ++= Seq(
-      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
-      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
-      ExclusionRule(organization = "com.typesafe.play")
-    ),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -192,11 +187,6 @@ lazy val notification = project
       logback,
       "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
-    excludeDependencies ++= Seq(
-      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
-      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
-      ExclusionRule(organization = "com.typesafe.play")
-    ),
     Debian / packageName := name.value,
     version := projectVersion
   )
@@ -215,11 +205,6 @@ lazy val report = project
     ),
     libraryDependencies ++= Seq(
       logback
-    ),
-    excludeDependencies ++= Seq(
-      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
-      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
-      ExclusionRule(organization = "com.typesafe.play")
     ),
     Debian / packageName := name.value,
     version := projectVersion
@@ -294,9 +279,6 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
       ),
       excludeDependencies ++= Seq(
         ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
-        // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
-        // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
-        ExclusionRule(organization = "com.typesafe.play")
       ),
     )
   }
@@ -323,9 +305,6 @@ lazy val football = lambda("football", "football")
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
       ExclusionRule("software.amazon.awssdk", "ec2"),
-      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
-      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
-      ExclusionRule(organization = "com.typesafe.play")
     ),
   )
 
@@ -428,9 +407,6 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
-      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
-      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
-      ExclusionRule(organization = "com.typesafe.play")
     ),
 )
 
@@ -443,9 +419,6 @@ lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreaking
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
-      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
-      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
-      ExclusionRule(organization = "com.typesafe.play")
     ),
   )
 
@@ -454,9 +427,6 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
   .settings(
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
-      // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
-      // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
-      ExclusionRule(organization = "com.typesafe.play")
     )
   )
 
