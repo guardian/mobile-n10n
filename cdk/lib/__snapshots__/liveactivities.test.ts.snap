@@ -18,6 +18,139 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
     },
   },
   "Resources": {
+    "BroadcastRule3D75643B": {
+      "Properties": {
+        "EventBusName": {
+          "Ref": "EventsD32975C2",
+        },
+        "EventPattern": {
+          "detail-type": [
+            "broadcast-start",
+            "broadcast-update",
+            "broadcast-end",
+          ],
+          "source": [
+            "football-lambda",
+          ],
+        },
+        "State": "ENABLED",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "liveactivitiesbroadcastlambdaC288C367",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "BroadcastRuleAllowEventRuleLiveActivitiesCODEliveactivitiesbroadcastlambda1F8C7AF2670B7E1E": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "liveactivitiesbroadcastlambdaC288C367",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "BroadcastRule3D75643B",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "ChannelRule421C2920": {
+      "Properties": {
+        "EventBusName": {
+          "Ref": "EventsD32975C2",
+        },
+        "EventPattern": {
+          "detail-type": [
+            "channel-create",
+            "channel-delete",
+          ],
+          "source": [
+            "football-lambda",
+          ],
+        },
+        "State": "ENABLED",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "liveactivitieschannelmanagerlambda398DC149",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ChannelRuleAllowEventRuleLiveActivitiesCODEliveactivitieschannelmanagerlambda76CE20D1B22DE0F2": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "liveactivitieschannelmanagerlambda398DC149",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "ChannelRule421C2920",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
     "EventsD32975C2": {
       "Properties": {
         "Description": "CODE event routing for live activities",
