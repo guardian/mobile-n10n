@@ -1,7 +1,7 @@
 package com.gu.mobile.notifications.football.notificationbuilders
 
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, Scheduled, TeamState, UpdateLiveActivity}
+import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, Scheduled, TeamState, UpdateLiveActivityEvent, StartLiveActivityEvent, CreateChannelEvent, EndLiveActivityEvent}
 import com.gu.mobile.notifications.football.models._
 import pa.MatchDay
 
@@ -27,8 +27,6 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
     val dismissals = allEvents.collect { case d: Dismissal => d }
     val redCards = RedCards.fromDismissals(matchInfo.homeTeam, matchInfo.awayTeam, dismissals)
-
-    val dynamoData = ""
 
     // TODO this is hard coded mostly for now.
     val contentState = FootballMatchContentState(
@@ -61,18 +59,21 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       articleUrl = articleId.map(id => s"$mapiHost/items/$id")
     )
 
-    val liveActivityEventType = UpdateLiveActivity // todo
+    val liveActivityEventType = triggeringEvent match {
+      case CreateChannel(_) => CreateChannelEvent
+      case StartLiveActivity(_) => StartLiveActivityEvent
+      case EndLiveActivity(_) => EndLiveActivityEvent
+      case _ => UpdateLiveActivityEvent
+    }
 
     LiveActivityPayload(
-      id =
-        UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes),
-      eventType = liveActivityEventType, // start stop etc
+      id = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes),
+      eventType = liveActivityEventType,
       liveActivityType = FootballLiveActivity,
       liveActivityID =
         matchInfo.id, // Match ID in the case of football, tbc for other sports/events
-      dynamoStoreData = Some(dynamoData), //  TBC
+      dynamoStoreData = None, //  TBC
       broadcastContentStateData = Some(contentState),
-      // todo
       eventTimestamp =
         new Date().getTime, // tbc - should this be the event time of the triggering event or the minute it happened??? ?
       topics = topics

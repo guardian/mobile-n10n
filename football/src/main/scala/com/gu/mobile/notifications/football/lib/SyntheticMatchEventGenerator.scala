@@ -7,6 +7,8 @@ import pa.{MatchDay, MatchEvent}
 class SyntheticMatchEventGenerator {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
+    // Live activity synthetic events are appended at the end, but when they are first generated, no other timeline events exist and duplicate events are filtered so this should not matter.
+    // todo This needs to be verified e2e
     events.map(enhanceTimelineEvents(id)) ++ generators.flatMap(_.apply(matchDay, events)) // order is important here
   }
 
@@ -36,7 +38,39 @@ class SyntheticMatchEventGenerator {
     else None
   }
 
-  private val generators: List[MatchEventGenerator] = List(fullTime, halfTime, secondHalf)
+  // Live Activity supporting events //
+
+  val now: Long = java.time.Instant.now.getEpochSecond
+  def koWithinTwoHours(ko: Long): Boolean = now >= ko - 7200 && now < ko - 1200
+  def koWithin20Minutes(ko: Long): Boolean = now >= ko - 1200 && now < ko
+
+  private val createChannel: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (koWithinTwoHours(matchDay.date.toEpochSecond)) Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/create-channel".getBytes).toString),
+      eventType = "create-channel"
+    ))
+    else None
+  }
+
+  private val startLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (koWithin20Minutes(matchDay.date.toEpochSecond)) Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/start-live-activity".getBytes).toString),
+      eventType = "start-live-activity"
+    ))
+    else None
+  }
+
+  // Note: matches may be abandoned after kick off with no result, in which case rely on "stale-date" to end the activity (4hrs)
+  // todo can we just use full-time event above?
+  private val endLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.result) Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/end-live-activity".getBytes).toString),
+      eventType = "end-live-activity"
+    ))
+    else None
+  }
+
+  private val generators: List[MatchEventGenerator] = List(fullTime, halfTime, secondHalf, createChannel, startLiveActivity, endLiveActivity)
 
   private def emptyMatchEvent = MatchEvent(
     id = None,
