@@ -51,11 +51,11 @@ class LiveActivityPusher extends Logging {
 
       // TODO for the eventbus to direct the event to the right place
       val activityType = payload.eventType match {
-        case CreateChannel      => "channel-create"
-        case StartLiveActivity  => "broadcast-start"
-        case UpdateLiveActivity => "broadcast-update"
-        case EndLiveActivity    => "broadcast-end"
-        case DeleteChannel      => "channel-delete"
+        case CreateChannelEvent      => "channel-create"
+        case StartLiveActivityEvent  => "broadcast-start"
+        case UpdateLiveActivityEvent => "broadcast-update"
+        case EndLiveActivityEvent    => "broadcast-end"
+        case DeleteChannelEvent      => "channel-delete"
       }
 
       val result = Try {
