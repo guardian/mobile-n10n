@@ -1,6 +1,8 @@
 package com.gu.mobile.notifications.football.models
 
-import com.gu.mobile.notifications.client.models.{DefaultGoalType, GoalType, OwnGoalType, PenaltyGoalType}
+import ch.qos.logback.core.model.conditional.ElseModel
+import com.gu.mobile.notifications.client.models.liveActitivites.PenaltyShootoutState
+import com.gu.mobile.notifications.client.models.{DefaultGoalType, GoalType, MissedShootoutResult, OwnGoalType, PenaltyGoalType, SavedShootoutResult, ScoredShootoutResult, ShootoutResultType}
 
 import scala.PartialFunction._
 import scala.util.Try
@@ -13,7 +15,8 @@ object FootballMatchEvent {
   def fromPaMatchEvent(homeTeam: pa.MatchDayTeam, awayTeam: pa.MatchDayTeam)(event: pa.MatchEvent): Option[FootballMatchEvent] =
     MatchPhaseEvent.fromEvent(event) orElse
       Goal.fromEvent(homeTeam, awayTeam)(event) orElse
-      Dismissal.fromEvent(homeTeam,awayTeam)(event)
+      Dismissal.fromEvent(homeTeam,awayTeam)(event) orElse
+      PenaltyShootoutResult.fromEvent(homeTeam, awayTeam)(event)
 }
 
 object Score {
@@ -110,6 +113,65 @@ case class GoalContext(
     score: Score
 )
 
+case class PenaltyShootoutResult(
+  result: ShootoutResultType,
+  playerName: String,
+  kickingTeam: pa.MatchDayTeam,
+  otherTeam: pa.MatchDayTeam,
+  minute: Int,
+  eventId: String
+) extends FootballMatchEvent
+
+object PenaltyShootoutResult {
+  def fromEvent(homeTeam: pa.MatchDayTeam, awayTeam: pa.MatchDayTeam)(event: pa.MatchEvent): Option[PenaltyShootoutResult] = for {
+    result <- shootoutPenaltyResultFromString(event.eventType)
+    playerName <- event.players.headOption
+    kickingTeam = if (playerName.teamID == homeTeam.id) homeTeam else awayTeam
+    otherTeam = if (playerName.teamID == homeTeam.id) awayTeam else homeTeam
+    eventTime <- event.eventTime
+    eventMinute <- Try(eventTime.toInt).toOption
+    eventId <- event.id
+  } yield PenaltyShootoutResult(
+    result,
+    playerName.name,
+    kickingTeam,
+    otherTeam,
+    eventMinute,
+    eventId
+  )
+
+  private def shootoutPenaltyResultFromString(s: String): Option[ShootoutResultType] = condOpt(s) {
+    case "shootoutGoal" => ScoredShootoutResult
+    case "shootoutMiss" => MissedShootoutResult
+    case "shootoutSave" => SavedShootoutResult
+  }
+}
+
+object PenaltyShootoutScore {
+  def fromPenaltyShootoutResult(homeTeam: pa.MatchDayTeam, awayTeam: pa.MatchDayTeam, shootoutResults: List[PenaltyShootoutResult]): Option[PenaltyShootoutScore] = {
+    if (shootoutResults.isEmpty) None
+    else {
+      val homeScored = shootoutResults.count(r => r.kickingTeam == homeTeam && r.result == ScoredShootoutResult)
+      val homeMissed = shootoutResults.count(r => r.kickingTeam == homeTeam && r.result == MissedShootoutResult)
+      val homeSaved = shootoutResults.count(r => r.kickingTeam == homeTeam && r.result == SavedShootoutResult)
+      val awayScored = shootoutResults.count(r => r.kickingTeam == awayTeam && r.result == ScoredShootoutResult)
+      val awayMissed = shootoutResults.count(r => r.kickingTeam == awayTeam && r.result == MissedShootoutResult)
+      val awaySaved = shootoutResults.count(r => r.kickingTeam == awayTeam && r.result == SavedShootoutResult)
+      Some(PenaltyShootoutScore(homeScored, homeMissed, homeSaved, awayScored, awayMissed, awaySaved))
+    }
+  }
+
+   def toPenaltyShootoutState(score: Option[PenaltyShootoutScore], isHomeTeam: Boolean): Option[PenaltyShootoutState] =
+     if (isHomeTeam) {
+       score.map(s => PenaltyShootoutState(s.homeScored, s.homeMissed, s.homeSaved))
+     } else {
+       score.map(s => PenaltyShootoutState(s.awayScored, s.awayMissed, s.awaySaved))
+     }
+
+}
+case class PenaltyShootoutScore(homeScored: Int = 0, homeMissed: Int = 0, homeSaved: Int = 0, awayScored: Int = 0, awayMissed: Int = 0, awaySaved: Int = 0)
+
+
 trait MatchPhaseEvent extends FootballMatchEvent
 
 object MatchPhaseEvent {
@@ -134,4 +196,3 @@ case class SecondHalf(eventId: String) extends MatchPhaseEvent
 case class CreateChannel(eventId: String) extends MatchPhaseEvent
 case class StartLiveActivity(eventId: String) extends MatchPhaseEvent
 case class EndLiveActivity(eventId: String) extends MatchPhaseEvent
-

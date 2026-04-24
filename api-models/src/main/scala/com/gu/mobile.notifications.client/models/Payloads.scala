@@ -60,6 +60,22 @@ object GoalType {
   }
 }
 
+sealed trait ShootoutResultType
+object ScoredShootoutResult  extends ShootoutResultType
+object SavedShootoutResult extends ShootoutResultType
+object MissedShootoutResult extends ShootoutResultType
+
+object ShootoutResultType {
+  implicit val jf: Writes[ShootoutResultType] = new Writes[ShootoutResultType] {
+    override def writes(o: ShootoutResultType): JsValue = o match {
+      case ScoredShootoutResult => JsString("Scored")
+      case SavedShootoutResult => JsString("Saved")
+      case MissedShootoutResult => JsString("Missed")
+    }
+  }
+}
+
+
 trait Payload {
   def id: UUID
 }
