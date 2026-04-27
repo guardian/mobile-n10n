@@ -1,31 +1,20 @@
 package com.gu.liveactivities.service
 
-import cats.syntax.all._
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
-import software.amazon.awssdk.services.dynamodb.model._
-import org.slf4j.{Logger, LoggerFactory}
-import play.api.libs.json._
-import tracking.Repository.RepositoryResult
-import tracking.RepositoryError
-
-import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.CollectionConverters._
-import com.gu.liveactivities.models.{LiveActivityData, LiveActivityMapping, RepositoryException, LiveActivityDataException}
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
+import cats.data.NonEmptyList
+import com.gu.liveactivities.models.{LiveActivityData, LiveActivityDataException, LiveActivityMapping, RepositoryException}
+import com.gu.liveactivities.util.DateTimeHelper.dateTimeToString
 import com.gu.liveactivities.util.Logging
-import com.gu.liveactivities.util.FutureUtils._
-import scala.util.Failure
-import com.gu.liveactivities
-import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromString, dateTimeToString}
-import org.scanamo.{ScanamoAsync, Table, DynamoReadError, ScanamoError, ConditionNotMet}
 import org.scanamo.syntax._
 import org.scanamo.update.UpdateExpression
-import cats.data.NonEmptyList
+import org.scanamo.{ConditionNotMet, DynamoReadError, ScanamoAsync, Table}
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
+
+import java.time.ZonedDateTime
+import scala.concurrent.{ExecutionContext, Future}
 
 trait ChannelMappingsRepository {
 
-  def containMapping(id: String): Future[Boolean]
+  def containMapping(id: String): Future[Option[String]]
 
   def createMapping(    
     id: String,
@@ -52,19 +41,18 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   private val table = Table[LiveActivityMapping](tableName)
   private val idKeyName = "id"
 
-  override def containMapping(id: String): Future[Boolean] =
-    scanamo.exec { 
-      table.get(idKeyName === id)
-    }
-    .flatMap(_ match {
-      case Some(Right(_)) => Future.successful(true)
-      case None => Future.successful(false)
-      case Some(Left(ex)) => {
-        val errorMsg = s"Error checking if live activity mapping exists for id $id - ${DynamoReadError.describe(ex)}"
-        logger.error(errorMsg)
-        Future.failed(new RepositoryException(errorMsg))
+  override def containMapping(id: String): Future[Option[String]] =
+    scanamo.exec {
+        table.get(idKeyName === id)
       }
-    })
+      .map {
+        case Some(Right(mapping)) => Some(mapping.channelId)
+        case None => None
+        case Some(Left(ex)) =>
+          val errorMsg = s"Error checking if live activity mapping exists for id $id - ${DynamoReadError.describe(ex)}"
+          logger.error(errorMsg)
+          throw new RepositoryException(errorMsg)
+      }.recover(handleErrors("reading from DynamoDB", id))
 
   override def createMapping(
     id: String,
@@ -85,22 +73,20 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       createdAt = createdAt,
       lastModifiedAt = createdAt
     )
-    scanamo.exec { 
-      table.when(attributeNotExists(idKeyName)).put(newItem)
-    }
-    .flatMap(_ match {
-      case Right(_) => Future.successful(())
-      case Left(ConditionNotMet(ex)) => {
-        val errorMsg = s"Live activity mapping for id $id already exists"
-        logger.error(errorMsg)
-        Future.failed(new RepositoryException(ex, errorMsg))
+    scanamo.exec {
+        table.when(attributeNotExists(idKeyName)).put(newItem)
       }
-      case Left(ex: DynamoReadError) => {
-        val errorMsg = s"Error saving live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
-        logger.error(errorMsg)
-        Future.failed(new RepositoryException(errorMsg))
-      }
-    })
+      .map {
+        case Right(_) => ()
+        case Left(ConditionNotMet(ex)) =>
+          val errorMsg = s"Live activity mapping for id $id already exists"
+          logger.error(errorMsg)
+          throw new RepositoryException(ex, errorMsg)
+        case Left(ex: DynamoReadError) =>
+          val errorMsg = s"Error saving live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
+          logger.error(errorMsg)
+          throw new RepositoryException(errorMsg)
+      }.recover(handleErrors("writing to DynamoDB", id))
   }
 
   private def updateMappingById(
@@ -175,4 +161,12 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     }
   }
 
+  private def handleErrors[T](operation: String, id: String): PartialFunction[Throwable, T] = {
+    case ex: RepositoryException =>
+      throw ex
+    case ex: Exception =>
+      val msg = s"System error during $operation for id $id: ${ex.getMessage}"
+      logger.error(msg)
+      throw new RepositoryException(msg)
+  }
 }
