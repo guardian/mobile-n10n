@@ -1,9 +1,8 @@
 package com.gu.mobile.notifications.client.models.liveActitivites
 
-import com.gu.mobile.notifications.client.models.Topic
+import com.gu.mobile.notifications.client.models.{Payload, Topic}
 import play.api.libs.json.{JsString, Json, Writes}
 import java.util.UUID
-import com.gu.mobile.notifications.client.models.Payload
 
 /**
  * These are the models for eventbus payloads shared between live activity services.
