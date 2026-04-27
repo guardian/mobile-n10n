@@ -21,7 +21,7 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
 
   private def filterDynamoEvent(item: A)(implicit ec: ExecutionContext): Future[Option[A]] = {
     if (!processedEvents.get.contains(item.id)) {
-      distinctCheck.insertNotification(item).map {
+      distinctCheck.insertEvent(item).map {
         case Distinct =>
           cache(item.id)
           Some(item)
@@ -31,12 +31,12 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
         case _ => None
       }
     } else {
-      logger.debug(s"Event ${item.id} already exists in local cache or does not have an id - discarding")
+      logger.debug(s"Event ${item.id} already exists in local cache or does not have an id - discarding (dynamo table: ${distinctCheck.tableName})")
       Future.successful(None)
     }
   }
 
-  def filterDynamoEvents(notifications: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
-    Future.traverse(notifications)(filterDynamoEvent).map(_.flatten)
+  def filterDynamoEvents(dynamoEvents: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
+    Future.traverse(dynamoEvents)(filterDynamoEvent).map(_.flatten)
   }
 }

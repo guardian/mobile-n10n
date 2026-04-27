@@ -58,11 +58,11 @@ object DynamoDistinctCheck {
 
 class DynamoDistinctCheck[A <: Payload, D: DynamoFormat](
   client: AmazonDynamoDBAsync,
-  tableName: String,
+  val tableName: String,
   partitionKeyName: String,
   toDynamoModel: A => D
 ) extends Logging {
-  def insertNotification(item: A)(implicit ec: ExecutionContext): Future[DistinctStatus] = {
+  def insertEvent(item: A)(implicit ec: ExecutionContext): Future[DistinctStatus] = {
     import org.scanamo.syntax._
 
     lazy val scanamoAsync: ScanamoAsync = ScanamoAsync(client)
