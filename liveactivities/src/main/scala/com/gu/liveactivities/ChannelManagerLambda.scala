@@ -7,6 +7,7 @@ import com.gu.liveactivities.util.Logging
 import play.api.libs.json.{Format, JsError, JsSuccess, Json}
 
 import java.io.{InputStream, OutputStream}
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
 
@@ -73,13 +74,16 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
       else
         processCloseChannelRequest(request.matchId)
 
-    // TODO - the timeout value
-    Try(Await.result(channelFuture, scala.concurrent.duration.Duration.Inf)) match {
+    //Timeout set to 160 seconds to provide a safety buffer.
+    // While the sum of downstream timeouts is at most ~110s,
+    // we allow extra time for other things such as JSON parsing, cold starts,
+    // authentication token fetches, and potential network congestion
+    // to ensure the Lambda doesn't fail a healthy request that is just running slow.
+    Try(Await.result(channelFuture, 160.seconds)) match {
       case Success(_) => ()
-      case Failure(exception) => {
+      case Failure(exception) =>
         logger.error(s"Failed to process: ${exception.getMessage}")
         throw exception
-      }
     }
   }
 }
