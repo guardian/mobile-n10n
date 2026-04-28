@@ -8,6 +8,8 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       "GuScheduledLambda",
       "GuAlarm",
       "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -71,7 +73,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
     },
     "ErrorEventMetricFilter9872E3AE": {
       "Properties": {
-        "FilterPattern": "Error",
+        "FilterPattern": "Error sending match status",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -87,6 +89,30 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
           {
             "MetricName": "error",
             "MetricNamespace": "CODE/football-notifications",
+            "MetricValue": "1",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "ErrorLiveActivitiesEventMetricFilterB40B00CE": {
+      "Properties": {
+        "FilterPattern": "Failed to publish live activities event",
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "footballLambdaAE03EC83",
+              },
+            ],
+          ],
+        },
+        "MetricTransformations": [
+          {
+            "MetricName": "error",
+            "MetricNamespace": "CODE/liveactivities-payload",
             "MetricValue": "1",
           },
         ],
@@ -116,6 +142,171 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
         ],
       },
       "Type": "AWS::Logs::MetricFilter",
+    },
+    "LiveActivitiesDynamoTable655B0994": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH",
+          },
+        ],
+        "TableName": "mobile-notifications-liveactivities-payload-CODE",
+        "Tags": [
+          {
+            "Key": "devx-backup-enabled",
+            "Value": "true",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "TimeToLiveSpecification": {
+          "AttributeName": "ttl",
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "MobileLiveActivitiesFootballConsumedReadThrottleEventsC09E6745": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId",
+                },
+                ":dynamodb",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes",
+        "AlarmName": "MobileLiveActivitiesFootballConsumedReadThrottleEvents-CODE",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "TableName",
+            "Value": "mobile-notifications-liveactivities-payload-CODE",
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ReadThrottleEvents",
+        "Namespace": "AWS/DynamoDB",
+        "Period": 300,
+        "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": 10,
+        "TreatMissingData": "notBreaching",
+        "Unit": "Count",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MobileLiveActivitiesFootballConsumedWriteThrottleEvents28E4A6AF": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId",
+                },
+                ":dynamodb",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes",
+        "AlarmName": "MobileLiveActivitiesFootballConsumedWriteThrottleEvents-CODE",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "TableName",
+            "Value": "mobile-notifications-liveactivities-payload-CODE",
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "WriteThrottleEvents",
+        "Namespace": "AWS/DynamoDB",
+        "Period": 300,
+        "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": 10,
+        "TreatMissingData": "notBreaching",
+        "Unit": "Count",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
     },
     "MobileNotificationsFootballConsumedReadThrottleEvents9A50CD73": {
       "Properties": {
@@ -234,6 +425,30 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
         "Unit": "Count",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SuccessLiveActivitiesEventMetricFilter6C8ACAEF": {
+      "Properties": {
+        "FilterPattern": "Successfully processed live activities event",
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "footballLambdaAE03EC83",
+              },
+            ],
+          ],
+        },
+        "MetricTransformations": [
+          {
+            "MetricName": "success",
+            "MetricNamespace": "CODE/liveactivities-payload",
+            "MetricValue": "1",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
     },
     "footballLambdaAE03EC83": {
       "DependsOn": [
@@ -459,6 +674,68 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
               },
             },
             {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:events:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":event-bus/liveactivities-eventbus-CODE",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:Query",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:dynamodb:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-football-notifications-CODE",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:dynamodb:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-liveactivities-payload-CODE",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
               "Action": [
                 "dynamodb:PutItem",
                 "dynamodb:UpdateItem",
@@ -565,6 +842,8 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
       "GuScheduledLambda",
       "GuAlarm",
       "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -628,7 +907,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
     },
     "ErrorEventMetricFilter9872E3AE": {
       "Properties": {
-        "FilterPattern": "Error",
+        "FilterPattern": "Error sending match status",
         "LogGroupName": {
           "Fn::Join": [
             "",
@@ -644,6 +923,30 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
           {
             "MetricName": "error",
             "MetricNamespace": "PROD/football-notifications",
+            "MetricValue": "1",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "ErrorLiveActivitiesEventMetricFilterB40B00CE": {
+      "Properties": {
+        "FilterPattern": "Failed to publish live activities event",
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "footballLambdaAE03EC83",
+              },
+            ],
+          ],
+        },
+        "MetricTransformations": [
+          {
+            "MetricName": "error",
+            "MetricNamespace": "PROD/liveactivities-payload",
             "MetricValue": "1",
           },
         ],
@@ -673,6 +976,171 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
         ],
       },
       "Type": "AWS::Logs::MetricFilter",
+    },
+    "LiveActivitiesDynamoTable655B0994": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH",
+          },
+        ],
+        "TableName": "mobile-notifications-liveactivities-payload-PROD",
+        "Tags": [
+          {
+            "Key": "devx-backup-enabled",
+            "Value": "true",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "TimeToLiveSpecification": {
+          "AttributeName": "ttl",
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "MobileLiveActivitiesFootballConsumedReadThrottleEventsC09E6745": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId",
+                },
+                ":dynamodb",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if DynamoDB ReadThrottleEvents >= 10 in 5 minutes",
+        "AlarmName": "MobileLiveActivitiesFootballConsumedReadThrottleEvents-PROD",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "TableName",
+            "Value": "mobile-notifications-liveactivities-payload-PROD",
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "ReadThrottleEvents",
+        "Namespace": "AWS/DynamoDB",
+        "Period": 300,
+        "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 10,
+        "TreatMissingData": "notBreaching",
+        "Unit": "Count",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "MobileLiveActivitiesFootballConsumedWriteThrottleEvents28E4A6AF": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId",
+                },
+                ":dynamodb",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "Triggers if DynamoDB WriteThrottleEvents >= 10 in 5 minutes",
+        "AlarmName": "MobileLiveActivitiesFootballConsumedWriteThrottleEvents-PROD",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "Dimensions": [
+          {
+            "Name": "TableName",
+            "Value": "mobile-notifications-liveactivities-payload-PROD",
+          },
+        ],
+        "EvaluationPeriods": 1,
+        "MetricName": "WriteThrottleEvents",
+        "Namespace": "AWS/DynamoDB",
+        "Period": 300,
+        "Statistic": "Sum",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 10,
+        "TreatMissingData": "notBreaching",
+        "Unit": "Count",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
     },
     "MobileNotificationsFootballConsumedReadThrottleEvents9A50CD73": {
       "Properties": {
@@ -791,6 +1259,30 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
         "Unit": "Count",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "SuccessLiveActivitiesEventMetricFilter6C8ACAEF": {
+      "Properties": {
+        "FilterPattern": "Successfully processed live activities event",
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/lambda/",
+              {
+                "Ref": "footballLambdaAE03EC83",
+              },
+            ],
+          ],
+        },
+        "MetricTransformations": [
+          {
+            "MetricName": "success",
+            "MetricNamespace": "PROD/liveactivities-payload",
+            "MetricValue": "1",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
     },
     "footballLambdaAE03EC83": {
       "DependsOn": [
@@ -1014,6 +1506,68 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                   ],
                 ],
               },
+            },
+            {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:events:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":event-bus/liveactivities-eventbus-PROD",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:Query",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:dynamodb:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-football-notifications-PROD",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:dynamodb:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-liveactivities-payload-PROD",
+                    ],
+                  ],
+                },
+              ],
             },
             {
               "Action": [

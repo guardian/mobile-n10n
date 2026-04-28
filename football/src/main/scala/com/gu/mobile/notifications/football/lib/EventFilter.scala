@@ -4,13 +4,13 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.UnaryOperator
 
-import com.gu.mobile.notifications.client.models.NotificationPayload
+import com.gu.mobile.notifications.client.models.Payload
 import com.gu.mobile.notifications.football.lib.DynamoDistinctCheck.{Distinct, Duplicate}
 import com.gu.mobile.notifications.football.Logging
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class EventFilter(distinctCheck: DynamoDistinctCheck) extends Logging {
+class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) extends Logging {
   private val processedEvents = new AtomicReference[Set[UUID]](Set.empty)
 
   private def cache(eventId: UUID): Unit = {
@@ -19,24 +19,24 @@ class EventFilter(distinctCheck: DynamoDistinctCheck) extends Logging {
     })
   }
 
-  private def filterNotification(notification: NotificationPayload)(implicit ec: ExecutionContext): Future[Option[NotificationPayload]] = {
-    if (!processedEvents.get.contains(notification.id)) {
-      distinctCheck.insertNotification(notification).map {
+  private def filterDynamoEvent(item: A)(implicit ec: ExecutionContext): Future[Option[A]] = {
+    if (!processedEvents.get.contains(item.id)) {
+      distinctCheck.insertEvent(item).map {
         case Distinct =>
-          cache(notification.id)
-          Some(notification)
+          cache(item.id)
+          Some(item)
         case Duplicate =>
-          cache(notification.id)
+          cache(item.id)
           None
         case _ => None
       }
     } else {
-      logger.debug(s"Event ${notification.id} already exists in local cache or does not have an id - discarding")
+      logger.debug(s"Event ${item.id} already exists in local cache or does not have an id - discarding (dynamo table: ${distinctCheck.tableName})")
       Future.successful(None)
     }
   }
 
-  def filterNotifications(notifications: List[NotificationPayload])(implicit ec: ExecutionContext): Future[List[NotificationPayload]] = {
-    Future.traverse(notifications)(filterNotification).map(_.flatten)
+  def filterDynamoEvents(dynamoEvents: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
+    Future.traverse(dynamoEvents)(filterDynamoEvent).map(_.flatten)
   }
 }
