@@ -164,7 +164,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     case ex: RepositoryException =>
       throw ex
     case ex: Exception =>
-      val msg = s"System error during $operation for id $id: ${ex.getMessage}"
+      val msg = s"Error during $operation for id $id: ${ex.getMessage}"
       logger.error(msg)
       throw new RepositoryException(msg)
   }
