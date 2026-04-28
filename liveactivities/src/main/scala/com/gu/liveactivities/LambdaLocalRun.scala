@@ -1,6 +1,7 @@
 package com.gu.liveactivities
 
 import play.api.libs.json.Json
+import scala.io.Source
 import java.nio.charset.StandardCharsets
 
 /**
@@ -33,18 +34,19 @@ object ChannelManagerLambdaLocalRun extends App {
 
 /**
  * Local run broadcasts a live activity update on the APNS Sandbox env for the iOS debug app.
+ * A local Dynamo table of channel mappings is needed or amend Lambda.scala to point to CODE Dynamo table.
  */
 object BroadcastLambdaLocalRun extends App {
 
   println("Start running BroadcastLambda locally")
 
-  val broadcastRequest =
-    """{
-    "matchId": "match-test-6",
-    "payload": "test message",
-    "eventId": "event-007",
-    "eventTime": "2026-04-07T17:37:29.278+0000"
-  }"""
+  def loadFile(file: String): String = {
+    val stream = this.getClass.getClassLoader.getResourceAsStream(file)
+    if (stream == null) throw new RuntimeException(s"Resource not found: $file")
+    Source.fromInputStream(stream).mkString
+  }
+
+  val broadcastRequest = Source.fromResource("broadcast-update-payload.json").mkString // eventbridge event represented by liveActivityPayload
 
   val broadcastRequestStream = new java.io.ByteArrayInputStream(broadcastRequest.getBytes(StandardCharsets.UTF_8))
 
