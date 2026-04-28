@@ -28,7 +28,7 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
     maybeChannelId.flatMap {
       case Some(id) =>
         logger.error(s"Channel mapping already exists for match ID $matchId")
-        // id channel id already exists for a match we don't want to fail the lambda to avoid the lambda retry on this event
+        // if channel id already exists for a match we don't want to fail the lambda to avoid the lambda retry on this event
         Future.successful(id)
       case None =>
         for {
@@ -41,16 +41,18 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
 
   def processCloseChannelRequest(matchId: String): Future[String] = {
     logger.info(s"Channel closed for match ID: $matchId")
-    for {
-      mapping <- repository.getMappingById(matchId)
-      _ <- if (!mapping.isChannelActive) {
-          logger.error(s"Channel not active for match ID ${matchId}")
-          Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
-        } else Future.successful(())
-      _ <- channelApiClient.closeChannel(mapping.channelId)
-      _ <- repository.updateMappingActiveChannel(matchId, false)
-      _ = logger.info(s"Channel closed with channel ID ${mapping.channelId} for match ID ${matchId}")
-    } yield mapping.channelId
+    val maybeMapping = repository.getMappingById(matchId)
+    maybeMapping.flatMap{
+      case mapping if !mapping.isChannelActive =>
+        logger.error(s"Channel not active for match ID $matchId")
+        // if channel is inactive for a match we don't want to fail the lambda to avoid the lambda retry on this event
+        Future.successful(mapping.channelId)
+      case mapping =>  for {
+        _ <- channelApiClient.closeChannel(mapping.channelId)
+        _ <- repository.updateMappingActiveChannel(matchId, isActive = false)
+        _ = logger.info(s"Channel closed with channel ID ${mapping.channelId} for match ID $matchId")
+      } yield mapping.channelId
+    }
   }
 
   def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {

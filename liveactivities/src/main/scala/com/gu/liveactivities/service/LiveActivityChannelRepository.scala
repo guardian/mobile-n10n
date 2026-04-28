@@ -114,13 +114,13 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
           table.update(idKeyName === id, upsWithLastModified.reduce[UpdateExpression](_ and _))
         }
 
-        result.flatMap(_ match {
+        result.flatMap {
           case Right(_) => Future.successful(())
           case Left(ex) =>
             val errorMsg = s"Error updating live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
             logger.error(errorMsg)
             Future.failed(new RepositoryException(errorMsg))
-        })
+        }.recover(handleErrors("updating mapping in DynamoDB", id))
     }
   }
 
@@ -139,18 +139,17 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   override def getMappingById(
       id: String
   ): Future[LiveActivityMapping] = {
-    scanamo.exec { 
-      table.consistently.get(idKeyName === id)
-    }
-    .flatMap(_ match {
-      case Some(Right(result)) => Future.successful(result)
-      case None => Future.failed(new LiveActivityDataException(id, "Live Activity mapping not found"))
-      case Some(Left(ex)) => {
-        val errorMsg = s"Error getting live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
-        logger.error(errorMsg)
-        Future.failed(new RepositoryException(errorMsg))
+    scanamo.exec {
+        table.consistently.get(idKeyName === id)
       }
-    })
+      .flatMap {
+        case Some(Right(result)) => Future.successful(result)
+        case None => Future.failed(new LiveActivityDataException(id, "Live Activity mapping not found"))
+        case Some(Left(ex)) =>
+          val errorMsg = s"Error getting live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
+          logger.error(errorMsg)
+          Future.failed(new RepositoryException(errorMsg))
+      }.recover(handleErrors("reading mapping from DynamoDB", id))
   }
 
   override def deleteMappingById(
