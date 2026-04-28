@@ -79,8 +79,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       dynamoStoreData = None, //  TBC
       broadcastContentStateData = Some(contentState),
       eventTimestamp =
-        new Date().getTime, // tbc - should this be the event time of the triggering event or the minute it happened??? ?
-      topics = topics
+        new Date().getTime, // Now (not the PA event time)
     )
 
   }
