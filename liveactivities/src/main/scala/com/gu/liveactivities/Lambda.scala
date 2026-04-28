@@ -5,6 +5,7 @@ import com.gu.liveactivities.util.{Configuration, IosConfiguration}
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain, DefaultCredentialsProvider, ProfileCredentialsProvider}
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.retries.DefaultRetryStrategy
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 
 import java.time.Duration
@@ -31,6 +32,9 @@ trait Lambda {
         ClientOverrideConfiguration.builder()
           .apiCallAttemptTimeout(Duration.ofSeconds(2)) // limit for one single try
           .apiCallTimeout(Duration.ofSeconds(10)) // limit for the entire operation
+          .retryStrategy(DefaultRetryStrategy.standardStrategyBuilder()
+            .maxAttempts(3)
+            .build())
           .build()
       )
       .build()
