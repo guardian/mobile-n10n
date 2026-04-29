@@ -280,13 +280,13 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
 
     def rawEvents: List[MatchEvent] = Parser.parseMatchEvents(loadFile("match-event-feed.xml")).get.events
     def matchDay: MatchDay = Parser.parseMatchDay(loadFile("20170811.xml")).head
-    def events: List[MatchEvent] = new SyntheticMatchEventGenerator().generate(rawEvents, "4011135", matchDay)
+    def events: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now()).generate(rawEvents, "4011135", matchDay)
     def matchData = MatchDataWithArticle(matchDay, events, Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live"))
 
     // live activity (we need a complete feed with penalties to test all live activity updates including ending the activity)
     def rawEventsLA: List[MatchEvent] = Parser.parseMatchEvents(loadFile("match-event-feed-penalties.xml")).get.events
     def matchDayLA: MatchDay = Parser.parseMatchDay(loadFile("4484328-penalites.xml")).head
-    def eventsLA: List[MatchEvent] = new SyntheticMatchEventGenerator().generate(rawEventsLA, "4484328", matchDayLA)
+    def eventsLA: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now()).generate(rawEventsLA, "4484328", matchDayLA)
     def matchDataLA = MatchDataWithArticle(matchDayLA, eventsLA, Some("football/live/2025/feb/11/exeter-city-v-nottingham-forest-juventus-v-psv-and-more-football-live"))
   }
 }
