@@ -59,7 +59,6 @@ case class LiveActivityPayload(
   dynamoStoreData: Option[String], // data not in contentstate but specific to match, election, etc TBC if this is needed.
   broadcastContentStateData: Option[ContentState],
   eventTimestamp: Long,
-//  topics: List[Topic] // we will need to know topics for push to start
 ) extends Payload
 
 object LiveActivityPayload {

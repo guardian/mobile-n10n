@@ -2,35 +2,25 @@ package com.gu.mobile.notifications.client.models.liveActitivites
 
 import play.api.libs.json._
 
-
-
 /**
  * These are the Live Activity Content models used for sending live activity
  * updates to Apple APNS service.
  **/
-
-
 
 // GENERIC CONTENT STATE //////////////////////////////////////////////////
 sealed trait ContentState
 object ContentState {
   import FootballContentJsonFormats._
 
-  implicit val format: OFormat[ContentState] = new OFormat[ContentState] {
+  implicit val contentStateFormat: OFormat[ContentState] = new OFormat[ContentState] {
     def writes(cs: ContentState): JsObject = cs match {
-      case f: FootballMatchContentState =>
-        footballMatchContentStateFormat
-          .writes(f)
-          .as[JsObject] + ("type" -> JsString("football"))
-      // Add cases for other ContentState subtypes here
+      case f: FootballMatchContentState => footballMatchContentStateFormat.writes(f)
     }
-
     def reads(json: JsValue): JsResult[ContentState] = {
-      (json \ "type").validate[String].flatMap {
-        case "football" => footballMatchContentStateFormat.reads(json)
-        // Add cases for other ContentState subtypes here
-        case other => JsError(s"Unknown ContentState type: $other")
-      }
+      // todo - if we add more content states for other live activity types
+      // todo - check adding a _type field to the json?
+      // Try FootballMatchContentState - could check a distinguishing field if needed
+      footballMatchContentStateFormat.reads(json)
     }
   }
 }
@@ -125,7 +115,5 @@ object FootballContentJsonFormats {
   implicit val competitionFormat: OFormat[Competition] =
     Json.format[Competition]
   implicit val teamStateFormat: OFormat[TeamState] = Json.format[TeamState]
-  implicit val footballMatchContentStateFormat
-      : OFormat[FootballMatchContentState] =
-    Json.format[FootballMatchContentState]
+  implicit val footballMatchContentStateFormat: OFormat[FootballMatchContentState] = Json.format[FootballMatchContentState]
 }

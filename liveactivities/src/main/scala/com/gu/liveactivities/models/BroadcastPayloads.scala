@@ -96,17 +96,12 @@ object BroadcastApsJsonFormats {
   implicit val broadcastApsEventFormat: OFormat[BroadcastApsEvent] =
     new OFormat[BroadcastApsEvent] {
       def writes(e: BroadcastApsEvent): JsObject = e match {
-        case s: BroadcastStartAps =>
-          broadcastStartApsFormat.writes(s) + ("eventType" -> JsString("start"))
-        case u: BroadcastUpdateAps =>
-          broadcastUpdateApsFormat.writes(u) + ("eventType" -> JsString(
-            "update"
-          ))
-        case e: BroadcastEndAps =>
-          broadcastEndApsFormat.writes(e) + ("eventType" -> JsString("end"))
+        case s: BroadcastStartAps  => broadcastStartApsFormat.writes(s)
+        case u: BroadcastUpdateAps => broadcastUpdateApsFormat.writes(u)
+        case e: BroadcastEndAps    => broadcastEndApsFormat.writes(e)
       }
       def reads(json: JsValue): JsResult[BroadcastApsEvent] =
-        (json \ "eventType").validate[String].flatMap {
+        (json \ "event").validate[String].flatMap {
           case "start"  => broadcastStartApsFormat.reads(json)
           case "update" => broadcastUpdateApsFormat.reads(json)
           case "end"    => broadcastEndApsFormat.reads(json)
