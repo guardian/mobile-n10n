@@ -11,6 +11,7 @@ case object FootballMatchAttributesType extends ActivityAttributesType {
   val `type` = "FootballMatchAttributes"
 }
 
+// Static live activity attributes can be sent in the broadcast payload when starting a live activity if needed.
 sealed trait ActivityAttributes
 case class FootballMatchAttributes(matchId: String) extends ActivityAttributes
 
@@ -138,7 +139,7 @@ object BroadcastBody {
       BroadcastUpdateAps(
         timestamp = now,
         `content-state` = contentState,
-        `stale-date` = now + (1 * 3600) // stale after 60 minutes
+        `stale-date` = now + (1 * 2760) // stale after 45 minutes
       )
     }
 
