@@ -25,6 +25,7 @@ dynamodb-local-live-activities/
 **.DS_Store
 
 .metals/
+metals.sbt
 .vscode/
 .bloop/
 project/.bloop/
