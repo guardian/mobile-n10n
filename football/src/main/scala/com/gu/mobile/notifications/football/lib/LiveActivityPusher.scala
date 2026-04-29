@@ -39,7 +39,7 @@ class LiveActivityPusher extends Logging {
   def pushToEventbus(payload: LiveActivityPayload)(implicit ec: ExecutionContext): Future[Unit] = {
 
     logger.info(
-      s"Eventbus pusher: Processing event with id ${payload.id}"
+      s"Eventbus pusher: Processing event ${payload.eventType} with id ${payload.id}"
     )
     val jsonDetail = Json.toJson(payload).toString()
     if (jsonDetail.isEmpty || jsonDetail == "{}") {
@@ -83,13 +83,13 @@ class LiveActivityPusher extends Logging {
       result match {
         case Success(_) => {
           logger.info(
-            s"Eventbus pusher: Successfully processed live activities event with id ${payload.id}"
+            s"Eventbus pusher: Successfully processed live activities event ${payload.eventType} with id ${payload.id}"
           )
           Future.successful(())
         }
         case Failure(e) => {
           logger.error(
-            s"Eventbus pusher: Failed to publish live activities event with id ${payload.id}: ${e.getMessage}"
+            s"Eventbus pusher: Failed to publish live activities event ${payload.eventType} with id ${payload.id}: ${e.getMessage}"
           )
           Future.failed(e)
         }
