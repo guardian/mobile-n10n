@@ -3,7 +3,7 @@ package com.gu.mobile.notifications.football.lib
 import java.net.URI
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
-import com.gu.mobile.notifications.client.models.TopicTypes.{FootballMatch, FootballTeam}
+import com.gu.mobile.notifications.client.models.TopicTypes.{FootballMatch, FootballTeam, FootballTeamLiveActivity}
 import com.gu.mobile.notifications.client.models.liveActitivites.{LiveActivityPayload, CreateChannelEvent, StartLiveActivityEvent, EndLiveActivityEvent}
 import com.gu.mobile.notifications.football.models.MatchDataWithArticle
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
@@ -45,7 +45,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
         topic = List(
           Topic(FootballTeam, "1006"),
           Topic(FootballTeam, "29"),
-          Topic(FootballMatch, "4011135")
+          Topic(FootballMatch, "4011135"),
+          Topic(FootballTeamLiveActivity, "1006"),
+          Topic(FootballTeamLiveActivity, "29"),
         ),
         matchStatus = "1st",
         eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
