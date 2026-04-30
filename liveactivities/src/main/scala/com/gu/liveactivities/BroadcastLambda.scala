@@ -59,7 +59,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
     // todo this needs to be tidied to support live activities other than football
     val matchId: String = requestPayload.liveActivityID
     val eventId: String = requestPayload.id.toString
-    val eventTime: ZonedDateTime = dateTimeFromLong(requestPayload.eventTimestamp) // time triggering event was received from PA
+    val eventTime: ZonedDateTime = dateTimeFromLong(requestPayload.eventTimestamp) // time triggering event was received and processed in football lambda
     val contentState: FootballMatchContentState = requestPayload.broadcastContentStateData match {
       case Some(cs: FootballMatchContentState) => cs
       case Some(other) =>
@@ -102,23 +102,24 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
 
       // TODO - determine expiry time and priority
 
-      broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast, dateTimeToLong(eventTime))
+      _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
+      broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
       _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
-      _ = logger.info(s"Broadcast sent successfully for match ID $matchId with channel ID ${mapping.channelId}")
+      _ = logger.info(s"Broadcast ${if(shouldEndBroadcast)"END"} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
       _ <- repository.updateMappingLastEvent(matchId, Some(eventId), Some(eventTime))
       _ = logger.info(s"Record updated successfully for match ID $matchId")
-
     } yield mapping.channelId
 
     // TODO - the timeout value
     Try(Await.result(broadcastFuture, scala.concurrent.duration.Duration.Inf)) match {
-      case Success(apnResponse) => {
+
+      case Success(_) => {
         // todo
-        logger.info(s"Broadcast successfully sent for match ID $matchId with APNs response: $apnResponse")
+        logger.info(s"Broadcast ${if(shouldEndBroadcast)"END"} successfully sent for liveActivityID $matchId")
       }
       case Failure(exception) => {
-        logger.error(s"Failed to send broadcast: ${exception.getMessage}")
+        logger.error(s"Failed to send broadcast for liveActivityID $matchId: ${exception.getMessage}")
         throw exception
       }
     }

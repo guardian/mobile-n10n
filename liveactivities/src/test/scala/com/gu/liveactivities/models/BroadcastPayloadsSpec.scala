@@ -30,7 +30,7 @@ class BroadcastPayloadsSpec extends Specification {
   "BroadcastBody.apply" should {
 
     "produce a BroadcastUpdateAps with stale date when shouldEndBroadcast is false" in new BroadcastScope {
-      val body = BroadcastBody(contentState, shouldEndBroadcast = false, eventTime)
+      val body = BroadcastBody(contentState, shouldEndBroadcast = false)
       body.aps must beAnInstanceOf[BroadcastUpdateAps]
       body.aps.event mustEqual "update"
       val updateAps = body.aps.asInstanceOf[BroadcastUpdateAps]
@@ -39,7 +39,7 @@ class BroadcastPayloadsSpec extends Specification {
     }
 
     "produce a BroadcastEndAps with dimissal date when shouldEndBroadcast is true" in new BroadcastScope {
-      val body = BroadcastBody(contentState, shouldEndBroadcast = true, eventTime)
+      val body = BroadcastBody(contentState, shouldEndBroadcast = true)
       body.aps must beAnInstanceOf[BroadcastEndAps]
       body.aps.event mustEqual "end"
       val endAps = body.aps.asInstanceOf[BroadcastEndAps]
@@ -48,7 +48,7 @@ class BroadcastPayloadsSpec extends Specification {
     }
 
     "set the content-state correctly" in new BroadcastScope {
-      val body = BroadcastBody(contentState, shouldEndBroadcast = false, eventTime)
+      val body = BroadcastBody(contentState, shouldEndBroadcast = false)
       body.aps.`content-state` mustEqual contentState
     }
   }
@@ -58,7 +58,7 @@ class BroadcastPayloadsSpec extends Specification {
     "serialise an update body and deserialise back to the same value" in new BroadcastScope {
       import BroadcastApsJsonFormats._
 
-      val body = BroadcastBody(contentState, shouldEndBroadcast = false, eventTime)
+      val body = BroadcastBody(contentState, shouldEndBroadcast = false)
       val json = Json.toJson(body)
       val parsed = json.validate[BroadcastBody]
 
@@ -72,7 +72,7 @@ class BroadcastPayloadsSpec extends Specification {
     "serialise an end body and deserialise back to the same value" in new BroadcastScope {
       import BroadcastApsJsonFormats._
 
-      val body = BroadcastBody(contentState, shouldEndBroadcast = true, eventTime)
+      val body = BroadcastBody(contentState, shouldEndBroadcast = true)
       val json = Json.toJson(body)
       val parsed = json.validate[BroadcastBody]
 
@@ -86,7 +86,7 @@ class BroadcastPayloadsSpec extends Specification {
     "include an 'event' field with value 'update' in the serialised JSON" in new BroadcastScope {
       import BroadcastApsJsonFormats._
 
-      val body = BroadcastBody(contentState, shouldEndBroadcast = false, eventTime)
+      val body = BroadcastBody(contentState, shouldEndBroadcast = false)
       val json = Json.toJson(body)
       (json \ "aps" \ "event").as[String] mustEqual "update"
     }
@@ -94,7 +94,7 @@ class BroadcastPayloadsSpec extends Specification {
     "include an 'event' field with value 'end' in the serialised JSON" in new BroadcastScope {
       import BroadcastApsJsonFormats._
 
-      val body = BroadcastBody(contentState, shouldEndBroadcast = true, eventTime)
+      val body = BroadcastBody(contentState, shouldEndBroadcast = true)
       val json = Json.toJson(body)
       (json \ "aps" \ "event").as[String] mustEqual "end"
     }

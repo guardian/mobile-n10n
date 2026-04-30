@@ -124,7 +124,6 @@ object BroadcastBody {
   def apply(
       contentState: ContentState,
       shouldEndBroadcast: Boolean = false,
-      eventTime: Long
   ): BroadcastBody = {
     val now = System.currentTimeMillis() / 1000
 
