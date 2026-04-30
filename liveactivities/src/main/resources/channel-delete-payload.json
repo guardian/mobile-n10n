@@ -27,6 +27,7 @@
         "redCards": 1
       },
       "competition": {
+        "id": "100",
         "name": "World Cup",
         "round": "Group C"
       },

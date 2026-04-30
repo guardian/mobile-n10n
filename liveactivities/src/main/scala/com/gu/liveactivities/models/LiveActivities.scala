@@ -41,12 +41,13 @@ object LiveActivityData {
     }
 
   implicit val dynamoFormat: DynamoFormat[LiveActivityData] = deriveDynamoFormat[LiveActivityData]
+
   def toLiveActivityData(contentState: ContentState): LiveActivityData = contentState match {
     case footballMatchContentState: FootballMatchContentState =>
       FootballLiveActivity(
         homeTeam = footballMatchContentState.homeTeam.name,
         awayTeam = footballMatchContentState.awayTeam.name,
-        competitionId = footballMatchContentState.competition.name,
+        competitionId = footballMatchContentState.competition.id,
         kickOffTimestamp = footballMatchContentState.kickOffTimestamp
       )
   }
