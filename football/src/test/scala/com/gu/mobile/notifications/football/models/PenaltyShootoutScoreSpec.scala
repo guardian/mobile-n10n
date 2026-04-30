@@ -16,20 +16,20 @@ class PenaltyShootoutScoreSpec extends Specification {
   "PenaltyShootoutScore.fromPenaltyShootoutResult" should {
 
     "return None when the list is empty" in new ShootoutScope {
-      PenaltyShootoutScore.fromPenaltyShootoutResult(home, away, List.empty) must beNone
+      PenaltyShootoutScore.fromPenaltyShootoutKicks(home, away, List.empty) must beNone
     }
 
     "count scored, missed and saved correctly for each team" in new ShootoutScope {
       val results = List(
-        PenaltyShootoutResult(ScoredShootoutResult, "Saka",    home, away, 90, "e1"),
-        PenaltyShootoutResult(ScoredShootoutResult, "Saka",    home, away, 91, "e2"),
-        PenaltyShootoutResult(MissedShootoutResult, "Havertz", home, away, 92, "e3"),
-        PenaltyShootoutResult(ScoredShootoutResult, "Palmer",  away, home, 90, "e4"),
-        PenaltyShootoutResult(SavedShootoutResult,  "Jackson", away, home, 91, "e5"),
-        PenaltyShootoutResult(MissedShootoutResult, "Nkunku",  away, home, 92, "e6")
+        PenaltyShootoutKick(ScoredShootoutResult, "Saka",    home, away, 90, "e1"),
+        PenaltyShootoutKick(ScoredShootoutResult, "Saka",    home, away, 91, "e2"),
+        PenaltyShootoutKick(MissedShootoutResult, "Havertz", home, away, 92, "e3"),
+        PenaltyShootoutKick(ScoredShootoutResult, "Palmer",  away, home, 90, "e4"),
+        PenaltyShootoutKick(SavedShootoutResult,  "Jackson", away, home, 91, "e5"),
+        PenaltyShootoutKick(MissedShootoutResult, "Nkunku",  away, home, 92, "e6")
       )
 
-      val score = PenaltyShootoutScore.fromPenaltyShootoutResult(home, away, results)
+      val score = PenaltyShootoutScore.fromPenaltyShootoutKicks(home, away, results)
       score must beSome(PenaltyShootoutScore(
         homeScored = 2, homeMissed = 1, homeSaved = 0,
         awayScored = 1, awayMissed = 1, awaySaved = 1
@@ -38,10 +38,10 @@ class PenaltyShootoutScoreSpec extends Specification {
 
     "handle all home team shootout events and all away team shootout events" in new ShootoutScope {
       val results = List(
-        PenaltyShootoutResult(ScoredShootoutResult, "Saka",   home, away, 90, "e1"),
-        PenaltyShootoutResult(SavedShootoutResult,  "Palmer", away, home, 90, "e2")
+        PenaltyShootoutKick(ScoredShootoutResult, "Saka",   home, away, 90, "e1"),
+        PenaltyShootoutKick(SavedShootoutResult,  "Palmer", away, home, 90, "e2")
       )
-      val score = PenaltyShootoutScore.fromPenaltyShootoutResult(home, away, results)
+      val score = PenaltyShootoutScore.fromPenaltyShootoutKicks(home, away, results)
       score must beSome(PenaltyShootoutScore(
         homeScored = 1, homeMissed = 0, homeSaved = 0,
         awayScored = 0, awayMissed = 0, awaySaved = 1

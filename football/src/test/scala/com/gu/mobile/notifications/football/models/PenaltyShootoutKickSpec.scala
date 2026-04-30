@@ -5,7 +5,7 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{MatchDayTeam, MatchEvent, Player}
 
-class PenaltyShootoutResultSpec extends Specification {
+class PenaltyShootoutKickSpec extends Specification {
 
   trait ShootoutScope extends Scope {
     val home = MatchDayTeam("home-1", "Arsenal", score = Some(1), htScore = Some(1), aggregateScore = None, scorers = None)
@@ -31,11 +31,11 @@ class PenaltyShootoutResultSpec extends Specification {
     )
   }
 
-  "PenaltyShootoutResult.fromEvent" should {
+  "PenaltyShootoutKick.fromEvent" should {
 
     "parse a shootoutGoal as ScoredShootoutResult for the correct team" in new ShootoutScope {
       val event = shootoutEvent("shootoutGoal", homePlayer)
-      val result = PenaltyShootoutResult.fromEvent(home, away)(event)
+      val result = PenaltyShootoutKick.fromEvent(home, away)(event)
       result must beSome
       result.get.result mustEqual ScoredShootoutResult
       result.get.kickingTeam mustEqual home
@@ -45,7 +45,7 @@ class PenaltyShootoutResultSpec extends Specification {
 
     "parse a shootoutMiss as MissedShootoutResult for the correct team" in new ShootoutScope {
       val event = shootoutEvent("shootoutMiss", awayPlayer, "evt-2")
-      val result = PenaltyShootoutResult.fromEvent(home, away)(event)
+      val result = PenaltyShootoutKick.fromEvent(home, away)(event)
       result must beSome
       result.get.result mustEqual MissedShootoutResult
       result.get.kickingTeam mustEqual away
@@ -55,7 +55,7 @@ class PenaltyShootoutResultSpec extends Specification {
 
     "parse a shootoutSave as SavedShootoutResult for the correct team" in new ShootoutScope {
       val event = shootoutEvent("shootoutSave", homePlayer, "evt-3")
-      val result = PenaltyShootoutResult.fromEvent(home, away)(event)
+      val result = PenaltyShootoutKick.fromEvent(home, away)(event)
       result must beSome
       result.get.kickingTeam mustEqual home
       result.get.otherTeam mustEqual away
@@ -64,27 +64,27 @@ class PenaltyShootoutResultSpec extends Specification {
 
     "return None for an unrecognised event type" in new ShootoutScope {
       val event = shootoutEvent("goal", homePlayer)
-      PenaltyShootoutResult.fromEvent(home, away)(event) must beNone
+      PenaltyShootoutKick.fromEvent(home, away)(event) must beNone
     }
 
     "return None when the event has no id" in new ShootoutScope {
       val event = shootoutEvent("shootoutGoal", homePlayer).copy(id = None)
-      PenaltyShootoutResult.fromEvent(home, away)(event) must beNone
+      PenaltyShootoutKick.fromEvent(home, away)(event) must beNone
     }
 
     "return None when there are no players on the event" in new ShootoutScope {
       val event = shootoutEvent("shootoutGoal", homePlayer).copy(players = List.empty)
-      PenaltyShootoutResult.fromEvent(home, away)(event) must beNone
+      PenaltyShootoutKick.fromEvent(home, away)(event) must beNone
     }
 
     "return None when eventTime is missing" in new ShootoutScope {
       val event = shootoutEvent("shootoutGoal", homePlayer).copy(eventTime = None)
-      PenaltyShootoutResult.fromEvent(home, away)(event) must beNone
+      PenaltyShootoutKick.fromEvent(home, away)(event) must beNone
     }
 
     "return None when eventTime is not an integer" in new ShootoutScope {
       val event = shootoutEvent("shootoutGoal", homePlayer).copy(eventTime = Some("90+3"))
-      PenaltyShootoutResult.fromEvent(home, away)(event) must beNone
+      PenaltyShootoutKick.fromEvent(home, away)(event) must beNone
     }
   }
 }

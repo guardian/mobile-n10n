@@ -27,8 +27,8 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
     val dismissals = allEvents.collect { case d: Dismissal => d }
     val redCards = RedCards.fromDismissals(matchInfo.homeTeam, matchInfo.awayTeam, dismissals)
-    val penaltyShootoutResults = allEvents.collect { case psr: PenaltyShootoutResult => psr }
-    val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutResult(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutResults)
+    val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
+    val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
     // TODO this is hard coded mostly for now.
     val contentState = FootballMatchContentState(

@@ -16,7 +16,7 @@ object FootballMatchEvent {
     MatchPhaseEvent.fromEvent(event) orElse
       Goal.fromEvent(homeTeam, awayTeam)(event) orElse
       Dismissal.fromEvent(homeTeam,awayTeam)(event) orElse
-      PenaltyShootoutResult.fromEvent(homeTeam, awayTeam)(event)
+      PenaltyShootoutKick.fromEvent(homeTeam, awayTeam)(event)
 }
 
 object Score {
@@ -113,7 +113,7 @@ case class GoalContext(
     score: Score
 )
 
-case class PenaltyShootoutResult(
+case class PenaltyShootoutKick(
   result: ShootoutResultType,
   playerName: String,
   kickingTeam: pa.MatchDayTeam,
@@ -122,18 +122,18 @@ case class PenaltyShootoutResult(
   eventId: String
 ) extends FootballMatchEvent
 
-object PenaltyShootoutResult {
-  def fromEvent(homeTeam: pa.MatchDayTeam, awayTeam: pa.MatchDayTeam)(event: pa.MatchEvent): Option[PenaltyShootoutResult] = for {
+object PenaltyShootoutKick {
+  def fromEvent(homeTeam: pa.MatchDayTeam, awayTeam: pa.MatchDayTeam)(event: pa.MatchEvent): Option[PenaltyShootoutKick] = for {
     result <- shootoutPenaltyResultFromString(event.eventType)
-    playerName <- event.players.headOption
-    kickingTeam = if (playerName.teamID == homeTeam.id) homeTeam else awayTeam
-    otherTeam = if (playerName.teamID == homeTeam.id) awayTeam else homeTeam
+    player <- event.players.headOption
+    kickingTeam = if (player.teamID == homeTeam.id) homeTeam else awayTeam
+    otherTeam = if (player.teamID == homeTeam.id) awayTeam else homeTeam
     eventTime <- event.eventTime
     eventMinute <- Try(eventTime.toInt).toOption
     eventId <- event.id
-  } yield PenaltyShootoutResult(
+  } yield PenaltyShootoutKick(
     result,
-    playerName.name,
+    player.name,
     kickingTeam,
     otherTeam,
     eventMinute,
@@ -148,15 +148,15 @@ object PenaltyShootoutResult {
 }
 
 object PenaltyShootoutScore {
-  def fromPenaltyShootoutResult(homeTeam: pa.MatchDayTeam, awayTeam: pa.MatchDayTeam, shootoutResults: List[PenaltyShootoutResult]): Option[PenaltyShootoutScore] = {
+  def fromPenaltyShootoutKicks(homeTeam: pa.MatchDayTeam, awayTeam: pa.MatchDayTeam, shootoutResults: List[PenaltyShootoutKick]): Option[PenaltyShootoutScore] = {
     if (shootoutResults.isEmpty) None
     else {
-      val homeScored = shootoutResults.count(r => r.kickingTeam == homeTeam && r.result == ScoredShootoutResult)
-      val homeMissed = shootoutResults.count(r => r.kickingTeam == homeTeam && r.result == MissedShootoutResult)
-      val homeSaved = shootoutResults.count(r => r.kickingTeam == homeTeam && r.result == SavedShootoutResult)
-      val awayScored = shootoutResults.count(r => r.kickingTeam == awayTeam && r.result == ScoredShootoutResult)
-      val awayMissed = shootoutResults.count(r => r.kickingTeam == awayTeam && r.result == MissedShootoutResult)
-      val awaySaved = shootoutResults.count(r => r.kickingTeam == awayTeam && r.result == SavedShootoutResult)
+      val homeScored = shootoutResults.count(r => r.kickingTeam.id == homeTeam.id && r.result == ScoredShootoutResult)
+      val homeMissed = shootoutResults.count(r => r.kickingTeam.id == homeTeam.id && r.result == MissedShootoutResult)
+      val homeSaved = shootoutResults.count(r => r.kickingTeam.id == homeTeam.id && r.result == SavedShootoutResult)
+      val awayScored = shootoutResults.count(r => r.kickingTeam.id == awayTeam.id && r.result == ScoredShootoutResult)
+      val awayMissed = shootoutResults.count(r => r.kickingTeam.id == awayTeam.id && r.result == MissedShootoutResult)
+      val awaySaved = shootoutResults.count(r => r.kickingTeam.id == awayTeam.id && r.result == SavedShootoutResult)
       Some(PenaltyShootoutScore(homeScored, homeMissed, homeSaved, awayScored, awayMissed, awaySaved))
     }
   }
