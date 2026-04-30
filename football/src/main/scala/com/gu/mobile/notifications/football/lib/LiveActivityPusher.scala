@@ -48,21 +48,11 @@ class LiveActivityPusher extends Logging {
       )
       Future.successful(())
     } else {
-
-      // TODO for the eventbus to direct the event to the right place
-      val activityType = payload.eventType match {
-        case CreateChannelEvent      => "channel-create"
-        case StartLiveActivityEvent  => "broadcast-start"
-        case UpdateLiveActivityEvent => "broadcast-update"
-        case EndLiveActivityEvent    => "broadcast-end"
-        case DeleteChannelEvent      => "channel-delete"
-      }
-
       val result = Try {
         val entry = PutEventsRequestEntry
           .builder()
           .source("football-lambda")
-          .detailType(activityType)
+          .detailType(payload.eventType.asString)
           .detail(Json.toJson(payload).toString())
           .eventBusName(eventBusName)
           .build()
