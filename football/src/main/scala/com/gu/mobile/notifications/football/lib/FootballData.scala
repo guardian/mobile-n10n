@@ -69,7 +69,7 @@ class FootballData(
 
   def matchIdsInProgress(dateTime: ZonedDateTime): Future[List[MatchDay]] = {
     def inProgress(m: MatchDay): Boolean =
-      m.date.minusMinutes(5).isBefore(dateTime) && m.date.plusHours(4).isAfter(dateTime)
+      m.date.minusHours(2).isBefore(dateTime) && m.date.plusHours(4).isAfter(dateTime)
 
 
     // unfortunately PA provide 00:00 as start date when they don't have the start date
