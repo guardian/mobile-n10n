@@ -1,0 +1,41 @@
+{
+  "version": "0",
+  "id": "65587515-3040-b54e-t00d-4b7970bdd1eb",
+  "detail-type": "channel-create",
+  "source": "football-lambda",
+  "account": "00000000000000",
+  "time": "2026-04-27T08:36:52Z",
+  "region": "eu-west-1",
+  "resources": [],
+  "detail": {
+    "id": "165875bb-ade9-3245-b602-6343a1dd406d",
+    "eventType": "channel-create",
+    "liveActivityType": "FootballLiveActivity",
+    "liveActivityID": "123456-test",
+    "dynamoStoreData": "",
+    "broadcastContentStateData": {
+      "matchStatus": "SCHEDULED",
+      "kickOffTimestamp": 1766433600,
+      "homeTeam": {
+        "name": "Team A",
+        "score": 3,
+        "redCards": 1
+      },
+      "awayTeam": {
+        "name": "Team B",
+        "score": 5,
+        "redCards": 1
+      },
+      "competition": {
+        "name": "World Cup",
+        "round": "Group C"
+      },
+      "commentary" : "Predicted to be an exciting match",
+      "lineupsAvailable" : true,
+      "currentMinute" : 0
+    },
+    "eventTimestamp": 1777278992019
+  }
+}
+
+

@@ -7,30 +7,28 @@ import java.nio.charset.StandardCharsets
 /**
  *  Local run creates and closes a channel on the APNS Sandbox env for the iOS debug app.
  */
-//object ChannelManagerLambdaLocalRun extends App {
-//
-//  val channelId = "match123"
-//
-//  println("Start running ChannelManagerLambda locally")
-//
-//  val createChannelJson = Json.toJson(ChannelRequest(channelId, Some("competiton-001"), None, toCreate = true)).toString()
-//
-//  val createRequestStream = new java.io.ByteArrayInputStream(createChannelJson.getBytes(StandardCharsets.UTF_8))
-//
-//  val createResponseStream = new java.io.ByteArrayOutputStream()
-//
-//  ChannelManagerLambda.handleRequest(createRequestStream, createResponseStream, null)
-//
-//  val closeRequest = ChannelRequest(channelId, None, None, toCreate = false)
-//
-//  val closeRequestStream = new java.io.ByteArrayInputStream(Json.toJson(closeRequest).toString().getBytes(StandardCharsets.UTF_8))
-//
-//  val closeResponseStream = new java.io.ByteArrayOutputStream()
-//
-//  ChannelManagerLambda.handleRequest(closeRequestStream, closeResponseStream, null)
-//
-//  println("Finished running ChannelManagerLambda locally with response: " + closeResponseStream.toString())
-//}
+object ChannelManagerLambdaLocalRun extends App {
+
+  println("Start running ChannelManagerLambda locally")
+
+  val createChannelJson = Source.fromResource("channel-create-payload.json").mkString
+
+  val createRequestStream = new java.io.ByteArrayInputStream(createChannelJson.getBytes(StandardCharsets.UTF_8))
+
+  val createResponseStream = new java.io.ByteArrayOutputStream()
+
+  ChannelManagerLambda.handleRequest(createRequestStream, createResponseStream, null)
+
+  val closeChannelJson = Source.fromResource("channel-delete-payload.json").mkString
+
+  val closeRequestStream = new java.io.ByteArrayInputStream(closeChannelJson.getBytes(StandardCharsets.UTF_8))
+
+  val closeResponseStream = new java.io.ByteArrayOutputStream()
+
+  ChannelManagerLambda.handleRequest(closeRequestStream, closeResponseStream, null)
+
+  println("Finished running ChannelManagerLambda locally with response: " + closeResponseStream.toString())
+}
 
 /**
  * Local run broadcasts a live activity update on the APNS Sandbox env for the iOS debug app.

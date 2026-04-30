@@ -39,5 +39,5 @@ trait Lambda {
       )
       .build()
 
-  val repository = new LiveActivityChannelRepository(dynamoDbClient, s"mobile-notifications-liveactivities-CODE")
+  val repository = new LiveActivityChannelRepository(dynamoDbClient, s"mobile-notifications-liveactivities-${config.stage}")
 }
