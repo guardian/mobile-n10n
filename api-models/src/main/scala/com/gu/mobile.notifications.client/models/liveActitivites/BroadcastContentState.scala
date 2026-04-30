@@ -12,7 +12,9 @@ import play.api.libs.json._
 
 
 // GENERIC CONTENT STATE //////////////////////////////////////////////////
-sealed trait ContentState
+sealed trait ContentState {
+  def contentType: String
+}
 object ContentState {
   import FootballContentJsonFormats._
 
@@ -21,7 +23,7 @@ object ContentState {
       case f: FootballMatchContentState =>
         footballMatchContentStateFormat
           .writes(f)
-          .as[JsObject] + ("type" -> JsString("football"))
+          .as[JsObject] + ("type" -> JsString(cs.contentType))
       // Add cases for other ContentState subtypes here
     }
 
@@ -94,7 +96,9 @@ case class FootballMatchContentState(
     currentMinute: Option[Int] = None,
     currentPeriodStartTime: Option[Long] = None,
     articleUrl: Option[String] = None
-) extends ContentState
+) extends ContentState {
+  val contentType = "football"
+}
 
 
 object FootballContentJsonFormats {

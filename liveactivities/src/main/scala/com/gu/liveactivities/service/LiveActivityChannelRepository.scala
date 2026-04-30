@@ -16,11 +16,10 @@ trait ChannelMappingsRepository {
 
   def containMapping(id: String): Future[Option[String]]
 
-  def createMapping(    
+  def createMapping(
     id: String,
     channelId: String,
-    eventData: Option[LiveActivityData],
-    competitionId: Option[String]): Future[Unit]
+    eventData: Option[LiveActivityData]): Future[Unit]
 
   def getMappingById(id: String): Future[LiveActivityMapping]
   
@@ -58,7 +57,6 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     id: String,
     channelId: String,
     eventData: Option[LiveActivityData],
-    competitionId: Option[String],
   ): Future[Unit] = {
     val createdAt = ZonedDateTime.now()
     val newItem = new LiveActivityMapping(
@@ -66,8 +64,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       channelId = channelId, 
       isChannelActive = true, 
       isLive = true, 
-      data = eventData, 
-      competitionId = competitionId,
+      data = eventData,
       lastEventId = None,
       lastEventAt = None,
       createdAt = createdAt,

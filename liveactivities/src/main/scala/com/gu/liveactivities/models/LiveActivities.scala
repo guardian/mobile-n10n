@@ -4,18 +4,22 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.json.Writes._
 import play.api.libs.functional.syntax._
+
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromString, dateTimeToString}
+import com.gu.mobile.notifications.client.models.liveActitivites.{ContentState, FootballMatchContentState}
 import org.scanamo.DynamoFormat
 import org.scanamo.generic.semiauto._
 
 sealed trait LiveActivityData
 
+// TODO: rename the file to be specific for dynamo metadata
 case class FootballLiveActivity(
     homeTeam: String,
     awayTeam: String,
-    articleUrl: String
+    competitionId: String,
+    kickOffTimestamp: Long
 ) extends LiveActivityData
 
 object FootballLiveActivity {
@@ -42,6 +46,16 @@ object LiveActivityData {
     }
 
   implicit val dynamoFormat: DynamoFormat[LiveActivityData] = deriveDynamoFormat[LiveActivityData]
+
+  def toLiveActivityData(contentState: ContentState): LiveActivityData = contentState match {
+    case footballMatchContentState: FootballMatchContentState =>
+      FootballLiveActivity(
+        homeTeam = footballMatchContentState.homeTeam.name,
+        awayTeam = footballMatchContentState.awayTeam.name,
+        competitionId = footballMatchContentState.competition.name,
+        kickOffTimestamp = footballMatchContentState.kickOffTimestamp
+      )
+  }
 }
 
 case class LiveActivityMapping(
@@ -50,7 +64,6 @@ case class LiveActivityMapping(
     isChannelActive: Boolean,
     isLive: Boolean,
     data: Option[LiveActivityData],
-    competitionId: Option[String],
     lastEventId: Option[String],
     lastEventAt: Option[ZonedDateTime],
 		createdAt: ZonedDateTime,

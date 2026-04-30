@@ -7,9 +7,38 @@ import play.api.libs.json._
 sealed trait TopicType
 
 object TopicType {
-  implicit val jf: Writes[TopicType] = new Writes[TopicType] {
+  implicit val writes: Writes[TopicType] = new Writes[TopicType] {
     override def writes(o: TopicType): JsValue = JsString(o.toString)
   }
+
+  private val all: List[TopicType] = List(
+    Breaking,
+    Content,
+    TagContributor,
+    TagKeyword,
+    TagSeries,
+    TagBlog,
+    FootballTeam,
+    FootballMatch,
+    User,
+    Newsstand
+  )
+
+  private val fromString: Map[String, TopicType] =
+    all.map(t => t.toString -> t).toMap
+
+  implicit val reads: Reads[TopicType] = Reads {
+    case JsString(value) =>
+      fromString.get(value) match {
+        case Some(t) => JsSuccess(t)
+        case None    => JsError(s"Invalid TopicType: $value")
+      }
+
+    case _ => JsError("TopicType must be a string")
+  }
+
+  implicit val format: Format[TopicType] =
+    Format(reads, writes)
 }
 
 object TopicTypes {
@@ -30,6 +59,7 @@ case class Topic(`type`: TopicType, name: String) {
 }
 object Topic {
   implicit val jf: OWrites[Topic] = Json.writes[Topic]
+  implicit val format: OFormat[Topic] = Json.format[Topic]
   val BreakingNewsUk = Topic(Breaking, UK.toString)
   val BreakingNewsUs = Topic(Breaking, US.toString)
   val BreakingNewsAu = Topic(Breaking, AU.toString)
