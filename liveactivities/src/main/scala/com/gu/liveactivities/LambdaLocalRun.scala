@@ -40,12 +40,6 @@ object BroadcastLambdaLocalRun extends App {
 
   println("Start running BroadcastLambda locally")
 
-  def loadFile(file: String): String = {
-    val stream = this.getClass.getClassLoader.getResourceAsStream(file)
-    if (stream == null) throw new RuntimeException(s"Resource not found: $file")
-    Source.fromInputStream(stream).mkString
-  }
-
   val broadcastRequest = Source.fromResource("broadcast-update-payload.json").mkString // eventbridge event represented by liveActivityPayload
 
   val broadcastRequestStream = new java.io.ByteArrayInputStream(broadcastRequest.getBytes(StandardCharsets.UTF_8))
