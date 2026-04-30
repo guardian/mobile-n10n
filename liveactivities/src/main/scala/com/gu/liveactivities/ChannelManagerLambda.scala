@@ -1,26 +1,15 @@
 package com.gu.liveactivities
 
-import com.gu.liveactivities.service.{ChannelApiClient, BroadcastApiClient, Authentication}
-import com.gu.liveactivities.service.LiveActivityChannelRepository
-import com.gu.liveactivities.util.{Configuration, IosConfiguration}
-import com.gu.liveactivities.models.{LiveActivityMapping, LiveActivityData}
-import scala.concurrent.Await
-import scala.util.Success
-import scala.util.Failure
-import scala.util.Try
-import com.amazonaws.services.lambda.runtime.Context
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler
-import java.io.{InputStream, OutputStream}
-import play.api.libs.json.Json
-import play.api.libs.json.Format
-import play.api.libs.json.JsSuccess
-import play.api.libs.json.JsError
-import java.nio.charset.StandardCharsets
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
-import software.amazon.awssdk.regions.Region.EU_WEST_1
+import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
+import com.gu.liveactivities.models.{LiveActivityData, LiveActivityInvalidStateException}
+import com.gu.liveactivities.service.ChannelApiClient
 import com.gu.liveactivities.util.Logging
-import scala.concurrent.Future
-import com.gu.liveactivities.models.LiveActivityInvalidStateException
+import play.api.libs.json.{Format, JsError, JsSuccess, Json}
+
+import java.io.{InputStream, OutputStream}
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success, Try}
 
 case class ChannelRequest(matchId: String, competitionId: Option[String], eventData: Option[LiveActivityData], toCreate: Boolean)
 
@@ -33,31 +22,37 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
   val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer)
 
   def processCreateChannelRequest(matchId: String, competitionId: Option[String], eventData: Option[LiveActivityData]): Future[String] = {
-    logger.info(s"Received request to create channel for match ID ${matchId}")
-    return for {
-      mappingExists <- repository.containMapping(matchId)
-      _ <- if (mappingExists) {
-          logger.error(s"Channel mapping already exists for match ID ${matchId}")
-          Future.failed(new LiveActivityInvalidStateException(matchId, "Channel mapping already exists"))
-        } else Future.successful(())
-      channelId <- channelApiClient.createChannel()
-      _ <- repository.createMapping(matchId, channelId, eventData, competitionId)
-      _ = logger.info(s"Channel created with channel ID ${channelId} for match ID ${matchId}")
-    } yield channelId
+    logger.info(s"Received request to create channel for match ID $matchId")
+
+    val maybeChannelId = repository.containMapping(matchId)
+    maybeChannelId.flatMap {
+      case Some(id) =>
+        logger.error(s"Channel mapping already exists for match ID $matchId")
+        // if channel id already exists for a match we don't want to fail the lambda to avoid the lambda retry on this event
+        Future.successful(id)
+      case None =>
+        for {
+          channelId <- channelApiClient.createChannel()
+          _ <- repository.createMapping(matchId, channelId, eventData, competitionId)
+          _ = logger.info(s"Channel created with channel ID $channelId for match ID $matchId")
+        } yield channelId
+    }
   }
 
   def processCloseChannelRequest(matchId: String): Future[String] = {
     logger.info(s"Channel closed for match ID: $matchId")
-    return for {
-      mapping <- repository.getMappingById(matchId)
-      _ <- if (!mapping.isChannelActive) {
-          logger.error(s"Channel not active for match ID ${matchId}")
-          Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
-        } else Future.successful(())
-      _ <- channelApiClient.closeChannel(mapping.channelId)
-      _ <- repository.updateMappingActiveChannel(matchId, false)
-      _ = logger.info(s"Channel closed with channel ID ${mapping.channelId} for match ID ${matchId}")
-    } yield mapping.channelId
+    val maybeMapping = repository.getMappingById(matchId)
+    maybeMapping.flatMap{
+      case mapping if !mapping.isChannelActive =>
+        logger.error(s"Channel not active for match ID $matchId")
+        // if channel is inactive for a match we don't want to fail the lambda to avoid the lambda retry on this event
+        Future.successful(mapping.channelId)
+      case mapping =>  for {
+        _ <- channelApiClient.closeChannel(mapping.channelId)
+        _ <- repository.updateMappingActiveChannel(matchId, isActive = false)
+        _ = logger.info(s"Channel closed with channel ID ${mapping.channelId} for match ID $matchId")
+      } yield mapping.channelId
+    }
   }
 
   def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
@@ -81,13 +76,16 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
       else
         processCloseChannelRequest(request.matchId)
 
-    // TODO - the timeout value
-    Try(Await.result(channelFuture, scala.concurrent.duration.Duration.Inf)) match {
+    //Timeout set to 160 seconds to provide a safety buffer.
+    // While the sum of downstream timeouts is at most ~110s,
+    // we allow extra time for other things such as JSON parsing, cold starts,
+    // authentication token fetches, and potential network congestion
+    // to ensure the Lambda doesn't fail a healthy request that is just running slow.
+    Try(Await.result(channelFuture, 160.seconds)) match {
       case Success(_) => ()
-      case Failure(exception) => {
+      case Failure(exception) =>
         logger.error(s"Failed to process: ${exception.getMessage}")
         throw exception
-      }
     }
   }
 }

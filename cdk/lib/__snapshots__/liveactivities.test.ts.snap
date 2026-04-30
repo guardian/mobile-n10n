@@ -85,6 +85,34 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::Lambda::Permission",
     },
+    "ChannelManagerDlq58D33B75": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "MessageRetentionPeriod": 604800,
+        "QueueName": "liveactivities-channel-manager-dlq-CODE",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VisibilityTimeout": 240,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
     "ChannelRule421C2920": {
       "Properties": {
         "EventBusName": {
@@ -530,9 +558,29 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
             "Value": "CODE",
           },
         ],
-        "Timeout": 120,
+        "Timeout": 180,
       },
       "Type": "AWS::Lambda::Function",
+    },
+    "liveactivitieschannelmanagerlambdaEventInvokeConfigE15EB3FC": {
+      "Properties": {
+        "DestinationConfig": {
+          "OnFailure": {
+            "Destination": {
+              "Fn::GetAtt": [
+                "ChannelManagerDlq58D33B75",
+                "Arn",
+              ],
+            },
+          },
+        },
+        "FunctionName": {
+          "Ref": "liveactivitieschannelmanagerlambda398DC149",
+        },
+        "MaximumRetryAttempts": 2,
+        "Qualifier": "$LATEST",
+      },
+      "Type": "AWS::Lambda::EventInvokeConfig",
     },
     "liveactivitieschannelmanagerlambdaServiceRole18EEF4D7": {
       "Properties": {
@@ -591,6 +639,20 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
       "Properties": {
         "PolicyDocument": {
           "Statement": [
+            {
+              "Action": [
+                "sqs:SendMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ChannelManagerDlq58D33B75",
+                  "Arn",
+                ],
+              },
+            },
             {
               "Action": [
                 "s3:GetObject*",

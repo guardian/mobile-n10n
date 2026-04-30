@@ -8,6 +8,7 @@ import { EventBus, Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction, SqsQueue } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { SqsDestination } from 'aws-cdk-lib/aws-lambda-destinations';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 
 export class LiveActivities extends GuStack {
@@ -26,6 +27,12 @@ export class LiveActivities extends GuStack {
 		});
 		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
+		const channelManagerDlq = new Queue(this, 'ChannelManagerDlq', {
+			queueName: `${app}-channel-manager-dlq-${stage}`,
+			visibilityTimeout: Duration.minutes(4),
+			retentionPeriod: Duration.days(7),
+		});
+
 		const channelLambda = new GuLambdaFunction(
 			this,
 			`${app}-channel-manager-lambda`,
@@ -37,7 +44,9 @@ export class LiveActivities extends GuStack {
 				fileName: `${app}.jar`,
 				runtime: Runtime.JAVA_11,
 				memorySize: 1024,
-				timeout: Duration.seconds(120),
+				timeout: Duration.minutes(3),
+				onFailure: new SqsDestination(channelManagerDlq),
+				retryAttempts: 2,
 				environment: {
 					Stack: stack,
 					Stage: stage,

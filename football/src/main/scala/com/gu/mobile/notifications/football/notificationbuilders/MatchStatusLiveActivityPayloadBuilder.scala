@@ -68,8 +68,12 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       case _ => UpdateLiveActivityEvent
     }
 
+    // Deterministic ID used for deduplicating match events (matchId + eventId)
+    val derivedId = s"football-match-status/${matchInfo.id}/${triggeringEvent.eventId}"
+
     LiveActivityPayload(
-      id = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes),
+      id =
+        UUID.nameUUIDFromBytes(derivedId.getBytes),
       eventType = liveActivityEventType,
       liveActivityType = FootballLiveActivity,
       liveActivityID =
