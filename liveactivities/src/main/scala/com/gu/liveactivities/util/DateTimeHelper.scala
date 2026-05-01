@@ -1,6 +1,7 @@
 package com.gu.liveactivities.util
 
 import java.time.ZonedDateTime
+import java.time.{Instant, ZoneOffset}
 import java.time.format.DateTimeFormatter
 import play.api.libs.json.JsPath
 import play.api.libs.json.Reads
@@ -15,6 +16,9 @@ object DateTimeHelper {
   def dateTimeToString(dt: ZonedDateTime): String = dt.format(iso8601formatter)
 
   def dateTimeFromString(s: String): ZonedDateTime = ZonedDateTime.parse(s, iso8601formatter)
+
+  def dateTimeToLong(dt: ZonedDateTime): Long = dt.toInstant.toEpochMilli
+  def dateTimeFromLong(l: Long): ZonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(l), ZoneOffset.UTC)
 
   implicit val zonedDateTimeRead: Reads[ZonedDateTime] = JsPath.read[String].map(dateTimeFromString)
 
