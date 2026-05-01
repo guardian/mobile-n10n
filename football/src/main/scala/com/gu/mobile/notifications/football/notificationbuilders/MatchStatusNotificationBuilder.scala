@@ -2,10 +2,9 @@ package com.gu.mobile.notifications.football.notificationbuilders
 
 import java.net.URI
 import java.util.UUID
-
 import com.gu.mobile.notifications.client.models.Importance.{Importance, Major, Minor}
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, Score, SecondHalf}
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, PenaltyShootoutKick, Score, SecondHalf}
 import pa.{MatchDay, MatchDayTeam}
 
 import scala.PartialFunction.condOpt
@@ -124,7 +123,6 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     }
 
 
-
     triggeringEvent match {
       case g: Goal => goalMsg(g)
       case dismissal: Dismissal => dismissalMsg(dismissal)
@@ -139,6 +137,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case SecondHalf(_) => "Second-half start"
     case FullTime(_) => "Full-Time"
     case _:Dismissal => "Red card"
+    case _:PenaltyShootoutKick  => "Penalty Kick" // needed for spec. We are filtering these out in the EventConsumer for now.
     case _ => "The Guardian"
   }
 
