@@ -61,16 +61,22 @@ object MatchStatus {
 
 case class Competition(
     name: String,
-    round: Option[String] = None
+    round: Option[String] = None // World Cup Group name
+)
+
+case class PenaltyShootoutState(
+    scored: Int = 0,
+    missed: Int = 0,
+    saved: Int = 0,
 )
 
 case class TeamState(
     name: String,
-    score: Int = 0,
     logoAssetName: Option[String] = None,
     teamUrl: Option[String] = None,
-    penaltyScore: Option[Int] = None,
-    redCards: Int = 0
+    score: Int = 0,
+    redCards: Int = 0,
+    penaltyScore: Option[PenaltyShootoutState] = None
 )
 
 case class FootballMatchContentState(
@@ -112,8 +118,8 @@ object FootballContentJsonFormats {
     Writes(ms => JsString(ms.status))
   )
 
-  implicit val competitionFormat: OFormat[Competition] =
-    Json.format[Competition]
+  implicit val competitionFormat: OFormat[Competition] = Json.format[Competition]
+  implicit val penaltyShootoutStateFormat: OFormat[PenaltyShootoutState] = Json.format[PenaltyShootoutState]
   implicit val teamStateFormat: OFormat[TeamState] = Json.format[TeamState]
   implicit val footballMatchContentStateFormat: OFormat[FootballMatchContentState] = Json.format[FootballMatchContentState]
 }

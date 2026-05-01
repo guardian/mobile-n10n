@@ -4,8 +4,8 @@ import java.net.URI
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
 import com.gu.mobile.notifications.client.models.TopicTypes.{FootballMatch, FootballTeam}
-import com.gu.mobile.notifications.client.models.liveActitivites.{LiveActivityPayload, CreateChannelEvent, StartLiveActivityEvent, EndLiveActivityEvent}
-import com.gu.mobile.notifications.football.models.MatchDataWithArticle
+import com.gu.mobile.notifications.client.models.liveActitivites.{CreateChannelEvent, EndLiveActivityEvent, LiveActivityPayload, StartLiveActivityEvent}
+import com.gu.mobile.notifications.football.models.{MatchDataWithArticle, PenaltyShootoutKick}
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
@@ -16,7 +16,9 @@ import pa.{MatchDay, MatchEvent, Parser}
 import java.time.ZonedDateTime
 import scala.io.Source
 
-class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mockito {
+class EventConsumerSpec(implicit ev: ExecutionEnv)
+    extends Specification
+    with Mockito {
   "An EventConsumer" should {
     "generate a kick-off notification" in new MatchEventsContext {
       override def matchDay: MatchDay = super.matchDay.copy(matchStatus = "KO")
@@ -242,6 +244,20 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
     }
   }
 
+  "A Notification EventConsumer" should {
+    "not generate notification payload for penalties YET" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
+
+      val result: List[NotificationPayload] =
+        eventConsumer.eventsToNotifications(matchDataLA)
+
+      result must forall((payload: NotificationPayload) => payload.title.getOrElse("") != "Penalty Kick")
+
+    }
+
+  }
+
   "A LiveActivity EventConsumer" should {
 
     "generate a create channel payload" in new MatchEventsContext {
@@ -267,26 +283,55 @@ class EventConsumerSpec(implicit ev: ExecutionEnv) extends Specification with Mo
   }
 
   trait MatchEventsContext extends Scope {
-    val matchStatusNotificationBuilder = new MatchStatusNotificationBuilder("https://mobile.guardianapis.com")
+    val matchStatusNotificationBuilder = new MatchStatusNotificationBuilder(
+      "https://mobile.guardianapis.com"
+    )
     val eventConsumer = new EventConsumer(matchStatusNotificationBuilder)
 
-    val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder("https://mobile.guardianapis.com")
-    val eventConsumerLiveActivities = new LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder)
+    val matchStatusLiveActivityPayloadBuilder =
+      new MatchStatusLiveActivityPayloadBuilder(
+        "https://mobile.guardianapis.com"
+      )
+    val eventConsumerLiveActivities = new LiveActivityEventConsumer(
+      matchStatusLiveActivityPayloadBuilder
+    )
 
     def loadFile(file: String): String = {
       val stream = this.getClass.getClassLoader.getResourceAsStream(file)
       Source.fromInputStream(stream).mkString
     }
 
-    def rawEvents: List[MatchEvent] = Parser.parseMatchEvents(loadFile("match-event-feed.xml")).get.events
+    def rawEvents: List[MatchEvent] =
+      Parser.parseMatchEvents(loadFile("match-event-feed.xml")).get.events
     def matchDay: MatchDay = Parser.parseMatchDay(loadFile("20170811.xml")).head
-    def events: List[MatchEvent] = new SyntheticMatchEventGenerator().generate(rawEvents, "4011135", matchDay)
-    def matchData = MatchDataWithArticle(matchDay, events, Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live"))
+    def events: List[MatchEvent] = new SyntheticMatchEventGenerator().generate(
+      rawEvents,
+      "4011135",
+      matchDay
+    )
+    def matchData = MatchDataWithArticle(
+      matchDay,
+      events,
+      Some(
+        "football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live"
+      )
+    )
 
     // live activity (we need a complete feed with penalties to test all live activity updates including ending the activity)
-    def rawEventsLA: List[MatchEvent] = Parser.parseMatchEvents(loadFile("match-event-feed-penalties.xml")).get.events
-    def matchDayLA: MatchDay = Parser.parseMatchDay(loadFile("4484328-penalites.xml")).head
-    def eventsLA: List[MatchEvent] = new SyntheticMatchEventGenerator().generate(rawEventsLA, "4484328", matchDayLA)
-    def matchDataLA = MatchDataWithArticle(matchDayLA, eventsLA, Some("football/live/2025/feb/11/exeter-city-v-nottingham-forest-juventus-v-psv-and-more-football-live"))
+    def rawEventsLA: List[MatchEvent] = Parser
+      .parseMatchEvents(loadFile("match-event-feed-penalties.xml"))
+      .get
+      .events
+    def matchDayLA: MatchDay =
+      Parser.parseMatchDay(loadFile("4484328-penalties.xml")).head
+    def eventsLA: List[MatchEvent] = new SyntheticMatchEventGenerator()
+      .generate(rawEventsLA, "4484328", matchDayLA)
+    def matchDataLA = MatchDataWithArticle(
+      matchDayLA,
+      eventsLA,
+      Some(
+        "football/live/2025/feb/11/exeter-city-v-nottingham-forest-juventus-v-psv-and-more-football-live"
+      )
+    )
   }
 }
