@@ -20,6 +20,18 @@ object TopicTypes {
   case object TagSeries extends TopicType { override val toString = "tag-series" }
   case object TagBlog extends TopicType { override val toString = "tag-blog" }
   case object FootballTeam extends TopicType { override val toString = "football-team" }
+  /**
+    * When a user is subscribed to a team, we will offer them a live activity
+    * whenever that team is playing a match, as an alternative to push
+    * notifications throughout the match. This live activity will be provided
+    * via a single notification when the match starts, and users with app
+    * versions that can support live activities will receive it by subscribing
+    * to topics of type `FootballTeamLiveActivity`. Users with app versions that
+    * do not support live activities will instead be subscribing to topics of
+    * type `FootballTeam`, which will deliver notifications throughout the
+    * match.
+    */
+  case object FootballTeamLiveActivity extends TopicType { override val toString = "football-team-live-activity" }
   case object FootballMatch extends TopicType { override val toString = "football-match" }
   case object User extends TopicType { override val toString = "user-type" }
   case object Newsstand extends TopicType { override val toString = "newsstand" }
