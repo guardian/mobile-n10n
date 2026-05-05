@@ -78,6 +78,12 @@ export class LiveActivities extends GuStack {
 			}),
 		);
 
+		const broadcastDlq = new Queue(this, 'BroadcastDlq', {
+			queueName: `${app}-broadcast-dlq-${stage}`,
+			visibilityTimeout: Duration.minutes(4),
+			retentionPeriod: Duration.days(7),
+		});
+
 		const broadcastLambda = new GuLambdaFunction(
 			this,
 			`${app}-broadcast-lambda`,
@@ -89,7 +95,9 @@ export class LiveActivities extends GuStack {
 				fileName: `${app}.jar`,
 				runtime: Runtime.JAVA_11,
 				memorySize: 1024,
-				timeout: Duration.seconds(120),
+				timeout: Duration.minutes(3),
+				onFailure: new SqsDestination(broadcastDlq),
+				retryAttempts: 2,
 				environment: {
 					Stack: stack,
 					Stage: stage,
