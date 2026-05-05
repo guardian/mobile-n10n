@@ -1,10 +1,11 @@
 package com.gu.mobile.notifications.football.lib
 
 import java.util.UUID
-
 import pa.{MatchDay, MatchEvent}
 
-class SyntheticMatchEventGenerator {
+import java.time.ZonedDateTime
+
+class SyntheticMatchEventGenerator(dateTime: ZonedDateTime) {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
     // Live activity synthetic events are appended at the end, but when they are first generated, no other timeline events exist and duplicate events are filtered so this should not matter.
@@ -40,7 +41,7 @@ class SyntheticMatchEventGenerator {
 
   // Live Activity supporting events //
 
-  val now: Long = java.time.Instant.now.getEpochSecond
+  val now: Long = dateTime.toInstant.getEpochSecond
   def koWithinTwoHours(ko: Long): Boolean = now >= ko - 7200 && now < ko - 1200
   def koWithin20Minutes(ko: Long): Boolean = now >= ko - 1200 && now < ko
 

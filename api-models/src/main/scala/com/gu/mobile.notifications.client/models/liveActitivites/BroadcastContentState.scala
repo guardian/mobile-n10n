@@ -60,6 +60,7 @@ object MatchStatus {
 }
 
 case class Competition(
+    id: String,
     name: String,
     round: Option[String] = None // World Cup Group name
 )

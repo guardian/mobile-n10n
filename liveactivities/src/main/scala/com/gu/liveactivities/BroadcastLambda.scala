@@ -32,12 +32,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       case JsSuccess(request, _) => {
 
         // If we see these errors there is a misconfiguration in the eventbridge routing rules.
-        // todo codify detail-type strings in the model. They are in the LiveActivityEventPusher
-        if (request.source != "football-lambda") {
-          logger.error(s"Unexpected eventbridge event source: ${request.source}")
-          throw new Exception(s"Unexpected event source: ${request.source}")
-        }
-        if (request.`detail-type` != "broadcast-update" && request.`detail-type` != "broadcast-end") {
+        if (request.`detail-type` != UpdateLiveActivityEvent && request.`detail-type` != EndLiveActivityEvent) {
           logger.error(s"Unexpected eventbridge event type: ${request.`detail-type`}")
           throw new Exception(s"Unexpected event type: ${request.`detail-type`}")
         }
