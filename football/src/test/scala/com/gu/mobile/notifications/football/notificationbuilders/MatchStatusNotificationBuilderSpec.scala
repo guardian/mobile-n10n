@@ -4,12 +4,16 @@ import java.net.URI
 import java.time.ZonedDateTime
 import java.util.UUID
 
-import com.gu.mobile.notifications.client.models.Importance.Major
+import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.models.{Dismissal, Goal, GoalContext, Score}
+import com.gu.mobile.notifications.football.lib.SyntheticMatchEventGenerator
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, Goal, GoalContext, Score}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
+import pa.{Competition, MatchDay, MatchDayTeam, Parser, Round, Stage, Venue}
+
+import java.time.ZonedDateTime
+import scala.io.Source
 
 
 class MatchStatusNotificationBuilderSpec extends Specification {
@@ -48,14 +52,19 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       )
     }
 
-    "Count red cards from dismissal events" in new MatchEventsContext {
-      val homeDismissal = Dismissal("d1", "Home Player", home, 55, None)
-      val notification = builder.build(baseGoal, matchInfo, List(homeDismissal), None)
+    "Build a red card notification" in new WorldCupContext {
+      val dismissal = dismissals.head
+      val previousEvents = allEvents.takeWhile(_ != dismissal)
+      val notification = builder.build(dismissal, matchInfo, previousEvents, None)
+      notification.title shouldEqual Some("Red card")
+      notification.message shouldEqual Some("Wales 0-0 Iran (FT)\nWayne Hennessey (Wales) 86min")
+      notification.importance shouldEqual Minor // to check
       notification.homeTeamRedCards shouldEqual 1
       notification.awayTeamRedCards shouldEqual 0
+      notification.homeTeamMessage must contain("Red card: Wayne Hennessey 86'")
     }
 
-    "Include round name when present" in new MatchEventsContext {
+    "Include the round name" in new MatchEventsContext {
       val matchWithRound = matchInfo.copy(round = Round("1", Some("Group C")))
       val notification = builder.build(baseGoal, matchWithRound, List.empty, None)
       notification.roundName shouldEqual Some("Group C")
@@ -90,5 +99,22 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       venue = Some(Venue(id = "1", name = "Wembley")),
       comments = None
     )
+  }
+
+  trait WorldCupContext extends Scope {
+    val builder = new MatchStatusNotificationBuilder("http://localhost")
+
+    def loadFile(file: String): String = {
+      val stream = this.getClass.getClassLoader.getResourceAsStream(file)
+      Source.fromInputStream(stream).mkString
+    }
+
+    def matchInfo: MatchDay = Parser.parseMatchDay(loadFile("worldcup/match-day.xml")).head
+    def rawEvents = Parser.parseMatchEvents(loadFile("worldcup/match-event-feed.xml")).get.events
+    def allEvents: List[FootballMatchEvent] =
+      new SyntheticMatchEventGenerator(ZonedDateTime.now())
+        .generate(rawEvents, matchInfo.id, matchInfo)
+        .flatMap(FootballMatchEvent.fromPaMatchEvent(matchInfo.homeTeam, matchInfo.awayTeam)(_))
+    def dismissals = allEvents.collect { case d: Dismissal => d }
   }
 }

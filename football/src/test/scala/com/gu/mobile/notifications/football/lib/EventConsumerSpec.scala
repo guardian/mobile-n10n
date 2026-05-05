@@ -76,7 +76,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         dryRun = None,
         homeTeamRedCards = 0,
         awayTeamRedCards = 0,
-        roundName = Some("Semi-Final")
+        roundName = Some("League")
       )
 
       result should contain(expectedNotification)
@@ -125,7 +125,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         dryRun = None,
         homeTeamRedCards = 2,
         awayTeamRedCards = 0,
-        roundName = Some("Semi-Final")
+        roundName = Some("League")
       )
 
       result should contain(expectedNotification)
@@ -176,7 +176,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         dryRun = None,
         homeTeamRedCards = 0,
         awayTeamRedCards = 0,
-        roundName = Some("Semi-Final")
+        roundName = Some("League")
       )
 
       result should contain(expectedNotification)
@@ -226,7 +226,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         dryRun = None,
         homeTeamRedCards = 2,
         awayTeamRedCards = 0,
-        roundName = Some("Semi-Final")
+        roundName = Some("League")
       )
 
       result should contain(expectedNotification)
@@ -275,7 +275,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         dryRun = None,
         homeTeamRedCards = 0,
         awayTeamRedCards = 0,
-        roundName = Some("Semi-Final")
+        roundName = Some("League")
       )
 
       result should contain(expectedNotification)
@@ -324,7 +324,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         None,
         homeTeamRedCards = 2,
         awayTeamRedCards = 0,
-        roundName = Some("Semi-Final")
+        roundName = Some("League")
       )
 
       result should contain(expectedNotification)
@@ -668,5 +668,20 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         "football/live/2025/feb/11/exeter-city-v-nottingham-forest-juventus-v-psv-and-more-football-live"
       )
     )
+  }
+
+  trait WorldCupContext extends Scope {
+    val matchStatusNotificationBuilder = new MatchStatusNotificationBuilder("https://mobile.guardianapis.com")
+    val eventConsumer = new EventConsumer(matchStatusNotificationBuilder)
+
+    def loadFile(file: String): String = {
+      val stream = this.getClass.getClassLoader.getResourceAsStream(file)
+      Source.fromInputStream(stream).mkString
+    }
+
+    def rawEvents: List[MatchEvent] = Parser.parseMatchEvents(loadFile("worldcup/match-event-feed.xml")).get.events
+    def matchDay: MatchDay = Parser.parseMatchDay(loadFile("worldcup/match-day.xml")).head
+    def matchEvents: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now()).generate(rawEvents, "4316435", matchDay)
+    def matchData = MatchDataWithArticle(matchDay, matchEvents, None)
   }
 }
