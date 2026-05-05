@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<matches>
+    <match matchID="4316435" date="25/11/2022" koTime="10:00">
+        <competition competitionID="700" seasonID="5596">FIFA World Cup Finals 2022</competition>
+        <stage stageNumber="1" stageType="League"></stage>
+        <round roundNumber="2">Group B</round>
+        <leg>1</leg>
+        <liveMatch>No</liveMatch>
+        <result>Yes</result>
+        <previewAvailable>No</previewAvailable>
+        <reportAvailable>No</reportAvailable>
+        <lineupsAvailable>Yes</lineupsAvailable>
+        <matchStatus>FT</matchStatus>
+        <attendance>40875</attendance>
+        <referee refereeID=""></referee>
+        <venue venueID="10919">Ahmad bin Ali Stadium</venue>
+        <homeTeam teamID="630">
+            <teamName>Wales</teamName>
+            <score>0</score>
+            <htScore>0</htScore>
+            <aggregateScore></aggregateScore>
+            <scorers>
+                <![CDATA[]]>
+            </scorers>
+        </homeTeam>
+        <awayTeam teamID="8111">
+            <teamName>Iran</teamName>
+            <score>2</score>
+            <htScore>0</htScore>
+            <aggregateScore></aggregateScore>
+            <scorers>
+                <![CDATA[Rouzbeh Cheshmi (90 +7:56),Ramin Rezaeian (90 +10:37)]]>
+            </scorers>
+        </awayTeam>
+        <comments></comments>
+    </match>
+</matches>
