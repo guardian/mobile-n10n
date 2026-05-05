@@ -1,7 +1,6 @@
 package com.gu.mobile.notifications.football.notificationbuilders
 
-import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, Scheduled, TeamState, UpdateLiveActivityEvent, StartLiveActivityEvent, CreateChannelEvent, EndLiveActivityEvent}
+import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, CreateChannelEvent, EndLiveActivityEvent, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, MatchStatus, Scheduled, StartLiveActivityEvent, TeamState, UpdateLiveActivityEvent}
 import com.gu.mobile.notifications.football.models._
 import pa.MatchDay
 
@@ -16,12 +15,6 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       articleId: Option[String]
   ): LiveActivityPayload = {
 
-    val topics = List(
-      Topic(TopicTypes.FootballTeam, matchInfo.homeTeam.id),
-      Topic(TopicTypes.FootballTeam, matchInfo.awayTeam.id),
-      Topic(TopicTypes.FootballMatch, matchInfo.id)
-    )
-
     val allEvents = triggeringEvent :: previousEvents
     val goals = allEvents.collect { case g: Goal => g }
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
@@ -30,9 +23,17 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
     val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
     val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
+    val currentMinute: Option[Int] = triggeringEvent match {
+      case d:Dismissal => Some(d.minute)
+      case g:Goal => Some(g.minute)
+      case p: PenaltyShootoutKick => Some(p.minute)
+      case phase: MatchPhaseEvent => phase.currentMinute
+      case _ => None
+    }
+
     // TODO this is hard coded mostly for now.
     val contentState = FootballMatchContentState(
-      matchStatus = Scheduled,
+      matchStatus = MatchStatus.fromString(matchInfo.matchStatus),
       kickOffTimestamp = matchInfo.date.toEpochSecond, // included date and time
       homeTeam = TeamState(
         name = transformTeamName(matchInfo.homeTeam.name),
@@ -40,7 +41,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         logoAssetName = None, // tbc
         teamUrl = None, // tbc
         redCards = redCards.home,
-        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, true)
+        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = true)
       ),
       awayTeam = TeamState(
         name = transformTeamName(matchInfo.awayTeam.name),
@@ -48,7 +49,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         logoAssetName = None, // tbc
         teamUrl = None, // tbc
         redCards = redCards.away,
-        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, false)
+        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = false)
       ),
       competition = Competition(
         name = matchInfo.competition.map(_.name).getOrElse(""),
@@ -56,7 +57,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       ),
       commentary = matchInfo.comments,
       lineupsAvailable = None, // Boolean   // not available on LiveMatch
-      currentMinute = None, // not available on LiveMatch
+      currentMinute = currentMinute,
       currentPeriodStartTime = None,
       articleUrl = articleId.map(id => s"$mapiHost/items/$id")
     )

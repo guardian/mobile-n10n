@@ -43,20 +43,57 @@ case object Abandoned extends MatchStatus { val status = "ABANDONED" }
 // @formatter:on
 
 object MatchStatus {
-  def fromString(s: String): MatchStatus = s match {
-    case "Pre-match" | "prematch"                        => PreMatch
-    case "MatchInProgress" | "1st Half" | "first_half"   => FirstHalf
-    case "HalfTime" | "Half Time" | "half_time"          => HalfTime
-    case "2nd Half" | "second_half"                      => SecondHalf
-    case "Extra Time" | "ET 1st Half"                    => ExtraTimeFirstHalf
-    case "ET Half Time"                                  => ExtraTimeHalfTime
-    case "ET 2nd Half"                                   => ExtraTimeSecondHalf
-    case "Penalties"                                     => Penalties
-    case "MatchComplete" | "MC" | "Full Time" | "Result" => FullTime
+  def fromString(s: String): MatchStatus = statuses.getOrElse(s, s) match {
+    case "Prematch"                                      => PreMatch
+    case "1st"                                           => FirstHalf
+    case "HT"                                            => HalfTime
+    case "2nd"                                           => SecondHalf
+    case "ET" | "ETS"                                    => ExtraTimeFirstHalf
+    case "ETHT"                                          => ExtraTimeHalfTime
+    case "ETSHS"                                         => ExtraTimeSecondHalf
+    case "PT"                                            => Penalties
+    case "FT"                                            => FullTime
     case "Postponed"                                     => Postponed
     case "Abandoned"                                     => Abandoned
     case _                                               => Scheduled
   }
+
+  // How PA match status are handled differs from push notification
+  private val statuses = Map(
+    ("KO", "1st"), // The Match has started (Kicked Off).
+
+    ("HT", "HT"), // The Referee has blown the whistle for Half Time.
+
+    ("SHS", "2nd"), // The Second Half of the Match has Started.
+
+    ("FT", "FT"), // The Referee has blown the whistle for Full Time.
+    ("PTFT", "FT"), // Penalty ShooT Full Time.
+    ("Result", "FT"), // The Result is official.
+    ("ETFT", "FT"), // Extra Time, Full Time has been blown.
+    ("MC", "FT"), // Match has been Completed.
+
+    ("FTET", "ET"), // Full Time, Extra Time it to be played.
+    ("ETS", "ETS"), // Extra Time has Started.
+    ("ETHT", "ETHT"), // Extra Time Half Time has been called.
+    ("ETSHS", "ETSHS"), // Extra Time, Second Half has Started.
+
+    ("FTPT", "PT"), // Full Time, Penalties are To be played.
+    ("PT", "PT"), // Penalty ShooT Out has started.
+    ("ETFTPT", "PT"), // Extra Time, Full Time, Penalties are To be played.
+
+    // Prematch
+    ("Fixture", "Prematch"), // fixture maps to 1st just in case the matchInfo and event feed are out of sync
+    ("-", "Prematch"), // same as above
+    ("New", "Prematch"), // New Match has been added to our data.
+
+    // edge cases
+    // TODO these need to be addressed. A match can be suspended and resumed within x days?)
+    ("Suspended", "S"), // Match has been Suspended. // todo when does this happen?
+    ("Resumed", "R"), // Match has been Resumed. // todo what game time does this map to? first half second half? match minute?
+    ("Abandoned", "A"), // Match has been Abandoned.
+    ("Cancelled", "C") // A Match has been Cancelled.
+    // POSTPONED???
+  )
 }
 
 case class Competition(
