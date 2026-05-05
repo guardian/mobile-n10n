@@ -150,7 +150,11 @@ case class FootballMatchStatusNotification(
   matchStatus: String,
   eventId: String,
   debug: Boolean,
-  dryRun: Option[Boolean]
+  dryRun: Option[Boolean],
+  matchStatusDetailed: Option[String] = None,
+  homeTeamRedCards: Int = 0,
+  awayTeamRedCards: Int = 0,
+  roundName: Option[String] = None
 ) extends Notification
 
 object FootballMatchStatusNotification {

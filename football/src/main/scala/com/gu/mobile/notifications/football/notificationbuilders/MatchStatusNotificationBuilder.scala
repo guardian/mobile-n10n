@@ -4,7 +4,7 @@ import java.net.URI
 import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Importance, Major, Minor}
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, PenaltyShootoutKick, Score, SecondHalf}
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, RedCards, Score, SecondHalf}
 import pa.{MatchDay, MatchDayTeam}
 
 import scala.PartialFunction.condOpt
@@ -35,6 +35,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     val allEvents = triggeringEvent :: previousEvents
     val goals = allEvents.collect { case g: Goal => g }
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
+    val dismissals = allEvents.collect { case d: Dismissal => d }
+    val redCards = RedCards.fromDismissals(matchInfo.homeTeam, matchInfo.awayTeam, dismissals)
 
     val status = statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)
 
@@ -60,7 +62,11 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       matchStatus = status,
       eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
       debug = false,
-      dryRun = None
+      dryRun = None,
+      matchStatusDetailed = Some(richMatchStatus(triggeringEvent, matchInfo.matchStatus)),
+      homeTeamRedCards = redCards.home,
+      awayTeamRedCards = redCards.away,
+      roundName = matchInfo.round.name
     )
   }
 
@@ -154,6 +160,27 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case _: Goal => Major
     case _ => Minor
   }
+
+  private def richMatchStatus(triggeringEvent: FootballMatchEvent, paStatus: String): String =
+    triggeringEvent match {
+      case _: KickOff    => "FIRST_HALF"
+      case _: HalfTime   => "HALF_TIME"
+      case _: SecondHalf => "SECOND_HALF"
+      case _: FullTime   => "FULL_TIME"
+      case _ => paStatus match {
+        case "KO"                                      => "FIRST_HALF"
+        case "HT"                                      => "HALF_TIME"
+        case "SHS"                                     => "SECOND_HALF"
+        case "FT" | "PTFT" | "Result" | "ETFT" | "MC" => "FULL_TIME"
+        case "FTET" | "ETS"                            => "EXTRA_TIME_FIRST_HALF"
+        case "ETHT"                                    => "EXTRA_TIME_HALF_TIME"
+        case "ETSHS"                                   => "EXTRA_TIME_SECOND_HALF"
+        case "FTPT" | "PT" | "ETFTPT"                 => "PENALTIES"
+        case "Postponed"                               => "POSTPONED"
+        case "Abandoned"                               => "ABANDONED"
+        case _                                         => "SCHEDULED"
+      }
+    }
 
   private val statuses = Map(
     ("KO", "1st"), // The Match has started (Kicked Off).

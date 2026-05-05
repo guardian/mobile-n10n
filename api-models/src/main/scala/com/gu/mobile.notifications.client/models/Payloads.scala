@@ -184,7 +184,11 @@ object FootballMatchStatusPayload {
     "topic" -> o.topic,
     "matchStatus" -> o.matchStatus,
     "eventId" -> o.eventId,
-    "debug" -> o.debug
+    "debug" -> o.debug,
+    "matchStatusDetailed" -> o.matchStatusDetailed,
+    "homeTeamRedCards" -> o.homeTeamRedCards,
+    "awayTeamRedCards" -> o.awayTeamRedCards,
+    "roundName" -> o.roundName
   )
 }
 case class FootballMatchStatusPayload(
@@ -210,7 +214,11 @@ case class FootballMatchStatusPayload(
   matchStatus: String,
   eventId: String,
   debug: Boolean,
-  dryRun: Option[Boolean]
+  dryRun: Option[Boolean],
+  matchStatusDetailed: Option[String] = None,
+  homeTeamRedCards: Int = 0,
+  awayTeamRedCards: Int = 0,
+  roundName: Option[String] = None
 ) extends NotificationPayload with derivedId {
   val `type` = FootballMatchStatus
   override val derivedId = s"football-match-status/$matchId/$eventId"
