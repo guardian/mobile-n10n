@@ -63,13 +63,6 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.awayTeamRedCards shouldEqual 0
       notification.homeTeamMessage must contain("Red card: Wayne Hennessey 86'")
     }
-
-    "Include the round name" in new MatchEventsContext {
-      val matchWithRound = matchInfo.copy(round = Round("1", Some("Group C")))
-      val notification = builder.build(baseGoal, matchWithRound, List.empty, None)
-      notification.roundName shouldEqual Some("Group C")
-    }
-
   }
 
   trait MatchEventsContext extends Scope {

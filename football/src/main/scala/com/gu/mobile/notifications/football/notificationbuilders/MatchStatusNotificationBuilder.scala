@@ -65,7 +65,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       matchStatus = status,
       eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
       debug = false,
-      dryRun = None,
+      dryRun = None
     )
   }
 
