@@ -63,7 +63,6 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
       debug = false,
       dryRun = None,
-      matchStatusDetailed = Some(richMatchStatus(triggeringEvent, matchInfo.matchStatus)),
       homeTeamRedCards = redCards.home,
       awayTeamRedCards = redCards.away,
       roundName = matchInfo.round.name
@@ -160,27 +159,6 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case _: Goal => Major
     case _ => Minor
   }
-
-  private def richMatchStatus(triggeringEvent: FootballMatchEvent, paStatus: String): String =
-    triggeringEvent match {
-      case _: KickOff    => "FIRST_HALF"
-      case _: HalfTime   => "HALF_TIME"
-      case _: SecondHalf => "SECOND_HALF"
-      case _: FullTime   => "FULL_TIME"
-      case _ => paStatus match {
-        case "KO"                                      => "FIRST_HALF"
-        case "HT"                                      => "HALF_TIME"
-        case "SHS"                                     => "SECOND_HALF"
-        case "FT" | "PTFT" | "Result" | "ETFT" | "MC" => "FULL_TIME"
-        case "FTET" | "ETS"                            => "EXTRA_TIME_FIRST_HALF"
-        case "ETHT"                                    => "EXTRA_TIME_HALF_TIME"
-        case "ETSHS"                                   => "EXTRA_TIME_SECOND_HALF"
-        case "FTPT" | "PT" | "ETFTPT"                 => "PENALTIES"
-        case "Postponed"                               => "POSTPONED"
-        case "Abandoned"                               => "ABANDONED"
-        case _                                         => "SCHEDULED"
-      }
-    }
 
   private val statuses = Map(
     ("KO", "1st"), // The Match has started (Kicked Off).

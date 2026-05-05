@@ -73,7 +73,10 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "1st",
         eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
         debug = false,
-        dryRun = None
+        dryRun = None,
+        homeTeamRedCards = 0,
+        awayTeamRedCards = 0,
+        roundName = Some("League")
       )
 
       result should contain(expectedNotification)

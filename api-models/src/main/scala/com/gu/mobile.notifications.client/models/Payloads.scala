@@ -185,7 +185,6 @@ object FootballMatchStatusPayload {
     "matchStatus" -> o.matchStatus,
     "eventId" -> o.eventId,
     "debug" -> o.debug,
-    "matchStatusDetailed" -> o.matchStatusDetailed,
     "homeTeamRedCards" -> o.homeTeamRedCards,
     "awayTeamRedCards" -> o.awayTeamRedCards,
     "roundName" -> o.roundName
@@ -215,7 +214,6 @@ case class FootballMatchStatusPayload(
   eventId: String,
   debug: Boolean,
   dryRun: Option[Boolean],
-  matchStatusDetailed: Option[String] = None,
   homeTeamRedCards: Int = 0,
   awayTeamRedCards: Int = 0,
   roundName: Option[String] = None

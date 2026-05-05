@@ -6,7 +6,7 @@ import java.util.UUID
 
 import com.gu.mobile.notifications.client.models.Importance.Major
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.models.{Goal, GoalContext, Score}
+import com.gu.mobile.notifications.football.models.{Dismissal, Goal, GoalContext, Score}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
@@ -41,8 +41,24 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         debug = false,
         competitionName = Some("FA Cup"),
         venue = Some("Wembley"),
-        dryRun = None
+        dryRun = None,
+        homeTeamRedCards = 0,
+        awayTeamRedCards = 0,
+        roundName = None
       )
+    }
+
+    "Count red cards from dismissal events" in new MatchEventsContext {
+      val homeDismissal = Dismissal("d1", "Home Player", home, 55, None)
+      val notification = builder.build(baseGoal, matchInfo, List(homeDismissal), None)
+      notification.homeTeamRedCards shouldEqual 1
+      notification.awayTeamRedCards shouldEqual 0
+    }
+
+    "Include round name when present" in new MatchEventsContext {
+      val matchWithRound = matchInfo.copy(round = Round("1", Some("Group C")))
+      val notification = builder.build(baseGoal, matchWithRound, List.empty, None)
+      notification.roundName shouldEqual Some("Group C")
     }
 
   }

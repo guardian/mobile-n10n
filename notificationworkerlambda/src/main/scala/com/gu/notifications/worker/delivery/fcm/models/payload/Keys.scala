@@ -37,7 +37,6 @@ object Keys {
   final val Venue = "venue"
   final val ArticleUri = "articleUri"
 
-  final val MatchStatusDetailed = "matchStatusDetailed"
   final val HomeTeamRedCards = "homeTeamRedCards"
   final val AwayTeamRedCards = "awayTeamRedCards"
   final val RoundName = "roundName"

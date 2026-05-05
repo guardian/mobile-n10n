@@ -151,7 +151,6 @@ case class FootballMatchStatusNotification(
   eventId: String,
   debug: Boolean,
   dryRun: Option[Boolean],
-  matchStatusDetailed: Option[String] = None,
   homeTeamRedCards: Int = 0,
   awayTeamRedCards: Int = 0,
   roundName: Option[String] = None

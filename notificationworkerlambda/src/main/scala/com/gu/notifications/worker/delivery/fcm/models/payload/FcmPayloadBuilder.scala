@@ -124,7 +124,6 @@ object FcmPayloadBuilder {
       ) ++ matchStatusAlert.articleUri.map(Keys.ArticleUri -> _.toString).toMap
         ++ matchStatusAlert.competitionName.map(Keys.CompetitionName -> _).toMap
         ++ matchStatusAlert.venue.map(Keys.Venue -> _).toMap
-        ++ matchStatusAlert.matchStatusDetailed.map(Keys.MatchStatusDetailed -> _).toMap
         ++ matchStatusAlert.roundName.map(Keys.RoundName -> _).toMap
         ++ Some(Keys.HomeTeamRedCards -> matchStatusAlert.homeTeamRedCards.toString).toMap
         ++ Some(Keys.AwayTeamRedCards -> matchStatusAlert.awayTeamRedCards.toString).toMap,

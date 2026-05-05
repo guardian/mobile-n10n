@@ -260,7 +260,9 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
           "matchInfoUri" -> "https://some.invalid.url/detail",
           "articleUri" -> "https://some.other.invalid.url/detail",
           "competitionName" -> "World cup 3012",
-          "venue" -> "Venue"
+          "venue" -> "Venue",
+          "homeTeamRedCards" -> "0",
+          "awayTeamRedCards" -> "0"
         ),
         ttl = TimeToLive.FootballMatchStatusTtl
       )
