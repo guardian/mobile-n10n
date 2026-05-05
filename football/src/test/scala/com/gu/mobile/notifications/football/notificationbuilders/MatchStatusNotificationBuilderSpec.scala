@@ -31,10 +31,15 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         awayTeamId = "2",
         awayTeamScore = 0,
         awayTeamMessage = " ",
+        awayTeamRedCards = 0,
         homeTeamName = "Liverpool",
         homeTeamId = "1",
         homeTeamScore = 1,
         homeTeamMessage = "Steve 5'",
+        homeTeamRedCards = 0,
+        competitionName = Some("FA Cup"),
+        roundName = None,
+        venue = Some("Wembley"),
         matchId = "some-match-id",
         matchInfoUri = new URI("http://localhost/sport/football/matches/some-match-id"),
         articleUri = Some(new URI("http://localhost/items/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")),
@@ -43,12 +48,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         eventId = UUID.nameUUIDFromBytes("".getBytes).toString,
         matchStatus = "1st",
         debug = false,
-        competitionName = Some("FA Cup"),
-        venue = Some("Wembley"),
-        dryRun = None,
-        homeTeamRedCards = 0,
-        awayTeamRedCards = 0,
-        roundName = None
+        dryRun = None
       )
     }
 

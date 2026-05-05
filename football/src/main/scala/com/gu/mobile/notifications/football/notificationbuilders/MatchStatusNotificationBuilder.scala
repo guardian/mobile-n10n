@@ -48,12 +48,15 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       awayTeamScore = score.away,
       awayTeamMessage = teamMessage(matchInfo.awayTeam, allEvents),
       awayTeamId = matchInfo.awayTeam.id,
+      awayTeamRedCards = redCards.away,
       homeTeamName = transformTeamName(matchInfo.homeTeam.name),
       homeTeamScore = score.home,
       homeTeamMessage = teamMessage(matchInfo.homeTeam, allEvents),
       homeTeamId = matchInfo.homeTeam.id,
+      homeTeamRedCards = redCards.home,
       matchId = matchInfo.id,
       competitionName = matchInfo.competition.map(_.name),
+      roundName = matchInfo.round.name,
       venue = matchInfo.venue.map(_.name).filter(_.nonEmpty),
       matchInfoUri = new URI(s"$mapiHost/sport/football/matches/${matchInfo.id}"),
       articleUri = articleId.map(id => new URI(s"$mapiHost/items/$id")),
@@ -63,9 +66,6 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
       debug = false,
       dryRun = None,
-      homeTeamRedCards = redCards.home,
-      awayTeamRedCards = redCards.away,
-      roundName = matchInfo.round.name
     )
   }
 

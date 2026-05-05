@@ -136,11 +136,14 @@ case class FootballMatchStatusNotification(
   awayTeamScore: Int,
   awayTeamMessage: String,
   awayTeamId: String,
+  awayTeamRedCards: Int = 0,
   homeTeamName: String,
   homeTeamScore: Int,
   homeTeamMessage: String,
   homeTeamId: String,
+  homeTeamRedCards: Int = 0,
   competitionName: Option[String],
+  roundName: Option[String] = None,
   venue: Option[String],
   matchId: String,
   matchInfoUri: URI,
@@ -150,10 +153,7 @@ case class FootballMatchStatusNotification(
   matchStatus: String,
   eventId: String,
   debug: Boolean,
-  dryRun: Option[Boolean],
-  homeTeamRedCards: Int = 0,
-  awayTeamRedCards: Int = 0,
-  roundName: Option[String] = None
+  dryRun: Option[Boolean]
 ) extends Notification
 
 object FootballMatchStatusNotification {

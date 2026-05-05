@@ -171,11 +171,14 @@ object FootballMatchStatusPayload {
     "awayTeamScore" -> o.awayTeamScore,
     "awayTeamMessage" -> o.awayTeamMessage,
     "awayTeamId" -> o.awayTeamId,
+    "awayTeamRedCards" -> o.awayTeamRedCards,
     "homeTeamName" -> o.homeTeamName,
     "homeTeamScore" -> o.homeTeamScore,
     "homeTeamMessage" -> o.homeTeamMessage,
     "homeTeamId" -> o.homeTeamId,
+    "homeTeamRedCards" -> o.homeTeamRedCards,
     "competitionName" -> o.competitionName,
+    "roundName" -> o.roundName,
     "venue" -> o.venue,
     "matchId" -> o.matchId,
     "matchInfoUri" -> o.matchInfoUri,
@@ -184,10 +187,7 @@ object FootballMatchStatusPayload {
     "topic" -> o.topic,
     "matchStatus" -> o.matchStatus,
     "eventId" -> o.eventId,
-    "debug" -> o.debug,
-    "homeTeamRedCards" -> o.homeTeamRedCards,
-    "awayTeamRedCards" -> o.awayTeamRedCards,
-    "roundName" -> o.roundName
+    "debug" -> o.debug
   )
 }
 case class FootballMatchStatusPayload(
@@ -199,11 +199,14 @@ case class FootballMatchStatusPayload(
   awayTeamScore: Int,
   awayTeamMessage: String,
   awayTeamId: String,
+  awayTeamRedCards: Int = 0,
   homeTeamName: String,
   homeTeamScore: Int,
   homeTeamMessage: String,
   homeTeamId: String,
+  homeTeamRedCards: Int = 0,
   competitionName: Option[String],
+  roundName: Option[String] = None,
   venue: Option[String],
   matchId: String,
   matchInfoUri: URI,
@@ -213,10 +216,7 @@ case class FootballMatchStatusPayload(
   matchStatus: String,
   eventId: String,
   debug: Boolean,
-  dryRun: Option[Boolean],
-  homeTeamRedCards: Int = 0,
-  awayTeamRedCards: Int = 0,
-  roundName: Option[String] = None
+  dryRun: Option[Boolean]
 ) extends NotificationPayload with derivedId {
   val `type` = FootballMatchStatus
   override val derivedId = s"football-match-status/$matchId/$eventId"

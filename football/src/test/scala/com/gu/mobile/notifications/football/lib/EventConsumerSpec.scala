@@ -46,11 +46,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 0,
         homeTeamMessage = " ",
         homeTeamId = "1006",
+        homeTeamRedCards = 0,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -73,10 +76,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "1st",
         eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
         debug = false,
-        dryRun = None,
-        homeTeamRedCards = 0,
-        awayTeamRedCards = 0,
-        roundName = Some("League")
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -97,12 +97,15 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 3,
         homeTeamMessage =
           "Henrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'\nRed card: Henrikh Mkhitaryan 114'",
         homeTeamId = "1006",
+        homeTeamRedCards = 2,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -122,10 +125,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "HT",
         eventId = "bb346058-64d0-3ab1-9016-ea19d90837f0",
         debug = false,
-        dryRun = None,
-        homeTeamRedCards = 2,
-        awayTeamRedCards = 0,
-        roundName = Some("League")
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -149,11 +149,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 2,
         homeTeamMessage = "Henrikh Mkhitaryan 10'\nSofiane Hanni 32'",
         homeTeamId = "1006",
+        homeTeamRedCards = 0,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -173,10 +176,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "2nd",
         eventId = "a45dfca1-ead9-3d8c-bf83-c4966a737b05",
         debug = false,
-        dryRun = None,
-        homeTeamRedCards = 0,
-        awayTeamRedCards = 0,
-        roundName = Some("League")
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -198,12 +198,15 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 3,
         homeTeamMessage =
           "Henrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'\nRed card: Henrikh Mkhitaryan 114'",
         homeTeamId = "1006",
+        homeTeamRedCards = 2,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -223,10 +226,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "FT",
         eventId = "d59c9939-8199-3b8b-ad63-16aa020c1a73",
         debug = false,
-        dryRun = None,
-        homeTeamRedCards = 2,
-        awayTeamRedCards = 0,
-        roundName = Some("League")
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -248,11 +248,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 1,
         homeTeamMessage = "Henrikh Mkhitaryan 10'",
         homeTeamId = "1006",
+        homeTeamRedCards = 0,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -272,10 +275,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "1st",
         eventId = "1c8d67f9-0f32-342a-8543-aa3e21ee7da4",
         debug = false,
-        dryRun = None,
-        homeTeamRedCards = 0,
-        awayTeamRedCards = 0,
-        roundName = Some("League")
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -297,11 +297,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         0,
         " ",
         "29",
+        0,
         "Arsenal",
         3,
         "Red card: Henrikh Mkhitaryan 114'\nHenrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'",
         "1006",
+        2,
         Some("Premier League 17/18"),
+        Some("League"),
         Some("Emirates Stadium"),
         "4011135",
         new URI(
@@ -321,10 +324,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         "1st",
         "7c92d6ca-9f20-398f-9510-eb4c179fb5ae",
         false,
-        None,
-        homeTeamRedCards = 2,
-        awayTeamRedCards = 0,
-        roundName = Some("League")
+        None
       )
 
       result should contain(expectedNotification)
