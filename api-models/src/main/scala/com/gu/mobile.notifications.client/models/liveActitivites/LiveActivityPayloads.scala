@@ -84,15 +84,6 @@ sealed trait LiveActivityType
 case object FootballLiveActivity extends LiveActivityType
 // tbc cricket, elections
 
-case class dynamoData(
-  liveActivityId: String,
-  isLive: Boolean,
-  data: Option[String], // tbc
-  competitionId: Option[String], // should this move to data??†
-  lastEventId: Option[String],
-  lastEventAt: Option[Long]
-)
-
 case class LiveActivityPayload(
   id: UUID, // unique event id for each payload associate with a live activity, used for de-duplication
   eventType: LiveActivityEventType,
@@ -116,5 +107,4 @@ object LiveActivityPayload {
   )
 
   implicit val liveActivityPayloadFormat: Format[LiveActivityPayload] = Json.format[LiveActivityPayload]
-  implicit val dynamoDataFormat: Format[dynamoData] = Json.format[dynamoData]
 }
