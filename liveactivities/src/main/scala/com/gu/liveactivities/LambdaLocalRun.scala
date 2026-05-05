@@ -9,11 +9,9 @@ import java.nio.charset.StandardCharsets
  */
 object ChannelManagerLambdaLocalRun extends App {
 
-  val channelId = "match123"
-
   println("Start running ChannelManagerLambda locally")
 
-  val createChannelJson = Json.toJson(ChannelRequest(channelId, Some("competiton-001"), None, toCreate = true)).toString()
+  val createChannelJson = Source.fromResource("channel-create-payload.json").mkString
 
   val createRequestStream = new java.io.ByteArrayInputStream(createChannelJson.getBytes(StandardCharsets.UTF_8))
 
@@ -21,9 +19,9 @@ object ChannelManagerLambdaLocalRun extends App {
 
   ChannelManagerLambda.handleRequest(createRequestStream, createResponseStream, null)
 
-  val closeRequest = ChannelRequest(channelId, None, None, toCreate = false)
+  val closeChannelJson = Source.fromResource("channel-delete-payload.json").mkString
 
-  val closeRequestStream = new java.io.ByteArrayInputStream(Json.toJson(closeRequest).toString().getBytes(StandardCharsets.UTF_8))
+  val closeRequestStream = new java.io.ByteArrayInputStream(closeChannelJson.getBytes(StandardCharsets.UTF_8))
 
   val closeResponseStream = new java.io.ByteArrayOutputStream()
 

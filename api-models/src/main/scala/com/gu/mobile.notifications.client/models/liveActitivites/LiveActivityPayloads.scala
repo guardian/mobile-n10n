@@ -11,11 +11,63 @@ import com.gu.mobile.notifications.client.models.Payload
  * Channel Manager and Broadcast lambdas.
  **/
 
+sealed trait EventSource
+case object FootballLambda extends EventSource
+
+object EventSource {
+  implicit val format: Format[EventSource] = new Format[EventSource] {
+    def writes(source: EventSource): JsValue = source match {
+      case FootballLambda => JsString("football-lambda")
+    }
+
+    def reads(json: JsValue): JsResult[EventSource] = json match {
+      case JsString("football-lambda") => JsSuccess(FootballLambda)
+      case JsString(other)             => JsError(s"Invalid EventSource: $other")
+      case _ => JsError("EventSource must be a string")
+    }
+  }
+}
+
+sealed trait LiveActivityEventType {
+  def asString: String
+}
+
+case object CreateChannelEvent extends LiveActivityEventType { val asString = "channel-create" }
+case object StartLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-start" }
+case object UpdateLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-update" }
+case object EndLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-end" }
+case object DeleteChannelEvent extends LiveActivityEventType { val asString = "channel-delete" }
+
+object LiveActivityEventType {
+  val values: Seq[LiveActivityEventType] = Seq(
+    CreateChannelEvent,
+    StartLiveActivityEvent,
+    UpdateLiveActivityEvent,
+    EndLiveActivityEvent,
+    DeleteChannelEvent
+  )
+
+  implicit val format: Format[LiveActivityEventType] = new Format[LiveActivityEventType] {
+    override def reads(json: JsValue): JsResult[LiveActivityEventType] = json match {
+      case JsString("channel-create")    => JsSuccess(CreateChannelEvent)
+      case JsString("broadcast-start")   => JsSuccess(StartLiveActivityEvent)
+      case JsString("broadcast-update")  => JsSuccess(UpdateLiveActivityEvent)
+      case JsString("broadcast-end")     => JsSuccess(EndLiveActivityEvent)
+      case JsString("channel-delete")    => JsSuccess(DeleteChannelEvent)
+      case JsString(other)               => JsError(s"Invalid LiveActivityEventType: $other")
+      case _                             => JsError("LiveActivityEventType must be a string")
+    }
+
+    override def writes(detailType: LiveActivityEventType): JsValue =
+      JsString(detailType.asString)
+  }
+}
+
 case class EventBridgeEvent(
   version: String,
   id: String,
-  `detail-type`: String,
-  source: String,
+  `detail-type`: LiveActivityEventType,
+  source: EventSource,
   account: String,
   time: String,
   region: String,
@@ -27,29 +79,10 @@ object EventBridgeEvent {
   implicit val eventBridgeEventFormat: Format[EventBridgeEvent] = Json.format[EventBridgeEvent]
 }
 
-// todo codify detail-type strings
-
-
-// Life cycle of a live activity:
-sealed trait LiveActivityEventType
-case object CreateChannelEvent extends LiveActivityEventType
-case object StartLiveActivityEvent extends LiveActivityEventType
-case object UpdateLiveActivityEvent extends LiveActivityEventType
-case object EndLiveActivityEvent extends LiveActivityEventType
-case object DeleteChannelEvent extends LiveActivityEventType
 
 sealed trait LiveActivityType
 case object FootballLiveActivity extends LiveActivityType
 // tbc cricket, elections
-
-case class dynamoData(
-  liveActivityId: String,
-  isLive: Boolean,
-  data: Option[String], // tbc
-  competitionId: Option[String], // should this move to data??†
-  lastEventId: Option[String],
-  lastEventAt: Option[Long]
-)
 
 case class LiveActivityPayload(
   id: UUID, // unique event id for each payload associate with a live activity, used for de-duplication
@@ -73,24 +106,5 @@ object LiveActivityPayload {
     }
   )
 
-  implicit val liveActivityEventTypeFormat: Format[LiveActivityEventType] = Format(
-    Reads {
-      case JsString("CreateChannel")      => JsSuccess(CreateChannelEvent)
-      case JsString("StartLiveActivity")  => JsSuccess(StartLiveActivityEvent)
-      case JsString("UpdateLiveActivity") => JsSuccess(UpdateLiveActivityEvent)
-      case JsString("EndLiveActivity")    => JsSuccess(EndLiveActivityEvent)
-      case JsString("DeleteChannel")      => JsSuccess(DeleteChannelEvent)
-      case _                              => JsError("Unknown LiveActivityEventType")
-    },
-    Writes {
-      case CreateChannelEvent      => JsString("CreateChannel")
-      case StartLiveActivityEvent  => JsString("StartLiveActivity")
-      case UpdateLiveActivityEvent => JsString("UpdateLiveActivity")
-      case EndLiveActivityEvent    => JsString("EndLiveActivity")
-      case DeleteChannelEvent      => JsString("DeleteChannel")
-    }
-  )
-
   implicit val liveActivityPayloadFormat: Format[LiveActivityPayload] = Json.format[LiveActivityPayload]
-  implicit val dynamoDataFormat: Format[dynamoData] = Json.format[dynamoData]
 }

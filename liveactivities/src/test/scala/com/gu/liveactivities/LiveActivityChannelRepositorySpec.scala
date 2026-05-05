@@ -1,18 +1,13 @@
 package com.gu.liveactivities
 
+import com.gu.liveactivities.models.{FootballLiveActivity, LiveActivityMapping, RepositoryException}
+import com.gu.liveactivities.service.LiveActivityChannelRepository
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
-import software.amazon.awssdk.services.dynamodb.model._
-import scala.jdk.CollectionConverters._
-import com.gu.liveactivities.service.LiveActivityChannelRepository
-import com.gu.liveactivities.models.FootballLiveActivity
-import com.gu.liveactivities.models.LiveActivityMapping
-import com.gu.liveactivities.models.LiveActivityData
-import com.gu.liveactivities.service.ChannelMappingsRepository
-import java.time.ZonedDateTime
-import com.gu.liveactivities.models.RepositoryException
-import com.gu.liveactivities.models.LiveActivityInvalidStateException
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType._
+import software.amazon.awssdk.services.dynamodb.model._
+
+import java.time.ZonedDateTime
 
 class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
     extends DynamodbSpecification
@@ -37,8 +32,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       repository.createMapping(
         footballMapping.id, 
         footballMapping.channelId, 
-        footballMapping.data, 
-        footballMapping.competitionId).flatMap { _ =>
+        footballMapping.data).flatMap { _ =>
         repository.getMappingById(footballMapping.id)
       } must beEqualToExcludingMetaData(footballMapping).await
     }
@@ -48,12 +42,10 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       val footballMapping = createFootballMappingWithId("football-0004")
       repository.createMapping(footballMapping.id, 
         footballMapping.channelId, 
-        footballMapping.data, 
-        footballMapping.competitionId).flatMap { _ =>
+        footballMapping.data).flatMap { _ =>
         repository.createMapping(footballMapping.id, 
           footballMapping.channelId, 
-          footballMapping.data, 
-          footballMapping.competitionId)
+          footballMapping.data)
       } must throwA[RepositoryException].await
     }
 
@@ -63,8 +55,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       repository.createMapping(
         footballMapping.id, 
         footballMapping.channelId, 
-        footballMapping.data, 
-        footballMapping.competitionId).flatMap { _ =>
+        footballMapping.data).flatMap { _ =>
         repository.deleteMappingById(footballMapping.id)
       } must beEqualTo(()).await
     }
@@ -75,8 +66,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       repository.createMapping(
         footballMapping.id, 
         footballMapping.channelId, 
-        footballMapping.data, 
-        footballMapping.competitionId).flatMap { _ =>
+        footballMapping.data).flatMap { _ =>
         repository.getMappingById(footballMapping.id)
       } must beEqualToExcludingMetaData(footballMapping).await
     }
@@ -90,7 +80,8 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
     val footballData = FootballLiveActivity(
       homeTeam = "HomeTeamName",
       awayTeam = "AwayTeamName",
-      articleUrl = "https://www.theguardian.com/football/test-article-id"
+      competitionId = "test-competition-id",
+      kickOffTimestamp = 1766433600
     )
 
     val footballMappingTemplate = LiveActivityMapping(
@@ -99,7 +90,6 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       isChannelActive = true,
       isLive = true,     
       data = Some(footballData),
-      competitionId = Some("test-competition-id"),
       lastEventId = None,
       lastEventAt = None,
       createdAt = ZonedDateTime.now(),
