@@ -2,9 +2,8 @@ package com.gu.liveactivities.models
 
 import com.gu.mobile.notifications.client.models.liveActitivites.ContentState
 import play.api.libs.json._
-import pa._
 
-// BROADCAST PAYLOADS //////////////////////////////////////////////////
+// APN BROADCAST PAYLOADS ////////////////////////////////
 
 // Start Live Activity (via broadcast or push)
 sealed trait ActivityAttributesType { val `type`: String }
@@ -12,6 +11,7 @@ case object FootballMatchAttributesType extends ActivityAttributesType {
   val `type` = "FootballMatchAttributes"
 }
 
+// Static live activity attributes can be sent in the broadcast payload when starting a live activity if needed.
 sealed trait ActivityAttributes
 case class FootballMatchAttributes(matchId: String) extends ActivityAttributes
 
@@ -58,9 +58,6 @@ sealed trait BroadcastApsEvent {
   def event: String
   def `content-state`: ContentState
 }
-sealed trait BroadcastBody {
-  def aps: BroadcastApsEvent
-}
 
 // Start Live Activity (via broadcast)
 case class BroadcastStartAps(
@@ -71,10 +68,6 @@ case class BroadcastStartAps(
     `attributes`: ActivityAttributes
 ) extends BroadcastApsEvent
 
-case class BroadcastStartBody(
-    aps: BroadcastStartAps
-) extends BroadcastBody
-
 // Update Live Activity (broadcast)
 case class BroadcastUpdateAps(
     timestamp: Long,
@@ -82,10 +75,6 @@ case class BroadcastUpdateAps(
     `content-state`: ContentState,
     `stale-date`: Long
 ) extends BroadcastApsEvent
-
-case class BroadcastUpdateBody(
-    aps: BroadcastUpdateAps
-) extends BroadcastBody
 
 // End Live Activity (broadcast)
 case class BroadcastEndAps(
@@ -95,67 +84,65 @@ case class BroadcastEndAps(
     `dismissal-date`: Long
 ) extends BroadcastApsEvent
 
-case class BroadcastEndBody(
-    aps: BroadcastEndAps
-) extends BroadcastBody
-
-object BroadcastJsonFormats {
+object BroadcastApsJsonFormats {
   import ActivityAttributesJsonFormats._
-  import com.gu.mobile.notifications.client.models.liveActitivites.FootballContentJsonFormats._
-  import ContentState.format
 
   implicit val broadcastStartApsFormat: OFormat[BroadcastStartAps] =
     Json.format[BroadcastStartAps]
-  implicit val broadcastStartBodyFormat: OFormat[BroadcastStartBody] =
-    Json.format[BroadcastStartBody]
   implicit val broadcastUpdateApsFormat: OFormat[BroadcastUpdateAps] =
     Json.format[BroadcastUpdateAps]
-  implicit val broadcastUpdateBodyFormat: OFormat[BroadcastUpdateBody] =
-    Json.format[BroadcastUpdateBody]
   implicit val broadcastEndApsFormat: OFormat[BroadcastEndAps] =
     Json.format[BroadcastEndAps]
-  implicit val broadcastEndBodyFormat: OFormat[BroadcastEndBody] =
-    Json.format[BroadcastEndBody]
 
   implicit val broadcastApsEventFormat: OFormat[BroadcastApsEvent] =
     new OFormat[BroadcastApsEvent] {
       def writes(e: BroadcastApsEvent): JsObject = e match {
-        case s: BroadcastStartAps =>
-          broadcastStartApsFormat.writes(s) + ("eventType" -> JsString("start"))
-        case u: BroadcastUpdateAps =>
-          broadcastUpdateApsFormat.writes(u) + ("eventType" -> JsString(
-            "update"
-          ))
-        case e: BroadcastEndAps =>
-          broadcastEndApsFormat.writes(e) + ("eventType" -> JsString("end"))
+        case s: BroadcastStartAps  => broadcastStartApsFormat.writes(s)
+        case u: BroadcastUpdateAps => broadcastUpdateApsFormat.writes(u)
+        case e: BroadcastEndAps    => broadcastEndApsFormat.writes(e)
       }
       def reads(json: JsValue): JsResult[BroadcastApsEvent] =
-        (json \ "eventType").validate[String].flatMap {
+        (json \ "event").validate[String].flatMap {
           case "start"  => broadcastStartApsFormat.reads(json)
           case "update" => broadcastUpdateApsFormat.reads(json)
           case "end"    => broadcastEndApsFormat.reads(json)
           case other    => JsError(s"Unknown BroadcastApsEvent type: $other")
         }
     }
+}
+
+case class BroadcastBody(
+    aps: BroadcastApsEvent
+)
+
+object BroadcastBody {
+  import BroadcastApsJsonFormats._
 
   implicit val broadcastBodyFormat: OFormat[BroadcastBody] =
-    new OFormat[BroadcastBody] {
-      def writes(b: BroadcastBody): JsObject = b match {
-        case s: BroadcastStartBody =>
-          broadcastStartBodyFormat.writes(s) + ("bodyType" -> JsString("start"))
-        case u: BroadcastUpdateBody =>
-          broadcastUpdateBodyFormat.writes(u) + ("bodyType" -> JsString(
-            "update"
-          ))
-        case e: BroadcastEndBody =>
-          broadcastEndBodyFormat.writes(e) + ("bodyType" -> JsString("end"))
-      }
-      def reads(json: JsValue): JsResult[BroadcastBody] =
-        (json \ "bodyType").validate[String].flatMap {
-          case "start"  => broadcastStartBodyFormat.reads(json)
-          case "update" => broadcastUpdateBodyFormat.reads(json)
-          case "end"    => broadcastEndBodyFormat.reads(json)
-          case other    => JsError(s"Unknown BroadcastBody type: $other")
-        }
+    Json.format[BroadcastBody]
+
+  def apply(
+      contentState: ContentState,
+      shouldEndBroadcast: Boolean = false,
+  ): BroadcastBody = {
+    val now = System.currentTimeMillis() / 1000
+
+    val apsEvent: BroadcastApsEvent = if (shouldEndBroadcast) {
+      BroadcastEndAps(
+        timestamp = now,
+        `content-state` = contentState,
+        `dismissal-date` =
+          now + (1 * 3600) // dismiss from lock screen after 1 hour
+      )
+    } else {
+      BroadcastUpdateAps(
+        timestamp = now,
+        `content-state` = contentState,
+        `stale-date` = now + (1 * 2760) // stale after 45 minutes
+      )
     }
+
+    BroadcastBody(aps = apsEvent)
+  }
+
 }

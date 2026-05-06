@@ -1,6 +1,7 @@
 package com.gu.liveactivities
 
 import play.api.libs.json.Json
+import scala.io.Source
 import java.nio.charset.StandardCharsets
 
 /**
@@ -8,11 +9,9 @@ import java.nio.charset.StandardCharsets
  */
 object ChannelManagerLambdaLocalRun extends App {
 
-  val channelId = "match123"
-
   println("Start running ChannelManagerLambda locally")
 
-  val createChannelJson = Json.toJson(ChannelRequest(channelId, Some("competiton-001"), None, toCreate = true)).toString()
+  val createChannelJson = Source.fromResource("channel-create-payload.json").mkString
 
   val createRequestStream = new java.io.ByteArrayInputStream(createChannelJson.getBytes(StandardCharsets.UTF_8))
 
@@ -20,9 +19,9 @@ object ChannelManagerLambdaLocalRun extends App {
 
   ChannelManagerLambda.handleRequest(createRequestStream, createResponseStream, null)
 
-  val closeRequest = ChannelRequest(channelId, None, None, toCreate = false)
+  val closeChannelJson = Source.fromResource("channel-delete-payload.json").mkString
 
-  val closeRequestStream = new java.io.ByteArrayInputStream(Json.toJson(closeRequest).toString().getBytes(StandardCharsets.UTF_8))
+  val closeRequestStream = new java.io.ByteArrayInputStream(closeChannelJson.getBytes(StandardCharsets.UTF_8))
 
   val closeResponseStream = new java.io.ByteArrayOutputStream()
 
@@ -33,18 +32,13 @@ object ChannelManagerLambdaLocalRun extends App {
 
 /**
  * Local run broadcasts a live activity update on the APNS Sandbox env for the iOS debug app.
+ * A local Dynamo table of channel mappings is needed or amend Lambda.scala to point to CODE Dynamo table.
  */
 object BroadcastLambdaLocalRun extends App {
 
   println("Start running BroadcastLambda locally")
 
-  val broadcastRequest =
-    """{
-    "matchId": "match-test-6",
-    "payload": "test message",
-    "eventId": "event-007",
-    "eventTime": "2026-04-07T17:37:29.278+0000"
-  }"""
+  val broadcastRequest = Source.fromResource("broadcast-update-payload.json").mkString // eventbridge event represented by liveActivityPayload
 
   val broadcastRequestStream = new java.io.ByteArrayInputStream(broadcastRequest.getBytes(StandardCharsets.UTF_8))
 

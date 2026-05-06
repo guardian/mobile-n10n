@@ -21,9 +21,9 @@ class EventConsumer(
     /** We have added synthetic events for live activities which we don't want
       * to generate push notifications for, so we filter those out here.
       */
-      // todo can we capture these strings in union type?
-    val liveActivityEventTypes =
-      List("create-channel", "start-live-activity", "end-live-activity")
+    // todo can we capture these strings in union type?
+    // todo we will want to send penalty kick notifications to push notification service for android
+    val liveActivityEventTypes = List("create-channel", "start-live-activity", "end-live-activity", "shootoutGoal", "shootoutMiss", "shootoutSave")
 
     val filteredMatchData = matchData.copy(allEvents =
       matchData.allEvents.filterNot(e =>

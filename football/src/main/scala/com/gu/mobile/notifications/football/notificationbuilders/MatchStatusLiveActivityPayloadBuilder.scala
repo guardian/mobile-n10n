@@ -27,6 +27,8 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
     val dismissals = allEvents.collect { case d: Dismissal => d }
     val redCards = RedCards.fromDismissals(matchInfo.homeTeam, matchInfo.awayTeam, dismissals)
+    val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
+    val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
     // TODO this is hard coded mostly for now.
     val contentState = FootballMatchContentState(
@@ -37,18 +39,19 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         score = score.home,
         logoAssetName = None, // tbc
         teamUrl = None, // tbc
-        penaltyScore = None, // tbc
-        redCards = redCards.home
+        redCards = redCards.home,
+        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, true)
       ),
       awayTeam = TeamState(
         name = transformTeamName(matchInfo.awayTeam.name),
         score = score.away,
         logoAssetName = None, // tbc
         teamUrl = None, // tbc
-        penaltyScore = None, // tbc
-        redCards = redCards.away
+        redCards = redCards.away,
+        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, false)
       ),
       competition = Competition(
+        id = matchInfo.competition.map(_.id).getOrElse(""),
         name = matchInfo.competition.map(_.name).getOrElse(""),
         round = matchInfo.round.name // World Cup Group
       ),
@@ -79,8 +82,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       dynamoStoreData = None, //  TBC
       broadcastContentStateData = Some(contentState),
       eventTimestamp =
-        new Date().getTime, // tbc - should this be the event time of the triggering event or the minute it happened??? ?
-      topics = topics
+        new Date().getTime, // Now (not the PA event time)
     )
 
   }
