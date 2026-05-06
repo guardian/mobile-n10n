@@ -99,6 +99,7 @@ lazy val commontest = project
 
 lazy val common = project
   .dependsOn(commoneventconsumer)
+  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
@@ -123,7 +124,8 @@ lazy val common = project
       "org.postgresql" % "postgresql" % "42.7.10",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
-      "net.logstash.logback" % "logstash-logback-encoder" % "8.1"
+      "net.logstash.logback" % "logstash-logback-encoder" % "8.1",
+      "software.amazon.awssdk" % "eventbridge" % "2.20.162",
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
@@ -302,7 +304,7 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
   }
 
 lazy val football = lambda("football", "football")
-  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
+  .dependsOn(common)
   .settings(
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
@@ -318,7 +320,6 @@ lazy val football = lambda("football", "football")
       "io.netty" % "netty-codec-http" % nettyVersion,
       "io.netty" % "netty-codec-http2" % nettyVersion,
       "io.netty" % "netty-common" % nettyVersion,
-      "software.amazon.awssdk" % "eventbridge" % "2.20.162"
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
@@ -436,7 +437,6 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
   .dependsOn(common)
-  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(
     libraryDependencies ++= Seq(
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -462,14 +462,12 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
 
 lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.gu.liveactivities.LambdaLocalRun"))
   .dependsOn(common)
-  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(LocalDynamoDBLiveActivities.settings)
   .settings(
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
-      "software.amazon.awssdk" % "eventbridge" % "2.20.162",
       "org.scanamo" %% "scanamo" % "6.0.0",
       "org.scanamo" %% "scanamo-testkit" % "6.0.0" % "test"
     ),
