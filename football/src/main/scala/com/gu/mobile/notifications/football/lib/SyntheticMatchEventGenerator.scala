@@ -49,6 +49,7 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) extends 
   def koWithin20Minutes(ko: Long): Boolean = now >= ko - 1200 && now < ko
 
   private val createChannel: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    logger.info(s"Using date time in create channel: ${Instant.ofEpochSecond(now).atZone(ZoneId.of("Europe/London"))}")
     if (koWithinTwoHours(matchDay.date.toEpochSecond)) {
       logger.info(
         s"Creating channel for match ${matchDay.id}, ko is ${matchDay.date}, now is ${
