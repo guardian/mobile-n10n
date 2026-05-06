@@ -21,6 +21,8 @@ import java.time.ZonedDateTime
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromLong, dateTimeToLong, dateTimeToString}
 import com.gu.mobile.notifications.client.models.liveActitivites.{EndLiveActivityEvent, EventBridgeEvent, FootballMatchContentState, LiveActivityPayload, UpdateLiveActivityEvent}
 
+import scala.concurrent.duration.DurationInt
+
 
 
 object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
@@ -32,12 +34,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       case JsSuccess(request, _) => {
 
         // If we see these errors there is a misconfiguration in the eventbridge routing rules.
-        // todo codify detail-type strings in the model. They are in the LiveActivityEventPusher
-        if (request.source != "football-lambda") {
-          logger.error(s"Unexpected eventbridge event source: ${request.source}")
-          throw new Exception(s"Unexpected event source: ${request.source}")
-        }
-        if (request.`detail-type` != "broadcast-update" && request.`detail-type` != "broadcast-end") {
+        if (request.`detail-type` != UpdateLiveActivityEvent && request.`detail-type` != EndLiveActivityEvent) {
           logger.error(s"Unexpected eventbridge event type: ${request.`detail-type`}")
           throw new Exception(s"Unexpected event type: ${request.`detail-type`}")
         }
@@ -111,8 +108,12 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       _ = logger.info(s"Record updated successfully for match ID $matchId")
     } yield mapping.channelId
 
-    // TODO - the timeout value
-    Try(Await.result(broadcastFuture, scala.concurrent.duration.Duration.Inf)) match {
+    //Timeout set to 160 seconds to provide a safety buffer.
+    // While the sum of downstream timeouts is at most ~110s,
+    // we allow extra time for other things such as JSON parsing, cold starts,
+    // authentication token fetches, and potential network congestion
+    // to ensure the Lambda doesn't fail a healthy request that is just running slow.
+    Try(Await.result(broadcastFuture, 160.seconds)) match {
 
       case Success(_) => {
         // todo

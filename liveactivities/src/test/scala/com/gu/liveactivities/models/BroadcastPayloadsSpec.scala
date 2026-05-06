@@ -12,7 +12,7 @@ class BroadcastPayloadsSpec extends Specification {
 
     val homeTeam = TeamState(name = "Arsenal", score = 1)
     val awayTeam = TeamState(name = "Chelsea", score = 0)
-    val competition = Competition(name = "Premier League", round = Some("League"))
+    val competition = Competition(id = "100", name = "Premier League", round = Some("League"))
 
     val contentState = FootballMatchContentState(
       matchStatus = FirstHalf,

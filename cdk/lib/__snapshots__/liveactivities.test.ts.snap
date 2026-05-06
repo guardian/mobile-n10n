@@ -18,6 +18,34 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
     },
   },
   "Resources": {
+    "BroadcastDlq8DE17B20": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "MessageRetentionPeriod": 604800,
+        "QueueName": "liveactivities-broadcast-dlq-CODE",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "VisibilityTimeout": 240,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
     "BroadcastRule3D75643B": {
       "Properties": {
         "EventBusName": {
@@ -307,9 +335,29 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
             "Value": "CODE",
           },
         ],
-        "Timeout": 120,
+        "Timeout": 180,
       },
       "Type": "AWS::Lambda::Function",
+    },
+    "liveactivitiesbroadcastlambdaEventInvokeConfig841BCA48": {
+      "Properties": {
+        "DestinationConfig": {
+          "OnFailure": {
+            "Destination": {
+              "Fn::GetAtt": [
+                "BroadcastDlq8DE17B20",
+                "Arn",
+              ],
+            },
+          },
+        },
+        "FunctionName": {
+          "Ref": "liveactivitiesbroadcastlambdaC288C367",
+        },
+        "MaximumRetryAttempts": 2,
+        "Qualifier": "$LATEST",
+      },
+      "Type": "AWS::Lambda::EventInvokeConfig",
     },
     "liveactivitiesbroadcastlambdaServiceRoleB0F7837A": {
       "Properties": {
@@ -368,6 +416,20 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
       "Properties": {
         "PolicyDocument": {
           "Statement": [
+            {
+              "Action": [
+                "sqs:SendMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "BroadcastDlq8DE17B20",
+                  "Arn",
+                ],
+              },
+            },
             {
               "Action": [
                 "s3:GetObject*",

@@ -403,7 +403,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     def rawEvents: List[MatchEvent] =
       Parser.parseMatchEvents(loadFile("match-event-feed.xml")).get.events
     def matchDay: MatchDay = Parser.parseMatchDay(loadFile("20170811.xml")).head
-    def events: List[MatchEvent] = new SyntheticMatchEventGenerator().generate(
+    def events: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now()).generate(
       rawEvents,
       "4011135",
       matchDay
@@ -423,7 +423,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       .events
     def matchDayLA: MatchDay =
       Parser.parseMatchDay(loadFile("4484328-penalties.xml")).head
-    def eventsLA: List[MatchEvent] = new SyntheticMatchEventGenerator()
+    def eventsLA: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now())
       .generate(rawEventsLA, "4484328", matchDayLA)
     def matchDataLA = MatchDataWithArticle(
       matchDayLA,

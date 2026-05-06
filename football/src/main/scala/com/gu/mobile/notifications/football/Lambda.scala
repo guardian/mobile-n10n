@@ -49,7 +49,7 @@ object Lambda extends Logging {
 
   lazy val capiClient = GuardianContentClient(configuration.capiApiKey)
 
-  lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator()
+  lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator(getZonedDateTime())
 
   lazy val notificationHttpProvider = new NotificationHttpProvider()
 

@@ -52,6 +52,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = false)
       ),
       competition = Competition(
+        id = matchInfo.competition.map(_.id).getOrElse(""),
         name = matchInfo.competition.map(_.name).getOrElse(""),
         round = matchInfo.round.name // World Cup Group
       ),
