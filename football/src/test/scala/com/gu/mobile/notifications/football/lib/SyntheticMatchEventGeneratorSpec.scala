@@ -73,22 +73,22 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
     }
 
     "Add extra time event if status is ETS" in new TestScope {
-      val generator = new SyntheticMatchEventGenerator()
+      val generator = new SyntheticMatchEventGenerator(currentTime)
       generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETS")).drop(1).head.eventType mustEqual "extra-time-first-half"
     }
 
     "Add extra time half time event if status is ETHT" in new TestScope {
-      val generator = new SyntheticMatchEventGenerator()
+      val generator = new SyntheticMatchEventGenerator(currentTime)
       generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETHT")).drop(1).head.eventType mustEqual "extra-time-half-time"
     }
 
     "Add extra time second half event if status is ETSHS" in new TestScope {
-      val generator = new SyntheticMatchEventGenerator()
+      val generator = new SyntheticMatchEventGenerator(currentTime)
       generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETSHS")).drop(1).head.eventType mustEqual "extra-time-second-half"
     }
 
     "Add penalty shootout event if status is PT" in new TestScope {
-      val generator = new SyntheticMatchEventGenerator()
+      val generator = new SyntheticMatchEventGenerator(currentTime)
       generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "PT")).drop(1).head.eventType mustEqual "penalties"
     }
 
