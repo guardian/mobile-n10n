@@ -63,7 +63,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       id = id, 
       channelId = channelId, 
       isChannelActive = true, 
-      isLive = true,
+      isLive = false,
       data = eventData,
       lastEventId = None,
       lastEventAt = None,
