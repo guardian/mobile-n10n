@@ -4,6 +4,9 @@ import java.util.UUID
 
 import pa.{MatchDay, MatchEvent}
 
+// Synthetic events create a timeline event for a match status change, that can be processed by the EventConsumer
+// and transformed into a NotificationPayload and/or LiveActivityPayload for broadcasting.
+
 class SyntheticMatchEventGenerator {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
@@ -34,6 +37,39 @@ class SyntheticMatchEventGenerator {
     if (matchDay.matchStatus == "SHS") Some(emptyMatchEvent.copy(
       id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/second-half".getBytes).toString),
       eventType = "second-half"
+    ))
+    else None
+  }
+
+  // match statuses synthetic events needed for live activities
+  private val extraTimeFirstHalf: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "ETS") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/extra-time-first-half".getBytes).toString),
+      eventType = "extra-time-first-half"
+    ))
+    else None
+  }
+
+  private val extraTimeHalfTime: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "ETHT") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/extra-time-half-time".getBytes).toString),
+      eventType = "extra-time-half-time"
+    ))
+    else None
+  }
+
+  private val extraTimeSecondHalf: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "ETSHS") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/extra-time-second-half".getBytes).toString),
+      eventType = "extra-time-second-half"
+    ))
+    else None
+  }
+
+  private val penalties: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "PT") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/penalties".getBytes).toString),
+      eventType = "penalties"
     ))
     else None
   }
@@ -70,7 +106,7 @@ class SyntheticMatchEventGenerator {
     else None
   }
 
-  private val generators: List[MatchEventGenerator] = List(fullTime, halfTime, secondHalf, createChannel, startLiveActivity, endLiveActivity)
+  private val generators: List[MatchEventGenerator] = List(fullTime, halfTime, secondHalf, extraTimeFirstHalf, extraTimeHalfTime, extraTimeSecondHalf, penalties, createChannel, startLiveActivity, endLiveActivity)
 
   private def emptyMatchEvent = MatchEvent(
     id = None,

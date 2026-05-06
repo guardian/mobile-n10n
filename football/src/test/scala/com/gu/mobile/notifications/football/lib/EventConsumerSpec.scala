@@ -1,11 +1,11 @@
 package com.gu.mobile.notifications.football.lib
 
 import java.net.URI
-import com.gu.mobile.notifications.client.models._
+import com.gu.mobile.notifications.client.models.{liveActitivites, _}
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
 import com.gu.mobile.notifications.client.models.TopicTypes.{FootballMatch, FootballTeam}
-import com.gu.mobile.notifications.client.models.liveActitivites.{CreateChannelEvent, EndLiveActivityEvent, LiveActivityPayload, StartLiveActivityEvent}
-import com.gu.mobile.notifications.football.models.{MatchDataWithArticle, PenaltyShootoutKick}
+import com.gu.mobile.notifications.client.models.liveActitivites.{ContentState, CreateChannelEvent, EndLiveActivityEvent, ExtraTimeFirstHalf, FirstHalf, FootballMatchContentState, FullTime, HalfTime, LiveActivityPayload, Penalties, PreMatch, StartLiveActivityEvent}
+import com.gu.mobile.notifications.football.models.{MatchDataWithArticle, PenaltyShootoutKick, SecondHalf}
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
@@ -19,7 +19,7 @@ import scala.io.Source
 class EventConsumerSpec(implicit ev: ExecutionEnv)
     extends Specification
     with Mockito {
-  "An EventConsumer" should {
+  "An Notifications EventConsumer" should {
     "generate a kick-off notification" in new MatchEventsContext {
       override def matchDay: MatchDay = super.matchDay.copy(matchStatus = "KO")
 
@@ -245,7 +245,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
   }
 
   "A Notification EventConsumer" should {
-    "not generate notification payload for penalties YET" in new MatchEventsContext {
+
+    // Penalty kicks are real events not synthetic events
+    "NOT generate notification payload for penalties" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
 
@@ -253,34 +255,131 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         eventConsumer.eventsToNotifications(matchDataLA)
 
       result must forall((payload: NotificationPayload) => payload.title.getOrElse("") != "Penalty Kick")
+    }
 
+    "NOT generate notification payload for extra time match phase events" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDayLA.copy(date = ZonedDateTime.now(), matchStatus = "ETS")
+
+      val result: List[NotificationPayload] =
+        eventConsumer.eventsToNotifications(matchDataLA)
+
+      result must forall((payload: NotificationPayload) => payload.title.getOrElse("") != "The Guardian") // default string for unknown events
     }
 
   }
 
-  "A LiveActivity EventConsumer" should {
+  "A LiveActivity EventConsumer handles synthetic events and" should {
 
-    "generate a create channel payload" in new MatchEventsContext {
+    "generate a CREATE CHANNEL payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) => payload.eventType == CreateChannelEvent)
+    // note: this will trigger the downstream update from the channel manager with Scheduled Match Status.
+    }
+
+    "generate a START live activity payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDayLA.copy(date = ZonedDateTime.now().plusMinutes(10))
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.eventType == StartLiveActivityEvent)
+    }
+
+    "generate a END live activity payload when result is true" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "FT", result = true)
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.eventType == EndLiveActivityEvent)
+    }
+
+    "generate a PreMatch live activity payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "-", result = false)
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState].matchStatus == liveActitivites.PreMatch)
+    }
+
+    "generate a kick off first half start live activity payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "KO", result = false)
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState].matchStatus == liveActitivites.FirstHalf)
+    }
+
+    "generate a half time live activity payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "HT", result = false)
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState].matchStatus == liveActitivites.HalfTime)
+    }
+
+    "generate a second half live activity payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "SHS", result = false)
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain { (payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState].matchStatus == liveActitivites.SecondHalf
+      }
+    }
+
+    "generate a extra time first half live activity payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "HT", result = false)
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState].matchStatus == liveActitivites.HalfTime)
+    }
+
+    "generate a extra time first half live activity payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "ETS", result = false)
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState].matchStatus == liveActitivites.ExtraTimeFirstHalf)
+    }
+
+    "generate a penalty time live activity payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "FTPT", result = false)
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState].matchStatus == liveActitivites.Penalties)
+    }
+
+    "generate a fulltime time live activity payload without result" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "PTFT", result = false)
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState].matchStatus must_== FullTime)
+    }
+
+  }
+
+  "A LiveActivity EventConsumer handles PA trigger events and" should {
+
+    "generate a goal payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
+
+      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+
+      result must contain((payload: LiveActivityPayload) => payload.eventType == CreateChannelEvent)
+      // note: this will trigger the downstream update from the channel manager with Scheduled Match Status.
+    }
+
+    "generate a red card payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay = super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
 
       val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) => payload.eventType == CreateChannelEvent)
+      // note: this will trigger the downstream update from the channel manager with Scheduled Match Status.
     }
 
-    "generate a start live activity payload" in new MatchEventsContext {
-      override def matchDayLA: MatchDay = super.matchDayLA.copy(date = ZonedDateTime.now().plusMinutes(10))
+    "generate a penalty kick payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay = super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
 
       val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
-      result must contain((payload: LiveActivityPayload) => payload.eventType == StartLiveActivityEvent)
-    }
-
-    "generate a end live activity payload" in new MatchEventsContext {
-      override def matchDay: MatchDay = super.matchDay.copy(matchStatus = "FT", result = true)
-
-      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
-      result must contain((payload: LiveActivityPayload) => payload.eventType == EndLiveActivityEvent)
+      result must contain((payload: LiveActivityPayload) => payload.eventType == CreateChannelEvent)
+      // note: this will trigger the downstream update from the channel manager with Scheduled Match Status.
     }
   }
+
+
 
   trait MatchEventsContext extends Scope {
     val matchStatusNotificationBuilder = new MatchStatusNotificationBuilder(
