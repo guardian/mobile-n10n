@@ -8,7 +8,7 @@ import pa.{MatchDay, MatchEvent}
 
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
-class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) extends Logging {
+class SyntheticMatchEventGenerator(getCurrentTime: ZonedDateTime) extends Logging {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
     // Live activity synthetic events are appended at the end, but when they are first generated, no other timeline events exist and duplicate events are filtered so this should not matter.
@@ -44,11 +44,12 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) extends 
 
   // Live Activity supporting events //
 
-  def now: Long = getCurrentTime().toInstant.getEpochSecond
+  def now: Long = getCurrentTime.toInstant.getEpochSecond
   def koWithinTwoHours(ko: Long): Boolean = now >= ko - 7200 && now < ko - 1200
   def koWithin20Minutes(ko: Long): Boolean = now >= ko - 1200 && now < ko
 
   private val createChannel: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    logger.info(s"Using date time in create channel: ${Instant.ofEpochSecond(now).atZone(ZoneId.of("Europe/London"))}")
     if (koWithinTwoHours(matchDay.date.toEpochSecond)) {
       logger.info(
         s"Creating channel for match ${matchDay.id}, ko is ${matchDay.date}, now is ${

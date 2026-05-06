@@ -49,7 +49,7 @@ object Lambda extends Logging {
 
   lazy val capiClient = GuardianContentClient(configuration.capiApiKey)
 
-  lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator(getZonedDateTime)
+  lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator(getZonedDateTime())
 
   lazy val notificationHttpProvider = new NotificationHttpProvider()
 
@@ -64,7 +64,7 @@ object Lambda extends Logging {
   lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, liveActivitiesTableName)
 
   def getZonedDateTime(): ZonedDateTime = {
-    val zonedDateTime = if (configuration.stage == "CODE") {
+    val zonedDateTime = if (configuration.stage == "DEV") {
       val is = URI.create("https://hdjq4n85yi.execute-api.eu-west-1.amazonaws.com/Prod/getTime").toURL.openStream()
       val json = Json.parse(Source.fromInputStream(is).mkString)
       ZonedDateTime.parse((json \ "currentDate").as[String])
