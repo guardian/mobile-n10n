@@ -1,11 +1,14 @@
 package com.gu.mobile.notifications.football.lib
 
+import com.gu.mobile.notifications.football.Lambda.logger
+import com.gu.mobile.notifications.football.Logging
+
 import java.util.UUID
 import pa.{MatchDay, MatchEvent}
 
-import java.time.ZonedDateTime
+import java.time.{Instant, ZoneId, ZonedDateTime}
 
-class SyntheticMatchEventGenerator(dateTime: ZonedDateTime) {
+class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) extends Logging {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
     // Live activity synthetic events are appended at the end, but when they are first generated, no other timeline events exist and duplicate events are filtered so this should not matter.
@@ -41,16 +44,23 @@ class SyntheticMatchEventGenerator(dateTime: ZonedDateTime) {
 
   // Live Activity supporting events //
 
-  val now: Long = dateTime.toInstant.getEpochSecond
+  def now: Long = getCurrentTime().toInstant.getEpochSecond
   def koWithinTwoHours(ko: Long): Boolean = now >= ko - 7200 && now < ko - 1200
   def koWithin20Minutes(ko: Long): Boolean = now >= ko - 1200 && now < ko
 
   private val createChannel: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
-    if (koWithinTwoHours(matchDay.date.toEpochSecond)) Some(emptyMatchEvent.copy(
-      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/create-channel".getBytes).toString),
-      eventType = "create-channel"
-    ))
-    else None
+    if (koWithinTwoHours(matchDay.date.toEpochSecond)) {
+      logger.info(
+        s"Creating channel for match ${matchDay.id}, ko is ${matchDay.date}, now is ${
+          Instant.ofEpochSecond(now).atZone(ZoneId.of("Europe/London"))
+        }"
+      )
+      Some(emptyMatchEvent.copy(
+        id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/create-channel".getBytes).toString),
+        eventType = "create-channel"
+        )
+      )
+    } else None
   }
 
   private val startLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
