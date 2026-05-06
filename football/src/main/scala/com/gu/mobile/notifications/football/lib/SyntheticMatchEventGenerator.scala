@@ -1,13 +1,14 @@
 package com.gu.mobile.notifications.football.lib
 
 import com.gu.mobile.notifications.football.Lambda.logger
+import com.gu.mobile.notifications.football.Logging
 
 import java.util.UUID
 import pa.{MatchDay, MatchEvent}
 
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
-class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
+class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) extends Logging {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
     // Live activity synthetic events are appended at the end, but when they are first generated, no other timeline events exist and duplicate events are filtered so this should not matter.
