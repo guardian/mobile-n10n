@@ -22,7 +22,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       if (triggeringEvent.isInstanceOf[KickOff])
         List(
           Topic(TopicTypes.FootballTeamLiveActivity, matchInfo.homeTeam.id),
-          Topic(TopicTypes.FootballTeamLiveActivity, matchInfo.awayTeam.id)
+          Topic(TopicTypes.FootballTeamLiveActivity, matchInfo.awayTeam.id),
+          Topic(TopicTypes.FootballMatchLiveActivity, matchInfo.id)
         )
       else Nil
   
