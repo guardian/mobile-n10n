@@ -17,11 +17,20 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     previousEvents: List[FootballMatchEvent],
     articleId: Option[String]
   ): FootballMatchStatusPayload = {
+    val liveActivityTopics =
+      if (triggeringEvent.isInstanceOf[KickOff])
+        List(
+          Topic(TopicTypes.FootballTeamLiveActivity, matchInfo.homeTeam.id),
+          Topic(TopicTypes.FootballTeamLiveActivity, matchInfo.awayTeam.id),
+          Topic(TopicTypes.FootballMatchLiveActivity, matchInfo.id)
+        )
+      else Nil
+  
     val topics = List(
       Topic(TopicTypes.FootballTeam, matchInfo.homeTeam.id),
       Topic(TopicTypes.FootballTeam, matchInfo.awayTeam.id),
       Topic(TopicTypes.FootballMatch, matchInfo.id)
-    )
+    ) ++ liveActivityTopics
 
     val allEvents = triggeringEvent :: previousEvents
     val goals = allEvents.collect { case g: Goal => g }
