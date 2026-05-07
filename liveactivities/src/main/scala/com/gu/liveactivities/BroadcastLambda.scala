@@ -83,11 +83,6 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
           Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
         } else Future.successful(())
 
-      _ <- if (!mapping.isLive) {
-          logger.error(s"Event not live for match ID $matchId")
-          Future.failed(new LiveActivityInvalidStateException(matchId, "Event not live"))
-        } else Future.successful(())
-
       _ <- if (mapping.lastEventId.contains(eventId)) {
           logger.warn(s"Duplicate event ID $eventId for match ID $matchId")
           Future.failed(new LiveActivityInvalidStateException(matchId, "Duplicate event ID"))
@@ -105,7 +100,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
       _ = logger.info(s"Broadcast ${if(shouldEndBroadcast)"END"} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
-      _ <- repository.updateMappingLastEvent(matchId, Some(eventId), Some(eventTime))
+      _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = true, Some(eventId), Some(eventTime))
       _ = logger.info(s"Record updated successfully for match ID $matchId")
     } yield mapping.channelId
 
