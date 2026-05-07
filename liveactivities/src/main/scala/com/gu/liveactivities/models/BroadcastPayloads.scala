@@ -2,6 +2,8 @@ package com.gu.liveactivities.models
 
 import com.gu.mobile.notifications.client.models.liveActitivites.ContentState
 import play.api.libs.json._
+import com.gu.liveactivities.util.Logging
+
 
 // APN BROADCAST PAYLOADS ////////////////////////////////
 
@@ -115,7 +117,7 @@ case class BroadcastBody(
     aps: BroadcastApsEvent
 )
 
-object BroadcastBody {
+object BroadcastBody extends Logging {
   import BroadcastApsJsonFormats._
 
   implicit val broadcastBodyFormat: OFormat[BroadcastBody] =
@@ -127,7 +129,10 @@ object BroadcastBody {
   ): BroadcastBody = {
     val now = System.currentTimeMillis() / 1000
 
-    val apsEvent: BroadcastApsEvent = if (shouldEndBroadcast) {
+    // todo clean up once timings are verified e2e
+    logger.debug(s"Creating BroadcastBody ${if (shouldEndBroadcast) "END"} with timestamp ${now}"
+)
+    val apsEvent: BroadcastApsEvent =  {
       BroadcastEndAps(
         timestamp = now,
         `content-state` = contentState,
