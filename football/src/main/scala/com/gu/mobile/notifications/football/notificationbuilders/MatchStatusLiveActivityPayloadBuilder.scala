@@ -68,7 +68,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       case Abandoned(_) => EndLiveActivityEvent
       case Cancelled(_) => EndLiveActivityEvent
       case CreateChannel(_) => CreateChannelEvent
-      case StartLiveActivity(_) => StartLiveActivityEvent
+//      case StartLiveActivity(_) => StartLiveActivityEvent // we do not want to use start yet
       case EndLiveActivity(_) => EndLiveActivityEvent
       case _ => UpdateLiveActivityEvent
     }

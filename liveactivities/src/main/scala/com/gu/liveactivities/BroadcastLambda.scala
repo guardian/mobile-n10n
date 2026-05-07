@@ -19,7 +19,7 @@ import com.gu.liveactivities.models.BroadcastBody
 
 import java.time.ZonedDateTime
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromLong, dateTimeToLong, dateTimeToString}
-import com.gu.mobile.notifications.client.models.liveActitivites.{EndLiveActivityEvent, EventBridgeEvent, FootballMatchContentState, LiveActivityPayload, UpdateLiveActivityEvent}
+import com.gu.mobile.notifications.client.models.liveActitivites.{EndLiveActivityEvent, EventBridgeEvent, FootballMatchContentState, LiveActivityPayload, StartLiveActivityEvent, UpdateLiveActivityEvent}
 
 import scala.concurrent.duration.DurationInt
 
@@ -68,6 +68,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
 
     val shouldEndBroadcast: Boolean = requestPayload.eventType match {
       case EndLiveActivityEvent => true
+      case StartLiveActivityEvent => false
       case UpdateLiveActivityEvent => false
       case _ =>
         logger.error(s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
