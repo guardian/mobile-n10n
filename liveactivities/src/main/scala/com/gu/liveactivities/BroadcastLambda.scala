@@ -101,7 +101,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
       _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
-      _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = true, Some(eventId), Some(eventTime))
+      _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = !shouldEndBroadcast, Some(eventId), Some(eventTime))
       _ = logger.info(s"Record updated successfully for match ID $matchId")
     } yield mapping.channelId
 
