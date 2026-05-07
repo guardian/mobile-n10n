@@ -28,13 +28,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "generate correct data for Match Status notification" in new MatchStatusNotificationScope {
       check()
     }
-    "include matchCommentary in Match Status notification when present" in new MatchStatusNotificationWithCommentaryScope {
-      check()
-    }
-    "include kickOffTimestamp in Match Status notification when present" in new MatchStatusNotificationWithKickOffTimestampScope {
-      check()
-    }
-    "include penalty shootout scores in Match Status notification when present" in new MatchStatusNotificationWithPenaltiesScope {
+    "include matchCommentary, kickOffTimestamp and penalty shootout scores in Match Status notification when present" in new MatchStatusNotificationWithOptionalFieldsScope {
       check()
     }
     "generate correct data for Editions notification" in new EditionsScope {
@@ -279,29 +273,70 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
 
   }
 
-  trait MatchStatusNotificationWithCommentaryScope extends MatchStatusNotificationScope {
-    override val notification = super.notification.copy(matchCommentary = Some("Arsenal dominating possession"))
-    override val expected = super.expected.map(n => n.copy(data = n.data + (Keys.MatchCommentary -> "Arsenal dominating possession")))
-  }
-
-  trait MatchStatusNotificationWithKickOffTimestampScope extends MatchStatusNotificationScope {
-    override val notification = super.notification.copy(kickOffTimestamp = Some(1746619200L))
-    override val expected = super.expected.map(n => n.copy(data = n.data + (Keys.KickOffTimestamp -> "1746619200")))
-  }
-
-  trait MatchStatusNotificationWithPenaltiesScope extends MatchStatusNotificationScope {
-    override val notification = super.notification.copy(
+  trait MatchStatusNotificationWithOptionalFieldsScope extends MatchStatusNotificationScope {
+    override val notification = models.FootballMatchStatusNotification(
+      id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      title = Some("Test notification"),
+      message = Some("The message"),
+      thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
+      sender = "UnitTests",
+      importance = Major,
+      topic = List(Topic(`type` = Breaking, name = "uk")),
+      awayTeamName = "Team1",
+      awayTeamScore = 0,
+      awayTeamMessage = "team1 message",
+      awayTeamId = "123",
+      homeTeamName = "Team2",
+      homeTeamScore = 1,
+      homeTeamMessage = "team2 message",
+      homeTeamId = "456",
+      competitionName = Some("World cup 3012"),
+      venue = Some("Venue"),
+      matchId = "123456",
+      matchInfoUri = new URI("https://some.invalid.url/detail"),
+      articleUri = Some(new URI("https://some.other.invalid.url/detail")),
+      matchStatus = "1",
+      eventId = "2",
+      debug = true,
+      dryRun = None,
+      matchCommentary = Some("Argentina win 4-3 on penalties."),
+      kickOffTimestamp = Some(1746619200L),
       homeTeamPenalties = Some(models.PenaltyScore(scored = 3, missed = 1, saved = 0)),
       awayTeamPenalties = Some(models.PenaltyScore(scored = 2, missed = 0, saved = 1))
     )
-    override val expected = super.expected.map(n => n.copy(data = n.data ++ Map(
-      Keys.HomeTeamPenaltiesScored -> "3",
-      Keys.HomeTeamPenaltiesMissed -> "1",
-      Keys.HomeTeamPenaltiesSaved -> "0",
-      Keys.AwayTeamPenaltiesScored -> "2",
-      Keys.AwayTeamPenaltiesMissed -> "0",
-      Keys.AwayTeamPenaltiesSaved -> "1"
-    )))
+    override val expected = Some(FirebaseAndroidNotification(
+      notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      data = Map(
+        "type" -> "footballMatchAlert",
+        "homeTeamName" -> "Team2",
+        "homeTeamId" -> "456",
+        "homeTeamScore" -> "1",
+        "homeTeamText" -> "team2 message",
+        "awayTeamName" -> "Team1",
+        "awayTeamId" -> "123",
+        "awayTeamScore" -> "0",
+        "awayTeamText" -> "team1 message",
+        "currentMinute" -> "",
+        "importance" -> "Major",
+        "matchStatus" -> "1",
+        "matchId" -> "123456",
+        "matchInfoUri" -> "https://some.invalid.url/detail",
+        "articleUri" -> "https://some.other.invalid.url/detail",
+        "competitionName" -> "World cup 3012",
+        "venue" -> "Venue",
+        "homeTeamRedCards" -> "0",
+        "awayTeamRedCards" -> "0",
+        Keys.MatchCommentary -> "Argentina win 4-3 on penalties.",
+        Keys.KickOffTimestamp -> "1746619200",
+        Keys.HomeTeamPenaltiesScored -> "3",
+        Keys.HomeTeamPenaltiesMissed -> "1",
+        Keys.HomeTeamPenaltiesSaved -> "0",
+        Keys.AwayTeamPenaltiesScored -> "2",
+        Keys.AwayTeamPenaltiesMissed -> "0",
+        Keys.AwayTeamPenaltiesSaved -> "1"
+      ),
+      ttl = TimeToLive.FootballMatchStatusTtl
+    ))
   }
 
   trait UsElectionNotificationScope extends NotificationScope {

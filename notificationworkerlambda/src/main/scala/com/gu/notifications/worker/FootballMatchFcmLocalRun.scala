@@ -14,7 +14,9 @@ import scala.io.Source
 import scala.jdk.CollectionConverters._
 
 /**
- * Run from the root:
+ * This Local Run generates the fcm payload in json using the xml files in the football directory.
+
+ * To run this, run the following command in your terminal from the project root:
   sbt "project notificationworkerlambda" "runMain com.gu.notifications.worker.FootballMatchLocalRun"
  */
 object FootballMatchLocalRun extends App {
