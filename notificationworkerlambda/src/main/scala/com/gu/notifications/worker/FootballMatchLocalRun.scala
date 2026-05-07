@@ -12,33 +12,34 @@ import java.time.ZonedDateTime
 import scala.io.Source
 
 /**
- * Run from sbt (project notificationworkerlambda):
- *   run FootballMatchLocalRun <matchday-xml> <match-events-xml>
- *
- * Example:
- *   run FootballMatchLocalRun football/src/test/resources/worldcup/match-day.xml \
- *                             football/src/test/resources/worldcup/match-event-feed.xml
- *
- * Output: pretty-printed JSON object.
+ * Run from the root:
+  sbt "project notificationworkerlambda" "runMain com.gu.notifications.worker.FootballMatchLocalRun"
+
  */
 object FootballMatchLocalRun extends App {
 
-  if (args.length != 2) {
-    System.err.println("Usage: FootballMatchLocalRun <matchday-xml> <match-events-xml>")
-    sys.exit(1)
+  val DefaultMatchDay    = "football/src/test/resources/worldcup/match-day.xml"
+  val DefaultMatchEvents = "football/src/test/resources/worldcup/match-event-feed.xml"
+
+  val (matchDayFile, matchEventsFile) = args match {
+    case Array(md, me) => (md, me)
+    case Array()       => (DefaultMatchDay, DefaultMatchEvents)
+    case _             =>
+      System.err.println("Usage: FootballMatchLocalRun [<matchday-xml> <match-events-xml>]")
+      sys.exit(1)
   }
 
   val eventConsumer = new EventConsumer(new MatchStatusNotificationBuilder("https://mobile.guardianapis.com"))
 
-  val matchDayXml    = Source.fromFile(args(0)).mkString
-  val matchEventsXml = Source.fromFile(args(1)).mkString
+  val matchDayXml    = Source.fromFile(matchDayFile).mkString
+  val matchEventsXml = Source.fromFile(matchEventsFile).mkString
 
   val result: JsValue = (Parser.parseMatchDay(matchDayXml).headOption, Parser.parseMatchEvents(matchEventsXml)) match {
     case (None, _) => System.err.println("No match days in XML"); sys.exit(1)
     case (_, None) => System.err.println("No match events in XML"); sys.exit(1)
     case (Some(matchDay), Some(parsed)) =>
       val rawEvents = parsed.events.toList
-      val events    = new SyntheticMatchEventGenerator(ZonedDateTime.now()).generate(rawEvents, matchDay.id, matchDay)
+      val events    = new SyntheticMatchEventGenerator(() => ZonedDateTime.now()).generate(rawEvents, matchDay.id, matchDay)
       matchJson(matchDay, rawEvents.size, events.size - rawEvents.size,
         MatchDataWithArticle(matchDay, events, articleId = None))
   }
@@ -91,7 +92,7 @@ object FootballMatchLocalRun extends App {
         Keys.MatchId       -> fp.matchId,
         Keys.MatchInfoUri  -> fp.matchInfoUri.toString
       ).view.mapValues(JsString(_)).toMap
-        ++ fp.articleUri.map(Keys.ArticleUri -> JsString(_.toString))
+        ++ fp.articleUri.map(uri => Keys.ArticleUri -> JsString(uri.toString))
         ++ fp.competitionName.map(Keys.CompetitionName -> JsString(_))
         ++ fp.venue.map(Keys.Venue -> JsString(_))
         ++ fp.roundName.map(Keys.RoundName -> JsString(_))
