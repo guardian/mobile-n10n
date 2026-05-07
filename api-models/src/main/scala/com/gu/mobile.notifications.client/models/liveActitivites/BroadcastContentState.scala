@@ -33,66 +33,56 @@ case object PreMatch extends MatchStatus { val status = "PRE_MATCH" }
 case object FirstHalf extends MatchStatus { val status = "FIRST_HALF" }
 case object HalfTime extends MatchStatus { val status = "HALF_TIME" }
 case object SecondHalf extends MatchStatus { val status = "SECOND_HALF" }
+case object ExtraTimeToBePlayed extends MatchStatus { val status = "EXTRA_TIME_TO_BE_PLAYED" }
 case object ExtraTimeFirstHalf extends MatchStatus { val status = "EXTRA_TIME_FIRST_HALF" }
 case object ExtraTimeHalfTime extends MatchStatus { val status = "EXTRA_TIME_HALF_TIME" }
 case object ExtraTimeSecondHalf extends MatchStatus { val status = "EXTRA_TIME_SECOND_HALF" }
+case object PenaltiesToBePlayed extends MatchStatus { val status = "PENALTIES_TO_BE_PLAYED" }
 case object Penalties extends MatchStatus { val status = "PENALTIES" }
 case object FullTime extends MatchStatus { val status = "FULL_TIME" }
 case object Postponed extends MatchStatus { val status = "POSTPONED" }
+case object Suspended extends MatchStatus { val status = "SUSPENDED" }
 case object Abandoned extends MatchStatus { val status = "ABANDONED" }
+case object Resumed extends MatchStatus { val status = "RESUMED" }
+case object Cancelled extends MatchStatus { val status = "CANCELLED" }
 // @formatter:on
 
 object MatchStatus {
-  def fromString(s: String): MatchStatus = statuses.getOrElse(s, s) match {
-    case "Prematch"                                      => PreMatch
-    case "1st"                                           => FirstHalf
-    case "HT"                                            => HalfTime
-    case "2nd"                                           => SecondHalf
-    case "ET" | "ETS"                                    => ExtraTimeFirstHalf
-    case "ETHT"                                          => ExtraTimeHalfTime
-    case "ETSHS"                                         => ExtraTimeSecondHalf
-    case "PT"                                            => Penalties
-    case "FT"                                            => FullTime
-    case "Postponed"                                     => Postponed
-    case "Abandoned"                                     => Abandoned
-    case _                                               => Scheduled
-  }
+  def fromString(s: String): MatchStatus = statuses.getOrElse(s, Scheduled)
 
-  // How PA match status are handled differs from push notification
-  private val statuses = Map(
-    ("KO", "1st"), // The Match has started (Kicked Off).
+  // How PA match status are handled here differs from push notification mappings
+  private val statuses: Map[String, MatchStatus] = Map(
+    ("Fixture", PreMatch), //
+    ("-", PreMatch), // seen in the wild
+    ("New", PreMatch), //
 
-    ("HT", "HT"), // The Referee has blown the whistle for Half Time.
+    ("KO", FirstHalf), // The Match has started (Kicked Off).
 
-    ("SHS", "2nd"), // The Second Half of the Match has Started.
+    ("HT", HalfTime), // The Referee has blown the whistle for Half Time.
 
-    ("FT", "FT"), // The Referee has blown the whistle for Full Time.
-    ("PTFT", "FT"), // Penalty ShooT Full Time.
-    ("Result", "FT"), // The Result is official.
-    ("ETFT", "FT"), // Extra Time, Full Time has been blown.
-    ("MC", "FT"), // Match has been Completed.
+    ("SHS", SecondHalf), // The Second Half of the Match has Started.
 
-    ("FTET", "ET"), // Full Time, Extra Time it to be played.
-    ("ETS", "ETS"), // Extra Time has Started.
-    ("ETHT", "ETHT"), // Extra Time Half Time has been called.
-    ("ETSHS", "ETSHS"), // Extra Time, Second Half has Started.
+    ("FT", FullTime), // The Referee has blown the whistle for Full Time.
+    ("Result", FullTime), // The Result is official.
+    ("MC", FullTime), // Match has been Completed.
 
-    ("FTPT", "PT"), // Full Time, Penalties are To be played.
-    ("PT", "PT"), // Penalty ShooT Out has started.
-    ("ETFTPT", "PT"), // Extra Time, Full Time, Penalties are To be played.
+    ("FTET", ExtraTimeToBePlayed), // Full Time, Extra Time it to be played.
+    ("ETS", ExtraTimeFirstHalf), // Extra Time has Started.
+    ("ETHT", ExtraTimeHalfTime), // Extra Time Half Time has been called.
+    ("ETSHS", ExtraTimeSecondHalf), // Extra Time, Second Half has Started.
+    ("ETFT", ExtraTimeSecondHalf), // Extra Time, Full Time has been blown.
 
-    // Prematch
-    ("Fixture", "Prematch"), // fixture maps to 1st just in case the matchInfo and event feed are out of sync
-    ("-", "Prematch"), // same as above
-    ("New", "Prematch"), // New Match has been added to our data.
+    ("FTPT", PenaltiesToBePlayed), // Full Time, Penalties are To be played.
+    ("ETFTPT", PenaltiesToBePlayed), // Extra Time, Full Time, Penalties are To be played.
+    ("PT", Penalties), // Penalty ShooT Out has started.
+    ("PTFT", Penalties), // Penalty ShooT Full Time.
 
     // edge cases
-    // TODO these need to be addressed. A match can be suspended and resumed within x days?)
-    ("Suspended", "S"), // Match has been Suspended. // todo when does this happen?
-    ("Resumed", "R"), // Match has been Resumed. // todo what game time does this map to? first half second half? match minute?
-    ("Abandoned", "A"), // Match has been Abandoned.
-    ("Cancelled", "C") // A Match has been Cancelled.
-    // POSTPONED???
+    ("Suspended", Suspended), // Match has been Suspended.
+    ("Resumed", Resumed), // Match has been Resumed. // todo can match phase be determined by match minute?
+    ("Abandoned", Abandoned), // Match has been Abandoned.
+    ("Postponed", Postponed), // A Match has been Postponed.
+    ("Cancelled", Cancelled) // A Match has been Cancelled.
   )
 }
 
@@ -142,13 +132,18 @@ object FootballContentJsonFormats {
           case "FIRST_HALF"             => JsSuccess(FirstHalf)
           case "HALF_TIME"              => JsSuccess(HalfTime)
           case "SECOND_HALF"            => JsSuccess(SecondHalf)
+          case "EXTRA_TIME_TO_BE_PLAYED" => JsSuccess(ExtraTimeToBePlayed)
           case "EXTRA_TIME_FIRST_HALF"  => JsSuccess(ExtraTimeFirstHalf)
           case "EXTRA_TIME_HALF_TIME"   => JsSuccess(ExtraTimeHalfTime)
           case "EXTRA_TIME_SECOND_HALF" => JsSuccess(ExtraTimeSecondHalf)
+          case "PENALTIES_TO_BE_PLAYED" => JsSuccess(PenaltiesToBePlayed)
           case "PENALTIES"              => JsSuccess(Penalties)
           case "FULL_TIME"              => JsSuccess(FullTime)
+          case "SUSPENDED"              => JsSuccess(Suspended)
+          case "RESUMED"                => JsSuccess(Resumed)
           case "POSTPONED"              => JsSuccess(Postponed)
           case "ABANDONED"              => JsSuccess(Abandoned)
+          case "CANCELLED"              => JsSuccess(Cancelled)
           case other                    => JsError(s"Unknown match status: $other")
         }
       case _ => JsError("Expected a JSON string for MatchStatus")
