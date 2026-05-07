@@ -681,7 +681,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
     def rawEvents: List[MatchEvent] = Parser.parseMatchEvents(loadFile("worldcup/match-event-feed.xml")).get.events
     def matchDay: MatchDay = Parser.parseMatchDay(loadFile("worldcup/match-day.xml")).head
-    def matchEvents: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now()).generate(rawEvents, "4316435", matchDay)
+    def matchEvents: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now()).generate(rawEvents, "4356015", matchDay)
     def matchData = MatchDataWithArticle(matchDay, matchEvents, None)
   }
 }

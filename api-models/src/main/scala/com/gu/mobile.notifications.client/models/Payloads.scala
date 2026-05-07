@@ -5,7 +5,8 @@ import java.util.UUID
 
 import com.gu.mobile.notifications.client.lib.JsonFormatsHelper._
 import com.gu.mobile.notifications.client.models.Importance.Importance
-import com.gu.mobile.notifications.client.models.liveActitivites.PenaltyShootoutState
+import com.gu.mobile.notifications.client.models.liveActitivites.{FootballContentJsonFormats, PenaltyShootoutState}
+import FootballContentJsonFormats.penaltyShootoutStateFormat
 import play.api.libs.json._
 import NotificationPayloadType._
 sealed case class GuardianItemType(mobileAggregatorPrefix: String)

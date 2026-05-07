@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <matches>
-    <match matchID="4316435" date="25/11/2022" koTime="10:00">
-        <competition competitionID="700" seasonID="5596">FIFA World Cup Finals 2022</competition>
+    <match matchID="4355270" date="09/12/2022" koTime="19:45">
+        <competition competitionID="103" seasonID="5623">Sky Bet League Two 22/23</competition>
         <stage stageNumber="1" stageType="League"></stage>
-        <round roundNumber="2">Group B</round>
+        <round roundNumber="1">League</round>
         <leg>1</leg>
         <liveMatch>No</liveMatch>
         <result>Yes</result>
@@ -11,11 +11,11 @@
         <reportAvailable>No</reportAvailable>
         <lineupsAvailable>Yes</lineupsAvailable>
         <matchStatus>FT</matchStatus>
-        <attendance>40875</attendance>
-        <referee refereeID=""></referee>
-        <venue venueID="10919">Ahmad bin Ali Stadium</venue>
-        <homeTeam teamID="630">
-            <teamName>Wales</teamName>
+        <attendance></attendance>
+        <referee refereeID="536184">Tom Nield</referee>
+        <venue venueID="36">Broadfield Stadium</venue>
+        <homeTeam teamID="188">
+            <teamName>Crawley Town</teamName>
             <score>0</score>
             <htScore>0</htScore>
             <aggregateScore></aggregateScore>
@@ -23,15 +23,83 @@
                 <![CDATA[]]>
             </scorers>
         </homeTeam>
-        <awayTeam teamID="8111">
-            <teamName>Iran</teamName>
+        <awayTeam teamID="80">
+            <teamName>Hartlepool</teamName>
             <score>2</score>
             <htScore>0</htScore>
             <aggregateScore></aggregateScore>
             <scorers>
-                <![CDATA[Rouzbeh Cheshmi (90 +7:56),Ramin Rezaeian (90 +10:37)]]>
+                <![CDATA[Rollin Menayese (64),Travis Johnson (81 o.g.)]]>
             </scorers>
         </awayTeam>
         <comments></comments>
+    </match>
+    <match matchID="4356198" date="09/12/2022" koTime="15:00">
+        <competition competitionID="700" seasonID="5596">FIFA World Cup Finals 2022</competition>
+        <stage stageNumber="2" stageType="Knockout"></stage>
+        <round roundNumber="2">Round of 16</round>
+        <leg>1</leg>
+        <liveMatch>No</liveMatch>
+        <result>Yes</result>
+        <previewAvailable>No</previewAvailable>
+        <reportAvailable>No</reportAvailable>
+        <lineupsAvailable>Yes</lineupsAvailable>
+        <matchStatus>FT</matchStatus>
+        <attendance>43893</attendance>
+        <referee refereeID="492229">Michael Oliver</referee>
+        <venue venueID="10774">Education City Stadium</venue>
+        <homeTeam teamID="2489">
+            <teamName>Croatia</teamName>
+            <score>1</score>
+            <htScore>0</htScore>
+            <aggregateScore></aggregateScore>
+            <scorers>
+                <![CDATA[Bruno Petkovic (117)]]>
+            </scorers>
+        </homeTeam>
+        <awayTeam teamID="23104">
+            <teamName>Brazil</teamName>
+            <score>1</score>
+            <htScore>0</htScore>
+            <aggregateScore></aggregateScore>
+            <scorers>
+                <![CDATA[Junior Neymar (105 +0:35)]]>
+            </scorers>
+        </awayTeam>
+        <comments>Croatia win 4-2 on penalties.</comments>
+    </match>
+    <match matchID="4356015" date="09/12/2022" koTime="19:00">
+        <competition competitionID="700" seasonID="5596">FIFA World Cup Finals 2022</competition>
+        <stage stageNumber="2" stageType="Knockout"></stage>
+        <round roundNumber="2">Round of 16</round>
+        <leg>1</leg>
+        <liveMatch>No</liveMatch>
+        <result>Yes</result>
+        <previewAvailable>No</previewAvailable>
+        <reportAvailable>No</reportAvailable>
+        <lineupsAvailable>Yes</lineupsAvailable>
+        <matchStatus>FT</matchStatus>
+        <attendance>88235</attendance>
+        <referee refereeID="469962">Antonio Miguel Mateu Lahoz</referee>
+        <venue venueID="10921">Lusail Stadium</venue>
+        <homeTeam teamID="631">
+            <teamName>Netherlands</teamName>
+            <score>2</score>
+            <htScore>0</htScore>
+            <aggregateScore></aggregateScore>
+            <scorers>
+                <![CDATA[Wout Weghorst (83),Wout Weghorst (90 +10:32)]]>
+            </scorers>
+        </homeTeam>
+        <awayTeam teamID="965">
+            <teamName>Argentina</teamName>
+            <score>2</score>
+            <htScore>1</htScore>
+            <aggregateScore></aggregateScore>
+            <scorers>
+                <![CDATA[Nahuel Molina (35),Lionel Messi (73 pen)]]>
+            </scorers>
+        </awayTeam>
+        <comments>Argentina win 4-3 on penalties.</comments>
     </match>
 </matches>
