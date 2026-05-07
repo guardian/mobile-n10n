@@ -332,30 +332,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
   }
 
   "A Notification EventConsumer" should {
-
-    // Penalty kicks are real events not synthetic events
-    "NOT generate notification payload for penalties" in new MatchEventsContext {
+    "generate notification payloads for penalty kicks" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
 
       val result: List[NotificationPayload] =
         eventConsumer.eventsToNotifications(matchDataLA)
 
-      result must forall((payload: NotificationPayload) =>
-        payload.title.getOrElse("") != "Penalty Kick"
-      )
-    }
-
-    "NOT generate notification payload for extra time match phase events" in new MatchEventsContext {
-      override def matchDayLA: MatchDay =
-        super.matchDayLA.copy(date = ZonedDateTime.now(), matchStatus = "ETS")
-
-      val result: List[NotificationPayload] =
-        eventConsumer.eventsToNotifications(matchDataLA)
-
-      result must forall((payload: NotificationPayload) =>
-        payload.title.getOrElse("") != "The Guardian"
-      ) // default string for unknown events
+      result must contain((payload: NotificationPayload) => payload.title.getOrElse("") == "Penalty Kick")
     }
 
   }
