@@ -63,6 +63,14 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.awayTeamRedCards shouldEqual 0
       notification.homeTeamMessage must contain("Red card: Wayne Hennessey 86'")
     }
+
+    "Accumulate red cards from multiple dismissal events" in new MatchEventsContext {
+      val firstDismissal  = Dismissal("e1", "Player A", home, 55, None)
+      val secondDismissal = Dismissal("e2", "Player B", home, 80, None)
+      val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal), None)
+      notification.homeTeamRedCards shouldEqual 2
+      notification.awayTeamRedCards shouldEqual 0
+    }
   }
 
   trait MatchEventsContext extends Scope {
