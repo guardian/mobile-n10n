@@ -187,6 +187,7 @@ object FootballMatchStatusPayload {
     "topic" -> o.topic,
     "matchStatus" -> o.matchStatus,
     "eventId" -> o.eventId,
+    "matchCommentary" -> o.matchCommentary,
     "debug" -> o.debug
   )
 }
@@ -215,6 +216,7 @@ case class FootballMatchStatusPayload(
   topic: List[Topic],
   matchStatus: String,
   eventId: String,
+  matchCommentary: Option[String] = None,
   debug: Boolean,
   dryRun: Option[Boolean]
 ) extends NotificationPayload with derivedId {

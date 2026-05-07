@@ -28,6 +28,9 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "generate correct data for Match Status notification" in new MatchStatusNotificationScope {
       check()
     }
+    "include matchCommentary in Match Status notification when present" in new MatchStatusNotificationWithCommentaryScope {
+      check()
+    }
     "generate correct data for Editions notification" in new EditionsScope {
       check()
     }
@@ -268,6 +271,11 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       )
     )
 
+  }
+
+  trait MatchStatusNotificationWithCommentaryScope extends MatchStatusNotificationScope {
+    override val notification = super.notification.copy(matchCommentary = Some("Arsenal dominating possession"))
+    override val expected = super.expected.map(n => n.copy(data = n.data + (Keys.MatchCommentary -> "Arsenal dominating possession")))
   }
 
   trait UsElectionNotificationScope extends NotificationScope {

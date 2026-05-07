@@ -40,6 +40,7 @@ object Keys {
   final val HomeTeamRedCards = "homeTeamRedCards"
   final val AwayTeamRedCards = "awayTeamRedCards"
   final val RoundName = "roundName"
+  final val MatchCommentary = "matchCommentary"
 
   final val EditionsDate = "date"
   final val EditionsKey = "key"

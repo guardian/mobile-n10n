@@ -152,6 +152,7 @@ case class FootballMatchStatusNotification(
   topic: List[Topic],
   matchStatus: String,
   eventId: String,
+  matchCommentary: Option[String] = None,
   debug: Boolean,
   dryRun: Option[Boolean]
 ) extends Notification
