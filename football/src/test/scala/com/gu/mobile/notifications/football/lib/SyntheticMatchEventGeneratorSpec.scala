@@ -51,7 +51,7 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
     )
 
     val kickoffId = UUID.nameUUIDFromBytes(s"football-match/match-id/timeline/00:00".getBytes).toString
-    val currentTime = ZonedDateTime.now()
+    val currentTime = () => ZonedDateTime.now()
   }
 
   "A SyntheticMatchEvent generator" should {

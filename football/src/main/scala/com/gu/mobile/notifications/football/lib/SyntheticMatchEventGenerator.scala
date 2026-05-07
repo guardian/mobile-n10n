@@ -1,13 +1,14 @@
 package com.gu.mobile.notifications.football.lib
 
 import java.util.UUID
-import java.time.ZonedDateTime
 import pa.{MatchDay, MatchEvent}
+
+import java.time.{Instant, ZoneId, ZonedDateTime}
 
 // Synthetic events create a timeline event for a match status change, that can be processed by the EventConsumer
 // and transformed into a NotificationPayload and/or LiveActivityPayload for broadcasting.
 
-class SyntheticMatchEventGenerator(dateTime: ZonedDateTime) {
+class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
     // Live activity synthetic events are appended at the end, but when they are first generated, no other timeline events exist and duplicate events are filtered so this should not matter.
@@ -133,16 +134,19 @@ class SyntheticMatchEventGenerator(dateTime: ZonedDateTime) {
   }
 
   // Live Activity supporting events //
-  val now: Long = dateTime.toInstant.getEpochSecond
+
+  def now: Long = getCurrentTime().toInstant.getEpochSecond
   def koWithinTwoHours(ko: Long): Boolean = now >= ko - 7200 && now < ko - 1200
   def koWithin20Minutes(ko: Long): Boolean = now >= ko - 1200 && now < ko
 
   private val createChannel: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
-    if (koWithinTwoHours(matchDay.date.toEpochSecond)) Some(emptyMatchEvent.copy(
-      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/create-channel".getBytes).toString),
-      eventType = "create-channel"
-    ))
-    else None
+    if (koWithinTwoHours(matchDay.date.toEpochSecond)) {
+      Some(emptyMatchEvent.copy(
+        id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/create-channel".getBytes).toString),
+        eventType = "create-channel"
+        )
+      )
+    } else None
   }
 
   private val startLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>

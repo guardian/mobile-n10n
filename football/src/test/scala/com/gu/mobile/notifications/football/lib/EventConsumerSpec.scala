@@ -3,9 +3,9 @@ package com.gu.mobile.notifications.football.lib
 import java.net.URI
 import com.gu.mobile.notifications.client.models.{liveActitivites, _}
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
-import com.gu.mobile.notifications.client.models.TopicTypes.{FootballMatch, FootballTeam}
-import com.gu.mobile.notifications.client.models.liveActitivites.{ContentState, CreateChannelEvent, EndLiveActivityEvent, ExtraTimeFirstHalf, FirstHalf, FootballMatchContentState, FullTime, HalfTime, LiveActivityPayload, Penalties, PreMatch, StartLiveActivityEvent, UpdateLiveActivityEvent}
-import com.gu.mobile.notifications.football.models.{MatchDataWithArticle, PenaltyShootoutKick, SecondHalf}
+import com.gu.mobile.notifications.client.models.TopicTypes.{FootballMatch, FootballTeam, FootballTeamLiveActivity, FootballMatchLiveActivity}
+import com.gu.mobile.notifications.football.models.{MatchDataWithArticle, PenaltyShootoutKick}
+import com.gu.mobile.notifications.client.models.liveActitivites._
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
@@ -47,7 +47,10 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         topic = List(
           Topic(FootballTeam, "1006"),
           Topic(FootballTeam, "29"),
-          Topic(FootballMatch, "4011135")
+          Topic(FootballMatch, "4011135"),
+          Topic(FootballTeamLiveActivity, "1006"),
+          Topic(FootballTeamLiveActivity, "29"),
+          Topic(FootballMatchLiveActivity, "4011135"),
         ),
         matchStatus = "1st",
         eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
@@ -461,7 +464,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     def rawEvents: List[MatchEvent] =
       Parser.parseMatchEvents(loadFile("match-event-feed.xml")).get.events
     def matchDay: MatchDay = Parser.parseMatchDay(loadFile("20170811.xml")).head
-    def events: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now()).generate(
+    def events: List[MatchEvent] = new SyntheticMatchEventGenerator(() => ZonedDateTime.now()).generate(
       rawEvents,
       "4011135",
       matchDay
@@ -481,7 +484,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       .events
     def matchDayLA: MatchDay =
       Parser.parseMatchDay(loadFile("4484328-penalties.xml")).head
-    def eventsLA: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now())
+    def eventsLA: List[MatchEvent] = new SyntheticMatchEventGenerator(() => ZonedDateTime.now())
       .generate(rawEventsLA, "4484328", matchDayLA)
     def matchDataLA = MatchDataWithArticle(
       matchDayLA,
