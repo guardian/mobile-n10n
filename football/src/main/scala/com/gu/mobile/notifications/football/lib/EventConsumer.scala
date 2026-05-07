@@ -28,18 +28,27 @@ class EventConsumer(
     // todo we will want to send penalty kick notifications and extra synthetic events to push notifications for android
     val liveActivityEventTypes =
       List(
-        "create-channel",
-        "start-live-activity",
-        "end-live-activity",
+
         // penalty shootout events
         "shootoutGoal",
         "shootoutMiss",
         "shootoutSave",
+        // additional synthetic live activity life cycle events
+        "create-channel",
+        "start-live-activity",
+        "end-live-activity",
         // additional synthetic match phase events for live activities
+        "extra-time-to-be-played",
         "extra-time-first-half",
         "extra-time-half-time",
         "extra-time-second-half",
-        "penalties"
+        "penalties-to-be-played",
+        "penalties",
+        "suspended",
+        "resumed",
+        "abandoned",
+        "cancelled",
+        "postponed"
       )
 
     val filteredMatchData = matchData.copy(allEvents =

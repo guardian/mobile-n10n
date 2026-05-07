@@ -1,6 +1,6 @@
 package com.gu.mobile.notifications.football.notificationbuilders
 
-import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, CreateChannelEvent, EndLiveActivityEvent, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, MatchStatus, Scheduled, StartLiveActivityEvent, TeamState, UpdateLiveActivityEvent}
+import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, CreateChannelEvent, EndLiveActivityEvent, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, MatchStatus, StartLiveActivityEvent, TeamState, UpdateLiveActivityEvent}
 import com.gu.mobile.notifications.football.models._
 import pa.MatchDay
 
@@ -63,7 +63,10 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       articleUrl = articleId.map(id => s"$mapiHost/items/$id")
     )
 
+    // certain type of triggering match event types will trigger different live activity event type.
     val liveActivityEventType = triggeringEvent match {
+      case Abandoned(_) => EndLiveActivityEvent
+      case Cancelled(_) => EndLiveActivityEvent
       case CreateChannel(_) => CreateChannelEvent
       case StartLiveActivity(_) => StartLiveActivityEvent
       case EndLiveActivity(_) => EndLiveActivityEvent

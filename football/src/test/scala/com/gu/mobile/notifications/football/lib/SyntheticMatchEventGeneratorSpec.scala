@@ -92,6 +92,46 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
       generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "PT")).drop(1).head.eventType mustEqual "penalties"
     }
 
+    "Add extra-time-to-be-played event if status is FTET" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "FTET")).drop(1).head.eventType mustEqual "extra-time-to-be-played"
+    }
+
+    "Add penalties-to-be-played event if status is FTPT" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "FTPT")).drop(1).head.eventType mustEqual "penalties-to-be-played"
+    }
+
+    "Add penalties-to-be-played event if status is ETFTPT" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETFTPT")).drop(1).head.eventType mustEqual "penalties-to-be-played"
+    }
+
+    "Add suspended event if status is Suspended" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Suspended")).drop(1).head.eventType mustEqual "suspended"
+    }
+
+    "Add resumed event if status is Resumed" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Resumed")).drop(1).head.eventType mustEqual "resumed"
+    }
+
+    "Add abandoned event if status is Abandoned" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Abandoned")).drop(1).head.eventType mustEqual "abandoned"
+    }
+
+    "Add postponed event if status is Postponed" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Postponed")).drop(1).head.eventType mustEqual "postponed"
+    }
+
+    "Add cancelled event if status is Cancelled" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Cancelled")).drop(1).head.eventType mustEqual "cancelled"
+    }
+
   }
 
   "A SyntheticMatchEvent generator supporting Live Activities" should {
