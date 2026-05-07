@@ -125,6 +125,11 @@ object ContentNotification {
 }
 
 
+case class PenaltyScore(scored: Int = 0, missed: Int = 0, saved: Int = 0)
+object PenaltyScore {
+  implicit val jf: OFormat[PenaltyScore] = Json.format[PenaltyScore]
+}
+
 case class FootballMatchStatusNotification(
   id: UUID,
   `type`: NotificationType = FootballMatchStatus,
@@ -137,11 +142,13 @@ case class FootballMatchStatusNotification(
   awayTeamMessage: String,
   awayTeamId: String,
   awayTeamRedCards: Int = 0,
+  awayTeamPenalties: Option[PenaltyScore] = None,
   homeTeamName: String,
   homeTeamScore: Int,
   homeTeamMessage: String,
   homeTeamId: String,
   homeTeamRedCards: Int = 0,
+  homeTeamPenalties: Option[PenaltyScore] = None,
   competitionName: Option[String],
   roundName: Option[String] = None,
   venue: Option[String],

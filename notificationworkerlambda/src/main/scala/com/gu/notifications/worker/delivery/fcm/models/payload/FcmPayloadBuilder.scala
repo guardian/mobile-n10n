@@ -128,7 +128,17 @@ object FcmPayloadBuilder {
         ++ Some(Keys.HomeTeamRedCards -> matchStatusAlert.homeTeamRedCards.toString).toMap
         ++ Some(Keys.AwayTeamRedCards -> matchStatusAlert.awayTeamRedCards.toString).toMap
         ++ matchStatusAlert.matchCommentary.map(Keys.MatchCommentary -> _).toMap
-        ++ matchStatusAlert.kickOffTimestamp.map(Keys.KickOffTimestamp -> _.toString).toMap,
+        ++ matchStatusAlert.kickOffTimestamp.map(Keys.KickOffTimestamp -> _.toString).toMap
+        ++ matchStatusAlert.homeTeamPenalties.map(p => Map(
+          Keys.HomeTeamPenaltiesScored -> p.scored.toString,
+          Keys.HomeTeamPenaltiesMissed -> p.missed.toString,
+          Keys.HomeTeamPenaltiesSaved -> p.saved.toString
+        )).getOrElse(Map.empty)
+        ++ matchStatusAlert.awayTeamPenalties.map(p => Map(
+          Keys.AwayTeamPenaltiesScored -> p.scored.toString,
+          Keys.AwayTeamPenaltiesMissed -> p.missed.toString,
+          Keys.AwayTeamPenaltiesSaved -> p.saved.toString
+        )).getOrElse(Map.empty),
       ttl = FootballMatchStatusTtl
     )
 

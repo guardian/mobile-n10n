@@ -34,6 +34,9 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "include kickOffTimestamp in Match Status notification when present" in new MatchStatusNotificationWithKickOffTimestampScope {
       check()
     }
+    "include penalty shootout scores in Match Status notification when present" in new MatchStatusNotificationWithPenaltiesScope {
+      check()
+    }
     "generate correct data for Editions notification" in new EditionsScope {
       check()
     }
@@ -284,6 +287,21 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
   trait MatchStatusNotificationWithKickOffTimestampScope extends MatchStatusNotificationScope {
     override val notification = super.notification.copy(kickOffTimestamp = Some(1746619200L))
     override val expected = super.expected.map(n => n.copy(data = n.data + (Keys.KickOffTimestamp -> "1746619200")))
+  }
+
+  trait MatchStatusNotificationWithPenaltiesScope extends MatchStatusNotificationScope {
+    override val notification = super.notification.copy(
+      homeTeamPenalties = Some(models.PenaltyScore(scored = 3, missed = 1, saved = 0)),
+      awayTeamPenalties = Some(models.PenaltyScore(scored = 2, missed = 0, saved = 1))
+    )
+    override val expected = super.expected.map(n => n.copy(data = n.data ++ Map(
+      Keys.HomeTeamPenaltiesScored -> "3",
+      Keys.HomeTeamPenaltiesMissed -> "1",
+      Keys.HomeTeamPenaltiesSaved -> "0",
+      Keys.AwayTeamPenaltiesScored -> "2",
+      Keys.AwayTeamPenaltiesMissed -> "0",
+      Keys.AwayTeamPenaltiesSaved -> "1"
+    )))
   }
 
   trait UsElectionNotificationScope extends NotificationScope {

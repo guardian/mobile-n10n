@@ -39,6 +39,12 @@ object Keys {
 
   final val HomeTeamRedCards = "homeTeamRedCards"
   final val AwayTeamRedCards = "awayTeamRedCards"
+  final val HomeTeamPenaltiesScored = "homeTeamPenaltiesScored"
+  final val HomeTeamPenaltiesMissed = "homeTeamPenaltiesMissed"
+  final val HomeTeamPenaltiesSaved = "homeTeamPenaltiesSaved"
+  final val AwayTeamPenaltiesScored = "awayTeamPenaltiesScored"
+  final val AwayTeamPenaltiesMissed = "awayTeamPenaltiesMissed"
+  final val AwayTeamPenaltiesSaved = "awayTeamPenaltiesSaved"
   final val RoundName = "roundName"
   final val MatchCommentary = "matchCommentary"
   final val KickOffTimestamp = "kickOffTimestamp"

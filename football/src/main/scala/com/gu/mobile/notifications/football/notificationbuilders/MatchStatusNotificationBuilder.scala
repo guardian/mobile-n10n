@@ -4,7 +4,7 @@ import java.net.URI
 import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Importance, Major, Minor}
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, PenaltyShootoutKick, RedCards, Score, SecondHalf}
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, PenaltyShootoutKick, PenaltyShootoutScore, RedCards, Score, SecondHalf}
 import pa.{MatchDay, MatchDayTeam}
 
 import scala.PartialFunction.condOpt
@@ -37,6 +37,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
     val dismissals = allEvents.collect { case d: Dismissal => d }
     val redCards = RedCards.fromDismissals(matchInfo.homeTeam, matchInfo.awayTeam, dismissals)
+    val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
+    val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
     val status = statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)
 
@@ -54,6 +56,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       homeTeamMessage = teamMessage(matchInfo.homeTeam, allEvents),
       homeTeamId = matchInfo.homeTeam.id,
       homeTeamRedCards = redCards.home,
+      homeTeamPenalties = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = true),
+      awayTeamPenalties = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = false),
       matchId = matchInfo.id,
       competitionName = matchInfo.competition.map(_.name),
       roundName = matchInfo.round.name,

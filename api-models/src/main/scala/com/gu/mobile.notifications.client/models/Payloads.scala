@@ -5,6 +5,7 @@ import java.util.UUID
 
 import com.gu.mobile.notifications.client.lib.JsonFormatsHelper._
 import com.gu.mobile.notifications.client.models.Importance.Importance
+import com.gu.mobile.notifications.client.models.liveActitivites.PenaltyShootoutState
 import play.api.libs.json._
 import NotificationPayloadType._
 sealed case class GuardianItemType(mobileAggregatorPrefix: String)
@@ -172,11 +173,13 @@ object FootballMatchStatusPayload {
     "awayTeamMessage" -> o.awayTeamMessage,
     "awayTeamId" -> o.awayTeamId,
     "awayTeamRedCards" -> o.awayTeamRedCards,
+    "awayTeamPenalties" -> o.awayTeamPenalties,
     "homeTeamName" -> o.homeTeamName,
     "homeTeamScore" -> o.homeTeamScore,
     "homeTeamMessage" -> o.homeTeamMessage,
     "homeTeamId" -> o.homeTeamId,
     "homeTeamRedCards" -> o.homeTeamRedCards,
+    "homeTeamPenalties" -> o.homeTeamPenalties,
     "competitionName" -> o.competitionName,
     "roundName" -> o.roundName,
     "venue" -> o.venue,
@@ -202,11 +205,13 @@ case class FootballMatchStatusPayload(
   awayTeamMessage: String,
   awayTeamId: String,
   awayTeamRedCards: Int = 0,
+  awayTeamPenalties: Option[PenaltyShootoutState] = None,
   homeTeamName: String,
   homeTeamScore: Int,
   homeTeamMessage: String,
   homeTeamId: String,
   homeTeamRedCards: Int = 0,
+  homeTeamPenalties: Option[PenaltyShootoutState] = None,
   competitionName: Option[String],
   roundName: Option[String] = None,
   venue: Option[String],
