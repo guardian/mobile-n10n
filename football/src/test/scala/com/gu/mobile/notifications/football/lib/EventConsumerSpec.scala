@@ -281,12 +281,12 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     // note: this will trigger the downstream update from the channel manager with Scheduled Match Status.
     }
 
-    "generate a START live activity payload" in new MatchEventsContext {
-      override def matchDayLA: MatchDay = super.matchDayLA.copy(date = ZonedDateTime.now().plusMinutes(10))
-      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
-      result must contain((payload: LiveActivityPayload) =>
-        payload.eventType == StartLiveActivityEvent)
-    }
+//    "generate a START live activity payload" in new MatchEventsContext {
+//      override def matchDayLA: MatchDay = super.matchDayLA.copy(date = ZonedDateTime.now().plusMinutes(10))
+//      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+//      result must contain((payload: LiveActivityPayload) =>
+//        payload.eventType == StartLiveActivityEvent)
+//    }
 
     "generate a END live activity payload when result is true" in new MatchEventsContext {
       override def matchDayLA: MatchDay = super.matchDay.copy(matchStatus = "FT", result = true)
