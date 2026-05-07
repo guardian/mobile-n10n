@@ -1,4 +1,4 @@
-package aws
+package com.gu.mobile.liveactivities.event.bus
 
 import com.gu.mobile.notifications.client.models.liveActitivites._
 import org.slf4j.Logger

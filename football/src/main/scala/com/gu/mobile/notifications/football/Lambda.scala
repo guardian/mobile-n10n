@@ -1,13 +1,12 @@
 package com.gu.mobile.notifications.football
 
-import aws.LiveActivityPusher
-
-import java.net.{URI, URL}
+import java.net.URI
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
+import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
 import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import play.api.libs.json.Json

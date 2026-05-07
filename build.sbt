@@ -99,7 +99,6 @@ lazy val commontest = project
 
 lazy val common = project
   .dependsOn(commoneventconsumer)
-  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(LocalDynamoDBCommon.settings)
   .settings(standardSettings: _*)
   .settings(
@@ -124,8 +123,7 @@ lazy val common = project
       "org.postgresql" % "postgresql" % "42.7.10",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
-      "net.logstash.logback" % "logstash-logback-encoder" % "8.1",
-      "software.amazon.awssdk" % "eventbridge" % "2.20.162",
+      "net.logstash.logback" % "logstash-logback-encoder" % "8.1"
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
@@ -250,33 +248,33 @@ lazy val apiModels = {
 
 def lambda(projectName: String, directoryName: String, mainClassName: Option[String] = None): Project =
   Project(projectName, file(directoryName))
-  .enablePlugins(AssemblyPlugin)
-  .settings(
-    organization := "com.gu",
-    resolvers ++= Seq(
-      "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
-      "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
-    ),
-    libraryDependencies ++= Seq(
-      "com.amazonaws" % "aws-lambda-java-core" % "1.4.0",
-      "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
-      "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "ch.qos.logback" % "logback-classic" % logbackVersion,
-      "net.logstash.logback" % "logstash-logback-encoder" % "8.1",
-      specs2 % Test
-    ),
-    assemblyJarName := s"$projectName.jar",
-    assembly / assemblyMergeStrategy := {
-      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-      case _ => MergeStrategy.first
-    },
-    Test / run / fork := true,
-    scalacOptions := compilerOptions,
-    mainClass := mainClassName,
-    // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
-    Test / parallelExecution := false
-  )
+    .enablePlugins(AssemblyPlugin)
+    .settings(
+      organization := "com.gu",
+      resolvers ++= Seq(
+        "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
+        "snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+      ),
+      libraryDependencies ++= Seq(
+        "com.amazonaws" % "aws-lambda-java-core" % "1.4.0",
+        "org.slf4j" % "slf4j-api" % slf4jVersion,
+        "com.gu" %% "simple-configuration-core" % simpleConfigurationVersion,
+        "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
+        "ch.qos.logback" % "logback-classic" % logbackVersion,
+        "net.logstash.logback" % "logstash-logback-encoder" % "8.1",
+        specs2 % Test
+      ),
+      assemblyJarName := s"$projectName.jar",
+      assembly / assemblyMergeStrategy := {
+        case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+        case _ => MergeStrategy.first
+      },
+      Test / run / fork := true,
+      scalacOptions := compilerOptions,
+      mainClass := mainClassName,
+      // Workaround Mockito causes deadlock on SBT classloaders: https://github.com/sbt/sbt/issues/3022
+      Test / parallelExecution := false
+    )
 
 lazy val schedulelambda = lambda("schedule", "schedulelambda")
   .dependsOn(commonscheduledynamodb)
@@ -303,8 +301,16 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
     )
   }
 
+lazy val commonEventBusPusher = project
+  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
+  .settings(Seq(
+    libraryDependencies ++= Seq(
+      "software.amazon.awssdk" % "eventbridge" % "2.20.162"
+    ),
+  ))
+
 lazy val football = lambda("football", "football")
-  .dependsOn(common)
+  .dependsOn(commonEventBusPusher)
   .settings(
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
@@ -433,10 +439,11 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
       ExclusionRule(organization = "com.typesafe.play")
     ),
-)
+  )
 
 lazy val fakebreakingnewslambda = lambda("fakebreakingnewslambda", "fakebreakingnewslambda", Some("fakebreakingnews.LocalRun"))
   .dependsOn(common)
+  .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(
     libraryDependencies ++= Seq(
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
@@ -462,12 +469,14 @@ lazy val reportExtractor = lambda("reportextractor", "reportextractor", Some("co
 
 lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.gu.liveactivities.LambdaLocalRun"))
   .dependsOn(common)
+  .dependsOn(commonEventBusPusher)
   .settings(LocalDynamoDBLiveActivities.settings)
   .settings(
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
+      "software.amazon.awssdk" % "eventbridge" % "2.20.162",
       "org.scanamo" %% "scanamo" % "6.0.0",
       "org.scanamo" %% "scanamo-testkit" % "6.0.0" % "test"
     ),
