@@ -885,6 +885,10 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
             "Value": "CODE",
           },
         ],
+        "TimeToLiveSpecification": {
+          "AttributeName": "ttlInEpochSeconds",
+          "Enabled": true,
+        },
       },
       "Type": "AWS::DynamoDB::Table",
       "UpdateReplacePolicy": "Retain",
