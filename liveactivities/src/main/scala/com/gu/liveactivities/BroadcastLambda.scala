@@ -70,6 +70,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       case EndLiveActivityEvent => true
       case StartLiveActivityEvent => false
       case UpdateLiveActivityEvent => false
+      case StartLiveActivityEvent => false
       case _ =>
         logger.error(s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
         throw new Exception(s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
@@ -98,7 +99,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
       broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
       _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
-      _ = logger.info(s"Broadcast ${if(shouldEndBroadcast)"END"} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
+      _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
       _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = true, Some(eventId), Some(eventTime))
       _ = logger.info(s"Record updated successfully for match ID $matchId")
