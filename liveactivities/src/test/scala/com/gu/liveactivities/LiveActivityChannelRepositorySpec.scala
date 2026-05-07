@@ -88,7 +88,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       id = "football-1234567",
       channelId = "test-channel-id",
       isChannelActive = true,
-      isLive = true,     
+      isLive = false,
       data = Some(footballData),
       lastEventId = None,
       lastEventAt = None,
