@@ -120,7 +120,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
         logger.info(s"Broadcast ${if(shouldEndBroadcast)"END"} successfully sent for liveActivityID $matchId")
       }
       case Failure(exception) => {
-        logger.error(s"Failed to send broadcast for liveActivityID $matchId: ${exception.getMessage}")
+        logger.error(s"Failed to send broadcast ${if(shouldEndBroadcast)"END"} for liveActivityID $matchId: ${exception.getMessage}")
         throw exception
       }
     }
