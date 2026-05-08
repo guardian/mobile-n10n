@@ -58,11 +58,11 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       val previousEvents = allEvents.takeWhile(_ != dismissal)
       val notification = builder.build(dismissal, matchInfo, previousEvents, None)
       notification.title shouldEqual Some("Red card")
-      notification.message shouldEqual Some("Wales 0-0 Iran (FT)\nWayne Hennessey (Wales) 86min")
-      notification.importance shouldEqual Minor // to check
+      notification.message shouldEqual Some("Netherlands 2-2 Argentina (FT)\nDenzel Dumfries (Netherlands) 128min")
+      notification.importance shouldEqual Minor
       notification.homeTeamRedCards shouldEqual 1
       notification.awayTeamRedCards shouldEqual 0
-      notification.homeTeamMessage must contain("Red card: Wayne Hennessey 86'")
+      notification.homeTeamMessage must contain("Red card: Denzel Dumfries 128'")
     }
 
     "Include kickOffTimestamp from match date" in new MatchEventsContext {
