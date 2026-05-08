@@ -33,12 +33,13 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       contentState.competition.name mustEqual "FA Cup"
       contentState.lineupsAvailable mustEqual true
       contentState.competition.round mustEqual Some("Final")
-      contentState.articleUrl mustEqual Some("http://localhost/items/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      contentState.articleUrl mustEqual Some("http://www.theguardian.com/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      contentState.matchInfoUrl mustEqual "http://www.theguardian.com/football/match/some-match-id"
     }
   }
 
   trait MatchEventsContext extends Scope {
-    val builder = new MatchStatusLiveActivityPayloadBuilder("http://localhost")
+    val builder = new MatchStatusLiveActivityPayloadBuilder("http://localhost.com")
     val home = MatchDayTeam("1", "Liverpool", None, None, None, None)
     val away = MatchDayTeam("2", "Plymouth", None, None, None, None)
     val baseGoal = Goal(DefaultGoalType, "Steve", home, away, 5, None, "")
