@@ -7,7 +7,7 @@ import pa.MatchDay
 import java.net.URI
 import java.util.{Date, UUID}
 
-class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
+class MatchStatusLiveActivityPayloadBuilder {
 
   def build(
       triggeringEvent: FootballMatchEvent,

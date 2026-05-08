@@ -39,7 +39,7 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
   }
 
   trait MatchEventsContext extends Scope {
-    val builder = new MatchStatusLiveActivityPayloadBuilder("http://localhost.com")
+    val builder = new MatchStatusLiveActivityPayloadBuilder()
     val home = MatchDayTeam("1", "Liverpool", None, None, None, None)
     val away = MatchDayTeam("2", "Plymouth", None, None, None, None)
     val baseGoal = Goal(DefaultGoalType, "Steve", home, away, 5, None, "")
