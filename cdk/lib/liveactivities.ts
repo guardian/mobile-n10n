@@ -24,7 +24,9 @@ export class LiveActivities extends GuStack {
 			tableName: dynamoTableName,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
+			timeToLiveAttribute: 'ttlInEpochSeconds',
 		});
+
 		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
 		const channelManagerDlq = new Queue(this, 'ChannelManagerDlq', {
