@@ -57,7 +57,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         round = matchInfo.round.name // World Cup Group
       ),
       commentary = matchInfo.comments,
-      lineupsAvailable = None, // Boolean   // not available on LiveMatch
+      lineupsAvailable = matchInfo.lineupsAvailable,
       currentMinute = currentMinute,
       currentPeriodStartTime = None,
       articleUrl = articleId.map(id => s"$mapiHost/items/$id")

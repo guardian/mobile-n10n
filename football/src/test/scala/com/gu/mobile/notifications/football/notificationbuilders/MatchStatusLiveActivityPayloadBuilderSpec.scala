@@ -31,6 +31,8 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       contentState.matchStatus mustEqual FirstHalf
       contentState.currentMinute mustEqual Some(5)
       contentState.competition.name mustEqual "FA Cup"
+      contentState.lineupsAvailable mustEqual true
+      contentState.competition.round mustEqual Some("Final")
       contentState.articleUrl mustEqual Some("http://localhost/items/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
     }
   }
@@ -45,13 +47,13 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       date = ZonedDateTime.parse("2000-01-01T00:00:00Z"),
       competition = Some(Competition(id = "1", name = "FA Cup")),
       stage = Stage("1"),
-      round = Round("1", None),
+      round = Round("1", Some("Final")),
       leg = "home",
       liveMatch = true,
       result = false,
       previewAvailable = false,
       reportAvailable = false,
-      lineupsAvailable = false,
+      lineupsAvailable = true,
       matchStatus = "KO",
       attendance = None,
       homeTeam = home,
