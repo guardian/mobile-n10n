@@ -606,9 +606,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     val eventConsumer = new EventConsumer(matchStatusNotificationBuilder)
 
     val matchStatusLiveActivityPayloadBuilder =
-      new MatchStatusLiveActivityPayloadBuilder(
-        "https://mobile.guardianapis.com"
-      )
+      new MatchStatusLiveActivityPayloadBuilder()
     val eventConsumerLiveActivities = new LiveActivityEventConsumer(
       matchStatusLiveActivityPayloadBuilder
     )
