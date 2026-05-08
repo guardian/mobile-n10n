@@ -52,6 +52,7 @@ object Configuration extends Logging {
       bundleId = config.getString("apns.bundleId"),
       keyId = config.getString("apns.keyId"),
       certificate = config.getString("apns.certificate"),
+      // SSM flag to send to APPLE production or sandbox server
       sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
       stage = config.getString("stage"),
       region = config.getString("region")

@@ -150,7 +150,7 @@ export class LiveActivities extends GuStack {
 		new Rule(this, 'ChannelRule', {
 			eventBus: eventBus,
 			eventPattern: {
-				source: ['football-lambda'],
+				source: ['liveactivity-pusher'],
 				detailType: ['channel-create', 'channel-delete'],
 			},
 			targets: [new LambdaFunction(channelLambda)],
@@ -159,12 +159,13 @@ export class LiveActivities extends GuStack {
 		new Rule(this, 'BroadcastRule', {
 			eventBus: eventBus,
 			eventPattern: {
-				source: ['football-lambda'],
-				detailType: ['broadcast-start', 'broadcast-update', 'broadcast-end'],
+				source: ['liveactivity-pusher'],
+				detailType: ['broadcast-update', 'broadcast-end'],
 			},
 			targets: [new LambdaFunction(broadcastLambda)],
 		});
 
+    // TODO should we delete this or keep
 		// Development SQS to capture and inspect events from PA polling during development
 		const liveGameTestingQueue = new Queue(
 			this,

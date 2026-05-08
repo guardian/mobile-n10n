@@ -31,7 +31,7 @@ class LiveActivityPusher(eventBusName: String, logger: Logger) {
       val result = Try {
         val entry = PutEventsRequestEntry
           .builder()
-          .source("football-lambda")
+          .source("liveactivity-pusher")
           .detailType(payload.eventType.asString)
           .detail(Json.toJson(payload).toString())
           .eventBusName(eventBusName)

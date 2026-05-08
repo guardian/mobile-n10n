@@ -30,12 +30,12 @@ class BroadcastApiClient(
 
   private val mediaType = "application/json; charset=UTF-8"
 
-  // TODO - to check
   private val serviceEndpoint =
     if (sendingToProdServer)
       s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
-    else
-      s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
+    else {
+      s"https://api.push.apple.com:443/4/broadcasts/apps/$bundleId"
+    }
 
   def sendToChannel(
       channelId: String,
