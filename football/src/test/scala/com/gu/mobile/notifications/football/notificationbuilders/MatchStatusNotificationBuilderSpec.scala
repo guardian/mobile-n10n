@@ -47,6 +47,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         topic = List(Topic(TopicTypes.FootballTeam, "1"), Topic(TopicTypes.FootballTeam, "2"), Topic(TopicTypes.FootballMatch, "some-match-id")),
         eventId = UUID.nameUUIDFromBytes("".getBytes).toString,
         matchStatus = "1st",
+        kickOffTimestamp = Some(ZonedDateTime.parse("2000-01-01T00:00:00Z").toEpochSecond),
         debug = false,
         dryRun = None
       )
@@ -62,6 +63,11 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.homeTeamRedCards shouldEqual 1
       notification.awayTeamRedCards shouldEqual 0
       notification.homeTeamMessage must contain("Red card: Wayne Hennessey 86'")
+    }
+
+    "Include kickOffTimestamp from match date" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo, List.empty, None)
+      notification.kickOffTimestamp shouldEqual Some(matchInfo.date.toEpochSecond)
     }
 
     "Accumulate red cards from multiple dismissal events" in new MatchEventsContext {
