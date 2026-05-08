@@ -1,10 +1,14 @@
 package com.gu.mobile.notifications.football.lib
 
 import java.util.UUID
-
 import pa.{MatchDay, MatchEvent}
 
-class SyntheticMatchEventGenerator {
+import java.time.{Instant, ZoneId, ZonedDateTime}
+
+// Synthetic events create a timeline event for a match status change, that can be processed by the EventConsumer
+// and transformed into a NotificationPayload and/or LiveActivityPayload for broadcasting.
+
+class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
     // Live activity synthetic events are appended at the end, but when they are first generated, no other timeline events exist and duplicate events are filtered so this should not matter.
@@ -38,18 +42,111 @@ class SyntheticMatchEventGenerator {
     else None
   }
 
+
+  // LIVE ACTIVITIES
+  private val suspended: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "Suspended") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/suspended".getBytes).toString),
+      eventType = "suspended"
+    ))
+    else None
+  }
+
+  private val resumed: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "Resumed") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/resumed".getBytes).toString),
+      eventType = "resumed"
+    ))
+    else None
+  }
+
+  private val abandoned: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "Abandoned") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/abandoned".getBytes).toString),
+      eventType = "abandoned"
+    ))
+    else None
+  }
+
+  private val postponed: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "Postponed") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/postponed".getBytes).toString),
+      eventType = "postponed"
+    ))
+    else None
+  }
+
+  private val cancelled: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "Cancelled") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/cancelled".getBytes).toString),
+      eventType = "cancelled"
+    ))
+    else None
+  }
+
+  // match statuses synthetic events needed for live activities
+  private val extraTimeToBePlayed: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "FTET") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/extra-time-to-be-played".getBytes).toString),
+      eventType = "extra-time-to-be-played"
+    ))
+    else None
+  }
+
+  private val extraTimeFirstHalf: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "ETS") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/extra-time-first-half".getBytes).toString),
+      eventType = "extra-time-first-half"
+    ))
+    else None
+  }
+
+  private val extraTimeHalfTime: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "ETHT") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/extra-time-half-time".getBytes).toString),
+      eventType = "extra-time-half-time"
+    ))
+    else None
+  }
+
+  private val extraTimeSecondHalf: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "ETSHS") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/extra-time-second-half".getBytes).toString),
+      eventType = "extra-time-second-half"
+    ))
+    else None
+  }
+
+  private val penaltiesToBePlayed: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "FTPT" || matchDay.matchStatus == "ETFTPT") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/penalties-to-be-played".getBytes).toString),
+      eventType = "penalties-to-be-played"
+    ))
+    else None
+  }
+
+  private val penalties: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    if (matchDay.matchStatus == "PT") Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/penalties".getBytes).toString),
+      eventType = "penalties"
+    ))
+    else None
+  }
+
   // Live Activity supporting events //
 
-  val now: Long = java.time.Instant.now.getEpochSecond
+  def now: Long = getCurrentTime().toInstant.getEpochSecond
   def koWithinTwoHours(ko: Long): Boolean = now >= ko - 7200 && now < ko - 1200
   def koWithin20Minutes(ko: Long): Boolean = now >= ko - 1200 && now < ko
 
   private val createChannel: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
-    if (koWithinTwoHours(matchDay.date.toEpochSecond)) Some(emptyMatchEvent.copy(
-      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/create-channel".getBytes).toString),
-      eventType = "create-channel"
-    ))
-    else None
+    if (koWithinTwoHours(matchDay.date.toEpochSecond)) {
+      Some(emptyMatchEvent.copy(
+        id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/create-channel".getBytes).toString),
+        eventType = "create-channel"
+        )
+      )
+    } else None
   }
 
   private val startLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
@@ -70,7 +167,24 @@ class SyntheticMatchEventGenerator {
     else None
   }
 
-  private val generators: List[MatchEventGenerator] = List(fullTime, halfTime, secondHalf, createChannel, startLiveActivity, endLiveActivity)
+  private val generators: List[MatchEventGenerator] = List(
+    fullTime,
+    halfTime,
+    secondHalf,
+    extraTimeToBePlayed,
+    extraTimeFirstHalf,
+    extraTimeHalfTime,
+    extraTimeSecondHalf,
+    penaltiesToBePlayed,
+    penalties,
+    suspended,
+    resumed,
+    abandoned,
+    postponed,
+    cancelled,
+    createChannel,
+    startLiveActivity,
+    endLiveActivity)
 
   private def emptyMatchEvent = MatchEvent(
     id = None,

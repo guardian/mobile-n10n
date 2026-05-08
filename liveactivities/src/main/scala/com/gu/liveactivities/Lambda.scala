@@ -1,17 +1,14 @@
 package com.gu.liveactivities
 
-import com.gu.liveactivities.service.Authentication
-import com.gu.liveactivities.service.ChannelApiClient
-import com.gu.liveactivities.service.LiveActivityChannelRepository
-import com.gu.liveactivities.util.Configuration
-import com.gu.liveactivities.util.IosConfiguration
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
-import software.amazon.awssdk.auth.credentials.{
-  AwsCredentialsProviderChain,
-  ProfileCredentialsProvider,
-  DefaultCredentialsProvider,
-}
+import com.gu.liveactivities.service.{Authentication, LiveActivityChannelRepository}
+import com.gu.liveactivities.util.{Configuration, IosConfiguration}
+import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain, DefaultCredentialsProvider, ProfileCredentialsProvider}
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.retries.DefaultRetryStrategy
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
+
+import java.time.Duration
 
 trait Lambda {
 
@@ -31,6 +28,15 @@ trait Lambda {
       .builder()
       .credentialsProvider(credentialsv2)
       .region(Region.of(config.region))
+      .overrideConfiguration(
+        ClientOverrideConfiguration.builder()
+          .apiCallAttemptTimeout(Duration.ofSeconds(2)) // limit for one single try
+          .apiCallTimeout(Duration.ofSeconds(10)) // limit for the entire operation
+          .retryStrategy(DefaultRetryStrategy.standardStrategyBuilder()
+            .maxAttempts(3)
+            .build())
+          .build()
+      )
       .build()
 
   val repository = new LiveActivityChannelRepository(dynamoDbClient, s"mobile-notifications-liveactivities-${config.stage}")

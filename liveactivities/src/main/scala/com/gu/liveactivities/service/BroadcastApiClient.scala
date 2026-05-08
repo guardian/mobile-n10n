@@ -1,5 +1,7 @@
 package com.gu.liveactivities.service
 
+import com.gu.liveactivities.models.BroadcastBody
+
 import java.net.http.HttpClient
 import java.time.Duration
 import java.nio.charset.StandardCharsets
@@ -8,73 +10,62 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import scala.concurrent.Future
 import scala.concurrent.Promise
-import com.turo.pushy.apns.auth.ApnsSigningKey
-import com.turo.pushy.apns.auth.AuthenticationToken
 import play.api.libs.json.Json
-import com.gu.liveactivities.BroadcastFixtures._
-import com.gu.liveactivities.models.BroadcastJsonFormats._
 import com.gu.liveactivities.util.Logging
 
 import java.time.Instant
-import java.util.Date
-import com.gu.liveactivities.models.BroadcastJsonFormats
 
-class BroadcastApiClient(authentication: Authentication, bundleId: String, sendingToProdServer: Boolean) extends Logging {
-  
-  private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build()
+class BroadcastApiClient(
+    authentication: Authentication,
+    bundleId: String,
+    sendingToProdServer: Boolean
+) extends Logging {
+
+  private val httpClient: HttpClient =
+    HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build()
 
   logger.info("HttpClient in BroadcastApiClient is instantiated")
 
   private val charSet = StandardCharsets.UTF_8
 
   private val mediaType = "application/json; charset=UTF-8"
-  
+
   // TODO - to check
-  private val serviceEndpoint = if (sendingToProdServer) 
-    s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
-  else
-    s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
+  private val serviceEndpoint =
+    if (sendingToProdServer)
+      s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
+    else
+      s"https://api.sandbox.push.apple.com:443/4/broadcasts/apps/$bundleId"
 
-  private val message = 
-    """{ 
-    |  \"aps\": {
-    |     \"timestamp\": 1685952000,
-    |     \"event\": \"update\",
-    |     \"content-state\": {
-    |         \"currentHealthLevel\": 0.0,
-    |         \"eventDescription\": \"Power Panda has been knocked down!\"
-    |     },
-    |     \"alert\": {
-    |         \"title\": {
-    |             \"loc-key\": \"%@ is knocked down!\",
-    |             \"loc-args\": [\"Power Panda\"]
-    |         },
-    |         \"body\": {
-    |             \"loc-key\": \"Use a potion to heal %@!\",
-    |             \"loc-args\": [\"Power Panda\"]
-    |         },
-    |         \"sound\": \"HeroDown.mp4\"
-    |     }
-    |  }
-    }"""
+  def sendToChannel(
+      channelId: String,
+      expiration: Option[Instant],
+      priority: Option[Int],
+      broadcastPayload: BroadcastBody
+  ): Future[String] = {
+    logger.info(s"Broadcasting to channel $channelId for match")
 
-  private val startPayload: String = Json.stringify(Json.toJson(broadcastStartBodyFixture)(BroadcastJsonFormats.broadcastStartBodyFormat))
-  private val updatePayload: String = Json.stringify(Json.toJson(broadcastUpdateBodyFixture)(BroadcastJsonFormats.broadcastUpdateBodyFormat))
-  private val endPayload: String = Json.stringify(Json.toJson(broadcastEndBodyFixture)(BroadcastJsonFormats.broadcastEndBodyFormat))
+    val broadcastPayloadJson: String = Json.stringify(
+      Json.toJson(broadcastPayload)(BroadcastBody.broadcastBodyFormat)
+    )
 
-  def sendToChannel(channelId: String, expiration: Option[Instant], priority: Option[Int]): Future[String] = {
-    logger.info(s"Broadcasting to channel $channelId")
     val authToken = authentication.getAccessToken()
-    val request: HttpRequest = HttpRequest.newBuilder(new URI(serviceEndpoint))
+    val request: HttpRequest = HttpRequest
+      .newBuilder(new URI(serviceEndpoint))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
       .header("Content-Type", mediaType)
       .header("apns-channel-id", channelId)
-      .header("apns-expiration", expiration.getOrElse(Instant.now().plusSeconds(5 * 60)).getEpochSecond.toString)
+      .header(
+        "apns-expiration",
+        expiration
+          .getOrElse(Instant.now().plusSeconds(5 * 60))
+          .getEpochSecond
+          .toString
+      )
       .header("apns-priority", priority.map(_.toString).getOrElse("1"))
       .header("apns-push-type", "Liveactivity")
-      .POST(HttpRequest.BodyPublishers.ofString(updatePayload, charSet))
-
+      .POST(HttpRequest.BodyPublishers.ofString(broadcastPayloadJson, charSet))
       .timeout(Duration.ofSeconds(60))
       .build()
 

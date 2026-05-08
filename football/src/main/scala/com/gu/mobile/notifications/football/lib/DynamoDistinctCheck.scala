@@ -3,8 +3,9 @@ package com.gu.mobile.notifications.football.lib
 import scala.concurrent.{ExecutionContext, Future}
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.gu.mobile.notifications.client.models.{FootballMatchStatusPayload, Payload}
-import org.scanamo.{ScanamoAsync, Table}
+import org.scanamo.{DynamoFormat, ScanamoAsync, Table}
 import DynamoDistinctCheck.{Distinct, DistinctStatus, Duplicate, Unknown}
+import com.gu.mobile.notifications.client.models.liveActitivites.LiveActivityPayload
 import com.gu.mobile.notifications.football.Logging
 import play.api.libs.json.Json
 
@@ -30,6 +31,24 @@ object DynamoMatchNotification {
   }
 }
 
+case class DynamoMatchLiveActivity(
+  id: String,
+  liveActivityID: String,
+  payload: String,
+  ttl: Long
+)
+
+object DynamoMatchLiveActivity {
+  def apply(payload: LiveActivityPayload): DynamoMatchLiveActivity = {
+    DynamoMatchLiveActivity(
+      id = payload.id.toString,
+      liveActivityID = payload.liveActivityID,
+      payload = Json.prettyPrint(Json.toJson(payload)),
+      ttl = (System.currentTimeMillis() / 1000) + (14 * 24 * 3600)
+    )
+  }
+}
+
 object DynamoDistinctCheck {
   sealed trait DistinctStatus
   case object Distinct extends DistinctStatus
@@ -37,25 +56,30 @@ object DynamoDistinctCheck {
   case object Unknown extends DistinctStatus
 }
 
-class DynamoDistinctCheck[A <: Payload](client: AmazonDynamoDBAsync, tableName: String) extends Logging {
-  def insertNotification(notification: A)(implicit ec: ExecutionContext, writes: play.api.libs.json.Writes[A]): Future[DistinctStatus] = {
+class DynamoDistinctCheck[A <: Payload, D: DynamoFormat](
+  client: AmazonDynamoDBAsync,
+  val tableName: String,
+  partitionKeyName: String,
+  toDynamoModel: A => D
+) extends Logging {
+  def insertEvent(item: A)(implicit ec: ExecutionContext): Future[DistinctStatus] = {
     import org.scanamo.syntax._
-    import org.scanamo.generic.auto._
 
     lazy val scanamoAsync: ScanamoAsync = ScanamoAsync(client)
-    lazy val notificationsTable = Table[DynamoMatchNotification](tableName)
+    lazy val notificationsTable = Table[D](tableName)
+    val dynamoPayload = toDynamoModel(item)
 
-    val putResult = scanamoAsync.exec(notificationsTable.given(not(attributeExists("notificationId"))).put(DynamoMatchNotification(notification)))
+    val putResult = scanamoAsync.exec(notificationsTable.given(not(attributeExists(partitionKeyName))).put(dynamoPayload))
     putResult map {
       case Right(_) =>
-        logger.info(s"Distinct notification ${notification.id} written to dynamodb")
+        logger.info(s"Distinct event ${item.id} written to dynamodb $tableName")
         Distinct
       case Left(error) =>
-        logger.info(s"Received $error when attempting to write ${notification.id} to dynamo, assuming it's a duplicate")
+        logger.info(s"Received $error when attempting to write ${item.id} to dynamodb $tableName, assuming it's a duplicate")
         Duplicate
     } recover {
       case e =>
-        logger.error(s"Failure while writing to dynamodb: ${e.getMessage}.  Request will be retried on next poll")
+        logger.error(s"Failure while writing to dynamodb $tableName: ${e.getMessage}.  Request will be retried on next poll")
         Unknown
     }
   }
