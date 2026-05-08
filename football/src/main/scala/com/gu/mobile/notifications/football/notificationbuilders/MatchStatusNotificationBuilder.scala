@@ -68,7 +68,6 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       topic = topics,
       matchStatus = status,
       eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
-      matchCommentary = matchInfo.comments,
       kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
       debug = false,
       dryRun = None

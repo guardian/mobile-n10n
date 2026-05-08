@@ -160,7 +160,6 @@ case class FootballMatchStatusNotification(
   matchStatus: String,
   eventId: String,
   kickOffTimestamp: Option[Long] = None,
-  matchCommentary: Option[String] = None,
   debug: Boolean,
   dryRun: Option[Boolean]
 ) extends Notification

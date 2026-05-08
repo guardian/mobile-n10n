@@ -28,7 +28,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "generate correct data for Match Status notification" in new MatchStatusNotificationScope {
       check()
     }
-    "include matchCommentary, kickOffTimestamp and penalty shootout scores in Match Status notification when present" in new MatchStatusNotificationWithOptionalFieldsScope {
+    "include kickOffTimestamp and penalty shootout scores in Match Status notification when present" in new MatchStatusNotificationWithOptionalFieldsScope {
       check()
     }
     "generate correct data for Editions notification" in new EditionsScope {
@@ -299,7 +299,6 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       eventId = "2",
       debug = true,
       dryRun = None,
-      matchCommentary = Some("Argentina win 4-3 on penalties."),
       kickOffTimestamp = Some(1746619200L),
       homeTeamPenalties = Some(models.PenaltyScore(scored = 3, missed = 1, saved = 0)),
       awayTeamPenalties = Some(models.PenaltyScore(scored = 2, missed = 0, saved = 1))
@@ -326,7 +325,6 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
         "venue" -> "Venue",
         "homeTeamRedCards" -> "0",
         "awayTeamRedCards" -> "0",
-        Keys.MatchCommentary -> "Argentina win 4-3 on penalties.",
         Keys.KickOffTimestamp -> "1746619200",
         Keys.HomeTeamPenaltiesScored -> "3",
         Keys.HomeTeamPenaltiesMissed -> "1",
