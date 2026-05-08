@@ -34,7 +34,10 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       case JsSuccess(request, _) => {
 
         // If we see these errors there is a misconfiguration in the eventbridge routing rules.
-        if (request.`detail-type` != UpdateLiveActivityEvent && request.`detail-type` != EndLiveActivityEvent) {
+        if (request.`detail-type` != UpdateLiveActivityEvent &&
+          request.`detail-type` != EndLiveActivityEvent &&
+          request.`detail-type` != StartLiveActivityEvent
+        ) {
           logger.error(s"Unexpected eventbridge event type: ${request.`detail-type`}")
           throw new Exception(s"Unexpected event type: ${request.`detail-type`}")
         }
@@ -70,7 +73,6 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       case EndLiveActivityEvent => true
       case StartLiveActivityEvent => false
       case UpdateLiveActivityEvent => false
-      case StartLiveActivityEvent => false
       case _ =>
         logger.error(s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
         throw new Exception(s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
