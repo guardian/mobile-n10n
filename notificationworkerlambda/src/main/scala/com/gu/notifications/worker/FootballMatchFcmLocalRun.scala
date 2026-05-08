@@ -17,9 +17,9 @@ import scala.jdk.CollectionConverters._
  * This Local Run generates the fcm payload in json using the xml files in the football directory.
 
  * To run this, run the following command in your terminal from the project root:
-  sbt "project notificationworkerlambda" "runMain com.gu.notifications.worker.FootballMatchLocalRun"
+  sbt "project notificationworkerlambda" "runMain com.gu.notifications.worker.FootballMatchFcmLocalRun"
  */
-object FootballMatchLocalRun extends App {
+object FootballMatchFcmLocalRun extends App {
 
   // One-time setup to extract the FCM key-value data from AndroidConfig locally.
   private val androidConfigDataField = {
