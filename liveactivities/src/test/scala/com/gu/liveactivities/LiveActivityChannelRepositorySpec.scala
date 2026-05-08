@@ -93,7 +93,8 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       lastEventId = None,
       lastEventAt = None,
       createdAt = ZonedDateTime.now(),
-      lastModifiedAt = ZonedDateTime.now()
+      lastModifiedAt = ZonedDateTime.now(),
+      ttlInEpochSeconds = Some(ZonedDateTime.now().toEpochSecond + 14 * 24 * 3600)
     )
 
     def createFootballMappingWithId(id: String): LiveActivityMapping = {
