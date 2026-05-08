@@ -54,7 +54,6 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
 
     "new /device/register endpoint returns expected response" in new RegistrationsContext {
       val Some(result) = route(app, FakeRequest(POST, "/device/register").withJsonBody(Json.parse(newRegistrationJson)))
-      println(Json.prettyPrint(Json.parse(contentAsString(result))))
 
       status(result) must equalTo(OK)
       contentAsString(result) must /("provider" -> "Guardian")

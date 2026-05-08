@@ -2,6 +2,7 @@ package com.gu.liveactivities.models
 
 import com.gu.mobile.notifications.client.models.liveActitivites.ContentState
 import play.api.libs.json._
+import com.gu.liveactivities.util.Logging
 
 // APN BROADCAST PAYLOADS ////////////////////////////////
 
@@ -115,7 +116,7 @@ case class BroadcastBody(
     aps: BroadcastApsEvent
 )
 
-object BroadcastBody {
+object BroadcastBody extends Logging {
   import BroadcastApsJsonFormats._
 
   implicit val broadcastBodyFormat: OFormat[BroadcastBody] =
@@ -123,24 +124,30 @@ object BroadcastBody {
 
   def apply(
       contentState: ContentState,
-      shouldEndBroadcast: Boolean = false,
+      shouldEndBroadcast: Boolean = false
   ): BroadcastBody = {
     val now = System.currentTimeMillis() / 1000
 
-    val apsEvent: BroadcastApsEvent = if (shouldEndBroadcast) {
-      BroadcastEndAps(
-        timestamp = now,
-        `content-state` = contentState,
-        `dismissal-date` =
-          now + (1 * 3600) // dismiss from lock screen after 1 hour
-      )
-    } else {
-      BroadcastUpdateAps(
-        timestamp = now,
-        `content-state` = contentState,
-        `stale-date` = now + (1 * 2760) // stale after 45 minutes
-      )
-    }
+    // todo clean up once timings are verified e2e
+    logger.info(
+      s"Creating BroadcastBody ${if (shouldEndBroadcast) "END"} with dismissal timestamp from: ${now}"
+    )
+
+    val apsEvent: BroadcastApsEvent =
+      if (shouldEndBroadcast) {
+        BroadcastEndAps(
+          timestamp = now,
+          `content-state` = contentState,
+          `dismissal-date` =
+            now + (1 * 3600) // dismiss from lock screen after 1 hour
+        )
+      } else {
+        BroadcastUpdateAps(
+          timestamp = now,
+          `content-state` = contentState,
+          `stale-date` = now + (1 * 2760) // stale after 45 minutes
+        )
+      }
 
     BroadcastBody(aps = apsEvent)
   }

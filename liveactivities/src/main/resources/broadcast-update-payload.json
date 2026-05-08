@@ -8,23 +8,33 @@
   "region": "eu-west-1",
   "resources": [],
   "detail": {
-    "id": "165875bb-ade9-3245-b602-6343a1dd406d",
-    "eventType": "UpdateLiveActivity",
+    "id": "165875bb-ade9-3245-b602-6343a1dd407d",
+    "eventType": "broadcast-update",
     "liveActivityType": "FootballLiveActivity",
     "liveActivityID": "123456-test",
     "dynamoStoreData": "",
     "broadcastContentStateData": {
-      "matchStatus": "SCHEDULED",
+      "matchStatus": "PENALTIES",
       "kickOffTimestamp": 1766433600,
       "homeTeam": {
         "name": "Team A",
-        "score": 3,
-        "redCards": 1
+        "score": 1,
+        "redCards": 1,
+        "penaltyScore": {
+          "scored": 4,
+          "missed": 1,
+          "saved": 1
+        }
       },
       "awayTeam": {
         "name": "Team B",
-        "score": 5,
-        "redCards": 1
+        "score": 1,
+        "redCards": 1,
+        "penaltyScore": {
+          "scored": 4,
+          "missed": 1,
+          "saved": 1
+        }
       },
       "competition": {
         "id": "100",
