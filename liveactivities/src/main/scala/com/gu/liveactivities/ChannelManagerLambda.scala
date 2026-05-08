@@ -94,11 +94,10 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
   }
 
   private def pushUpdateLiveActivityEvent(matchId: String, broadcastContentStateData: Option[ContentState]): Future[Unit] = {
-    val triggeringEventId = Some(UUID.nameUUIDFromBytes(s"football-match/$matchId/live-activity-initial-data".getBytes).toString)
-    val derivedId = s"football-match-status/$matchId/$triggeringEventId"
+    val triggeringEventId = s"football-match-status/$matchId/live-activity-initial-data"
     liveActivityPusher.pushToEventbus(
       LiveActivityPayload(
-        id = UUID.nameUUIDFromBytes(derivedId.getBytes),
+        id = UUID.nameUUIDFromBytes(triggeringEventId.getBytes),
         eventType = UpdateLiveActivityEvent,
         liveActivityType = FootballLiveActivity,
         liveActivityID = matchId,
