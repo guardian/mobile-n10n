@@ -1,28 +1,15 @@
-package com.gu.mobile.notifications.football.lib
+package com.gu.mobile.liveactivities.event.bus
 
 import com.gu.mobile.notifications.client.models.liveActitivites._
-import com.gu.mobile.notifications.football.Logging
-import com.gu.mobile.notifications.football.models.MatchDataWithArticle
+import org.slf4j.Logger
 import play.api.libs.json.Json
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient
-import software.amazon.awssdk.services.eventbridge.model.{
-  PutEventsRequest,
-  PutEventsRequestEntry,
-  PutEventsResponse
-}
-import scala.util.Try
+import software.amazon.awssdk.services.eventbridge.model.{PutEventsRequest, PutEventsRequestEntry, PutEventsResponse}
 
-// Temporary json formatters to test pushing match data - will be replaced once we know what we want to send.
-import play.api.libs.json.Writes
-import scala.concurrent.Future
-import scala.util.Success
-import scala.util.Failure
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
-class LiveActivityPusher extends Logging {
-
-  private val eventBusName =
-    "liveactivities-eventbus-CODE"
+class LiveActivityPusher(eventBusName: String, logger: Logger) {
   private val eventBridgeClient =
     EventBridgeClient
       .builder()
@@ -41,13 +28,6 @@ class LiveActivityPusher extends Logging {
     logger.info(
       s"Eventbus pusher: Processing event with id ${payload.id}"
     )
-    val jsonDetail = Json.toJson(payload).toString()
-    if (jsonDetail.isEmpty || jsonDetail == "{}") {
-      logger.info(
-        s"Eventbus pusher: Skipping empty event for ${payload.id}"
-      )
-      Future.successful(())
-    } else {
       val result = Try {
         val entry = PutEventsRequestEntry
           .builder()
@@ -64,26 +44,27 @@ class LiveActivityPusher extends Logging {
 
         val response: PutEventsResponse = eventBridgeClient.putEvents(request)
 
-        // todo - alert for failed entry counts?
-        logger.info(
-          s"Eventbus pusher: Event published with event ${payload.eventType} is ${payload.id}. Failed entry count: ${response.failedEntryCount()}"
-        )
+        if (response.failedEntryCount() > 0) {
+          val error = response.entries().get(0).errorMessage()
+          throw new RuntimeException(s"EventBridge rejected entry: $error")
+        } else {
+          logger.info(
+            s"Eventbus pusher: Event published with event ${payload.eventType} is ${payload.id}"
+          )
+        }
       }
 
       result match {
-        case Success(_) => {
+        case Success(_) =>
           logger.info(
             s"Eventbus pusher: Successfully processed live activities event ${payload.eventType} with id ${payload.id}"
           )
           Future.successful(())
-        }
-        case Failure(e) => {
+        case Failure(e) =>
           logger.error(
             s"Eventbus pusher: Failed to publish live activities event ${payload.eventType} with id ${payload.id}: ${e.getMessage}"
           )
           Future.failed(e)
-        }
       }
-    }
   }
 }

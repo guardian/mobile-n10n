@@ -1,7 +1,8 @@
 package com.gu.liveactivities
 
 import com.gu.liveactivities.service.{Authentication, LiveActivityChannelRepository}
-import com.gu.liveactivities.util.{Configuration, IosConfiguration}
+import com.gu.liveactivities.util.{Configuration, IosConfiguration, Logging}
+import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain, DefaultCredentialsProvider, ProfileCredentialsProvider}
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.regions.Region
@@ -10,7 +11,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 
 import java.time.Duration
 
-trait Lambda {
+trait Lambda extends Logging{
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
@@ -40,4 +41,7 @@ trait Lambda {
       .build()
 
   val repository = new LiveActivityChannelRepository(dynamoDbClient, s"mobile-notifications-liveactivities-${config.stage}")
+
+  private val eventBusName = s"liveactivities-eventbus-${config.stage}"
+  lazy val liveActivityPusher = new LiveActivityPusher(eventBusName, logger)
 }

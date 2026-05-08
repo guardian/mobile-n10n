@@ -78,6 +78,15 @@ export class LiveActivities extends GuStack {
 			}),
 		);
 
+		channelLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['events:PutEvents'],
+				resources: [
+					`arn:aws:events:${region}:${account}:event-bus/${app}-eventbus-${stage}`,
+				],
+			}),
+		);
+
 		const broadcastDlq = new Queue(this, 'BroadcastDlq', {
 			queueName: `${app}-broadcast-dlq-${stage}`,
 			visibilityTimeout: Duration.minutes(4),
