@@ -34,7 +34,10 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       case JsSuccess(request, _) => {
 
         // If we see these errors there is a misconfiguration in the eventbridge routing rules.
-        if (request.`detail-type` != UpdateLiveActivityEvent && request.`detail-type` != EndLiveActivityEvent) {
+        if (request.`detail-type` != UpdateLiveActivityEvent &&
+          request.`detail-type` != EndLiveActivityEvent &&
+          request.`detail-type` != StartLiveActivityEvent
+        ) {
           logger.error(s"Unexpected eventbridge event type: ${request.`detail-type`}")
           throw new Exception(s"Unexpected event type: ${request.`detail-type`}")
         }
@@ -83,11 +86,6 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
           Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
         } else Future.successful(())
 
-      _ <- if (!mapping.isLive) {
-          logger.error(s"Event not live for match ID $matchId")
-          Future.failed(new LiveActivityInvalidStateException(matchId, "Event not live"))
-        } else Future.successful(())
-
       _ <- if (mapping.lastEventId.contains(eventId)) {
           logger.warn(s"Duplicate event ID $eventId for match ID $matchId")
           Future.failed(new LiveActivityInvalidStateException(matchId, "Duplicate event ID"))
@@ -103,9 +101,9 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
       broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
       _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
-      _ = logger.info(s"Broadcast ${if(shouldEndBroadcast)"END"} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
+      _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
-      _ <- repository.updateMappingLastEvent(matchId, Some(eventId), Some(eventTime))
+      _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = !shouldEndBroadcast, Some(eventId), Some(eventTime))
       _ = logger.info(s"Record updated successfully for match ID $matchId")
     } yield mapping.channelId
 

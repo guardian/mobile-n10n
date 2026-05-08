@@ -1,12 +1,13 @@
 package com.gu.mobile.notifications.football
 
-import java.net.{URI, URL}
+import java.net.URI
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
-import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, LiveActivityPusher, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
+import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
+import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import play.api.libs.json.Json
 
@@ -147,7 +148,10 @@ class NotificationHandler(configuration: Configuration, apiClient: Notifications
 
 class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
 
-  lazy val liveActivityPusher = new LiveActivityPusher()
+  private val eventBusName =
+    "liveactivities-eventbus-CODE"
+
+  lazy val liveActivityPusher = new LiveActivityPusher(eventBusName, logger)
 
   lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder(configuration.mapiHost)
 

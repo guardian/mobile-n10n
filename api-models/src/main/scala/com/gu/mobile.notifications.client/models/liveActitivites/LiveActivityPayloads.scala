@@ -13,15 +13,18 @@ import com.gu.mobile.notifications.client.models.Payload
 
 sealed trait EventSource
 case object FootballLambda extends EventSource
+case object ChannelManagerLambda extends EventSource
 
 object EventSource {
   implicit val format: Format[EventSource] = new Format[EventSource] {
     def writes(source: EventSource): JsValue = source match {
       case FootballLambda => JsString("football-lambda")
+      case ChannelManagerLambda => JsString("channel-manager-lambda")
     }
 
     def reads(json: JsValue): JsResult[EventSource] = json match {
       case JsString("football-lambda") => JsSuccess(FootballLambda)
+      case JsString("channel-manager-lambda") => JsSuccess(ChannelManagerLambda)
       case JsString(other)             => JsError(s"Invalid EventSource: $other")
       case _ => JsError("EventSource must be a string")
     }

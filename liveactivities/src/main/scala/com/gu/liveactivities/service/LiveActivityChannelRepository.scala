@@ -28,6 +28,7 @@ trait ChannelMappingsRepository {
   def updateMappingLive(id: String, isLive: Boolean): Future[Unit]
 
   def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
+  def updateMappingLiveAndLastEvent(id: String, isLive: Boolean, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
   
   def deleteMappingById(id: String): Future[Unit]
 }
@@ -64,7 +65,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       id = id, 
       channelId = channelId, 
       isChannelActive = true, 
-      isLive = true,
+      isLive = false,
       data = eventData,
       lastEventId = None,
       lastEventAt = None,
@@ -133,6 +134,10 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
 
   override def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventAt: Option[ZonedDateTime]): Future[Unit] = {
     updateMappingById(id, lastEventId = lastEventId, lastEventAt = lastEventAt)
+  }
+
+  override def updateMappingLiveAndLastEvent(id: String, isLive: Boolean, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit] = {
+    updateMappingById(id, isLive = Some(isLive), lastEventId = lastEventId, lastEventAt = lastEventUpdate)
   }
 
   override def getMappingById(
