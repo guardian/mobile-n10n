@@ -25,7 +25,29 @@ class EventConsumer(
       * to generate push notifications for, so we filter those out here.
       */
     // todo can we capture these strings in union type?
-    val liveActivityEventTypes = List("create-channel", "start-live-activity", "end-live-activity")
+    val liveActivityEventTypes =
+      List(
+        // penalty shootout events
+        "shootoutGoal",
+        "shootoutMiss",
+        "shootoutSave",
+        // additional synthetic live activity life cycle events
+        "create-channel",
+        "start-live-activity",
+        "end-live-activity",
+        // additional synthetic match phase events for live activities
+        "extra-time-to-be-played",
+        "extra-time-first-half",
+        "extra-time-half-time",
+        "extra-time-second-half",
+        "penalties-to-be-played",
+        "penalties",
+        "suspended",
+        "resumed",
+        "abandoned",
+        "cancelled",
+        "postponed"
+      )
 
     val filteredMatchData = matchData.copy(allEvents =
       matchData.allEvents.filterNot(e =>
@@ -107,3 +129,4 @@ class LiveActivityEventConsumer(
     } getOrElse Nil
   }
 }
+
