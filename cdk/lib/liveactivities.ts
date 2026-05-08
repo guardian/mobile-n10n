@@ -164,8 +164,7 @@ export class LiveActivities extends GuStack {
 			},
 			targets: [new LambdaFunction(broadcastLambda)],
 		});
-
-    // TODO should we delete this or keep
+		// TODO should we delete this or keep
 		// Development SQS to capture and inspect events from PA polling during development
 		const liveGameTestingQueue = new Queue(
 			this,

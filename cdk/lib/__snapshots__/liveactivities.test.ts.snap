@@ -53,12 +53,11 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
         },
         "EventPattern": {
           "detail-type": [
-            "broadcast-start",
             "broadcast-update",
             "broadcast-end",
           ],
           "source": [
-            "football-lambda",
+            "liveactivity-pusher",
           ],
         },
         "State": "ENABLED",
@@ -152,7 +151,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
             "channel-delete",
           ],
           "source": [
-            "football-lambda",
+            "liveactivity-pusher",
           ],
         },
         "State": "ENABLED",
