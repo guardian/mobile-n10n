@@ -24,7 +24,6 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       result.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id/".getBytes)
 
       val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
-      println(contentState)
       contentState.homeTeam.name mustEqual "Liverpool"
       contentState.homeTeam.score mustEqual 1
       contentState.awayTeam.name mustEqual "Plymouth"
