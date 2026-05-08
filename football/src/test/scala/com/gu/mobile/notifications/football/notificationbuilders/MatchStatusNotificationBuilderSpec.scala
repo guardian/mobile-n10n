@@ -119,7 +119,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
     def matchInfo: MatchDay = Parser.parseMatchDay(loadFile("worldcup/match-day.xml")).head
     def rawEvents = Parser.parseMatchEvents(loadFile("worldcup/match-event-feed.xml")).get.events
     def allEvents: List[FootballMatchEvent] =
-      new SyntheticMatchEventGenerator(ZonedDateTime.now())
+      new SyntheticMatchEventGenerator(() => ZonedDateTime.now())
         .generate(rawEvents, matchInfo.id, matchInfo)
         .flatMap(FootballMatchEvent.fromPaMatchEvent(matchInfo.homeTeam, matchInfo.awayTeam)(_))
     def dismissals = allEvents.collect { case d: Dismissal => d }

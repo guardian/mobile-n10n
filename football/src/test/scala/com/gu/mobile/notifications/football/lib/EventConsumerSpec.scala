@@ -75,6 +75,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "1st",
         eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
+        kickOffTimestamp = Some(1502477100L),
         debug = false,
         dryRun = None
       )
@@ -124,6 +125,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "HT",
         eventId = "bb346058-64d0-3ab1-9016-ea19d90837f0",
+        kickOffTimestamp = Some(1502477100L),
         debug = false,
         dryRun = None
       )
@@ -175,6 +177,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "2nd",
         eventId = "a45dfca1-ead9-3d8c-bf83-c4966a737b05",
+        kickOffTimestamp = Some(1502477100L),
         debug = false,
         dryRun = None
       )
@@ -225,6 +228,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "FT",
         eventId = "d59c9939-8199-3b8b-ad63-16aa020c1a73",
+        kickOffTimestamp = Some(1502477100L),
         debug = false,
         dryRun = None
       )
@@ -274,6 +278,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "1st",
         eventId = "1c8d67f9-0f32-342a-8543-aa3e21ee7da4",
+        kickOffTimestamp = Some(1502477100L),
         debug = false,
         dryRun = None
       )
@@ -287,44 +292,37 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         eventConsumer.eventsToNotifications(matchData)
 
       val expectedNotification = FootballMatchStatusPayload(
-        Some("Red card"),
-        Some(
-          "Arsenal 3-0 Leicester (1st)\nHenrikh Mkhitaryan (Arsenal) 114min"
-        ),
-        None,
-        "mobile-notifications-football-lambda",
-        "Leicester",
-        0,
-        " ",
-        "29",
-        0,
-        "Arsenal",
-        3,
-        "Red card: Henrikh Mkhitaryan 114'\nHenrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'",
-        "1006",
-        2,
-        Some("Premier League 17/18"),
-        Some("League"),
-        Some("Emirates Stadium"),
-        "4011135",
-        new URI(
-          "https://mobile.guardianapis.com/sport/football/matches/4011135"
-        ),
-        Some(
-          new URI(
-            "https://mobile.guardianapis.com/items/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live"
-          )
-        ),
-        Minor,
-        List(
+        title = Some("Red card"),
+        message = Some("Arsenal 3-0 Leicester (1st)\nHenrikh Mkhitaryan (Arsenal) 114min"),
+        thumbnailUrl = None,
+        sender = "mobile-notifications-football-lambda",
+        awayTeamName = "Leicester",
+        awayTeamScore = 0,
+        awayTeamMessage = " ",
+        awayTeamId = "29",
+        awayTeamRedCards = 0,
+        homeTeamName = "Arsenal",
+        homeTeamScore = 3,
+        homeTeamMessage = "Red card: Henrikh Mkhitaryan 114'\nHenrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'",
+        homeTeamId = "1006",
+        homeTeamRedCards = 2,
+        competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
+        venue = Some("Emirates Stadium"),
+        matchId = "4011135",
+        matchInfoUri = new URI("https://mobile.guardianapis.com/sport/football/matches/4011135"),
+        articleUri = Some(new URI("https://mobile.guardianapis.com/items/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")),
+        importance = Minor,
+        topic = List(
           Topic(FootballTeam, "1006"),
           Topic(FootballTeam, "29"),
           Topic(FootballMatch, "4011135")
         ),
-        "1st",
-        "7c92d6ca-9f20-398f-9510-eb4c179fb5ae",
-        false,
-        None
+        matchStatus = "1st",
+        eventId = "7c92d6ca-9f20-398f-9510-eb4c179fb5ae",
+        kickOffTimestamp = Some(1502477100L),
+        debug = false,
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -665,7 +663,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
     def rawEvents: List[MatchEvent] = Parser.parseMatchEvents(loadFile("worldcup/match-event-feed.xml")).get.events
     def matchDay: MatchDay = Parser.parseMatchDay(loadFile("worldcup/match-day.xml")).head
-    def matchEvents: List[MatchEvent] = new SyntheticMatchEventGenerator(ZonedDateTime.now()).generate(rawEvents, "4356015", matchDay)
+    def matchEvents: List[MatchEvent] = new SyntheticMatchEventGenerator(() => ZonedDateTime.now()).generate(rawEvents, "4356015", matchDay)
     def matchData = MatchDataWithArticle(matchDay, matchEvents, None)
   }
 }
