@@ -66,10 +66,9 @@ object Lambda extends Logging {
 
   def getZonedDateTime(): ZonedDateTime = {
     val zonedDateTime = if (configuration.stage == "CODE") {
-      ZonedDateTime.now()
-//      val is = URI.create("https://hdjq4n85yi.execute-api.eu-west-1.amazonaws.com/Prod/getTime").toURL.openStream()
-//      val json = Json.parse(Source.fromInputStream(is).mkString)
-//      ZonedDateTime.parse((json \ "currentDate").as[String])
+      val is = URI.create("https://hdjq4n85yi.execute-api.eu-west-1.amazonaws.com/Prod/getTime").toURL.openStream()
+      val json = Json.parse(Source.fromInputStream(is).mkString)
+      ZonedDateTime.parse((json \ "currentDate").as[String])
     } else {
       ZonedDateTime.now()
     }
