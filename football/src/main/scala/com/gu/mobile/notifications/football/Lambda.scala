@@ -17,7 +17,7 @@ import scala.concurrent.{Await, TimeoutException}
 import scala.io.Source
 import scala.util.Failure
 import com.gu.mobile.notifications.client.models.NotificationPayload
-import com.gu.mobile.notifications.client.models.liveActitivites.LiveActivityPayload
+import com.gu.mobile.notifications.client.models.liveActitivites.{FootballLambdaEventSource, LiveActivityPayload}
 import com.gu.mobile.notifications.football.models.MatchDataWithArticle
 
 import scala.concurrent.Future
@@ -169,7 +169,7 @@ class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDy
 
     for {
       filteredLiveActivities <- liveActivityEventFilter.filterDynamoEvents(liveActivities)
-      result <- liveActivityPusher.pushEvents(filteredLiveActivities)
+      result <- liveActivityPusher.pushEvents(filteredLiveActivities, FootballLambdaEventSource)
     } yield result
   }
 }

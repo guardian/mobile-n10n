@@ -15,15 +15,15 @@ class LiveActivityPusher(eventBusName: String, logger: Logger) {
       .builder()
       .build()
 
-  def pushEvents(events: List[LiveActivityPayload])(implicit ec: ExecutionContext): Future[Unit] = {
+  def pushEvents(events: List[LiveActivityPayload], source: EventSource)(implicit ec: ExecutionContext): Future[Unit] = {
 
     logger.info(
       "Eventbus pusher: number of events to push: " + events.size
     )
-    Future.traverse(events)(pushToEventbus).map(_ => ())
+    Future.traverse(events)(pushToEventbus(source)).map(_ => ())
   }
 
-  def pushToEventbus(payload: LiveActivityPayload)(implicit ec: ExecutionContext): Future[Unit] = {
+  def pushToEventbus(source: EventSource)(payload: LiveActivityPayload)(implicit ec: ExecutionContext): Future[Unit] = {
 
     logger.info(
       s"Eventbus pusher: Processing event with id ${payload.id}"
@@ -31,7 +31,7 @@ class LiveActivityPusher(eventBusName: String, logger: Logger) {
       val result = Try {
         val entry = PutEventsRequestEntry
           .builder()
-          .source("liveactivity-pusher")
+          .source(source.asString)
           .detailType(payload.eventType.asString)
           .detail(Json.toJson(payload).toString())
           .eventBusName(eventBusName)

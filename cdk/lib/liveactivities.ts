@@ -5,7 +5,7 @@ import type { App } from 'aws-cdk-lib';
 import { Duration, Tags } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { EventBus, Rule } from 'aws-cdk-lib/aws-events';
-import { LambdaFunction, SqsQueue } from 'aws-cdk-lib/aws-events-targets';
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { SqsDestination } from 'aws-cdk-lib/aws-lambda-destinations';
@@ -150,7 +150,7 @@ export class LiveActivities extends GuStack {
 		new Rule(this, 'ChannelRule', {
 			eventBus: eventBus,
 			eventPattern: {
-				source: ['liveactivity-pusher'],
+				source: ['football-lambda'],
 				detailType: ['channel-create', 'channel-delete'],
 			},
 			targets: [new LambdaFunction(channelLambda)],
@@ -159,31 +159,19 @@ export class LiveActivities extends GuStack {
 		new Rule(this, 'BroadcastRule', {
 			eventBus: eventBus,
 			eventPattern: {
-				source: ['liveactivity-pusher'],
+				source: ['football-lambda'],
 				detailType: ['broadcast-update', 'broadcast-end'],
 			},
 			targets: [new LambdaFunction(broadcastLambda)],
 		});
-		// TODO should we delete this or keep
-		// Development SQS to capture and inspect events from PA polling during development
-		const liveGameTestingQueue = new Queue(
-			this,
-			`${app}-football-live-games-${stage}`,
-			{
-				queueName: `${app}-football-live-games-${stage}`,
-				retentionPeriod: Duration.days(7),
-			},
-		);
 
-		new Rule(this, 'liveGameEventsTargeting', {
+		new Rule(this, 'InitialBroadcastRule', {
 			eventBus: eventBus,
-			description: `Deliver live match events in ${stage} to liveGameTestingQueue`,
 			eventPattern: {
-				source: ['football-lambda'],
-				// detailType: ['football-match-events-with-articleId'],
+				source: ['channel-manager-lambda'],
+				detailType: ['broadcast-update'],
 			},
-			enabled: false, // only enable if we want to inspect events in the development queue
-			targets: [new SqsQueue(liveGameTestingQueue)],
+			targets: [new LambdaFunction(broadcastLambda)],
 		});
 	}
 }
