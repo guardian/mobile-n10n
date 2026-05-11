@@ -48,9 +48,21 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         eventId = UUID.nameUUIDFromBytes("".getBytes).toString,
         matchStatus = "1st",
         kickOffTimestamp = Some(ZonedDateTime.parse("2000-01-01T00:00:00Z").toEpochSecond),
+        lineupsAvailable = Some(false),
         debug = false,
         dryRun = None
       )
+    }
+
+    "Include lineupsAvailable from matchInfo when false" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo, List.empty, None)
+      notification.lineupsAvailable shouldEqual Some(false)
+    }
+
+    "Include lineupsAvailable from matchInfo when true" in new MatchEventsContext {
+      val matchInfoWithLineups = matchInfo.copy(lineupsAvailable = true)
+      val notification = builder.build(baseGoal, matchInfoWithLineups, List.empty, None)
+      notification.lineupsAvailable shouldEqual Some(true)
     }
 
     "Build a red card notification" in new WorldCupContext {

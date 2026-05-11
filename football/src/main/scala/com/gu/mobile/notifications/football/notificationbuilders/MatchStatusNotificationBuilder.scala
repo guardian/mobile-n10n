@@ -69,6 +69,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       matchStatus = status,
       eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
       kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
+      lineupsAvailable = Some(matchInfo.lineupsAvailable),
       debug = false,
       dryRun = None
     )

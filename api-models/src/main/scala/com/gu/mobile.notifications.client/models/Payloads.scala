@@ -192,6 +192,7 @@ object FootballMatchStatusPayload {
     "matchStatus" -> o.matchStatus,
     "eventId" -> o.eventId,
     "kickOffTimestamp" -> o.kickOffTimestamp,
+    "lineupsAvailable" -> o.lineupsAvailable,
     "debug" -> o.debug
   )
 }
@@ -223,6 +224,7 @@ case class FootballMatchStatusPayload(
   matchStatus: String,
   eventId: String,
   kickOffTimestamp: Option[Long] = None,
+  lineupsAvailable: Option[Boolean] = None,
   debug: Boolean,
   dryRun: Option[Boolean]
 ) extends NotificationPayload with derivedId {
