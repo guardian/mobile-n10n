@@ -6,7 +6,8 @@ deployments:
     type: aws-lambda
     parameters:
       bucketSsmLookup: true
-      functionNames: [liveactivities-channel-manager-, liveactivities-broadcast-]
+      functionNames:
+        [liveactivities-channel-manager-, liveactivities-broadcast-]
       fileName: liveactivities.jar
       prefixStack: false
     dependencies: [mobile-notifications-liveactivities-cfn]
@@ -16,3 +17,4 @@ deployments:
     parameters:
       templateStagePaths:
         CODE: LiveActivities-CODE.template.json
+        PROD: LiveActivities-PROD.template.json
