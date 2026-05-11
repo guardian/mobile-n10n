@@ -4,9 +4,10 @@ import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, C
 import com.gu.mobile.notifications.football.models._
 import pa.MatchDay
 
+import java.net.URI
 import java.util.{Date, UUID}
 
-class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
+class MatchStatusLiveActivityPayloadBuilder {
 
   def build(
       triggeringEvent: FootballMatchEvent,
@@ -60,7 +61,8 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       lineupsAvailable = matchInfo.lineupsAvailable,
       currentMinute = currentMinute,
       currentPeriodStartTime = None,
-      articleUrl = articleId.map(id => s"$mapiHost/items/$id")
+      articleUrl = articleId.map(id => new URI(s"http://www.theguardian.com/$id").toString),
+      matchInfoUrl = new URI(s"http://www.theguardian.com/football/match/${matchInfo.id}").toString
     )
 
     // certain type of triggering match event types will trigger different live activity event type.

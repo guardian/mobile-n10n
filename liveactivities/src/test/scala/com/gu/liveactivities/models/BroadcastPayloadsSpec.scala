@@ -21,7 +21,9 @@ class BroadcastPayloadsSpec extends Specification {
       awayTeam = awayTeam,
       competition = competition,
       commentary = Some("Arsenal dominating."),
-      currentMinute = Some(30)
+      currentMinute = Some(30),
+      articleUrl = None,
+      matchInfoUrl = "http://www.theguardian.com/football/match/some-match-id"
     )
 
     val eventTime = now - 60L // 1min ago
