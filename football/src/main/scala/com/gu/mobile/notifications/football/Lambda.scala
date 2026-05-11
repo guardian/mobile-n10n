@@ -118,7 +118,6 @@ object Lambda extends Logging {
       Thread.sleep(10000)
     }
   }
-
 }
 
 class NotificationHandler(configuration: Configuration, apiClient: NotificationsApiClient, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
