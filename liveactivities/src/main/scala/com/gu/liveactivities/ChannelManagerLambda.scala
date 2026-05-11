@@ -2,6 +2,8 @@ package com.gu.liveactivities
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.gu.liveactivities.models.LiveActivityData
+import com.gu.mobile.notifications.client.models.liveActitivites.ChannelManagerLambdaEventSource
+
 import com.gu.liveactivities.service.ChannelApiClient
 import com.gu.liveactivities.util.Logging
 import com.gu.mobile.notifications.client.models.liveActitivites._
@@ -95,7 +97,7 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
 
   private def pushUpdateLiveActivityEvent(matchId: String, broadcastContentStateData: Option[ContentState]): Future[Unit] = {
     val triggeringEventId = s"football-match-status/$matchId/live-activity-initial-data"
-    liveActivityPusher.pushToEventbus(
+    liveActivityPusher.pushToEventbus(ChannelManagerLambdaEventSource)(
       LiveActivityPayload(
         id = UUID.nameUUIDFromBytes(triggeringEventId.getBytes),
         eventType = UpdateLiveActivityEvent,

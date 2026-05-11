@@ -53,7 +53,6 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
         },
         "EventPattern": {
           "detail-type": [
-            "broadcast-start",
             "broadcast-update",
             "broadcast-end",
           ],
@@ -232,18 +231,20 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::Events::EventBus",
     },
-    "liveGameEventsTargetingA85C7B8B": {
+    "InitialBroadcastRule538D106F": {
       "Properties": {
-        "Description": "Deliver live match events in CODE to liveGameTestingQueue",
         "EventBusName": {
           "Ref": "EventsD32975C2",
         },
         "EventPattern": {
+          "detail-type": [
+            "broadcast-update",
+          ],
           "source": [
-            "football-lambda",
+            "channel-manager-lambda",
           ],
         },
-        "State": "DISABLED",
+        "State": "ENABLED",
         "Tags": [
           {
             "Key": "gu:cdk:version",
@@ -266,7 +267,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
           {
             "Arn": {
               "Fn::GetAtt": [
-                "liveactivitiesfootballlivegamesCODE6EBEFF14",
+                "liveactivitiesbroadcastlambdaC288C367",
                 "Arn",
               ],
             },
@@ -275,6 +276,25 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
         ],
       },
       "Type": "AWS::Events::Rule",
+    },
+    "InitialBroadcastRuleAllowEventRuleLiveActivitiesCODEliveactivitiesbroadcastlambda1F8C7AF269FE96B0": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "liveactivitiesbroadcastlambdaC288C367",
+            "Arn",
+          ],
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "InitialBroadcastRule538D106F",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "liveactivitiesbroadcastlambdaC288C367": {
       "DependsOn": [
@@ -912,75 +932,6 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::DynamoDB::Table",
       "UpdateReplacePolicy": "Retain",
-    },
-    "liveactivitiesfootballlivegamesCODE6EBEFF14": {
-      "DeletionPolicy": "Delete",
-      "Properties": {
-        "MessageRetentionPeriod": 604800,
-        "QueueName": "liveactivities-football-live-games-CODE",
-        "Tags": [
-          {
-            "Key": "gu:cdk:version",
-            "Value": "TEST",
-          },
-          {
-            "Key": "gu:repo",
-            "Value": "guardian/mobile-n10n",
-          },
-          {
-            "Key": "Stack",
-            "Value": "mobile-notifications",
-          },
-          {
-            "Key": "Stage",
-            "Value": "CODE",
-          },
-        ],
-      },
-      "Type": "AWS::SQS::Queue",
-      "UpdateReplacePolicy": "Delete",
-    },
-    "liveactivitiesfootballlivegamesCODEPolicy00A91D6E": {
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sqs:SendMessage",
-                "sqs:GetQueueAttributes",
-                "sqs:GetQueueUrl",
-              ],
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {
-                    "Fn::GetAtt": [
-                      "liveGameEventsTargetingA85C7B8B",
-                      "Arn",
-                    ],
-                  },
-                },
-              },
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "events.amazonaws.com",
-              },
-              "Resource": {
-                "Fn::GetAtt": [
-                  "liveactivitiesfootballlivegamesCODE6EBEFF14",
-                  "Arn",
-                ],
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "Queues": [
-          {
-            "Ref": "liveactivitiesfootballlivegamesCODE6EBEFF14",
-          },
-        ],
-      },
-      "Type": "AWS::SQS::QueuePolicy",
     },
   },
 }

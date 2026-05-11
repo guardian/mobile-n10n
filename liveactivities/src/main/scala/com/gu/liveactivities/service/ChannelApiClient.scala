@@ -24,12 +24,12 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
   private val charSet = StandardCharsets.UTF_8
 
   private val mediaType = "application/json; charset=UTF-8"
- 
-  // TODO - to check
+
   private val url = if (sendingToProdServer)
-    s"https://api-manage-broadcast.sandbox.push.apple.com:2195/1/apps/$bundleId/channels"
+    s"https://api-manage-broadcast.push.apple.com:2196/1/apps/$bundleId/channels"
   else
     s"https://api-manage-broadcast.sandbox.push.apple.com:2195/1/apps/$bundleId/channels"
+
 
 
   private val message = "{\"message-storage-policy\": 1, \"push-type\": \"LiveActivity\"}"
