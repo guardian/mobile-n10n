@@ -21,17 +21,17 @@
         "score": 1,
         "redCards": 1,
         "penaltyScore": {
-          "scored": 4,
+          "scored": 1,
           "missed": 1,
           "saved": 1
         }
       },
       "awayTeam": {
         "name": "Team B",
-        "score": 1,
-        "redCards": 1,
+        "score": 0,
+        "redCards": 0,
         "penaltyScore": {
-          "scored": 4,
+          "scored": 0,
           "missed": 1,
           "saved": 1
         }
