@@ -114,7 +114,7 @@ case class FootballMatchContentState(
     awayTeam: TeamState,
     competition: Competition,
     commentary: Option[String] = None,
-    lineupsAvailable: Option[Boolean] = None,
+    lineupsAvailable: Boolean = false,
     currentMinute: Option[Int] = None,
     currentPeriodStartTime: Option[Long] = None,
     articleUrl: Option[String] = None
