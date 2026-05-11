@@ -36,13 +36,13 @@ jobs:
 
       - name: Test Report
         uses: dorny/test-reporter@v2
-        if: success() || failure()    # run this step even if previous step failed
+        if: success() || failure() # run this step even if previous step failed
         with:
           name: Tests
           path: liveactivities/target/test-reports/TEST-*.xml
           reporter: java-junit
-          only-summary: 'false'
-          fail-on-error: 'true'
+          only-summary: "false"
+          fail-on-error: "true"
 
       - name: Copy jar to root
         run: cp liveactivities/target/scala-*/liveactivities.jar .
@@ -77,3 +77,4 @@ jobs:
               - liveactivities.jar
             mobile-notifications-liveactivities-cfn:
               - cdk/cdk.out/LiveActivities-CODE.template.json
+              - cdk/cdk.out/LiveActivities-PROD.template.json
