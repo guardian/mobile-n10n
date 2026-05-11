@@ -76,6 +76,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "1st",
         eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
         kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("FIRST_HALF"),
         debug = false,
         dryRun = None
       )
@@ -126,6 +128,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "HT",
         eventId = "bb346058-64d0-3ab1-9016-ea19d90837f0",
         kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("HALF_TIME"),
         debug = false,
         dryRun = None
       )
@@ -178,6 +182,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "2nd",
         eventId = "a45dfca1-ead9-3d8c-bf83-c4966a737b05",
         kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("SECOND_HALF"),
         debug = false,
         dryRun = None
       )
@@ -229,6 +235,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "FT",
         eventId = "d59c9939-8199-3b8b-ad63-16aa020c1a73",
         kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("FULL_TIME"),
         debug = false,
         dryRun = None
       )
@@ -279,6 +287,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "1st",
         eventId = "1c8d67f9-0f32-342a-8543-aa3e21ee7da4",
         kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("FIRST_HALF"),
         debug = false,
         dryRun = None
       )
@@ -321,6 +331,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         matchStatus = "1st",
         eventId = "7c92d6ca-9f20-398f-9510-eb4c179fb5ae",
         kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("FIRST_HALF"),
         debug = false,
         dryRun = None
       )
@@ -330,14 +342,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
   }
 
   "A Notification EventConsumer" should {
-    "generate notification payloads for penalty kicks" in new MatchEventsContext {
+    "not generate normal notifications for penalty shootout kicks" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
 
       val result: List[NotificationPayload] =
         eventConsumer.eventsToNotifications(matchDataLA)
 
-      result must contain((payload: NotificationPayload) => payload.title.getOrElse("") == "Penalty Kick")
+      result must not contain((payload: NotificationPayload) => payload.title.getOrElse("") == "Penalty Kick")
     }
 
   }

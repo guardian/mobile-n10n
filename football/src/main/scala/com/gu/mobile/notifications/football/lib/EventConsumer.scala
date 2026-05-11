@@ -27,6 +27,7 @@ class EventConsumer(
     // todo can we capture these strings in union type?
     val liveActivityEventTypes =
       List(
+
         // penalty shootout events
         "shootoutGoal",
         "shootoutMiss",
@@ -129,4 +130,3 @@ class LiveActivityEventConsumer(
     } getOrElse Nil
   }
 }
-
