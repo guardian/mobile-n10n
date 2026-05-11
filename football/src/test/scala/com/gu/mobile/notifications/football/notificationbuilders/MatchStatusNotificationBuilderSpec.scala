@@ -7,7 +7,7 @@ import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.football.lib.SyntheticMatchEventGenerator
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, Goal, GoalContext, Score}
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, Goal, GoalContext, KickOff, Score}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Parser, Round, Stage, Venue}
@@ -49,9 +49,28 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         matchStatus = "1st",
         kickOffTimestamp = Some(ZonedDateTime.parse("2000-01-01T00:00:00Z").toEpochSecond),
         lineupsAvailable = Some(false),
+        detailedMatchStatus = Some("FIRST_HALF"),
         debug = false,
         dryRun = None
       )
+    }
+
+    "Include detailedMatchStatus derived from triggering event type" in new MatchEventsContext {
+      val kickOff = KickOff("")
+      val notification = builder.build(kickOff, matchInfo.copy(matchStatus = "Fixture"), List.empty, None)
+      notification.detailedMatchStatus shouldEqual Some("FIRST_HALF")
+    }
+
+    "Include detailedMatchStatus from PA status when event type has no override" in new MatchEventsContext {
+      val matchInPenalties = matchInfo.copy(matchStatus = "PT")
+      val notification = builder.build(baseGoal, matchInPenalties, List.empty, None)
+      notification.detailedMatchStatus shouldEqual Some("PENALTIES")
+    }
+
+    "Include detailedMatchStatus for extra time half time" in new MatchEventsContext {
+      val matchInETHT = matchInfo.copy(matchStatus = "ETHT")
+      val notification = builder.build(baseGoal, matchInETHT, List.empty, None)
+      notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_HALF_TIME")
     }
 
     "Include lineupsAvailable from matchInfo when false" in new MatchEventsContext {
@@ -110,7 +129,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       previewAvailable = false,
       reportAvailable = false,
       lineupsAvailable = false,
-      matchStatus = "1st",
+      matchStatus = "KO",
       attendance = None,
       homeTeam = home,
       awayTeam = away,

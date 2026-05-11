@@ -32,6 +32,7 @@ object Keys {
   final val AwayTeamText = "awayTeamText"
   final val CurrentMinute = "currentMinute"
   final val MatchStatus = "matchStatus"
+  final val DetailedMatchStatus = "detailedMatchStatus"
   final val MatchInfoUri = "matchInfoUri"
   final val CompetitionName = "competitionName"
   final val Venue = "venue"

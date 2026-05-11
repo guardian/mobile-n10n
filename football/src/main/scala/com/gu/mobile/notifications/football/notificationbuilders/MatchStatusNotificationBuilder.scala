@@ -4,6 +4,7 @@ import java.net.URI
 import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Importance, Major, Minor}
 import com.gu.mobile.notifications.client.models._
+import com.gu.mobile.notifications.client.models.liveActitivites.MatchStatus
 import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, PenaltyShootoutKick, PenaltyShootoutScore, RedCards, Score, SecondHalf}
 import pa.{MatchDay, MatchDayTeam}
 
@@ -70,12 +71,22 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
       kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
       lineupsAvailable = Some(matchInfo.lineupsAvailable),
+      detailedMatchStatus = Some(detailedMatchStatus(triggeringEvent, matchInfo.matchStatus)),
       debug = false,
       dryRun = None
     )
   }
 
   def transformTeamName(name: String): String = name.replace(" Ladies", "")
+
+  private def detailedMatchStatus(triggeringEvent: FootballMatchEvent, paStatus: String): String =
+    triggeringEvent match {
+      case _: KickOff    => "FIRST_HALF"
+      case _: HalfTime   => "HALF_TIME"
+      case _: SecondHalf => "SECOND_HALF"
+      case _: FullTime   => "FULL_TIME"
+      case _             => MatchStatus.fromString(paStatus).status
+    }
 
   private def goalDescription(goal: Goal) = {
     val extraInfo = {
