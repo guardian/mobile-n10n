@@ -117,9 +117,9 @@ case class FootballMatchContentState(
     lineupsAvailable: Boolean = false,
     currentMinute: Option[Int] = None,
     currentPeriodStartTime: Option[Long] = None,
-    articleUrl: Option[String] = None
+    articleUrl: Option[String] = None,
+    matchInfoUrl: String
 ) extends ContentState
-
 
 object FootballContentJsonFormats {
   // MatchStatus format must be defined first since FootballMatchContentState depends on it

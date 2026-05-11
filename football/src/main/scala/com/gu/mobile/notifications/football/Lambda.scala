@@ -118,7 +118,6 @@ object Lambda extends Logging {
       Thread.sleep(10000)
     }
   }
-
 }
 
 class NotificationHandler(configuration: Configuration, apiClient: NotificationsApiClient, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
@@ -153,7 +152,7 @@ class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDy
 
   lazy val liveActivityPusher = new LiveActivityPusher(eventBusName, logger)
 
-  lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder(configuration.mapiHost)
+  lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder()
 
   lazy val liveActivityEventConsumer = new LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder)
 
