@@ -28,6 +28,7 @@ trait ChannelMappingsRepository {
   def updateMappingLive(id: String, isLive: Boolean): Future[Unit]
 
   def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
+  def updateMappingLiveAndLastEvent(id: String, isLive: Boolean, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
   
   def deleteMappingById(id: String): Future[Unit]
 }
@@ -59,16 +60,18 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     eventData: Option[LiveActivityData],
   ): Future[Unit] = {
     val createdAt = ZonedDateTime.now()
+    val ttlEpochSeconds = createdAt.toEpochSecond + 14 * 24 * 3600 // 15=4 days from now
     val newItem = new LiveActivityMapping(
       id = id, 
       channelId = channelId, 
       isChannelActive = true, 
-      isLive = true,
+      isLive = false,
       data = eventData,
       lastEventId = None,
       lastEventAt = None,
       createdAt = createdAt,
-      lastModifiedAt = createdAt
+      lastModifiedAt = createdAt,
+      ttlInEpochSeconds = Some(ttlEpochSeconds)
     )
     scanamo.exec {
         table.when(attributeNotExists(idKeyName)).put(newItem)
@@ -131,6 +134,10 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
 
   override def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventAt: Option[ZonedDateTime]): Future[Unit] = {
     updateMappingById(id, lastEventId = lastEventId, lastEventAt = lastEventAt)
+  }
+
+  override def updateMappingLiveAndLastEvent(id: String, isLive: Boolean, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit] = {
+    updateMappingById(id, isLive = Some(isLive), lastEventId = lastEventId, lastEventAt = lastEventUpdate)
   }
 
   override def getMappingById(

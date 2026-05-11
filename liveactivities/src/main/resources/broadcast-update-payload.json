@@ -8,23 +8,33 @@
   "region": "eu-west-1",
   "resources": [],
   "detail": {
-    "id": "165875bb-ade9-3245-b602-6343a1dd406d",
-    "eventType": "UpdateLiveActivity",
+    "id": "165875bb-ade9-3245-b602-6343a1dd407d",
+    "eventType": "broadcast-update",
     "liveActivityType": "FootballLiveActivity",
     "liveActivityID": "123456-test",
     "dynamoStoreData": "",
     "broadcastContentStateData": {
-      "matchStatus": "SCHEDULED",
+      "matchStatus": "PENALTIES",
       "kickOffTimestamp": 1766433600,
       "homeTeam": {
         "name": "Team A",
-        "score": 3,
-        "redCards": 1
+        "score": 1,
+        "redCards": 1,
+        "penaltyScore": {
+          "scored": 1,
+          "missed": 1,
+          "saved": 1
+        }
       },
       "awayTeam": {
         "name": "Team B",
-        "score": 5,
-        "redCards": 1
+        "score": 0,
+        "redCards": 0,
+        "penaltyScore": {
+          "scored": 0,
+          "missed": 1,
+          "saved": 1
+        }
       },
       "competition": {
         "id": "100",
@@ -33,9 +43,11 @@
       },
       "commentary" : "Predicted to be an exciting match",
       "lineupsAvailable" : true,
-      "currentMinute" : 0
+      "currentMinute" : 0,
+      "articleUrl" : "http://www.theguardian.com/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live",
+      "matchInfoUrl" : "https://www.theguardian.com/football/match/4545750"
     },
-    "eventTimestamp": 1777278992019
+    "eventTimestamp": 1777278992020
   }
 }
 

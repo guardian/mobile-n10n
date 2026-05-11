@@ -1,6 +1,5 @@
 package com.gu.mobile.notifications.football.models
 
-import ch.qos.logback.core.model.conditional.ElseModel
 import com.gu.mobile.notifications.client.models.liveActitivites.PenaltyShootoutState
 import com.gu.mobile.notifications.client.models.{DefaultGoalType, GoalType, MissedShootoutResult, OwnGoalType, PenaltyGoalType, SavedShootoutResult, ScoredShootoutResult, ShootoutResultType}
 
@@ -129,14 +128,14 @@ object PenaltyShootoutKick {
     kickingTeam = if (player.teamID == homeTeam.id) homeTeam else awayTeam
     otherTeam = if (player.teamID == homeTeam.id) awayTeam else homeTeam
     eventTime <- event.eventTime
-    eventMinute <- Try(eventTime.toInt).toOption
+    currentMinute <- Try(eventTime.toInt).toOption
     eventId <- event.id
   } yield PenaltyShootoutKick(
     result,
     player.name,
     kickingTeam,
     otherTeam,
-    eventMinute,
+    currentMinute,
     eventId
   )
 
@@ -172,19 +171,34 @@ object PenaltyShootoutScore {
 case class PenaltyShootoutScore(homeScored: Int = 0, homeMissed: Int = 0, homeSaved: Int = 0, awayScored: Int = 0, awayMissed: Int = 0, awaySaved: Int = 0)
 
 
-trait MatchPhaseEvent extends FootballMatchEvent
+trait MatchPhaseEvent extends FootballMatchEvent {
+  val currentMinute: Option[Int] = None
+}
 
 object MatchPhaseEvent {
+  // some of these are Synthetic Events we generate and add to the timeline.
   def fromEvent(event: pa.MatchEvent): Option[MatchPhaseEvent] = {
     val eventId = event.id.getOrElse("")
     condOpt(event.eventType) {
       case "timeline" if event.matchTime.contains("0:00") => KickOff(eventId)
-      case "full-time"                                    => FullTime(eventId) // todo use this to end activity?
+      case "full-time"                                    => FullTime(eventId)
       case "half-time"                                    => HalfTime(eventId)
       case "second-half"                                  => SecondHalf(eventId)
+      case "extra-time-to-be-played"                      => ExtraTimeToBePlayed(eventId)
+      case "extra-time-first-half"                        => ExtraTimeFirstHalf(eventId)
+      case "extra-time-half-time"                         => ExtraTimeHalfTime(eventId)
+      case "extra-time-second-half"                       => ExtraTimeSecondHalf(eventId)
+      case "penalties-to-be-played"                       => PenaltiesToBePlayed(eventId)
+      case "penalties"                                    => Penalties(eventId)
+      case "suspended"                                    => Suspended(eventId)
+      case "resumed"                                      => Resumed(eventId)
+      case "abandoned"                                    => Abandoned(eventId)
+      case "postponed"                                    => Postponed(eventId)
+      case "cancelled"                                    => Cancelled(eventId)
       case "create-channel"                               => CreateChannel(eventId)
       case "start-live-activity"                          => StartLiveActivity(eventId)
       case "end-live-activity"                            => EndLiveActivity(eventId)
+
     }
   }
 }
@@ -193,6 +207,20 @@ case class KickOff(eventId: String) extends MatchPhaseEvent
 case class FullTime(eventId: String) extends MatchPhaseEvent
 case class HalfTime(eventId: String) extends MatchPhaseEvent
 case class SecondHalf(eventId: String) extends MatchPhaseEvent
+case class ExtraTimeToBePlayed(eventId: String) extends MatchPhaseEvent
+case class ExtraTimeFirstHalf(eventId: String) extends MatchPhaseEvent
+case class ExtraTimeHalfTime(eventId: String) extends MatchPhaseEvent
+case class ExtraTimeSecondHalf(eventId: String) extends MatchPhaseEvent
+case class PenaltiesToBePlayed(eventId: String) extends MatchPhaseEvent
+case class Penalties(eventId: String) extends MatchPhaseEvent
+// extraordinary events
+case class Suspended(eventId: String) extends MatchPhaseEvent
+case class Resumed(eventId: String) extends MatchPhaseEvent
+case class Abandoned(eventId: String) extends MatchPhaseEvent
+case class Postponed(eventId: String) extends MatchPhaseEvent
+case class Cancelled(eventId: String) extends MatchPhaseEvent
+
+// Live Activity phase events
 case class CreateChannel(eventId: String) extends MatchPhaseEvent
 case class StartLiveActivity(eventId: String) extends MatchPhaseEvent
-case class EndLiveActivity(eventId: String) extends MatchPhaseEvent
+case class EndLiveActivity(eventId: String) extends MatchPhaseEvent // occurs when there is a result

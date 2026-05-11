@@ -19,7 +19,7 @@ import com.gu.liveactivities.models.BroadcastBody
 
 import java.time.ZonedDateTime
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromLong, dateTimeToLong, dateTimeToString}
-import com.gu.mobile.notifications.client.models.liveActitivites.{EndLiveActivityEvent, EventBridgeEvent, FootballMatchContentState, LiveActivityPayload, UpdateLiveActivityEvent}
+import com.gu.mobile.notifications.client.models.liveActitivites.{EndLiveActivityEvent, EventBridgeEvent, FootballMatchContentState, LiveActivityPayload, StartLiveActivityEvent, UpdateLiveActivityEvent}
 
 import scala.concurrent.duration.DurationInt
 
@@ -34,7 +34,10 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       case JsSuccess(request, _) => {
 
         // If we see these errors there is a misconfiguration in the eventbridge routing rules.
-        if (request.`detail-type` != UpdateLiveActivityEvent && request.`detail-type` != EndLiveActivityEvent) {
+        if (request.`detail-type` != UpdateLiveActivityEvent &&
+          request.`detail-type` != EndLiveActivityEvent &&
+          request.`detail-type` != StartLiveActivityEvent
+        ) {
           logger.error(s"Unexpected eventbridge event type: ${request.`detail-type`}")
           throw new Exception(s"Unexpected event type: ${request.`detail-type`}")
         }
@@ -68,6 +71,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
 
     val shouldEndBroadcast: Boolean = requestPayload.eventType match {
       case EndLiveActivityEvent => true
+      case StartLiveActivityEvent => false
       case UpdateLiveActivityEvent => false
       case _ =>
         logger.error(s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
@@ -80,11 +84,6 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       _ <- if (!mapping.isChannelActive) {
           logger.error(s"Channel not active for match ID $matchId")
           Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
-        } else Future.successful(())
-
-      _ <- if (!mapping.isLive) {
-          logger.error(s"Event not live for match ID $matchId")
-          Future.failed(new LiveActivityInvalidStateException(matchId, "Event not live"))
         } else Future.successful(())
 
       _ <- if (mapping.lastEventId.contains(eventId)) {
@@ -102,9 +101,9 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
       broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
       _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
-      _ = logger.info(s"Broadcast ${if(shouldEndBroadcast)"END"} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
+      _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
-      _ <- repository.updateMappingLastEvent(matchId, Some(eventId), Some(eventTime))
+      _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = !shouldEndBroadcast, Some(eventId), Some(eventTime))
       _ = logger.info(s"Record updated successfully for match ID $matchId")
     } yield mapping.channelId
 
@@ -120,7 +119,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
         logger.info(s"Broadcast ${if(shouldEndBroadcast)"END"} successfully sent for liveActivityID $matchId")
       }
       case Failure(exception) => {
-        logger.error(s"Failed to send broadcast for liveActivityID $matchId: ${exception.getMessage}")
+        logger.error(s"Failed to send broadcast ${if(shouldEndBroadcast)"END"} for liveActivityID $matchId: ${exception.getMessage}")
         throw exception
       }
     }

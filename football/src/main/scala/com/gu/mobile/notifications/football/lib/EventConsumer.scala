@@ -3,7 +3,10 @@ package com.gu.mobile.notifications.football.lib
 import com.gu.mobile.notifications.client.models.NotificationPayload
 import com.gu.mobile.notifications.client.models.liveActitivites.LiveActivityPayload
 import com.gu.mobile.notifications.football.Logging
-import com.gu.mobile.notifications.football.models.{FootballMatchEvent, MatchDataWithArticle}
+import com.gu.mobile.notifications.football.models.{
+  FootballMatchEvent,
+  MatchDataWithArticle
+}
 import com.gu.mobile.notifications.football.notificationbuilders.{
   MatchStatusLiveActivityPayloadBuilder,
   MatchStatusNotificationBuilder
@@ -22,8 +25,31 @@ class EventConsumer(
       * to generate push notifications for, so we filter those out here.
       */
     // todo can we capture these strings in union type?
-    // todo we will want to send penalty kick notifications to push notification service for android
-    val liveActivityEventTypes = List("create-channel", "start-live-activity", "end-live-activity", "shootoutGoal", "shootoutMiss", "shootoutSave")
+    // todo we will want to send penalty kick notifications and extra synthetic events to push notifications for android
+    val liveActivityEventTypes =
+      List(
+
+        // penalty shootout events
+        "shootoutGoal",
+        "shootoutMiss",
+        "shootoutSave",
+        // additional synthetic live activity life cycle events
+        "create-channel",
+        "start-live-activity",
+        "end-live-activity",
+        // additional synthetic match phase events for live activities
+        "extra-time-to-be-played",
+        "extra-time-first-half",
+        "extra-time-half-time",
+        "extra-time-second-half",
+        "penalties-to-be-played",
+        "penalties",
+        "suspended",
+        "resumed",
+        "abandoned",
+        "cancelled",
+        "postponed"
+      )
 
     val filteredMatchData = matchData.copy(allEvents =
       matchData.allEvents.filterNot(e =>

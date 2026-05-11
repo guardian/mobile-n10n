@@ -61,8 +61,9 @@ case class LiveActivityMapping(
     data: Option[LiveActivityData],
     lastEventId: Option[String],
     lastEventAt: Option[ZonedDateTime],
-		createdAt: ZonedDateTime,
-    lastModifiedAt: ZonedDateTime
+    createdAt: ZonedDateTime,
+    lastModifiedAt: ZonedDateTime,
+    ttlInEpochSeconds: Option[Long] = None
 )
 
 object LiveActivityMapping {

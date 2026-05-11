@@ -11,17 +11,22 @@ import com.gu.mobile.notifications.client.models.Payload
  * Channel Manager and Broadcast lambdas.
  **/
 
-sealed trait EventSource
-case object FootballLambda extends EventSource
+sealed trait EventSource {
+  def asString: String
+}
+case object FootballLambdaEventSource extends EventSource { val asString = "football-lambda" }
+case object ChannelManagerLambdaEventSource extends EventSource { val asString = "channel-manager-lambda" }
 
 object EventSource {
   implicit val format: Format[EventSource] = new Format[EventSource] {
     def writes(source: EventSource): JsValue = source match {
-      case FootballLambda => JsString("football-lambda")
+      case FootballLambdaEventSource => JsString("football-lambda")
+      case ChannelManagerLambdaEventSource => JsString("channel-manager-lambda")
     }
 
     def reads(json: JsValue): JsResult[EventSource] = json match {
-      case JsString("football-lambda") => JsSuccess(FootballLambda)
+      case JsString("football-lambda") => JsSuccess(FootballLambdaEventSource)
+      case JsString("channel-manager-lambda") => JsSuccess(ChannelManagerLambdaEventSource)
       case JsString(other)             => JsError(s"Invalid EventSource: $other")
       case _ => JsError("EventSource must be a string")
     }

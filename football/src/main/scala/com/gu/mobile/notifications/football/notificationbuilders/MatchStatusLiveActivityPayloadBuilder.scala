@@ -1,13 +1,13 @@
 package com.gu.mobile.notifications.football.notificationbuilders
 
-import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, Scheduled, TeamState, UpdateLiveActivityEvent, StartLiveActivityEvent, CreateChannelEvent, EndLiveActivityEvent}
+import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, CreateChannelEvent, EndLiveActivityEvent, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, MatchStatus, StartLiveActivityEvent, TeamState, UpdateLiveActivityEvent}
 import com.gu.mobile.notifications.football.models._
 import pa.MatchDay
 
+import java.net.URI
 import java.util.{Date, UUID}
 
-class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
+class MatchStatusLiveActivityPayloadBuilder {
 
   def build(
       triggeringEvent: FootballMatchEvent,
@@ -15,12 +15,6 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
       previousEvents: List[FootballMatchEvent],
       articleId: Option[String]
   ): LiveActivityPayload = {
-
-    val topics = List(
-      Topic(TopicTypes.FootballTeam, matchInfo.homeTeam.id),
-      Topic(TopicTypes.FootballTeam, matchInfo.awayTeam.id),
-      Topic(TopicTypes.FootballMatch, matchInfo.id)
-    )
 
     val allEvents = triggeringEvent :: previousEvents
     val goals = allEvents.collect { case g: Goal => g }
@@ -30,9 +24,17 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
     val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
     val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
+    val currentMinute: Option[Int] = triggeringEvent match {
+      case d:Dismissal => Some(d.minute)
+      case g:Goal => Some(g.minute)
+      case p: PenaltyShootoutKick => Some(p.minute)
+      case phase: MatchPhaseEvent => phase.currentMinute
+      case _ => None
+    }
+
     // TODO this is hard coded mostly for now.
     val contentState = FootballMatchContentState(
-      matchStatus = Scheduled,
+      matchStatus = MatchStatus.fromString(matchInfo.matchStatus),
       kickOffTimestamp = matchInfo.date.toEpochSecond, // included date and time
       homeTeam = TeamState(
         name = transformTeamName(matchInfo.homeTeam.name),
@@ -40,7 +42,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         logoAssetName = None, // tbc
         teamUrl = None, // tbc
         redCards = redCards.home,
-        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, true)
+        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = true)
       ),
       awayTeam = TeamState(
         name = transformTeamName(matchInfo.awayTeam.name),
@@ -48,7 +50,7 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         logoAssetName = None, // tbc
         teamUrl = None, // tbc
         redCards = redCards.away,
-        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, false)
+        penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = false)
       ),
       competition = Competition(
         id = matchInfo.competition.map(_.id).getOrElse(""),
@@ -56,15 +58,19 @@ class MatchStatusLiveActivityPayloadBuilder(mapiHost: String) {
         round = matchInfo.round.name // World Cup Group
       ),
       commentary = matchInfo.comments,
-      lineupsAvailable = None, // Boolean   // not available on LiveMatch
-      currentMinute = None, // not available on LiveMatch
+      lineupsAvailable = matchInfo.lineupsAvailable,
+      currentMinute = currentMinute,
       currentPeriodStartTime = None,
-      articleUrl = articleId.map(id => s"$mapiHost/items/$id")
+      articleUrl = articleId.map(id => new URI(s"http://www.theguardian.com/$id").toString),
+      matchInfoUrl = new URI(s"http://www.theguardian.com/football/match/${matchInfo.id}").toString
     )
 
+    // certain type of triggering match event types will trigger different live activity event type.
     val liveActivityEventType = triggeringEvent match {
+      case Abandoned(_) => EndLiveActivityEvent
+      case Cancelled(_) => EndLiveActivityEvent
       case CreateChannel(_) => CreateChannelEvent
-      case StartLiveActivity(_) => StartLiveActivityEvent
+//      case StartLiveActivity(_) => StartLiveActivityEvent // we do not want to use start yet
       case EndLiveActivity(_) => EndLiveActivityEvent
       case _ => UpdateLiveActivityEvent
     }

@@ -88,12 +88,13 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       id = "football-1234567",
       channelId = "test-channel-id",
       isChannelActive = true,
-      isLive = true,     
+      isLive = false,
       data = Some(footballData),
       lastEventId = None,
       lastEventAt = None,
       createdAt = ZonedDateTime.now(),
-      lastModifiedAt = ZonedDateTime.now()
+      lastModifiedAt = ZonedDateTime.now(),
+      ttlInEpochSeconds = Some(ZonedDateTime.now().toEpochSecond + 14 * 24 * 3600)
     )
 
     def createFootballMappingWithId(id: String): LiveActivityMapping = {

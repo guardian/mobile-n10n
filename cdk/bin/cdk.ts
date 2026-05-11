@@ -194,3 +194,10 @@ export const liveActivitiesCodeProps: GuStackProps = {
 };
 
 new LiveActivities(app, 'LiveActivities-CODE', liveActivitiesCodeProps);
+
+export const liveActivitiesProdProps: GuStackProps = {
+	stack: 'mobile-notifications',
+	stage: 'PROD',
+};
+
+new LiveActivities(app, 'LiveActivities-PROD', liveActivitiesProdProps);

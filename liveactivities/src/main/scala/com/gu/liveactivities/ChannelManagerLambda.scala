@@ -2,27 +2,24 @@ package com.gu.liveactivities
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.gu.liveactivities.models.LiveActivityData
+import com.gu.mobile.notifications.client.models.liveActitivites.ChannelManagerLambdaEventSource
+
 import com.gu.liveactivities.service.ChannelApiClient
 import com.gu.liveactivities.util.Logging
-import com.gu.mobile.notifications.client.models.liveActitivites.{CreateChannelEvent, DeleteChannelEvent, EventBridgeEvent, LiveActivityPayload}
-import play.api.libs.json.{Format, JsError, JsSuccess, Json}
+import com.gu.mobile.notifications.client.models.liveActitivites._
+import play.api.libs.json.{JsError, JsSuccess, Json}
 
 import java.io.{InputStream, OutputStream}
+import java.util.{Date, UUID}
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
-
-case class ChannelRequest(matchId: String, competitionId: Option[String], eventData: Option[LiveActivityData], toCreate: Boolean)
-
-object ChannelRequest {
-  implicit val jf: Format[ChannelRequest] = Json.format[ChannelRequest]
-}
 
 object ChannelManagerLambda extends RequestStreamHandler with Lambda with Logging {
 
   private val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer)
 
-  private def processCreateChannelRequest(matchId: String, eventData: Option[LiveActivityData]): Future[String] = {
+  private def processCreateChannelRequest(matchId: String, eventData: Option[LiveActivityData], broadcastContentStateData: Option[ContentState]): Future[String] = {
     logger.info(s"Received request to create channel for match ID $matchId")
 
     val maybeChannelId = repository.containMapping(matchId)
@@ -36,6 +33,8 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
           channelId <- channelApiClient.createChannel()
           _ <- repository.createMapping(matchId, channelId, eventData)
           _ = logger.info(s"Channel created with channel ID $channelId for match ID $matchId")
+          _ <- pushUpdateLiveActivityEvent(matchId, broadcastContentStateData)
+          _ = logger.info(s"Initial broadcast update pushed to event bus for channel ID $channelId and match ID $matchId")
         } yield channelId
     }
   }
@@ -76,7 +75,7 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
     val channelFuture = request.eventType match {
       case CreateChannelEvent =>
         val eventData = request.broadcastContentStateData.map(LiveActivityData.toLiveActivityData)
-        processCreateChannelRequest(request.liveActivityID, eventData)
+        processCreateChannelRequest(request.liveActivityID, eventData, request.broadcastContentStateData)
       case DeleteChannelEvent =>
         processCloseChannelRequest(request.liveActivityID)
       case other =>
@@ -94,5 +93,20 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
         logger.error(s"Failed to process: ${exception.getMessage}")
         throw exception
     }
+  }
+
+  private def pushUpdateLiveActivityEvent(matchId: String, broadcastContentStateData: Option[ContentState]): Future[Unit] = {
+    val triggeringEventId = s"football-match-status/$matchId/live-activity-initial-data"
+    liveActivityPusher.pushToEventbus(ChannelManagerLambdaEventSource)(
+      LiveActivityPayload(
+        id = UUID.nameUUIDFromBytes(triggeringEventId.getBytes),
+        eventType = UpdateLiveActivityEvent,
+        liveActivityType = FootballLiveActivity,
+        liveActivityID = matchId,
+        dynamoStoreData = None,
+        broadcastContentStateData = broadcastContentStateData,
+        eventTimestamp =  new Date().getTime,
+      )
+    )
   }
 }
