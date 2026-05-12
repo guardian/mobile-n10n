@@ -79,33 +79,45 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
 
     }
 
-    val broadcastFuture = for {
-      mapping <- repository.getMappingById(matchId)
-      _ <- if (!mapping.isChannelActive) {
-          logger.error(s"Channel not active for match ID $matchId")
-          Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
-        } else Future.successful(())
+    val broadcastFuture = repository.getMappingById(matchId).flatMap { mapping =>
+      // If the mapping is not live, but it HAS a lastEventId, it means it was Live once and has now Ended.
+      // We want to skip any further updates in this terminal state.
+      // But we don't want to fail the lambda because it's expected that the source may continue
+      // to send update events after a session has ended. Therefore, we treat these as expected no-ops.
+      val broadcastNotAllowed = !shouldEndBroadcast && !mapping.isLive && mapping.lastEventId.isDefined
 
-      _ <- if (mapping.lastEventId.contains(eventId)) {
-          logger.warn(s"Duplicate event ID $eventId for match ID $matchId")
-          Future.failed(new LiveActivityInvalidStateException(matchId, "Duplicate event ID"))
-        } else Future.successful(())
+      if (broadcastNotAllowed) {
+        logger.warn(s"${requestPayload.eventType.asString} event ID $eventId not allowed after ${EndLiveActivityEvent.asString} for match ID $matchId")
+        Future.successful(mapping.channelId)
+      } else {
+        for {
+          _ <- if (!mapping.isChannelActive) {
+            logger.error(s"Channel not active for match ID $matchId")
+            Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
+          } else Future.successful(())
 
-      _ <- if (mapping.lastEventAt.exists(lastEventAt => eventTime.isBefore(lastEventAt))) {
-          logger.warn(s"Out of order event time ${dateTimeToString(eventTime)} for match ID $matchId")
-          Future.failed(new LiveActivityInvalidStateException(matchId, "Out of order event time"))
-        } else Future.successful(())
+          _ <- if (mapping.lastEventId.contains(eventId)) {
+            logger.warn(s"Duplicate event ID $eventId for match ID $matchId")
+            Future.failed(new LiveActivityInvalidStateException(matchId, "Duplicate event ID"))
+          } else Future.successful(())
 
-      // TODO - determine expiry time and priority
+          _ <- if (mapping.lastEventAt.exists(lastEventAt => eventTime.isBefore(lastEventAt))) {
+            logger.warn(s"Out of order event time ${dateTimeToString(eventTime)} for match ID $matchId")
+            Future.failed(new LiveActivityInvalidStateException(matchId, "Out of order event time"))
+          } else Future.successful(())
 
-      _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
-      broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
-      _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
-      _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
+          // TODO - determine expiry time and priority
 
-      _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = !shouldEndBroadcast, Some(eventId), Some(eventTime))
-      _ = logger.info(s"Record updated successfully for match ID $matchId")
-    } yield mapping.channelId
+          _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
+          broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
+          _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
+          _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
+
+          _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = !shouldEndBroadcast, Some(eventId), Some(eventTime))
+          _ = logger.info(s"Record updated successfully for match ID $matchId")
+        } yield mapping.channelId
+      }
+    }
 
     //Timeout set to 160 seconds to provide a safety buffer.
     // While the sum of downstream timeouts is at most ~110s,
@@ -113,10 +125,9 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
     // authentication token fetches, and potential network congestion
     // to ensure the Lambda doesn't fail a healthy request that is just running slow.
     Try(Await.result(broadcastFuture, 160.seconds)) match {
-
       case Success(_) => {
         // todo
-        logger.info(s"Broadcast ${if(shouldEndBroadcast)"END"} successfully sent for liveActivityID $matchId")
+        logger.info(s"Broadcast ${requestPayload.eventType.asString} successfully processed for liveActivityID $matchId")
       }
       case Failure(exception) => {
         logger.error(s"Failed to send broadcast ${if(shouldEndBroadcast)"END"} for liveActivityID $matchId: ${exception.getMessage}")

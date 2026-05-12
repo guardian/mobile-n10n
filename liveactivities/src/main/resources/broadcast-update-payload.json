@@ -1,6 +1,6 @@
 {
   "version": "0",
-  "id": "65587515-3040-b54e-t00d-4b7970bdd1eb",
+  "id": "65587515-3040-b54e-t00d-4b7970bdd1hj",
   "detail-type": "broadcast-update",
   "source": "football-lambda",
   "account": "00000000000000",
@@ -8,7 +8,7 @@
   "region": "eu-west-1",
   "resources": [],
   "detail": {
-    "id": "165875bb-ade9-3245-b602-6343a1dd407d",
+    "id": "165875bb-ade9-3245-b602-6343a1dd406f",
     "eventType": "broadcast-update",
     "liveActivityType": "FootballLiveActivity",
     "liveActivityID": "123456-test",
@@ -44,10 +44,10 @@
       "commentary" : "Predicted to be an exciting match",
       "lineupsAvailable" : true,
       "currentMinute" : 0,
-      "articleUrl" : "http://www.theguardian.com/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live",
-      "matchInfoUrl" : "https://www.theguardian.com/football/match/4545750"
+      "articleUrl": "http://www.theguardian.com/123456-test-article",
+      "matchInfoUrl": "http://www.theguardian.com/football/match/123456-test"
     },
-    "eventTimestamp": 1777278992020
+    "eventTimestamp": 1777998999999
   }
 }
 
