@@ -1,6 +1,8 @@
 package com.gu.liveactivities
 
+import com.amazonaws.services.lambda.runtime.events.ScheduledEvent
 import play.api.libs.json.Json
+
 import scala.io.Source
 import java.nio.charset.StandardCharsets
 
@@ -47,4 +49,17 @@ object BroadcastLambdaLocalRun extends App {
   BroadcastLambda.handleRequest(broadcastRequestStream, broadcastResponseStream, null)
 
   println("Finished running BroadcastLambda locally with response: " + broadcastResponseStream.toString())
+}
+
+/**
+ * Local run for channel clean up
+ */
+object ChannelCleanUpLambdaLocalRun extends App {
+
+  println("Start running ChannelCleanUpLambda locally")
+
+  val se = new ScheduledEvent()
+  ChannelCleanUpLambda.handleRequest(se, null)
+
+  println("Finished running ChannelCleanUpLambda locally with response: ")
 }

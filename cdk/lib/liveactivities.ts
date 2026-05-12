@@ -4,7 +4,7 @@ import { GuLambdaFunction } from '@guardian/cdk/lib/constructs/lambda';
 import type { App } from 'aws-cdk-lib';
 import { Duration, Tags } from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { EventBus, Rule } from 'aws-cdk-lib/aws-events';
+import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -131,6 +131,66 @@ export class LiveActivities extends GuStack {
 			}),
 		);
 		broadcastLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['ssm:GetParametersByPath'],
+				effect: Effect.ALLOW,
+				resources: [
+					`arn:aws:ssm:${region}:${account}:parameter/notifications/${stage}/liveactivities/ios`,
+				],
+			}),
+		);
+
+		//////////// Channel Clean up lambda //////////////
+
+		const channelCleanerDlq = new Queue(this, 'ChannelCleanerDlq', {
+			queueName: `${app}-channel-cleaner-dlq-${stage}`,
+			visibilityTimeout: Duration.minutes(4),
+			retentionPeriod: Duration.days(7),
+		});
+
+		const channelCleanerLambda = new GuLambdaFunction(
+			this,
+			`${app}-channel-cleaner-lambda`,
+			{
+				app: app,
+				description: 'Clean up channels for live activities',
+				handler: 'com.gu.liveactivities.ChannelCleanerLambda::handleRequest',
+				functionName: `${app}-channel-cleaner-${stage}`,
+				fileName: `${app}.jar`,
+				runtime: Runtime.JAVA_11,
+				memorySize: 1024,
+				timeout: Duration.minutes(3),
+				onFailure: new SqsDestination(channelCleanerDlq),
+				retryAttempts: 2,
+				environment: {
+					Stack: stack,
+					Stage: stage,
+					App: app,
+					DYNAMODB_TABLE_NAME: dynamoTableName,
+				},
+			},
+		);
+
+		// Note: scheduled rules must use the default event bus, not custom eventBus
+		new Rule(this, 'ChannelCleanerSchedule', {
+			schedule: Schedule.cron({ hour: '3', minute: '0' }), // tbd
+			targets: [new LambdaFunction(channelCleanerLambda)],
+		});
+
+		channelCleanerLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: [
+					'dynamodb:GetItem',
+					'dynamodb:PutItem',
+					'dynamodb:UpdateItem',
+					'dynamodb:Query',
+				],
+				effect: Effect.ALLOW,
+				resources: [dynamoTable.tableArn],
+			}),
+		);
+
+		channelCleanerLambda.addToRolePolicy(
 			new PolicyStatement({
 				actions: ['ssm:GetParametersByPath'],
 				effect: Effect.ALLOW,
