@@ -9,10 +9,7 @@ import java.net.http.HttpResponse
 import scala.concurrent.Future
 import scala.concurrent.Promise
 
-import com.turo.pushy.apns.auth.ApnsSigningKey;
-import com.turo.pushy.apns.auth.AuthenticationToken;
-import java.time.Instant
-import java.util.Date
+import play.api.libs.json.{Json, Reads}
 import com.gu.liveactivities.util.Logging
 
 class ChannelApiClient(authentication: Authentication, bundleId: String, sendingToProdServer: Boolean) extends Logging {
@@ -26,18 +23,16 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
   private val mediaType = "application/json; charset=UTF-8"
 
   private val url = if (sendingToProdServer)
-    s"https://api-manage-broadcast.push.apple.com:2196/1/apps/$bundleId/channels"
+    s"https://api-manage-broadcast.push.apple.com:2196/1/apps/$bundleId"
   else
-    s"https://api-manage-broadcast.sandbox.push.apple.com:2195/1/apps/$bundleId/channels"
-
-
+    s"https://api-manage-broadcast.sandbox.push.apple.com:2195/1/apps/$bundleId"
 
   private val message = "{\"message-storage-policy\": 1, \"push-type\": \"LiveActivity\"}"
 
   def createChannel(): Future[String] = {
     logger.info("Creating channel")
     val authToken = authentication.getAccessToken()
-    val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
+    val request: HttpRequest = HttpRequest.newBuilder(new URI(s"${url}/channels"))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
       .header("Content-Type", mediaType)
@@ -65,7 +60,7 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
   def closeChannel(channelId: String): Future[Unit] = {
     logger.info(s"Closing channel $channelId")
     val authToken = authentication.getAccessToken()
-    val request: HttpRequest = HttpRequest.newBuilder(new URI(url))
+    val request: HttpRequest = HttpRequest.newBuilder(new URI(s"${url}/channels"))
       .version(HttpClient.Version.HTTP_2)
       .header("Authorization", authToken)
       .header("Content-Type", mediaType)
@@ -88,6 +83,42 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
       }
     })
     p.future
-  } 
+  }
+
+  /////////////////////////////////////////////////////////////////
+  case class AllChannelsResponse(channels: List[String])
+  object AllChannelsResponse {
+    implicit val reads: Reads[AllChannelsResponse] = Json.reads[AllChannelsResponse]
+  }
+
+  def getAllChannels(): Future[List[String]] = {
+    logger.info("Fetching all channels")
+
+    val authToken = authentication.getAccessToken()
+    val request: HttpRequest = HttpRequest.newBuilder(new URI(s"${url}/all-channels"))
+      .version(HttpClient.Version.HTTP_2)
+      .header("Authorization", authToken)
+      .header("Content-Type", mediaType)
+      .GET()
+      .timeout(Duration.ofSeconds(60))
+      .build()
+
+    val p = Promise[List[String]]()
+    httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
+      if (response == null) {
+        logger.error(s"Failed to get all channels due to error ${err.getMessage}")
+        p.failure(err)
+      } else if (response.statusCode() >= 200 &&
+                response.statusCode() < 300) {
+        val channelIds = Json.parse(response.body()).as[AllChannelsResponse].channels
+        logger.info(s"Retrieved all channels successfully: ${channelIds.length}")
+        p.success(channelIds)
+      } else {
+        logger.error(s"Failed to get all channels with status code ${response.statusCode()} and body ${response.body()}")
+        p.failure(new Exception(s"Failed to get all channels with status code ${response.statusCode()} and body ${response.body()}"))
+      }
+    })
+    p.future
+  }
 
 }
