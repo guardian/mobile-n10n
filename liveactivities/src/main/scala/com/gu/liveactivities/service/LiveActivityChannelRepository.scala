@@ -6,6 +6,7 @@ import com.gu.liveactivities.util.DateTimeHelper.dateTimeToString
 import com.gu.liveactivities.util.Logging
 import org.scanamo.syntax._
 import org.scanamo.update.UpdateExpression
+import org.scanamo.query.{Between, Condition, ConditionExpression}
 import org.scanamo.{ConditionNotMet, DynamoReadError, ScanamoAsync, Table}
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 
@@ -16,21 +17,24 @@ trait ChannelMappingsRepository {
 
   def containMapping(id: String): Future[Option[String]]
 
-  def createMapping(    
+  def createMapping(
     id: String,
     channelId: String,
     eventData: Option[LiveActivityData]): Future[Unit]
 
   def getMappingById(id: String): Future[LiveActivityMapping]
-  
+
   def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit]
 
   def updateMappingLive(id: String, isLive: Boolean): Future[Unit]
 
   def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
   def updateMappingLiveAndLastEvent(id: String, isLive: Boolean, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
-  
+
   def deleteMappingById(id: String): Future[Unit]
+
+  def fetchAllMappings(): Future[List[LiveActivityMapping]]
+  def fetchAllMappingsByStatus(isChannelActive: Boolean, isLive: Boolean, hasLastEvent: Boolean): Future[List[LiveActivityMapping]]
 }
 
 class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: String)(
@@ -62,9 +66,9 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     val createdAt = ZonedDateTime.now()
     val ttlEpochSeconds = createdAt.toEpochSecond + 14 * 24 * 3600 // 15=4 days from now
     val newItem = new LiveActivityMapping(
-      id = id, 
-      channelId = channelId, 
-      isChannelActive = true, 
+      id = id,
+      channelId = channelId,
+      isChannelActive = true,
       isLive = false,
       data = eventData,
       lastEventId = None,
@@ -90,10 +94,10 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   }
 
   private def updateMappingById(
-      id: String, 
-      isChannelActive: Option[Boolean] = None, 
-      isLive: Option[Boolean] = None, 
-      lastEventId: Option[String] = None, 
+      id: String,
+      isChannelActive: Option[Boolean] = None,
+      isLive: Option[Boolean] = None,
+      lastEventId: Option[String] = None,
       lastEventAt: Option[ZonedDateTime] = None
   ): Future[Unit] = {
   val updates: List[UpdateExpression] = List(
@@ -159,10 +163,58 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   override def deleteMappingById(
       id: String
   ): Future[Unit] = {
-    scanamo.exec { 
+    scanamo.exec {
       table.delete(idKeyName === id)
     }
   }
+
+  override def fetchAllMappings(): Future[List[LiveActivityMapping]] = {
+    println("*************** fetch all mappings  *****************")
+    scanamo.exec {
+        table.scan()
+      }
+      .flatMap { results =>
+        val errors = results.collect { case Left(ex) => ex }
+
+        println(results.length)
+
+        if (errors.nonEmpty) {
+          val errorMsg = s"Error fetching all ChannelMappings - ${errors.map(DynamoReadError.describe).mkString(", ")}"
+          logger.error(errorMsg)
+          Future.failed(new RepositoryException(errorMsg))
+        } else {
+          Future.successful(results.collect { case Right(mapping) => mapping })
+        }
+      }.recover(handleErrors("fetching all mappings from DynamoDB", "all"))
+  }
+
+  override def fetchAllMappingsByStatus(isChannelActive: Boolean, isLive: Boolean, hasLastEvent: Boolean): Future[List[LiveActivityMapping]] = {
+    println("*************** fetch all mappings by status *****************")
+    println(s"isActive: $isChannelActive, isLive: $isLive, hasLastEvent: $hasLastEvent")
+
+    // we can use filter and full scan here because this will remain a low volume table.
+    scanamo.exec {
+        table
+          .filter(Condition("Live" === isLive))
+          .filter(Condition("isActive" === isChannelActive))
+          .filter(if (hasLastEvent) Condition(attributeExists("lastEventId")) else Condition(attributeNotExists("lastEventId")))
+          .scan()
+      }
+      .flatMap { results =>
+        val errors = results.collect { case Left(ex) => ex }
+
+        println(results.length)
+
+        if (errors.nonEmpty) {
+          val errorMsg = s"Error fetching ChannelMappings by status - ${errors.map(DynamoReadError.describe).mkString(", ")}"
+          logger.error(errorMsg)
+          Future.failed(new RepositoryException(errorMsg))
+        } else {
+          Future.successful(results.collect { case Right(mapping) => mapping })
+        }
+      }.recover(handleErrors("fetching all mappings by status from DynamoDB", "all"))
+
+}
 
   private def handleErrors[T](operation: String, id: String): PartialFunction[Throwable, T] = {
     case ex: RepositoryException =>
