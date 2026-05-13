@@ -6,7 +6,6 @@ import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import com.typesafe.config.Config
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain => AwsCredentialsProviderChainV2, DefaultCredentialsProvider => DefaultCredentialsProviderV2, ProfileCredentialsProvider => ProfileCredentialsProviderV2}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
-import software.amazon.awssdk.regions.Region.EU_WEST_1
 
 class Configuration extends Logging {
 

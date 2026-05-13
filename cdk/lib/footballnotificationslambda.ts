@@ -125,6 +125,14 @@ export class FootballNotificationsLambda extends GuStack {
 			}),
 		);
 
+		footballnotificationslambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['s3:GetObject'],
+				effect: Effect.ALLOW,
+				resources: [`arn:aws:s3:::mobile-pa-football-data/*`],
+			}),
+		);
+
 		// Read Throttle Events Alarm
 		new GuAlarm(this, 'MobileNotificationsFootballConsumedReadThrottleEvents', {
 			app,

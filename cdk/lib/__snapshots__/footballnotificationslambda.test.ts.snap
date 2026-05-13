@@ -759,6 +759,11 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                 ],
               },
             },
+            {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::mobile-pa-football-data/*",
+            },
           ],
           "Version": "2012-10-17",
         },
@@ -1592,6 +1597,11 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                   ],
                 ],
               },
+            },
+            {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::mobile-pa-football-data/*",
             },
           ],
           "Version": "2012-10-17",
