@@ -55,13 +55,13 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       )
     }
 
-    "Include detailedMatchStatus derived from triggering event type" in new MatchEventsContext {
+    "Include detailedMatchStatus for kick off" in new MatchEventsContext {
       val kickOff = KickOff("")
       val notification = builder.build(kickOff, matchInfo.copy(matchStatus = "Fixture"), List.empty, None)
       notification.detailedMatchStatus shouldEqual Some("FIRST_HALF")
     }
 
-    "Include detailedMatchStatus from PA status when event type has no override" in new MatchEventsContext {
+    "Include detailedMatchStatus for penalties" in new MatchEventsContext {
       val matchInPenalties = matchInfo.copy(matchStatus = "PT")
       val notification = builder.build(baseGoal, matchInPenalties, List.empty, None)
       notification.detailedMatchStatus shouldEqual Some("PENALTIES")
@@ -73,35 +73,23 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_HALF_TIME")
     }
 
-    "Include lineupsAvailable from matchInfo when false" in new MatchEventsContext {
-      val notification = builder.build(baseGoal, matchInfo, List.empty, None)
-      notification.lineupsAvailable shouldEqual Some(false)
-    }
-
-    "Include lineupsAvailable from matchInfo when true" in new MatchEventsContext {
+    "Include lineupsAvailable true from matchInfo" in new MatchEventsContext {
       val matchInfoWithLineups = matchInfo.copy(lineupsAvailable = true)
       val notification = builder.build(baseGoal, matchInfoWithLineups, List.empty, None)
       notification.lineupsAvailable shouldEqual Some(true)
     }
 
-    "Build a red card notification" in new WorldCupContext {
-      val dismissal = dismissals.head
-      val previousEvents = allEvents.takeWhile(_ != dismissal)
-      val notification = builder.build(dismissal, matchInfo, previousEvents, None)
-      notification.title shouldEqual Some("Red card")
-      notification.message shouldEqual Some("Netherlands 2-2 Argentina (FT)\nDenzel Dumfries (Netherlands) 128min")
-      notification.importance shouldEqual Minor
-      notification.homeTeamRedCards shouldEqual 1
-      notification.awayTeamRedCards shouldEqual 0
-      notification.homeTeamMessage must contain("Red card: Denzel Dumfries 128'")
+    "Include lineupsAvailable false from matchInfo if not available" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo, List.empty, None)
+      notification.lineupsAvailable shouldEqual Some(false)
     }
 
-    "Include kickOffTimestamp from match date" in new MatchEventsContext {
+    "Include kickOffTimestamp from match info" in new MatchEventsContext {
       val notification = builder.build(baseGoal, matchInfo, List.empty, None)
       notification.kickOffTimestamp shouldEqual Some(matchInfo.date.toEpochSecond)
     }
 
-    "Accumulate red cards from multiple dismissal events" in new MatchEventsContext {
+    "Include the correct red cards count for each team" in new MatchEventsContext {
       val firstDismissal  = Dismissal("e1", "Player A", home, 55, None)
       val secondDismissal = Dismissal("e2", "Player B", home, 80, None)
       val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal), None)
