@@ -1,6 +1,6 @@
 package com.gu.liveactivities
 
-import com.gu.liveactivities.service.{Authentication, LiveActivityChannelRepository}
+import com.gu.liveactivities.service.{Authentication, BroadcastApiClient, LiveActivityChannelRepository}
 import com.gu.liveactivities.util.{Configuration, IosConfiguration, Logging}
 import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain, DefaultCredentialsProvider, ProfileCredentialsProvider}
@@ -41,6 +41,8 @@ trait Lambda extends Logging{
       .build()
 
   val repository = new LiveActivityChannelRepository(dynamoDbClient, s"mobile-notifications-liveactivities-${config.stage}")
+  val broadcastApiClient = new BroadcastApiClient(authentication, config.bundleId, config.sendingToProdServer)
+  val broadcastService = new BroadcastService(repository, broadcastApiClient)
 
   private val eventBusName = s"liveactivities-eventbus-${config.stage}"
   lazy val liveActivityPusher = new LiveActivityPusher(eventBusName, logger)
