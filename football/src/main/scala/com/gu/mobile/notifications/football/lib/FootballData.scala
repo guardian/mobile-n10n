@@ -109,7 +109,9 @@ class FootballData(
 
     def competitionIsSupported(supportedCompetitions: List[PACompetition])(matchDay: MatchDay): Boolean =
       matchDay.competition.exists { matchComp =>
-        supportedCompetitions.exists(_.id == matchComp.id)
+        val isSupported = supportedCompetitions.exists(_.id == matchComp.id)
+        if (!isSupported) logger.warn(s"match ${matchDay.id} from competition ${matchComp.id} is not supported")
+        isSupported
       }
 
     logger.info(s"Retrieving matches on or around $dateTime from PA")
