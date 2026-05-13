@@ -23,16 +23,11 @@ trait ChannelMappingsRepository {
     eventData: Option[LiveActivityData]): Future[Unit]
 
   def getMappingById(id: String): Future[LiveActivityMapping]
-
   def updateMappingActiveChannel(id: String, isActive: Boolean): Future[Unit]
-
   def updateMappingLive(id: String, isLive: Boolean): Future[Unit]
-
   def updateMappingLastEvent(id: String, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
   def updateMappingLiveAndLastEvent(id: String, isLive: Boolean, lastEventId: Option[String], lastEventUpdate: Option[ZonedDateTime]): Future[Unit]
-
   def deleteMappingById(id: String): Future[Unit]
-
   def fetchAllMappings(): Future[List[LiveActivityMapping]]
   def fetchAllMappingsByStatus(isChannelActive: Boolean, isLive: Boolean, hasLastEvent: Boolean): Future[List[LiveActivityMapping]]
 }
@@ -174,8 +169,6 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       }
       .flatMap { results =>
         val errors = results.collect { case Left(ex) => ex }
-
-        println(results.length)
 
         if (errors.nonEmpty) {
           val errorMsg = s"Error fetching all ChannelMappings - ${errors.map(DynamoReadError.describe).mkString(", ")}"
