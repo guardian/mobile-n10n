@@ -15,7 +15,7 @@ class ChannelCleanUpLambdaTest extends Specification with Mockito {
 
   "ChannelCleanUpService.deleteChannelsForEndedBroadcasts" should {
 
-    "close channels no longer live but skip channels created within the last 7 days" in {
+    "close channels no longer live but skip channels created within the last 24 hours" in {
 
       val oldMapping = LiveActivityMapping(
         id = "match-old",
@@ -25,8 +25,8 @@ class ChannelCleanUpLambdaTest extends Specification with Mockito {
         data = None,
         lastEventId = Some("event-1"),
         lastEventAt = None,
-        createdAt = ZonedDateTime.now().minusDays(10), // older than 7 days → should be closed
-        lastModifiedAt = ZonedDateTime.now().minusDays(10),
+        createdAt = ZonedDateTime.now().minusHours(25), // older than 24 hours → should be closed
+        lastModifiedAt = ZonedDateTime.now().minusHours(25),
         ttlInEpochSeconds = None,
       )
 
@@ -38,8 +38,8 @@ class ChannelCleanUpLambdaTest extends Specification with Mockito {
         data = None,
         lastEventId = Some("event-2"),
         lastEventAt = None,
-        createdAt = ZonedDateTime.now().minusDays(1), // within 7 days → should be skipped
-        lastModifiedAt = ZonedDateTime.now().minusDays(1),
+        createdAt = ZonedDateTime.now().minusHours(23), // within 24 hours → should be skipped
+        lastModifiedAt = ZonedDateTime.now().minusHours(23),
         ttlInEpochSeconds = None,
       )
 

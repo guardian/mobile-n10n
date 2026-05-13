@@ -27,7 +27,7 @@ class ChannelCleanUpService(
       _ <- Future.sequence(
         channelsForDeletion.map { mapping =>
           {
-            if (mapping.createdAt.isAfter(ZonedDateTime.now().minusDays(3))) {
+            if (mapping.createdAt.isAfter(ZonedDateTime.now().minusHours(24))) {
               logger.warn(s"Channel with ID ${mapping.channelId} for match ID ${mapping.id} is " +
                   s"not live but was created less than 24hrs ago, skipping deletion.")
               Future.successful(())
@@ -41,7 +41,7 @@ class ChannelCleanUpService(
                 }
                 .recover { case exception =>
                   // todo we should alert on this failure
-                  logger.error(s"Failed to delete channel with ID ${mapping.channelId} for match ID ${mapping.id} - ${exception.getMessage}",)
+                  logger.error(s"Failed to delete channel with ID ${mapping.channelId} for match ID ${mapping.id} - ${exception.getMessage}")
                 }
             }
           }
@@ -63,7 +63,7 @@ class ChannelCleanUpService(
           channelApiClient
             .closeChannel(channelId)
             .recover { case exception =>
-              logger.error(s"Failed to delete orphan channel with ID ${channelId} - ${exception.getMessage}",)
+              logger.error(s"Failed to delete orphan channel with ID ${channelId} - ${exception.getMessage}")
             }
         },
       )
