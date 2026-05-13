@@ -31,6 +31,7 @@ object Lambda extends Logging {
 
   def tableName = s"mobile-notifications-football-notifications-${configuration.stage}"
   def liveActivitiesTableName = s"mobile-notifications-liveactivities-payload-${configuration.stage}"
+  lazy val paDataBucket = "mobile-pa-football-data"
 
   lazy val configuration: Configuration = {
     logger.debug("Creating configuration")
@@ -63,7 +64,7 @@ object Lambda extends Logging {
     .withCredentials(configuration.credentials)
     .build()
 
-  lazy val competitionsDataStore = new S3DataStore[PACompetition](s3Client, configuration.paDataBucket)
+  lazy val competitionsDataStore = new S3DataStore[PACompetition](s3Client, paDataBucket)
 
   lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator, competitionsDataStore, configuration.stage)
 

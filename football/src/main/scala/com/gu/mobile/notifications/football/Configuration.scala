@@ -46,5 +46,4 @@ class Configuration extends Logging {
   val notificationsApiKey = conf.getString("notifications-client.api-key")
   val mapiHost = conf.getString("mapi.host")
   val capiApiKey = conf.getString("capi.key")
-  val paDataBucket = conf.getString("buckets.football-feed-data")
 }
