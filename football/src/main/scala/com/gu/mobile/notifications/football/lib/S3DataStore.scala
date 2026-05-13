@@ -22,7 +22,7 @@ class S3DataStore[T](s3Client: AmazonS3, bucketName: String) extends Logging {
   private def parseS3Object(path: String)(implicit format: Format[T]) : List[T] = {
     Json.fromJson[List[T]](Json.parse(asString(s3Client.getObject(bucketName, path)))) match {
       case JsSuccess(list, __) =>
-        logger.info(s"Got ${list.length} items from s3, path $path")
+        logger.debug(s"Got ${list.length} items from s3 $bucketName, path $path")
         list
       case JsError(errors) =>
         val errorPaths = errors.map { error => error._1.toString() }.mkString(",")
