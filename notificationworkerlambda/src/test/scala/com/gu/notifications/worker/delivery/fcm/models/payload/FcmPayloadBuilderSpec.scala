@@ -239,6 +239,8 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       articleUri = Some(new URI("https://some.other.invalid.url/detail")),
       matchStatus = "1",
       eventId = "2",
+      detailedMatchStatus = None,
+      lineupsAvailable = None,
       debug = true,
       dryRun = None
     )
@@ -297,6 +299,8 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       articleUri = Some(new URI("https://some.other.invalid.url/detail")),
       matchStatus = "1",
       eventId = "2",
+      detailedMatchStatus = Some("PENALTIES"),
+      lineupsAvailable = Some(true),
       debug = true,
       dryRun = None,
       kickOffTimestamp = Some(1746619200L),
@@ -326,6 +330,8 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
         "homeTeamRedCards" -> "0",
         "awayTeamRedCards" -> "0",
         Keys.KickOffTimestamp -> "1746619200",
+        Keys.DetailedMatchStatus -> "PENALTIES",
+        Keys.LineupsAvailable -> "true",
         Keys.HomeTeamPenaltiesScored -> "3",
         Keys.HomeTeamPenaltiesMissed -> "1",
         Keys.HomeTeamPenaltiesSaved -> "0",
