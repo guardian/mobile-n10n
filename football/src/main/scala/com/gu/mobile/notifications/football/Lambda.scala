@@ -5,9 +5,10 @@ import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
 import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
-import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PaFootballClient, SyntheticMatchEventGenerator}
+import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PACompetition, PaFootballClient, S3DataStore, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import play.api.libs.json.Json
 
@@ -22,6 +23,7 @@ import com.gu.mobile.notifications.football.models.MatchDataWithArticle
 
 import scala.concurrent.Future
 import org.scanamo.generic.auto._
+import pa.Competition
 
 object Lambda extends Logging {
 
@@ -56,7 +58,14 @@ object Lambda extends Logging {
 
   val apiClient = new NotificationsApiClient(configuration)
 
-  lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator)
+  lazy val s3Client: AmazonS3 = AmazonS3ClientBuilder.standard
+    .withRegion(Regions.EU_WEST_1)
+    .withCredentials(configuration.credentials)
+    .build()
+
+  lazy val competitionsDataStore = new S3DataStore[PACompetition](s3Client, configuration.paDataBucket)
+
+  lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator, competitionsDataStore, configuration.stage)
 
   lazy val articleSearcher = new ArticleSearcher(capiClient)
 

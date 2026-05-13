@@ -1,11 +1,11 @@
 package com.gu.mobile.notifications.football.lib
 
-import java.time.ZonedDateTime
-
-import com.gu.mobile.notifications.football.Logging
+import java.time.{LocalDate, ZonedDateTime}
+import com.gu.mobile.notifications.football.{Configuration, Logging}
 import com.gu.mobile.notifications.football.models.RawMatchData
 import org.joda.time.DateTime
 import pa.MatchDay
+import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -14,9 +14,24 @@ import scala.util.{Failure, Success, Try}
 
 case class EndedMatch(matchId: String, startTime: DateTime)
 
+case class PACompetition(
+                        id: String,
+                        tag: String,
+                        fullName: String,
+                        shortName: String,
+                        startDate: Option[LocalDate] = None,
+                        endDate: Option[LocalDate] = None,
+                      )
+
+object PACompetition {
+  implicit val competitionFormat: Format[PACompetition] = Json.format[PACompetition]
+}
+
 class FootballData(
-  paClient: PaFootballClient,
-  syntheticEvents: SyntheticMatchEventGenerator
+                    paClient: PaFootballClient,
+                    syntheticEvents: SyntheticMatchEventGenerator,
+                    competitionsDataStore: S3DataStore[PACompetition],
+                    stage: String
 ) extends Logging {
 
   implicit class RichMatchDay(matchDay: MatchDay) {
@@ -92,13 +107,29 @@ class FootballData(
       }.getOrElse(false) //Shouldn't ever happen
     }
 
+    def competitionIsSupported(supportedCompetitions: List[PACompetition])(matchDay: MatchDay): Boolean =
+      matchDay.competition.exists { matchComp =>
+        supportedCompetitions.exists(_.id == matchComp.id)
+      }
+
     logger.info(s"Retrieving matches on or around $dateTime from PA")
-    val matches = paClient.aroundToday(dateTime)
-    matches.map(
-      _.filter(inProgress)
-       .filter(paProvideAlerts)
-       .filterNot(isMidnight)
-    )
+    for {
+       matches <- paClient.aroundToday(dateTime)
+       competitions <- competitionsDataStore
+         .fetch(s"${stage}/competition/competitions.json")
+         .recover { case exception =>
+           // We don't want to fail the whole process if we can't retrieve the list of competitions,
+           // we'll just assume all competitions are supported and log the error
+           logger.error(s"Failed to retrieve list of competitions: ${exception.getMessage}", exception)
+           List.empty[PACompetition]
+         }
+    } yield {
+      matches
+        .filter(m => competitions.isEmpty || competitionIsSupported(competitions)(m))
+        .filter(inProgress)
+        .filter(paProvideAlerts)
+        .filterNot(isMidnight)
+    }
   }
 
   private def processMatch(matchDay: MatchDay): Future[Option[RawMatchData]] = {

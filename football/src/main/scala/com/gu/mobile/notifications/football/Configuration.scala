@@ -6,7 +6,6 @@ import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import com.typesafe.config.Config
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain => AwsCredentialsProviderChainV2, DefaultCredentialsProvider => DefaultCredentialsProviderV2, ProfileCredentialsProvider => ProfileCredentialsProviderV2}
 import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
-import software.amazon.awssdk.regions.Region.EU_WEST_1
 
 class Configuration extends Logging {
 
@@ -47,4 +46,5 @@ class Configuration extends Logging {
   val notificationsApiKey = conf.getString("notifications-client.api-key")
   val mapiHost = conf.getString("mapi.host")
   val capiApiKey = conf.getString("capi.key")
+  val paDataBucket = conf.getString("buckets.football-feed-data")
 }
