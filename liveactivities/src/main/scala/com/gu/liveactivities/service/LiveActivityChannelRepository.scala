@@ -6,7 +6,7 @@ import com.gu.liveactivities.util.DateTimeHelper.dateTimeToString
 import com.gu.liveactivities.util.Logging
 import org.scanamo.syntax._
 import org.scanamo.update.UpdateExpression
-import org.scanamo.query.{Between, Condition, ConditionExpression}
+import org.scanamo.query.Condition
 import org.scanamo.{ConditionNotMet, DynamoReadError, ScanamoAsync, Table}
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 
@@ -169,7 +169,6 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
   }
 
   override def fetchAllMappings(): Future[List[LiveActivityMapping]] = {
-    println("*************** fetch all mappings  *****************")
     scanamo.exec {
         table.scan()
       }
@@ -183,33 +182,41 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
           logger.error(errorMsg)
           Future.failed(new RepositoryException(errorMsg))
         } else {
+          logger.info(s"Successfully fetched all ChannelMappings with total count: ${results.length}")
           Future.successful(results.collect { case Right(mapping) => mapping })
         }
       }.recover(handleErrors("fetching all mappings from DynamoDB", "all"))
   }
 
   override def fetchAllMappingsByStatus(isChannelActive: Boolean, isLive: Boolean, hasLastEvent: Boolean): Future[List[LiveActivityMapping]] = {
-    println("*************** fetch all mappings by status *****************")
-    println(s"isActive: $isChannelActive, isLive: $isLive, hasLastEvent: $hasLastEvent")
-
     // we can use filter and full scan here because this will remain a low volume table.
-    scanamo.exec {
-        table
-          .filter(Condition("Live" === isLive))
-          .filter(Condition("isActive" === isChannelActive))
-          .filter(if (hasLastEvent) Condition(attributeExists("lastEventId")) else Condition(attributeNotExists("lastEventId")))
-          .scan()
+      val results = if (hasLastEvent) {
+        scanamo.exec {
+          table.filter(
+            Condition("isLive" === isLive)
+              .and(Condition("isChannelActive" === isChannelActive))
+              .and(Condition(attributeExists("lastEventId")))
+              .and(Condition(attributeExists("lastEventAt")))
+          ).scan()
+        }
+      } else {
+        scanamo.exec {
+          table.filter(
+            Condition("isLive" === isLive)
+              .and(Condition("isChannelActive" === isChannelActive))
+              .and(Condition(attributeNotExists("lastEventId")))
+              .and(Condition(attributeNotExists("lastEventAt")))
+          ).scan()
+        }
       }
-      .flatMap { results =>
+      results .flatMap { results =>
         val errors = results.collect { case Left(ex) => ex }
-
-        println(results.length)
-
         if (errors.nonEmpty) {
           val errorMsg = s"Error fetching ChannelMappings by status - ${errors.map(DynamoReadError.describe).mkString(", ")}"
           logger.error(errorMsg)
           Future.failed(new RepositoryException(errorMsg))
         } else {
+          logger.info(s"Successfully fetched ChannelMappings with total count: ${results.length} - isActive: $isChannelActive, isLive: $isLive, hasLastEvent: $hasLastEvent")
           Future.successful(results.collect { case Right(mapping) => mapping })
         }
       }.recover(handleErrors("fetching all mappings by status from DynamoDB", "all"))
