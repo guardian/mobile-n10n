@@ -135,8 +135,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
           ) ++
             n.articleUri.map(u => CustomProperty(Keys.ArticleUri -> u.toString)).toSeq ++
             n.competitionName.map(c => CustomProperty(Keys.CompetitionName -> c)).toSeq ++
-            n.venue.map(v => CustomProperty(Keys.Venue -> v)).toSeq ++
-            n.detailedMatchStatus.map(s => CustomProperty(Keys.DetailedMatchStatus -> s)).toSeq
+            n.venue.map(v => CustomProperty(Keys.Venue -> v)).toSeq
           )
         )
       )

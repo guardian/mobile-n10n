@@ -128,6 +128,7 @@ object FcmPayloadBuilder {
         ++ Some(Keys.HomeTeamRedCards -> matchStatusAlert.homeTeamRedCards.toString).toMap
         ++ Some(Keys.AwayTeamRedCards -> matchStatusAlert.awayTeamRedCards.toString).toMap
         ++ matchStatusAlert.detailedMatchStatus.map(Keys.DetailedMatchStatus -> _).toMap
+        ++ matchStatusAlert.lineupsAvailable.map(v => Keys.LineupsAvailable -> v.toString).toMap
         ++ matchStatusAlert.kickOffTimestamp.map(Keys.KickOffTimestamp -> _.toString).toMap
         ++ matchStatusAlert.homeTeamPenalties.map(p => Map(
           Keys.HomeTeamPenaltiesScored -> p.scored.toString,

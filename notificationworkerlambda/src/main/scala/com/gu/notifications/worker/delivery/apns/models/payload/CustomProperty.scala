@@ -39,7 +39,6 @@ object CustomProperty {
     final val AwayTeamText = "awayTeamText"
     final val CurrentMinute = "currentMinute"
     final val MatchStatus = "matchStatus"
-    final val DetailedMatchStatus = "detailedMatchStatus"
     final val MatchId = "matchId"
     final val MapiUrl = "mapiUrl"
     final val MatchInfoUri = "matchInfoUri"
