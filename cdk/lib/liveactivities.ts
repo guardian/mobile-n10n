@@ -181,9 +181,9 @@ export class LiveActivities extends GuStack {
 			new PolicyStatement({
 				actions: [
 					'dynamodb:GetItem',
-					'dynamodb:PutItem',
 					'dynamodb:UpdateItem',
 					'dynamodb:Query',
+					'dynamodb:Scan',
 				],
 				effect: Effect.ALLOW,
 				resources: [dynamoTable.tableArn],
