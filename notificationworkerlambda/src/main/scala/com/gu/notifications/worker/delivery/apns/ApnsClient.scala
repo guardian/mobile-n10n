@@ -26,7 +26,6 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
   type Success = ApnsDeliverySuccess
   type Payload = ApnsPayload
-  type BatchSuccess = ApnsBatchDeliverySuccess
   val dryRun = config.dryRun
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
   private val timer = new Timer("ios-worker-timeout", true)

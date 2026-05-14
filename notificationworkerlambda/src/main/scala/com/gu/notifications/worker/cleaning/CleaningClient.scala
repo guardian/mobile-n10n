@@ -33,13 +33,4 @@ class CleaningClientImpl(sqsUrl: String) extends CleaningClient {
         sendTokensToQueue(chunk.toList)
       }
     }
-
-  def sendInvalidBatchTokensToCleaning(implicit logger: Logger): Pipe[IO, Chunk[List[String]], Unit] = {
-    _.evalMap { chunk =>
-      IO.delay {
-        sendTokensToQueue(chunk.toList.flatten)
-      }
-    }
-  }
-
 }
