@@ -7,7 +7,7 @@ deployments:
     parameters:
       bucketSsmLookup: true
       functionNames:
-        [liveactivities-channel-manager-, liveactivities-broadcast-]
+        [liveactivities-channel-manager-, liveactivities-broadcast-, liveactivities-channel-cleaner-]
       fileName: liveactivities.jar
       prefixStack: false
     dependencies: [mobile-notifications-liveactivities-cfn]
