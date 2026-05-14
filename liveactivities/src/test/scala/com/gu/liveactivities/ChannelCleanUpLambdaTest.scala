@@ -25,8 +25,8 @@ class ChannelCleanUpLambdaTest extends Specification with Mockito {
         data = None,
         lastEventId = Some("event-1"),
         lastEventAt = None,
-        createdAt = ZonedDateTime.now().minusHours(25), // older than 24 hours → should be closed
-        lastModifiedAt = ZonedDateTime.now().minusHours(25),
+        createdAt = ZonedDateTime.now().minusHours(49), // older than 24 hours → should be closed
+        lastModifiedAt = ZonedDateTime.now().minusHours(49),
         ttlInEpochSeconds = None,
       )
 
@@ -38,8 +38,8 @@ class ChannelCleanUpLambdaTest extends Specification with Mockito {
         data = None,
         lastEventId = Some("event-2"),
         lastEventAt = None,
-        createdAt = ZonedDateTime.now().minusHours(23), // within 24 hours → should be skipped
-        lastModifiedAt = ZonedDateTime.now().minusHours(23),
+        createdAt = ZonedDateTime.now().minusHours(47), // within 24 hours → should be skipped
+        lastModifiedAt = ZonedDateTime.now().minusHours(47),
         ttlInEpochSeconds = None,
       )
 

@@ -143,7 +143,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
     },
     "ChannelCleanerSchedule66A32CDB": {
       "Properties": {
-        "ScheduleExpression": "cron(0 3 * * ? *)",
+        "ScheduleExpression": "cron(50 09 * * ? *)",
         "State": "ENABLED",
         "Tags": [
           {
