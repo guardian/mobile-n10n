@@ -25,7 +25,7 @@ class ChannelCleanUpService(
       _ <- Future.sequence(
         channelsForPossibleDeletion.map { mapping =>
         {
-          if (mapping.createdAt.isAfter(ZonedDateTime.now().minusHours(48))) { // TODO TEST
+          if (mapping.createdAt.isAfter(ZonedDateTime.now().minusHours(24))) {
             logger.info(s"Channel with ID ${mapping.channelId} for match ID ${mapping.id} is " +
               s"not live but was created less than 24hrs ago, skipping deletion.")
             Future.successful(())
