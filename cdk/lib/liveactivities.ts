@@ -154,7 +154,7 @@ export class LiveActivities extends GuStack {
 			{
 				app: app,
 				description: 'Clean up channels for live activities',
-				handler: 'com.gu.liveactivities.ChannelCleanerLambda::handleRequest',
+				handler: 'com.gu.liveactivities.ChannelCleanUpLambda::handleRequest',
 				functionName: `${app}-channel-cleaner-${stage}`,
 				fileName: `${app}.jar`,
 				runtime: Runtime.JAVA_11,
@@ -173,7 +173,7 @@ export class LiveActivities extends GuStack {
 
 		// Note: scheduled rules must use the default event bus, not custom eventBus
 		new Rule(this, 'ChannelCleanerSchedule', {
-			schedule: Schedule.cron({ hour: '09', minute: '50' }), // Test run in CODE  UTC
+			schedule: Schedule.cron({ hour: '10', minute: '30' }), // Test run in CODE  UTC
 			targets: [new LambdaFunction(channelCleanerLambda)],
 		});
 
