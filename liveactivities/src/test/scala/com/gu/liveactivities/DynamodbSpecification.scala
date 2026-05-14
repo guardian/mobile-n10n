@@ -24,6 +24,12 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll with Befor
     LocalDynamoDB.createTable(awsClient)(TableName)(targetTableAttributes: _*)
   }
 
+  override def before: Unit = {
+    LocalDynamoDB.deleteTable(awsClient)(TableName)
+    LocalDynamoDB.createTable(awsClient)(TableName)(targetTableAttributes: _*)
+  }
+  override def after: Unit = ()
+
   override def afterAll(): Unit = {
     LocalDynamoDB.deleteTable(awsClient)(TableName)
   }
