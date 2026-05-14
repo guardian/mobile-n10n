@@ -14,8 +14,8 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
     extends DynamodbSpecification
     with Mockito {
 
-  override protected def before: Any = ()
-  override protected def after: Any = ()
+//  override protected def before: Any = ()
+//  override protected def after: Any = ()
   override val TableName = "test-table"
 
   // This matcher adapts the existing `be_<=` matcher to a matcher applicable to `Any`
@@ -76,65 +76,81 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
   }
 
   "LiveActivityChannelRepository.fetchAllMappingsByStatus" should {
-    "return only mappings that are active, not live, and have a last event" in new FetchStatusScope {
-      prepareData.flatMap { _ =>
+
+    "return only mappings that are active, not live, and have a last event" in new RepositoryScope with ExampleData {
+      val activeNotLiveWithEvent   = createFootballMappingWithId("status-0001").copy(isChannelActive = true, isLive = false, lastEventId = Some("event-1"), lastEventAt = Some(ZonedDateTime.now()))
+      val activeNotLiveNoEvent     = createFootballMappingWithId("status-0002").copy(isChannelActive = true, isLive = false, lastEventId = None, lastEventAt = None)
+      val activeLiveWithEvent      = createFootballMappingWithId("status-0003").copy(isChannelActive = true, isLive = true,  lastEventId = Some("event-3"), lastEventAt = Some(ZonedDateTime.now()))
+      val inactiveNotLiveWithEvent = createFootballMappingWithId("status-0004").copy(isChannelActive = false, isLive = false, lastEventId = Some("event-4"), lastEventAt = Some(ZonedDateTime.now()))
+
+      val setup = for {
+        _ <- repository.createMapping(activeNotLiveWithEvent.id, activeNotLiveWithEvent.channelId, activeNotLiveWithEvent.data)
+        _ <- repository.createMapping(activeNotLiveNoEvent.id, activeNotLiveNoEvent.channelId, activeNotLiveNoEvent.data)
+        _ <- repository.createMapping(activeLiveWithEvent.id, activeLiveWithEvent.channelId, activeLiveWithEvent.data)
+        _ <- repository.createMapping(inactiveNotLiveWithEvent.id, inactiveNotLiveWithEvent.channelId, inactiveNotLiveWithEvent.data)
+        _ <- repository.updateMappingLastEvent(activeNotLiveWithEvent.id, Some("event-1"), Some(ZonedDateTime.now()))
+        _ <- repository.updateMappingLiveAndLastEvent(activeLiveWithEvent.id, isLive = true, Some("event-3"), Some(ZonedDateTime.now()))
+        _ <- repository.updateMappingLastEvent(inactiveNotLiveWithEvent.id, Some("event-4"), Some(ZonedDateTime.now()))
+        _ <- repository.updateMappingActiveChannel(inactiveNotLiveWithEvent.id, isActive = false)
+      } yield ()
+
+      setup.flatMap { _ =>
         repository.fetchAllMappingsByStatus(isChannelActive = true, isLive = false, hasLastEvent = true)
-          .map(_.map(_.id))
       } must (
-        haveSize[List[String]](2) and
-          containAllOf(Seq(activeNotLiveWithEvent.id, activeNotLiveWithEvent2.id))
+        haveSize[List[LiveActivityMapping]](1) and
+          contain((m: LiveActivityMapping) => m.id == "status-0001")
         ).await
     }
 
-    "return only mappings that are active, not live, and have no last event" in new FetchStatusScope {
-      prepareData.flatMap { _ =>
+    "return only mappings that are active, not live, and have no last event" in new RepositoryScope with ExampleData {
+      val activeNotLiveNoEvent   = createFootballMappingWithId("status-0010").copy(isChannelActive = true, isLive = false, lastEventId = None, lastEventAt = None)
+      val activeNotLiveWithEvent = createFootballMappingWithId("status-0011").copy(isChannelActive = true, isLive = false)
+
+      val setup = for {
+        _ <- repository.createMapping(activeNotLiveNoEvent.id, activeNotLiveNoEvent.channelId, activeNotLiveNoEvent.data)
+        _ <- repository.createMapping(activeNotLiveWithEvent.id, activeNotLiveWithEvent.channelId, activeNotLiveWithEvent.data)
+        _ <- repository.updateMappingLastEvent(activeNotLiveWithEvent.id, Some("event-11"), Some(ZonedDateTime.now()))
+      } yield ()
+
+      setup.flatMap { _ =>
         repository.fetchAllMappingsByStatus(isChannelActive = true, isLive = false, hasLastEvent = false)
-          .map(_.map(_.id))
       } must (
-        haveSize[List[String]](1) and
-          contain(exactly(activeNotLiveNoEvent.id))
+        haveSize[List[LiveActivityMapping]](1) and
+          contain((m: LiveActivityMapping) => m.id == "status-0010")
         ).await
     }
 
-    "return only mappings that are inactive, not live, and have a last event" in new FetchStatusScope {
-      prepareData.flatMap { _ =>
-        repository.fetchAllMappingsByStatus(isChannelActive = false, isLive = false, hasLastEvent = true)
-          .map(_.map(_.id))
-      } must (
-        haveSize[List[String]](1) and
-          contain(exactly(inactiveNotLiveWithEvent.id))
-        ).await
-    }
+    "return empty list when no mappings match the given status" in new RepositoryScope with ExampleData {
+      val activeNotLiveNoEvent = createFootballMappingWithId("status-0020")
 
-    "return empty list when no mappings match the given status" in new FetchStatusScope {
-      prepareData.flatMap { _ =>
+      repository.createMapping(activeNotLiveNoEvent.id, activeNotLiveNoEvent.channelId, activeNotLiveNoEvent.data).flatMap { _ =>
         repository.fetchAllMappingsByStatus(isChannelActive = false, isLive = true, hasLastEvent = true)
-          .map(_.map(_.id))
-      } must beEqualTo(List.empty[String]).await
+      } must beEqualTo(List.empty[LiveActivityMapping]).await
     }
-  }
 
-  trait FetchStatusScope extends AsyncDynamoScope with ExampleData {
-    val repository = new LiveActivityChannelRepository(asyncClient, TableName)
+    "return multiple matching mappings" in new RepositoryScope with ExampleData {
+      val m1 = createFootballMappingWithId("status-0030")
+      val m2 = createFootballMappingWithId("status-0031")
+      val m3 = createFootballMappingWithId("status-0032")
 
-    val activeNotLiveWithEvent: LiveActivityMapping   = createFootballMappingWithId("shared-active-notlive-event")
-    val activeNotLiveWithEvent2: LiveActivityMapping  = createFootballMappingWithId("shared-active-notlive-event2")
-    val activeNotLiveNoEvent: LiveActivityMapping     = createFootballMappingWithId("shared-active-notlive-noevent")
-    val activeLiveWithEvent: LiveActivityMapping      = createFootballMappingWithId("shared-active-live-event")
-    val inactiveNotLiveWithEvent: LiveActivityMapping = createFootballMappingWithId("shared-inactive-notlive-event")
+      val setup = for {
+        _ <- repository.createMapping(m1.id, m1.channelId, m1.data)
+        _ <- repository.createMapping(m2.id, m2.channelId, m2.data)
+        _ <- repository.createMapping(m3.id, m3.channelId, m3.data)
+        _ <- repository.updateMappingLastEvent(m1.id, Some("event-30"), Some(ZonedDateTime.now()))
+        _ <- repository.updateMappingLastEvent(m2.id, Some("event-31"), Some(ZonedDateTime.now()))
+        // m3 gets no lastEvent so should not be returned
+      } yield ()
 
-    val prepareData: Future[Unit] = for {
-      _ <- repository.createMapping(activeNotLiveWithEvent.id, activeNotLiveWithEvent.channelId, activeNotLiveWithEvent.data)
-      _ <- repository.createMapping(activeNotLiveWithEvent2.id, activeNotLiveWithEvent2.channelId, activeNotLiveWithEvent2.data)
-      _ <- repository.createMapping(activeNotLiveNoEvent.id, activeNotLiveNoEvent.channelId, activeNotLiveNoEvent.data)
-      _ <- repository.createMapping(activeLiveWithEvent.id, activeLiveWithEvent.channelId, activeLiveWithEvent.data)
-      _ <- repository.createMapping(inactiveNotLiveWithEvent.id, inactiveNotLiveWithEvent.channelId, inactiveNotLiveWithEvent.data)
-      _ <- repository.updateMappingLastEvent(activeNotLiveWithEvent.id, Some("event-1"), Some(ZonedDateTime.now()))
-      _ <- repository.updateMappingLastEvent(activeNotLiveWithEvent2.id, Some("event-2"), Some(ZonedDateTime.now()))
-      _ <- repository.updateMappingLiveAndLastEvent(activeLiveWithEvent.id, isLive = true, Some("event-3"), Some(ZonedDateTime.now()))
-      _ <- repository.updateMappingLastEvent(inactiveNotLiveWithEvent.id, Some("event-4"), Some(ZonedDateTime.now()))
-      _ <- repository.updateMappingActiveChannel(inactiveNotLiveWithEvent.id, isActive = false)
-    } yield ()
+      setup.flatMap { _ =>
+        repository.fetchAllMappingsByStatus(isChannelActive = true, isLive = false, hasLastEvent = true)
+      } must (
+        haveSize[List[LiveActivityMapping]](2) and
+          contain((m: LiveActivityMapping) => m.id == "status-0030") and
+          contain((m: LiveActivityMapping) => m.id == "status-0031") and
+          not(contain((m: LiveActivityMapping) => m.id == "status-0032"))
+        ).await
+    }
   }
 
   trait RepositoryScope extends AsyncDynamoScope {
