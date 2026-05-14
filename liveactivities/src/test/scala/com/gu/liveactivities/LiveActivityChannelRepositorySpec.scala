@@ -81,8 +81,8 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       prepareData.flatMap { _ =>
         repository.fetchAllMappingsByStatus(isChannelActive = true, isLive = false, hasLastEvent = true)
       } must (
-        haveSize[List[LiveActivityMapping]](1) and
-          contain((m: LiveActivityMapping) => m.id must beEqualTo(activeNotLiveWithEvent.id))
+        haveSize[List[String]](2) and
+          containAllOf(Seq(activeNotLiveWithEvent.id, activeNotLiveWithEvent2.id))
         ).await
     }
 
@@ -110,14 +110,6 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       } must beEqualTo(List.empty[LiveActivityMapping]).await
     }
 
-    "return multiple matching mappings" in new FetchStatusScope {
-      prepareData.flatMap { _ =>
-        repository.fetchAllMappingsByStatus(isChannelActive = true, isLive = false, hasLastEvent = true)
-      }.map(_.map(_.id)) must (
-        haveSize[List[String]](2) and
-          containAllOf(Seq(activeNotLiveWithEvent.id, activeNotLiveWithEvent2.id))
-        ).await
-    }
   }
 
   trait FetchStatusScope extends AsyncDynamoScope with ExampleData {
