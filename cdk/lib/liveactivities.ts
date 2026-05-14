@@ -173,7 +173,7 @@ export class LiveActivities extends GuStack {
 
 		// Note: scheduled rules must use the default event bus, not custom eventBus
 		new Rule(this, 'ChannelCleanerSchedule', {
-			schedule: Schedule.cron({ hour: '10', minute: '30' }), // Test run in CODE  UTC
+			schedule: Schedule.cron({ hour: '5', minute: '0' }), // 5am UTC
 			targets: [new LambdaFunction(channelCleanerLambda)],
 		});
 
