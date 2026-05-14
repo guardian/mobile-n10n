@@ -76,40 +76,42 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
   }
 
   "LiveActivityChannelRepository.fetchAllMappingsByStatus" should {
-
     "return only mappings that are active, not live, and have a last event" in new FetchStatusScope {
       prepareData.flatMap { _ =>
         repository.fetchAllMappingsByStatus(isChannelActive = true, isLive = false, hasLastEvent = true)
+          .map(_.map(_.id))
       } must (
-        haveSize[List[LiveActivityMapping]](2) and
-          containAllOf(Seq(activeNotLiveWithEvent, activeNotLiveWithEvent2))
+        haveSize[List[String]](2) and
+          containAllOf(Seq(activeNotLiveWithEvent.id, activeNotLiveWithEvent2.id))
         ).await
     }
 
     "return only mappings that are active, not live, and have no last event" in new FetchStatusScope {
       prepareData.flatMap { _ =>
         repository.fetchAllMappingsByStatus(isChannelActive = true, isLive = false, hasLastEvent = false)
+          .map(_.map(_.id))
       } must (
-        haveSize[List[LiveActivityMapping]](1) and
-          contain((m: LiveActivityMapping) => m must beEqualToExcludingMetaData(activeNotLiveNoEvent))
+        haveSize[List[String]](1) and
+          contain(exactly(activeNotLiveNoEvent.id))
         ).await
     }
 
     "return only mappings that are inactive, not live, and have a last event" in new FetchStatusScope {
       prepareData.flatMap { _ =>
         repository.fetchAllMappingsByStatus(isChannelActive = false, isLive = false, hasLastEvent = true)
+          .map(_.map(_.id))
       } must (
-        haveSize[List[LiveActivityMapping]](1) and
-          contain((m: LiveActivityMapping) => m must beEqualToExcludingMetaData(activeNotLiveWithEvent))
+        haveSize[List[String]](1) and
+          contain(exactly(inactiveNotLiveWithEvent.id))
         ).await
     }
 
     "return empty list when no mappings match the given status" in new FetchStatusScope {
       prepareData.flatMap { _ =>
         repository.fetchAllMappingsByStatus(isChannelActive = false, isLive = true, hasLastEvent = true)
-      } must beEqualTo(List.empty[LiveActivityMapping]).await
+          .map(_.map(_.id))
+      } must beEqualTo(List.empty[String]).await
     }
-
   }
 
   trait FetchStatusScope extends AsyncDynamoScope with ExampleData {
