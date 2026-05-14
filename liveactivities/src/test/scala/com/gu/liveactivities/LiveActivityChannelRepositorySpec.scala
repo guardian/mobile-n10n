@@ -8,14 +8,11 @@ import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType._
 import software.amazon.awssdk.services.dynamodb.model._
 
 import java.time.ZonedDateTime
-import scala.concurrent.Future
 
 class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
     extends DynamodbSpecification
     with Mockito {
 
-//  override protected def before: Any = ()
-//  override protected def after: Any = ()
   override val TableName = "test-table"
 
   // This matcher adapts the existing `be_<=` matcher to a matcher applicable to `Any`

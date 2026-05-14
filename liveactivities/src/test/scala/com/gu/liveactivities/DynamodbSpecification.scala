@@ -1,14 +1,14 @@
 package com.gu.liveactivities
 
 import org.specs2.mutable.Specification
-import org.specs2.specification.{BeforeAfterAll,BeforeAfterEach, Scope}
+import org.specs2.specification.{BeforeAfterEach, Scope}
 import software.amazon.awssdk.services.dynamodb.model._
 
 import org.scanamo.ScanamoAsync
 import scala.concurrent.ExecutionContext
 import org.scanamo.LocalDynamoDB
 
-trait DynamodbSpecification extends Specification with BeforeAfterAll with BeforeAfterEach {
+trait DynamodbSpecification extends Specification with BeforeAfterEach {
 
   sequential
 
@@ -20,19 +20,14 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll with Befor
 
   val TestEndpoint = "http://localhost:8002"
 
-  override def beforeAll(): Unit = {
-    LocalDynamoDB.createTable(awsClient)(TableName)(targetTableAttributes: _*)
-  }
-
   override def before: Unit = {
-    LocalDynamoDB.deleteTable(awsClient)(TableName)
     LocalDynamoDB.createTable(awsClient)(TableName)(targetTableAttributes: _*)
   }
-  override def after: Unit = ()
 
-  override def afterAll(): Unit = {
+  override def after: Unit = {
     LocalDynamoDB.deleteTable(awsClient)(TableName)
   }
+
   private def awsClient = LocalDynamoDB.client(8002)
 
   private def scanamo = ScanamoAsync(awsClient)
