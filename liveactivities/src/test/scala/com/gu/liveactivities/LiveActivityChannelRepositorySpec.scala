@@ -19,7 +19,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
   override val TableName = "test-table"
 
   // This matcher adapts the existing `be_<=` matcher to a matcher applicable to `Any`
-  def beEqualToExcludingMetaData(expected: LiveActivityMapping) = 
+  def beEqualToExcludingMetaData(expected: LiveActivityMapping) =
     beEqualTo(expected) ^^
     { (t: LiveActivityMapping) => t.copy(
         createdAt = expected.createdAt,
@@ -33,8 +33,8 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       with ExampleData {
       val footballMapping = createFootballMappingWithId("football-0001")
       repository.createMapping(
-        footballMapping.id, 
-        footballMapping.channelId, 
+        footballMapping.id,
+        footballMapping.channelId,
         footballMapping.data).flatMap { _ =>
         repository.getMappingById(footballMapping.id)
       } must beEqualToExcludingMetaData(footballMapping).await
@@ -43,11 +43,11 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
     "Error if trying to save a new channel mapping for an id that already exists" in new RepositoryScope
       with ExampleData {
       val footballMapping = createFootballMappingWithId("football-0004")
-      repository.createMapping(footballMapping.id, 
-        footballMapping.channelId, 
+      repository.createMapping(footballMapping.id,
+        footballMapping.channelId,
         footballMapping.data).flatMap { _ =>
-        repository.createMapping(footballMapping.id, 
-          footballMapping.channelId, 
+        repository.createMapping(footballMapping.id,
+          footballMapping.channelId,
           footballMapping.data)
       } must throwA[RepositoryException].await
     }
@@ -56,8 +56,8 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       with ExampleData {
       val footballMapping = createFootballMappingWithId("football-0002")
       repository.createMapping(
-        footballMapping.id, 
-        footballMapping.channelId, 
+        footballMapping.id,
+        footballMapping.channelId,
         footballMapping.data).flatMap { _ =>
         repository.deleteMappingById(footballMapping.id)
       } must beEqualTo(()).await
@@ -67,8 +67,8 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       with ExampleData {
       val footballMapping = createFootballMappingWithId("football-0003")
       repository.createMapping(
-        footballMapping.id, 
-        footballMapping.channelId, 
+        footballMapping.id,
+        footballMapping.channelId,
         footballMapping.data).flatMap { _ =>
         repository.getMappingById(footballMapping.id)
       } must beEqualToExcludingMetaData(footballMapping).await
@@ -81,8 +81,8 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
       prepareData.flatMap { _ =>
         repository.fetchAllMappingsByStatus(isChannelActive = true, isLive = false, hasLastEvent = true)
       } must (
-        haveSize[List[String]](2) and
-          containAllOf(Seq(activeNotLiveWithEvent.id, activeNotLiveWithEvent2.id))
+        haveSize[List[LiveActivityMapping]](2) and
+          containAllOf(Seq(activeNotLiveWithEvent, activeNotLiveWithEvent2))
         ).await
     }
 
@@ -91,7 +91,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
         repository.fetchAllMappingsByStatus(isChannelActive = true, isLive = false, hasLastEvent = false)
       } must (
         haveSize[List[LiveActivityMapping]](1) and
-          contain((m: LiveActivityMapping) => m.id must beEqualTo(activeNotLiveNoEvent.id))
+          contain((m: LiveActivityMapping) => m must beEqualToExcludingMetaData(activeNotLiveNoEvent))
         ).await
     }
 
@@ -100,7 +100,7 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
         repository.fetchAllMappingsByStatus(isChannelActive = false, isLive = false, hasLastEvent = true)
       } must (
         haveSize[List[LiveActivityMapping]](1) and
-          contain((m: LiveActivityMapping) => m.id must beEqualTo(activeNotLiveWithEvent.id))
+          contain((m: LiveActivityMapping) => m must beEqualToExcludingMetaData(activeNotLiveWithEvent))
         ).await
     }
 
@@ -115,11 +115,11 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
   trait FetchStatusScope extends AsyncDynamoScope with ExampleData {
     val repository = new LiveActivityChannelRepository(asyncClient, TableName)
 
-    val activeNotLiveWithEvent   = createFootballMappingWithId("shared-active-notlive-event")
-    val activeNotLiveWithEvent2   = createFootballMappingWithId("shared-active-notlive-event2")
-    val activeNotLiveNoEvent     = createFootballMappingWithId("shared-active-notlive-noevent")
-    val activeLiveWithEvent      = createFootballMappingWithId("shared-active-live-event")
-    val inactiveNotLiveWithEvent = createFootballMappingWithId("shared-inactive-notlive-event")
+    val activeNotLiveWithEvent: LiveActivityMapping   = createFootballMappingWithId("shared-active-notlive-event")
+    val activeNotLiveWithEvent2: LiveActivityMapping  = createFootballMappingWithId("shared-active-notlive-event2")
+    val activeNotLiveNoEvent: LiveActivityMapping     = createFootballMappingWithId("shared-active-notlive-noevent")
+    val activeLiveWithEvent: LiveActivityMapping      = createFootballMappingWithId("shared-active-live-event")
+    val inactiveNotLiveWithEvent: LiveActivityMapping = createFootballMappingWithId("shared-inactive-notlive-event")
 
     val prepareData: Future[Unit] = for {
       _ <- repository.createMapping(activeNotLiveWithEvent.id, activeNotLiveWithEvent.channelId, activeNotLiveWithEvent.data)
