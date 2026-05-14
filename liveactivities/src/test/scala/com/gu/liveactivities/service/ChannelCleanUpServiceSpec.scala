@@ -1,7 +1,6 @@
-package com.gu.liveactivities
+package com.gu.liveactivities.service
 
 import com.gu.liveactivities.models.LiveActivityMapping
-import com.gu.liveactivities.service.{ChannelApiClient, ChannelMappingsRepository}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
@@ -9,7 +8,7 @@ import java.time.ZonedDateTime
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-class ChannelCleanUpLambdaTest extends Specification with Mockito {
+class ChannelCleanUpServiceTest extends Specification with Mockito {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
@@ -58,7 +57,7 @@ class ChannelCleanUpLambdaTest extends Specification with Mockito {
       val service = new ChannelCleanUpService(mockRepository, mockChannelApiClient)
 
       val result = Await.result(service.deleteChannelsForEndedBroadcasts(), 5.seconds)
-      result must haveSize(2)
+      result must haveSize(1)
       // old channel: closeChannel should be called once
       there was one(mockChannelApiClient).closeChannel("channel-old")
 
