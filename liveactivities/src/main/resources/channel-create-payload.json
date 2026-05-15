@@ -33,7 +33,9 @@
       },
       "commentary" : "Predicted to be an exciting match",
       "lineupsAvailable" : true,
-      "currentMinute" : 0
+      "currentMinute" : 0,
+      "articleUrl": "http://www.theguardian.com/123456-test-article",
+      "matchInfoUrl": "http://www.theguardian.com/football/match/123456-test"
     },
     "eventTimestamp": 1777278992019
   }
