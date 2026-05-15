@@ -1,6 +1,6 @@
 package com.gu.liveactivities.service
 
-import com.gu.liveactivities.models.LiveActivityMapping
+import com.gu.liveactivities.models.{LiveActivityMapping, RepositoryException}
 import com.gu.liveactivities.util.Logging
 
 import java.time.ZonedDateTime
@@ -16,12 +16,14 @@ class ChannelCleanUpService(
     val channelsDeleted = scala.collection.mutable.ListBuffer.empty[LiveActivityMapping]
 
     for {
+      // todo repo failure will throw
       channelsForPossibleDeletion <- repository.fetchAllMappingsByStatus(
         isChannelActive = true,
         isLive = false,
         hasLastEvent = true,
       )
       _ = logger.info(s"Channels identified for possible deletion: ${channelsForPossibleDeletion.size}")
+      // todo these sequence failures will not currently throw
       _ <- Future.sequence(
         channelsForPossibleDeletion.map { mapping =>
         {
@@ -39,7 +41,7 @@ class ChannelCleanUpService(
                 f
               }
               .recover { case exception =>
-                // todo we should alert on this failure
+                // todo Handle exception better and throw when needed. Some errorw will be handled by rest of the Cleanup tasks.
                 logger.error(s"Failed to delete channel with ID ${mapping.channelId} for match ID ${mapping.id} - ${exception.getMessage}")
               }
           }
@@ -47,26 +49,26 @@ class ChannelCleanUpService(
         },
       )
     } yield channelsDeleted.toList
-
   }
 
-  // todo not running yet
-  // No channel should exist in APNS without an active mapping in Dynamo
-  private def deleteOrphanChannelsInAPNS(): Future[List[String]] = {
-    for {
-      allChannels <- channelApiClient.getAllChannels()
-      allMappings <- repository.fetchAllMappings()
-      allActiveMappings = allMappings.filter(_.isChannelActive)
-      orphanChannels = allChannels.filter(c => !allActiveMappings.exists(_.channelId == c))
-      _ <- Future.sequence(
-        orphanChannels.map { channelId =>
-          channelApiClient
-            .closeChannel(channelId)
-            .recover { case exception =>
-              logger.error(s"Failed to delete orphan channel with ID ${channelId} - ${exception.getMessage}")
-            }
-        },
-      )
-    } yield orphanChannels
-  }
+
+//  // todo not running yet
+//  // No channel should exist in APNS without an active mapping in Dynamo
+//  private def deleteOrphanChannelsInAPNS(): Future[List[String]] = {
+//    for {
+//      allChannels <- channelApiClient.getAllChannels()
+//      allMappings <- repository.fetchAllMappings()
+//      allActiveMappings = allMappings.filter(_.isChannelActive)
+//      orphanChannels = allChannels.filter(c => !allActiveMappings.exists(_.channelId == c))
+//      _ <- Future.sequence(
+//        orphanChannels.map { channelId =>
+//          channelApiClient
+//            .closeChannel(channelId)
+//            .recover { case exception =>
+//              logger.error(s"Failed to delete orphan channel with ID ${channelId} - ${exception.getMessage}")
+//            }
+//        },
+//      )
+//    } yield orphanChannels
+//  }
 }

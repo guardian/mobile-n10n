@@ -202,7 +202,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
           ).scan()
         }
       }
-      results .flatMap { results =>
+      results.flatMap { results =>
         val errors = results.collect { case Left(ex) => ex }
         if (errors.nonEmpty) {
           val errorMsg = s"Error fetching ChannelMappings by status - ${errors.map(DynamoReadError.describe).mkString(", ")}"

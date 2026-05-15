@@ -1,7 +1,6 @@
 package com.gu.liveactivities
 
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent
-import play.api.libs.json.Json
 
 import scala.io.Source
 import java.nio.charset.StandardCharsets
