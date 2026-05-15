@@ -32,8 +32,8 @@ class BroadcastServiceSpec(implicit ee: ExecutionEnv) extends Specification with
   val defaultContentState = FootballMatchContentState(
     matchStatus = FirstHalf,
     kickOffTimestamp = now.toEpochSecond - 1800, // 30min ago
-    homeTeam = TeamState(name = "Arsenal", score = 1),
-    awayTeam = TeamState(name = "Chelsea", score = 0),
+    homeTeam = TeamState(id = "1", name = "Arsenal", score = 1),
+    awayTeam = TeamState(id = "2", name = "Chelsea", score = 0),
     competition = Competition(id = "100", name = "Premier League", round = Some("League")),
     commentary = Some("Arsenal dominating."),
     currentMinute = Some(30),

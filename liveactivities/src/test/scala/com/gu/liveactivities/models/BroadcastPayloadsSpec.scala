@@ -10,8 +10,8 @@ class BroadcastPayloadsSpec extends Specification {
   trait BroadcastScope extends Scope {
     val now = System.currentTimeMillis() / 1000
 
-    val homeTeam = TeamState(name = "Arsenal", score = 1)
-    val awayTeam = TeamState(name = "Chelsea", score = 0)
+    val homeTeam = TeamState(id = "1", name = "Arsenal", score = 1)
+    val awayTeam = TeamState(id = "2", name = "Chelsea", score = 0)
     val competition = Competition(id = "100", name = "Premier League", round = Some("League"))
 
     val contentState = FootballMatchContentState(

@@ -99,6 +99,7 @@ case class PenaltyShootoutState(
 )
 
 case class TeamState(
+    id: String,
     name: String,
     logoAssetName: Option[String] = None,
     teamUrl: Option[String] = None,
