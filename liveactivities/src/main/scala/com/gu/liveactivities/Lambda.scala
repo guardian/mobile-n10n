@@ -1,6 +1,6 @@
 package com.gu.liveactivities
 
-import com.gu.liveactivities.service.{Authentication, LiveActivityChannelRepository}
+import com.gu.liveactivities.service.{Authentication, BroadcastApiClient, LiveActivityChannelRepository}
 import com.gu.liveactivities.util.{Configuration, IosConfiguration, Logging}
 import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain, DefaultCredentialsProvider, ProfileCredentialsProvider}
