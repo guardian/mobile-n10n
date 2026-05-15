@@ -1,33 +1,22 @@
 package com.gu.liveactivities
 
+import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.gu.liveactivities.service.BroadcastApiClient
-
-import scala.concurrent.Await
-import scala.util.Try
-import scala.util.Success
-import scala.util.Failure
-import com.amazonaws.services.lambda.runtime.Context
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler
+import com.gu.liveactivities.util.Logging
+import com.gu.mobile.notifications.client.models.liveActitivites._
+import play.api.libs.json._
 
 import java.io.{InputStream, OutputStream}
-import play.api.libs.json._
-import com.gu.liveactivities.util.Logging
-
-import scala.concurrent.Future
-import com.gu.liveactivities.models.LiveActivityInvalidStateException
-import com.gu.liveactivities.models.BroadcastBody
-
-import java.time.ZonedDateTime
-import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromLong, dateTimeToLong, dateTimeToString}
-import com.gu.mobile.notifications.client.models.liveActitivites.{EndLiveActivityEvent, EventBridgeEvent, FootballMatchContentState, LiveActivityPayload, StartLiveActivityEvent, UpdateLiveActivityEvent}
-
+import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import scala.util.{Failure, Success, Try}
 
 
 
 object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
 
-
+  val broadcastApiClient = new BroadcastApiClient(authentication, config.bundleId, config.sendingToProdServer)
+  val broadcastService = new BroadcastService(repository, broadcastApiClient)
 
   def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     Json.parse(input).validate[EventBridgeEvent] match {

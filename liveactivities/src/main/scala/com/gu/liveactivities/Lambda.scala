@@ -41,8 +41,6 @@ trait Lambda extends Logging{
       .build()
 
   val repository = new LiveActivityChannelRepository(dynamoDbClient, s"mobile-notifications-liveactivities-${config.stage}")
-  val broadcastApiClient = new BroadcastApiClient(authentication, config.bundleId, config.sendingToProdServer)
-  val broadcastService = new BroadcastService(repository, broadcastApiClient)
 
   private val eventBusName = s"liveactivities-eventbus-${config.stage}"
   lazy val liveActivityPusher = new LiveActivityPusher(eventBusName, logger)
