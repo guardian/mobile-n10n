@@ -37,6 +37,7 @@ class MatchStatusLiveActivityPayloadBuilder {
       matchStatus = MatchStatus.fromString(matchInfo.matchStatus),
       kickOffTimestamp = matchInfo.date.toEpochSecond, // included date and time
       homeTeam = TeamState(
+        id = matchInfo.homeTeam.id,
         name = transformTeamName(matchInfo.homeTeam.name),
         score = score.home,
         logoAssetName = None, // tbc
@@ -45,6 +46,7 @@ class MatchStatusLiveActivityPayloadBuilder {
         penaltyScore = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = true)
       ),
       awayTeam = TeamState(
+        id = matchInfo.awayTeam.id,
         name = transformTeamName(matchInfo.awayTeam.name),
         score = score.away,
         logoAssetName = None, // tbc
