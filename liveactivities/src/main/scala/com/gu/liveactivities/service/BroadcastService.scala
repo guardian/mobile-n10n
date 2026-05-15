@@ -1,10 +1,13 @@
-package com.gu.liveactivities
+package com.gu.liveactivities.service
 
 import com.gu.liveactivities.models.{BroadcastBody, LiveActivityInvalidStateException}
-import com.gu.liveactivities.service.{BroadcastApiClient, ChannelMappingsRepository}
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromLong, dateTimeToString}
 import com.gu.liveactivities.util.Logging
-import com.gu.mobile.notifications.client.models.liveActitivites.{ContentState, EndLiveActivityEvent, FootballMatchContentState, LiveActivityPayload}
+import com.gu.mobile.notifications.client.models.liveActitivites.{
+  ContentState,
+  EndLiveActivityEvent,
+  LiveActivityPayload,
+}
 
 import java.time.ZonedDateTime
 import scala.concurrent.{ExecutionContext, Future}

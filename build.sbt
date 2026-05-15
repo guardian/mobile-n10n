@@ -477,6 +477,7 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
       "software.amazon.awssdk" % "eventbridge" % "2.20.162",
+      "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
       "org.scanamo" %% "scanamo" % "6.0.0",
       "org.scanamo" %% "scanamo-testkit" % "6.0.0" % "test"
     ),

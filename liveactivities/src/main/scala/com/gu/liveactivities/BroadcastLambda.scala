@@ -1,7 +1,7 @@
 package com.gu.liveactivities
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
-import com.gu.liveactivities.service.BroadcastApiClient
+import com.gu.liveactivities.service.{BroadcastApiClient, BroadcastService}
 import com.gu.liveactivities.util.Logging
 import com.gu.mobile.notifications.client.models.liveActitivites._
 import play.api.libs.json._
