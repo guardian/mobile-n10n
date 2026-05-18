@@ -1,6 +1,6 @@
 package com.gu.notifications.worker
 
-import com.gu.mobile.notifications.client.models.{FootballMatchStatusPayload, NotificationPayload}
+import com.gu.mobile.notifications.client.models.{FootballMatchStatusPayload, FootballPenaltyShootoutPayload, NotificationPayload}
 import com.gu.mobile.notifications.football.lib.{EventConsumer, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.models.MatchDataWithArticle
 import com.gu.mobile.notifications.football.notificationbuilders.MatchStatusNotificationBuilder
@@ -57,19 +57,23 @@ object FootballMatchFcmLocalRun extends App {
       "notifications" -> JsArray(eventConsumer.eventsToNotifications(matchData).map(notificationJson))
     )
 
-  private def notificationJson(payload: NotificationPayload): JsObject = {
-    val fp = payload.asInstanceOf[FootballMatchStatusPayload]
+  private def notificationJson(payload: NotificationPayload): JsObject =
     Json.obj(
-      "title"      -> fp.title,
-      "importance" -> fp.importance.toString,
-      "message"    -> fp.message,
-      "fcmData"    -> fcmData(fp)
+      "title"      -> payload.title,
+      "importance" -> payload.importance.toString,
+      "message"    -> payload.message,
+      "fcmData"    -> fcmData(payload)
     )
-  }
 
-  private def fcmData(fp: FootballMatchStatusPayload): JsObject = {
-    val notification = Json.toJson(fp).as[_root_.models.FootballMatchStatusNotification]
-    FcmPayloadBuilder(notification, debug = false).map { fcmPayload =>
+  private def fcmData(payload: NotificationPayload): JsObject = {
+    val notification: Option[_root_.models.Notification] = payload match {
+      case fp: FootballMatchStatusPayload =>
+        Some(Json.toJson(fp).as[_root_.models.FootballMatchStatusNotification])
+      case fp: FootballPenaltyShootoutPayload =>
+        Some(Json.toJson(fp).as[_root_.models.FootballPenaltyShootoutNotification])
+      case _ => None
+    }
+    notification.flatMap(FcmPayloadBuilder(_, debug = false)).map { fcmPayload =>
       val data = androidConfigDataField.get(fcmPayload.androidConfig).asInstanceOf[java.util.Map[String, String]].asScala
       JsObject(data.view.mapValues(JsString(_)).toMap)
     }.getOrElse(JsObject.empty)

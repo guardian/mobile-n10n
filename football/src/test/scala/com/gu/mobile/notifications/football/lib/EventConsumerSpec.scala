@@ -361,7 +361,6 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
       result must contain(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
-    }
 
     "NOT generate notification payload for extra time match phase events" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
