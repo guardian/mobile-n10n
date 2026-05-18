@@ -83,6 +83,28 @@ class FootballData(
     }
   }
 
+  def competitionIsSupported(
+      matches: List[MatchDay],
+      supportedCompetitions: List[PACompetition],
+  ): List[MatchDay] = {
+    if (supportedCompetitions.isEmpty) {
+      logger.warn("No supported competitions PA list retrieved, assuming all matches are supported")
+      return matches
+    }
+    else {
+      val (supported, unsupported) = matches.partition { m =>
+        m.competition.exists(comp => supportedCompetitions.exists(_.id == comp.id))
+      }
+      if (unsupported.nonEmpty) {
+        val msg = unsupported
+          .map(m => s"${m.id} from competition ${m.competition.map(_.id).getOrElse("unknown")}")
+          .mkString(", ")
+        logger.warn(s"Unsupported matches: $msg")
+      }
+      supported
+    }
+  }
+
   def matchIdsInProgress(dateTime: ZonedDateTime): Future[List[MatchDay]] = {
     def inProgress(m: MatchDay): Boolean =
       m.date.minusHours(2).isBefore(dateTime) && m.date.plusHours(4).isAfter(dateTime)
@@ -107,28 +129,6 @@ class FootballData(
           }
         }
         .getOrElse(false) // Shouldn't ever happen
-    }
-
-    def competitionIsSupported(
-        matches: List[MatchDay],
-        supportedCompetitions: List[PACompetition],
-    ): List[MatchDay] = {
-      if (supportedCompetitions.isEmpty) then {
-        logger.warn("No supported competitions PA list retrieved, assuming all matches are supported")
-        return matches
-      }
-      else {
-        val (supported, unsupported) = matches.partition { m =>
-          m.competition.exists(comp => supportedCompetitions.exists(_.id == comp.id))
-        }
-        if (unsupported.nonEmpty) {
-          val msg = unsupported
-            .map(m => s"${m.id} from competition ${m.competition.map(_.id).getOrElse("unknown")}")
-            .mkString(", ")
-          logger.warn(s"Unsupported matches: $msg")
-        }
-        supported
-      }
     }
 
     logger.info(s"Retrieving matches on or around $dateTime from PA")
