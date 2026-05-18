@@ -28,7 +28,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "generate correct data for Match Status notification" in new MatchStatusNotificationScope {
       check()
     }
-    "include kickOffTimestamp and penalty shootout scores in Match Status notification when present" in new MatchStatusNotificationWithOptionalFieldsScope {
+    "include kickOffTimestamp, lineupsAvailable and detailedMatchStatus in Match Status notification when present" in new MatchStatusNotificationWithOptionalFieldsScope {
       check()
     }
     "generate correct data for Editions notification" in new EditionsScope {
@@ -304,8 +304,6 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       debug = true,
       dryRun = None,
       kickOffTimestamp = Some(1746619200L),
-      homeTeamPenalties = Some(models.PenaltyScore(scored = 3, missed = 1, saved = 0)),
-      awayTeamPenalties = Some(models.PenaltyScore(scored = 2, missed = 0, saved = 1))
     )
     override val expected = Some(FirebaseAndroidNotification(
       notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
@@ -331,13 +329,7 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
         "awayTeamRedCards" -> "0",
         Keys.KickOffTimestamp -> "1746619200",
         Keys.DetailedMatchStatus -> "PENALTIES",
-        Keys.LineupsAvailable -> "true",
-        Keys.HomeTeamPenaltiesScored -> "3",
-        Keys.HomeTeamPenaltiesMissed -> "1",
-        Keys.HomeTeamPenaltiesSaved -> "0",
-        Keys.AwayTeamPenaltiesScored -> "2",
-        Keys.AwayTeamPenaltiesMissed -> "0",
-        Keys.AwayTeamPenaltiesSaved -> "1"
+        Keys.LineupsAvailable -> "true"
       ),
       ttl = TimeToLive.FootballMatchStatusTtl
     ))
