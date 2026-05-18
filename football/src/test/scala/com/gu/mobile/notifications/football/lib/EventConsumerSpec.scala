@@ -349,7 +349,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       val result: List[NotificationPayload] =
         eventConsumer.eventsToNotifications(matchDataLA)
 
-      result must not contain((payload: NotificationPayload) => payload.title.getOrElse("") == "Penalty Kick")
+      result must not contain((payload: NotificationPayload) =>
+        payload.isInstanceOf[FootballMatchStatusPayload] && payload.title.contains("Penalty Kick")
+      )
     }
 
     "generate FootballPenaltyShootoutPayload for shootout events" in new MatchEventsContext {
