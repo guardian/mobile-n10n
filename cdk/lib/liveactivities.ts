@@ -1,8 +1,14 @@
+import { GuAlarm } from '@guardian/cdk/lib/constructs/cloudwatch';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuLambdaFunction } from '@guardian/cdk/lib/constructs/lambda';
 import type { App } from 'aws-cdk-lib';
 import { Duration, Tags } from 'aws-cdk-lib';
+import {
+	ComparisonOperator,
+	Metric,
+	TreatMissingData,
+} from 'aws-cdk-lib/aws-cloudwatch';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { EventBus, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
@@ -10,6 +16,26 @@ import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { SqsDestination } from 'aws-cdk-lib/aws-lambda-destinations';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
+
+const addDlqAlarm = (scope: GuStack, app: string, dlq: Queue, name: string) => {
+	new GuAlarm(scope, `${name}Alarm`, {
+		app: app,
+		alarmName: `${name}-alarm`,
+		alarmDescription: `More than 1 message in ${name}`,
+		metric: new Metric({
+			namespace: 'AWS/SQS',
+			metricName: 'ApproximateNumberOfMessagesVisible',
+			dimensionsMap: { QueueName: dlq.queueName },
+			statistic: 'Sum',
+			period: Duration.minutes(1),
+		}),
+		threshold: 1,
+		evaluationPeriods: 1,
+		comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+		treatMissingData: TreatMissingData.NOT_BREACHING,
+		snsTopicName: 'mobile-server-side',
+	});
+};
 
 export class LiveActivities extends GuStack {
 	constructor(scope: App, id: string, props: GuStackProps) {
@@ -32,8 +58,14 @@ export class LiveActivities extends GuStack {
 		const channelManagerDlq = new Queue(this, 'ChannelManagerDlq', {
 			queueName: `${app}-channel-manager-dlq-${stage}`,
 			visibilityTimeout: Duration.minutes(4),
-			retentionPeriod: Duration.days(7),
+			retentionPeriod: Duration.days(14),
 		});
+		addDlqAlarm(
+			this,
+			app,
+			channelManagerDlq,
+			`${app}-channel-manager-dlq-${stage}`,
+		);
 
 		const channelLambda = new GuLambdaFunction(
 			this,
@@ -92,8 +124,9 @@ export class LiveActivities extends GuStack {
 		const broadcastDlq = new Queue(this, 'BroadcastDlq', {
 			queueName: `${app}-broadcast-dlq-${stage}`,
 			visibilityTimeout: Duration.minutes(4),
-			retentionPeriod: Duration.days(7),
+			retentionPeriod: Duration.days(14),
 		});
+		addDlqAlarm(this, app, broadcastDlq, `${app}-broadcast-dlq-${stage}`);
 
 		const broadcastLambda = new GuLambdaFunction(
 			this,
@@ -145,8 +178,14 @@ export class LiveActivities extends GuStack {
 		const channelCleanerDlq = new Queue(this, 'ChannelCleanerDlq', {
 			queueName: `${app}-channel-cleaner-dlq-${stage}`,
 			visibilityTimeout: Duration.minutes(4),
-			retentionPeriod: Duration.days(7),
+			retentionPeriod: Duration.days(14),
 		});
+		addDlqAlarm(
+			this,
+			app,
+			channelCleanerDlq,
+			`${app}-channel-cleaner-dlq-${stage}`,
+		);
 
 		const channelCleanerLambda = new GuLambdaFunction(
 			this,
