@@ -29,9 +29,9 @@ class EventConsumer(
       List(
 
         // penalty shootout events
-        "shootoutGoal",
-        "shootoutMiss",
-        "shootoutSave",
+        // "shootoutGoal",
+        // "shootoutMiss",
+        // "shootoutSave",
         // additional synthetic live activity life cycle events
         "create-channel",
         "start-live-activity",

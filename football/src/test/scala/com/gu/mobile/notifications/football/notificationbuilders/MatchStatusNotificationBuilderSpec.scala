@@ -7,7 +7,7 @@ import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.football.lib.SyntheticMatchEventGenerator
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, Goal, GoalContext, KickOff, Score}
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, Goal, GoalContext, KickOff, PenaltyShootoutKick, Score}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Parser, Round, Stage, Venue}

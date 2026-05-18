@@ -28,6 +28,7 @@ object Notification {
       case n: GoalAlertNotification => GoalAlertNotification.jf.writes(n)
       case n: LiveEventNotification => LiveEventNotification.jf.writes(n)
       case n: FootballMatchStatusNotification => FootballMatchStatusNotification.jf.writes(n)
+      case n: FootballPenaltyShootoutNotification => FootballPenaltyShootoutNotification.jf.writes(n)
       case n: NewsstandShardNotification => NewsstandShardNotification.jf.writes(n)
       case n: EditionsNotification => EditionsNotification.jf.writes(n)
       case n: Us2020ResultsNotification => Us2020ResultsNotification.jf.writes(n)
@@ -39,6 +40,7 @@ object Notification {
         case GoalAlert => GoalAlertNotification.jf.reads(json)
         case LiveEventAlert => LiveEventNotification.jf.reads(json)
         case FootballMatchStatus => FootballMatchStatusNotification.jf.reads(json)
+        case FootballPenaltyShootout => FootballPenaltyShootoutNotification.jf.reads(json)
         case NewsstandShard => NewsstandShardNotification.jf.reads(json)
         case Editions => EditionsNotification.jf.reads(json)
         case Us2020Results => Us2020ResultsNotification.jf.reads(json)
@@ -169,6 +171,44 @@ case class FootballMatchStatusNotification(
 object FootballMatchStatusNotification {
 
   implicit val jf: Format[FootballMatchStatusNotification] = Jsonx.formatCaseClass[FootballMatchStatusNotification]
+}
+
+case class FootballPenaltyShootoutNotification(
+  id: UUID,
+  `type`: NotificationType = NotificationType.FootballPenaltyShootout,
+  title: Option[String],
+  message: Option[String],
+  sender: String,
+  awayTeamName: String,
+  awayTeamScore: Int,
+  awayTeamMessage: String,
+  awayTeamId: String,
+  awayTeamRedCards: Int = 0,
+  awayTeamPenalties: Option[PenaltyScore] = None,
+  homeTeamName: String,
+  homeTeamScore: Int,
+  homeTeamMessage: String,
+  homeTeamId: String,
+  homeTeamRedCards: Int = 0,
+  homeTeamPenalties: Option[PenaltyScore] = None,
+  competitionName: Option[String],
+  roundName: Option[String] = None,
+  venue: Option[String],
+  matchId: String,
+  matchInfoUri: URI,
+  articleUri: Option[URI],
+  importance: Importance,
+  topic: List[Topic],
+  matchStatus: String,
+  eventId: String,
+  kickOffTimestamp: Option[Long] = None,
+  detailedMatchStatus: Option[String] = None,
+  debug: Boolean,
+  dryRun: Option[Boolean]
+) extends Notification
+
+object FootballPenaltyShootoutNotification {
+  implicit val jf: Format[FootballPenaltyShootoutNotification] = Jsonx.formatCaseClass[FootballPenaltyShootoutNotification]
 }
 
 case class GoalAlertNotification(

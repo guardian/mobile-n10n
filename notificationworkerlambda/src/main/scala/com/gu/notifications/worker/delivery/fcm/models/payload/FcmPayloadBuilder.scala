@@ -36,6 +36,7 @@ object FcmPayloadBuilder {
       case n: BreakingNewsNotification => Some(breakingNewsAndroidNotification(n, debug))
       case n: ContentNotification => Some(contentAndroidNotification(n, debug))
       case n: FootballMatchStatusNotification => Some(footballMatchStatusAndroidNotification(n))
+      case n: FootballPenaltyShootoutNotification => Some(footballPenaltyShootoutAndroidNotification(n))
       case n: EditionsNotification => Some(editionsAndroidNotification(n))
       case n: Us2020ResultsNotification => Some(us2020ResultsNotification(n))
       case _ => None
@@ -136,6 +137,44 @@ object FcmPayloadBuilder {
           Keys.HomeTeamPenaltiesSaved -> p.saved.toString
         )).getOrElse(Map.empty)
         ++ matchStatusAlert.awayTeamPenalties.map(p => Map(
+          Keys.AwayTeamPenaltiesScored -> p.scored.toString,
+          Keys.AwayTeamPenaltiesMissed -> p.missed.toString,
+          Keys.AwayTeamPenaltiesSaved -> p.saved.toString
+        )).getOrElse(Map.empty),
+      ttl = FootballMatchStatusTtl
+    )
+
+  private def footballPenaltyShootoutAndroidNotification(n: FootballPenaltyShootoutNotification): FirebaseAndroidNotification =
+    FirebaseAndroidNotification(
+      notificationId = n.id,
+      data = Map(
+        Keys.Type -> MessageTypes.FootballPenaltyShootout,
+        Keys.HomeTeamName -> n.homeTeamName,
+        Keys.HomeTeamId -> n.homeTeamId,
+        Keys.HomeTeamScore -> n.homeTeamScore.toString,
+        Keys.HomeTeamText -> n.homeTeamMessage,
+        Keys.AwayTeamName -> n.awayTeamName,
+        Keys.AwayTeamId -> n.awayTeamId,
+        Keys.AwayTeamScore -> n.awayTeamScore.toString,
+        Keys.AwayTeamText -> n.awayTeamMessage,
+        Keys.Importance -> n.importance.toString,
+        Keys.MatchStatus -> n.matchStatus,
+        Keys.MatchId -> n.matchId,
+        Keys.MatchInfoUri -> n.matchInfoUri.toString,
+        Keys.HomeTeamRedCards -> n.homeTeamRedCards.toString,
+        Keys.AwayTeamRedCards -> n.awayTeamRedCards.toString
+      ) ++ n.articleUri.map(Keys.ArticleUri -> _.toString).toMap
+        ++ n.competitionName.map(Keys.CompetitionName -> _).toMap
+        ++ n.venue.map(Keys.Venue -> _).toMap
+        ++ n.roundName.map(Keys.RoundName -> _).toMap
+        ++ n.detailedMatchStatus.map(Keys.DetailedMatchStatus -> _).toMap
+        ++ n.kickOffTimestamp.map(Keys.KickOffTimestamp -> _.toString).toMap
+        ++ n.homeTeamPenalties.map(p => Map(
+          Keys.HomeTeamPenaltiesScored -> p.scored.toString,
+          Keys.HomeTeamPenaltiesMissed -> p.missed.toString,
+          Keys.HomeTeamPenaltiesSaved -> p.saved.toString
+        )).getOrElse(Map.empty)
+        ++ n.awayTeamPenalties.map(p => Map(
           Keys.AwayTeamPenaltiesScored -> p.scored.toString,
           Keys.AwayTeamPenaltiesMissed -> p.missed.toString,
           Keys.AwayTeamPenaltiesSaved -> p.saved.toString
