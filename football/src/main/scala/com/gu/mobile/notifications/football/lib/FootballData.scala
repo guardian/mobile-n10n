@@ -90,8 +90,7 @@ class FootballData(
     if (supportedCompetitions.isEmpty) {
       logger.warn("No supported competitions PA list retrieved, assuming all matches are supported")
       return matches
-    }
-    else {
+    } else {
       val (supported, unsupported) = matches.partition { m =>
         m.competition.exists(comp => supportedCompetitions.exists(_.id == comp.id))
       }
@@ -99,7 +98,9 @@ class FootballData(
         val msg = unsupported
           .map(m => s"${m.id} from competition ${m.competition.map(_.id).getOrElse("unknown")}")
           .mkString(", ")
-        logger.warn(s"Unsupported matches: $msg")
+        logger.warn(
+          s"Found ${supported.size} supported matches. Skipping ${unsupported.size} matches from unsupported competitions: $msg",
+        )
       }
       supported
     }
