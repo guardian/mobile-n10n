@@ -92,9 +92,28 @@ class MatchStatusNotificationBuilderSpec extends Specification {
     "Include the correct red cards count for each team" in new MatchEventsContext {
       val firstDismissal  = Dismissal("e1", "Player A", home, 55, None)
       val secondDismissal = Dismissal("e2", "Player B", home, 80, None)
-      val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal), None)
+      val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal), None).asInstanceOf[FootballMatchStatusPayload]
       notification.homeTeamRedCards shouldEqual 2
       notification.awayTeamRedCards shouldEqual 0
+      notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
+    }
+
+
+    "Return FootballPenaltyShootoutPayload for a penalty shootout kick" in new MatchEventsContext {
+      val shootoutKick = PenaltyShootoutKick(ScoredShootoutResult, "Player", home, away, 1, "event-1")
+      val notification = builder.build(shootoutKick, matchInfo.copy(matchStatus = "PT"), List.empty, None)
+      notification must beAnInstanceOf[FootballPenaltyShootoutPayload]
+    }
+
+    "Not return FootballMatchStatusPayload for a penalty shootout kick" in new MatchEventsContext {
+      val shootoutKick = PenaltyShootoutKick(ScoredShootoutResult, "Player", home, away, 1, "event-1")
+      val notification = builder.build(shootoutKick, matchInfo.copy(matchStatus = "PT"), List.empty, None)
+      notification must not(beAnInstanceOf[FootballMatchStatusPayload])
+    }
+
+    "Not return FootballPenaltyShootoutPayload for a goal" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo, List.empty, None)
+      notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
   }
 
