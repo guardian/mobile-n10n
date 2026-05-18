@@ -57,35 +57,35 @@ class MatchStatusNotificationBuilderSpec extends Specification {
 
     "Include detailedMatchStatus for kick off" in new MatchEventsContext {
       val kickOff = KickOff("")
-      val notification = builder.build(kickOff, matchInfo.copy(matchStatus = "Fixture"), List.empty, None)
+      val notification = builder.build(kickOff, matchInfo.copy(matchStatus = "Fixture"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.detailedMatchStatus shouldEqual Some("FIRST_HALF")
     }
 
     "Include detailedMatchStatus for penalties" in new MatchEventsContext {
       val matchInPenalties = matchInfo.copy(matchStatus = "PT")
-      val notification = builder.build(baseGoal, matchInPenalties, List.empty, None)
+      val notification = builder.build(baseGoal, matchInPenalties, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.detailedMatchStatus shouldEqual Some("PENALTIES")
     }
 
     "Include detailedMatchStatus for extra time half time" in new MatchEventsContext {
       val matchInETHT = matchInfo.copy(matchStatus = "ETHT")
-      val notification = builder.build(baseGoal, matchInETHT, List.empty, None)
+      val notification = builder.build(baseGoal, matchInETHT, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_HALF_TIME")
     }
 
     "Include lineupsAvailable true from matchInfo" in new MatchEventsContext {
       val matchInfoWithLineups = matchInfo.copy(lineupsAvailable = true)
-      val notification = builder.build(baseGoal, matchInfoWithLineups, List.empty, None)
+      val notification = builder.build(baseGoal, matchInfoWithLineups, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.lineupsAvailable shouldEqual Some(true)
     }
 
     "Include lineupsAvailable false from matchInfo if not available" in new MatchEventsContext {
-      val notification = builder.build(baseGoal, matchInfo, List.empty, None)
+      val notification = builder.build(baseGoal, matchInfo, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.lineupsAvailable shouldEqual Some(false)
     }
 
     "Include kickOffTimestamp from match info" in new MatchEventsContext {
-      val notification = builder.build(baseGoal, matchInfo, List.empty, None)
+      val notification = builder.build(baseGoal, matchInfo, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.kickOffTimestamp shouldEqual Some(matchInfo.date.toEpochSecond)
     }
 
