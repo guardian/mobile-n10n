@@ -13,7 +13,7 @@ import {
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { Schedule } from 'aws-cdk-lib/aws-events';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, MetricFilter } from 'aws-cdk-lib/aws-logs';
 
 export class FootballNotificationsLambda extends GuStack {
@@ -33,7 +33,6 @@ export class FootballNotificationsLambda extends GuStack {
 				functionName: [app, stage].join('-'),
 				fileName: `${app}.jar`,
 				monitoringConfiguration: { noMonitoring: true },
-				loggingFormat: LoggingFormat.TEXT,
 				//MinuteEvent
 				rules: [
 					{
