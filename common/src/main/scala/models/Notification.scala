@@ -176,6 +176,7 @@ case class FootballPenaltyShootoutNotification(
   `type`: NotificationType = NotificationType.FootballPenaltyShootout,
   title: Option[String],
   message: Option[String],
+  thumbnailUrl: Option[URI] = None,
   sender: String,
   awayTeamName: String,
   awayTeamScore: Int,
@@ -200,6 +201,7 @@ case class FootballPenaltyShootoutNotification(
   matchStatus: String,
   eventId: String,
   kickOffTimestamp: Option[Long] = None,
+  lineupsAvailable: Option[Boolean] = None,
   detailedMatchStatus: Option[String] = None,
   debug: Boolean,
   dryRun: Option[Boolean]

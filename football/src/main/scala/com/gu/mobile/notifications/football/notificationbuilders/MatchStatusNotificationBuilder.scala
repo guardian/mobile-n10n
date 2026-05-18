@@ -4,7 +4,6 @@ import java.net.URI
 import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Importance, Major, Minor}
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.client.models.liveActitivites.MatchStatus
 import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, PenaltyShootoutKick, PenaltyShootoutScore, RedCards, Score, SecondHalf}
 import pa.{MatchDay, MatchDayTeam}
 
@@ -17,7 +16,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     matchInfo: MatchDay,
     previousEvents: List[FootballMatchEvent],
     articleId: Option[String]
-  ): NotificationPayload = {
+  ): FootballMatchStatusPayload = {
     val liveActivityTopics =
       if (triggeringEvent.isInstanceOf[KickOff])
         List(
@@ -26,7 +25,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
           Topic(TopicTypes.FootballMatchLiveActivity, matchInfo.id)
         )
       else Nil
-  
+
     val topics = List(
       Topic(TopicTypes.FootballTeam, matchInfo.homeTeam.id),
       Topic(TopicTypes.FootballTeam, matchInfo.awayTeam.id),
@@ -72,6 +71,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
           matchStatus = status,
           eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
           kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
+          lineupsAvailable = Some(matchInfo.lineupsAvailable),
           detailedMatchStatus = Some("PENALTIES"),
           debug = false,
           dryRun = None

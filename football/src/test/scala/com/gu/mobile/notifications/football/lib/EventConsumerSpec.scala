@@ -352,6 +352,29 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       result must not contain((payload: NotificationPayload) => payload.title.getOrElse("") == "Penalty Kick")
     }
 
+    "generate FootballPenaltyShootoutPayload for shootout events" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
+
+      val result: List[NotificationPayload] =
+        eventConsumer.eventsToNotifications(matchDataLA)
+
+      result must contain(beAnInstanceOf[FootballPenaltyShootoutPayload])
+    }
+    }
+
+    "NOT generate notification payload for extra time match phase events" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDayLA.copy(date = ZonedDateTime.now(), matchStatus = "ETS")
+
+      val result: List[NotificationPayload] =
+        eventConsumer.eventsToNotifications(matchDataLA)
+
+      result must forall((payload: NotificationPayload) =>
+        payload.title.getOrElse("") != "The Guardian"
+      ) // default string for unknown events
+    }
+
   }
 
   "A LiveActivity EventConsumer handles synthetic events and" should {
@@ -662,20 +685,5 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         "football/live/2025/feb/11/exeter-city-v-nottingham-forest-juventus-v-psv-and-more-football-live"
       )
     )
-  }
-
-  trait WorldCupContext extends Scope {
-    val matchStatusNotificationBuilder = new MatchStatusNotificationBuilder("https://mobile.guardianapis.com")
-    val eventConsumer = new EventConsumer(matchStatusNotificationBuilder)
-
-    def loadFile(file: String): String = {
-      val stream = this.getClass.getClassLoader.getResourceAsStream(file)
-      Source.fromInputStream(stream).mkString
-    }
-
-    def rawEvents: List[MatchEvent] = Parser.parseMatchEvents(loadFile("worldcup/match-event-feed.xml")).get.events
-    def matchDay: MatchDay = Parser.parseMatchDay(loadFile("worldcup/match-day.xml")).head
-    def matchEvents: List[MatchEvent] = new SyntheticMatchEventGenerator(() => ZonedDateTime.now()).generate(rawEvents, "4356015", matchDay)
-    def matchData = MatchDataWithArticle(matchDay, matchEvents, None)
   }
 }

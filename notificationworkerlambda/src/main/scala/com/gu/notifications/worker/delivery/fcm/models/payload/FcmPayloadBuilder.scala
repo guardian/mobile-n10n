@@ -150,14 +150,15 @@ object FcmPayloadBuilder {
         Keys.Importance -> n.importance.toString,
         Keys.MatchStatus -> n.matchStatus,
         Keys.MatchId -> n.matchId,
-        Keys.MatchInfoUri -> n.matchInfoUri.toString,
-        Keys.HomeTeamRedCards -> n.homeTeamRedCards.toString,
-        Keys.AwayTeamRedCards -> n.awayTeamRedCards.toString
+        Keys.MatchInfoUri -> n.matchInfoUri.toString
       ) ++ n.articleUri.map(Keys.ArticleUri -> _.toString).toMap
         ++ n.competitionName.map(Keys.CompetitionName -> _).toMap
         ++ n.venue.map(Keys.Venue -> _).toMap
         ++ n.roundName.map(Keys.RoundName -> _).toMap
+        ++ Some(Keys.HomeTeamRedCards -> n.homeTeamRedCards.toString).toMap
+        ++ Some(Keys.AwayTeamRedCards -> n.awayTeamRedCards.toString).toMap
         ++ n.detailedMatchStatus.map(Keys.DetailedMatchStatus -> _).toMap
+        ++ n.lineupsAvailable.map(v => Keys.LineupsAvailable -> v.toString).toMap
         ++ n.kickOffTimestamp.map(Keys.KickOffTimestamp -> _.toString).toMap
         ++ n.homeTeamPenalties.map(p => Map(
           Keys.HomeTeamPenaltiesScored -> p.scored.toString,

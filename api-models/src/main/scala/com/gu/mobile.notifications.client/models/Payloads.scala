@@ -236,6 +236,7 @@ object FootballPenaltyShootoutPayload {
     "type" -> FootballPenaltyShootout.toString,
     "title" -> o.title,
     "message" -> o.message,
+    "thumbnailUrl" -> o.thumbnailUrl,
     "sender" -> o.sender,
     "awayTeamName" -> o.awayTeamName,
     "awayTeamScore" -> o.awayTeamScore,
@@ -260,6 +261,7 @@ object FootballPenaltyShootoutPayload {
     "matchStatus" -> o.matchStatus,
     "eventId" -> o.eventId,
     "kickOffTimestamp" -> o.kickOffTimestamp,
+    "lineupsAvailable" -> o.lineupsAvailable,
     "detailedMatchStatus" -> o.detailedMatchStatus,
     "debug" -> o.debug
   )
@@ -267,6 +269,7 @@ object FootballPenaltyShootoutPayload {
 case class FootballPenaltyShootoutPayload(
   title: Option[String],
   message: Option[String],
+  thumbnailUrl: Option[URI] = None,
   sender: String,
   awayTeamName: String,
   awayTeamScore: Int,
@@ -291,6 +294,7 @@ case class FootballPenaltyShootoutPayload(
   matchStatus: String,
   eventId: String,
   kickOffTimestamp: Option[Long] = None,
+  lineupsAvailable: Option[Boolean] = None,
   detailedMatchStatus: Option[String] = None,
   debug: Boolean,
   dryRun: Option[Boolean]

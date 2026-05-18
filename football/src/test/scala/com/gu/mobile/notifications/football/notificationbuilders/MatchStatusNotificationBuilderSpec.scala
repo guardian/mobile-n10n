@@ -95,24 +95,23 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal), None).asInstanceOf[FootballMatchStatusPayload]
       notification.homeTeamRedCards shouldEqual 2
       notification.awayTeamRedCards shouldEqual 0
-      notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
-
 
     "Return FootballPenaltyShootoutPayload for a penalty shootout kick" in new MatchEventsContext {
       val shootoutKick = PenaltyShootoutKick(ScoredShootoutResult, "Player", home, away, 1, "event-1")
       val notification = builder.build(shootoutKick, matchInfo.copy(matchStatus = "PT"), List.empty, None)
       notification must beAnInstanceOf[FootballPenaltyShootoutPayload]
-    }
-
-    "Not return FootballMatchStatusPayload for a penalty shootout kick" in new MatchEventsContext {
-      val shootoutKick = PenaltyShootoutKick(ScoredShootoutResult, "Player", home, away, 1, "event-1")
-      val notification = builder.build(shootoutKick, matchInfo.copy(matchStatus = "PT"), List.empty, None)
       notification must not(beAnInstanceOf[FootballMatchStatusPayload])
     }
 
     "Not return FootballPenaltyShootoutPayload for a goal" in new MatchEventsContext {
       val notification = builder.build(baseGoal, matchInfo, List.empty, None)
+      notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
+    }
+
+    "Not return FootballPenaltyShootoutPayload for dismissal" in new MatchEventsContext {
+      val dismissal = Dismissal("e2", "Player B", home, 80, None)
+      val notification = builder.build(baseGoal, matchInfo, List(dismissal), None)
       notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
   }
@@ -144,22 +143,5 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       venue = Some(Venue(id = "1", name = "Wembley")),
       comments = None
     )
-  }
-
-  trait WorldCupContext extends Scope {
-    val builder = new MatchStatusNotificationBuilder("http://localhost")
-
-    def loadFile(file: String): String = {
-      val stream = this.getClass.getClassLoader.getResourceAsStream(file)
-      Source.fromInputStream(stream).mkString
-    }
-
-    def matchInfo: MatchDay = Parser.parseMatchDay(loadFile("worldcup/match-day.xml")).head
-    def rawEvents = Parser.parseMatchEvents(loadFile("worldcup/match-event-feed.xml")).get.events
-    def allEvents: List[FootballMatchEvent] =
-      new SyntheticMatchEventGenerator(() => ZonedDateTime.now())
-        .generate(rawEvents, matchInfo.id, matchInfo)
-        .flatMap(FootballMatchEvent.fromPaMatchEvent(matchInfo.homeTeam, matchInfo.awayTeam)(_))
-    def dismissals = allEvents.collect { case d: Dismissal => d }
   }
 }

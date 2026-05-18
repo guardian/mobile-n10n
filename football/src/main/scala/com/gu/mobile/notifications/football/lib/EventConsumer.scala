@@ -28,10 +28,6 @@ class EventConsumer(
     val liveActivityEventTypes =
       List(
 
-        // penalty shootout events
-        // "shootoutGoal",
-        // "shootoutMiss",
-        // "shootoutSave",
         // additional synthetic live activity life cycle events
         "create-channel",
         "start-live-activity",
