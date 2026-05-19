@@ -853,7 +853,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
             "Value": "CODE",
           },
         ],
-        "Timeout": 180,
+        "Timeout": 660,
       },
       "Type": "AWS::Lambda::Function",
     },
