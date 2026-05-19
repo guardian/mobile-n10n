@@ -23,7 +23,7 @@ class ChannelCleanUpService(
         hasLastEvent = true,
       )
       _ = logger.info(s"Channels identified for possible deletion: ${channelsForPossibleDeletion.size}")
-      // todo these sequence failures will not currently throw
+      // todo this sequence failures will not currently throw
       _ <- Future.sequence(
         channelsForPossibleDeletion.map { mapping =>
         {
@@ -36,14 +36,19 @@ class ChannelCleanUpService(
               .closeChannel(mapping.channelId)
               .flatMap { _ =>
                 val f = repository.updateMappingActiveChannel(mapping.id, isActive = false)
-                channelsDeleted ++= List(mapping)
-                logger.info(s"Channel successfully marked inactive with channel ID: ${mapping.channelId} for match ID ${mapping.id}")
+                  .map { result =>
+                    channelsDeleted ++= List(mapping)
+                    logger.info(s"Channel successfully marked inactive with channel ID: ${mapping.channelId} for match ID ${mapping.id}")
+                    result
+                  }
                 f
               }
               .recover { case exception =>
-                // todo Handle exception better and throw when needed. Some errorw will be handled by rest of the Cleanup tasks.
+                // todo handle exception better and throw when needed. Some errors will be handled by rest of the Cleanup tasks.
                 logger.error(s"Failed to delete channel with ID ${mapping.channelId} for match ID ${mapping.id} - ${exception.getMessage}")
               }
+
+
           }
         }
         },
