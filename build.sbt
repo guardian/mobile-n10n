@@ -412,7 +412,7 @@ lazy val ecrRepositorySettings =
   }
 
 lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notificationworkerlambda", Some("com.gu.notifications.worker.TopicCounterLocalRun"))
-  .dependsOn(common, football % "compile->compile;test->compile")
+  .dependsOn(common)
   .enablePlugins(DockerPlugin)
   .enablePlugins(JavaAppPackaging)
   .settings(ecrRepositorySettings: _*)
