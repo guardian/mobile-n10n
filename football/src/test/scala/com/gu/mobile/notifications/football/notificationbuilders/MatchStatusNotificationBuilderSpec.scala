@@ -7,7 +7,7 @@ import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.football.lib.SyntheticMatchEventGenerator
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, Goal, GoalContext, KickOff, PenaltyShootoutKick, Score}
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, Score}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Parser, Round, Stage, Venue}
@@ -57,7 +57,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
 
     "Include detailedMatchStatus for kick off" in new MatchEventsContext {
       val kickOff = KickOff("")
-      val notification = builder.build(kickOff, matchInfo.copy(matchStatus = "Fixture"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      val notification = builder.build(kickOff, matchInfo.copy(matchStatus = "KO"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.detailedMatchStatus shouldEqual Some("FIRST_HALF")
     }
 
@@ -71,6 +71,21 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       val matchInETHT = matchInfo.copy(matchStatus = "ETHT")
       val notification = builder.build(baseGoal, matchInETHT, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_HALF_TIME")
+    }
+
+    "Include detailedMatchStatus EXTRA_TIME_TO_BE_PLAYED for a full time event when match status is FTET" in new MatchEventsContext {
+      val notification = builder.build(fullTime, matchInfo.copy(matchStatus = "FTET"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_TO_BE_PLAYED")
+    }
+
+    "Include detailedMatchStatus EXTRA_TIME_FIRST_HALF for a goal during extra time" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo.copy(matchStatus = "ETS"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_FIRST_HALF")
+    }
+
+    "Include detailedMatchStatus EXTRA_TIME_SECOND_HALF for a goal during extra time second half" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo.copy(matchStatus = "ETSHS"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_SECOND_HALF")
     }
 
     "Include lineupsAvailable true from matchInfo" in new MatchEventsContext {
