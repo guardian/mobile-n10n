@@ -23,8 +23,8 @@ object ChannelCleanUpLambda extends Lambda with Logging {
       deletedChannels <- cleanUpService.deleteChannelsForEndedBroadcasts()
       _ = logger.info(s"${deletedChannels.size} channels deleted:  [${deletedChannels.map(_.id).mkString(", ")}]")
       // orphanChannels <- deleteOrphanChannelsInAPNS() // channels that exist in APNS but corresponding mapping is missing in Dynamo
-      // staleMappings <- markInactiveStaleMappings // mapping still "LIVE" that missed an end activity update and need to be deleted - observed Mapi may return channel id otherwise
-      // orphanMappings <- markInactiveOrphanMappings // mapping still "active" but channel has been deleted. - observed 4551548
+      // staleMappings <- markInactiveStaleMappings // mapping still "LIVE" that missed an end activity update and need to be deleted - Mapi may return channel id otherwise
+      // orphanMappings <- markInactiveOrphanMappings // mapping still "active" but channel has been deleted.
       cleanupSummary = {
         deletedChannels
 //        orphanChannels,
