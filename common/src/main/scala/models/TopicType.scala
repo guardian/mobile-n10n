@@ -15,6 +15,8 @@ object TopicTypes {
   object TagBlog extends TopicType("tag-blog", 1)
   object FootballTeam extends TopicType("football-team", 1)
   object FootballMatch extends TopicType("football-match", 1)
+  object FootballTeamLiveActivity extends TopicType("football-team-live-activity", 1)
+  object FootballMatchLiveActivity extends TopicType("football-match-live-activity", 1)
   object Newsstand extends TopicType("newsstand", 100)
   object NewsstandShard extends TopicType("newsstand-shard", 100)
   object Editions extends TopicType("editions", 100)
@@ -33,7 +35,9 @@ object TopicType {
     case "tag-blog" => TagBlog
     case "football-team" => FootballTeam
     case "football-match" => FootballMatch
+    case "football-team-live-activity" => FootballTeamLiveActivity
     case "newsstand" => TopicTypes.Newsstand
+    case "football-match-live-activity" => FootballMatchLiveActivity
     case "newsstand-shard" => TopicTypes.NewsstandShard
     case "live-notification" => LiveNotification
     case "editions" => Editions
