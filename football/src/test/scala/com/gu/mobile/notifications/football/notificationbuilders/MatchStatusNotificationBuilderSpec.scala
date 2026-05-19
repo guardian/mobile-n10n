@@ -74,6 +74,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
     }
 
     "Include detailedMatchStatus EXTRA_TIME_TO_BE_PLAYED for a full time event when match status is FTET" in new MatchEventsContext {
+      val fullTime = FullTime("")
       val notification = builder.build(fullTime, matchInfo.copy(matchStatus = "FTET"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_TO_BE_PLAYED")
     }
