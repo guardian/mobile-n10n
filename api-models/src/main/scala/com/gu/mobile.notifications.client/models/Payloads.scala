@@ -5,6 +5,8 @@ import java.util.UUID
 
 import com.gu.mobile.notifications.client.lib.JsonFormatsHelper._
 import com.gu.mobile.notifications.client.models.Importance.Importance
+import com.gu.mobile.notifications.client.models.liveActitivites.{FootballContentJsonFormats, PenaltyShootoutState}
+import FootballContentJsonFormats.penaltyShootoutStateFormat
 import play.api.libs.json._
 import NotificationPayloadType._
 sealed case class GuardianItemType(mobileAggregatorPrefix: String)
@@ -98,6 +100,7 @@ object NotificationPayload {
       case n: BreakingNewsPayload => BreakingNewsPayload.jf.writes(n)
       case n: ContentAlertPayload => ContentAlertPayload.jf.writes(n)
       case n: FootballMatchStatusPayload => FootballMatchStatusPayload.jf.writes(n)
+      case n: FootballPenaltyShootoutPayload => FootballPenaltyShootoutPayload.jf.writes(n)
     }
   }
 }
@@ -171,11 +174,14 @@ object FootballMatchStatusPayload {
     "awayTeamScore" -> o.awayTeamScore,
     "awayTeamMessage" -> o.awayTeamMessage,
     "awayTeamId" -> o.awayTeamId,
+    "awayTeamRedCards" -> o.awayTeamRedCards,
     "homeTeamName" -> o.homeTeamName,
     "homeTeamScore" -> o.homeTeamScore,
     "homeTeamMessage" -> o.homeTeamMessage,
     "homeTeamId" -> o.homeTeamId,
+    "homeTeamRedCards" -> o.homeTeamRedCards,
     "competitionName" -> o.competitionName,
+    "roundName" -> o.roundName,
     "venue" -> o.venue,
     "matchId" -> o.matchId,
     "matchInfoUri" -> o.matchInfoUri,
@@ -184,6 +190,9 @@ object FootballMatchStatusPayload {
     "topic" -> o.topic,
     "matchStatus" -> o.matchStatus,
     "eventId" -> o.eventId,
+    "kickOffTimestamp" -> o.kickOffTimestamp,
+    "lineupsAvailable" -> o.lineupsAvailable,
+    "detailedMatchStatus" -> o.detailedMatchStatus,
     "debug" -> o.debug
   )
 }
@@ -196,11 +205,14 @@ case class FootballMatchStatusPayload(
   awayTeamScore: Int,
   awayTeamMessage: String,
   awayTeamId: String,
+  awayTeamRedCards: Int = 0,
   homeTeamName: String,
   homeTeamScore: Int,
   homeTeamMessage: String,
   homeTeamId: String,
+  homeTeamRedCards: Int = 0,
   competitionName: Option[String],
+  roundName: Option[String] = None,
   venue: Option[String],
   matchId: String,
   matchInfoUri: URI,
@@ -209,12 +221,88 @@ case class FootballMatchStatusPayload(
   topic: List[Topic],
   matchStatus: String,
   eventId: String,
+  kickOffTimestamp: Option[Long] = None,
+  lineupsAvailable: Option[Boolean] = None,
+  detailedMatchStatus: Option[String] = None,
   debug: Boolean,
   dryRun: Option[Boolean]
 ) extends NotificationPayload with derivedId {
   val `type` = FootballMatchStatus
   override val derivedId = s"football-match-status/$matchId/$eventId"
 }
+object FootballPenaltyShootoutPayload {
+  implicit val jf: Writes[FootballPenaltyShootoutPayload] = (o: FootballPenaltyShootoutPayload) => Json.obj(
+    "id" -> o.id,
+    "type" -> FootballPenaltyShootout.toString,
+    "title" -> o.title,
+    "message" -> o.message,
+    "thumbnailUrl" -> o.thumbnailUrl,
+    "sender" -> o.sender,
+    "awayTeamName" -> o.awayTeamName,
+    "awayTeamScore" -> o.awayTeamScore,
+    "awayTeamMessage" -> o.awayTeamMessage,
+    "awayTeamId" -> o.awayTeamId,
+    "awayTeamRedCards" -> o.awayTeamRedCards,
+    "awayTeamPenalties" -> o.awayTeamPenalties,
+    "homeTeamName" -> o.homeTeamName,
+    "homeTeamScore" -> o.homeTeamScore,
+    "homeTeamMessage" -> o.homeTeamMessage,
+    "homeTeamId" -> o.homeTeamId,
+    "homeTeamRedCards" -> o.homeTeamRedCards,
+    "homeTeamPenalties" -> o.homeTeamPenalties,
+    "competitionName" -> o.competitionName,
+    "roundName" -> o.roundName,
+    "venue" -> o.venue,
+    "matchId" -> o.matchId,
+    "matchInfoUri" -> o.matchInfoUri,
+    "articleUri" -> o.articleUri,
+    "importance" -> o.importance,
+    "topic" -> o.topic,
+    "matchStatus" -> o.matchStatus,
+    "eventId" -> o.eventId,
+    "kickOffTimestamp" -> o.kickOffTimestamp,
+    "lineupsAvailable" -> o.lineupsAvailable,
+    "detailedMatchStatus" -> o.detailedMatchStatus,
+    "debug" -> o.debug
+  )
+}
+case class FootballPenaltyShootoutPayload(
+  title: Option[String],
+  message: Option[String],
+  thumbnailUrl: Option[URI] = None,
+  sender: String,
+  awayTeamName: String,
+  awayTeamScore: Int,
+  awayTeamMessage: String,
+  awayTeamId: String,
+  awayTeamRedCards: Int = 0,
+  awayTeamPenalties: Option[PenaltyShootoutState] = None,
+  homeTeamName: String,
+  homeTeamScore: Int,
+  homeTeamMessage: String,
+  homeTeamId: String,
+  homeTeamRedCards: Int = 0,
+  homeTeamPenalties: Option[PenaltyShootoutState] = None,
+  competitionName: Option[String],
+  roundName: Option[String] = None,
+  venue: Option[String],
+  matchId: String,
+  matchInfoUri: URI,
+  articleUri: Option[URI],
+  importance: Importance,
+  topic: List[Topic],
+  matchStatus: String,
+  eventId: String,
+  kickOffTimestamp: Option[Long] = None,
+  lineupsAvailable: Option[Boolean] = None,
+  detailedMatchStatus: Option[String] = None,
+  debug: Boolean,
+  dryRun: Option[Boolean]
+) extends NotificationPayload with derivedId {
+  val `type` = FootballPenaltyShootout
+  override val derivedId = s"football-penalty-shootout/$matchId/$eventId"
+}
+
 trait derivedId {
   val derivedId: String
   lazy val id = UUID.nameUUIDFromBytes(derivedId.getBytes)
