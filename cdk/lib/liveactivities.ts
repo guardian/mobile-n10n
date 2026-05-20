@@ -198,7 +198,7 @@ export class LiveActivities extends GuStack {
 				fileName: `${app}.jar`,
 				runtime: Runtime.JAVA_11,
 				memorySize: 1024,
-				timeout: Duration.minutes(3),
+				timeout: Duration.minutes(11),
 				onFailure: new SqsDestination(channelCleanerDlq),
 				retryAttempts: 2,
 				environment: {
