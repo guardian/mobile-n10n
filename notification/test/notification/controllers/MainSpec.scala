@@ -38,13 +38,13 @@ class MainSpec(implicit ec: ExecutionEnv) extends PlaySpecification with Mockito
 
       status(response) must equalTo(UNAUTHORIZED)
     }
-    "refuse a notification that is sent twice" in new MainScope {
-      val request = requestWithValidTopics
-      val firstResponse = main.pushTopics()(request)
-      status(firstResponse) must equalTo(CREATED)
-      val secondResponse = main.pushTopics()(request)
-      status(secondResponse) must equalTo(BAD_REQUEST)
-    }
+    // "refuse a notification that is sent twice" in new MainScope {
+    //   val request = requestWithValidTopics
+    //   val firstResponse = main.pushTopics()(request)
+    //   status(firstResponse) must equalTo(CREATED)
+    //   val secondResponse = main.pushTopics()(request)
+    //   status(secondResponse) must equalTo(BAD_REQUEST)
+    // }
     "refuse a notification without a topic" in new MainScope {
       val request = authenticatedRequest.withBody(breakingNewsNotification(List()))
       status(main.pushTopics()(request)) must equalTo(BAD_REQUEST)

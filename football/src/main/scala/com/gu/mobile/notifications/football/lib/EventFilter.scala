@@ -37,6 +37,8 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
   }
 
   def filterDynamoEvents(dynamoEvents: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
-    Future.traverse(dynamoEvents)(filterDynamoEvent).map(_.flatten)
+    // TODO: re-enable dedup
+    Future.successful(dynamoEvents)
+    // Future.traverse(dynamoEvents)(filterDynamoEvent).map(_.flatten)
   }
 }

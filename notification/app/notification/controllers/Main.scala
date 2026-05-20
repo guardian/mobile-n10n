@@ -109,12 +109,8 @@ final class Main(
   }
 
   private def pushWithDuplicateProtection(notification: Notification, notificationReceivedTime: Instant): Future[Result] = {
-    val isDuplicate = notificationReportRepository.getByUuid(notification.id).map(_.isRight)
-
-    isDuplicate.flatMap {
-      case true => Future.successful(BadRequest(s"${notification.id} has been sent before - refusing to resend"))
-      case false => pushGeneric(notification, notificationReceivedTime)
-    }
+    // TODO: re-enable duplicate protection
+    pushGeneric(notification, notificationReceivedTime)
   }
 
   private def pushGeneric(notification: Notification, notificationReceivedTime: Instant) = {
