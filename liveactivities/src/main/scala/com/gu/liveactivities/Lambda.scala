@@ -24,23 +24,28 @@ trait Lambda extends Logging{
     DefaultCredentialsProvider.builder.build(),
   )
 
-  val dynamoDbClient =
+  private def buildDbClient(attemptTimeout: Int = 2, timeout: Int = 10): DynamoDbAsyncClient = {
     DynamoDbAsyncClient
       .builder()
       .credentialsProvider(credentialsv2)
       .region(Region.of(config.region))
       .overrideConfiguration(
         ClientOverrideConfiguration.builder()
-          .apiCallAttemptTimeout(Duration.ofSeconds(2)) // limit for one single try
-          .apiCallTimeout(Duration.ofSeconds(10)) // limit for the entire operation
+          .apiCallAttemptTimeout(Duration.ofSeconds(attemptTimeout)) // limit for one single try
+          .apiCallTimeout(Duration.ofSeconds(timeout)) // limit for the entire operation
           .retryStrategy(DefaultRetryStrategy.standardStrategyBuilder()
             .maxAttempts(3)
             .build())
           .build()
       )
       .build()
+  }
 
-  val repository = new LiveActivityChannelRepository(dynamoDbClient, s"mobile-notifications-liveactivities-${config.stage}")
+  private val dynamoTableName = s"mobile-notifications-liveactivities-${config.stage}"
+  val repository = new LiveActivityChannelRepository(buildDbClient(), dynamoTableName)
+  def getRepositoryWithCustomTimeouts(attemptTimeout: Int, timeout: Int): LiveActivityChannelRepository = {
+    new LiveActivityChannelRepository(buildDbClient(attemptTimeout, timeout), dynamoTableName)
+  }
 
   private val eventBusName = s"liveactivities-eventbus-${config.stage}"
   lazy val liveActivityPusher = new LiveActivityPusher(eventBusName, logger)
