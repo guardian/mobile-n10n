@@ -88,14 +88,16 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       }.recover(handleErrors("writing to DynamoDB", id))
   }
 
-  private def updateMappingById(
+  private[liveactivities] def updateMappingById(
       id: String,
       isChannelActive: Option[Boolean] = None,
       isLive: Option[Boolean] = None,
       lastEventId: Option[String] = None,
-      lastEventAt: Option[ZonedDateTime] = None
+      lastEventAt: Option[ZonedDateTime] = None,
+      expectedLastModifiedAt: Option[ZonedDateTime] = None, // ONLY for testing
   ): Future[Unit] = {
-  val updates: List[UpdateExpression] = List(
+
+    val updates: List[UpdateExpression] = List(
       isChannelActive.map(c => set("isChannelActive", c)),
       isLive.map(l => set("isLive", l)),
       lastEventId.map(eventId => set("lastEventId", eventId)),
@@ -107,25 +109,39 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
         logger.warn(s"No fields to update for live activity mapping with id $id")
         Future.successful(())
       case Some(ups) =>
-        val result = scanamo.exec {
-          val modifiedAt = ZonedDateTime.now()
-          val upsWithLastModified = set("lastModifiedAt", dateTimeToString(modifiedAt)) :: ups
-          table.update(idKeyName === id, upsWithLastModified.reduce[UpdateExpression](_ and _))
-        }
 
-        result.flatMap {
-          case Right(_) =>
-            logger.info(
-              s"Updated live activity DB mapping id $id with updates: ${
-                ups.map(exp => s"${exp.attributes.names} = ${exp.attributes.values}").toString()
-              }"
-            )
-            Future.successful(())
-          case Left(ex) =>
-            val errorMsg = s"Error updating live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
-            logger.error(errorMsg)
-            Future.failed(new RepositoryException(errorMsg))
-        }.recover(handleErrors("updating mapping in DynamoDB", id))
+        val result = for {
+          lastModifiedAt <- expectedLastModifiedAt
+            .map(Future.successful)
+            .getOrElse(getMappingById(id).map(_.lastModifiedAt))
+          result <- scanamo.exec {
+            val modifiedAt = ZonedDateTime.now()
+            val upsWithLastModified = set("lastModifiedAt", dateTimeToString(modifiedAt)) :: ups
+            val lastModifiedAtCondition = Condition("lastModifiedAt" === dateTimeToString(lastModifiedAt))
+            table
+              .when(lastModifiedAtCondition)
+              .update(idKeyName === id, upsWithLastModified.reduce[UpdateExpression](_ and _))
+          }
+        } yield result
+
+        result
+          .flatMap {
+            case Right(_) =>
+              logger.info(
+                s"Updated live activity DB mapping id $id with updates: ${ups.map(exp => s"${exp.attributes.names} = ${exp.attributes.values}").toString()}",
+              )
+              Future.successful(())
+            case Left(ConditionNotMet(ex)) =>
+              val errorMsg =
+                s"Error updating live activity mapping for id $id - mapping was modified by another process, please retry - ${ex.getMessage}"
+              logger.error(errorMsg)
+              throw new RepositoryException(ex, errorMsg)
+            case Left(ex: DynamoReadError) =>
+              val errorMsg = s"Error updating live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
+              logger.error(errorMsg)
+              throw new RepositoryException(errorMsg)
+          }
+          .recover(handleErrors("updating mapping in DynamoDB", id))
     }
   }
 

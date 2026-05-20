@@ -2,6 +2,7 @@ package com.gu.liveactivities
 
 import com.gu.liveactivities.models.{FootballLiveActivity, LiveActivityMapping, RepositoryException}
 import com.gu.liveactivities.service.LiveActivityChannelRepository
+import org.scanamo.{ScanamoAsync, Table}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType._
@@ -69,6 +70,47 @@ class LiveActivityChannelRepositoryTest(implicit ev: ExecutionEnv)
         footballMapping.data).flatMap { _ =>
         repository.getMappingById(footballMapping.id)
       } must beEqualToExcludingMetaData(footballMapping).await
+    }
+  }
+
+  "LiveActivityChannelRepository.updateMapping" should {
+
+    "updateMappingActiveChannel sets isChannelActive and isLive to the given value" in new RepositoryScope with ExampleData {
+      val mapping = createFootballMappingWithId("update-0001")
+      repository.createMapping(mapping.id, mapping.channelId, mapping.data).flatMap { _ =>
+        repository.updateMappingActiveChannel(mapping.id, isActive = false)
+      }.flatMap { _ =>
+        repository.getMappingById(mapping.id)
+      } must beLike[LiveActivityMapping] { case m =>
+        m.isChannelActive must beFalse and (m.isLive must beFalse)
+      }.await
+    }
+
+    "updateMapping updates lastModifiedAt" in new RepositoryScope with ExampleData {
+      val mapping = createFootballMappingWithId("update-0004")
+      repository.createMapping(mapping.id, mapping.channelId, mapping.data).flatMap { _ =>
+        repository.getMappingById(mapping.id)
+      }.flatMap { original =>
+        repository.updateMappingLive(mapping.id, isLive = true).flatMap { _ =>
+          repository.getMappingById(mapping.id).map(updated => (original, updated))
+        }
+      } must beLike[(LiveActivityMapping, LiveActivityMapping)] { case (original, updated) =>
+        (updated.lastModifiedAt.isAfter(original.lastModifiedAt) ||
+          updated.lastModifiedAt.isEqual(original.lastModifiedAt)) must beTrue
+      }.await
+    }
+
+    "updateMappingById errors if update condition not met" in new RepositoryScope with ExampleData {
+      val mapping = createFootballMappingWithId("update-0009")
+      val staleTimestamp = ZonedDateTime.now().minusHours(5)
+      val result = repository.createMapping(mapping.id, mapping.channelId, mapping.data).flatMap { _ =>
+        repository.updateMappingById(
+          id = mapping.id,
+          isChannelActive = Some(false),
+          expectedLastModifiedAt = Some(staleTimestamp)
+        )
+      }
+      result must throwA[RepositoryException].await
     }
   }
 
