@@ -33,12 +33,12 @@ class EventConsumer(
         "start-live-activity",
         "end-live-activity",
         // additional synthetic match phase events for live activities
-        "extra-time-to-be-played",
-        "extra-time-first-half",
-        "extra-time-half-time",
-        "extra-time-second-half",
-        "penalties-to-be-played",
-        "penalties",
+//        "extra-time-to-be-played",
+//        "extra-time-first-half",
+//        "extra-time-half-time",
+//        "extra-time-second-half",
+//        "penalties-to-be-played",
+//        "penalties",
         "suspended",
         "resumed",
         "abandoned",
@@ -88,7 +88,20 @@ class LiveActivityEventConsumer(
   def eventsToLiveActivityPayload(
       matchData: MatchDataWithArticle
   ): List[LiveActivityPayload] = {
-    matchData.allEvents.flatMap { event =>
+
+    val footballOnlyEventTypes =
+      List(
+        // use end-broadcast instead
+        "full-time"
+      )
+
+    val filteredMatchData = matchData.copy(allEvents =
+      matchData.allEvents.filterNot(e =>
+        footballOnlyEventTypes.contains(e.eventType)
+      )
+    )
+
+    filteredMatchData.allEvents.flatMap { event =>
       processForLiveActivities(
         matchData.matchDay,
         matchData.allEvents,
