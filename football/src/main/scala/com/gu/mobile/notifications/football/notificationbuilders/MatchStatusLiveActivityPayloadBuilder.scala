@@ -57,7 +57,7 @@ class MatchStatusLiveActivityPayloadBuilder {
       competition = Competition(
         id = matchInfo.competition.map(_.id).getOrElse(""),
         name = matchInfo.competition.map(_.name).getOrElse(""),
-        round = matchInfo.round.name // World Cup Group
+        round = matchInfo.round.name.filter(_ != "League") // Round includes world cup grouping, "semi-final" etc.
       ),
       commentary = matchInfo.comments,
       lineupsAvailable = matchInfo.lineupsAvailable,
