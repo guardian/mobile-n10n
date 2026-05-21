@@ -46,11 +46,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 0,
         homeTeamMessage = " ",
         homeTeamId = "1006",
+        homeTeamRedCards = 0,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -72,6 +75,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "1st",
         eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
+        kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("FIRST_HALF"),
         debug = false,
         dryRun = None
       )
@@ -94,12 +100,15 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 3,
         homeTeamMessage =
           "Henrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'\nRed card: Henrikh Mkhitaryan 114'",
         homeTeamId = "1006",
+        homeTeamRedCards = 2,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -118,6 +127,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "HT",
         eventId = "bb346058-64d0-3ab1-9016-ea19d90837f0",
+        kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("HALF_TIME"),
         debug = false,
         dryRun = None
       )
@@ -143,11 +155,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 2,
         homeTeamMessage = "Henrikh Mkhitaryan 10'\nSofiane Hanni 32'",
         homeTeamId = "1006",
+        homeTeamRedCards = 0,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -166,6 +181,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "2nd",
         eventId = "a45dfca1-ead9-3d8c-bf83-c4966a737b05",
+        kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("SECOND_HALF"),
         debug = false,
         dryRun = None
       )
@@ -189,12 +207,15 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 3,
         homeTeamMessage =
           "Henrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'\nRed card: Henrikh Mkhitaryan 114'",
         homeTeamId = "1006",
+        homeTeamRedCards = 2,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -213,6 +234,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "FT",
         eventId = "d59c9939-8199-3b8b-ad63-16aa020c1a73",
+        kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("FULL_TIME"),
         debug = false,
         dryRun = None
       )
@@ -236,11 +260,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamScore = 0,
         awayTeamMessage = " ",
         awayTeamId = "29",
+        awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
         homeTeamScore = 1,
         homeTeamMessage = "Henrikh Mkhitaryan 10'",
         homeTeamId = "1006",
+        homeTeamRedCards = 0,
         competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
         venue = Some("Emirates Stadium"),
         matchId = "4011135",
         matchInfoUri = new URI(
@@ -259,6 +286,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         ),
         matchStatus = "1st",
         eventId = "1c8d67f9-0f32-342a-8543-aa3e21ee7da4",
+        kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("FIRST_HALF"),
         debug = false,
         dryRun = None
       )
@@ -272,41 +302,39 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         eventConsumer.eventsToNotifications(matchData)
 
       val expectedNotification = FootballMatchStatusPayload(
-        Some("Red card"),
-        Some(
-          "Arsenal 3-0 Leicester (1st)\nHenrikh Mkhitaryan (Arsenal) 114min"
-        ),
-        None,
-        "mobile-notifications-football-lambda",
-        "Leicester",
-        0,
-        " ",
-        "29",
-        "Arsenal",
-        3,
-        "Red card: Henrikh Mkhitaryan 114'\nHenrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'",
-        "1006",
-        Some("Premier League 17/18"),
-        Some("Emirates Stadium"),
-        "4011135",
-        new URI(
-          "https://mobile.guardianapis.com/sport/football/matches/4011135"
-        ),
-        Some(
-          new URI(
-            "https://mobile.guardianapis.com/items/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live"
-          )
-        ),
-        Minor,
-        List(
+        title = Some("Red card"),
+        message = Some("Arsenal 3-0 Leicester (1st)\nHenrikh Mkhitaryan (Arsenal) 114min"),
+        thumbnailUrl = None,
+        sender = "mobile-notifications-football-lambda",
+        awayTeamName = "Leicester",
+        awayTeamScore = 0,
+        awayTeamMessage = " ",
+        awayTeamId = "29",
+        awayTeamRedCards = 0,
+        homeTeamName = "Arsenal",
+        homeTeamScore = 3,
+        homeTeamMessage = "Red card: Henrikh Mkhitaryan 114'\nHenrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'",
+        homeTeamId = "1006",
+        homeTeamRedCards = 2,
+        competitionName = Some("Premier League 17/18"),
+        roundName = Some("League"),
+        venue = Some("Emirates Stadium"),
+        matchId = "4011135",
+        matchInfoUri = new URI("https://mobile.guardianapis.com/sport/football/matches/4011135"),
+        articleUri = Some(new URI("https://mobile.guardianapis.com/items/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")),
+        importance = Minor,
+        topic = List(
           Topic(FootballTeam, "1006"),
           Topic(FootballTeam, "29"),
           Topic(FootballMatch, "4011135")
         ),
-        "1st",
-        "7c92d6ca-9f20-398f-9510-eb4c179fb5ae",
-        false,
-        None
+        matchStatus = "1st",
+        eventId = "7c92d6ca-9f20-398f-9510-eb4c179fb5ae",
+        kickOffTimestamp = Some(1502477100L),
+        lineupsAvailable = Some(true),
+        detailedMatchStatus = Some("FIRST_HALF"),
+        debug = false,
+        dryRun = None
       )
 
       result should contain(expectedNotification)
@@ -314,18 +342,26 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
   }
 
   "A Notification EventConsumer" should {
-
-    // Penalty kicks are real events not synthetic events
-    "NOT generate notification payload for penalties" in new MatchEventsContext {
+    "not generate normal notifications for penalty shootout kicks" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
 
       val result: List[NotificationPayload] =
         eventConsumer.eventsToNotifications(matchDataLA)
 
-      result must forall((payload: NotificationPayload) =>
-        payload.title.getOrElse("") != "Penalty Kick"
+      result must not contain((payload: NotificationPayload) =>
+        payload.isInstanceOf[FootballMatchStatusPayload] && payload.title.contains("Penalty Kick")
       )
+    }
+
+    "generate FootballPenaltyShootoutPayload for shootout events" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
+
+      val result: List[NotificationPayload] =
+        eventConsumer.eventsToNotifications(matchDataLA)
+
+      result must contain(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
 
     "NOT generate notification payload for extra time match phase events" in new MatchEventsContext {

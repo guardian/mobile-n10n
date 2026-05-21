@@ -12,6 +12,7 @@ object NotificationType {
   case object GoalAlert extends NotificationType
   case object LiveEventAlert extends NotificationType
   case object FootballMatchStatus extends NotificationType
+  case object FootballPenaltyShootout extends NotificationType
   case object NewsstandShard extends NotificationType
   case object Editions extends NotificationType
   case object Us2020Results extends NotificationType
@@ -22,6 +23,7 @@ object NotificationType {
     "goal" -> GoalAlert,
     "live-notification" -> LiveEventAlert,
     "football-match-status" -> FootballMatchStatus,
+    "football-penalty-shootout" -> FootballPenaltyShootout,
     "newsstand-shard" -> NewsstandShard,
     "editions" -> Editions,
     "us-2020-results" -> Us2020Results

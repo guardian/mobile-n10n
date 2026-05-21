@@ -28,10 +28,16 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
     "generate correct data for Match Status notification" in new MatchStatusNotificationScope {
       check()
     }
+    "include kickOffTimestamp, lineupsAvailable and detailedMatchStatus in Match Status notification when present" in new MatchStatusNotificationWithOptionalFieldsScope {
+      check()
+    }
     "generate correct data for Editions notification" in new EditionsScope {
       check()
     }
     "generate correct data for US Elections notification" in new UsElectionNotificationScope {
+      check()
+    }
+    "generate correct data for Penalty Shootout notification" in new PenaltyShootoutNotificationScope {
       check()
     }
   }
@@ -236,6 +242,8 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
       articleUri = Some(new URI("https://some.other.invalid.url/detail")),
       matchStatus = "1",
       eventId = "2",
+      detailedMatchStatus = None,
+      lineupsAvailable = None,
       debug = true,
       dryRun = None
     )
@@ -260,12 +268,145 @@ class FcmPayloadBuilderSpec extends Specification with Matchers {
           "matchInfoUri" -> "https://some.invalid.url/detail",
           "articleUri" -> "https://some.other.invalid.url/detail",
           "competitionName" -> "World cup 3012",
-          "venue" -> "Venue"
+          "venue" -> "Venue",
+          "homeTeamRedCards" -> "0",
+          "awayTeamRedCards" -> "0"
         ),
         ttl = TimeToLive.FootballMatchStatusTtl
       )
     )
 
+  }
+
+  trait MatchStatusNotificationWithOptionalFieldsScope extends MatchStatusNotificationScope {
+    override val notification = models.FootballMatchStatusNotification(
+      id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      title = Some("Test notification"),
+      message = Some("The message"),
+      thumbnailUrl = Some(new URI("https://invalid.url/img.png")),
+      sender = "UnitTests",
+      importance = Major,
+      topic = List(Topic(`type` = Breaking, name = "uk")),
+      awayTeamName = "Team1",
+      awayTeamScore = 0,
+      awayTeamMessage = "team1 message",
+      awayTeamId = "123",
+      homeTeamName = "Team2",
+      homeTeamScore = 1,
+      homeTeamMessage = "team2 message",
+      homeTeamId = "456",
+      competitionName = Some("World cup 3012"),
+      venue = Some("Venue"),
+      matchId = "123456",
+      matchInfoUri = new URI("https://some.invalid.url/detail"),
+      articleUri = Some(new URI("https://some.other.invalid.url/detail")),
+      matchStatus = "1",
+      eventId = "2",
+      detailedMatchStatus = Some("PENALTIES"),
+      lineupsAvailable = Some(true),
+      debug = true,
+      dryRun = None,
+      kickOffTimestamp = Some(1746619200L),
+    )
+    override val expected = Some(FirebaseAndroidNotification(
+      notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      data = Map(
+        "type" -> "footballMatchAlert",
+        "homeTeamName" -> "Team2",
+        "homeTeamId" -> "456",
+        "homeTeamScore" -> "1",
+        "homeTeamText" -> "team2 message",
+        "awayTeamName" -> "Team1",
+        "awayTeamId" -> "123",
+        "awayTeamScore" -> "0",
+        "awayTeamText" -> "team1 message",
+        "currentMinute" -> "",
+        "importance" -> "Major",
+        "matchStatus" -> "1",
+        "matchId" -> "123456",
+        "matchInfoUri" -> "https://some.invalid.url/detail",
+        "articleUri" -> "https://some.other.invalid.url/detail",
+        "competitionName" -> "World cup 3012",
+        "venue" -> "Venue",
+        "homeTeamRedCards" -> "0",
+        "awayTeamRedCards" -> "0",
+        Keys.KickOffTimestamp -> "1746619200",
+        Keys.DetailedMatchStatus -> "PENALTIES",
+        Keys.LineupsAvailable -> "true"
+      ),
+      ttl = TimeToLive.FootballMatchStatusTtl
+    ))
+  }
+
+  trait PenaltyShootoutNotificationScope extends NotificationScope {
+    val notification = models.FootballPenaltyShootoutNotification(
+      id = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+      title = Some("Penalty Kick"),
+      message = Some("Netherlands 2-2 Argentina (PT)"),
+      sender = "UnitTests",
+      importance = Major,
+      topic = List(Topic(`type` = Breaking, name = "uk")),
+      awayTeamName = "Argentina",
+      awayTeamScore = 2,
+      awayTeamMessage = "Messi 73'",
+      awayTeamId = "965",
+      awayTeamRedCards = 0,
+      awayTeamPenalties = Some(models.PenaltyScore(scored = 2, missed = 0, saved = 1)),
+      homeTeamName = "Netherlands",
+      homeTeamScore = 2,
+      homeTeamMessage = "Weghorst 83'",
+      homeTeamId = "631",
+      homeTeamRedCards = 1,
+      homeTeamPenalties = Some(models.PenaltyScore(scored = 3, missed = 1, saved = 0)),
+      competitionName = Some("World Cup"),
+      venue = Some("Lusail"),
+      matchId = "4356015",
+      matchInfoUri = new URI("https://some.invalid.url/detail"),
+      articleUri = Some(new URI("https://some.other.invalid.url/detail")),
+      matchStatus = "PT",
+      eventId = "2",
+      kickOffTimestamp = Some(1746619200L),
+      lineupsAvailable = Some(true),
+      detailedMatchStatus = Some("PENALTIES"),
+      debug = true,
+      dryRun = None
+    )
+
+    val expected = Some(
+      FirebaseAndroidNotification(
+        notificationId = UUID.fromString("4c261110-4672-4451-a5b8-3422c6839c42"),
+        data = Map(
+          Keys.Type -> MessageTypes.FootballPenaltyShootout,
+          "homeTeamName" -> "Netherlands",
+          "homeTeamId" -> "631",
+          "homeTeamScore" -> "2",
+          "homeTeamText" -> "Weghorst 83'",
+          "awayTeamName" -> "Argentina",
+          "awayTeamId" -> "965",
+          "awayTeamScore" -> "2",
+          "awayTeamText" -> "Messi 73'",
+          "importance" -> "Major",
+          "matchStatus" -> "PT",
+          "matchId" -> "4356015",
+          "matchInfoUri" -> "https://some.invalid.url/detail",
+          "articleUri" -> "https://some.other.invalid.url/detail",
+          "competitionName" -> "World Cup",
+          "venue" -> "Lusail",
+          "homeTeamRedCards" -> "1",
+          "awayTeamRedCards" -> "0",
+          Keys.KickOffTimestamp -> "1746619200",
+          Keys.LineupsAvailable -> "true",
+          Keys.DetailedMatchStatus -> "PENALTIES",
+          Keys.HomeTeamPenaltiesScored -> "3",
+          Keys.HomeTeamPenaltiesMissed -> "1",
+          Keys.HomeTeamPenaltiesSaved -> "0",
+          Keys.AwayTeamPenaltiesScored -> "2",
+          Keys.AwayTeamPenaltiesMissed -> "0",
+          Keys.AwayTeamPenaltiesSaved -> "1"
+        ),
+        ttl = TimeToLive.FootballMatchStatusTtl
+      )
+    )
   }
 
   trait UsElectionNotificationScope extends NotificationScope {

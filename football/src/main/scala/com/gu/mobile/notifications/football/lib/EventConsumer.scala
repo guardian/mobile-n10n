@@ -25,14 +25,9 @@ class EventConsumer(
       * to generate push notifications for, so we filter those out here.
       */
     // todo can we capture these strings in union type?
-    // todo we will want to send penalty kick notifications and extra synthetic events to push notifications for android
     val liveActivityEventTypes =
       List(
 
-        // penalty shootout events
-        "shootoutGoal",
-        "shootoutMiss",
-        "shootoutSave",
         // additional synthetic live activity life cycle events
         "create-channel",
         "start-live-activity",

@@ -4,12 +4,16 @@ import java.net.URI
 import java.time.ZonedDateTime
 import java.util.UUID
 
-import com.gu.mobile.notifications.client.models.Importance.Major
+import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.models.{Goal, GoalContext, Score}
+import com.gu.mobile.notifications.football.lib.SyntheticMatchEventGenerator
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, Score}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
+import pa.{Competition, MatchDay, MatchDayTeam, Parser, Round, Stage, Venue}
+
+import java.time.ZonedDateTime
+import scala.io.Source
 
 
 class MatchStatusNotificationBuilderSpec extends Specification {
@@ -27,10 +31,15 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         awayTeamId = "2",
         awayTeamScore = 0,
         awayTeamMessage = " ",
+        awayTeamRedCards = 0,
         homeTeamName = "Liverpool",
         homeTeamId = "1",
         homeTeamScore = 1,
         homeTeamMessage = "Steve 5'",
+        homeTeamRedCards = 0,
+        competitionName = Some("FA Cup"),
+        roundName = None,
+        venue = Some("Wembley"),
         matchId = "some-match-id",
         matchInfoUri = new URI("http://localhost/sport/football/matches/some-match-id"),
         articleUri = Some(new URI("http://localhost/items/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")),
@@ -38,13 +47,89 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         topic = List(Topic(TopicTypes.FootballTeam, "1"), Topic(TopicTypes.FootballTeam, "2"), Topic(TopicTypes.FootballMatch, "some-match-id")),
         eventId = UUID.nameUUIDFromBytes("".getBytes).toString,
         matchStatus = "1st",
+        kickOffTimestamp = Some(ZonedDateTime.parse("2000-01-01T00:00:00Z").toEpochSecond),
+        lineupsAvailable = Some(false),
+        detailedMatchStatus = Some("FIRST_HALF"),
         debug = false,
-        competitionName = Some("FA Cup"),
-        venue = Some("Wembley"),
         dryRun = None
       )
     }
 
+    "Include detailedMatchStatus for kick off" in new MatchEventsContext {
+      val kickOff = KickOff("")
+      val notification = builder.build(kickOff, matchInfo.copy(matchStatus = "KO"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.detailedMatchStatus shouldEqual Some("FIRST_HALF")
+    }
+
+    "Include detailedMatchStatus for penalties" in new MatchEventsContext {
+      val matchInPenalties = matchInfo.copy(matchStatus = "PT")
+      val notification = builder.build(baseGoal, matchInPenalties, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.detailedMatchStatus shouldEqual Some("PENALTIES")
+    }
+
+    "Include detailedMatchStatus for extra time half time" in new MatchEventsContext {
+      val matchInETHT = matchInfo.copy(matchStatus = "ETHT")
+      val notification = builder.build(baseGoal, matchInETHT, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_HALF_TIME")
+    }
+
+    "Include detailedMatchStatus EXTRA_TIME_TO_BE_PLAYED for a full time event when match status is FTET" in new MatchEventsContext {
+      val fullTime = FullTime("")
+      val notification = builder.build(fullTime, matchInfo.copy(matchStatus = "FTET"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_TO_BE_PLAYED")
+    }
+
+    "Include detailedMatchStatus EXTRA_TIME_FIRST_HALF for a goal during extra time" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo.copy(matchStatus = "ETS"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_FIRST_HALF")
+    }
+
+    "Include detailedMatchStatus EXTRA_TIME_SECOND_HALF for a goal during extra time second half" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo.copy(matchStatus = "ETSHS"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.detailedMatchStatus shouldEqual Some("EXTRA_TIME_SECOND_HALF")
+    }
+
+    "Include lineupsAvailable true from matchInfo" in new MatchEventsContext {
+      val matchInfoWithLineups = matchInfo.copy(lineupsAvailable = true)
+      val notification = builder.build(baseGoal, matchInfoWithLineups, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.lineupsAvailable shouldEqual Some(true)
+    }
+
+    "Include lineupsAvailable false from matchInfo if not available" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.lineupsAvailable shouldEqual Some(false)
+    }
+
+    "Include kickOffTimestamp from match info" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.kickOffTimestamp shouldEqual Some(matchInfo.date.toEpochSecond)
+    }
+
+    "Include the correct red cards count for each team" in new MatchEventsContext {
+      val firstDismissal  = Dismissal("e1", "Player A", home, 55, None)
+      val secondDismissal = Dismissal("e2", "Player B", home, 80, None)
+      val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal), None).asInstanceOf[FootballMatchStatusPayload]
+      notification.homeTeamRedCards shouldEqual 2
+      notification.awayTeamRedCards shouldEqual 0
+    }
+
+    "Return FootballPenaltyShootoutPayload for a penalty shootout kick" in new MatchEventsContext {
+      val shootoutKick = PenaltyShootoutKick(ScoredShootoutResult, "Player", home, away, 1, "event-1")
+      val notification = builder.build(shootoutKick, matchInfo.copy(matchStatus = "PT"), List.empty, None)
+      notification must beAnInstanceOf[FootballPenaltyShootoutPayload]
+      notification must not(beAnInstanceOf[FootballMatchStatusPayload])
+    }
+
+    "Not return FootballPenaltyShootoutPayload for a goal" in new MatchEventsContext {
+      val notification = builder.build(baseGoal, matchInfo, List.empty, None)
+      notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
+    }
+
+    "Not return FootballPenaltyShootoutPayload for dismissal" in new MatchEventsContext {
+      val dismissal = Dismissal("e2", "Player B", home, 80, None)
+      val notification = builder.build(baseGoal, matchInfo, List(dismissal), None)
+      notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
+    }
   }
 
   trait MatchEventsContext extends Scope {
@@ -66,7 +151,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       previewAvailable = false,
       reportAvailable = false,
       lineupsAvailable = false,
-      matchStatus = "1st",
+      matchStatus = "KO",
       attendance = None,
       homeTeam = home,
       awayTeam = away,
