@@ -364,9 +364,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       result must contain(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
 
-    "NOT generate notification payload for extra time match phase events" in new MatchEventsContext {
+    "NOT generate notification payload for abandoned match phase events" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
-        super.matchDayLA.copy(date = ZonedDateTime.now(), matchStatus = "ETS")
+        super.matchDayLA.copy(date = ZonedDateTime.now(), matchStatus = "Abandoned")
 
       val result: List[NotificationPayload] =
         eventConsumer.eventsToNotifications(matchDataLA)
