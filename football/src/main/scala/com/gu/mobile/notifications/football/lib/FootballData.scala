@@ -156,7 +156,7 @@ class FootballData(
   }
 
   private def processMatch(matchDay: MatchDay): Future[Option[RawMatchData]] = {
-    if (matchDay.result)
+    if (matchDay.result) // TODO: remove this logging once PA result/liveMatch behaviour is understood
       logger.warn(s"Match ${matchDay.id} matchStatus=${matchDay.matchStatus} result=${matchDay.result} liveMatch=${matchDay.liveMatch}")
     val matchData = for {
       (matchDay, events) <- paClient.eventsForMatch(matchDay, syntheticEvents)
