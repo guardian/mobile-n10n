@@ -88,15 +88,7 @@ class LiveActivityEventConsumer(
       matchData: MatchDataWithArticle
   ): List[LiveActivityPayload] = {
 
-    val duplicatePhaseEventTypes =
-      List(
-        "full-time", // using "end-live-activity" synthetic event instead fo live activities when there is a result
-      )
-
-    val filteredMatchData =
-      matchData.copy(allEvents = matchData.allEvents.filterNot(e => duplicatePhaseEventTypes.contains(e.eventType)))
-
-    filteredMatchData.allEvents.flatMap { event =>
+    matchData.allEvents.flatMap { event =>
       processForLiveActivities(
         matchData.matchDay,
         matchData.allEvents,

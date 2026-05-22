@@ -382,7 +382,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
     "generate a CREATE CHANNEL payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
-        super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
+        super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1), liveMatch = false)
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -391,20 +391,23 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       // note: this will trigger the downstream update from the channel manager with Scheduled Match Status.
     }
 
-//    "generate a START live activity payload" in new MatchEventsContext {
-//      override def matchDayLA: MatchDay = super.matchDayLA.copy(date = ZonedDateTime.now().plusMinutes(10))
-//      val result: List[LiveActivityPayload] = eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
-//      result must contain((payload: LiveActivityPayload) =>
-//        payload.eventType == StartLiveActivityEvent)
-//    }
-
-    "generate a END live activity payload when result is true" in new MatchEventsContext {
+    "generate a END live activity payload when result is true and liveMatch is false" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
-        super.matchDay.copy(matchStatus = "FT", result = true)
+        super.matchDay.copy(matchStatus = "FT", result = true, liveMatch = false)
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
         payload.eventType == EndLiveActivityEvent
+      )
+    }
+
+    "NOT generate a END live activity payload when result is true and liveMatch is true" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDay.copy(matchStatus = "FT", result = true, liveMatch = true)
+      val result: List[LiveActivityPayload] =
+        eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.eventType == UpdateLiveActivityEvent
       )
     }
   }
@@ -414,6 +417,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a PreMatch live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "-", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -426,6 +430,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a kick off first half start live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "KO", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -438,6 +443,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a half time live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "HT", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -450,6 +456,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a second half live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "SHS", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain { (payload: LiveActivityPayload) =>
@@ -462,6 +469,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a extra time to be played live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "FTET", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -474,6 +482,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a extra time first half live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "ETS", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -486,6 +495,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a extra time half time live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "ETHT", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -498,6 +508,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a extra time second half live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "ETSHS", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -510,6 +521,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a penalty time to be played live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "FTPT", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -522,6 +534,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a penalty time live activity payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "PT", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -534,6 +547,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a fulltime time live activity UPDATE payload without a result" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "FT", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
 
@@ -548,9 +562,44 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
     }
 
-    "generate a fulltime time live activity END payload with result" in new MatchEventsContext {
+    "generate a fulltime time live activity UPDATE payload with a result" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "FT", result = true)
+
+      val result: List[LiveActivityPayload] =
+        eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .matchStatus == liveActitivites.FullTime
+      )
+      result must contain((payload: LiveActivityPayload) =>
+        payload.eventType == UpdateLiveActivityEvent
+      )
+
+    }
+
+    "NOT generate a fulltime time live activity END payload only with result" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDay.copy(matchStatus = "FT", result = true, liveMatch = true)
+
+      val result: List[LiveActivityPayload] =
+        eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .matchStatus == liveActitivites.FullTime
+      )
+      result must contain((payload: LiveActivityPayload) =>
+        payload.eventType == UpdateLiveActivityEvent
+      )
+    }
+
+    "generate a live activity END payload when there is a result AND the match is no longer live" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDay.copy(matchStatus = "FT", result = true, liveMatch = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -561,12 +610,13 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       result must contain((payload: LiveActivityPayload) =>
         payload.eventType == EndLiveActivityEvent
       )
-
     }
 
+    // todo - check end broadcast states are shown
     "generate a abandoned live activity END payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "Abandoned", result = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -577,7 +627,6 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       result must contain((payload: LiveActivityPayload) =>
         payload.eventType == EndLiveActivityEvent
       )
-
     }
   }
 
@@ -654,13 +703,16 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
     def rawEvents: List[MatchEvent] =
       Parser.parseMatchEvents(loadFile("match-event-feed.xml")).get.events
+
     def matchDay: MatchDay = Parser.parseMatchDay(loadFile("20170811.xml")).head
+
     def events: List[MatchEvent] =
       new SyntheticMatchEventGenerator(() => ZonedDateTime.now()).generate(
         rawEvents,
         "4011135",
         matchDay
       )
+
     def matchData = MatchDataWithArticle(
       matchDay,
       events,
@@ -674,11 +726,14 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       .parseMatchEvents(loadFile("match-event-feed-penalties.xml"))
       .get
       .events
+
     def matchDayLA: MatchDay =
       Parser.parseMatchDay(loadFile("4484328-penalties.xml")).head
+
     def eventsLA: List[MatchEvent] =
       new SyntheticMatchEventGenerator(() => ZonedDateTime.now())
         .generate(rawEventsLA, "4484328", matchDayLA)
+
     def matchDataLA = MatchDataWithArticle(
       matchDayLA,
       eventsLA,
@@ -687,4 +742,5 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       )
     )
   }
+
 }
