@@ -156,6 +156,8 @@ class FootballData(
   }
 
   private def processMatch(matchDay: MatchDay): Future[Option[RawMatchData]] = {
+    if (matchDay.result)
+      logger.info(s"Match ${matchDay.id} has matchDay.result=true, matchStatus=${matchDay.matchStatus}")
     val matchData = for {
       (matchDay, events) <- paClient.eventsForMatch(matchDay, syntheticEvents)
     } yield Some(RawMatchData(matchDay, events))
