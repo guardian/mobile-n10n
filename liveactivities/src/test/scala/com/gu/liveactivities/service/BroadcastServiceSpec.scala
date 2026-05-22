@@ -1,7 +1,6 @@
-package com.gu.liveactivities
+package com.gu.liveactivities.service
 
 import com.gu.liveactivities.models.{LiveActivityData, LiveActivityMapping}
-import com.gu.liveactivities.service.{BroadcastApiClient, BroadcastService, ChannelMappingsRepository}
 import com.gu.liveactivities.util.DateTimeHelper
 import com.gu.mobile.notifications.client.models.liveActitivites._
 import org.slf4j

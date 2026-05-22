@@ -8,8 +8,10 @@ import play.api.libs.json._
 
 import java.time.ZonedDateTime
 
-sealed trait LiveActivityData
 
+// Live Activity DynamoDB models, specifically LiveActivityID mapping to ChannelID plus correlating data for the live activity.
+
+sealed trait LiveActivityData
 case class FootballLiveActivity(
     homeTeam: String,
     awayTeam: String,
