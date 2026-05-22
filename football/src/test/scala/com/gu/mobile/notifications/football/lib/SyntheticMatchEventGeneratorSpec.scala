@@ -69,7 +69,7 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
     }
     "Add full-time event if match is result" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true)).drop(1).head.eventType mustEqual "full-time"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true, liveMatch = true)).drop(1).head.eventType mustEqual "full-time"
     }
 
     "Add extra time event if status is ETS" in new TestScope {
@@ -152,7 +152,7 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
 
     "Add an endLiveActivity event if match info contains result" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true)).reverse.head.eventType mustEqual "end-live-activity"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true, liveMatch = false)).reverse.head.eventType mustEqual "end-live-activity"
     }
   }
 }
