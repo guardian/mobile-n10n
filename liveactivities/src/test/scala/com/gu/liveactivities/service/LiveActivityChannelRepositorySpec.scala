@@ -1,7 +1,7 @@
-package com.gu.liveactivities
+package com.gu.liveactivities.service
 
+import com.gu.liveactivities.DynamodbSpecification
 import com.gu.liveactivities.models.{FootballLiveActivity, LiveActivityMapping, RepositoryException}
-import com.gu.liveactivities.service.LiveActivityChannelRepository
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType._
