@@ -49,7 +49,7 @@ class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient
 
           _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
           broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
-          _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
+          _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, Some(10), broadcastPayload)
           _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
           _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = !shouldEndBroadcast, Some(eventId), Some(eventTime))
