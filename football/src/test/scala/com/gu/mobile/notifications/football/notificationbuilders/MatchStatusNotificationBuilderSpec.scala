@@ -7,7 +7,7 @@ import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.football.lib.SyntheticMatchEventGenerator
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, Score}
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, PreMatch, Score}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Parser, Round, Stage, Venue}
@@ -129,6 +129,12 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       val dismissal = Dismissal("e2", "Player B", home, 80, None)
       val notification = builder.build(baseGoal, matchInfo, List(dismissal), None)
       notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
+    }
+
+    "Use 'Kick-off starting soon' as title for a pre-match event" in new MatchEventsContext {
+      val preMatch = PreMatch("pre-match-event-id")
+      val notification = builder.build(preMatch, matchInfo, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.title shouldEqual Some("Kick-off starting soon")
     }
   }
 

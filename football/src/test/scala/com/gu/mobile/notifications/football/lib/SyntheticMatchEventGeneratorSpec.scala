@@ -154,5 +154,11 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
       val generator = new SyntheticMatchEventGenerator(currentTime)
       generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true, liveMatch = false)).reverse.head.eventType mustEqual "end-live-activity"
     }
+
+    "Add a pre-match event if match kick off is within 20min" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      val events = generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15)))
+      events.map(_.eventType) must contain("pre-match")
+    }
   }
 }
