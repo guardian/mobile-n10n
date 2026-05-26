@@ -70,12 +70,12 @@ object MatchStatus {
     ("ETS", ExtraTimeFirstHalf), // Extra Time has Started.
     ("ETHT", ExtraTimeHalfTime), // Extra Time Half Time has been called.
     ("ETSHS", ExtraTimeSecondHalf), // Extra Time, Second Half has Started.
-    ("ETFT", FullTime), // Extra Time, Full Time has been blown.
+    ("ETFT", ExtraTimeSecondHalf), // Extra Time, Full Time has been blown.
 
     ("FTPT", PenaltiesToBePlayed), // Full Time, Penalties are To be played.
     ("ETFTPT", PenaltiesToBePlayed), // Extra Time, Full Time, Penalties are To be played.
     ("PT", Penalties), // Penalty ShooT Out has started.
-    ("PTFT", FullTime), // Penalty ShooT Full Time.
+    ("PTFT", Penalties), // Penalty ShooT Full Time.
 
     // edge cases
     ("Suspended", Suspended), // Match has been Suspended.

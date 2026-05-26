@@ -45,13 +45,7 @@ class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient
           // TODO - determine expiry time and priority
 
           _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
-
           broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
-
-          // Before sending a broadcast-end to end a live activity, first send APNS a final broadcast-update with the final payload.
-          _ <- if (shouldEndBroadcast) broadcastApiClient.sendToChannel(mapping.channelId, None, priorityLevel, BroadcastBody(contentState, shouldEndBroadcast = false)) else Future.successful("")
-
-
           _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, priorityLevel, broadcastPayload)
           _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
