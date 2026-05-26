@@ -36,6 +36,26 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       contentState.articleUrl mustEqual Some("http://www.theguardian.com/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
       contentState.matchInfoUrl mustEqual "http://www.theguardian.com/football/match/some-match-id"
     }
+
+
+    "Filter out league round name" in new MatchEventsContext {
+      val result = builder.build(
+        baseGoal,
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+
+      result.eventType mustEqual UpdateLiveActivityEvent
+      result.liveActivityType mustEqual FootballLiveActivity
+      result.liveActivityID mustEqual "some-match-id"
+      result.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id/".getBytes)
+
+      val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
+      contentState.competition.name mustEqual "FA Cup"
+      contentState.competition.round mustEqual None
+    }
+
   }
 
   trait MatchEventsContext extends Scope {
