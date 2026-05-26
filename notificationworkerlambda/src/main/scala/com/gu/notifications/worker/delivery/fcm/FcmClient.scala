@@ -6,11 +6,11 @@ import com.google.api.client.json.JsonFactory
 import com.google.auth.oauth2.{GoogleCredentials, ServiceAccountCredentials}
 import com.google.firebase.messaging._
 import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
-import com.gu.notifications.worker.delivery.DeliveryException.{BatchCallFailedRequest, FailedRequest, InvalidToken, UnknownReasonFailedRequest}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken, UnknownReasonFailedRequest}
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
-import com.gu.notifications.worker.delivery.{DeliveryClient, DeliveryException, FcmBatchDeliverySuccess, FcmDeliverySuccess, FcmPayload}
+import com.gu.notifications.worker.delivery.{DeliveryClient, DeliveryException, FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.utils.Logging
 import org.slf4j.{Logger, LoggerFactory}
 import com.gu.notifications.worker.utils.UnwrappingExecutionException
@@ -19,7 +19,6 @@ import java.io.ByteArrayInputStream
 import java.time.{Duration, Instant}
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future, Promise}
-import scala.jdk.CollectionConverters._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
@@ -29,7 +28,6 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
   extends DeliveryClient with Logging {
 
   type Success = FcmDeliverySuccess
-  type BatchSuccess = FcmBatchDeliverySuccess
   type Payload = FcmPayload
   val dryRun = config.dryRun
 

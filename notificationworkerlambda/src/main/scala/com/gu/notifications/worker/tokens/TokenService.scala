@@ -13,11 +13,9 @@ import java.time.Instant
 import scala.concurrent.ExecutionContextExecutor
 
 case class IndividualNotification(notification: Notification, token: String)
-case class BatchNotification(notification: Notification, token: List[String])
 
 case class ChunkedTokens(notification: Notification, tokens: List[String], range: ShardRange, metadata: NotificationMetadata) {
   def toNotificationToSends: List[IndividualNotification] = tokens.map(IndividualNotification(notification, _))
-  def toBatchNotificationToSends: List[BatchNotification] = tokens.grouped(500).map(BatchNotification(notification, _)).toList
 }
 
 object ChunkedTokens {

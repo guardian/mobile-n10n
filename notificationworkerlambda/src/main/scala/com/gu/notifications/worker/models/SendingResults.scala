@@ -1,6 +1,6 @@
 package com.gu.notifications.worker.models
 
-import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryException, DeliverySuccess}
+import com.gu.notifications.worker.delivery.{DeliveryException, DeliverySuccess}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.{Duration, Instant}
@@ -22,12 +22,6 @@ object SendingResults {
     case Right(success) if success.dryRun => previous.copy(dryRunCount = previous.dryRunCount + 1)
     case Right(_) => previous.copy(successCount = previous.successCount + 1)
     case Left(_) => previous.copy(failureCount = previous.failureCount + 1)
-  }
-
-  def aggregateBatch(previous: SendingResults, batchSize: Int, res: Either[Throwable, BatchDeliverySuccess]): SendingResults = res match {
-    case Right(batchSuccess) =>
-      batchSuccess.responses.foldLeft(previous)((acc, resp) => SendingResults.aggregate(acc, resp))
-    case Left(_) => SendingResults(previous.successCount, previous.failureCount + batchSize, previous.dryRunCount)
   }
 }
 
@@ -68,21 +62,6 @@ object LatencyMetrics {
       val duration = Duration.between(notificationSentTime, timeOfDeliveries).toSeconds
       previous :+ duration
     }.getOrElse(previous) // If the delivery was a failure just return the previous result
-  }
-
-  def collectBatchLatency(previous: List[Long], result: Either[Throwable, BatchDeliverySuccess], notificationSentTime: Instant): List[Long] = {
-    result.toOption.flatMap { batchSuccess =>
-      val successes = batchSuccess.responses.collect { case Right(success) => success }
-      successes.headOption.map { firstDelivery =>
-        val successfulDeliveries = successes.size
-        val timeOfDeliveries: Instant = firstDelivery.deliveryTime
-        val duration = Duration.between(notificationSentTime, timeOfDeliveries).toSeconds
-        // The batch are all delivered at the same time so we dont need to recalculate for every delivery in the batch.
-        // However we do want to record a time for each delivery.
-        val batchDeliveryTimes = List.fill(successfulDeliveries)(duration)
-        previous ++ batchDeliveryTimes
-      }
-    }.getOrElse(previous) // If the overall batch was a failure (or the batch only contained failures) just return the previous result
   }
 
   def audienceSizeBucket(audienceSize: Option[Int]): String = audienceSize match {
