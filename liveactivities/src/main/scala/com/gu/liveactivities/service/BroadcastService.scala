@@ -3,11 +3,7 @@ package com.gu.liveactivities.service
 import com.gu.liveactivities.models.{BroadcastBody, LiveActivityInvalidStateException}
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromLong, dateTimeToString}
 import com.gu.liveactivities.util.Logging
-import com.gu.mobile.notifications.client.models.liveActitivites.{
-  ContentState,
-  EndLiveActivityEvent,
-  LiveActivityPayload,
-}
+import com.gu.mobile.notifications.client.models.liveActitivites.{ContentState, EndLiveActivityEvent, FootballLiveActivity, LiveActivityPayload}
 
 import java.time.ZonedDateTime
 import scala.concurrent.{ExecutionContext, Future}
@@ -24,6 +20,7 @@ class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient
       // But we don't want to fail the lambda because it's expected that the source may continue
       // to send update events after a session has ended. Therefore, we treat these as expected no-ops.
       val broadcastNotAllowed = !shouldEndBroadcast && !mapping.isLive && mapping.lastEventId.isDefined
+      val priorityLevel = if (requestPayload.liveActivityType == FootballLiveActivity) Some(10) else None
 
       if (broadcastNotAllowed) {
         logger.warn(s"${requestPayload.eventType.asString} event ID $eventId not allowed after ${EndLiveActivityEvent.asString} for match ID $matchId")
@@ -49,7 +46,7 @@ class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient
 
           _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
           broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
-          _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, None, broadcastPayload)
+          _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, priorityLevel, broadcastPayload)
           _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
           _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = !shouldEndBroadcast, Some(eventId), Some(eventTime))
