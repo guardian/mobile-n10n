@@ -182,5 +182,4 @@ class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDy
       result <- liveActivityPusher.pushEvents(filteredLiveActivities, FootballLambdaEventSource)
     } yield result
   }
-
 }
