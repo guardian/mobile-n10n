@@ -6,9 +6,9 @@ import _root_.models.Link._
 import _root_.models.TopicTypes._
 import com.google.api.core.ApiFuture
 import com.google.firebase.{ErrorCode, FirebaseApp}
-import com.google.firebase.messaging.{BatchResponse, FirebaseMessaging, FirebaseMessagingException, SendResponse}
-import com.gu.notifications.worker.delivery.DeliveryException.{BatchCallFailedRequest, FailedRequest, InvalidToken, UnknownReasonFailedRequest}
-import com.gu.notifications.worker.delivery.{BatchDeliverySuccess, DeliveryException, FcmBatchDeliverySuccess, FcmDeliverySuccess, FcmPayload}
+import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, SendResponse}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken, UnknownReasonFailedRequest}
+import com.gu.notifications.worker.delivery.{DeliveryException, FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import models.FcmConfig
 import org.specs2.mutable.Specification
@@ -76,31 +76,6 @@ trait FcmScope extends Scope {
   var failedRequest = 0
   var unknownReasonFailedRequest = 0
   var otherResponse = 0
-  var deliveryBatchSuccess = 0
-  var otherBatchResponse = 0
-  var catastrophicBatchSendResponse = 0
-  val batchInvalidTokens = ListBuffer.empty[String]
-
-  def onCompleteCb(message: Either[DeliveryException, BatchDeliverySuccess]): Unit = {
-    message match {
-      case Right(FcmBatchDeliverySuccess(responses, _)) =>
-            responses.foreach {
-              case Right(_) =>
-                deliverySuccess += 1
-              case Left(InvalidToken(_, token, _, _)) =>
-                invalidTokens += 1
-                batchInvalidTokens += token
-              case Left(FailedRequest(_, _, _, _)) =>
-                failedRequest += 1
-              case Left(UnknownReasonFailedRequest(_, _)) =>
-                unknownReasonFailedRequest += 1
-              case _ => otherResponse += 1
-            }
-      case Left(BatchCallFailedRequest(_, _)) =>
-        catastrophicBatchSendResponse += 1
-      case _ => otherResponse += 1
-    }
-  }
 
   val dryRun = false
   val app: FirebaseApp = Mockito.mock[FirebaseApp]
