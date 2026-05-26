@@ -43,7 +43,8 @@ class BroadcastApiClient(
       priority: Option[Int],
       broadcastPayload: BroadcastBody
   ): Future[String] = {
-    logger.info(s"Broadcasting to channel $channelId for match")
+    val defaultPriority = "1"
+    logger.info(s"Broadcasting to channel $channelId for match with priority ${priority.getOrElse(defaultPriority)}")
 
     val broadcastPayloadJson: String = Json.stringify(
       Json.toJson(broadcastPayload)(BroadcastBody.broadcastBodyFormat)
@@ -63,7 +64,7 @@ class BroadcastApiClient(
           .getEpochSecond
           .toString
       )
-      .header("apns-priority", priority.map(_.toString).getOrElse("1"))
+      .header("apns-priority", priority.map(_.toString).getOrElse(defaultPriority))
       .header("apns-push-type", "Liveactivity")
       .POST(HttpRequest.BodyPublishers.ofString(broadcastPayloadJson, charSet))
       .timeout(Duration.ofSeconds(60))
