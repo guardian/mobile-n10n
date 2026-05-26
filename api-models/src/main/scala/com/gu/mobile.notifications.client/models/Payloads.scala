@@ -80,6 +80,7 @@ object ShootoutResultType {
 
 trait Payload {
   def id: UUID
+  def isEndPayload: Boolean = false
 }
 
 sealed trait NotificationPayload extends Payload {

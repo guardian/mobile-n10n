@@ -97,7 +97,12 @@ case class LiveActivityPayload(
   dynamoStoreData: Option[String], // data not in contentstate but specific to match, election, etc TBC if this is needed.
   broadcastContentStateData: Option[ContentState],
   eventTimestamp: Long,
-) extends Payload
+) extends Payload {
+  override def isEndPayload = eventType match {
+    case EndLiveActivityEvent => true
+    case _ => false
+  }
+}
 
 object LiveActivityPayload {
 

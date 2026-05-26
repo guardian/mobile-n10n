@@ -36,6 +36,45 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     }
   }
 
+  private def isDuplicateRecord(item: A)(implicit ec: ExecutionContext): Future[Boolean] = {
+    if (!processedEvents.get.contains(item.id)) {
+      distinctCheck.isDuplicate(item).map { isDup =>
+        if (!isDup) {
+          cache(item.id)
+        }
+        isDup
+      }
+    } else {
+      logger.debug(
+        s"Event ${item.id} already exists in local cache or does not have an id - discarding (dynamo table: ${distinctCheck.tableName})",
+      )
+      Future.successful(true)
+    }
+  }
+
+  def filterAsync[A](list: List[A])(predicate: A => Future[Boolean])(implicit ec: ExecutionContext): Future[List[A]] = {
+    Future.traverse(list) { item =>
+      predicate(item).map {
+        case true  => Some(item)
+        case false => None
+      }
+    }.map(_.flatten)
+  }
+
+  def filterDynamoEventsForLiveActivities(dynamoEvents: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
+    for {
+      newEvents <- filterAsync(dynamoEvents)(isDuplicateRecord)
+      /**
+       * Because we poll once a minute, we might end up with triggering event (eg. goal) along with an end event,
+       * but we only ever want to process the end event alone in a single polling cycle. This only affects Live Activities.
+       */
+      (endEvent, updateEvents) = newEvents.partition(_.isEndPayload)
+      eventsToProcess = if (updateEvents.isEmpty) endEvent else updateEvents
+
+      processedEvents <- Future.traverse(eventsToProcess)(filterDynamoEvent).map(_.flatten)
+    } yield processedEvents
+  }
+
   def filterDynamoEvents(dynamoEvents: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
     Future.traverse(dynamoEvents)(filterDynamoEvent).map(_.flatten)
   }
