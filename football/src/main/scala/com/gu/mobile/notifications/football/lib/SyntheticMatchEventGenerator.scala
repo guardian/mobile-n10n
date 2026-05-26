@@ -157,6 +157,14 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
     else None
   }
 
+  private val preMatch: MatchEventGenerator = { (matchDay: MatchDay, _) =>
+    if (koWithin20Minutes(matchDay.date.toEpochSecond)) Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/pre-match".getBytes).toString),
+      eventType = "pre-match"
+    ))
+    else None
+  }
+
   // Note: matches may be abandoned after kick off with no result, in which case rely on "stale-date" to end the activity (4hrs)
   // todo: add end conditions for Abandoned and cancelled?
   private val endLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
@@ -184,6 +192,7 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
     cancelled,
     createChannel,
     startLiveActivity,
+    preMatch,
     endLiveActivity)
 
   private def emptyMatchEvent = MatchEvent(

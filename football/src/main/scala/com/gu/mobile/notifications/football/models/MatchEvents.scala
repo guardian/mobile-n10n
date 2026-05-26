@@ -195,6 +195,7 @@ object MatchPhaseEvent {
       case "abandoned"                                    => Abandoned(eventId)
       case "postponed"                                    => Postponed(eventId)
       case "cancelled"                                    => Cancelled(eventId)
+      case "pre-match"                                    => PreMatch(eventId)
       case "create-channel"                               => CreateChannel(eventId)
       case "start-live-activity"                          => StartLiveActivity(eventId)
       case "end-live-activity"                            => EndLiveActivity(eventId)
@@ -219,6 +220,8 @@ case class Resumed(eventId: String) extends MatchPhaseEvent
 case class Abandoned(eventId: String) extends MatchPhaseEvent
 case class Postponed(eventId: String) extends MatchPhaseEvent
 case class Cancelled(eventId: String) extends MatchPhaseEvent
+
+case class PreMatch(eventId: String) extends MatchPhaseEvent
 
 // Live Activity phase events
 case class CreateChannel(eventId: String) extends MatchPhaseEvent
