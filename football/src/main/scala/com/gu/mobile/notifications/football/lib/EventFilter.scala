@@ -46,7 +46,7 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
       }
     } else {
       logger.debug(
-        s"Event ${item.id} already exists in local cache or does not have an id - discarding (dynamo table: ${distinctCheck.tableName})",
+        s"Event ${item.id} is a duplicate already in dynamo table: ${distinctCheck.tableName}",
       )
       Future.successful(true)
     }
@@ -69,7 +69,9 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
        * but we only ever want to process the end event alone in a single polling cycle. This only affects Live Activities.
        */
       (endEvent, updateEvents) = newEvents.partition(_.isEndPayload)
+      _ = logger.debug(s"Received ${dynamoEvents.size} events, ${newEvents.size} are new, ${endEvent.size} are end events")
       eventsToProcess = if (updateEvents.isEmpty) endEvent else updateEvents
+      _ = logger.debug(s"Processing ${eventsToProcess.size} events, skipping ${newEvents.size - eventsToProcess.size} end events")
 
       processedEvents <- Future.traverse(eventsToProcess)(filterDynamoEvent).map(_.flatten)
     } yield processedEvents
