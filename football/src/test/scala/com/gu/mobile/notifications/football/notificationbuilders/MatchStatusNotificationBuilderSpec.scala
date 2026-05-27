@@ -136,6 +136,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       val notification = builder.build(preMatch, matchInfo, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.title shouldEqual Some("Kick off starting soon")
       notification.message shouldEqual Some("Liverpool v Plymouth")
+      notification.matchStatus shouldEqual "PRE_MATCH"
     }
   }
 

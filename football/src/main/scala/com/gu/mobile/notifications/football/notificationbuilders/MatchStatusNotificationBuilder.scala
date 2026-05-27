@@ -41,7 +41,10 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
     val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
-    val status = statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)
+    val status = triggeringEvent match {
+      case _: PreMatch => "PRE_MATCH"
+      case _ => statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)
+    }
 
     triggeringEvent match {
       case _: PenaltyShootoutKick =>
