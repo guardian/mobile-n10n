@@ -3,8 +3,8 @@ package com.gu.mobile.notifications.football.lib
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.UnaryOperator
-
 import com.gu.mobile.notifications.client.models.Payload
+import com.gu.mobile.notifications.client.models.liveActitivites.LiveActivityPayload
 import com.gu.mobile.notifications.football.lib.DynamoDistinctCheck.{Distinct, Duplicate}
 import com.gu.mobile.notifications.football.Logging
 
@@ -59,25 +59,34 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     }.map(_.flatten)
   }
 
-  def filterDynamoEventsForLiveActivities(dynamoEvents: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
-    for {
-      newEvents <- filterAsync(dynamoEvents)(isDuplicateRecord)
-      /**
-       * Because we poll once a minute, we might end up with triggering event (eg. goal) along with an end event,
-       * but we only ever want to process the end event alone in a single polling cycle. This only affects Live Activities.
-       */
-      (endEvent, updateEvents) = newEvents.partition(_.isEndPayload)
-      _ = logger.debug(s"Received ${dynamoEvents.size} events, ${newEvents.size} are new, ${endEvent.size} are end events")
-      eventsToProcess = if (updateEvents.isEmpty) endEvent else updateEvents
-      _ = logger.debug(s"Processing ${eventsToProcess.size} events, skipping ${newEvents.size - eventsToProcess.size} end events")
+  private def filterOutEndEventsNotReceivedInIsolation(events: List[LiveActivityPayload]): List[LiveActivityPayload] = {
+    val (endEvents, updateEvents) = events.partition(_.isEndPayload)
+    val updateEventMatchIds = updateEvents.flatMap(_.liveActivityID).toSet
+    endEvents.filterNot(event => event.liveActivityID.exists(updateEventMatchIds.contains)) ++ updateEvents
+  }
 
+  def filterDynamoEventsForLiveActivities(
+      dynamoEvents: List[LiveActivityPayload],
+  )(implicit ec: ExecutionContext, ev: LiveActivityPayload <:< A): Future[List[LiveActivityPayload]] = {
+    for {
+      newEvents <- filterAsync(dynamoEvents.map(ev(_)))(isDuplicateRecord)
+        .map(_.flatMap(a => dynamoEvents.find(_.id == a.id)))
+
+      /** Because we poll once a minute, we might end up with a triggering update event (eg. very late goal) along with
+        * an end event in the same polling cycle, but we only ever want to process the end event alone after all updates
+        * have been processed (dispatched via eventbridge). This only affects Live Activities.
+        */
+      eventsToProcess = filterOutEndEventsNotReceivedInIsolation(newEvents)
       processedEvents <- Future.traverse(eventsToProcess) { item =>
-        distinctCheck.insertEvent(item).map {
+        distinctCheck.insertEvent(ev(item)).map {
           case Distinct => Some(item)
-          case _ => None
+          case _        => None
         }
       }
-      _ = logger.debug(s"After filtering ${processedEvents.size} events remain to be processed, ${eventsToProcess.size - processedEvents.size} were duplicates")
+      _ = logger.debug(
+        s"${dynamoEvents.size} events to filter. ${newEvents.size} were new and not duplicates in (dynamo table: ${distinctCheck.tableName}). " +
+          s"${newEvents.size - eventsToProcess.size} were early end events, leaving ${eventsToProcess.size} events to process this cycle",
+      )
     } yield processedEvents.flatten
   }
 
