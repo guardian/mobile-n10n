@@ -178,10 +178,10 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
          |${dismissal.playerName} (${dismissal.team.name}) ${dismissal.minute}min$extraInfo""".stripMargin
     }
 
-
     triggeringEvent match {
       case g: Goal => goalMsg(g)
       case dismissal: Dismissal => dismissalMsg(dismissal)
+      case prematch: PreMatch => s"""${homeTeamName} v ${awayTeamName}"""
       case _ => s"""${homeTeamName} ${score.home}-${score.away} ${awayTeamName} ($matchStatus)"""
     }
   }
@@ -193,8 +193,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case SecondHalf(_) => "Second-half start"
     case FullTime(_) => "Full-Time"
     case _:Dismissal => "Red card"
-    case _:PenaltyShootoutKick  => "Penalty Kick" // needed for spec. We are filtering these out in the EventConsumer for now.
-    case _:PreMatch => "Kick-off starting soon"
+    case _:PenaltyShootoutKick  => "Penalty Kick"
+    case _:PreMatch => "Kick off starting soon"
     case _ => "The Guardian"
   }
 
