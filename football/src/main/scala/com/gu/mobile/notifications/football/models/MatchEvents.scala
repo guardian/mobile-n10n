@@ -222,7 +222,6 @@ case class Abandoned(eventId: String) extends MatchPhaseEvent
 case class Postponed(eventId: String) extends MatchPhaseEvent
 case class Cancelled(eventId: String) extends MatchPhaseEvent
 
-
 // Live Activity phase events
 case class CreateChannel(eventId: String) extends MatchPhaseEvent
 case class StartLiveActivity(eventId: String) extends MatchPhaseEvent
