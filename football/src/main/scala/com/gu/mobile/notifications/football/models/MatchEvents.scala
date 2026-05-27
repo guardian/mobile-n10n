@@ -204,6 +204,7 @@ object MatchPhaseEvent {
   }
 }
 
+case class PreMatch(eventId: String) extends MatchPhaseEvent
 case class KickOff(eventId: String) extends MatchPhaseEvent
 case class FullTime(eventId: String) extends MatchPhaseEvent
 case class HalfTime(eventId: String) extends MatchPhaseEvent
@@ -221,7 +222,6 @@ case class Abandoned(eventId: String) extends MatchPhaseEvent
 case class Postponed(eventId: String) extends MatchPhaseEvent
 case class Cancelled(eventId: String) extends MatchPhaseEvent
 
-case class PreMatch(eventId: String) extends MatchPhaseEvent
 
 // Live Activity phase events
 case class CreateChannel(eventId: String) extends MatchPhaseEvent
