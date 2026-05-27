@@ -49,5 +49,4 @@ trait Lambda extends Logging{
 
   private val eventBusName = s"liveactivities-eventbus-${config.stage}"
   lazy val liveActivityPusher = new LiveActivityPusher(eventBusName, logger)
-
 }

@@ -5,7 +5,7 @@ import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromLong, dateTimeToSt
 import com.gu.liveactivities.util.Logging
 import com.gu.mobile.notifications.client.models.liveActitivites.{ContentState, EndLiveActivityEvent, FootballLiveActivity, LiveActivityPayload}
 
-import java.time.{Instant, ZonedDateTime}
+import java.time.ZonedDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient: BroadcastApiClient)(implicit ec: ExecutionContext) extends Logging {

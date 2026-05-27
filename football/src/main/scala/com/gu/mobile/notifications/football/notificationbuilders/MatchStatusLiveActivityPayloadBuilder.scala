@@ -2,7 +2,6 @@ package com.gu.mobile.notifications.football.notificationbuilders
 
 import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, CreateChannelEvent, EndLiveActivityEvent, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, MatchStatus, StartLiveActivityEvent, TeamState, UpdateLiveActivityEvent}
 import com.gu.mobile.notifications.football.models._
-import org.slf4j.{Logger, LoggerFactory}
 import pa.MatchDay
 
 import java.net.URI
@@ -32,12 +31,6 @@ class MatchStatusLiveActivityPayloadBuilder {
       case phase: MatchPhaseEvent => phase.currentMinute
       case _ => None
     }
-
-    // TODO delete this!
-    val logger: Logger = LoggerFactory.getLogger(this.getClass)
-    logger.info(s"Building live activity payload match ${matchInfo.id} - current minute: ${currentMinute.getOrElse("N/A")}, match status ${matchInfo.matchStatus} mapped to: ${MatchStatus.fromString(matchInfo.matchStatus)}")
-
-
 
     val contentState = FootballMatchContentState(
       matchStatus = MatchStatus.fromString(matchInfo.matchStatus),
