@@ -45,14 +45,12 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
         isDup
       }
     } else {
-      logger.debug(
-        s"Event ${item.id} is a duplicate already in dynamo table: ${distinctCheck.tableName}",
-      )
+      logger.debug(s"Event ${item.id} already exists in local cache or does not have an id - discarding (dynamo table: ${distinctCheck.tableName})")
       Future.successful(true)
     }
   }
 
-  def filterAsync[A](list: List[A])(predicate: A => Future[Boolean])(implicit ec: ExecutionContext): Future[List[A]] = {
+  private def filterAsync[A](list: List[A])(predicate: A => Future[Boolean])(implicit ec: ExecutionContext): Future[List[A]] = {
     Future.traverse(list) { item =>
       predicate(item).map {
         case true  => Some(item)
@@ -73,8 +71,14 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
       eventsToProcess = if (updateEvents.isEmpty) endEvent else updateEvents
       _ = logger.debug(s"Processing ${eventsToProcess.size} events, skipping ${newEvents.size - eventsToProcess.size} end events")
 
-      processedEvents <- Future.traverse(eventsToProcess)(filterDynamoEvent).map(_.flatten)
-    } yield processedEvents
+      processedEvents <- Future.traverse(eventsToProcess) { item =>
+        distinctCheck.insertEvent(item).map {
+          case Distinct => Some(item)
+          case _ => None
+        }
+      }
+      _ = logger.debug(s"After filtering ${processedEvents.size} events remain to be processed, ${eventsToProcess.size - processedEvents.size} were duplicates")
+    } yield processedEvents.flatten
   }
 
   def filterDynamoEvents(dynamoEvents: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
