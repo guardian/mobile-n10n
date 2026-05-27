@@ -698,6 +698,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                 "dynamodb:PutItem",
                 "dynamodb:UpdateItem",
                 "dynamodb:Query",
+                "dynamodb:GetItem",
               ],
               "Effect": "Allow",
               "Resource": [
@@ -734,30 +735,6 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                   ],
                 },
               ],
-            },
-            {
-              "Action": [
-                "dynamodb:PutItem",
-                "dynamodb:UpdateItem",
-                "dynamodb:Query",
-              ],
-              "Effect": "Allow",
-              "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:aws:dynamodb:",
-                    {
-                      "Ref": "AWS::Region",
-                    },
-                    ":",
-                    {
-                      "Ref": "AWS::AccountId",
-                    },
-                    ":table/mobile-notifications-football-notifications-CODE",
-                  ],
-                ],
-              },
             },
             {
               "Action": "s3:GetObject",
@@ -1537,6 +1514,7 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                 "dynamodb:PutItem",
                 "dynamodb:UpdateItem",
                 "dynamodb:Query",
+                "dynamodb:GetItem",
               ],
               "Effect": "Allow",
               "Resource": [
@@ -1573,30 +1551,6 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                   ],
                 },
               ],
-            },
-            {
-              "Action": [
-                "dynamodb:PutItem",
-                "dynamodb:UpdateItem",
-                "dynamodb:Query",
-              ],
-              "Effect": "Allow",
-              "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:aws:dynamodb:",
-                    {
-                      "Ref": "AWS::Region",
-                    },
-                    ":",
-                    {
-                      "Ref": "AWS::AccountId",
-                    },
-                    ":table/mobile-notifications-football-notifications-PROD",
-                  ],
-                ],
-              },
             },
             {
               "Action": "s3:GetObject",
