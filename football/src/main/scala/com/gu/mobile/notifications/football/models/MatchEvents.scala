@@ -181,6 +181,7 @@ object MatchPhaseEvent {
     val eventId = event.id.getOrElse("")
     condOpt(event.eventType) {
       case "timeline" if event.matchTime.contains("0:00") => KickOff(eventId)
+      case "pre-match"                                    => PreMatch(eventId)
       case "full-time"                                    => FullTime(eventId)
       case "half-time"                                    => HalfTime(eventId)
       case "second-half"                                  => SecondHalf(eventId)
@@ -195,7 +196,6 @@ object MatchPhaseEvent {
       case "abandoned"                                    => Abandoned(eventId)
       case "postponed"                                    => Postponed(eventId)
       case "cancelled"                                    => Cancelled(eventId)
-      case "pre-match"                                    => PreMatch(eventId)
       case "create-channel"                               => CreateChannel(eventId)
       case "start-live-activity"                          => StartLiveActivity(eventId)
       case "end-live-activity"                            => EndLiveActivity(eventId)

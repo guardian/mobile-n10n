@@ -131,11 +131,22 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
 
-    "Use 'Kick-off starting soon' as title and message for a pre-match event" in new MatchEventsContext {
+    "Show the correct title and message for the pre-match notifcation" in new MatchEventsContext {
       val preMatch = PreMatch("pre-match-event-id")
-      val notification = builder.build(preMatch, matchInfo, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
-      notification.title shouldEqual Some("Kick off starting soon")
+      val notification = builder.build(preMatch, matchInfo.copy(matchStatus = "Fixture"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.title shouldEqual Some("Kick off soon")
       notification.message shouldEqual Some("Liverpool v Plymouth")
+    }
+
+    "Override the payload matchStatus to be 'Pre' when PA's match status is 'Fixture'" in new MatchEventsContext {
+      val preMatch = PreMatch("pre-match-event-id")
+      val notification = builder.build(preMatch, matchInfo.copy(matchStatus = "Fixture"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.matchStatus shouldEqual "Pre"
+    }
+
+    "Override the payload matchStatus to be 'Pre' when PA matchStatus is '-'" in new MatchEventsContext {
+      val preMatch = PreMatch("pre-match-event-id")
+      val notification = builder.build(preMatch, matchInfo.copy(matchStatus = "-"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.matchStatus shouldEqual "Pre"
     }
   }

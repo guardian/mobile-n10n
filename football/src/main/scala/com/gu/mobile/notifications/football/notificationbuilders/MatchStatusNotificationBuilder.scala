@@ -41,10 +41,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
     val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
-    val status = triggeringEvent match {
-      case _: PreMatch => "Pre" // show "Pre" instead of "1st" on old Android clients (3 char limit)
-      case _ => statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)
-    }
+    val status = statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)
 
     triggeringEvent match {
       case _: PenaltyShootoutKick =>
@@ -197,7 +194,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case FullTime(_) => "Full-Time"
     case _:Dismissal => "Red card"
     case _:PenaltyShootoutKick  => "Penalty Kick"
-    case _:PreMatch => "Kick off starting soon"
+    case _:PreMatch => "Kick off soon"
     case _ => "The Guardian"
   }
 
@@ -230,8 +227,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
 
     ("Suspended", "S"), // Match has been Suspended.
 
-    ("Fixture", "1st"), // fixture maps to 1st just in case the matchInfo and event feed are out of sync
-    ("-", "1st"), // same as above
+    ("Fixture", "Pre"), // pre-match fixture
+    ("-", "Pre"), // same as above
 
     // don't really expect to see these (the way we handle data)
     ("Resumed", "R"), // Match has been Resumed.
