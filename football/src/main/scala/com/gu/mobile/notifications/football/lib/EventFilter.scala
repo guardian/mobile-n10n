@@ -61,15 +61,16 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
 
   private def filterOutEndEventsNotReceivedInIsolation(events: List[LiveActivityPayload]): List[LiveActivityPayload] = {
     val (endEvents, updateEvents) = events.partition(_.isEndPayload)
-    val updateEventMatchIds = updateEvents.flatMap(_.liveActivityID).toSet
-    endEvents.filterNot(event => event.liveActivityID.exists(updateEventMatchIds.contains)) ++ updateEvents
+    val updateEventMatchIds = updateEvents.map(_.liveActivityID).toSet
+    endEvents.filterNot(event => updateEventMatchIds.contains(event.liveActivityID)) ++ updateEvents
   }
 
+  // we need to be able to access liveActivityId so the Payload trait must be narrowed. "An instance of A <:< B witnesses that A is a subtype of B."
   def filterDynamoEventsForLiveActivities(
       dynamoEvents: List[LiveActivityPayload],
   )(implicit ec: ExecutionContext, ev: LiveActivityPayload <:< A): Future[List[LiveActivityPayload]] = {
     for {
-      newEvents <- filterAsync(dynamoEvents.map(ev(_)))(isDuplicateRecord)
+      newEvents <- filterAsync(dynamoEvents.map(ev(_)))(item => isDuplicateRecord(item).map(!_))
         .map(_.flatMap(a => dynamoEvents.find(_.id == a.id)))
 
       /** Because we poll once a minute, we might end up with a triggering update event (eg. very late goal) along with
