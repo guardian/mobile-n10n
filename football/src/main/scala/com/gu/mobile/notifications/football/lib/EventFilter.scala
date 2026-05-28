@@ -19,6 +19,12 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     })
   }
 
+  private def decache(eventId: UUID): Unit = {
+    processedEvents.getAndUpdate(new UnaryOperator[Set[UUID]] {
+      override def apply(set: Set[UUID]): Set[UUID] = set - eventId
+    })
+  }
+
   private def filterDynamoEvent(item: A)(implicit ec: ExecutionContext): Future[Option[A]] = {
     if (!processedEvents.get.contains(item.id)) {
       distinctCheck.insertEvent(item).map {
@@ -59,10 +65,15 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     }.map(_.flatten)
   }
 
+
   private def filterOutEndEventsNotReceivedInIsolation(events: List[LiveActivityPayload]): List[LiveActivityPayload] = {
     val (endEvents, updateEvents) = events.partition(_.isEndPayload)
     val updateEventMatchIds = updateEvents.map(_.liveActivityID).toSet
-    endEvents.filterNot(event => updateEventMatchIds.contains(event.liveActivityID)) ++ updateEvents
+
+    val (isolatedEndEvents, earlyEndEvents) = endEvents.partition(event => !updateEventMatchIds.contains(event.liveActivityID))
+    earlyEndEvents.foreach(event => decache(event.id)) // we must decache the early end event so it can be processed next cycle.
+
+    isolatedEndEvents ++ updateEvents
   }
 
   // we need to be able to access liveActivityId so the Payload trait must be narrowed. "An instance of A <:< B witnesses that A is a subtype of B."
