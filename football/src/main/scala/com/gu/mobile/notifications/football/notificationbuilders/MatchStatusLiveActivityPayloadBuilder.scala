@@ -32,7 +32,6 @@ class MatchStatusLiveActivityPayloadBuilder {
       case _ => None
     }
 
-    // TODO this is hard coded mostly for now.
     val contentState = FootballMatchContentState(
       matchStatus = MatchStatus.fromString(matchInfo.matchStatus),
       kickOffTimestamp = matchInfo.date.toEpochSecond, // included date and time

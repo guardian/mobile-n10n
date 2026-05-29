@@ -158,9 +158,9 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
   }
 
   // Note: matches may be abandoned after kick off with no result, in which case rely on "stale-date" to end the activity (4hrs)
-  // todo can we just use full-time event above?
+  // todo: add end conditions for Abandoned and cancelled?
   private val endLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
-    if (matchDay.result) Some(emptyMatchEvent.copy(
+    if (matchDay.result && !matchDay.liveMatch) Some(emptyMatchEvent.copy(
       id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/end-live-activity".getBytes).toString),
       eventType = "end-live-activity"
     ))

@@ -178,9 +178,8 @@ class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDy
     val liveActivities = rawEvents.flatMap(liveActivityEventConsumer.eventsToLiveActivityPayload)
 
     for {
-      filteredLiveActivities <- liveActivityEventFilter.filterDynamoEvents(liveActivities)
+      filteredLiveActivities <- liveActivityEventFilter.filterDynamoEventsForLiveActivities(liveActivities)
       result <- liveActivityPusher.pushEvents(filteredLiveActivities, FootballLambdaEventSource)
     } yield result
   }
-
 }

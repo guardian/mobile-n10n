@@ -27,7 +27,6 @@ class EventConsumer(
     // todo can we capture these strings in union type?
     val liveActivityEventTypes =
       List(
-
         // additional synthetic live activity life cycle events
         "create-channel",
         "start-live-activity",
@@ -88,7 +87,17 @@ class LiveActivityEventConsumer(
   def eventsToLiveActivityPayload(
       matchData: MatchDataWithArticle
   ): List[LiveActivityPayload] = {
-    matchData.allEvents.flatMap { event =>
+
+    // only "end-live-activity" synthetic event when there is a result
+    val duplicatePhaseEventTypes =
+      List(
+        "full-time",
+      )
+
+    val filteredMatchData =
+      matchData.copy(allEvents = matchData.allEvents.filterNot(e => duplicatePhaseEventTypes.contains(e.eventType)))
+
+    filteredMatchData.allEvents.flatMap { event =>
       processForLiveActivities(
         matchData.matchDay,
         matchData.allEvents,

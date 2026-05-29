@@ -106,21 +106,16 @@ export class FootballNotificationsLambda extends GuStack {
 
 		footballnotificationslambda.addToRolePolicy(
 			new PolicyStatement({
-				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
+				actions: [
+					'dynamodb:PutItem',
+					'dynamodb:UpdateItem',
+					'dynamodb:Query',
+					'dynamodb:GetItem',
+				],
 				effect: Effect.ALLOW,
 				resources: [
 					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
 					`arn:aws:dynamodb:${region}:${account}:table/${liveActivitiesDynamoTableName}`,
-				],
-			}),
-		);
-
-		footballnotificationslambda.addToRolePolicy(
-			new PolicyStatement({
-				actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Query'],
-				effect: Effect.ALLOW,
-				resources: [
-					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
 				],
 			}),
 		);

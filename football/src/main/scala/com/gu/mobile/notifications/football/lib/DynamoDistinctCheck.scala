@@ -62,6 +62,23 @@ class DynamoDistinctCheck[A <: Payload, D: DynamoFormat](
   partitionKeyName: String,
   toDynamoModel: A => D
 ) extends Logging {
+
+  def isDuplicate(item: A)(implicit ec: ExecutionContext): Future[Boolean] = {
+    import org.scanamo.syntax._
+
+    lazy val scanamoAsync: ScanamoAsync = ScanamoAsync(client)
+    lazy val notificationsTable = Table[D](tableName)
+
+   scanamoAsync.exec(notificationsTable.get(partitionKeyName -> item.id.toString)).map {
+      case Some(Right(_)) => true
+      case _ => false
+    } recover {
+      case e =>
+        logger.error(s"Failure while checking for dynamodb duplicates $tableName: ${e.getMessage}.")
+        false
+    }
+  }
+
   def insertEvent(item: A)(implicit ec: ExecutionContext): Future[DistinctStatus] = {
     import org.scanamo.syntax._
 
