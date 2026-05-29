@@ -58,8 +58,10 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
   private def filterOutEndEventsNotReceivedInIsolation(events: List[LiveActivityPayload]): List[LiveActivityPayload] = {
     val (endEvents, updateEvents) = events.partition(_.isEndPayload)
     val updateEventMatchIds = updateEvents.map(_.liveActivityID).toSet
-
     val (isolatedEndEvents, earlyEndEvents) = endEvents.partition(event => !updateEventMatchIds.contains(event.liveActivityID))
+
+    if (earlyEndEvents.nonEmpty) logger.debug("Early end event received for match ids: " + earlyEndEvents.map(_.liveActivityID))
+
     isolatedEndEvents ++ updateEvents
   }
 
@@ -83,10 +85,6 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
           case _        => None
         }
       }
-      _ = logger.debug(
-        s"${dynamoEvents.size} events to filter. ${newEvents.size} were new and not duplicates in (dynamo table: ${distinctCheck.tableName}). " +
-          s"${newEvents.size - eventsToProcess.size} were early end events, leaving ${eventsToProcess.size} events to process this cycle",
-      )
     } yield processedEvents.flatten
   }
 
