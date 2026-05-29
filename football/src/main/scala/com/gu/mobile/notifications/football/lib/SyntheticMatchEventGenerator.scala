@@ -168,8 +168,7 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
   }
 
   private val generators: List[MatchEventGenerator] = List(
-    createChannel,
-    startLiveActivity,
+    fullTime,
     halfTime,
     secondHalf,
     extraTimeToBePlayed,
@@ -178,12 +177,13 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
     extraTimeSecondHalf,
     penaltiesToBePlayed,
     penalties,
-    fullTime,
     suspended,
     resumed,
     abandoned,
     postponed,
     cancelled,
+    createChannel,
+    startLiveActivity,
     endLiveActivity)
 
   private def emptyMatchEvent = MatchEvent(
