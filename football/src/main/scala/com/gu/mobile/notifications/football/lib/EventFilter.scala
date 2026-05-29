@@ -42,14 +42,9 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     }
   }
 
-  private def isDuplicateRecord(item: A)(implicit ec: ExecutionContext): Future[Boolean] = {
+  private def isUniqueRecord(item: A)(implicit ec: ExecutionContext): Future[Boolean] = {
     if (!processedEvents.get.contains(item.id)) {
-      distinctCheck.isDuplicate(item).map { isDup =>
-        if (!isDup) {
-          cache(item.id)
-        }
-        isDup
-      }
+      distinctCheck.isDuplicate(item).map { isDup => !isDup }
     } else {
       logger.debug(s"Event ${item.id} already exists in local cache or does not have an id - discarding (dynamo table: ${distinctCheck.tableName})")
       Future.successful(true)
@@ -71,8 +66,6 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     val updateEventMatchIds = updateEvents.map(_.liveActivityID).toSet
 
     val (isolatedEndEvents, earlyEndEvents) = endEvents.partition(event => !updateEventMatchIds.contains(event.liveActivityID))
-    earlyEndEvents.foreach(event => decache(event.id)) // we must decache the early end event so it can be processed next cycle.
-
     isolatedEndEvents ++ updateEvents
   }
 
@@ -81,7 +74,7 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
       dynamoEvents: List[LiveActivityPayload],
   )(implicit ec: ExecutionContext, ev: LiveActivityPayload <:< A): Future[List[LiveActivityPayload]] = {
     for {
-      newEvents <- filterAsync(dynamoEvents)(item => isDuplicateRecord(ev(item)).map(!_))
+      newEvents <- filterAsync(dynamoEvents)(item => isUniqueRecord(ev(item)))
       /** Because we poll once a minute, we might end up with a triggering update event (eg. very late goal) along with
         * an end event in the same polling cycle, but we only ever want to process the end event alone after all updates
         * have been processed (dispatched via eventbridge). This only affects Live Activities.
@@ -89,7 +82,10 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
       eventsToProcess = filterOutEndEventsNotReceivedInIsolation(newEvents)
       processedEvents <- Future.traverse(eventsToProcess) { item =>
         distinctCheck.insertEvent(ev(item)).map {
-          case Distinct => Some(item)
+          case Distinct => {
+            cache(item.id)
+            Some(item)
+          }
           case _        => None
         }
       }
