@@ -96,6 +96,21 @@ class EventFilterSpec(implicit ev: ExecutionEnv) extends Specification with Mock
 
       eventFilter.filterDynamoEventsForLiveActivities(List(event1, event2)) must beEmpty[List[LiveActivityPayload]].await
     }
+
+    "use local cache to skip dynamo call on second invocation" in new FilterScopeLiveActivities {
+      val event1 = makePayload(UpdateLiveActivityEvent, "match-1")
+
+      // First call: event passes through isDuplicate and insertEvent
+      distinctCheck.isDuplicate(event1) returns Future.successful(false)
+      distinctCheck.insertEvent(event1) returns Future.successful(Distinct)
+
+      eventFilter.filterDynamoEventsForLiveActivities(List(event1)) must contain(exactly(event1)).await
+
+      // Second call: event is now in local cache, isDuplicate should NOT be called again
+      eventFilter.filterDynamoEventsForLiveActivities(List(event1)) must beEmpty[List[LiveActivityPayload]].await
+
+      // isDuplicate should only have been called once (from the first invocation)
+      there was one(distinctCheck).isDuplicate(event1)
+    }
   }
 }
-

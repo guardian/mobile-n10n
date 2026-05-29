@@ -40,8 +40,8 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     if (!processedEvents.get.contains(item.id)) {
       distinctCheck.isDuplicate(item).map { isDup => !isDup }
     } else {
-      logger.debug(s"Event ${item.id} already exists in local cache or does not have an id - discarding (dynamo table: ${distinctCheck.tableName})")
-      Future.successful(true)
+      logger.debug(s"Event ${item.id} already exists in local cache - discarding (dynamo table: ${distinctCheck.tableName})")
+      Future.successful(false)
     }
   }
 
