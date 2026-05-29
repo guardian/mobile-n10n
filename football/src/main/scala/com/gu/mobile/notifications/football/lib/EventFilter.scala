@@ -19,12 +19,6 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     })
   }
 
-  private def decache(eventId: UUID): Unit = {
-    processedEvents.getAndUpdate(new UnaryOperator[Set[UUID]] {
-      override def apply(set: Set[UUID]): Set[UUID] = set - eventId
-    })
-  }
-
   private def filterDynamoEvent(item: A)(implicit ec: ExecutionContext): Future[Option[A]] = {
     if (!processedEvents.get.contains(item.id)) {
       distinctCheck.insertEvent(item).map {
