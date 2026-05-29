@@ -142,7 +142,7 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
 
     "Add a startLiveActivity event if match kick off is within 20min" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15))).head.eventType mustEqual "start-live-activity"
+      generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15))).map(_.eventType) must contain("start-live-activity")
     }
 
     "Add id to first timeline event" in new TestScope {

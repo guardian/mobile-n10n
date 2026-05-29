@@ -70,10 +70,10 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
           importance = importance(triggeringEvent),
           topic = topics,
           matchStatus = status,
+          detailedMatchStatus = Some("PENALTIES"),
           eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
           kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
           lineupsAvailable = Some(matchInfo.lineupsAvailable),
-          detailedMatchStatus = Some("PENALTIES"),
           debug = false,
           dryRun = None
         )
@@ -101,10 +101,10 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
           importance = importance(triggeringEvent),
           topic = topics,
           matchStatus = status,
+          detailedMatchStatus = Some(MatchStatus.fromString(matchInfo.matchStatus).status),
           eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
           kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
           lineupsAvailable = Some(matchInfo.lineupsAvailable),
-          detailedMatchStatus = Some(MatchStatus.fromString(matchInfo.matchStatus).status),
           debug = false,
           dryRun = None
         )
