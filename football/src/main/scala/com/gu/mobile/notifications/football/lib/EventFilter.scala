@@ -81,9 +81,7 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
       dynamoEvents: List[LiveActivityPayload],
   )(implicit ec: ExecutionContext, ev: LiveActivityPayload <:< A): Future[List[LiveActivityPayload]] = {
     for {
-      newEvents <- filterAsync(dynamoEvents.map(ev(_)))(item => isDuplicateRecord(item).map(!_))
-        .map(_.flatMap(a => dynamoEvents.find(_.id == a.id)))
-
+      newEvents <- filterAsync(dynamoEvents)(item => isDuplicateRecord(ev(item)).map(!_))
       /** Because we poll once a minute, we might end up with a triggering update event (eg. very late goal) along with
         * an end event in the same polling cycle, but we only ever want to process the end event alone after all updates
         * have been processed (dispatched via eventbridge). This only affects Live Activities.
