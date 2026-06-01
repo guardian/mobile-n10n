@@ -3,21 +3,11 @@ package com.gu.mobile.notifications.football.lib
 import java.net.URI
 import com.gu.mobile.notifications.client.models.{liveActitivites, _}
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
-import com.gu.mobile.notifications.client.models.TopicTypes.{
-  FootballMatch,
-  FootballTeam,
-  FootballTeamLiveActivity,
-  FootballMatchLiveActivity
-}
-import com.gu.mobile.notifications.football.models.{
-  MatchDataWithArticle,
-  PenaltyShootoutKick
-}
+import com.gu.mobile.notifications.client.models.NotificationPayloadType.FootballPenaltyShootout
+import com.gu.mobile.notifications.client.models.TopicTypes.{FootballMatch, FootballMatchLiveActivity, FootballTeam, FootballTeamLiveActivity}
+import com.gu.mobile.notifications.football.models.{MatchDataWithArticle, PenaltyShootoutKick}
 import com.gu.mobile.notifications.client.models.liveActitivites._
-import com.gu.mobile.notifications.football.notificationbuilders.{
-  MatchStatusLiveActivityPayloadBuilder,
-  MatchStatusNotificationBuilder
-}
+import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -342,26 +332,17 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
   }
 
   "A Notification EventConsumer" should {
-    "not generate normal notifications for penalty shootout kicks" in new MatchEventsContext {
+
+    "generate FootballPenaltyShootout TYPE Payload for shootout events" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
 
       val result: List[NotificationPayload] =
         eventConsumer.eventsToNotifications(matchDataLA)
 
-      result must not contain((payload: NotificationPayload) =>
-        payload.isInstanceOf[FootballMatchStatusPayload] && payload.title.contains("Penalty Kick")
+      result must contain((payload: NotificationPayload) =>
+        payload.isInstanceOf[FootballMatchStatusPayload] && payload.title.contains("Penalty Kick") && payload.`type` == FootballPenaltyShootout
       )
-    }
-
-    "generate FootballPenaltyShootoutPayload for shootout events" in new MatchEventsContext {
-      override def matchDayLA: MatchDay =
-        super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
-
-      val result: List[NotificationPayload] =
-        eventConsumer.eventsToNotifications(matchDataLA)
-
-      result must contain(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
 
     "NOT generate notification payload for extra time match phase events" in new MatchEventsContext {

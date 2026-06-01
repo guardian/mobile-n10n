@@ -126,7 +126,7 @@ object ContentNotification {
   implicit val jf: OFormat[ContentNotification] = Json.format[ContentNotification]
 }
 
-
+// Duplicates live activities PenaltyShootoutState in common api-models
 case class PenaltyScore(scored: Int = 0, missed: Int = 0, saved: Int = 0)
 object PenaltyScore {
   implicit val jf: OFormat[PenaltyScore] = Json.format[PenaltyScore]

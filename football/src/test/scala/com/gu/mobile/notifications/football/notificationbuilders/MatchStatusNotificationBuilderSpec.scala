@@ -3,8 +3,8 @@ package com.gu.mobile.notifications.football.notificationbuilders
 import java.net.URI
 import java.time.ZonedDateTime
 import java.util.UUID
-
 import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
+import com.gu.mobile.notifications.client.models.NotificationPayloadType.{FootballMatchStatus, FootballPenaltyShootout}
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.football.lib.SyntheticMatchEventGenerator
 import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, Score}
@@ -113,22 +113,24 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.awayTeamRedCards shouldEqual 0
     }
 
-    "Return FootballPenaltyShootoutPayload for a penalty shootout kick" in new MatchEventsContext {
+    "Return FootballPenaltyShootoutPayload type for a penalty shootout kick" in new MatchEventsContext {
       val shootoutKick = PenaltyShootoutKick(ScoredShootoutResult, "Player", home, away, 1, "event-1")
       val notification = builder.build(shootoutKick, matchInfo.copy(matchStatus = "PT"), List.empty, None)
-      notification must beAnInstanceOf[FootballPenaltyShootoutPayload]
-      notification must not(beAnInstanceOf[FootballMatchStatusPayload])
+      notification.`type` mustEqual FootballPenaltyShootout
+      notification must beAnInstanceOf[FootballMatchStatusPayload]
     }
 
-    "Not return FootballPenaltyShootoutPayload for a goal" in new MatchEventsContext {
+    "Not return FootballPenaltyShootoutPayload type for a goal" in new MatchEventsContext {
       val notification = builder.build(baseGoal, matchInfo, List.empty, None)
-      notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
+      notification.`type` mustEqual FootballMatchStatus
+      notification must beAnInstanceOf[FootballMatchStatusPayload]
     }
 
     "Not return FootballPenaltyShootoutPayload for dismissal" in new MatchEventsContext {
       val dismissal = Dismissal("e2", "Player B", home, 80, None)
       val notification = builder.build(baseGoal, matchInfo, List(dismissal), None)
-      notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
+      notification.`type` mustEqual FootballMatchStatus
+      notification must beAnInstanceOf[FootballMatchStatusPayload]
     }
   }
 
