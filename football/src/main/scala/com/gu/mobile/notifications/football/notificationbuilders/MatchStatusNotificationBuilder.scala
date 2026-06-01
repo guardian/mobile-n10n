@@ -41,7 +41,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
 
     val status = statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)
 
-   val footballPayload =   FootballMatchStatusPayload(
+   val footballPayload =
+     FootballMatchStatusPayload(
      title = Some(eventTitle(triggeringEvent)),
      message = Some(mainMessage(triggeringEvent, transformTeamName(matchInfo.homeTeam.name), transformTeamName(matchInfo.awayTeam.name), score, status)),
      sender = "mobile-notifications-football-lambda",
@@ -50,11 +51,13 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
      awayTeamMessage = teamMessage(matchInfo.awayTeam, allEvents),
      awayTeamId = matchInfo.awayTeam.id,
      awayTeamRedCards = redCards.away,
+     awayTeamPenalties =  PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = false),
      homeTeamName = transformTeamName(matchInfo.homeTeam.name),
      homeTeamScore = score.home,
      homeTeamMessage = teamMessage(matchInfo.homeTeam, allEvents),
      homeTeamId = matchInfo.homeTeam.id,
      homeTeamRedCards = redCards.home,
+     homeTeamPenalties = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = true),
      competitionName = matchInfo.competition.map(_.name),
      roundName = matchInfo.round.name,
      venue = matchInfo.venue.map(_.name).filter(_.nonEmpty),
@@ -64,49 +67,15 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
      importance = importance(triggeringEvent),
      topic = topics,
      matchStatus = status,
+     detailedMatchStatus = if (penaltyShootoutScore.isDefined) Some("PENALTIES") else Some(MatchStatus.fromString(matchInfo.matchStatus).status),
      eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
      kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
      lineupsAvailable = Some(matchInfo.lineupsAvailable),
-     detailedMatchStatus = Some(MatchStatus.fromString(matchInfo.matchStatus).status),
      debug = false,
      dryRun = None
    )
 
     triggeringEvent match {
-      case _: PenaltyShootoutKick =>
-        // todo reuse the football payload and pattern match on `type` in notifications service?
-        FootballPenaltyShootoutPayload(
-          title = Some(eventTitle(triggeringEvent)),
-          message = Some(mainMessage(triggeringEvent, transformTeamName(matchInfo.homeTeam.name), transformTeamName(matchInfo.awayTeam.name), score, status)),
-          sender = "mobile-notifications-football-lambda",
-          awayTeamName = transformTeamName(matchInfo.awayTeam.name),
-          awayTeamScore = score.away,
-          awayTeamMessage = teamMessage(matchInfo.awayTeam, allEvents),
-          awayTeamId = matchInfo.awayTeam.id,
-          awayTeamRedCards = redCards.away,
-          awayTeamPenalties = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = false),
-          homeTeamName = transformTeamName(matchInfo.homeTeam.name),
-          homeTeamScore = score.home,
-          homeTeamMessage = teamMessage(matchInfo.homeTeam, allEvents),
-          homeTeamId = matchInfo.homeTeam.id,
-          homeTeamRedCards = redCards.home,
-          homeTeamPenalties = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = true),
-          competitionName = matchInfo.competition.map(_.name),
-          roundName = matchInfo.round.name,
-          venue = matchInfo.venue.map(_.name).filter(_.nonEmpty),
-          matchId = matchInfo.id,
-          matchInfoUri = new URI(s"$mapiHost/sport/football/matches/${matchInfo.id}"),
-          articleUri = articleId.map(id => new URI(s"$mapiHost/items/$id")),
-          importance = importance(triggeringEvent),
-          topic = topics,
-          matchStatus = status,
-          detailedMatchStatus = Some("PENALTIES"),
-          eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
-          kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
-          lineupsAvailable = Some(matchInfo.lineupsAvailable),
-          debug = false,
-          dryRun = None
-        )
       case _: StartLiveActivity => footballPayload.copy(
         title =  Some(s"""${matchInfo.homeTeam.name} v ${matchInfo.awayTeam.name}"""),
         message = Some("Tap to enable live updates"),

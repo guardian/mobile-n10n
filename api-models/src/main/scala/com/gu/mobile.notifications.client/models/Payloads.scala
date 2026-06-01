@@ -101,7 +101,6 @@ object NotificationPayload {
       case n: BreakingNewsPayload => BreakingNewsPayload.jf.writes(n)
       case n: ContentAlertPayload => ContentAlertPayload.jf.writes(n)
       case n: FootballMatchStatusPayload => FootballMatchStatusPayload.jf.writes(n)
-      case n: FootballPenaltyShootoutPayload => FootballPenaltyShootoutPayload.jf.writes(n)
     }
   }
 }
@@ -166,75 +165,7 @@ case class ContentAlertPayload(
 object FootballMatchStatusPayload {
   implicit val jf: Writes[FootballMatchStatusPayload] = (o: FootballMatchStatusPayload) => Json.obj(
     "id" -> o.id,
-    "type" -> FootballMatchStatus.toString,
-    "title" -> o.title,
-    "message" -> o.message,
-    "thumbnailUrl" -> o.thumbnailUrl,
-    "sender" -> o.sender,
-    "awayTeamName" -> o.awayTeamName,
-    "awayTeamScore" -> o.awayTeamScore,
-    "awayTeamMessage" -> o.awayTeamMessage,
-    "awayTeamId" -> o.awayTeamId,
-    "awayTeamRedCards" -> o.awayTeamRedCards,
-    "homeTeamName" -> o.homeTeamName,
-    "homeTeamScore" -> o.homeTeamScore,
-    "homeTeamMessage" -> o.homeTeamMessage,
-    "homeTeamId" -> o.homeTeamId,
-    "homeTeamRedCards" -> o.homeTeamRedCards,
-    "competitionName" -> o.competitionName,
-    "roundName" -> o.roundName,
-    "venue" -> o.venue,
-    "matchId" -> o.matchId,
-    "matchInfoUri" -> o.matchInfoUri,
-    "articleUri" -> o.articleUri,
-    "importance" -> o.importance,
-    "topic" -> o.topic,
-    "matchStatus" -> o.matchStatus,
-    "eventId" -> o.eventId,
-    "kickOffTimestamp" -> o.kickOffTimestamp,
-    "lineupsAvailable" -> o.lineupsAvailable,
-    "detailedMatchStatus" -> o.detailedMatchStatus,
-    "debug" -> o.debug
-  )
-}
-case class FootballMatchStatusPayload(
-  title: Option[String],
-  message: Option[String],
-  thumbnailUrl: Option[URI] = None,
-  sender: String,
-  awayTeamName: String,
-  awayTeamScore: Int,
-  awayTeamMessage: String,
-  awayTeamId: String,
-  awayTeamRedCards: Int = 0,
-  homeTeamName: String,
-  homeTeamScore: Int,
-  homeTeamMessage: String,
-  homeTeamId: String,
-  homeTeamRedCards: Int = 0,
-  competitionName: Option[String],
-  roundName: Option[String] = None,
-  venue: Option[String],
-  matchId: String,
-  matchInfoUri: URI,
-  articleUri: Option[URI],
-  importance: Importance,
-  topic: List[Topic],
-  matchStatus: String,
-  eventId: String,
-  kickOffTimestamp: Option[Long] = None,
-  lineupsAvailable: Option[Boolean] = None,
-  detailedMatchStatus: Option[String] = None,
-  debug: Boolean,
-  dryRun: Option[Boolean]
-) extends NotificationPayload with derivedId {
-  val `type` = FootballMatchStatus
-  override val derivedId = s"football-match-status/$matchId/$eventId"
-}
-object FootballPenaltyShootoutPayload {
-  implicit val jf: Writes[FootballPenaltyShootoutPayload] = (o: FootballPenaltyShootoutPayload) => Json.obj(
-    "id" -> o.id,
-    "type" -> FootballPenaltyShootout.toString,
+    "type" -> o.`type`.toString,
     "title" -> o.title,
     "message" -> o.message,
     "thumbnailUrl" -> o.thumbnailUrl,
@@ -267,7 +198,7 @@ object FootballPenaltyShootoutPayload {
     "debug" -> o.debug
   )
 }
-case class FootballPenaltyShootoutPayload(
+case class FootballMatchStatusPayload(
   title: Option[String],
   message: Option[String],
   thumbnailUrl: Option[URI] = None,
@@ -300,8 +231,9 @@ case class FootballPenaltyShootoutPayload(
   debug: Boolean,
   dryRun: Option[Boolean]
 ) extends NotificationPayload with derivedId {
-  val `type` = FootballPenaltyShootout
-  override val derivedId = s"football-penalty-shootout/$matchId/$eventId"
+  private val hasPenalties = homeTeamPenalties.isDefined || awayTeamPenalties.isDefined
+  val `type` = if (hasPenalties) FootballPenaltyShootout else FootballMatchStatus
+  override val derivedId = if (hasPenalties) s"football-penalty-shootout/$matchId/$eventId" else s"football-match-status/$matchId/$eventId"
 }
 
 trait derivedId {
