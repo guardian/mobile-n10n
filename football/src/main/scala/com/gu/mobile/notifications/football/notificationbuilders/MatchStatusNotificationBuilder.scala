@@ -43,72 +43,41 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
 
     val status = statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)
 
-    triggeringEvent match {
-      case _: PenaltyShootoutKick =>
-        FootballPenaltyShootoutPayload(
-          title = Some(eventTitle(triggeringEvent)),
-          message = Some(mainMessage(triggeringEvent, transformTeamName(matchInfo.homeTeam.name), transformTeamName(matchInfo.awayTeam.name), score, status)),
-          sender = "mobile-notifications-football-lambda",
-          awayTeamName = transformTeamName(matchInfo.awayTeam.name),
-          awayTeamScore = score.away,
-          awayTeamMessage = teamMessage(matchInfo.awayTeam, allEvents),
-          awayTeamId = matchInfo.awayTeam.id,
-          awayTeamRedCards = redCards.away,
-          awayTeamPenalties = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = false),
-          homeTeamName = transformTeamName(matchInfo.homeTeam.name),
-          homeTeamScore = score.home,
-          homeTeamMessage = teamMessage(matchInfo.homeTeam, allEvents),
-          homeTeamId = matchInfo.homeTeam.id,
-          homeTeamRedCards = redCards.home,
-          homeTeamPenalties = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = true),
-          competitionName = matchInfo.competition.map(_.name),
-          roundName = matchInfo.round.name,
-          venue = matchInfo.venue.map(_.name).filter(_.nonEmpty),
-          matchId = matchInfo.id,
-          matchInfoUri = new URI(s"$mapiHost/sport/football/matches/${matchInfo.id}"),
-          articleUri = articleId.map(id => new URI(s"$mapiHost/items/$id")),
-          importance = importance(triggeringEvent),
-          topic = topics,
-          matchStatus = status,
-          eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
-          kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
-          lineupsAvailable = Some(matchInfo.lineupsAvailable),
-          detailedMatchStatus = Some("PENALTIES"),
-          debug = false,
-          dryRun = None
-        )
-      case _ =>
-        FootballMatchStatusPayload(
-          title = Some(eventTitle(triggeringEvent)),
-          message = Some(mainMessage(triggeringEvent, transformTeamName(matchInfo.homeTeam.name), transformTeamName(matchInfo.awayTeam.name), score, status)),
-          sender = "mobile-notifications-football-lambda",
-          awayTeamName = transformTeamName(matchInfo.awayTeam.name),
-          awayTeamScore = score.away,
-          awayTeamMessage = teamMessage(matchInfo.awayTeam, allEvents),
-          awayTeamId = matchInfo.awayTeam.id,
-          awayTeamRedCards = redCards.away,
-          homeTeamName = transformTeamName(matchInfo.homeTeam.name),
-          homeTeamScore = score.home,
-          homeTeamMessage = teamMessage(matchInfo.homeTeam, allEvents),
-          homeTeamId = matchInfo.homeTeam.id,
-          homeTeamRedCards = redCards.home,
-          competitionName = matchInfo.competition.map(_.name),
-          roundName = matchInfo.round.name,
-          venue = matchInfo.venue.map(_.name).filter(_.nonEmpty),
-          matchId = matchInfo.id,
-          matchInfoUri = new URI(s"$mapiHost/sport/football/matches/${matchInfo.id}"),
-          articleUri = articleId.map(id => new URI(s"$mapiHost/items/$id")),
-          importance = importance(triggeringEvent),
-          topic = topics,
-          matchStatus = status,
-          eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
-          kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
-          lineupsAvailable = Some(matchInfo.lineupsAvailable),
-          detailedMatchStatus = Some(MatchStatus.fromString(matchInfo.matchStatus).status),
-          debug = false,
-          dryRun = None
-        )
-    }
+    val footballPayload =
+      FootballMatchStatusPayload(
+      title = Some(eventTitle(triggeringEvent)),
+      message = Some(mainMessage(triggeringEvent, transformTeamName(matchInfo.homeTeam.name), transformTeamName(matchInfo.awayTeam.name), score, status)),
+      sender = "mobile-notifications-football-lambda",
+      awayTeamName = transformTeamName(matchInfo.awayTeam.name),
+      awayTeamScore = score.away,
+      awayTeamMessage = teamMessage(matchInfo.awayTeam, allEvents),
+      awayTeamId = matchInfo.awayTeam.id,
+      awayTeamRedCards = redCards.away,
+        awayTeamPenalties =  PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = false),
+      homeTeamName = transformTeamName(matchInfo.homeTeam.name),
+      homeTeamScore = score.home,
+      homeTeamMessage = teamMessage(matchInfo.homeTeam, allEvents),
+      homeTeamId = matchInfo.homeTeam.id,
+      homeTeamRedCards = redCards.home,
+        homeTeamPenalties = PenaltyShootoutScore.toPenaltyShootoutState(penaltyShootoutScore, isHomeTeam = true),
+      competitionName = matchInfo.competition.map(_.name),
+      roundName = matchInfo.round.name,
+      venue = matchInfo.venue.map(_.name).filter(_.nonEmpty),
+      matchId = matchInfo.id,
+      matchInfoUri = new URI(s"$mapiHost/sport/football/matches/${matchInfo.id}"),
+      articleUri = articleId.map(id => new URI(s"$mapiHost/items/$id")),
+      importance = importance(triggeringEvent),
+      topic = topics,
+      matchStatus = status,
+      detailedMatchStatus = if (penaltyShootoutScore.isDefined) Some("PENALTIES") else Some(MatchStatus.fromString(matchInfo.matchStatus).status),
+      eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
+      kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
+      lineupsAvailable = Some(matchInfo.lineupsAvailable),
+      debug = false,
+      dryRun = None
+    )
+
+     footballPayload
   }
 
   def transformTeamName(name: String): String = name.replace(" Ladies", "")
@@ -178,7 +147,6 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
          |${dismissal.playerName} (${dismissal.team.name}) ${dismissal.minute}min$extraInfo""".stripMargin
     }
 
-
     triggeringEvent match {
       case g: Goal => goalMsg(g)
       case dismissal: Dismissal => dismissalMsg(dismissal)
@@ -193,7 +161,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case SecondHalf(_) => "Second-half start"
     case FullTime(_) => "Full-Time"
     case _:Dismissal => "Red card"
-    case _:PenaltyShootoutKick  => "Penalty Kick" // needed for spec. We are filtering these out in the EventConsumer for now.
+    case _:PenaltyShootoutKick  => "Penalty Kick"
     case _ => "The Guardian"
   }
 
