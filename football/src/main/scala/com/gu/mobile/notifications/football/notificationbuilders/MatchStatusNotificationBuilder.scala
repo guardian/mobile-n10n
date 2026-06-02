@@ -29,7 +29,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       Topic(TopicTypes.FootballTeam, matchInfo.homeTeam.id),
       Topic(TopicTypes.FootballTeam, matchInfo.awayTeam.id),
       Topic(TopicTypes.FootballMatch, matchInfo.id)
-    ) ++ (if (triggeringEvent.isInstanceOf[KickOff]) liveActivityTopics else Nil)
+    )
 
     val allEvents = triggeringEvent :: previousEvents
     val goals = allEvents.collect { case g: Goal => g }
