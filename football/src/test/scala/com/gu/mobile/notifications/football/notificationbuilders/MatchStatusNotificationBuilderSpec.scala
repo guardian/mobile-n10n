@@ -3,18 +3,12 @@ package com.gu.mobile.notifications.football.notificationbuilders
 import java.net.URI
 import java.time.ZonedDateTime
 import java.util.UUID
-
-import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
+import com.gu.mobile.notifications.client.models.Importance.Major
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.lib.SyntheticMatchEventGenerator
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, Score}
+import com.gu.mobile.notifications.football.models.{Dismissal,  FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, Score, StartLiveActivity}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import pa.{Competition, MatchDay, MatchDayTeam, Parser, Round, Stage, Venue}
-
-import java.time.ZonedDateTime
-import scala.io.Source
-
+import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
 
 class MatchStatusNotificationBuilderSpec extends Specification {
 
@@ -130,6 +124,17 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       val notification = builder.build(baseGoal, matchInfo, List(dismissal), None)
       notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
+
+    "Build a start-live-activity payload correctly from matchInfo" in new MatchEventsContext {
+      val laTopics = List(Topic(TopicTypes.FootballTeamLiveActivity, "1"), Topic(TopicTypes.FootballTeamLiveActivity, "2"), Topic(TopicTypes.FootballMatchLiveActivity, "some-match-id"))
+      val startEvent = StartLiveActivity("event-abc")
+      val notification = builder.build(startEvent, matchInfo, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.title shouldEqual Some("Liverpool v Plymouth")
+      notification.message shouldEqual Some("Tap to enable live updates")
+      notification.matchInfoUri shouldEqual(new URI("https://www.theguardian.com/football/match/some-match-id?liveactivity=true"))
+      notification.topic.mustEqual(laTopics)
+    }
+
   }
 
   trait MatchEventsContext extends Scope {
