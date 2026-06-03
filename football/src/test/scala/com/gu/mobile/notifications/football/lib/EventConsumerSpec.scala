@@ -68,10 +68,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         topic = List(
           Topic(FootballTeam, "1006"),
           Topic(FootballTeam, "29"),
-          Topic(FootballMatch, "4011135"),
-          Topic(FootballTeamLiveActivity, "1006"),
-          Topic(FootballTeamLiveActivity, "29"),
-          Topic(FootballMatchLiveActivity, "4011135")
+          Topic(FootballMatch, "4011135")
         ),
         matchStatus = "1st",
         eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",

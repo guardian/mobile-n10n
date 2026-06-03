@@ -1,6 +1,6 @@
 package com.gu.mobile.notifications.football.notificationbuilders
 
-import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, CreateChannelEvent, EndLiveActivityEvent, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, MatchStatus, StartLiveActivityEvent, TeamState, UpdateLiveActivityEvent}
+import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, CreateChannelEvent, EndLiveActivityEvent, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, MatchStatus, TeamState, UpdateLiveActivityEvent}
 import com.gu.mobile.notifications.football.models._
 import pa.MatchDay
 
@@ -71,7 +71,6 @@ class MatchStatusLiveActivityPayloadBuilder {
       case Abandoned(_) => EndLiveActivityEvent
       case Cancelled(_) => EndLiveActivityEvent
       case CreateChannel(_) => CreateChannelEvent
-//      case StartLiveActivity(_) => StartLiveActivityEvent // we do not want to use start yet
       case EndLiveActivity(_) => EndLiveActivityEvent
       case _ => UpdateLiveActivityEvent
     }

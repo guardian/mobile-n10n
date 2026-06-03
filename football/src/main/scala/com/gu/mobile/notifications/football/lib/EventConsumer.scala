@@ -29,7 +29,6 @@ class EventConsumer(
       List(
         // additional synthetic live activity life cycle events
         "create-channel",
-        "start-live-activity",
         "end-live-activity",
         // additional synthetic match phase events for live activities
         "extra-time-to-be-played",
@@ -88,10 +87,9 @@ class LiveActivityEventConsumer(
       matchData: MatchDataWithArticle
   ): List[LiveActivityPayload] = {
 
-    // only "end-live-activity" synthetic event when there is a result
     val duplicatePhaseEventTypes =
       List(
-        "full-time",
+        "full-time", // only send "end-live-activity" synthetic event
       )
 
     val filteredMatchData =

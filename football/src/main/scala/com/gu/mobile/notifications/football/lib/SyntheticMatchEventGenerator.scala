@@ -149,6 +149,7 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
     } else None
   }
 
+  // sent to push notification service to trigger live activity start (not to the  liveactivities service)
   private val startLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
     if (koWithin20Minutes(matchDay.date.toEpochSecond)) Some(emptyMatchEvent.copy(
       id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/start-live-activity".getBytes).toString),
