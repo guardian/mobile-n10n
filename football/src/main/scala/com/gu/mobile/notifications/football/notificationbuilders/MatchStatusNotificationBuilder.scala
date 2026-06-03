@@ -110,7 +110,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       case _: StartLiveActivity => footballPayload.copy(
         title =  Some(s"""${matchInfo.homeTeam.name} v ${matchInfo.awayTeam.name}"""),
         message = Some("Tap to enable live updates"),
-        matchInfoUri = new URI(s"https://www.theguardian.com/football/match/${matchInfo.id}?liveactivity=true"),
+        matchInfoUri = new URI(s"$mapiHost/sport/football/matches/${matchInfo.id}?liveactivity=true"),
         topic = liveActivityTopics // only send to iOS users subscribed to the live activity topics
       )
       case _ => footballPayload

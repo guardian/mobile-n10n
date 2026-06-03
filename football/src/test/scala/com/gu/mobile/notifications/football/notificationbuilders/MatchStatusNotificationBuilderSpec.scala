@@ -131,7 +131,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       val notification = builder.build(startEvent, matchInfo, List.empty, None).asInstanceOf[FootballMatchStatusPayload]
       notification.title shouldEqual Some("Liverpool v Plymouth")
       notification.message shouldEqual Some("Tap to enable live updates")
-      notification.matchInfoUri shouldEqual(new URI("https://www.theguardian.com/football/match/some-match-id?liveactivity=true"))
+      notification.matchInfoUri shouldEqual(new URI("http://localhost/sport/football/matches/some-match-id?liveactivity=true"))
       notification.topic.mustEqual(laTopics)
     }
 
