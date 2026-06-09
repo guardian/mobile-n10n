@@ -38,7 +38,7 @@ class FootballData(
 
     private lazy val internationalTeamsForFriendlies = Set(
       "497", // England,
-      "499", // 'Scotland,
+      "499", // Scotland,
       "630", // Wales,
       "494", // Republic of Ireland,
       "964", // Northern Ireland,
@@ -58,8 +58,10 @@ class FootballData(
       "23104", // Brazil
     )
 
+    // Checks if neither team are in the internationalTeamsForFriendlies set — i.e., the match is "uncovered".
+    // As long as one team id is in the set, the match should be covered.
     lazy val isUncoveredInternationalFriendly: Boolean =
-      Set(matchDay.homeTeam.id, matchDay.awayTeam.name).intersect(internationalTeamsForFriendlies).isEmpty
+      Set(matchDay.homeTeam.id, matchDay.awayTeam.id).intersect(internationalTeamsForFriendlies).isEmpty
 
     lazy val isEarlyQualifyingRound: Boolean = Try(matchDay.round.roundNumber.toInt) match {
       case Success(r) => r < 3
@@ -106,6 +108,22 @@ class FootballData(
     }
   }
 
+
+  // Theres some stuff that PA don't provide data for and we want to supress alerts for these matches
+  def paProvideAlerts(matchDay: MatchDay): Boolean = {
+    matchDay.competition
+      .map { c =>
+        c.id match {
+          // International friendly: Must involve at least one of a whitelisted set of teams
+          case "721" if matchDay.isUncoveredInternationalFriendly => false
+          // FA cup qualifying rounds not covererd before round 3
+          case "303" if matchDay.isEarlyQualifyingRound => false
+          case _                                        => true
+        }
+      }
+      .getOrElse(false) // Shouldn't ever happen
+  }
+
   def matchIdsInProgress(dateTime: ZonedDateTime): Future[List[MatchDay]] = {
     def inProgress(m: MatchDay): Boolean =
       m.date.minusHours(2).isBefore(dateTime) && m.date.plusHours(4).isAfter(dateTime)
@@ -115,21 +133,6 @@ class FootballData(
     def isMidnight(matchDay: MatchDay): Boolean = {
       val localDate = matchDay.date.toLocalTime
       localDate.getHour() == 0 && localDate.getMinute() == 0
-    }
-
-    // Theres some stuff that PA don't provide data for and we want to supress alerts for these matches
-    def paProvideAlerts(matchDay: MatchDay): Boolean = {
-      matchDay.competition
-        .map { c =>
-          c.id match {
-            // International friendly: Must involve at least one of a whitelisted set of teams
-            case "721" if matchDay.isUncoveredInternationalFriendly => false
-            // FA cup qualifying rounds not covererd before round 3
-            case "303" if matchDay.isEarlyQualifyingRound => false
-            case _                                        => true
-          }
-        }
-        .getOrElse(false) // Shouldn't ever happen
     }
 
     logger.info(s"Retrieving matches on or around $dateTime from PA")
