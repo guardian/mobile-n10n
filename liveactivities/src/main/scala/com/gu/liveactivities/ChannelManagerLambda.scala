@@ -74,8 +74,15 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
   private def processRequest(request: LiveActivityPayload, context: Context): Unit = {
     val channelFuture = request.eventType match {
       case CreateChannelEvent =>
-        val eventData = request.broadcastContentStateData.map(LiveActivityData.toLiveActivityData)
-        processCreateChannelRequest(request.liveActivityID, eventData, request.broadcastContentStateData)
+
+        if (!config.isEnabled) {
+          logger.warn(s"Received ${CreateChannelEvent.asString} event for match ID ${request.liveActivityID} but channel creation is disabled by config")
+          Future.unit
+        } else {
+          val eventData = request.broadcastContentStateData.map(LiveActivityData.toLiveActivityData)
+          processCreateChannelRequest(request.liveActivityID, eventData, request.broadcastContentStateData)
+        }
+
       case DeleteChannelEvent =>
         processCloseChannelRequest(request.liveActivityID)
       case other =>

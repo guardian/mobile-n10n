@@ -7,7 +7,7 @@ import com.gu.mobile.notifications.client.models.liveActitivites._
 import play.api.libs.json._
 
 import java.io.{InputStream, OutputStream}
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.DurationInt
 import scala.util.{Failure, Success, Try}
 
@@ -65,7 +65,9 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
         throw new Exception(s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
     }
 
-    val broadcastFuture = broadcastService.processBroadcast(requestPayload, shouldEndBroadcast, contentState)
+    val broadcastFuture = if (!config.isEnabled) {
+        Future.successful(s"Broadcast lambda is currently disabled by config. Skipping broadcast with id ${requestPayload.id} for match ID $matchId")
+    } else {broadcastService.processBroadcast(requestPayload, shouldEndBroadcast, contentState)}
 
     //Timeout set to 160 seconds to provide a safety buffer.
     // While the sum of downstream timeouts is at most ~110s,
@@ -73,9 +75,8 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
     // authentication token fetches, and potential network congestion
     // to ensure the Lambda doesn't fail a healthy request that is just running slow.
     Try(Await.result(broadcastFuture, 160.seconds)) match {
-      case Success(_) => {
-        // todo
-        logger.info(s"Broadcast ${requestPayload.eventType.asString} successfully processed for liveActivityID $matchId")
+      case Success(msg) => {
+        logger.info(msg) // Broadcast successfully processed or processing is disabled by config msg.
       }
       case Failure(exception) => {
         logger.error(s"Failed to send broadcast ${if(shouldEndBroadcast)"END"} for liveActivityID $matchId: ${exception.getMessage}")

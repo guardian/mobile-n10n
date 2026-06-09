@@ -42,8 +42,6 @@ class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient
             Future.failed(new LiveActivityInvalidStateException(matchId, "Out of order event time"))
           } else Future.successful(())
 
-          // TODO - determine expiry time and priority
-
           _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
           broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
           _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, priorityLevel, broadcastPayload)
@@ -51,7 +49,7 @@ class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient
 
           _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = !shouldEndBroadcast, Some(eventId), Some(eventTime))
           _ = logger.info(s"Record updated successfully for match ID $matchId")
-        } yield mapping.channelId
+        } yield s"Broadcast ${requestPayload.eventType.asString} successfully processed for liveActivityID $matchId"
       }
     }
 
