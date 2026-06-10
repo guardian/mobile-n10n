@@ -142,7 +142,7 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
 
     "Add a startLiveActivity event if match kick off is within 20min" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15))).head.eventType mustEqual "start-live-activity"
+      generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15))).map(_.eventType) must contain("start-live-activity")
     }
 
     "Add id to first timeline event" in new TestScope {
@@ -153,6 +153,12 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
     "Add an endLiveActivity event if match info contains result" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
       generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true, liveMatch = false)).reverse.head.eventType mustEqual "end-live-activity"
+    }
+
+    "Add a pre-match event if match kick off is within 20min" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      val events = generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15)))
+      events.map(_.eventType) must contain("pre-match")
     }
   }
 }

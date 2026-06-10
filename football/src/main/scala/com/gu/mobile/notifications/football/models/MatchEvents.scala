@@ -181,6 +181,7 @@ object MatchPhaseEvent {
     val eventId = event.id.getOrElse("")
     condOpt(event.eventType) {
       case "timeline" if event.matchTime.contains("0:00") => KickOff(eventId)
+      case "pre-match"                                    => PreMatch(eventId)
       case "full-time"                                    => FullTime(eventId)
       case "half-time"                                    => HalfTime(eventId)
       case "second-half"                                  => SecondHalf(eventId)
@@ -203,6 +204,7 @@ object MatchPhaseEvent {
   }
 }
 
+case class PreMatch(eventId: String) extends MatchPhaseEvent
 case class KickOff(eventId: String) extends MatchPhaseEvent
 case class FullTime(eventId: String) extends MatchPhaseEvent
 case class HalfTime(eventId: String) extends MatchPhaseEvent
