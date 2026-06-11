@@ -5,7 +5,7 @@ import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Importance, Major, Minor}
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.client.models.liveActitivites.MatchStatus
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, PenaltyShootoutKick, PenaltyShootoutScore, RedCards, Score, SecondHalf, StartLiveActivity}
+import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, PenaltyShootoutKick, PenaltyShootoutScore, PreMatch, RedCards, Score, SecondHalf, StartLiveActivity}
 import pa.{MatchDay, MatchDayTeam}
 
 import scala.PartialFunction.condOpt
@@ -100,10 +100,10 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
           importance = importance(triggeringEvent),
           topic = topics,
           matchStatus = status,
+          detailedMatchStatus = Some("PENALTIES"),
           eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
           kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
           lineupsAvailable = Some(matchInfo.lineupsAvailable),
-          detailedMatchStatus = Some("PENALTIES"),
           debug = false,
           dryRun = None
         )
@@ -184,10 +184,10 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
          |${dismissal.playerName} (${dismissal.team.name}) ${dismissal.minute}min$extraInfo""".stripMargin
     }
 
-
     triggeringEvent match {
       case g: Goal => goalMsg(g)
       case dismissal: Dismissal => dismissalMsg(dismissal)
+      case prematch: PreMatch => s"""${homeTeamName} v ${awayTeamName}"""
       case _ => s"""${homeTeamName} ${score.home}-${score.away} ${awayTeamName} ($matchStatus)"""
     }
   }
@@ -199,7 +199,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case SecondHalf(_) => "Second-half start"
     case FullTime(_) => "Full-Time"
     case _:Dismissal => "Red card"
-    case _:PenaltyShootoutKick  => "Penalty Kick" // needed for spec. We are filtering these out in the EventConsumer for now.
+    case _:PenaltyShootoutKick  => "Penalty Kick"
+    case _:PreMatch => "Kick off soon"
     case _ => "The Guardian"
   }
 
@@ -232,8 +233,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
 
     ("Suspended", "S"), // Match has been Suspended.
 
-    ("Fixture", "1st"), // fixture maps to 1st just in case the matchInfo and event feed are out of sync
-    ("-", "1st"), // same as above
+    ("Fixture", "Pre"), // pre-match fixture
+    ("-", "Pre"), // same as above
 
     // don't really expect to see these (the way we handle data)
     ("Resumed", "R"), // Match has been Resumed.

@@ -18,6 +18,15 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
 
   private type MatchEventGenerator = (MatchDay, List[pa.MatchEvent]) => Option[MatchEvent]
 
+  // generate a push notification 20 minutes before the scheduled kick off
+  private val preMatch: MatchEventGenerator = { (matchDay: MatchDay, _) =>
+    if (koWithin20Minutes(matchDay.date.toEpochSecond)) Some(emptyMatchEvent.copy(
+      id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/pre-match".getBytes).toString),
+      eventType = "pre-match"
+    ))
+    else None
+  }
+
   private val fullTime: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
     if (matchDay.result) Some(emptyMatchEvent.copy(
       id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/full-time".getBytes).toString),
@@ -169,6 +178,7 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
   }
 
   private val generators: List[MatchEventGenerator] = List(
+    preMatch,
     fullTime,
     halfTime,
     secondHalf,

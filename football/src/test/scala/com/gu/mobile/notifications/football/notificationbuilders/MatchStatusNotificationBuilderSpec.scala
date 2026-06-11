@@ -5,7 +5,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.Major
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.models.{Dismissal,  FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, Score, StartLiveActivity}
+import com.gu.mobile.notifications.football.models.{Dismissal,  FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, PreMatch, Score, StartLiveActivity}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
@@ -125,6 +125,25 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification must not(beAnInstanceOf[FootballPenaltyShootoutPayload])
     }
 
+    "Show the correct title and message for the pre-match notifcation" in new MatchEventsContext {
+      val preMatch = PreMatch("pre-match-event-id")
+      val notification = builder.build(preMatch, matchInfo.copy(matchStatus = "Fixture"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.title shouldEqual Some("Kick off soon")
+      notification.message shouldEqual Some("Liverpool v Plymouth")
+    }
+
+    "Override the payload matchStatus to be 'Pre' when PA's match status is 'Fixture'" in new MatchEventsContext {
+      val preMatch = PreMatch("pre-match-event-id")
+      val notification = builder.build(preMatch, matchInfo.copy(matchStatus = "Fixture"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.matchStatus shouldEqual "Pre"
+    }
+
+    "Override the payload matchStatus to be 'Pre' when PA matchStatus is '-'" in new MatchEventsContext {
+      val preMatch = PreMatch("pre-match-event-id")
+      val notification = builder.build(preMatch, matchInfo.copy(matchStatus = "-"), List.empty, None).asInstanceOf[FootballMatchStatusPayload]
+      notification.matchStatus shouldEqual "Pre"
+    }
+
     "Build a start-live-activity payload correctly from matchInfo" in new MatchEventsContext {
       val laTopics = List(Topic(TopicTypes.FootballTeamLiveActivity, "1"), Topic(TopicTypes.FootballTeamLiveActivity, "2"), Topic(TopicTypes.FootballMatchLiveActivity, "some-match-id"))
       val startEvent = StartLiveActivity("event-abc")
@@ -134,7 +153,6 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.matchInfoUri shouldEqual(new URI("http://localhost/sport/football/matches/some-match-id?liveactivity=true"))
       notification.topic.mustEqual(laTopics)
     }
-
   }
 
   trait MatchEventsContext extends Scope {
