@@ -15,7 +15,8 @@ case class IosConfiguration(
   certificate: String,
   sendingToProdServer: Boolean = false,
   stage: String,
-  region: String
+  region: String,
+  isEnabled: Boolean = true
 )
 
 object Configuration extends Logging {
@@ -54,7 +55,8 @@ object Configuration extends Logging {
       certificate = config.getString("apns.certificate"),
       sendingToProdServer = config.getBoolean("apns.sendingToProdServer"),
       stage = config.getString("stage"),
-      region = config.getString("region")
+      region = config.getString("region"),
+      isEnabled = config.getBoolean("isEnabled")
     )
   }
 }
