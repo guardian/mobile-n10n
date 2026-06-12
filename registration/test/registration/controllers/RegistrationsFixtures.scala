@@ -210,4 +210,24 @@ trait RegistrationsJson {
       |  ]
       |}
     """.stripMargin
+
+  val newRegistrationWithInvalidTopicJson =
+    """
+      |{
+      |  "deviceToken": "TEST-TOKEN-ID",
+      |  "platform": "android",
+      |  "buildTier": "android 36",
+      |  "appVersion": "6.223.22932",
+      |  "topics": [
+      |    {
+      |      "name": "football/england",
+      |      "type": "football-team"
+      |    },
+      |    {
+      |      "name": "",
+      |      "type": "tag"
+      |    }
+      |  ]
+      |}
+    """.stripMargin
 }

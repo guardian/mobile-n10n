@@ -61,6 +61,13 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       contentAsString(result) must /("platform" -> "ios")
       contentAsString(result) must (/("topics") andHave size(4))
     }
+
+    "new /device/register endpoint filters out unknown topic types and returns 200" in new RegistrationsContext {
+      val Some(result) = route(app, FakeRequest(POST, "/device/register").withJsonBody(Json.parse(newRegistrationWithInvalidTopicJson)))
+
+      status(result) must equalTo(OK)
+      contentAsString(result) must (/("topics") andHave size(1))
+    }
   }
 
   trait RegistrationsContext extends RegistrationsBase with withMockedWSClient {

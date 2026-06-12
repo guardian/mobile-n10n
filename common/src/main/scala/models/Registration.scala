@@ -1,7 +1,7 @@
 package models
 
+import org.slf4j.LoggerFactory
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
 
 case class Registration(
   deviceToken: DeviceToken,
@@ -12,22 +12,38 @@ case class Registration(
 )
 
 object Registration {
-  private val validTopicsReads: Reads[Set[Topic]] = Reads { json =>
-    json.validate[JsArray].map { arr =>
-      arr.value.flatMap(_.validate[Topic].asOpt).toSet
-    }
+  private val logger = LoggerFactory.getLogger(classOf[Registration])
+
+  private val reads: Reads[Registration] = Reads { json =>
+    for {
+      deviceToken <- (json \ "deviceToken").validate[DeviceToken]
+      platform    <- (json \ "platform").validate[Platform]
+      buildTier   <- (json \ "buildTier").validateOpt[String]
+      appVersion  <- (json \ "appVersion").validateOpt[String]
+      topics      <- (json \ "topics").validate[JsArray].map { arr =>
+        arr.value.flatMap { v =>
+          v.validate[Topic] match {
+            case JsSuccess(topic, _) => Some(topic)
+            case JsError(_) =>
+              val topicType = (v \ "type").asOpt[String].getOrElse("unknown")
+              val topicName = (v \ "name").asOpt[String].getOrElse("unknown")
+              logger.warn(s"Filtering out unrecognised topic type=$topicType topic name=$topicName ($platform $buildTier $appVersion)")
+              None
+          }
+        }.toSet
+      }
+    } yield Registration(deviceToken, platform, topics, buildTier, appVersion)
   }
 
-  private val validTopicsFormat: Format[Set[Topic]] = Format(
-    validTopicsReads,
-    Writes[Set[Topic]](topics => Json.toJson(topics.toList))
-  )
+  private val writes: Writes[Registration] = Writes { r =>
+    Json.obj(
+      "deviceToken" -> r.deviceToken,
+      "platform"    -> r.platform,
+      "topics"      -> r.topics.toList,
+      "buildTier"   -> r.buildTier,
+      "appVersion"  -> r.appVersion
+    )
+  }
 
-  implicit val registrationJF: Format[Registration] = (
-    (__ \ "deviceToken").format[DeviceToken] and
-    (__ \ "platform").format[Platform] and
-    (__ \ "topics").format[Set[Topic]](validTopicsFormat) and
-    (__ \ "buildTier").formatNullable[String] and
-    (__ \ "appVersion").formatNullable[String]
-  )(Registration.apply, r => (r.deviceToken, r.platform, r.topics, r.buildTier, r.appVersion))
+  implicit val registrationJF: Format[Registration] = Format(reads, writes)
 }
