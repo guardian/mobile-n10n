@@ -14,7 +14,8 @@ class CustomErrorHandler(env: Environment, config: Configuration, sourceMapper: 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   override def onBadRequest(request: RequestHeader, message: String): Future[Result] = {
     val debugInfo = request.headers.get("User-Agent")
-    logger.error(s"Bad request due to $message. User agent = $debugInfo")
+    if (!message.startsWith("Json validation error"))
+      logger.error(s"Bad request due to $message. User agent = $debugInfo")
     Future.successful(BadRequest("Bad request"))
   }
 }

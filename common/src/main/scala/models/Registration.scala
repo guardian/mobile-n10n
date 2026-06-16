@@ -18,15 +18,17 @@ object Registration {
     val base = Json.format[Registration]
     Format(
       Reads { json =>
-        (json \ "topics").asOpt[JsArray].foreach { arr =>
-          arr.value.foreach { v =>
+        val invalid = (json \ "topics").asOpt[JsArray].toSeq.flatMap { arr =>
+          arr.value.flatMap { v =>
             if (v.validate[Topic].isError) {
               val topicType = (v \ "type").asOpt[String].getOrElse("unknown")
               val topicName = (v \ "name").asOpt[String].getOrElse("unknown")
-              logger.warn(s"Invalid topic type=$topicType topic id=$topicName")
-            }
+              Some(s"Topic Type=$topicType (Topic Id=$topicName)")
+            } else None
           }
         }
+        if (invalid.nonEmpty)
+          logger.warn(s"Bad request: request contains invalid topic type(s). ${invalid.mkString(". ")}")
         base.reads(json)
       },
       base
