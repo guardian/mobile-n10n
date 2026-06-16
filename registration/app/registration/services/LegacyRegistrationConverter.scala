@@ -61,7 +61,7 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
       topics <- request.preferences.topics.toList
       topic <- topics
       topicType <- TopicType.fromString(topic.`type`) orElse {
-        logger.error(s"Invalid topic type '${topic.`type`}' for topic id='${topic.name}'")
+        logger.warn(s"Invalid topic type=${topic.`type`} topic id=${topic.name}")
         None
       }
     } yield Topic(topicType, topic.name) // todo: check this
