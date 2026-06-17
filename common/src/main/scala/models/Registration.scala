@@ -1,6 +1,6 @@
 package models
 
-import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import play.api.libs.json._
 
 case class Registration(
@@ -12,8 +12,6 @@ case class Registration(
 )
 
 object Registration {
-  private val logger = LoggerFactory.getLogger(classOf[Registration])
-
   implicit val registrationJF: Format[Registration] = {
     val base = Json.format[Registration]
     Format(
@@ -28,7 +26,7 @@ object Registration {
           }
         }
         if (invalid.nonEmpty)
-          logger.warn(s"Bad request: request contains invalid topic type(s). ${invalid.mkString(". ")}")
+          MDC.put("invalidTopics", invalid.mkString(". "))
         base.reads(json)
       },
       base

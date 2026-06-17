@@ -1,6 +1,6 @@
 package registration
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.{Logger, LoggerFactory, MDC}
 import play.api._
 import play.api.http.DefaultHttpErrorHandler
 import play.api.mvc.Results._
@@ -14,8 +14,13 @@ class CustomErrorHandler(env: Environment, config: Configuration, sourceMapper: 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
   override def onBadRequest(request: RequestHeader, message: String): Future[Result] = {
     val debugInfo = request.headers.get("User-Agent")
-    if (!message.startsWith("Json validation error"))
-      logger.error(s"Bad request due to $message. User agent = $debugInfo")
+    Option(MDC.get("invalidTopics")) match {
+      case Some(invalidTopics) =>
+        logger.warn(s"Bad request: request contains invalid topic type(s). $invalidTopics. User agent = $debugInfo")
+        MDC.remove("invalidTopics")
+      case None =>
+        logger.error(s"Bad request due to $message. User agent = $debugInfo")
+    }
     Future.successful(BadRequest("Bad request"))
   }
 }
