@@ -5,8 +5,11 @@ import registration.models.LegacyTopic
 import models._
 import registration.models.LegacyRegistration
 import cats.syntax.all._
+import org.slf4j.LoggerFactory
 
 class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistration] {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   def toRegistration(legacyRegistration: LegacyRegistration): Either[NotificationsError, Registration] = {
 
@@ -57,7 +60,10 @@ class LegacyRegistrationConverter extends RegistrationConverter[LegacyRegistrati
     val topics = for {
       topics <- request.preferences.topics.toList
       topic <- topics
-      topicType <- TopicType.fromString(topic.`type`)
+      topicType <- TopicType.fromString(topic.`type`) orElse {
+        logger.warn(s"Invalid topic type=${topic.`type`} topic id=${topic.name}")
+        None
+      }
     } yield Topic(topicType, topic.name) // todo: check this
 
     val matchTopics = for {
