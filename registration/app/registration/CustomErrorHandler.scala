@@ -16,8 +16,10 @@ class CustomErrorHandler(env: Environment, config: Configuration, sourceMapper: 
     val debugInfo = request.headers.get("User-Agent")
     Option(MDC.get("invalidTopics")) match {
       case Some(invalidTopics) =>
-        logger.warn(s"Bad request: request contains invalid topic type(s). $invalidTopics. User agent = $debugInfo")
+        val allTopics = Option(MDC.get("allTopics")).getOrElse("")
+        logger.warn(s"Bad request: invalid topic type(s): [$invalidTopics]. All topics: [$allTopics]. User agent: $debugInfo")
         MDC.remove("invalidTopics")
+        MDC.remove("allTopics")
       case None =>
         logger.error(s"Bad request due to $message. User agent = $debugInfo")
     }
