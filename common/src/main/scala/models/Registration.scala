@@ -1,6 +1,6 @@
 package models
 
-import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import play.api.libs.json._
 
 case class Registration(
@@ -12,38 +12,24 @@ case class Registration(
 )
 
 object Registration {
-  private val logger = LoggerFactory.getLogger(classOf[Registration])
-
-  private val reads: Reads[Registration] = Reads { json =>
-    for {
-      deviceToken <- (json \ "deviceToken").validate[DeviceToken]
-      platform    <- (json \ "platform").validate[Platform]
-      buildTier   <- (json \ "buildTier").validateOpt[String]
-      appVersion  <- (json \ "appVersion").validateOpt[String]
-      topics      <- (json \ "topics").validate[JsArray].map { arr =>
-        arr.value.flatMap { v =>
-          v.validate[Topic] match {
-            case JsSuccess(topic, _) => Some(topic)
-            case JsError(_) =>
+  implicit val registrationJF: Format[Registration] = {
+    val base = Json.format[Registration]
+    Format(
+      Reads { json =>
+        val invalid = (json \ "topics").asOpt[JsArray].toSeq.flatMap { arr =>
+          arr.value.flatMap { v =>
+            if (v.validate[Topic].isError) {
               val topicType = (v \ "type").asOpt[String].getOrElse("unknown")
               val topicName = (v \ "name").asOpt[String].getOrElse("unknown")
-              logger.warn(s"Filtering out unrecognised topic type=$topicType topic name=$topicName ($platform $buildTier $appVersion)")
-              None
+              Some(s"Topic Type=$topicType (Topic Id=$topicName)")
+            } else None
           }
-        }.toSet
-      }
-    } yield Registration(deviceToken, platform, topics, buildTier, appVersion)
-  }
-
-  private val writes: Writes[Registration] = Writes { r =>
-    Json.obj(
-      "deviceToken" -> r.deviceToken,
-      "platform"    -> r.platform,
-      "topics"      -> r.topics.toList,
-      "buildTier"   -> r.buildTier,
-      "appVersion"  -> r.appVersion
+        }
+        if (invalid.nonEmpty)
+          MDC.put("invalidTopics", invalid.mkString(". "))
+        base.reads(json)
+      },
+      base
     )
   }
-
-  implicit val registrationJF: Format[Registration] = Format(reads, writes)
 }
