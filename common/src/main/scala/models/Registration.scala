@@ -21,17 +21,17 @@ object Registration {
           val n = (v \ "name").asOpt[String].getOrElse("unknown")
           s"$t (id=$n)"
         }
-        val all = (json \ "topics").asOpt[JsArray].toSeq.flatMap(_.value.map(topicSummary))
-        val invalid = (json \ "topics").asOpt[JsArray].toSeq.flatMap { arr =>
-          arr.value.flatMap { v =>
-            if (v.validate[Topic].isError) Some(topicSummary(v)) else None
-          }
+
+        val topicsArray = (json \ "topics").asOpt[JsArray].getOrElse(JsArray())
+        val (validTopics, invalidTopics) = topicsArray.value.partition(_.validate[Topic].isSuccess)
+
+        if (invalidTopics.nonEmpty) {
+          MDC.put("invalidTopics", invalidTopics.map(topicSummary).mkString(", "))
+          MDC.put("validTopics", validTopics.map(topicSummary).mkString(", "))
         }
-        if (invalid.nonEmpty) {
-          MDC.put("invalidTopics", invalid.mkString(", "))
-          if (all.nonEmpty) MDC.put("allTopics", all.mkString(", "))
-        }
-        base.reads(json)
+
+        val filteredJson = json.as[JsObject] + ("topics" -> JsArray(validTopics))
+        base.reads(filteredJson)
       },
       base
     )
