@@ -79,7 +79,7 @@ object MatchStatus {
 
     // edge cases
     ("Suspended", Suspended), // Match has been Suspended.
-    ("Resumed", Resumed), // Match has been Resumed. // todo can match phase be determined by match minute?
+    ("Resumed", Resumed), // Match has been Resumed.
     ("Abandoned", Abandoned), // Match has been Abandoned.
     ("Postponed", Postponed), // A Match has been Postponed.
     ("Cancelled", Cancelled) // A Match has been Cancelled.

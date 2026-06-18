@@ -115,11 +115,6 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
 
         result.flatMap {
           case Right(_) =>
-            logger.info(
-              s"Updated live activity DB mapping id $id with updates: ${
-                ups.map(exp => s"${exp.attributes.names} = ${exp.attributes.values}").toString()
-              }"
-            )
             Future.successful(())
           case Left(ex) =>
             val errorMsg = s"Error updating live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
