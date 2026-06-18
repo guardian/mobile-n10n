@@ -44,7 +44,7 @@ case class FootballMatchAuditor(client: PaClient)(implicit ec: ExecutionContext)
       case _ => false
     } recover {
       case _ =>
-        logger.error(s"Unable to determine match status of $matchId.  Assuming that it is in the future")
+        logger.warn(s"Unable to determine match status of $matchId.  Assuming that it is in the future")
         false
     }
   }
