@@ -2,7 +2,7 @@ package com.gu.liveactivities
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import com.gu.liveactivities.service.{BroadcastApiClient, BroadcastService}
-import com.gu.liveactivities.util.Logging
+import com.gu.liveactivities.util.{Logging, Metrics}
 import com.gu.mobile.notifications.client.models.liveActitivites._
 import play.api.libs.json._
 
@@ -15,8 +15,9 @@ import scala.util.{Failure, Success, Try}
 
 object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
 
-  val broadcastApiClient = new BroadcastApiClient(authentication, config.bundleId, config.sendingToProdServer)
-  val broadcastService = new BroadcastService(repository, broadcastApiClient)
+  val metrics = new Metrics(config.stage, Metrics.BroadcastLambdaName)
+  val broadcastApiClient = new BroadcastApiClient(authentication, config.bundleId, config.sendingToProdServer, metrics)
+  val broadcastService = new BroadcastService(repository, broadcastApiClient, metrics)
 
   def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
     Json.parse(input).validate[EventBridgeEvent] match {

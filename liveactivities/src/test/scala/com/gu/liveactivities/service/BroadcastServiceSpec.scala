@@ -1,7 +1,7 @@
 package com.gu.liveactivities.service
 
 import com.gu.liveactivities.models.{LiveActivityData, LiveActivityMapping}
-import com.gu.liveactivities.util.DateTimeHelper
+import com.gu.liveactivities.util.{DateTimeHelper, Metrics}
 import com.gu.mobile.notifications.client.models.liveActitivites._
 import org.slf4j
 import org.slf4j.Logger
@@ -20,9 +20,10 @@ class BroadcastServiceSpec(implicit ee: ExecutionEnv) extends Specification with
   trait Context extends Scope{
     val channelManagerRepositoryMock: ChannelMappingsRepository = mock[ChannelMappingsRepository]
     val broadcastApiClientMock: BroadcastApiClient = mock[BroadcastApiClient]
+    val metricsMock: Metrics = mock[Metrics]
     val mockLogger: Logger = mock[org.slf4j.Logger]
 
-    val broadcastService: BroadcastService = new BroadcastService(channelManagerRepositoryMock, broadcastApiClientMock)(ee.ec) {
+    val broadcastService: BroadcastService = new BroadcastService(channelManagerRepositoryMock, broadcastApiClientMock, metricsMock)(ee.ec) {
       override val logger: slf4j.Logger = mockLogger
     }
   }
@@ -89,6 +90,7 @@ class BroadcastServiceSpec(implicit ee: ExecutionEnv) extends Specification with
       // Verify
       eventually {
         there was one(mockLogger).warn(s"broadcast-update event ID ${defaultPayload.id.toString} not allowed after broadcast-end for match ID $matchId")
+        there was one(metricsMock).increment(Metrics.BroadcastNotProcessed)
       }
       broadcastResult must beEqualTo("channelId1")
     }

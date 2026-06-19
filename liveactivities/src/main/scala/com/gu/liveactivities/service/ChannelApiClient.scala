@@ -8,11 +8,10 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import scala.concurrent.Future
 import scala.concurrent.Promise
-
 import play.api.libs.json.{Json, Reads}
-import com.gu.liveactivities.util.Logging
+import com.gu.liveactivities.util.{Logging, Metrics}
 
-class ChannelApiClient(authentication: Authentication, bundleId: String, sendingToProdServer: Boolean) extends Logging {
+class ChannelApiClient(authentication: Authentication, bundleId: String, sendingToProdServer: Boolean, metrics: Metrics) extends Logging {
   
   private val httpClient: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build()
 
@@ -42,6 +41,8 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
     val p = Promise[String]()
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
       if (response == null) {
+        logger.error(s"Failed to create channel due to error ${err.getMessage}")
+        metrics.increment(Metrics.APNSNetworkError)
         p.failure(err)
       } else if (response.statusCode() >= 200 && 
                 response.statusCode() < 300 && 
@@ -51,6 +52,7 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
         p.success(channelId)
       } else {
         logger.error(s"Failed to create channel with status code ${response.statusCode()} and body ${response.body()}")
+        metrics.recordApnsErrorResponse(response.statusCode())
         p.failure(new Exception(s"Failed to create channel with status code ${response.statusCode()} and body ${response.body()}"))
       }
     })
@@ -72,12 +74,14 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
       if (response == null) {
         logger.error(s"Failed to close channel $channelId due to error ${err.getMessage}")
+        metrics.increment(Metrics.APNSNetworkError)
         p.failure(err)
       } else if (response.statusCode() >= 200 && 
                 response.statusCode() < 300) {
         logger.info(s"Channel closed successfully with channel ID $channelId")
         p.success(())
       } else {
+        metrics.recordApnsErrorResponse(response.statusCode())
         logger.error(s"Failed to close channel with status code ${response.statusCode()} and body ${response.body()}")
         p.failure(new Exception(s"Failed to close channel with status code ${response.statusCode()} and body ${response.body()}"))
       }
@@ -107,6 +111,7 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
       if (response == null) {
         logger.error(s"Failed to get all channels due to error ${err.getMessage}")
+        metrics.increment(Metrics.APNSNetworkError)
         p.failure(err)
       } else if (response.statusCode() >= 200 &&
                 response.statusCode() < 300) {
@@ -115,6 +120,7 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
         p.success(channelIds)
       } else {
         logger.error(s"Failed to get all channels with status code ${response.statusCode()} and body ${response.body()}")
+        metrics.recordApnsErrorResponse(response.statusCode())
         p.failure(new Exception(s"Failed to get all channels with status code ${response.statusCode()} and body ${response.body()}"))
       }
     })
