@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@guardian/cdk": "62.3.2",
-    "@guardian/eslint-config": "14.0.0",
+    "@guardian/eslint-config": "14.0.1",
     "@guardian/prettier": "10.0.0",
     "@guardian/tsconfig": "1.0.1",
     "@types/jest": "^30.0.0",
