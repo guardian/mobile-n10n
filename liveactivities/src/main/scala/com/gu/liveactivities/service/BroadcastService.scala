@@ -24,7 +24,7 @@ class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient
 
       if (broadcastNotAllowed) {
         logger.warn(s"${requestPayload.eventType.asString} event ID $eventId not allowed after ${EndLiveActivityEvent.asString} for match ID $matchId")
-        metrics.increment(Metrics.BroadcastNotProcessed)
+        metrics.increment(Metrics.BroadcastNotAllowed)
         Future.successful(mapping.channelId)
       } else {
         for {

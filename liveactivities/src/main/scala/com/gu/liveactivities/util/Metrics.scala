@@ -46,7 +46,9 @@ object Metrics {
   val ChannelManagerLambdaName = "channel-manager"
   val ChannelCleanUpLambdaName = "channel-cleanup"
 
+  val BroadcastProcessed = "BroadcastProcessed"
   val BroadcastNotProcessed = "BroadcastNotProcessed"
+  val BroadcastNotAllowed = "BroadcastNotAllowed"
   val ChannelNotActive = "ChannelNotActive"
   val DuplicateEvent = "DuplicateEvent"
   val OutOfOrderEvent = "OutOfOrderEvent"
