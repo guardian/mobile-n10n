@@ -4,7 +4,6 @@ import java.util.Date
 import java.util.concurrent.atomic._
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.turo.pushy.apns.auth.AuthenticationToken
-import org.checkerframework.checker.units.qual.A
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import com.gu.liveactivities.util.Logging
