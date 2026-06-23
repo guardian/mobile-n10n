@@ -487,6 +487,9 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
       ExclusionRule(organization = "com.typesafe.play")
     ),
+    dependencyOverrides ++= Seq(
+        "com.google.code.gson" % "gson" % "2.10.1", // can be removed once pushy is removed.
+    ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
     Test / test := (Test / test).dependsOn(startDynamoDBLocal).value,
