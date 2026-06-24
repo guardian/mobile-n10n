@@ -128,11 +128,6 @@ object BroadcastBody extends Logging {
   ): BroadcastBody = {
     val now = System.currentTimeMillis() / 1000
 
-    // todo clean up once timings are verified e2e
-    logger.info(
-      s"Creating BroadcastBody ${if (shouldEndBroadcast) "END"} with dismissal timestamp from: ${now}"
-    )
-
     val apsEvent: BroadcastApsEvent =
       if (shouldEndBroadcast) {
         BroadcastEndAps(

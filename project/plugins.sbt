@@ -23,6 +23,8 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.10.0-RC1")
 
 addSbtPlugin("ch.epfl.scala" % "sbt-version-policy" % "3.2.1")
 
+addDependencyTreePlugin
+
 /*
    Without setting VersionScheme.Always here on `scala-xml`, sbt 1.8.0 will raise fatal 'version conflict' errors when
    used with sbt plugins like `sbt-native-packager`, which currently use sort-of-incompatible versions of the `scala-xml`

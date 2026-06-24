@@ -120,7 +120,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "org.postgresql" % "postgresql" % "42.7.10",
+      "org.postgresql" % "postgresql" % "42.7.11",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
       "net.logstash.logback" % "logstash-logback-encoder" % "8.1"
@@ -486,6 +486,9 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
       // Hopefully this workaround can be removed once play-json-extensions either updates to Play 3.0 or is merged into play-json
       ExclusionRule(organization = "com.typesafe.play")
+    ),
+    dependencyOverrides ++= Seq(
+        "com.google.code.gson" % "gson" % "2.10.1", // can be removed once pushy is removed.
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,

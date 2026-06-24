@@ -12,7 +12,6 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
     // Live activity synthetic events are appended at the end, but when they are first generated, no other timeline events exist and duplicate events are filtered so this should not matter.
-    // todo This needs to be verified e2e
     events.map(enhanceTimelineEvents(id)) ++ generators.flatMap(_.apply(matchDay, events)) // order is important here
   }
 
@@ -167,8 +166,7 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
     else None
   }
 
-  // Note: matches may be abandoned after kick off with no result, in which case rely on "stale-date" to end the activity (4hrs)
-  // todo: add end conditions for Abandoned and cancelled?
+  // Note: matches may be abandoned after kick off - this is handled in the liveActivityPayloadBuilder
   private val endLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
     if (matchDay.result && !matchDay.liveMatch) Some(emptyMatchEvent.copy(
       id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/end-live-activity".getBytes).toString),
