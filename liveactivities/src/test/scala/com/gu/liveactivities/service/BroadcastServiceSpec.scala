@@ -90,7 +90,7 @@ class BroadcastServiceSpec(implicit ee: ExecutionEnv) extends Specification with
       // Verify
       eventually {
         there was one(mockLogger).warn(s"broadcast-update event ID ${defaultPayload.id.toString} not allowed after broadcast-end for match ID $matchId")
-        there was one(metricsMock).increment(Metrics.BroadcastNotProcessed)
+        there was one(metricsMock).increment(Metrics.BroadcastNotAllowed)
       }
       broadcastResult must beEqualTo("channelId1")
     }
