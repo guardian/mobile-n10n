@@ -422,7 +422,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
       "com.turo" % "pushy" % "0.13.10",
-      "com.google.firebase" % "firebase-admin" % "9.2.0",
+      "com.google.firebase" % "firebase-admin" % "9.9.0",
       "com.google.protobuf" % "protobuf-java" % "4.33.3",
       "com.google.protobuf" % "protobuf-java-util" % "4.33.3",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
