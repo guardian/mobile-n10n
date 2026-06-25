@@ -52,6 +52,7 @@ object Metrics {
   val ChannelNotActive = "ChannelNotActive"
   val DuplicateEvent = "DuplicateEvent"
   val OutOfOrderEvent = "OutOfOrderEvent"
+  val APNS200 = "APNS200"
   val APNS4xx = "APNS4xx"
   val APNS5xx = "APNS5xx"
   val APNSNetworkError = "APNSNetworkError"

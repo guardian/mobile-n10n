@@ -86,7 +86,7 @@ class BroadcastApiClient(
       } else {
         val apnsUniqueId = response.headers().firstValue("apns-unique-id").orElse("not found") // SANDBOX only header for debugging
         logger.info(s"Received response with status code ${response.statusCode()} and apns-unique-id ${apnsUniqueId}")
-
+        metrics.increment(Metrics.APNS200)
         p.success(response.body())
       }
     })
