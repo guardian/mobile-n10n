@@ -253,6 +253,7 @@ export class LiveActivities extends GuStack {
 				detailType: ['channel-create', 'channel-delete'],
 			},
 			targets: [new LambdaFunction(channelLambda)],
+      description: "Route channel create/delete events from football to channel manager lambda",
 		});
 
 		new Rule(this, 'BroadcastRule', {
@@ -262,6 +263,7 @@ export class LiveActivities extends GuStack {
 				detailType: ['broadcast-update', 'broadcast-end'],
 			},
 			targets: [new LambdaFunction(broadcastLambda)],
+      description: "Route broadcast update/end events from football to broadcast lambda",
 		});
 
 		new Rule(this, 'InitialBroadcastRule', {
@@ -271,6 +273,7 @@ export class LiveActivities extends GuStack {
 				detailType: ['broadcast-update'],
 			},
 			targets: [new LambdaFunction(broadcastLambda)],
+      description: "Route initial broadcast update event from channel manager to broadcast lambda",
 		});
 	}
 }
