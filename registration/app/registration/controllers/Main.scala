@@ -14,7 +14,7 @@ import registration.services._
 import registration.services.topic.TopicValidator
 
 import scala.concurrent.{ExecutionContext, Future}
-import org.slf4j.{Logger, LoggerFactory, MDC}
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.http.HttpEntity
 import providers.ProviderError
 
@@ -62,18 +62,7 @@ final class Main(
     registerWithConverter(legacyRegistrationConverter)
 
   def register: Action[Registration] = actionWithTimeout(parse.json[Registration]) { request: Request[Registration] =>
-    Option(MDC.get("invalidTopics")).foreach { invalidTopics =>
-      val validTopics = Option(MDC.get("validTopics")).getOrElse("")
-      val userAgent = request.headers.get("User-Agent").getOrElse("unknown")
-      val deviceToken = request.body.deviceToken
-      logger.warn(s"Request contains invalid topic type(s): [$invalidTopics]. Filtering them out. Keeping: [$validTopics]. Device token: $deviceToken. User agent: $userAgent")
-      MDC.remove("invalidTopics")
-      MDC.remove("validTopics")
-    }
-    if (request.body.topics.isEmpty)
-      Future.successful(BadRequest("Request contains no valid topics"))
-    else
-      registerCommon(request.body).map(processResponse(_))
+    registerCommon(request.body).map(processResponse(_))
   }
 
   private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(parse.json[T]) { request =>
