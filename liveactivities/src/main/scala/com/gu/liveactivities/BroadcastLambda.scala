@@ -77,11 +77,9 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
     // to ensure the Lambda doesn't fail a healthy request that is just running slow.
     Try(Await.result(broadcastFuture, 160.seconds)) match {
       case Success(msg) => {
-        metrics.increment(Metrics.BroadcastProcessed)
         logger.info(msg) // Broadcast successfully processed or processing is disabled by config msg.
       }
       case Failure(exception) => {
-        metrics.increment(Metrics.BroadcastNotProcessed)
         logger.error(s"Failed to send broadcast ${if(shouldEndBroadcast)"END"} for liveActivityID $matchId: ${exception.getMessage}")
         throw exception
       }

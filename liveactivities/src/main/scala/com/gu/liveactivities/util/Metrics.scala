@@ -58,14 +58,15 @@ object Metrics {
 
 
   sealed abstract class Metric(val name: String, val dimensions: Map[String, String] = Map.empty)
-  case object BroadcastProcessed    extends Metric("BroadcastProcessed")
-  case object BroadcastNotProcessed extends Metric("BroadcastNotProcessed")
-  case object BroadcastNotAllowed   extends Metric("BroadcastNotAllowed")
-  case object ChannelNotActive      extends Metric("ChannelNotActive")
-  case object DuplicateEvent        extends Metric("DuplicateEvent")
-  case object OutOfOrderEvent       extends Metric("OutOfOrderEvent")
 
-  // APNS responses are tracked as a single metric distinguished by an `Outcome` dimension
+
+  private val ReasonDimension = "Reason"
+  sealed abstract class BroadcastNotProcessed(reason: String) extends Metric("BroadcastNotProcessed", Map(ReasonDimension -> reason))
+  case object BroadcastNotAllowed extends BroadcastNotProcessed("BroadcastNotAllowed")
+  case object ChannelNotActive    extends BroadcastNotProcessed("ChannelNotActive")
+  case object DuplicateEvent      extends BroadcastNotProcessed("DuplicateEvent")
+  case object OutOfOrderEvent     extends BroadcastNotProcessed("OutOfOrderEvent")
+
   private val OutcomeDimension = "Outcome"
   sealed abstract class ApnsResponse(outcome: String) extends Metric("ApnsResponse", Map(OutcomeDimension -> outcome))
   case object ApnsSuccess      extends ApnsResponse("2xx")
