@@ -52,6 +52,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
     },
     "BroadcastRule3D75643B": {
       "Properties": {
+        "Description": "Route broadcast update/end events from football to broadcast lambda",
         "EventBusName": {
           "Ref": "EventsD32975C2",
         },
@@ -229,6 +230,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
     },
     "ChannelRule421C2920": {
       "Properties": {
+        "Description": "Route channel create/delete events from football to channel manager lambda",
         "EventBusName": {
           "Ref": "EventsD32975C2",
         },
@@ -320,6 +322,7 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
     },
     "InitialBroadcastRule538D106F": {
       "Properties": {
+        "Description": "Route initial broadcast update event from channel manager to broadcast lambda",
         "EventBusName": {
           "Ref": "EventsD32975C2",
         },
