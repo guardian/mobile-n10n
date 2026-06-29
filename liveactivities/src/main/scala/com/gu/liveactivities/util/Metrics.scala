@@ -27,8 +27,7 @@ class Metrics(stage: String, lambdaName: String, cloudWatchClient: CloudWatchCli
       .build()
 
     Try(cloudWatchClient.putMetricData(request)) match {
-      case Success(_) =>
-        logger.debug(s"Published metric '$metricName' to CloudWatch namespace '$namespace'")
+      case Success(_) => ()
       case Failure(exception) =>
         logger.error(s"Failed to publish metric '$metricName' to CloudWatch namespace '$namespace': ${exception.getMessage}", exception)
     }
