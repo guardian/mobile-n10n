@@ -14,18 +14,15 @@ class Metrics(stage: String, lambdaName: String, cloudWatchClient: CloudWatchCli
 
   private val namespace = s"Notifications/$stage/liveactivities-$lambdaName"
 
-  def increment(metricName: String): Unit =
-    increment(metricName, Map.empty)
-
-  def increment(metricName: String, dimensions: Map[String, String]): Unit = {
+  def increment(metric: Metrics.Metric): Unit = {
     val datumBuilder = MetricDatum.builder()
-      .metricName(metricName)
+      .metricName(metric.name)
       .unit(StandardUnit.COUNT)
       .value(1.0)
 
-    if (dimensions.nonEmpty) {
+    if (metric.dimensions.nonEmpty) {
       datumBuilder.dimensions(
-        dimensions.map { case (name, value) => Dimension.builder().name(name).value(value).build() }.toSeq: _*
+        metric.dimensions.map { case (name, value) => Dimension.builder().name(name).value(value).build() }.toSeq: _*
       )
     }
 
@@ -37,19 +34,19 @@ class Metrics(stage: String, lambdaName: String, cloudWatchClient: CloudWatchCli
     Try(cloudWatchClient.putMetricData(request)) match {
       case Success(_) => ()
       case Failure(exception) =>
-        logger.error(s"Failed to publish metric '$metricName' to CloudWatch namespace '$namespace': ${exception.getMessage}", exception)
+        logger.error(s"Failed to publish metric '${metric.name}' to CloudWatch namespace '$namespace': ${exception.getMessage}", exception)
     }
   }
 
   def recordApnsSuccess(): Unit =
-    increment(Metrics.ApnsResponse, Map(Metrics.OutcomeDimension -> Metrics.ApnsOutcome2xx))
+    increment(Metrics.ApnsSuccess)
 
   def recordApnsNetworkError(): Unit =
-    increment(Metrics.ApnsResponse, Map(Metrics.OutcomeDimension -> Metrics.ApnsOutcomeNetworkError))
+    increment(Metrics.ApnsNetworkError)
 
   def recordApnsErrorResponse(statusCode: Int): Unit = {
-    if (statusCode >= 400 && statusCode <= 499) increment(Metrics.ApnsResponse, Map(Metrics.OutcomeDimension -> Metrics.ApnsOutcome4xx))
-    else if (statusCode >= 500 && statusCode <= 599) increment(Metrics.ApnsResponse, Map(Metrics.OutcomeDimension -> Metrics.ApnsOutcome5xx))
+    if (statusCode >= 400 && statusCode <= 499) increment(Metrics.Apns4xx)
+    else if (statusCode >= 500 && statusCode <= 599) increment(Metrics.Apns5xx)
   }
 }
 
@@ -59,20 +56,22 @@ object Metrics {
   val ChannelManagerLambdaName = "channel-manager"
   val ChannelCleanUpLambdaName = "channel-cleanup"
 
-  val BroadcastProcessed = "BroadcastProcessed"
-  val BroadcastNotProcessed = "BroadcastNotProcessed"
-  val BroadcastNotAllowed = "BroadcastNotAllowed"
-  val ChannelNotActive = "ChannelNotActive"
-  val DuplicateEvent = "DuplicateEvent"
-  val OutOfOrderEvent = "OutOfOrderEvent"
+
+  sealed abstract class Metric(val name: String, val dimensions: Map[String, String] = Map.empty)
+  case object BroadcastProcessed    extends Metric("BroadcastProcessed")
+  case object BroadcastNotProcessed extends Metric("BroadcastNotProcessed")
+  case object BroadcastNotAllowed   extends Metric("BroadcastNotAllowed")
+  case object ChannelNotActive      extends Metric("ChannelNotActive")
+  case object DuplicateEvent        extends Metric("DuplicateEvent")
+  case object OutOfOrderEvent       extends Metric("OutOfOrderEvent")
 
   // APNS responses are tracked as a single metric distinguished by an `Outcome` dimension
-  val ApnsResponse = "ApnsResponse"
-  val OutcomeDimension = "Outcome"
-  val ApnsOutcome2xx = "2xx"
-  val ApnsOutcome4xx = "4xx"
-  val ApnsOutcome5xx = "5xx"
-  val ApnsOutcomeNetworkError = "NetworkError"
+  private val OutcomeDimension = "Outcome"
+  sealed abstract class ApnsResponse(outcome: String) extends Metric("ApnsResponse", Map(OutcomeDimension -> outcome))
+  case object ApnsSuccess      extends ApnsResponse("2xx")
+  case object Apns4xx          extends ApnsResponse("4xx")
+  case object Apns5xx          extends ApnsResponse("5xx")
+  case object ApnsNetworkError extends ApnsResponse("NetworkError")
 
 
 
