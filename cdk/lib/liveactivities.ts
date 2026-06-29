@@ -119,13 +119,13 @@ export class LiveActivities extends GuStack {
 				],
 			}),
 		);
-    channelLambda.addToRolePolicy(
-      new PolicyStatement({
-        actions: ['cloudwatch:PutMetricData'],
-        effect: Effect.ALLOW,
-        resources: ['*'],
-      }),
-    );
+		channelLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['cloudwatch:PutMetricData'],
+				effect: Effect.ALLOW,
+				resources: ['*'],
+			}),
+		);
 
 		const broadcastDlq = new Queue(this, 'BroadcastDlq', {
 			queueName: `${app}-broadcast-dlq-${stage}`,
@@ -178,14 +178,13 @@ export class LiveActivities extends GuStack {
 				],
 			}),
 		);
-    broadcastLambda.addToRolePolicy(
-      new PolicyStatement({
-        actions: ['cloudwatch:PutMetricData'],
-        effect: Effect.ALLOW,
-        resources: ['*'],
-      }),
-    );
-
+		broadcastLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['cloudwatch:PutMetricData'],
+				effect: Effect.ALLOW,
+				resources: ['*'],
+			}),
+		);
 
 		//////////// Channel Clean up lambda //////////////
 
@@ -252,13 +251,13 @@ export class LiveActivities extends GuStack {
 				],
 			}),
 		);
-    channelCleanerLambda.addToRolePolicy(
-      new PolicyStatement({
-        actions: ['cloudwatch:PutMetricData'],
-        effect: Effect.ALLOW,
-        resources: ['*'],
-      }),
-    );
+		channelCleanerLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['cloudwatch:PutMetricData'],
+				effect: Effect.ALLOW,
+				resources: ['*'],
+			}),
+		);
 
 		//////////// EVENTBUS INFRASTRUCTURE //////////////
 
