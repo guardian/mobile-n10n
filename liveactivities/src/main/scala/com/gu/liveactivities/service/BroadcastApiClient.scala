@@ -77,7 +77,7 @@ class BroadcastApiClient(
 
       if (err != null) {
         logger.error("Error occurred while sending broadcast", err)
-        metrics.increment(Metrics.APNSNetworkError)
+        metrics.recordApnsNetworkError()
         p.failure(err)
       } else if (response.statusCode() != 200) {
         logger.error(s"Failed to send broadcast with status code ${response.statusCode()} and body ${response.body()}")
@@ -86,7 +86,7 @@ class BroadcastApiClient(
       } else {
         val apnsUniqueId = response.headers().firstValue("apns-unique-id").orElse("not found") // SANDBOX only header for debugging
         logger.info(s"Received response with status code ${response.statusCode()} and apns-unique-id ${apnsUniqueId}")
-        metrics.increment(Metrics.APNS200)
+        metrics.recordApnsSuccess()
         p.success(response.body())
       }
     })

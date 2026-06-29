@@ -42,13 +42,14 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
       if (response == null) {
         logger.error(s"Failed to create channel due to error ${err.getMessage}")
-        metrics.increment(Metrics.APNSNetworkError)
+        metrics.recordApnsNetworkError()
         p.failure(err)
       } else if (response.statusCode() >= 200 && 
                 response.statusCode() < 300 && 
                 response.headers().firstValue("apns-channel-id").isPresent()) {
         val channelId = response.headers().firstValue("apns-channel-id").get()
         logger.info(s"Channel created successfully with channel ID $channelId")
+        metrics.recordApnsSuccess()
         p.success(channelId)
       } else {
         logger.error(s"Failed to create channel with status code ${response.statusCode()} and body ${response.body()}")
@@ -74,11 +75,12 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
       if (response == null) {
         logger.error(s"Failed to close channel $channelId due to error ${err.getMessage}")
-        metrics.increment(Metrics.APNSNetworkError)
+        metrics.recordApnsNetworkError()
         p.failure(err)
       } else if (response.statusCode() >= 200 && 
                 response.statusCode() < 300) {
         logger.info(s"Channel closed successfully with channel ID $channelId")
+        metrics.recordApnsSuccess()
         p.success(())
       } else {
         metrics.recordApnsErrorResponse(response.statusCode())
@@ -111,12 +113,13 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
       if (response == null) {
         logger.error(s"Failed to get all channels due to error ${err.getMessage}")
-        metrics.increment(Metrics.APNSNetworkError)
+        metrics.recordApnsNetworkError()
         p.failure(err)
       } else if (response.statusCode() >= 200 &&
                 response.statusCode() < 300) {
         val channelIds = Json.parse(response.body()).as[AllChannelsResponse].channels
         logger.info(s"Retrieved all channels successfully: ${channelIds.length}")
+        metrics.recordApnsSuccess()
         p.success(channelIds)
       } else {
         logger.error(s"Failed to get all channels with status code ${response.statusCode()} and body ${response.body()}")
