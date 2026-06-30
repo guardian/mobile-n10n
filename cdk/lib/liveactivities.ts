@@ -43,8 +43,10 @@ const addApnsErrorAlarm = (
 	app: string,
 	stage: string,
 	metricLambdaName: string,
+	threshold: number = 1,
 ) => {
 	const namespace = `Notifications/${stage}/liveactivities-${metricLambdaName}`;
+	// APNS traffic is low-volume and bursty.
 	const period = Duration.minutes(5);
 	const apns4xx = new Metric({
 		namespace,
@@ -70,7 +72,7 @@ const addApnsErrorAlarm = (
 			label: 'APNS 4xx + 5xx',
 			period,
 		}),
-		threshold: 10,
+		threshold,
 		evaluationPeriods: 1,
 		comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
 		treatMissingData: TreatMissingData.NOT_BREACHING,
@@ -301,9 +303,11 @@ export class LiveActivities extends GuStack {
 		);
 
 		//////////// Alarm on APNS 4xx/5xx responses /////////////
-		addApnsErrorAlarm(this, app, stage, 'broadcast');
-		addApnsErrorAlarm(this, app, stage, 'channel-manager');
-		addApnsErrorAlarm(this, app, stage, 'channel-cleaner');
+		// Fire on any APNS 4xx/5xx error for each low-volume lambda. The alarm self-resolves back to OK
+		// once errors stop (missing data is treated as not breaching).
+		addApnsErrorAlarm(this, app, stage, 'broadcast', 1);
+		addApnsErrorAlarm(this, app, stage, 'channel-manager', 1);
+		addApnsErrorAlarm(this, app, stage, 'channel-cleaner', 1);
 
 		//////////// EVENTBUS INFRASTRUCTURE //////////////
 
