@@ -41,10 +41,11 @@ class BroadcastApiClient(
       channelId: String,
       expiration: Option[Instant],
       priority: Option[Int],
-      broadcastPayload: BroadcastBody
+      broadcastPayload: BroadcastBody,
+      liveActivityId: String
   ): Future[String] = {
     val defaultPriority = "1"
-    logger.info(s"Broadcasting to channel $channelId for match with priority ${priority.getOrElse(defaultPriority)}")
+    logger.info(liveActivityMarker(liveActivityId),s"Broadcasting to channel $channelId for match with priority ${priority.getOrElse(defaultPriority)}")
 
     val broadcastPayloadJson: String = Json.stringify(
       Json.toJson(broadcastPayload)(BroadcastBody.broadcastBodyFormat)
@@ -72,17 +73,17 @@ class BroadcastApiClient(
 
     val p = Promise[String]()
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
-      logger.info(s"Received response: $response, error: $err")
+      logger.info(liveActivityMarker(liveActivityId), "Received response: $response, error: $err")
 
       if (err != null) {
-        logger.error("Error occurred while sending broadcast", err)
+        logger.error(liveActivityMarker(liveActivityId), "Error occurred while sending broadcast", err)
         p.failure(err)
       } else if (response.statusCode() != 200) {
-        logger.error(s"Failed to send broadcast with status code ${response.statusCode()} and body ${response.body()}")
+        logger.error(liveActivityMarker(liveActivityId), s"Failed to send broadcast with status code ${response.statusCode()} and body ${response.body()}")
         p.failure(new RuntimeException(s"Failed to send broadcast with status code ${response.statusCode()} and body ${response.body()}"))
       } else {
         val apnsUniqueId = response.headers().firstValue("apns-unique-id").orElse("not found") // SANDBOX only header for debugging
-        logger.info(s"Received response with status code ${response.statusCode()} and apns-unique-id ${apnsUniqueId}")
+        logger.info(liveActivityMarker(liveActivityId),s"Received response with status code ${response.statusCode()} and apns-unique-id ${apnsUniqueId}")
 
         p.success(response.body())
       }

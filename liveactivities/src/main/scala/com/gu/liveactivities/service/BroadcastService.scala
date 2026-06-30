@@ -23,32 +23,32 @@ class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient
       val priorityLevel = if (requestPayload.liveActivityType == FootballLiveActivity) Some(10) else None
 
       if (broadcastNotAllowed) {
-        logger.warn(s"${requestPayload.eventType.asString} event ID $eventId not allowed after ${EndLiveActivityEvent.asString} for match ID $matchId")
+        logger.warn(liveActivityMarker(matchId), s"${requestPayload.eventType.asString} event ID $eventId not allowed after ${EndLiveActivityEvent.asString} for match ID $matchId")
         Future.successful(mapping.channelId)
       } else {
         for {
           _ <- if (!mapping.isChannelActive) {
-            logger.error(s"Channel not active for match ID $matchId")
+            logger.error(liveActivityMarker(matchId), s"Channel not active for match ID $matchId")
             Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
           } else Future.successful(())
 
           _ <- if (mapping.lastEventId.contains(eventId)) {
-            logger.warn(s"Duplicate event ID $eventId for match ID $matchId")
+            logger.warn(liveActivityMarker(matchId), s"Duplicate event ID $eventId for match ID $matchId")
             Future.failed(new LiveActivityInvalidStateException(matchId, "Duplicate event ID"))
           } else Future.successful(())
 
           _ <- if (mapping.lastEventAt.exists(lastEventAt => eventTime.isBefore(lastEventAt))) {
-            logger.warn(s"Out of order event time ${dateTimeToString(eventTime)} for match ID $matchId")
+            logger.warn(liveActivityMarker(matchId), s"Out of order event time ${dateTimeToString(eventTime)} for match ID $matchId")
             Future.failed(new LiveActivityInvalidStateException(matchId, "Out of order event time"))
           } else Future.successful(())
 
-          _ = logger.info(s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
+          _ = logger.info(liveActivityMarker(matchId), s"Sending broadcast for match ID $matchId to channel ID ${mapping.channelId}")
           broadcastPayload = BroadcastBody(contentState, shouldEndBroadcast)
-          _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, priorityLevel, broadcastPayload)
-          _ = logger.info(s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
+          _ <- broadcastApiClient.sendToChannel(mapping.channelId, None, priorityLevel, broadcastPayload, matchId)
+          _ = logger.info(liveActivityMarker(matchId), s"Broadcast ${requestPayload.eventType.asString} sent successfully for match ID $matchId to channel ID ${mapping.channelId}")
 
           _ <- repository.updateMappingLiveAndLastEvent(matchId, isLive = !shouldEndBroadcast, Some(eventId), Some(eventTime))
-          _ = logger.info(s"Record updated successfully for match ID $matchId")
+          _ = logger.info(liveActivityMarker(matchId), s"Record updated successfully for match ID $matchId")
         } yield s"Broadcast ${requestPayload.eventType.asString} successfully processed for liveActivityID $matchId"
       }
     }

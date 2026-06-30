@@ -28,7 +28,7 @@ class ChannelCleanUpService(
         channelsForPossibleDeletion.map { mapping =>
         {
           if (mapping.createdAt.isAfter(ZonedDateTime.now().minusHours(24))) {
-            logger.info(s"Channel with ID ${mapping.channelId} for match ID ${mapping.id} is " +
+            logger.info(liveActivityMarker(mapping.id), s"Channel with ID ${mapping.channelId} for match ID ${mapping.id} is " +
               s"not live but was created less than 24hrs ago, skipping deletion.")
             Future.successful(())
           } else {
@@ -38,14 +38,14 @@ class ChannelCleanUpService(
                 val f = repository.updateMappingActiveChannel(mapping.id, isActive = false)
                   .map { result =>
                     channelsDeleted ++= List(mapping)
-                    logger.info(s"Channel successfully marked inactive with channel ID: ${mapping.channelId} for match ID ${mapping.id}")
+                    logger.info(liveActivityMarker(mapping.id), s"Channel successfully marked inactive with channel ID: ${mapping.channelId} for match ID ${mapping.id}")
                     result
                   }
                 f
               }
               .recover { case exception =>
                 // todo handle exception better and throw when needed. Some errors will be handled by rest of the Cleanup tasks.
-                logger.error(s"Failed to delete channel with ID ${mapping.channelId} for match ID ${mapping.id} - ${exception.getMessage}")
+                logger.error(liveActivityMarker(mapping.id), s"Failed to delete channel with ID ${mapping.channelId} for match ID ${mapping.id} - ${exception.getMessage}")
               }
 
 

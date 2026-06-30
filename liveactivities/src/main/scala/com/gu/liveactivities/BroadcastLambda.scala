@@ -43,7 +43,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
   }
 
   def processRequest(requestPayload: LiveActivityPayload, context: Context): Unit = {
-    logger.info(s"Received request to broadcast payload for match ID ${requestPayload.liveActivityID}")
+    logger.info(liveActivityMarker(requestPayload.liveActivityID), s"Received request to broadcast payload for match ID ${requestPayload.liveActivityID}")
 
     // todo this needs to be tidied to support live activities other than football
     val matchId: String = requestPayload.liveActivityID
@@ -61,7 +61,7 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
       case StartLiveActivityEvent => false
       case UpdateLiveActivityEvent => false
       case _ =>
-        logger.error(s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
+        logger.error(liveActivityMarker(matchId), s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
         throw new Exception(s"Unexpected event type ${requestPayload.eventType} for broadcast payload")
     }
 
@@ -76,10 +76,10 @@ object BroadcastLambda extends RequestStreamHandler with Lambda with Logging {
     // to ensure the Lambda doesn't fail a healthy request that is just running slow.
     Try(Await.result(broadcastFuture, 160.seconds)) match {
       case Success(msg) => {
-        logger.info(msg) // Broadcast successfully processed or processing is disabled by config msg.
+        logger.info(liveActivityMarker(matchId), msg) // Broadcast successfully processed or processing is disabled by config msg.
       }
       case Failure(exception) => {
-        logger.error(s"Failed to send broadcast ${if(shouldEndBroadcast)"END"} for liveActivityID $matchId: ${exception.getMessage}")
+        logger.error(liveActivityMarker(matchId), s"Failed to send broadcast ${if(shouldEndBroadcast)"END"} for liveActivityID $matchId: ${exception.getMessage}")
         throw exception
       }
     }

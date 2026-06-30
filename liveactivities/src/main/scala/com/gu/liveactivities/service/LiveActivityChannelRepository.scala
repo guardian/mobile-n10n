@@ -49,7 +49,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
         case None => None
         case Some(Left(ex)) =>
           val errorMsg = s"Error checking if live activity mapping exists for id $id - ${DynamoReadError.describe(ex)}"
-          logger.error(errorMsg)
+          logger.error(liveActivityMarker(id), errorMsg)
           throw new RepositoryException(errorMsg)
       }.recover(handleErrors("reading from DynamoDB", id))
 
@@ -79,11 +79,11 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
         case Right(_) => ()
         case Left(ConditionNotMet(ex)) =>
           val errorMsg = s"Live activity mapping for id $id already exists"
-          logger.error(errorMsg)
+          logger.error(liveActivityMarker(id), errorMsg)
           throw new RepositoryException(ex, errorMsg)
         case Left(ex: DynamoReadError) =>
           val errorMsg = s"Error saving live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
-          logger.error(errorMsg)
+          logger.error(liveActivityMarker(id), errorMsg)
           throw new RepositoryException(errorMsg)
       }.recover(handleErrors("writing to DynamoDB", id))
   }
@@ -104,7 +104,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
 
     NonEmptyList.fromList(updates) match {
       case None =>
-        logger.warn(s"No fields to update for live activity mapping with id $id")
+        logger.warn(liveActivityMarker(id), s"No fields to update for live activity mapping with id $id")
         Future.successful(())
       case Some(ups) =>
         val result = scanamo.exec {
@@ -118,7 +118,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
             Future.successful(())
           case Left(ex) =>
             val errorMsg = s"Error updating live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
-            logger.error(errorMsg)
+            logger.error(liveActivityMarker(id), errorMsg)
             Future.failed(new RepositoryException(errorMsg))
         }.recover(handleErrors("updating mapping in DynamoDB", id))
     }
@@ -151,7 +151,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
         case None => Future.failed(new LiveActivityDataException(id, "Live Activity mapping not found"))
         case Some(Left(ex)) =>
           val errorMsg = s"Error getting live activity mapping for id $id - ${DynamoReadError.describe(ex)}"
-          logger.error(errorMsg)
+          logger.error(liveActivityMarker(id), errorMsg)
           Future.failed(new RepositoryException(errorMsg))
       }.recover(handleErrors("reading mapping from DynamoDB", id))
   }
@@ -222,7 +222,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
       throw ex
     case ex: Exception =>
       val msg = s"Error during $operation for id $id: ${ex.getMessage}"
-      logger.error(msg)
+      logger.error(liveActivityMarker(id), msg)
       throw new RepositoryException(msg)
   }
 }

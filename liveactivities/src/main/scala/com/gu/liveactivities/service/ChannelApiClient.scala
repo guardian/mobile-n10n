@@ -29,7 +29,7 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
 
   private val message = "{\"message-storage-policy\": 1, \"push-type\": \"LiveActivity\"}"
 
-  def createChannel(): Future[String] = {
+  def createChannel(liveActivityId: String): Future[String] = {
     logger.info("Creating channel")
     val authToken = authentication.getAccessToken()
     val request: HttpRequest = HttpRequest.newBuilder(new URI(s"${url}/channels"))
@@ -57,7 +57,7 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
     p.future
   }
 
-  def closeChannel(channelId: String): Future[Unit] = {
+  def closeChannel(channelId: String, liveActivityId: String): Future[Unit] = {
     logger.info(s"Closing channel $channelId")
     val authToken = authentication.getAccessToken()
     val request: HttpRequest = HttpRequest.newBuilder(new URI(s"${url}/channels"))
@@ -71,14 +71,14 @@ class ChannelApiClient(authentication: Authentication, bundleId: String, sending
     val p = Promise[Unit]()
     httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).whenComplete((response, err) => {
       if (response == null) {
-        logger.error(s"Failed to close channel $channelId due to error ${err.getMessage}")
+        logger.error(liveActivityMarker(liveActivityId), s"Failed to close channel $channelId due to error ${err.getMessage}")
         p.failure(err)
       } else if (response.statusCode() >= 200 && 
                 response.statusCode() < 300) {
-        logger.info(s"Channel closed successfully with channel ID $channelId")
+        logger.info(liveActivityMarker(liveActivityId), s"Channel closed successfully with channel ID $channelId")
         p.success(())
       } else {
-        logger.error(s"Failed to close channel with status code ${response.statusCode()} and body ${response.body()}")
+        logger.error(liveActivityMarker(liveActivityId), s"Failed to close channel with status code ${response.statusCode()} and body ${response.body()}")
         p.failure(new Exception(s"Failed to close channel with status code ${response.statusCode()} and body ${response.body()}"))
       }
     })

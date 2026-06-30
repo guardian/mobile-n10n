@@ -20,37 +20,37 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
   private val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer)
 
   private def processCreateChannelRequest(matchId: String, eventData: Option[LiveActivityData], broadcastContentStateData: Option[ContentState]): Future[String] = {
-    logger.info(s"Received request to create channel for match ID $matchId")
+    logger.info(liveActivityMarker(matchId), s"Received request to create channel for match ID $matchId")
 
     val maybeChannelId = repository.containMapping(matchId)
     maybeChannelId.flatMap {
       case Some(id) =>
-        logger.error(s"Channel mapping already exists for match ID $matchId")
+        logger.error(liveActivityMarker(matchId), s"Channel mapping already exists for match ID $matchId")
         // if channel id already exists for a match we don't want to fail the lambda to avoid the lambda retry on this event
         Future.successful(id)
       case None =>
         for {
-          channelId <- channelApiClient.createChannel()
+          channelId <- channelApiClient.createChannel(matchId)
           _ <- repository.createMapping(matchId, channelId, eventData)
-          _ = logger.info(s"Channel created with channel ID $channelId for match ID $matchId")
+          _ = logger.info(liveActivityMarker(matchId), s"Channel created with channel ID $channelId for match ID $matchId")
           _ <- pushUpdateLiveActivityEvent(matchId, broadcastContentStateData)
-          _ = logger.info(s"Initial broadcast update pushed to event bus for channel ID $channelId and match ID $matchId")
+          _ = logger.info(liveActivityMarker(matchId), s"Initial broadcast update pushed to event bus for channel ID $channelId and match ID $matchId")
         } yield channelId
     }
   }
 
   private def processCloseChannelRequest(matchId: String): Future[String] = {
-    logger.info(s"Channel closed for match ID: $matchId")
+    logger.info(liveActivityMarker(matchId), s"Channel closed for match ID: $matchId")
     val maybeMapping = repository.getMappingById(matchId)
     maybeMapping.flatMap{
       case mapping if !mapping.isChannelActive =>
-        logger.error(s"Channel not active for match ID $matchId")
+        logger.error(liveActivityMarker(matchId), s"Channel not active for match ID $matchId")
         // if channel is inactive for a match we don't want to fail the lambda to avoid the lambda retry on this event
         Future.successful(mapping.channelId)
       case mapping =>  for {
-        _ <- channelApiClient.closeChannel(mapping.channelId)
+        _ <- channelApiClient.closeChannel(mapping.channelId, matchId)
         _ <- repository.updateMappingActiveChannel(matchId, isActive = false)
-        _ = logger.info(s"Channel closed with channel ID ${mapping.channelId} for match ID $matchId")
+        _ = logger.info(liveActivityMarker(matchId), s"Channel closed with channel ID ${mapping.channelId} for match ID $matchId")
       } yield mapping.channelId
     }
   }
@@ -76,7 +76,7 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
       case CreateChannelEvent =>
 
         if (!config.isEnabled) {
-          logger.warn(s"Received ${CreateChannelEvent.asString} event for match ID ${request.liveActivityID} but channel creation is disabled by config")
+          logger.warn(liveActivityMarker(request.liveActivityID), s"Received ${CreateChannelEvent.asString} event for match ID ${request.liveActivityID} but channel creation is disabled by config")
           Future.unit
         } else {
           val eventData = request.broadcastContentStateData.map(LiveActivityData.toLiveActivityData)
@@ -97,7 +97,7 @@ object ChannelManagerLambda extends RequestStreamHandler with Lambda with Loggin
     Try(Await.result(channelFuture, 160.seconds)) match {
       case Success(_) => ()
       case Failure(exception) =>
-        logger.error(s"Failed to process: ${exception.getMessage}")
+        logger.error(liveActivityMarker(request.liveActivityID), s"Failed to process: ${exception.getMessage}")
         throw exception
     }
   }
