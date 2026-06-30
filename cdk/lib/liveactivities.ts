@@ -6,6 +6,7 @@ import type { App } from 'aws-cdk-lib';
 import { Duration, Tags } from 'aws-cdk-lib';
 import {
 	ComparisonOperator,
+	MathExpression,
 	Metric,
 	TreatMissingData,
 } from 'aws-cdk-lib/aws-cloudwatch';
@@ -30,6 +31,46 @@ const addDlqAlarm = (scope: GuStack, app: string, dlq: Queue, name: string) => {
 			period: Duration.minutes(1),
 		}),
 		threshold: 1,
+		evaluationPeriods: 1,
+		comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+		treatMissingData: TreatMissingData.NOT_BREACHING,
+		snsTopicName: 'mobile-server-side',
+	});
+};
+
+const addApnsErrorAlarm = (
+	scope: GuStack,
+	app: string,
+	stage: string,
+	metricLambdaName: string,
+) => {
+	const namespace = `Notifications/${stage}/liveactivities-${metricLambdaName}`;
+	const period = Duration.minutes(5);
+	const apns4xx = new Metric({
+		namespace,
+		metricName: 'ApnsResponse',
+		dimensionsMap: { Outcome: '4xx' },
+		statistic: 'Sum',
+		period,
+	});
+	const apns5xx = new Metric({
+		namespace,
+		metricName: 'ApnsResponse',
+		dimensionsMap: { Outcome: '5xx' },
+		statistic: 'Sum',
+		period,
+	});
+	new GuAlarm(scope, `${app}-apns-errors-${metricLambdaName}-alarm`, {
+		app: app,
+		alarmName: `${app}-apns-errors-${metricLambdaName}-${stage}`,
+		alarmDescription: `APNS returned 4xx/5xx responses from the ${metricLambdaName} lambda`,
+		metric: new MathExpression({
+			expression: 'apns4xx + apns5xx',
+			usingMetrics: { apns4xx, apns5xx },
+			label: 'APNS 4xx + 5xx',
+			period,
+		}),
+		threshold: 10,
 		evaluationPeriods: 1,
 		comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
 		treatMissingData: TreatMissingData.NOT_BREACHING,
@@ -258,6 +299,11 @@ export class LiveActivities extends GuStack {
 				resources: ['*'],
 			}),
 		);
+
+		//////////// Alarm on APNS 4xx/5xx responses /////////////
+		addApnsErrorAlarm(this, app, stage, 'broadcast');
+		addApnsErrorAlarm(this, app, stage, 'channel-manager');
+		addApnsErrorAlarm(this, app, stage, 'channel-cleaner');
 
 		//////////// EVENTBUS INFRASTRUCTURE //////////////
 

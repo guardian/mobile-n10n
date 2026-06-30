@@ -54,11 +54,9 @@ object Metrics {
   // Lambda names used to scope the CloudWatch namespace to a specific lambda
   val BroadcastLambdaName = "broadcast"
   val ChannelManagerLambdaName = "channel-manager"
-  val ChannelCleanUpLambdaName = "channel-cleanup"
-
+  val ChannelCleanUpLambdaName = "channel-cleaner"
 
   sealed abstract class Metric(val name: String, val dimensions: Map[String, String] = Map.empty)
-
 
   private val ReasonDimension = "Reason"
   sealed abstract class BroadcastNotProcessed(reason: String) extends Metric("BroadcastNotProcessed", Map(ReasonDimension -> reason))
@@ -73,8 +71,6 @@ object Metrics {
   case object Apns4xx          extends ApnsResponse("4xx")
   case object Apns5xx          extends ApnsResponse("5xx")
   case object ApnsNetworkError extends ApnsResponse("NetworkError")
-
-
 
   def buildCloudWatchClient(): CloudWatchClient =
     CloudWatchClient.builder()
