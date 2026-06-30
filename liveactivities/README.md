@@ -96,6 +96,7 @@ LiveActivity logs are structured. You can filter by lambda via these cloudWatchL
 ## Monitoring 
 
 Apple provide limited broadcast notification delivery metrics via[ Apple developer dashboard](https://icloud.developer.apple.com/dashboard/notifications).
+Monitoring dashboards are available on Kibana ELK stack and AWS Cloudwatch under the mobile account. 
 
 ## Alarms
 
