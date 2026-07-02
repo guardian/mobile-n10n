@@ -2,13 +2,13 @@ package com.gu.liveactivities.service
 
 import com.gu.liveactivities.models.{BroadcastBody, LiveActivityInvalidStateException}
 import com.gu.liveactivities.util.DateTimeHelper.{dateTimeFromLong, dateTimeToString}
-import com.gu.liveactivities.util.Logging
+import com.gu.liveactivities.util.{Logging, Metrics}
 import com.gu.mobile.notifications.client.models.liveActitivites.{ContentState, EndLiveActivityEvent, FootballLiveActivity, LiveActivityPayload}
 
 import java.time.ZonedDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
-class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient: BroadcastApiClient)(implicit ec: ExecutionContext) extends Logging {
+class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient: BroadcastApiClient, metrics: Metrics)(implicit ec: ExecutionContext) extends Logging {
 
   def processBroadcast(requestPayload: LiveActivityPayload, shouldEndBroadcast: Boolean, contentState: ContentState): Future[String] = {
     val matchId = requestPayload.liveActivityID
@@ -24,21 +24,25 @@ class BroadcastService(repository: ChannelMappingsRepository, broadcastApiClient
 
       if (broadcastNotAllowed) {
         logger.warn(s"${requestPayload.eventType.asString} event ID $eventId not allowed after ${EndLiveActivityEvent.asString} for match ID $matchId")
+        metrics.increment(Metrics.BroadcastNotAllowed)
         Future.successful(mapping.channelId)
       } else {
         for {
           _ <- if (!mapping.isChannelActive) {
             logger.error(s"Channel not active for match ID $matchId")
+            metrics.increment(Metrics.ChannelNotActive)
             Future.failed(new LiveActivityInvalidStateException(matchId, "Channel not active"))
           } else Future.successful(())
 
           _ <- if (mapping.lastEventId.contains(eventId)) {
             logger.warn(s"Duplicate event ID $eventId for match ID $matchId")
+            metrics.increment(Metrics.DuplicateEvent)
             Future.failed(new LiveActivityInvalidStateException(matchId, "Duplicate event ID"))
           } else Future.successful(())
 
           _ <- if (mapping.lastEventAt.exists(lastEventAt => eventTime.isBefore(lastEventAt))) {
             logger.warn(s"Out of order event time ${dateTimeToString(eventTime)} for match ID $matchId")
+            metrics.increment(Metrics.OutOfOrderEvent)
             Future.failed(new LiveActivityInvalidStateException(matchId, "Out of order event time"))
           } else Future.successful(())
 

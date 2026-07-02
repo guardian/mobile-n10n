@@ -11,14 +11,15 @@ import java.net.http.HttpResponse
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import play.api.libs.json.Json
-import com.gu.liveactivities.util.Logging
+import com.gu.liveactivities.util.{Logging, Metrics}
 
 import java.time.Instant
 
 class BroadcastApiClient(
     authentication: Authentication,
     bundleId: String,
-    sendingToProdServer: Boolean
+    sendingToProdServer: Boolean,
+    metrics: Metrics
 ) extends Logging {
 
   private val httpClient: HttpClient =
@@ -76,14 +77,16 @@ class BroadcastApiClient(
 
       if (err != null) {
         logger.error("Error occurred while sending broadcast", err)
+        metrics.recordApnsNetworkError()
         p.failure(err)
       } else if (response.statusCode() != 200) {
         logger.error(s"Failed to send broadcast with status code ${response.statusCode()} and body ${response.body()}")
+        metrics.recordApnsErrorResponse(response.statusCode())
         p.failure(new RuntimeException(s"Failed to send broadcast with status code ${response.statusCode()} and body ${response.body()}"))
       } else {
         val apnsUniqueId = response.headers().firstValue("apns-unique-id").orElse("not found") // SANDBOX only header for debugging
         logger.info(s"Received response with status code ${response.statusCode()} and apns-unique-id ${apnsUniqueId}")
-
+        metrics.recordApnsSuccess()
         p.success(response.body())
       }
     })

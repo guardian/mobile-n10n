@@ -11,6 +11,9 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
       "GuLambdaFunction",
       "GuAlarm",
       "GuLambdaFunction",
+      "GuAlarm",
+      "GuAlarm",
+      "GuAlarm",
     ],
     "gu:cdk:version": "TEST",
   },
@@ -386,6 +389,282 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::Lambda::Permission",
     },
+    "liveactivitiesapnserrorsbroadcastalarm24C2C924": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "APNS returned 4xx/5xx responses from the broadcast lambda",
+        "AlarmName": "liveactivities-apns-errors-broadcast-CODE",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": [
+          {
+            "Expression": "apns4xx + apns5xx",
+            "Id": "expr_1",
+            "Label": "APNS 4xx + 5xx",
+            "ReturnData": true,
+          },
+          {
+            "Id": "apns4xx",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "Outcome",
+                    "Value": "4xx",
+                  },
+                ],
+                "MetricName": "ApnsResponse",
+                "Namespace": "Notifications/CODE/liveactivities-broadcast",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          {
+            "Id": "apns5xx",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "Outcome",
+                    "Value": "5xx",
+                  },
+                ],
+                "MetricName": "ApnsResponse",
+                "Namespace": "Notifications/CODE/liveactivities-broadcast",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "liveactivitiesapnserrorschannelcleaneralarm213AECC3": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "APNS returned 4xx/5xx responses from the channel-cleaner lambda",
+        "AlarmName": "liveactivities-apns-errors-channel-cleaner-CODE",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": [
+          {
+            "Expression": "apns4xx + apns5xx",
+            "Id": "expr_1",
+            "Label": "APNS 4xx + 5xx",
+            "ReturnData": true,
+          },
+          {
+            "Id": "apns4xx",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "Outcome",
+                    "Value": "4xx",
+                  },
+                ],
+                "MetricName": "ApnsResponse",
+                "Namespace": "Notifications/CODE/liveactivities-channel-cleaner",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          {
+            "Id": "apns5xx",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "Outcome",
+                    "Value": "5xx",
+                  },
+                ],
+                "MetricName": "ApnsResponse",
+                "Namespace": "Notifications/CODE/liveactivities-channel-cleaner",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "liveactivitiesapnserrorschannelmanageralarm28AE3817": {
+      "Properties": {
+        "ActionsEnabled": true,
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:sns:",
+                {
+                  "Ref": "AWS::Region",
+                },
+                ":",
+                {
+                  "Ref": "AWS::AccountId",
+                },
+                ":mobile-server-side",
+              ],
+            ],
+          },
+        ],
+        "AlarmDescription": "APNS returned 4xx/5xx responses from the channel-manager lambda",
+        "AlarmName": "liveactivities-apns-errors-channel-manager-CODE",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "EvaluationPeriods": 1,
+        "Metrics": [
+          {
+            "Expression": "apns4xx + apns5xx",
+            "Id": "expr_1",
+            "Label": "APNS 4xx + 5xx",
+            "ReturnData": true,
+          },
+          {
+            "Id": "apns4xx",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "Outcome",
+                    "Value": "4xx",
+                  },
+                ],
+                "MetricName": "ApnsResponse",
+                "Namespace": "Notifications/CODE/liveactivities-channel-manager",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          {
+            "Id": "apns5xx",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "Outcome",
+                    "Value": "5xx",
+                  },
+                ],
+                "MetricName": "ApnsResponse",
+                "Namespace": "Notifications/CODE/liveactivities-channel-manager",
+              },
+              "Period": 300,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "Threshold": 1,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
     "liveactivitiesbroadcastdlqCODEAlarm3AB74C54": {
       "Properties": {
         "ActionsEnabled": true,
@@ -721,6 +1000,11 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
                   ],
                 ],
               },
+            },
+            {
+              "Action": "cloudwatch:PutMetricData",
+              "Effect": "Allow",
+              "Resource": "*",
             },
           ],
           "Version": "2012-10-17",
@@ -1069,6 +1353,11 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
                   ],
                 ],
               },
+            },
+            {
+              "Action": "cloudwatch:PutMetricData",
+              "Effect": "Allow",
+              "Resource": "*",
             },
           ],
           "Version": "2012-10-17",
@@ -1437,6 +1726,11 @@ exports[`The LiveActivities stack matches the snapshot for CODE 1`] = `
                   ],
                 ],
               },
+            },
+            {
+              "Action": "cloudwatch:PutMetricData",
+              "Effect": "Allow",
+              "Resource": "*",
             },
           ],
           "Version": "2012-10-17",

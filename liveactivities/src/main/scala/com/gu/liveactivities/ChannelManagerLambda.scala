@@ -5,7 +5,7 @@ import com.gu.liveactivities.models.LiveActivityData
 import com.gu.mobile.notifications.client.models.liveActitivites.ChannelManagerLambdaEventSource
 
 import com.gu.liveactivities.service.ChannelApiClient
-import com.gu.liveactivities.util.Logging
+import com.gu.liveactivities.util.{Logging, Metrics}
 import com.gu.mobile.notifications.client.models.liveActitivites._
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
@@ -17,7 +17,8 @@ import scala.util.{Failure, Success, Try}
 
 object ChannelManagerLambda extends RequestStreamHandler with Lambda with Logging {
 
-  private val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer)
+  private val metrics = new Metrics(config.stage, Metrics.ChannelManagerLambdaName)
+  private val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer, metrics)
 
   private def processCreateChannelRequest(matchId: String, eventData: Option[LiveActivityData], broadcastContentStateData: Option[ContentState]): Future[String] = {
     logger.info(s"Received request to create channel for match ID $matchId")

@@ -3,7 +3,7 @@ package com.gu.liveactivities
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent
 import com.gu.liveactivities.service.{ChannelApiClient, ChannelCleanUpService}
-import com.gu.liveactivities.util.Logging
+import com.gu.liveactivities.util.{Logging, Metrics}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.Await
@@ -11,7 +11,8 @@ import scala.util.{Failure, Success, Try}
 
 object ChannelCleanUpLambda extends Lambda with Logging {
 
-  private val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer)
+  private val metrics = new Metrics(config.stage, Metrics.ChannelCleanUpLambdaName)
+  private val channelApiClient = new ChannelApiClient(authentication, config.bundleId, config.sendingToProdServer, metrics)
   private val dynamoRepository = getRepositoryWithCustomTimeouts(10, 40)
   private val cleanUpService = new ChannelCleanUpService(dynamoRepository, channelApiClient)
 

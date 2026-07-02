@@ -6,6 +6,7 @@ import type { App } from 'aws-cdk-lib';
 import { Duration, Tags } from 'aws-cdk-lib';
 import {
 	ComparisonOperator,
+	MathExpression,
 	Metric,
 	TreatMissingData,
 } from 'aws-cdk-lib/aws-cloudwatch';
@@ -30,6 +31,48 @@ const addDlqAlarm = (scope: GuStack, app: string, dlq: Queue, name: string) => {
 			period: Duration.minutes(1),
 		}),
 		threshold: 1,
+		evaluationPeriods: 1,
+		comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+		treatMissingData: TreatMissingData.NOT_BREACHING,
+		snsTopicName: 'mobile-server-side',
+	});
+};
+
+const addApnsErrorAlarm = (
+	scope: GuStack,
+	app: string,
+	stage: string,
+	metricLambdaName: string,
+	threshold: number = 1,
+) => {
+	const namespace = `Notifications/${stage}/liveactivities-${metricLambdaName}`;
+	// APNS traffic is low-volume and bursty.
+	const period = Duration.minutes(5);
+	const apns4xx = new Metric({
+		namespace,
+		metricName: 'ApnsResponse',
+		dimensionsMap: { Outcome: '4xx' },
+		statistic: 'Sum',
+		period,
+	});
+	const apns5xx = new Metric({
+		namespace,
+		metricName: 'ApnsResponse',
+		dimensionsMap: { Outcome: '5xx' },
+		statistic: 'Sum',
+		period,
+	});
+	new GuAlarm(scope, `${app}-apns-errors-${metricLambdaName}-alarm`, {
+		app: app,
+		alarmName: `${app}-apns-errors-${metricLambdaName}-${stage}`,
+		alarmDescription: `APNS returned 4xx/5xx responses from the ${metricLambdaName} lambda`,
+		metric: new MathExpression({
+			expression: 'apns4xx + apns5xx',
+			usingMetrics: { apns4xx, apns5xx },
+			label: 'APNS 4xx + 5xx',
+			period,
+		}),
+		threshold,
 		evaluationPeriods: 1,
 		comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
 		treatMissingData: TreatMissingData.NOT_BREACHING,
@@ -111,13 +154,19 @@ export class LiveActivities extends GuStack {
 				],
 			}),
 		);
-
 		channelLambda.addToRolePolicy(
 			new PolicyStatement({
 				actions: ['events:PutEvents'],
 				resources: [
 					`arn:aws:events:${region}:${account}:event-bus/${app}-eventbus-${stage}`,
 				],
+			}),
+		);
+		channelLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['cloudwatch:PutMetricData'],
+				effect: Effect.ALLOW,
+				resources: ['*'],
 			}),
 		);
 
@@ -170,6 +219,13 @@ export class LiveActivities extends GuStack {
 				resources: [
 					`arn:aws:ssm:${region}:${account}:parameter/notifications/${stage}/liveactivities/ios`,
 				],
+			}),
+		);
+		broadcastLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['cloudwatch:PutMetricData'],
+				effect: Effect.ALLOW,
+				resources: ['*'],
 			}),
 		);
 
@@ -238,6 +294,20 @@ export class LiveActivities extends GuStack {
 				],
 			}),
 		);
+		channelCleanerLambda.addToRolePolicy(
+			new PolicyStatement({
+				actions: ['cloudwatch:PutMetricData'],
+				effect: Effect.ALLOW,
+				resources: ['*'],
+			}),
+		);
+
+		//////////// Alarm on APNS 4xx/5xx responses /////////////
+		// Fire on any APNS 4xx/5xx error for each low-volume lambda. The alarm self-resolves back to OK
+		// once errors stop (missing data is treated as not breaching).
+		addApnsErrorAlarm(this, app, stage, 'broadcast', 1);
+		addApnsErrorAlarm(this, app, stage, 'channel-manager', 1);
+		addApnsErrorAlarm(this, app, stage, 'channel-cleaner', 1);
 
 		//////////// EVENTBUS INFRASTRUCTURE //////////////
 
