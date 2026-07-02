@@ -478,7 +478,7 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
       "software.amazon.awssdk" % "eventbridge" % "2.20.162",
       "software.amazon.awssdk" % "cloudwatch" % awsSdk2Version,
-      "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+      "com.amazonaws" % "aws-lambda-java-events" % "3.11.6",
       "org.scanamo" %% "scanamo" % "6.0.0",
       "org.scanamo" %% "scanamo-testkit" % "6.0.0" % "test"
     ),
