@@ -305,7 +305,7 @@ lazy val commonEventBusPusher = project
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(Seq(
     libraryDependencies ++= Seq(
-      "software.amazon.awssdk" % "eventbridge" % "2.20.162"
+      "software.amazon.awssdk" % "eventbridge" % "2.46.17"
     ),
   ))
 
@@ -476,7 +476,7 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       "com.turo" % "pushy" % "0.13.10",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
-      "software.amazon.awssdk" % "eventbridge" % "2.20.162",
+      "software.amazon.awssdk" % "eventbridge" % "2.46.17",
       "software.amazon.awssdk" % "cloudwatch" % awsSdk2Version,
       "com.amazonaws" % "aws-lambda-java-events" % "3.11.6",
       "org.scanamo" %% "scanamo" % "6.0.0",
