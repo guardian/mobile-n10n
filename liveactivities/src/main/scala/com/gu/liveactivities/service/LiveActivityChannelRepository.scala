@@ -59,7 +59,7 @@ class LiveActivityChannelRepository(client: DynamoDbAsyncClient, tableName: Stri
     eventData: Option[LiveActivityData],
   ): Future[Unit] = {
     val createdAt = ZonedDateTime.now()
-    val ttlEpochSeconds = createdAt.toEpochSecond + 14 * 24 * 3600 // 15=4 days from now
+    val ttlEpochSeconds = createdAt.toEpochSecond + 14 * 24 * 3600 // 14 days from now
     val newItem = new LiveActivityMapping(
       id = id,
       channelId = channelId,
