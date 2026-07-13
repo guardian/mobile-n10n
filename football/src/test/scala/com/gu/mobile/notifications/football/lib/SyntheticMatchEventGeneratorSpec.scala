@@ -161,4 +161,13 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
       events.map(_.eventType) must contain("pre-match")
     }
   }
+
+  "A SyntheticMatchEvent generator supporting StateChangeEvents" should {
+    "Create state change event if calculated match state differs" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      val events = generator.generate(List(timelineEvent), "match-id", matchInfo)
+      events.map(_.eventType) must contain("state-change")
+    }
+
+  }
 }
