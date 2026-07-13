@@ -1,17 +1,23 @@
 package com.gu.mobile.notifications.football.lib
 
+
+import com.gu.mobile.notifications.football.Logging
 import com.gu.mobile.notifications.football.models.FootballMatchEvent
 import com.gu.mobile.notifications.football.notificationbuilders.MatchStatusLiveActivityPayloadBuilder
 
 import java.util.UUID
 import pa.{MatchDay, MatchEvent}
 
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.time.ZonedDateTime
+import scala.concurrent.duration._
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.control.NonFatal
 
 // Synthetic events create a timeline event for a match status change, that can be processed by the EventConsumer
 // and transformed into a NotificationPayload and/or LiveActivityPayload for broadcasting.
 
-class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
+class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime, matchStateDiffer: DynamoMatchStateDiffer) extends Logging {
 
   def generate(events: List[MatchEvent], id: String, matchDay: MatchDay): List[MatchEvent] = {
     // Live activity synthetic events are appended at the end, but when they are first generated, no other timeline events exist and duplicate events are filtered so this should not matter.
@@ -196,17 +202,33 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
             articleId = None
           )
 
-           // todo clean up
-           println(s"footballMatchState: $footballMatchState")
+           // todo block on the async DynamoDB check but revisit making this async in future;
+           //  this will impact a few of the test set ups
+          val isFootballMatchStateIdentical: Boolean =
+            try {
+              Await.result(matchStateDiffer.isIdentical(matchDay.id, footballMatchState), 5.seconds)
+            } catch {
+              case NonFatal(exception) =>
+                logger.error(s"Error checking for identical football match state: ${exception.getMessage}")
+                true // assume identical if we can't check
+            }
 
-           // todo this will impact a few of the test set ups
-          val isFootballMatchStateDifferent: Boolean = false// call to DataStore with last match state sent, TRUE if diff
+           if (!isFootballMatchStateIdentical) {
+             // Only emit the state-change event if we successfully persist the new state, otherwise try again next polling cycle.
+             try {
+               Await.result(matchStateDiffer.updateState(matchDay.id, footballMatchState), 5.seconds)
 
-          if (isFootballMatchStateDifferent) Some(emptyMatchEvent.copy(
-            id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/state-change/${latestEvent.eventTime}".getBytes).toString),
-            eventType = "state-change"
-          ))
-          else None
+               Some(emptyMatchEvent.copy(
+                 id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/state-change/${latestEvent.eventTime}".getBytes).toString),
+                 eventType = "state-change"
+               ))
+             } catch {
+               case NonFatal(exception) =>
+                 logger.error(s"Error updating football match state, not emitting state-change event: ${exception.getMessage}")
+                 None
+             }
+           }
+           else None
         }
 
       case Nil => None
