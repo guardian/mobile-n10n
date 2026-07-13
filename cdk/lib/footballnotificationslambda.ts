@@ -71,8 +71,8 @@ export class FootballNotificationsLambda extends GuStack {
 			}),
 		);
 
+		// DynamoDB Push Notifications Table
 		const dynamoTableName = `${stack}-football-notifications-${stage}`;
-
 		const dynamoTable = new Table(this, 'DynamoTable', {
 			tableName: dynamoTableName,
 			partitionKey: { name: 'notificationId', type: AttributeType.STRING },
@@ -85,13 +85,21 @@ export class FootballNotificationsLambda extends GuStack {
 			logicalId: 'DynamoTable',
 			reason: 'Retaining a stateful resource previously defined in YAML',
 		});
-
 		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
-		// Live Activities DynamoDB Table
+		// DynamoDB Football Match State Table
+		const dynamoMatchStateTableName = `${stack}-football-match-state-${stage}`;
+		const dynamoMatchStateTable = new Table(this, 'MatchStateDynamoTable', {
+			tableName: dynamoMatchStateTableName,
+			partitionKey: { name: 'matchId', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			timeToLiveAttribute: 'ttl',
+		});
+		Tags.of(dynamoMatchStateTable).add('devx-backup-enabled', 'true');
+
+		// DynamoDB Live Activities Payloads Table
 		const liveActivitiesAppName = 'liveactivities';
 		const liveActivitiesDynamoTableName = `${stack}-${liveActivitiesAppName}-payload-${stage}`;
-
 		const liveActivitiesDynamoTable = new Table(
 			this,
 			'LiveActivitiesDynamoTable',
@@ -116,6 +124,7 @@ export class FootballNotificationsLambda extends GuStack {
 				resources: [
 					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
 					`arn:aws:dynamodb:${region}:${account}:table/${liveActivitiesDynamoTableName}`,
+					`arn:aws:dynamodb:${region}:${account}:table/${dynamoMatchStateTableName}`,
 				],
 			}),
 		);

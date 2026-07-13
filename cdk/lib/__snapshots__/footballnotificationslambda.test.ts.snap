@@ -190,6 +190,53 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
       "Type": "AWS::DynamoDB::Table",
       "UpdateReplacePolicy": "Retain",
     },
+    "MatchStateDynamoTableDAD63A95": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "matchId",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": [
+          {
+            "AttributeName": "matchId",
+            "KeyType": "HASH",
+          },
+        ],
+        "TableName": "mobile-notifications-football-match-state-CODE",
+        "Tags": [
+          {
+            "Key": "devx-backup-enabled",
+            "Value": "true",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+        "TimeToLiveSpecification": {
+          "AttributeName": "ttl",
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
+    },
     "MobileLiveActivitiesFootballConsumedReadThrottleEventsC09E6745": {
       "Properties": {
         "ActionsEnabled": true,
@@ -734,6 +781,22 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                     ],
                   ],
                 },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:dynamodb:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-football-match-state-CODE",
+                    ],
+                  ],
+                },
               ],
             },
             {
@@ -976,6 +1039,53 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
           },
         ],
         "TableName": "mobile-notifications-liveactivities-payload-PROD",
+        "Tags": [
+          {
+            "Key": "devx-backup-enabled",
+            "Value": "true",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "TimeToLiveSpecification": {
+          "AttributeName": "ttl",
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "MatchStateDynamoTableDAD63A95": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "matchId",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": [
+          {
+            "AttributeName": "matchId",
+            "KeyType": "HASH",
+          },
+        ],
+        "TableName": "mobile-notifications-football-match-state-PROD",
         "Tags": [
           {
             "Key": "devx-backup-enabled",
@@ -1547,6 +1657,22 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                         "Ref": "AWS::AccountId",
                       },
                       ":table/mobile-notifications-liveactivities-payload-PROD",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:dynamodb:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-football-match-state-PROD",
                     ],
                   ],
                 },
