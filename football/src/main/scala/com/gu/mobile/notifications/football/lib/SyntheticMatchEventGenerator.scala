@@ -1,5 +1,8 @@
 package com.gu.mobile.notifications.football.lib
 
+import com.gu.mobile.notifications.football.models.FootballMatchEvent
+import com.gu.mobile.notifications.football.notificationbuilders.MatchStatusLiveActivityPayloadBuilder
+
 import java.util.UUID
 import pa.{MatchDay, MatchEvent}
 
@@ -157,7 +160,7 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
     } else None
   }
 
-  // sent to push notification service to trigger live activity start (not to the  liveactivities service)
+  // sent to push notification service to trigger live activity start (not to the liveactivities service)
   private val startLiveActivity: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
     if (koWithin20Minutes(matchDay.date.toEpochSecond)) Some(emptyMatchEvent.copy(
       id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/start-live-activity".getBytes).toString),
@@ -173,6 +176,41 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
       eventType = "end-live-activity"
     ))
     else None
+  }
+
+  // Note: VAR introduces the possibility of goal or red card event reversals. The original event disappears from PA match event list data once reversed,
+  // so we must instead calculate if the match state has changed every polling cycle and generate a synthetic 'stateChangeEvent' to trigger
+  // an update or push notification if required.
+  private val stateChangeEvent: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent]) =>
+    val payloadBuilder = new MatchStatusLiveActivityPayloadBuilder() // reuse the live activity payload model to avoid introducing yet another model.
+    val toFootballEvent = FootballMatchEvent.fromPaMatchEvent(matchDay.homeTeam, matchDay.awayTeam) _
+
+    matchEvents.reverse match {
+      case latestEvent :: previousEvents =>
+         toFootballEvent(latestEvent).flatMap { triggeringEvent =>
+
+          val footballMatchState = payloadBuilder.buildFootballContentState(
+            triggeringEvent = triggeringEvent,
+            matchInfo = matchDay,
+            previousEvents = previousEvents.reverse.flatMap(toFootballEvent),
+            articleId = None
+          )
+
+           // todo clean up
+           println(s"footballMatchState: $footballMatchState")
+
+           // todo this will impact a few of the test set ups
+          val isFootballMatchStateDifferent: Boolean = false// call to DataStore with last match state sent, TRUE if diff
+
+          if (isFootballMatchStateDifferent) Some(emptyMatchEvent.copy(
+            id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/state-change/${latestEvent.eventTime}".getBytes).toString),
+            eventType = "state-change"
+          ))
+          else None
+        }
+
+      case Nil => None
+    }
   }
 
   private val generators: List[MatchEventGenerator] = List(
@@ -193,7 +231,8 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
     cancelled,
     createChannel,
     startLiveActivity,
-    endLiveActivity)
+    endLiveActivity,
+    stateChangeEvent)
 
   private def emptyMatchEvent = MatchEvent(
     id = None,
