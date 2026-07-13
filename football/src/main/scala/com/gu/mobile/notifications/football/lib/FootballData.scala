@@ -129,10 +129,14 @@ class FootballData(
       m.date.minusHours(2).isBefore(dateTime) && m.date.plusHours(4).isAfter(dateTime)
 
     // unfortunately PA provide 00:00 as start date when they don't have the start date
-    // so we can't do anything with these matches
+    // so we can't do anything with these matches, unless the competition is
+    // in the exemption list below, where a 00:00 kickoff is likely to be genuine
+    // (e.g. World Cup which happens in different time zones and publishes its schedule months in advance)
     def isMidnight(matchDay: MatchDay): Boolean = {
       val localDate = matchDay.date.toLocalTime
-      localDate.getHour() == 0 && localDate.getMinute() == 0
+      val exemptionList = List("700" /* FIFA World Cup */)
+      val isExempt = matchDay.competition.exists(c => exemptionList.contains(c.id))
+      !isExempt && localDate.getHour() == 0 && localDate.getMinute() == 0
     }
 
     logger.info(s"Retrieving matches on or around $dateTime from PA")
