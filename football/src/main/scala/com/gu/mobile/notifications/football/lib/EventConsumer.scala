@@ -30,13 +30,6 @@ class EventConsumer(
         // additional synthetic live activity life cycle events
         "create-channel",
         "end-live-activity",
-        // additional synthetic match phase events for live activities
-        "extra-time-to-be-played",
-        "extra-time-first-half",
-        "extra-time-half-time",
-        "extra-time-second-half",
-        "penalties-to-be-played",
-        "penalties",
         "suspended",
         "resumed",
         "abandoned",

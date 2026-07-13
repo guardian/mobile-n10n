@@ -5,7 +5,7 @@ import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Importance, Major, Minor}
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.client.models.liveActitivites.MatchStatus
-import com.gu.mobile.notifications.football.models.{Dismissal, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, PenaltyShootoutKick, PenaltyShootoutScore, PreMatch, RedCards, Score, SecondHalf, StartLiveActivity}
+import com.gu.mobile.notifications.football.models.{Dismissal, ExtraTimeFirstHalf, ExtraTimeHalfTime, ExtraTimeSecondHalf, ExtraTimeToBePlayed, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, Penalties, PenaltiesToBePlayed, PenaltyShootoutKick, PenaltyShootoutScore, PreMatch, RedCards, Score, SecondHalf, StartLiveActivity}
 import pa.{MatchDay, MatchDayTeam}
 
 import scala.PartialFunction.condOpt
@@ -201,6 +201,12 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case _:Dismissal => "Red card"
     case _:PenaltyShootoutKick  => "Penalty Kick"
     case _:PreMatch => "Kick off soon"
+    case _: ExtraTimeToBePlayed => "Extra time to be played"
+    case _: ExtraTimeFirstHalf => "Extra time: first half"
+    case _: ExtraTimeHalfTime => "Extra time: half-time"
+    case _: ExtraTimeSecondHalf => "Extra time: second half"
+    case _: PenaltiesToBePlayed => "Penalties to be played"
+    case _: Penalties => "Penalties"
     case _ => "The Guardian"
   }
 
@@ -224,11 +230,11 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
 
     ("FTET", "ET"), // Full Time, Extra Time it to be played.
     ("ETS", "ET"), // Extra Time has Started.
-    ("ETHT", "ET"), // Extra Time Half Time has been called.
-    ("ETSHS", "ET"), // Extra Time, Second Half has Started.
+    ("ETHT", "ETHT"), // Extra Time Half Time has been called.
+    ("ETSHS", "ETSHS"), // Extra Time, Second Half has Started.
 
     ("FTPT", "PT"), // Full Time, Penalties are To be played.
-    ("PT", "PT"), // Penalty ShooT Out has started.
+    ("PT", "PT"), // Penalty Shoot Out has started.
     ("ETFTPT", "PT"), // Extra Time, Full Time, Penalties are To be played.
 
     ("Suspended", "S"), // Match has been Suspended.
