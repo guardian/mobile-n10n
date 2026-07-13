@@ -41,7 +41,8 @@ class EventConsumer(
         "resumed",
         "abandoned",
         "cancelled",
-        "postponed"
+        "postponed",
+        "state-changed" // remove in order push state change caused by VAR reversal.
       )
 
     val filteredMatchData = matchData.copy(allEvents =

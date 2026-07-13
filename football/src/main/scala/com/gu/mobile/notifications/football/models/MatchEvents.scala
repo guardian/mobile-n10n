@@ -199,11 +199,17 @@ object MatchPhaseEvent {
       case "create-channel"                               => CreateChannel(eventId)
       case "start-live-activity"                          => StartLiveActivity(eventId)
       case "end-live-activity"                            => EndLiveActivity(eventId)
-
+      case "state-change"                                 => MatchStateChange(eventId)
     }
   }
 }
 
+// This is used to identify when VAR has been used to overturn
+// other match events such as goals or red cards, so we can send
+// a correction push notification or broadcast update.
+case class MatchStateChange(eventId: String) extends MatchPhaseEvent
+
+// standard Match phase events
 case class PreMatch(eventId: String) extends MatchPhaseEvent
 case class KickOff(eventId: String) extends MatchPhaseEvent
 case class FullTime(eventId: String) extends MatchPhaseEvent
