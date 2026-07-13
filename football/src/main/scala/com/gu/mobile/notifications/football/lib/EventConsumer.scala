@@ -30,6 +30,7 @@ class EventConsumer(
         // additional synthetic live activity life cycle events
         "create-channel",
         "end-live-activity",
+        // additional synthetic match phase events for live activities
         "suspended",
         "resumed",
         "abandoned",
