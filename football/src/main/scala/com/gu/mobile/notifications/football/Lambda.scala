@@ -8,7 +8,7 @@ import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsy
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
 import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
-import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PACompetition, PaFootballClient, S3DataStore, SyntheticMatchEventGenerator}
+import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, DynamoMatchStateDiffer, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PACompetition, PaFootballClient, S3DataStore, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import play.api.libs.json.Json
 
@@ -31,6 +31,7 @@ object Lambda extends Logging {
 
   def tableName = s"mobile-notifications-football-notifications-${configuration.stage}"
   def liveActivitiesTableName = s"mobile-notifications-liveactivities-payload-${configuration.stage}"
+  def matchStateTableName = s"mobile-notifications-football-match-state-${configuration.stage}"
   lazy val paDataBucket = "mobile-pa-football-data"
 
   lazy val configuration: Configuration = {
@@ -53,7 +54,8 @@ object Lambda extends Logging {
 
   lazy val capiClient = GuardianContentClient(configuration.capiApiKey)
 
-  lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator(getZonedDateTime)
+  lazy val matchStateDiffer = new DynamoMatchStateDiffer(dynamoDBClient, matchStateTableName, "matchId")
+  lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator(getZonedDateTime, matchStateDiffer)
 
   lazy val notificationHttpProvider = new NotificationHttpProvider()
 
