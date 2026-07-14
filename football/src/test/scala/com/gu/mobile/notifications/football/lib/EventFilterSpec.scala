@@ -8,7 +8,7 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class EventFilterSpec(implicit ev: ExecutionEnv) extends Specification with Mockito {
 
@@ -26,6 +26,24 @@ class EventFilterSpec(implicit ev: ExecutionEnv) extends Specification with Mock
         broadcastContentStateData = None,
         eventTimestamp = System.currentTimeMillis() / 1000
       )
+  }
+
+  trait FilterScopeWithStateDiffer extends FilterScopeLiveActivities {
+    val matchStateDiffer = mock[DynamoMatchStateDiffer]
+    override val eventFilter = new EventFilter[LiveActivityPayload, DynamoMatchLiveActivity](distinctCheck, Some(matchStateDiffer))
+
+    def footballState(matchId: String): FootballMatchContentState =
+      FootballMatchContentState(
+        matchStatus = FirstHalf,
+        kickOffTimestamp = 0L,
+        homeTeam = TeamState(id = "1", name = "Arsenal"),
+        awayTeam = TeamState(id = "2", name = "Chelsea"),
+        competition = Competition(id = "100", name = "Premier League"),
+        matchInfoUrl = s"https://www.theguardian.com/football/match/$matchId"
+      )
+
+    def makeStateChangePayload(matchId: String, state: FootballMatchContentState): LiveActivityPayload =
+      makePayload(UpdateStateChangeLiveActivityEvent, matchId).copy(broadcastContentStateData = Some(state))
   }
 
   "filterDynamoEventsForLiveActivities" should {
@@ -111,6 +129,44 @@ class EventFilterSpec(implicit ev: ExecutionEnv) extends Specification with Mock
 
       // isDuplicate should only have been called once (from the first invocation)
       there was one(distinctCheck).isDuplicate(event1)
+    }
+  }
+
+
+  // TODO copilot review
+  "filterDynamoEventsForLiveActivities persisting match state" should {
+
+    "persist the broadcast state and emit the event for a state-change event" in new FilterScopeWithStateDiffer {
+      val state = footballState("match-1")
+      val stateChangeEvent = makeStateChangePayload("match-1", state)
+
+      distinctCheck.isDuplicate(stateChangeEvent) returns Future.successful(false)
+      distinctCheck.insertEvent(stateChangeEvent) returns Future.successful(Distinct)
+      matchStateDiffer.updateState(any[String], any[FootballMatchContentState])(any[ExecutionContext]) returns Future.unit
+
+      eventFilter.filterDynamoEventsForLiveActivities(List(stateChangeEvent)) must contain(exactly(stateChangeEvent)).await
+      there was one(matchStateDiffer).updateState(===("match-1"), ===(state))(any[ExecutionContext])
+    }
+
+    "not call updateState for a non state-change event" in new FilterScopeWithStateDiffer {
+      val updateEvent = makePayload(UpdateLiveActivityEvent, "match-1")
+
+      distinctCheck.isDuplicate(updateEvent) returns Future.successful(false)
+      distinctCheck.insertEvent(updateEvent) returns Future.successful(Distinct)
+
+      eventFilter.filterDynamoEventsForLiveActivities(List(updateEvent)) must contain(exactly(updateEvent)).await
+      there was no(matchStateDiffer).updateState(any[String], any[FootballMatchContentState])(any[ExecutionContext])
+    }
+
+    "skip emitting a state-change event when the state write fails" in new FilterScopeWithStateDiffer {
+      val state = footballState("match-1")
+      val stateChangeEvent = makeStateChangePayload("match-1", state)
+
+      distinctCheck.isDuplicate(stateChangeEvent) returns Future.successful(false)
+      distinctCheck.insertEvent(stateChangeEvent) returns Future.successful(Distinct)
+      matchStateDiffer.updateState(any[String], any[FootballMatchContentState])(any[ExecutionContext]) returns Future.failed(new RuntimeException("dynamo down"))
+
+      eventFilter.filterDynamoEventsForLiveActivities(List(stateChangeEvent)) must beEmpty[List[LiveActivityPayload]].await
     }
   }
 }

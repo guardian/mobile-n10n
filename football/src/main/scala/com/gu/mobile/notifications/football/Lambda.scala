@@ -74,7 +74,7 @@ object Lambda extends Logging {
 
   lazy val notificationHandler = new NotificationHandler(configuration, apiClient, dynamoDBClient, tableName)
 
-  lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, liveActivitiesTableName)
+  lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, liveActivitiesTableName, matchStateDiffer)
 
   def getZonedDateTime(): ZonedDateTime = {
     val zonedDateTime = if (configuration.stage == "CODE") {
@@ -157,7 +157,7 @@ class NotificationHandler(configuration: Configuration, apiClient: Notifications
   }
 }
 
-class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
+class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDynamoDBAsync, tableName: String, matchStateDiffer: DynamoMatchStateDiffer) extends Logging {
 
   private val eventBusName =
     s"liveactivities-eventbus-${configuration.stage}"
@@ -174,10 +174,11 @@ class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDy
     partitionKeyName = "id",
     toDynamoModel = payload => DynamoMatchLiveActivity(payload)
   )
-  lazy val liveActivityEventFilter = new EventFilter[LiveActivityPayload, DynamoMatchLiveActivity](liveActivityDistinctCheck)
+  lazy val liveActivityEventFilter = new EventFilter[LiveActivityPayload, DynamoMatchLiveActivity](liveActivityDistinctCheck, Some(matchStateDiffer))
 
   def process(rawEvents: List[MatchDataWithArticle]): Future[Unit] = {
     val liveActivities = rawEvents.flatMap(liveActivityEventConsumer.eventsToLiveActivityPayload)
+    // todo payload is marked as statechange payload now
 
     for {
       filteredLiveActivities <- liveActivityEventFilter.filterDynamoEventsForLiveActivities(liveActivities)

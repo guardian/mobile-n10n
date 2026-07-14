@@ -40,17 +40,11 @@ sealed trait LiveActivityEventType {
 case object CreateChannelEvent extends LiveActivityEventType { val asString = "channel-create" }
 case object StartLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-start" }
 case object UpdateLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-update" }
+case object UpdateStateChangeLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-update" }
 case object EndLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-end" }
 case object DeleteChannelEvent extends LiveActivityEventType { val asString = "channel-delete" }
 
 object LiveActivityEventType {
-  val values: Seq[LiveActivityEventType] = Seq(
-    CreateChannelEvent,
-    StartLiveActivityEvent,
-    UpdateLiveActivityEvent,
-    EndLiveActivityEvent,
-    DeleteChannelEvent
-  )
 
   implicit val format: Format[LiveActivityEventType] = new Format[LiveActivityEventType] {
     override def reads(json: JsValue): JsResult[LiveActivityEventType] = json match {
