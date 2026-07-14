@@ -135,7 +135,7 @@ class FootballData(
   private val competitionsAllowingMidnightKO = Set(
     "700", // FIFA World Cup
   )
-  private[lib] def isMidnight(matchDay: MatchDay): Boolean = {
+  private[lib] def isFakeMidnightKO(matchDay: MatchDay): Boolean = {
     val isAllowlisted = matchDay.competition.exists(c => competitionsAllowingMidnightKO.contains(c.id))
     !isAllowlisted && matchDay.date.toLocalTime == LocalTime.MIDNIGHT
   }
@@ -163,7 +163,7 @@ class FootballData(
       matchesInSupportedCompetitions
         .filter(inProgress)
         .filter(paProvideAlerts)
-        .filterNot(isMidnight)
+        .filterNot(isFakeMidnightKO)
     }
   }
 
