@@ -55,7 +55,7 @@ object Lambda extends Logging {
   lazy val capiClient = GuardianContentClient(configuration.capiApiKey)
 
   lazy val matchStateDiffer = new DynamoMatchStateDiffer(dynamoDBClient, matchStateTableName, "matchId")
-  lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator(getZonedDateTime, matchStateDiffer)
+  lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator(getZonedDateTime)
 
   lazy val notificationHttpProvider = new NotificationHttpProvider()
 
@@ -68,7 +68,7 @@ object Lambda extends Logging {
 
   lazy val competitionsDataStore = new S3DataStore[PACompetition](s3Client, paDataBucket)
 
-  lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator, competitionsDataStore, configuration.stage)
+  lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator, competitionsDataStore, matchStateDiffer, configuration.stage)
 
   lazy val articleSearcher = new ArticleSearcher(capiClient)
 

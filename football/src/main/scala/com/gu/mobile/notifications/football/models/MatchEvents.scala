@@ -15,7 +15,8 @@ object FootballMatchEvent {
     MatchPhaseEvent.fromEvent(event) orElse
       Goal.fromEvent(homeTeam, awayTeam)(event) orElse
       Dismissal.fromEvent(homeTeam,awayTeam)(event) orElse
-      PenaltyShootoutKick.fromEvent(homeTeam, awayTeam)(event)
+      PenaltyShootoutKick.fromEvent(homeTeam, awayTeam)(event) orElse
+      MatchStateChangeEvent.fromEvent(event) // TODO will we be generating a state change event for every other match event? if so filter out dupes, to just send a match state change...
 }
 
 object Score {
@@ -171,6 +172,19 @@ object PenaltyShootoutScore {
 case class PenaltyShootoutScore(homeScored: Int = 0, homeMissed: Int = 0, homeSaved: Int = 0, awayScored: Int = 0, awayMissed: Int = 0, awaySaved: Int = 0)
 
 
+// This is used to identify when VAR has been used to overturn
+// other match events such as goals or red cards, so we can send
+// a correction push notification or broadcast update.
+case class MatchStateChangeEvent(eventId: String) extends FootballMatchEvent
+object MatchStateChangeEvent {
+  def fromEvent(event: pa.MatchEvent): Option[MatchStateChangeEvent] = {
+    val eventId = event.id.getOrElse("")
+    condOpt(event.eventType) {
+      case "state-change" => MatchStateChangeEvent(eventId)
+    }
+  }
+}
+
 trait MatchPhaseEvent extends FootballMatchEvent {
   val currentMinute: Option[Int] = None
 }
@@ -199,15 +213,9 @@ object MatchPhaseEvent {
       case "create-channel"                               => CreateChannel(eventId)
       case "start-live-activity"                          => StartLiveActivity(eventId)
       case "end-live-activity"                            => EndLiveActivity(eventId)
-      case "state-change"                                 => MatchStateChange(eventId)
     }
   }
 }
-
-// This is used to identify when VAR has been used to overturn
-// other match events such as goals or red cards, so we can send
-// a correction push notification or broadcast update.
-case class MatchStateChange(eventId: String) extends MatchPhaseEvent
 
 // standard Match phase events
 case class PreMatch(eventId: String) extends MatchPhaseEvent
