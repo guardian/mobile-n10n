@@ -1,6 +1,6 @@
 package com.gu.mobile.notifications.football.lib
 
-import java.time.{LocalDate, ZonedDateTime}
+import java.time.{LocalDate, LocalTime, ZonedDateTime}
 import com.gu.mobile.notifications.football.{Configuration, Logging}
 import com.gu.mobile.notifications.football.models.RawMatchData
 import org.joda.time.DateTime
@@ -124,20 +124,25 @@ class FootballData(
       .getOrElse(false) // Shouldn't ever happen
   }
 
+
+  /**
+   * PA give 00:00 as the start time when they don't actually know the kickoff time yet,
+   * so those matches are unusable and should be filtered out. Competitions in
+   * `midnightExemptCompetitions` are excluded from this check because a 00:00 kickoff can be
+   * genuine for them (e.g. the World Cup, whose schedule spans multiple time zones and is
+   * published months in advance).
+   */
+  private val midnightExemptCompetitions = Set(
+    "700", // FIFA World Cup
+  )
+  private[lib] def isMidnight(matchDay: MatchDay): Boolean = {
+    val isExempt = matchDay.competition.exists(c => midnightExemptCompetitions.contains(c.id))
+    !isExempt && matchDay.date.toLocalTime == LocalTime.MIDNIGHT
+  }
+
   def matchIdsInProgress(dateTime: ZonedDateTime): Future[List[MatchDay]] = {
     def inProgress(m: MatchDay): Boolean =
       m.date.minusHours(2).isBefore(dateTime) && m.date.plusHours(4).isAfter(dateTime)
-
-    // unfortunately PA provide 00:00 as start date when they don't have the start date
-    // so we can't do anything with these matches, unless the competition is
-    // in the exemption list below, where a 00:00 kickoff is likely to be genuine
-    // (e.g. World Cup which happens in different time zones and publishes its schedule months in advance)
-    def isMidnight(matchDay: MatchDay): Boolean = {
-      val localDate = matchDay.date.toLocalTime
-      val exemptionList = List("700" /* FIFA World Cup */)
-      val isExempt = matchDay.competition.exists(c => exemptionList.contains(c.id))
-      !isExempt && localDate.getHour() == 0 && localDate.getMinute() == 0
-    }
 
     logger.info(s"Retrieving matches on or around $dateTime from PA")
     for {
