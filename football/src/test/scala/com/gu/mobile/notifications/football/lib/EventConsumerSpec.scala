@@ -6,13 +6,8 @@ import com.gu.mobile.notifications.client.models.Importance.{Major, Minor}
 import com.gu.mobile.notifications.client.models.TopicTypes.{
   FootballMatch,
   FootballTeam,
-  FootballTeamLiveActivity,
-  FootballMatchLiveActivity
 }
-import com.gu.mobile.notifications.football.models.{
-  MatchDataWithArticle,
-  PenaltyShootoutKick
-}
+import com.gu.mobile.notifications.football.models.MatchDataWithArticle
 import com.gu.mobile.notifications.client.models.liveActitivites._
 import com.gu.mobile.notifications.football.notificationbuilders.{
   MatchStatusLiveActivityPayloadBuilder,
@@ -26,7 +21,6 @@ import pa.{MatchDay, MatchEvent, Parser}
 
 import java.time.ZonedDateTime
 import scala.io.Source
-import scala.concurrent.{ExecutionContext, Future}
 
 class EventConsumerSpec(implicit ev: ExecutionEnv)
     extends Specification
@@ -694,10 +688,6 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       matchStatusLiveActivityPayloadBuilder
     )
 
-    val matchStateDiffer = mock[DynamoMatchStateDiffer]
-    matchStateDiffer.isIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext]) returns Future.successful(true)
-    matchStateDiffer.updateState(any[String], any[FootballMatchContentState])(any[ExecutionContext]) returns Future.unit
-
     def loadFile(file: String): String = {
       val stream = this.getClass.getClassLoader.getResourceAsStream(file)
       Source.fromInputStream(stream).mkString
@@ -709,10 +699,11 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     def matchDay: MatchDay = Parser.parseMatchDay(loadFile("20170811.xml")).head
 
     def events: List[MatchEvent] =
-      new SyntheticMatchEventGenerator(() => ZonedDateTime.now(), matchStateDiffer).generate(
+      new SyntheticMatchEventGenerator(() => ZonedDateTime.now()).generate(
         rawEvents,
         "4011135",
-        matchDay
+        matchDay,
+        stateChange = false
       )
 
     def matchData = MatchDataWithArticle(
@@ -733,8 +724,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       Parser.parseMatchDay(loadFile("4484328-penalties.xml")).head
 
     def eventsLA: List[MatchEvent] =
-      new SyntheticMatchEventGenerator(() => ZonedDateTime.now(), matchStateDiffer)
-        .generate(rawEventsLA, "4484328", matchDayLA)
+      new SyntheticMatchEventGenerator(() => ZonedDateTime.now())
+        .generate(rawEventsLA, "4484328", matchDayLA, stateChange = false)
 
     def matchDataLA = MatchDataWithArticle(
       matchDayLA,

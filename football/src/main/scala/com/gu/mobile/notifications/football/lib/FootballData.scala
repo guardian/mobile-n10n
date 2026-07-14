@@ -176,7 +176,7 @@ class FootballData(
     }
   }
 
-  private def isFootballMatchStateIdentical(matchDay: MatchDay, events: List[pa.MatchEvent]): Future[Boolean] = {
+  private[lib] def isFootballMatchStateIdentical(matchDay: MatchDay, events: List[pa.MatchEvent]): Future[Boolean] = {
     val payloadBuilder = new MatchStatusLiveActivityPayloadBuilder()
     val toFootballEvent = FootballMatchEvent.fromPaMatchEvent(matchDay.homeTeam, matchDay.awayTeam) _
 
