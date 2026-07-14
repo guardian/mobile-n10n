@@ -128,16 +128,16 @@ class FootballData(
   /**
    * PA give 00:00 as the start time when they don't actually know the kickoff time yet,
    * so those matches are unusable and should be filtered out. Competitions in
-   * `midnightExemptCompetitions` are excluded from this check because a 00:00 kickoff can be
+   * `competitionsAllowingMidnightKO` are excluded from this check because a 00:00 kickoff can be
    * genuine for them (e.g. the World Cup, whose schedule spans multiple time zones and is
    * published months in advance).
    */
-  private val midnightExemptCompetitions = Set(
+  private val competitionsAllowingMidnightKO = Set(
     "700", // FIFA World Cup
   )
   private[lib] def isMidnight(matchDay: MatchDay): Boolean = {
-    val isExempt = matchDay.competition.exists(c => midnightExemptCompetitions.contains(c.id))
-    !isExempt && matchDay.date.toLocalTime == LocalTime.MIDNIGHT
+    val isAllowlisted = matchDay.competition.exists(c => competitionsAllowingMidnightKO.contains(c.id))
+    !isAllowlisted && matchDay.date.toLocalTime == LocalTime.MIDNIGHT
   }
 
   def matchIdsInProgress(dateTime: ZonedDateTime): Future[List[MatchDay]] = {
