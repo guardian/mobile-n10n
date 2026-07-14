@@ -134,6 +134,8 @@ class FootballData(
    */
   private val competitionsAllowingMidnightKO = Set(
     "700", // FIFA World Cup
+    "701", // FIFA World Cup qualifying
+    "714", // Copa America
   )
   private[lib] def isFakeMidnightKO(matchDay: MatchDay): Boolean = {
     val isAllowlisted = matchDay.competition.exists(c => competitionsAllowingMidnightKO.contains(c.id))
