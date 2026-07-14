@@ -177,4 +177,24 @@ class FootballDataSpec extends Specification {
       footballData.paProvideAlerts(matchWith("303", roundNumber = "Final")) must beTrue
     }
   }
+
+  "isMidnight" should {
+
+    val footballData = new FootballData(null, null, null, "test")
+
+    "return true for a non-exempt competition kicking off at 00:00" in new FootballDataScope {
+      val m = matchDayWithCompetition("100").copy(date = ZonedDateTime.parse("2026-05-18T00:00:00Z"))
+      footballData.isMidnight(m) must beTrue
+    }
+
+    "return false for a non-exempt competition kicking off at a non-midnight time" in new FootballDataScope {
+      val m = matchDayWithCompetition("100").copy(date = ZonedDateTime.parse("2026-05-18T15:00:00Z"))
+      footballData.isMidnight(m) must beFalse
+    }
+
+    "return false for the World Cup (700) kicking off at 00:00" in new FootballDataScope {
+      val m = matchDayWithCompetition("700").copy(date = ZonedDateTime.parse("2026-05-18T00:00:00Z"))
+      footballData.isMidnight(m) must beFalse
+    }
+  }
 }
