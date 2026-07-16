@@ -178,18 +178,12 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
   // Note: VAR introduces the possibility of goal or red card event reversals. The original event disappears from PA match event list data once reversed,
   // so we must instead calculate if the match state has changed every polling cycle and generate a synthetic 'stateChangeEvent' to trigger
   // an update or push notification if required.
-  private val stateChangeEvent: MatchEventGenerator = { (matchDay: MatchDay, matchEvents: List[pa.MatchEvent], stateChange) =>
+  private val stateChangeEvent: MatchEventGenerator = { (matchDay: MatchDay, _, stateChange: Boolean) =>
     if (stateChange) {
-      matchEvents.reverse match {
-        case latestEvent :: _ =>
           Some(emptyMatchEvent.copy(
-            // TODO is pa eventime unique enough to generate a UUID?
-            id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/state-change/${latestEvent.eventTime}".getBytes).toString),
+            id = Some(UUID.nameUUIDFromBytes(s"football-match/${matchDay.id}/state-change/${System.currentTimeMillis()}".getBytes).toString),
             eventType = "state-change"
           ))
-
-        case Nil => None
-      }
     } else None
   }
 
