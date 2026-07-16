@@ -57,79 +57,79 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
   "A SyntheticMatchEvent generator" should {
     "Add id to first timeline event" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo) mustEqual List(timelineEvent.copy(id = Some(kickoffId)))
+      generator.generate(List(timelineEvent), "match-id", matchInfo, stateChange = false) mustEqual List(timelineEvent.copy(id = Some(kickoffId)))
     }
     "Add half-time event if status is HT" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "HT")).drop(1).head.eventType mustEqual "half-time"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "HT"), stateChange = false).drop(1).head.eventType mustEqual "half-time"
     }
     "Add second-half event if status is SHS" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "SHS")).drop(1).head.eventType mustEqual "second-half"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "SHS"), stateChange = false).drop(1).head.eventType mustEqual "second-half"
     }
     "Add full-time event if match is result" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true, liveMatch = true)).drop(1).head.eventType mustEqual "full-time"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true, liveMatch = true), stateChange = false).drop(1).head.eventType mustEqual "full-time"
     }
 
     "Add extra time event if status is ETS" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETS")).drop(1).head.eventType mustEqual "extra-time-first-half"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETS"), stateChange = false).drop(1).head.eventType mustEqual "extra-time-first-half"
     }
 
     "Add extra time half time event if status is ETHT" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETHT")).drop(1).head.eventType mustEqual "extra-time-half-time"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETHT"), stateChange = false).drop(1).head.eventType mustEqual "extra-time-half-time"
     }
 
     "Add extra time second half event if status is ETSHS" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETSHS")).drop(1).head.eventType mustEqual "extra-time-second-half"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETSHS"), stateChange = false).drop(1).head.eventType mustEqual "extra-time-second-half"
     }
 
     "Add penalty shootout event if status is PT" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "PT")).drop(1).head.eventType mustEqual "penalties"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "PT"), stateChange = false).drop(1).head.eventType mustEqual "penalties"
     }
 
     "Add extra-time-to-be-played event if status is FTET" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "FTET")).drop(1).head.eventType mustEqual "extra-time-to-be-played"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "FTET"), stateChange = false).drop(1).head.eventType mustEqual "extra-time-to-be-played"
     }
 
     "Add penalties-to-be-played event if status is FTPT" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "FTPT")).drop(1).head.eventType mustEqual "penalties-to-be-played"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "FTPT"), stateChange = false).drop(1).head.eventType mustEqual "penalties-to-be-played"
     }
 
     "Add penalties-to-be-played event if status is ETFTPT" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETFTPT")).drop(1).head.eventType mustEqual "penalties-to-be-played"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "ETFTPT"), stateChange = false).drop(1).head.eventType mustEqual "penalties-to-be-played"
     }
 
     "Add suspended event if status is Suspended" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Suspended")).drop(1).head.eventType mustEqual "suspended"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Suspended"), stateChange = false).drop(1).head.eventType mustEqual "suspended"
     }
 
     "Add resumed event if status is Resumed" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Resumed")).drop(1).head.eventType mustEqual "resumed"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Resumed"), stateChange = false).drop(1).head.eventType mustEqual "resumed"
     }
 
     "Add abandoned event if status is Abandoned" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Abandoned")).drop(1).head.eventType mustEqual "abandoned"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Abandoned"), stateChange = false).drop(1).head.eventType mustEqual "abandoned"
     }
 
     "Add postponed event if status is Postponed" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Postponed")).drop(1).head.eventType mustEqual "postponed"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Postponed"), stateChange = false).drop(1).head.eventType mustEqual "postponed"
     }
 
     "Add cancelled event if status is Cancelled" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Cancelled")).drop(1).head.eventType mustEqual "cancelled"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(matchStatus = "Cancelled"), stateChange = false).drop(1).head.eventType mustEqual "cancelled"
     }
 
   }
@@ -137,28 +137,43 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
   "A SyntheticMatchEvent generator supporting Live Activities" should {
     "Add a createChannel event if match kick off is within 2 hrs" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusHours(1))).head.eventType mustEqual "create-channel"
+      generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusHours(1)), stateChange = false).head.eventType mustEqual "create-channel"
     }
 
     "Add a startLiveActivity event if match kick off is within 20min" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15))).map(_.eventType) must contain("start-live-activity")
+      generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15)), stateChange = false).map(_.eventType) must contain("start-live-activity")
     }
 
     "Add id to first timeline event" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(date = ZonedDateTime.now())) mustEqual List(timelineEvent.copy(id = Some(kickoffId)))
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(date = ZonedDateTime.now()), stateChange = false) mustEqual List(timelineEvent.copy(id = Some(kickoffId)))
     }
 
     "Add an endLiveActivity event if match info contains result" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true, liveMatch = false)).reverse.head.eventType mustEqual "end-live-activity"
+      generator.generate(List(timelineEvent), "match-id", matchInfo.copy(result = true, liveMatch = false), stateChange = false).reverse.head.eventType mustEqual "end-live-activity"
     }
 
     "Add a pre-match event if match kick off is within 20min" in new TestScope {
       val generator = new SyntheticMatchEventGenerator(currentTime)
-      val events = generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15)))
+      val events = generator.generate(List(), "match-id", matchInfo.copy(date = ZonedDateTime.now.plusMinutes(15)), stateChange = false)
       events.map(_.eventType) must contain("pre-match")
     }
+  }
+
+  "A SyntheticMatchEvent generator supporting StateChangeEvents" should {
+    "Create a state-change event when a state change has occurred" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      val events = generator.generate(List(timelineEvent), "match-id", matchInfo, stateChange = true)
+      events.map(_.eventType) must contain("state-change")
+    }
+
+    "Not create a state-change event when no state change has occurred" in new TestScope {
+      val generator = new SyntheticMatchEventGenerator(currentTime)
+      val events = generator.generate(List(timelineEvent), "match-id", matchInfo, stateChange = false)
+      events.map(_.eventType) must not contain("state-change")
+    }
+
   }
 }
