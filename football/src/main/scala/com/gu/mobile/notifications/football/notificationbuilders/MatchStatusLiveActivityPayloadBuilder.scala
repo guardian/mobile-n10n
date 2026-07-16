@@ -10,13 +10,12 @@ import java.util.{Date, UUID}
 class MatchStatusLiveActivityPayloadBuilder {
 
   def buildFootballContentState(
-      triggeringEvent: FootballMatchEvent,
+                                 currentMinute: Option[Int],
       matchInfo: MatchDay,
-      previousEvents: List[FootballMatchEvent],
+                                 allEvents: List[FootballMatchEvent],
       articleId: Option[String]
   ): FootballMatchContentState = {
 
-    val allEvents = triggeringEvent :: previousEvents
     val goals = allEvents.collect { case g: Goal => g }
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
     val dismissals = allEvents.collect { case d: Dismissal => d }
@@ -24,13 +23,6 @@ class MatchStatusLiveActivityPayloadBuilder {
     val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
     val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
-    val currentMinute: Option[Int] = triggeringEvent match {
-      case d:Dismissal => Some(d.minute)
-      case g:Goal => Some(g.minute)
-      case p: PenaltyShootoutKick => Some(p.minute)
-      case phase: MatchPhaseEvent => phase.currentMinute
-      case _ => None
-    }
 
     def transformTeamName(name: String): String = name.replace(" Ladies", "")
 
@@ -76,7 +68,17 @@ class MatchStatusLiveActivityPayloadBuilder {
       articleId: Option[String]
   ): LiveActivityPayload = {
 
-    val contentState = buildFootballContentState(triggeringEvent, matchInfo, previousEvents, articleId)
+    val allEvents = triggeringEvent :: previousEvents
+
+    val currentMinute: Option[Int] = triggeringEvent match {
+      case d: Dismissal => Some(d.minute)
+      case g: Goal => Some(g.minute)
+      case p: PenaltyShootoutKick => Some(p.minute)
+      case phase: MatchPhaseEvent => phase.currentMinute
+      case _ => None
+    }
+
+    val contentState = buildFootballContentState(currentMinute, matchInfo, allEvents, articleId)
 
     // certain type of triggering match event types will trigger different live activity event type.
     val liveActivityEventType = triggeringEvent match {

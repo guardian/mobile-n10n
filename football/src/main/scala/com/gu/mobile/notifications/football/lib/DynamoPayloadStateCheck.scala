@@ -39,7 +39,7 @@ class DynamoPayloadStateCheck(client: AmazonDynamoDBAsync, tableName: String) ex
 
   // articleUrl is only added to the payload after isMatchStateIdentical is called, so we must ignore it.
   private def ignoringArticleUrl(a: FootballMatchContentState, b: FootballMatchContentState): Boolean =
-    a.copy(articleUrl = None) == b.copy(articleUrl = None) // ensure articleURL is None for both at the point of comparison
+    a.copy(articleUrl = None, currentMinute = None) == b.copy(articleUrl = None, currentMinute = None) // these are calculated outside of state generation
 
   // The stored `payload` column is the JSON-serialised LiveActivityPayload; the match state we diff
   // against is its `broadcastContentStateData` subfield.

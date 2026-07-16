@@ -197,31 +197,20 @@ class FootballData(
     val payloadBuilder = new MatchStatusLiveActivityPayloadBuilder()
     val toFootballEvent = FootballMatchEvent.fromPaMatchEvent(matchDay.homeTeam, matchDay.awayTeam) _
 
-    events.reverse match {
-      case latestEvent :: previousEvents =>
-        toFootballEvent(latestEvent) match {
-          case Some(triggeringEvent) =>
-            val footballMatchState = payloadBuilder.buildFootballContentState(
-              triggeringEvent = triggeringEvent,
-              matchInfo = matchDay,
-              previousEvents = previousEvents.reverse.flatMap(toFootballEvent),
-              articleId = None,
-            )
-
-            payloadStateCheck
-              .isMatchStateIdentical(matchDay.id, footballMatchState)
-              .recover { case NonFatal(exception) =>
-                logger.error(s"Error checking for for identical football match state ${matchDay.id}: ${exception.getMessage}")
-                true // assume identical
-              }
-
-          case None =>
-            // latest event couldn't be converted to a FootballMatchEvent
-            Future.successful(true)
+    if (events.isEmpty) Future.successful(true) // no stage change before a match has started.
+    else {
+      val footballMatchState = payloadBuilder.buildFootballContentState(
+        currentMinute = None,
+        matchInfo = matchDay,
+        allEvents = events.flatMap(toFootballEvent),
+        articleId = None,
+      )
+      payloadStateCheck
+        .isMatchStateIdentical(matchDay.id, footballMatchState)
+        .recover { case NonFatal(exception) =>
+          logger.error(s"Error checking for for identical football match state ${matchDay.id}: ${exception.getMessage}")
+          true // assume identical // todo confirm this behaviour is desired.
         }
-
-      case Nil =>
-        Future.successful(true) // assume identical
     }
   }
 }

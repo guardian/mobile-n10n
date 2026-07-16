@@ -4,11 +4,12 @@ import com.gu.mobile.notifications.client.models.liveActitivites.FootballMatchCo
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage}
+import pa.{Competition, MatchDay, MatchDayTeam, MatchEvent, Parser, Round, Stage}
 
 import java.time.ZonedDateTime
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.io.Source
 
 class FootballDataSpec extends Specification with Mockito {
 
@@ -244,15 +245,58 @@ class FootballDataSpec extends Specification with Mockito {
       there was no(payloadStateDiffer).isMatchStateIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext])
     }
 
-    "return true (assume identical) when the latest event cannot be converted to a football event" in new StateScope {
-      val unconvertibleEvent = paEvent("unknown-event-type")
-      Await.result(footballData.isFootballMatchStateIdentical(matchDayWithCompetition("100"), List(unconvertibleEvent)), 5.seconds) must beTrue
-      there was no(payloadStateDiffer).isMatchStateIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext])
-    }
-
     "return true (assume identical) when the differ check fails" in new StateScope {
       payloadStateDiffer.isMatchStateIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext]) returns Future.failed(new RuntimeException("dynamo down"))
       Await.result(footballData.isFootballMatchStateIdentical(matchDayWithCompetition("100"), List(triggeringEvent)), 5.seconds) must beTrue
+    }
+  }
+
+  trait ProcessMatchScope extends Scope {
+    implicit val ec: ExecutionContext = ExecutionContext.global
+
+    private def loadFile(file: String): String = {
+      val stream = this.getClass.getClassLoader.getResourceAsStream(file)
+      Source.fromInputStream(stream).mkString
+    }
+
+    val matchDay: MatchDay = Parser.parseMatchDay(loadFile("20170811_statechange.xml")).head
+    val rawEvents: List[MatchEvent] = Parser.parseMatchEvents(loadFile("match-event-feed.xml")).get.events
+
+    val paClient: PaFootballClient = mock[PaFootballClient]
+    paClient.eventsForMatch(any[MatchDay])(any[ExecutionContext]) returns Future.successful((matchDay, rawEvents))
+
+    val syntheticEvents = new SyntheticMatchEventGenerator(() => ZonedDateTime.now())
+
+    def eventTypesFrom(stateIsIdentical: Boolean): List[String] = {
+      val payloadStateCheck = mock[DynamoPayloadStateCheck]
+      payloadStateCheck.isMatchStateIdentical(any[String], any[FootballMatchContentState])(
+        any[ExecutionContext],
+      ) returns Future.successful(stateIsIdentical)
+
+      val footballData = new FootballData(paClient, syntheticEvents, null, payloadStateCheck, "TEST")
+      val result = Await.result(footballData.processMatch(matchDay), 5.seconds)
+      result.toList.flatMap(_.allEvents).map(_.eventType)
+    }
+  }
+
+  "processMatch synthetic state-change event" should {
+
+    "add a state-change synthetic event when the match state has changed" in new ProcessMatchScope {
+      eventTypesFrom(stateIsIdentical = false) must contain("state-change")
+    }
+
+    "not add a state-change synthetic event when the match state is identical" in new ProcessMatchScope {
+      eventTypesFrom(stateIsIdentical = true) must not(contain("state-change"))
+    }
+
+    "not add a state-change synthetic event when the state check errors (assume identical)" in new ProcessMatchScope {
+      val payloadStateCheck = mock[DynamoPayloadStateCheck]
+      payloadStateCheck.isMatchStateIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext]) returns Future.failed(new RuntimeException("dynamo down"))
+
+      val footballData = new FootballData(paClient, syntheticEvents, null, payloadStateCheck, "TEST")
+      val eventTypes = Await.result(footballData.processMatch(matchDay), 5.seconds).toList.flatMap(_.allEvents).map(_.eventType)
+
+      eventTypes must not(contain("state-change"))
     }
   }
 }
