@@ -9,12 +9,12 @@ import java.util.{Date, UUID}
 
 class MatchStatusLiveActivityPayloadBuilder {
 
-  def build(
+  def buildFootballContentState(
       triggeringEvent: FootballMatchEvent,
       matchInfo: MatchDay,
       previousEvents: List[FootballMatchEvent],
       articleId: Option[String]
-  ): LiveActivityPayload = {
+  ): FootballMatchContentState = {
 
     val allEvents = triggeringEvent :: previousEvents
     val goals = allEvents.collect { case g: Goal => g }
@@ -32,7 +32,9 @@ class MatchStatusLiveActivityPayloadBuilder {
       case _ => None
     }
 
-    val contentState = FootballMatchContentState(
+    def transformTeamName(name: String): String = name.replace(" Ladies", "")
+
+    FootballMatchContentState(
       matchStatus = MatchStatus.fromString(matchInfo.matchStatus),
       kickOffTimestamp = matchInfo.date.toEpochSecond, // included date and time
       homeTeam = TeamState(
@@ -65,6 +67,16 @@ class MatchStatusLiveActivityPayloadBuilder {
       articleUrl = articleId.map(id => new URI(s"http://www.theguardian.com/$id").toString),
       matchInfoUrl = new URI(s"http://www.theguardian.com/football/match/${matchInfo.id}").toString
     )
+  }
+
+  def build(
+      triggeringEvent: FootballMatchEvent,
+      matchInfo: MatchDay,
+      previousEvents: List[FootballMatchEvent],
+      articleId: Option[String]
+  ): LiveActivityPayload = {
+
+    val contentState = buildFootballContentState(triggeringEvent, matchInfo, previousEvents, articleId)
 
     // certain type of triggering match event types will trigger different live activity event type.
     val liveActivityEventType = triggeringEvent match {
@@ -93,6 +105,5 @@ class MatchStatusLiveActivityPayloadBuilder {
 
   }
 
-  def transformTeamName(name: String): String = name.replace(" Ladies", "")
 
 }

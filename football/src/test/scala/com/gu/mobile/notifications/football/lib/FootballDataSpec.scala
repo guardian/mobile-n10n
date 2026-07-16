@@ -1,12 +1,16 @@
 package com.gu.mobile.notifications.football.lib
 
+import com.gu.mobile.notifications.client.models.liveActitivites.FootballMatchContentState
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage}
 
 import java.time.ZonedDateTime
+import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 
-class FootballDataSpec extends Specification {
+class FootballDataSpec extends Specification with Mockito {
 
   trait FootballDataScope extends Scope {
     val home = MatchDayTeam("1", "Arsenal", None, None, None, None)
@@ -62,7 +66,7 @@ class FootballDataSpec extends Specification {
 
   "competitionIsSupported" should {
 
-    val footballData = new FootballData(null, null, null, "test") // pass mocks or nulls as needed
+    val footballData = new FootballData(null, null, null, null, "test") // pass mocks or nulls as needed
 
     "return a match when its competition is in the supported list" in new FootballDataScope {
       val matches = List(matchDayWithCompetition("100"))
@@ -105,7 +109,7 @@ class FootballDataSpec extends Specification {
 
   "paProvideAlerts" should {
 
-    val footballData = new FootballData(null, null, null, "test")
+    val footballData = new FootballData(null, null, null, null, "test")
 
     def matchWith(competitionId: String, homeId: String = "1", awayId: String = "2", roundNumber: String = "5"): MatchDay =
       MatchDay(
@@ -180,7 +184,7 @@ class FootballDataSpec extends Specification {
 
   "isMidnight" should {
 
-    val footballData = new FootballData(null, null, null, "test")
+    val footballData = new FootballData(null, null, null, null, "test")
 
     "return true for a non-exempt competition kicking off at 00:00" in new FootballDataScope {
       val m = matchDayWithCompetition("100").copy(date = ZonedDateTime.parse("2026-05-18T00:00:00Z"))
@@ -195,6 +199,60 @@ class FootballDataSpec extends Specification {
     "return false for the World Cup (700) kicking off at 00:00" in new FootballDataScope {
       val m = matchDayWithCompetition("700").copy(date = ZonedDateTime.parse("2026-05-18T00:00:00Z"))
       footballData.isFakeMidnightKO(m) must beFalse
+    }
+  }
+
+  "isFootballMatchStateIdentical" should {
+
+    trait StateScope extends FootballDataScope {
+      val payloadStateDiffer: DynamoPayloadStateCheck = mock[DynamoPayloadStateCheck]
+      val footballData = new FootballData(null, null, null, payloadStateDiffer, "test")
+
+      def paEvent(eventType: String, matchTime: Option[String] = None, eventTime: Option[String] = None): pa.MatchEvent =
+        pa.MatchEvent(
+          id = Some("event-1"),
+          teamID = None,
+          eventType = eventType,
+          matchTime = matchTime,
+          eventTime = eventTime,
+          addedTime = None,
+          players = List.empty,
+          reason = None,
+          how = None,
+          whereFrom = None,
+          whereTo = None,
+          distance = None,
+          outcome = None
+        )
+
+      // A timeline event at 0:00 is converted to a KickOff FootballMatchEvent
+      val triggeringEvent: pa.MatchEvent = paEvent("timeline", matchTime = Some("0:00"), eventTime = Some("0"))
+    }
+
+    "return true when the differ reports the state is identical" in new StateScope {
+      payloadStateDiffer.isMatchStateIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext]) returns Future.successful(true)
+      Await.result(footballData.isFootballMatchStateIdentical(matchDayWithCompetition("100"), List(triggeringEvent)), 5.seconds) must beTrue
+    }
+
+    "return false when the differ reports the state has changed" in new StateScope {
+      payloadStateDiffer.isMatchStateIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext]) returns Future.successful(false)
+      Await.result(footballData.isFootballMatchStateIdentical(matchDayWithCompetition("100"), List(triggeringEvent)), 5.seconds) must beFalse
+    }
+
+    "return true (assume identical) when there are no events" in new StateScope {
+      Await.result(footballData.isFootballMatchStateIdentical(matchDayWithCompetition("100"), List.empty), 5.seconds) must beTrue
+      there was no(payloadStateDiffer).isMatchStateIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext])
+    }
+
+    "return true (assume identical) when the latest event cannot be converted to a football event" in new StateScope {
+      val unconvertibleEvent = paEvent("unknown-event-type")
+      Await.result(footballData.isFootballMatchStateIdentical(matchDayWithCompetition("100"), List(unconvertibleEvent)), 5.seconds) must beTrue
+      there was no(payloadStateDiffer).isMatchStateIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext])
+    }
+
+    "return true (assume identical) when the differ check fails" in new StateScope {
+      payloadStateDiffer.isMatchStateIdentical(any[String], any[FootballMatchContentState])(any[ExecutionContext]) returns Future.failed(new RuntimeException("dynamo down"))
+      Await.result(footballData.isFootballMatchStateIdentical(matchDayWithCompetition("100"), List(triggeringEvent)), 5.seconds) must beTrue
     }
   }
 }

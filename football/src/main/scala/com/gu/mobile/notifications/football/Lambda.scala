@@ -8,7 +8,7 @@ import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsy
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
 import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
-import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PACompetition, PaFootballClient, S3DataStore, SyntheticMatchEventGenerator}
+import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, DynamoPayloadStateCheck, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PACompetition, PaFootballClient, S3DataStore, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import play.api.libs.json.Json
 
@@ -53,6 +53,7 @@ object Lambda extends Logging {
 
   lazy val capiClient = GuardianContentClient(configuration.capiApiKey)
 
+  lazy val payloadStateCheck = new DynamoPayloadStateCheck(dynamoDBClient, liveActivitiesTableName)
   lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator(getZonedDateTime)
 
   lazy val notificationHttpProvider = new NotificationHttpProvider()
@@ -66,7 +67,7 @@ object Lambda extends Logging {
 
   lazy val competitionsDataStore = new S3DataStore[PACompetition](s3Client, paDataBucket)
 
-  lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator, competitionsDataStore, configuration.stage)
+  lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator, competitionsDataStore, payloadStateCheck, configuration.stage)
 
   lazy val articleSearcher = new ArticleSearcher(capiClient)
 
@@ -130,6 +131,7 @@ object Lambda extends Logging {
   }
 }
 
+// TODO handle match state changes
 class NotificationHandler(configuration: Configuration, apiClient: NotificationsApiClient, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
 
   lazy val notificationSender = new NotificationSender(apiClient)
