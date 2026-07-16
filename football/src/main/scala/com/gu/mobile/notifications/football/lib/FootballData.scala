@@ -1,14 +1,16 @@
 package com.gu.mobile.notifications.football.lib
 
+import com.gu.mobile.notifications.client.models.liveActitivites.LiveActivityPayload
+
 import java.time.{LocalDate, LocalTime, ZonedDateTime}
-import com.gu.mobile.notifications.football.{Logging}
+import com.gu.mobile.notifications.football.Logging
 import com.gu.mobile.notifications.football.models.{FootballMatchEvent, RawMatchData}
 import com.gu.mobile.notifications.football.notificationbuilders.MatchStatusLiveActivityPayloadBuilder
 import pa.{MatchDay, MatchEvent}
 import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future}
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
@@ -29,7 +31,7 @@ class FootballData(
     paClient: PaFootballClient,
     syntheticEvents: SyntheticMatchEventGenerator,
     competitionsDataStore: S3DataStore[PACompetition],
-    matchStateDiffer: DynamoMatchStateDiffer,
+    matchStateDiffer: DynamoPayloadStateCheck[LiveActivityPayload, DynamoMatchLiveActivity],
     stage: String,
 ) extends Logging {
 
@@ -173,12 +175,17 @@ class FootballData(
     Future.successful((matchDay, eventsWithSyntheticEvents))
   }
 
-  // TODO where we process a match. Goal is to add a statechange event here per match if needed. separate out concerns in the for comp.
-  private def processMatch(matchDay: MatchDay): Future[Option[RawMatchData]] = {
+  // Process individual match
+  private[lib] def processMatch(matchDay: MatchDay): Future[Option[RawMatchData]] = {
     val matchData = for {
-      (_, events) <- paClient.eventsForMatch(matchDay) // todo remove synth events from pa client
-      stateChange <- isFootballMatchStateIdentical(matchDay, events).map(!_) // todo calc state change boolean here
-      (_, eventsWithSyntheticEvents) <- appendSyntheticEvents(matchDay, events, stateChange)(syntheticEvents) // todo add synth events here.
+      // fetch current PA events timeline for match
+      (_, events) <- paClient.eventsForMatch(matchDay)
+      // check if the current match state is identical to the last known payload state.
+      // TODO can we rely on diffing just the live activity payload?
+      stateChange <- isFootballMatchStateIdentical(matchDay, events).map(!_)
+      // add synthetic events to the PA events timeline, if any are generated.
+      // a state change synth even will be generated for every update, but we filter out the superfluous ones in the EventConsumer.
+      (_, eventsWithSyntheticEvents) <- appendSyntheticEvents(matchDay, events, stateChange)(syntheticEvents)
     } yield Some(RawMatchData(matchDay, eventsWithSyntheticEvents))
 
     matchData.recover { case NonFatal(exception) =>
@@ -203,7 +210,7 @@ class FootballData(
             )
 
             matchStateDiffer
-              .isIdentical(matchDay.id, footballMatchState)
+              .isMatchStateIdentical(matchDay.id, footballMatchState)
               .recover { case NonFatal(exception) =>
                 logger.error(s"Error checking for for identical football match state ${matchDay.id}: ${exception.getMessage}")
                 true // assume identical

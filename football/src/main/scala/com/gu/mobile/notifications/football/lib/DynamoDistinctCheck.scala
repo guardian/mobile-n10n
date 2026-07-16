@@ -5,7 +5,8 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.gu.mobile.notifications.client.models.{FootballMatchStatusPayload, Payload}
 import org.scanamo.{DynamoFormat, ScanamoAsync, Table}
 import DynamoDistinctCheck.{Distinct, DistinctStatus, Duplicate, Unknown}
-import com.gu.mobile.notifications.client.models.liveActitivites.LiveActivityPayload
+import com.gu.mobile.notifications.client.models.liveActitivites.{FootballMatchContentState, LiveActivityPayload}
+import com.gu.mobile.notifications.football.Lambda.tableName
 import com.gu.mobile.notifications.football.Logging
 import play.api.libs.json.Json
 
@@ -48,6 +49,54 @@ object DynamoMatchLiveActivity {
     )
   }
 }
+
+// This is used to pre-diff the state in FootballData fetcher to determine if state-change synthetic event should be generated.
+// It is not used to determine if a notification should be sent, that is handled by DynamoDistinctCheck. Both classes read the same table data.
+class DynamoPayloadStateCheck[A, D](client: AmazonDynamoDBAsync, tableName: String) extends Logging {
+  def isMatchStateIdentical(id: String, state: FootballMatchContentState)(implicit ec: ExecutionContext): Future[Boolean] = {
+    import org.scanamo.syntax._
+    import org.scanamo.generic.auto._
+
+    lazy val scanamoAsync: ScanamoAsync = ScanamoAsync(client)
+    lazy val payloadTable = Table[DynamoMatchLiveActivity](tableName)
+    lazy val lastPayloadIndex = payloadTable.index("lastPayload-index") // only live activities payload table has an index.
+
+    val gsiQuery = lastPayloadIndex.query("liveActivityID" -> id)
+
+    scanamoAsync.exec(gsiQuery).map { rows =>
+      val latestPayloadState = rows
+        .collect { case Right(row) => row }
+        .sortBy(-_.ttl) // most recent first
+        .flatMap(row => footballStateFromPayload(row.payload))
+        .headOption
+
+      // TODO double check waht scanamo supports.
+//      val gsiQuery = lastPayloadIndex.descending.limit(1).query("liveActivityID" -> id)
+//
+//      scanamoAsync.exec(gsiQuery).map { rows =>
+//        rows
+//          .collect { case Right(row) => row }
+//          .flatMap(row => footballStateFromPayload(row.payload))
+//          .headOption
+//          .contains(state)
+//      }
+//
+      // TODO check json serialisation diff works
+      latestPayloadState.contains(state) // TODO check the whole state or just score/penalties?
+    } recover {
+      case e =>
+        logger.error(s"Failure while checking for dynamodb GSI for match state $tableName: ${e.getMessage}.")
+        false
+    }
+  }
+  // The stored `payload` column is the JSON-serialised LiveActivityPayload; the match state we diff
+  // against is its `broadcastContentStateData` subfield (when it is a football content state).
+  private def footballStateFromPayload(payloadJson: String): Option[FootballMatchContentState] =
+    Json.parse(payloadJson).as[LiveActivityPayload].broadcastContentStateData.collect {
+      case footballState: FootballMatchContentState => footballState
+    }
+}
+
 
 object DynamoDistinctCheck {
   sealed trait DistinctStatus

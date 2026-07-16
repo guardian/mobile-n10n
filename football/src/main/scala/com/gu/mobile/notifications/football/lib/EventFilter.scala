@@ -12,8 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class EventFilter[A <: Payload, D](
-    distinctCheck: DynamoDistinctCheck[A, D],
-    matchStateDiffer: Option[DynamoMatchStateDiffer] = None,
+    distinctCheck: DynamoDistinctCheck[A, D]
 ) extends Logging {
   private val processedEvents = new AtomicReference[Set[UUID]](Set.empty)
 
@@ -98,48 +97,15 @@ class EventFilter[A <: Payload, D](
       eventsWithoutEndEvents = filterOutEndEventsNotReceivedInIsolation(eventsWithoutStateChangeEvents)
 
       processedEvents <- Future.traverse(eventsWithoutEndEvents) { item =>
-        distinctCheck.insertEvent(ev(item)).flatMap {
-          case Distinct =>
-            // Persist the newly broadcast content state so the next polling cycle can diff against it.
-            // If the state write fails we skip emitting this event to avoid the stored state drifting
-            // out of sync with what subscribers have received.
-            updateMatchStateDynamoIfStateChangeEvent(item)
-              .map { _ =>
-                cache(item.id) // todo when to cache? before or after stateupate?
-                Some(item)
-              }
-              .recover {
-                //TODO possibility of divergence between what is is stored in the two dynamo tables for deduping.
-                // We should in theory attempt another state change in a subsequent polling cycle with a unique UUID (generated using latest PA event timestamp)
-                // to catch this in the next cycle.
-                case NonFatal(e) =>
-                  logger.error(
-                    s"Failed to persist match state for ${item.liveActivityID}; skipping state-change event ${item.id}: ${e.getMessage}",
-                    e,
-                  )
-                  None
-              }
-            // cases Duplicate and error
-          case _ => Future.successful(None)
+        distinctCheck.insertEvent(ev(item)).map {
+          case Distinct => {
+            cache(item.id)
+            Some(item)
+          }
+          case _        => None
         }
       }
     } yield processedEvents.flatten
-  }
-
-  private def updateMatchStateDynamoIfStateChangeEvent(item: LiveActivityPayload)(implicit ec: ExecutionContext): Future[Unit] = {
-    if (item.eventType == UpdateStateChangeLiveActivityEvent) {
-      (item.broadcastContentStateData, matchStateDiffer) match {
-        case (Some(state: FootballMatchContentState), Some(differ)) =>
-          differ.updateState(item.liveActivityID, state)
-          // TODO this won't be needed when this flow is duplicated for push notification handler
-        case (Some(_: FootballMatchContentState), None) =>
-          logger.warn(s"No match state differ configured; cannot persist state for match ${item.liveActivityID}")
-          Future.unit
-        case _ =>
-          logger.warn(s"State-change event ${item.id} for match ${item.liveActivityID} has no football content state to persist")
-          Future.unit
-      }
-    } else Future.unit
   }
 
   def filterDynamoEvents(dynamoEvents: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {

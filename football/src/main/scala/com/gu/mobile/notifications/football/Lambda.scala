@@ -8,7 +8,7 @@ import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsy
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.gu.contentapi.client.GuardianContentClient
 import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
-import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, DynamoMatchStateDiffer, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PACompetition, PaFootballClient, S3DataStore, SyntheticMatchEventGenerator}
+import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, DynamoPayloadStateCheck, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PACompetition, PaFootballClient, S3DataStore, SyntheticMatchEventGenerator}
 import com.gu.mobile.notifications.football.notificationbuilders.{MatchStatusLiveActivityPayloadBuilder, MatchStatusNotificationBuilder}
 import play.api.libs.json.Json
 
@@ -31,7 +31,6 @@ object Lambda extends Logging {
 
   def tableName = s"mobile-notifications-football-notifications-${configuration.stage}"
   def liveActivitiesTableName = s"mobile-notifications-liveactivities-payload-${configuration.stage}"
-  def matchStateTableName = s"mobile-notifications-football-match-state-${configuration.stage}"
   lazy val paDataBucket = "mobile-pa-football-data"
 
   lazy val configuration: Configuration = {
@@ -54,7 +53,7 @@ object Lambda extends Logging {
 
   lazy val capiClient = GuardianContentClient(configuration.capiApiKey)
 
-  lazy val matchStateDiffer = new DynamoMatchStateDiffer(dynamoDBClient, matchStateTableName, "matchId")
+  lazy val payloadStateCheck = new DynamoPayloadStateCheck[LiveActivityPayload, DynamoMatchLiveActivity](dynamoDBClient, liveActivitiesTableName)
   lazy val syntheticMatchEventGenerator = new SyntheticMatchEventGenerator(getZonedDateTime)
 
   lazy val notificationHttpProvider = new NotificationHttpProvider()
@@ -68,13 +67,13 @@ object Lambda extends Logging {
 
   lazy val competitionsDataStore = new S3DataStore[PACompetition](s3Client, paDataBucket)
 
-  lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator, competitionsDataStore, matchStateDiffer, configuration.stage)
+  lazy val footballData = new FootballData(paFootballClient, syntheticMatchEventGenerator, competitionsDataStore, payloadStateCheck, configuration.stage)
 
   lazy val articleSearcher = new ArticleSearcher(capiClient)
 
   lazy val notificationHandler = new NotificationHandler(configuration, apiClient, dynamoDBClient, tableName)
 
-  lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, liveActivitiesTableName, matchStateDiffer)
+  lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, liveActivitiesTableName)
 
   def getZonedDateTime(): ZonedDateTime = {
     val zonedDateTime = if (configuration.stage == "CODE") {
@@ -135,9 +134,7 @@ object Lambda extends Logging {
 class NotificationHandler(configuration: Configuration, apiClient: NotificationsApiClient, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
 
   lazy val notificationSender = new NotificationSender(apiClient)
-
   lazy val matchStatusNotificationBuilder = new MatchStatusNotificationBuilder(configuration.mapiHost)
-
   lazy val eventConsumer = new EventConsumer(matchStatusNotificationBuilder)
 
   lazy val distinctCheck = new DynamoDistinctCheck[NotificationPayload, DynamoMatchNotification](
@@ -146,7 +143,7 @@ class NotificationHandler(configuration: Configuration, apiClient: Notifications
     partitionKeyName = "notificationId",
     toDynamoModel = payload => DynamoMatchNotification(payload)
   )
-  lazy val eventFilter = new EventFilter[NotificationPayload, DynamoMatchNotification](distinctCheck)
+  lazy val eventFilter = new EventFilter[NotificationPayload, DynamoMatchNotification](distinctCheck) // TODO handle match state changes
 
   def process(rawEvents: List[MatchDataWithArticle]): Future[Unit] = {
     val notifications = rawEvents.flatMap(eventConsumer.eventsToNotifications)
@@ -157,15 +154,13 @@ class NotificationHandler(configuration: Configuration, apiClient: Notifications
   }
 }
 
-class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDynamoDBAsync, tableName: String, matchStateDiffer: DynamoMatchStateDiffer) extends Logging {
+class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
 
   private val eventBusName =
     s"liveactivities-eventbus-${configuration.stage}"
 
   lazy val liveActivityPusher = new LiveActivityPusher(eventBusName, logger)
-
   lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder()
-
   lazy val liveActivityEventConsumer = new LiveActivityEventConsumer(matchStatusLiveActivityPayloadBuilder)
 
   lazy val liveActivityDistinctCheck = new DynamoDistinctCheck[LiveActivityPayload, DynamoMatchLiveActivity](
@@ -174,7 +169,7 @@ class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDy
     partitionKeyName = "id",
     toDynamoModel = payload => DynamoMatchLiveActivity(payload)
   )
-  lazy val liveActivityEventFilter = new EventFilter[LiveActivityPayload, DynamoMatchLiveActivity](liveActivityDistinctCheck, Some(matchStateDiffer))
+  lazy val liveActivityEventFilter = new EventFilter[LiveActivityPayload, DynamoMatchLiveActivity](liveActivityDistinctCheck)
 
   def process(rawEvents: List[MatchDataWithArticle]): Future[Unit] = {
     val liveActivities = rawEvents.flatMap(liveActivityEventConsumer.eventsToLiveActivityPayload)
