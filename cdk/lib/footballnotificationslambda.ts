@@ -10,7 +10,12 @@ import {
 	TreatMissingData,
 	Unit,
 } from 'aws-cdk-lib/aws-cloudwatch';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import {
+	AttributeType,
+	BillingMode,
+	ProjectionType,
+	Table,
+} from 'aws-cdk-lib/aws-dynamodb';
 import { Schedule } from 'aws-cdk-lib/aws-events';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -87,16 +92,6 @@ export class FootballNotificationsLambda extends GuStack {
 		});
 		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
-		// DynamoDB Football Match State Table
-		const dynamoMatchStateTableName = `${stack}-football-match-state-${stage}`;
-		const dynamoMatchStateTable = new Table(this, 'MatchStateDynamoTable', {
-			tableName: dynamoMatchStateTableName,
-			partitionKey: { name: 'matchId', type: AttributeType.STRING },
-			billingMode: BillingMode.PAY_PER_REQUEST,
-			timeToLiveAttribute: 'ttl',
-		});
-		Tags.of(dynamoMatchStateTable).add('devx-backup-enabled', 'true');
-
 		// DynamoDB Live Activities Payloads Table
 		const liveActivitiesAppName = 'liveactivities';
 		const liveActivitiesDynamoTableName = `${stack}-${liveActivitiesAppName}-payload-${stage}`;
@@ -112,6 +107,14 @@ export class FootballNotificationsLambda extends GuStack {
 		);
 		Tags.of(liveActivitiesDynamoTable).add('devx-backup-enabled', 'true');
 
+		// GSI is used to determine if an untracked state change event has occurred, ie. goal was overruled.
+		liveActivitiesDynamoTable.addGlobalSecondaryIndex({
+			indexName: 'lastPayload-index',
+			partitionKey: { name: 'liveActivityID', type: AttributeType.STRING },
+			sortKey: { name: 'ttl', type: AttributeType.NUMBER },
+			projectionType: ProjectionType.ALL,
+		});
+
 		footballnotificationslambda.addToRolePolicy(
 			new PolicyStatement({
 				actions: [
@@ -124,7 +127,6 @@ export class FootballNotificationsLambda extends GuStack {
 				resources: [
 					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
 					`arn:aws:dynamodb:${region}:${account}:table/${liveActivitiesDynamoTableName}`,
-					`arn:aws:dynamodb:${region}:${account}:table/${dynamoMatchStateTableName}`,
 				],
 			}),
 		);
