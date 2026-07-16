@@ -10,7 +10,12 @@ import {
 	TreatMissingData,
 	Unit,
 } from 'aws-cdk-lib/aws-cloudwatch';
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
+import {
+	AttributeType,
+	BillingMode,
+	ProjectionType,
+	Table,
+} from 'aws-cdk-lib/aws-dynamodb';
 import { Schedule } from 'aws-cdk-lib/aws-events';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LoggingFormat, Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -71,8 +76,8 @@ export class FootballNotificationsLambda extends GuStack {
 			}),
 		);
 
+		// DynamoDB Push Notifications Table
 		const dynamoTableName = `${stack}-football-notifications-${stage}`;
-
 		const dynamoTable = new Table(this, 'DynamoTable', {
 			tableName: dynamoTableName,
 			partitionKey: { name: 'notificationId', type: AttributeType.STRING },
@@ -85,13 +90,11 @@ export class FootballNotificationsLambda extends GuStack {
 			logicalId: 'DynamoTable',
 			reason: 'Retaining a stateful resource previously defined in YAML',
 		});
-
 		Tags.of(dynamoTable).add('devx-backup-enabled', 'true');
 
-		// Live Activities DynamoDB Table
+		// DynamoDB Live Activities Payloads Table
 		const liveActivitiesAppName = 'liveactivities';
 		const liveActivitiesDynamoTableName = `${stack}-${liveActivitiesAppName}-payload-${stage}`;
-
 		const liveActivitiesDynamoTable = new Table(
 			this,
 			'LiveActivitiesDynamoTable',
@@ -103,6 +106,14 @@ export class FootballNotificationsLambda extends GuStack {
 			},
 		);
 		Tags.of(liveActivitiesDynamoTable).add('devx-backup-enabled', 'true');
+
+		// GSI is used to determine if an untracked state change event has occurred, ie. goal was overruled.
+		liveActivitiesDynamoTable.addGlobalSecondaryIndex({
+			indexName: 'lastPayload-index',
+			partitionKey: { name: 'liveActivityID', type: AttributeType.STRING },
+			sortKey: { name: 'ttl', type: AttributeType.NUMBER },
+			projectionType: ProjectionType.ALL,
+		});
 
 		footballnotificationslambda.addToRolePolicy(
 			new PolicyStatement({

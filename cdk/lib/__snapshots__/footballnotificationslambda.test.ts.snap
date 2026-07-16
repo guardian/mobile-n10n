@@ -151,8 +151,34 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
             "AttributeName": "id",
             "AttributeType": "S",
           },
+          {
+            "AttributeName": "liveActivityID",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "ttl",
+            "AttributeType": "N",
+          },
         ],
         "BillingMode": "PAY_PER_REQUEST",
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "lastPayload-index",
+            "KeySchema": [
+              {
+                "AttributeName": "liveActivityID",
+                "KeyType": "HASH",
+              },
+              {
+                "AttributeName": "ttl",
+                "KeyType": "RANGE",
+              },
+            ],
+            "Projection": {
+              "ProjectionType": "ALL",
+            },
+          },
+        ],
         "KeySchema": [
           {
             "AttributeName": "id",
@@ -967,8 +993,34 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
             "AttributeName": "id",
             "AttributeType": "S",
           },
+          {
+            "AttributeName": "liveActivityID",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "ttl",
+            "AttributeType": "N",
+          },
         ],
         "BillingMode": "PAY_PER_REQUEST",
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "lastPayload-index",
+            "KeySchema": [
+              {
+                "AttributeName": "liveActivityID",
+                "KeyType": "HASH",
+              },
+              {
+                "AttributeName": "ttl",
+                "KeyType": "RANGE",
+              },
+            ],
+            "Projection": {
+              "ProjectionType": "ALL",
+            },
+          },
+        ],
         "KeySchema": [
           {
             "AttributeName": "id",
