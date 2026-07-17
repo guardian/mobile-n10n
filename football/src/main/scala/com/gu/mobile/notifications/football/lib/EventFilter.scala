@@ -65,17 +65,36 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     isolatedEndEvents ++ updateEvents
   }
 
+
+  //
+  private def filterOutStateChangeEventsNotReceivedInIsolation(events: List[LiveActivityPayload]): List[LiveActivityPayload] = {
+    val (stateChangeEvents, updateEvents) = events.partition(_.eventType == com.gu.mobile.notifications.client.models.liveActitivites.UpdateStateChangeLiveActivityEvent)
+    val updateEventMatchIds = updateEvents.map(_.liveActivityID).toSet
+    val (isolatedStateChangeEvents, superfluousStateChangeEvents) =
+      stateChangeEvents.partition(event => !updateEventMatchIds.contains(event.liveActivityID))
+
+    // todo clean this up and change partition to filter.
+    // logging to verify hypothesis of state change event for every cycle there is an update including end.
+    if (superfluousStateChangeEvents.nonEmpty)
+      logger.debug("Superfluous state-change event(s) suppressed for match ids: " + superfluousStateChangeEvents.map(_.liveActivityID))
+
+    isolatedStateChangeEvents ++ updateEvents
+  }
+
   // we need to be able to access liveActivityId so the Payload trait must be narrowed. "An instance of A <:< B witnesses that A is a subtype of B."
   def filterDynamoEventsForLiveActivities(
       dynamoEvents: List[LiveActivityPayload],
   )(implicit ec: ExecutionContext, ev: LiveActivityPayload <:< A): Future[List[LiveActivityPayload]] = {
     for {
+      // Filter out any payloads that have already been sent (either in the local cache or in the dynamo table) to avoid duplicate processing.
       newEvents <- filterAsync(dynamoEvents)(item => isUniqueRecord(ev(item)))
-      /** Because we poll once a minute, we might end up with a triggering update event (eg. very late goal) along with
-        * an end event in the same polling cycle, but we only ever want to process the end event alone after all updates
-        * have been processed (dispatched via eventbridge). This only affects Live Activities.
-        */
-      eventsToProcess = filterOutEndEventsNotReceivedInIsolation(newEvents)
+      // In order to capture VAR goal reversals, we need to calculate payload state change events, but remove the superfluous
+      // ones with state change already captured by normal update events
+      eventsWithoutStateChangeEvents = filterOutStateChangeEventsNotReceivedInIsolation(newEvents)
+      // Because we poll once a minute, we might end up with a triggering update event (eg. very late goal)
+      // along with an end event in the same polling cycle, but we only ever want to process the end event
+      // alone after all updates have been processed (dispatched via eventbridge). This only affects Live Activities.
+      eventsToProcess = filterOutEndEventsNotReceivedInIsolation(eventsWithoutStateChangeEvents)
       processedEvents <- Future.traverse(eventsToProcess) { item =>
         distinctCheck.insertEvent(ev(item)).map {
           case Distinct => {
@@ -88,6 +107,7 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     } yield processedEvents.flatten
   }
 
+  // TODO filter out statechange events for push notifications as well.
   def filterDynamoEvents(dynamoEvents: List[A])(implicit ec: ExecutionContext): Future[List[A]] = {
     Future.traverse(dynamoEvents)(filterDynamoEvent).map(_.flatten)
   }
