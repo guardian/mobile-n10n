@@ -112,5 +112,62 @@ class EventFilterSpec(implicit ev: ExecutionEnv) extends Specification with Mock
       // isDuplicate should only have been called once (from the first invocation)
       there was one(distinctCheck).isDuplicate(event1)
     }
+
+    "suppress a state-change event when an update event exists for the same match" in new FilterScopeLiveActivities {
+      val update = makePayload(UpdateLiveActivityEvent, "match-1")
+      val stateChange = makePayload(UpdateStateChangeLiveActivityEvent, "match-1")
+
+      distinctCheck.isDuplicate(update) returns Future.successful(false)
+      distinctCheck.isDuplicate(stateChange) returns Future.successful(false)
+      distinctCheck.insertEvent(update) returns Future.successful(Distinct)
+
+      eventFilter.filterDynamoEventsForLiveActivities(List(update, stateChange)) must contain(exactly(update)).await
+    }
+
+    "allow a state-change event through when received in isolation (no update for same match)" in new FilterScopeLiveActivities {
+      val stateChange = makePayload(UpdateStateChangeLiveActivityEvent, "match-1")
+
+      distinctCheck.isDuplicate(stateChange) returns Future.successful(false)
+      distinctCheck.insertEvent(stateChange) returns Future.successful(Distinct)
+
+      eventFilter.filterDynamoEventsForLiveActivities(List(stateChange)) must contain(exactly(stateChange)).await
+    }
+
+    "allow a state-change event through when the update is for a different match" in new FilterScopeLiveActivities {
+      val update = makePayload(UpdateLiveActivityEvent, "match-2")
+      val stateChange = makePayload(UpdateStateChangeLiveActivityEvent, "match-1")
+
+      distinctCheck.isDuplicate(update) returns Future.successful(false)
+      distinctCheck.isDuplicate(stateChange) returns Future.successful(false)
+      distinctCheck.insertEvent(update) returns Future.successful(Distinct)
+      distinctCheck.insertEvent(stateChange) returns Future.successful(Distinct)
+
+      eventFilter.filterDynamoEventsForLiveActivities(List(update, stateChange)) must contain(exactly(update, stateChange)).await
+    }
+
+    "drop an event when the final insertEvent does not return Distinct (Duplicate/Unknown)" in new FilterScopeLiveActivities {
+      val event = makePayload(UpdateLiveActivityEvent, "match-1")
+
+      distinctCheck.isDuplicate(event) returns Future.successful(false)
+      distinctCheck.insertEvent(event) returns Future.successful(Duplicate) // or DynamoDistinctCheck.Unknown
+
+      eventFilter.filterDynamoEventsForLiveActivities(List(event)) must beEmpty[List[LiveActivityPayload]].await
+    }
+
+    "not cache an end event that was suppressed as an early end event" in new FilterScopeLiveActivities {
+      val update = makePayload(UpdateLiveActivityEvent, "match-1")
+      val end = makePayload(EndLiveActivityEvent, "match-1")
+
+      distinctCheck.isDuplicate(update) returns Future.successful(false)
+      distinctCheck.isDuplicate(end) returns Future.successful(false)
+      distinctCheck.insertEvent(update) returns Future.successful(Distinct)
+      distinctCheck.insertEvent(end) returns Future.successful(Distinct)
+
+      // cycle 1: end suppressed (update present) -> only update dispatched
+      eventFilter.filterDynamoEventsForLiveActivities(List(update, end)) must contain(exactly(update)).await
+      // cycle 2: end now arrives in isolation and should still be dispatchable (not cached away)
+      eventFilter.filterDynamoEventsForLiveActivities(List(end)) must contain(exactly(end)).await
+    }
+
   }
 }
