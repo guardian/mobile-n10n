@@ -32,11 +32,11 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     )
 
     val allEvents = triggeringEvent :: previousEvents
-    val goals = allEvents.collect { case g: Goal => g }
+    val goals = allEvents.collect { case g: Goal if !g.isDeleted => g }
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
-    val dismissals = allEvents.collect { case d: Dismissal => d }
+    val dismissals = allEvents.collect { case d: Dismissal if !d.isDeleted => d }
     val redCards = RedCards.fromDismissals(matchInfo.homeTeam, matchInfo.awayTeam, dismissals)
-    val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
+    val penaltyShootoutKicks = allEvents.collect { case psk: PenaltyShootoutKick if !psk.isDeleted => psk }
     val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
     val status = statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)
@@ -64,7 +64,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
      importance = importance(triggeringEvent),
      topic = topics,
      matchStatus = status,
-     eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
+     eventId = s"${triggeringEvent.eventId}/${triggeringEvent.isDeleted}", // used to derive the uuid in the payload trait
      kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
      lineupsAvailable = Some(matchInfo.lineupsAvailable),
      detailedMatchStatus = Some(MatchStatus.fromString(matchInfo.matchStatus).status),
@@ -101,7 +101,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
           topic = topics,
           matchStatus = status,
           detailedMatchStatus = Some("PENALTIES"),
-          eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
+          eventId = s"${triggeringEvent.eventId}/${triggeringEvent.isDeleted}", // used to derive the uuid in payload traid
           kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
           lineupsAvailable = Some(matchInfo.lineupsAvailable),
           debug = false,
@@ -193,13 +193,16 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
   }
 
   private def eventTitle(fme: FootballMatchEvent): String = fme match {
-    case _: Goal => "Goal!"
+    case g: Goal if !g.isDeleted => "Goal!"
+    case g: Goal if g.isDeleted => "No Goal!"
     case HalfTime(_) => "Half-time"
     case KickOff(_) => "Kick-off!"
     case SecondHalf(_) => "Second-half start"
     case FullTime(_) => "Full-Time"
-    case _:Dismissal => "Red card"
-    case _:PenaltyShootoutKick  => "Penalty Kick"
+    case d: Dismissal if !d.isDeleted => "Red card"
+    case d: Dismissal if d.isDeleted => "Red card overturned"
+    case psk: PenaltyShootoutKick if !psk.isDeleted => "Penalty Kick"
+    case psk: PenaltyShootoutKick if psk.isDeleted => "Penalty Kick overturned"
     case _:PreMatch => "Kick off soon"
     case _: ExtraTimeToBePlayed => "Extra time to follow"
     case _: ExtraTimeFirstHalf => "Extra time: first half"
