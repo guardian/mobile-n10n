@@ -25,6 +25,7 @@ import org.specs2.specification.Scope
 import pa.{MatchDay, MatchEvent, Parser}
 
 import java.time.ZonedDateTime
+import java.util.UUID
 import scala.io.Source
 
 class EventConsumerSpec(implicit ev: ExecutionEnv)
@@ -646,6 +647,48 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       )
     }
 
+    "generate a goal reversal payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
+
+      val result: List[LiveActivityPayload] =
+        eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+
+      result must contain((payload: LiveActivityPayload) =>
+        payload.eventType == UpdateLiveActivityEvent
+      )
+
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .homeTeam.score mustEqual (1)
+      )
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .awayTeam.score mustEqual (1)
+      )
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .homeTeam.score mustEqual (2)
+      )
+      // Ensure second away goal not present in the payload, as it was reversed/deleted
+      result must not contain ((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .awayTeam.score mustEqual (2)
+        )
+
+      // Check a payload is generated for the specific deleted goal event id.
+      val derivedId = s"football-match-status/${matchDayLA.id}/${"36159360"}/${true}"
+      result must contain((payload: LiveActivityPayload) =>
+        payload.id mustEqual (UUID.nameUUIDFromBytes(derivedId.getBytes))
+      )
+    }
+
+
+    // TODO add reversal tests for red cards and for penalty kick goals
     "generate a red card payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))

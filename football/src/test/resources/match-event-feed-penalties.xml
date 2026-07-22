@@ -8017,7 +8017,7 @@
             <distance />
             <outcome>Goal</outcome>
         </event>
-        <event teamID="15" eventID="36158116">
+        <event teamID="15" eventID="36158116" deleted="false">
             <eventType>goal</eventType>
             <matchTime>(15)</matchTime>
             <eventTime>15</eventTime>
@@ -9097,7 +9097,7 @@
             <distance />
             <outcome>Goal</outcome>
         </event>
-        <event teamID="15" eventID="36159360">
+        <event teamID="15" eventID="36159360" deleted="true">
             <eventType>goal</eventType>
             <matchTime>(37)</matchTime>
             <eventTime>37</eventTime>
