@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<matches>
+    <match matchID="4484328" date="11/02/2025" koTime="20:00">
+        <competition competitionID="300" seasonID="5990">The Emirates FA Cup 24/25</competition>
+        <stage stageNumber="1" stageType="Knockout"></stage>
+        <round roundNumber="4">Fourth Round</round>
+        <leg>1</leg>
+        <liveMatch>No</liveMatch>
+        <result>Yes</result>
+        <previewAvailable>No</previewAvailable>
+        <reportAvailable>No</reportAvailable>
+        <lineupsAvailable>Yes</lineupsAvailable>
+        <matchStatus>FT</matchStatus>
+        <attendance>8330</attendance>
+        <referee refereeID="603491">Andrew Kitchen</referee>
+        <venue venueID="7671">St James Park</venue>
+        <homeTeam teamID="76">
+            <teamName>Exeter</teamName>
+            <score>2</score>
+            <htScore>1</htScore>
+            <aggregateScore></aggregateScore>
+            <scorers>
+                <![CDATA[Josh Magennis (5),Josh Magennis (50)]]>
+            </scorers>
+        </homeTeam>
+        <awayTeam teamID="15">
+            <teamName>Nottm Forest</teamName>
+            <score>2</score>
+            <htScore>2</htScore>
+            <aggregateScore></aggregateScore>
+            <scorers>
+                <![CDATA[Ramon Sosa (15),Taiwo Awoniyi (37)]]>
+            </scorers>
+        </awayTeam>
+        <comments>Nottm Forest win 4-2 on penalties.</comments>
+    </match>
+</matches>

@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="utf-8"?>
+<matchEvents>
+    <matchMinutes>128</matchMinutes>
+    <isResult>Yes</isResult>
+    <teams>
+        <homeTeam teamID="76">Exeter</homeTeam>
+        <awayTeam teamID="15">Nottm Forest</awayTeam>
+    </teams>
+    <events>
+        <event teamID="" eventID="">
+            <eventType>timeline</eventType>
+            <matchTime>0:00</matchTime>
+            <eventTime>0</eventTime>
+            <normalTime>0:00</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="" teamID="" teamName=""/>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how/>
+            <whereFrom/>
+            <whereTo/>
+            <type/>
+            <distance/>
+            <outcome/>
+        </event>
+        <event teamID="76" eventID="36157560">
+            <eventType>clearance</eventType>
+            <matchTime>(1)</matchTime>
+            <eventTime>1</eventTime>
+            <normalTime>0:18</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="616849" teamID="76" teamName="Exeter">Vincent Harper</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how/>
+            <whereFrom/>
+            <whereTo/>
+            <type/>
+            <distance/>
+            <outcome/>
+        </event>
+        <event teamID="76" eventID="36157488">
+            <eventType>shot on target</eventType>
+            <matchTime>(5)</matchTime>
+            <eventTime>5</eventTime>
+            <normalTime>4:26</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="392015" teamID="76" teamName="Exeter">Josh Magennis</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom>Centre 6 Yard</whereFrom>
+            <whereTo/>
+            <type/>
+            <distance/>
+            <outcome>Goal</outcome>
+        </event>
+        <event teamID="76" eventID="36157489">
+            <eventType>goal</eventType>
+            <matchTime>(5)</matchTime>
+            <eventTime>5</eventTime>
+            <normalTime>4:26</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="392015" teamID="76" teamName="Exeter">Josh Magennis</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom>Centre 6 Yard</whereFrom>
+            <whereTo>Left Low</whereTo>
+            <type/>
+            <distance/>
+            <outcome/>
+        </event>
+        <event teamID="15" eventID="36158115">
+            <eventType>shot on target</eventType>
+            <matchTime>(15)</matchTime>
+            <eventTime>15</eventTime>
+            <normalTime>14:18</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="625650" teamID="15" teamName="Nottm Forest">Ramon Sosa</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom>Centre Penalty Area</whereFrom>
+            <whereTo/>
+            <type/>
+            <distance/>
+            <outcome>Goal</outcome>
+        </event>
+        <event teamID="15" eventID="36158116">
+            <eventType>goal</eventType>
+            <matchTime>(15)</matchTime>
+            <eventTime>15</eventTime>
+            <normalTime>14:18</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="625650" teamID="15" teamName="Nottm Forest">Ramon Sosa</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom>Centre Penalty Area</whereFrom>
+            <whereTo>Centre Low</whereTo>
+            <type/>
+            <distance/>
+            <outcome/>
+        </event>
+        <event teamID="15" eventID="36159359">
+            <eventType>shot on target</eventType>
+            <matchTime>(37)</matchTime>
+            <eventTime>37</eventTime>
+            <normalTime>36:32</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="521680" teamID="15" teamName="Nottm Forest">Taiwo Awoniyi</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Left Foot</how>
+            <whereFrom>Centre</whereFrom>
+            <whereTo/>
+            <type>Curled</type>
+            <distance/>
+            <outcome>Goal</outcome>
+        </event>
+        <event teamID="15" eventID="36159360">
+            <eventType>goal</eventType>
+            <matchTime>(37)</matchTime>
+            <eventTime>37</eventTime>
+            <normalTime>36:32</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="521680" teamID="15" teamName="Nottm Forest">Taiwo Awoniyi</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Left Foot</how>
+            <whereFrom>Centre</whereFrom>
+            <whereTo>Left Low</whereTo>
+            <type/>
+            <distance/>
+            <outcome/>
+        </event>
+        <event teamID="76" eventID="36161531">
+            <eventType>shot on target</eventType>
+            <matchTime>(50)</matchTime>
+            <eventTime>50</eventTime>
+            <normalTime>49:56</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="392015" teamID="76" teamName="Exeter">Josh Magennis</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom>Left 6 Yard</whereFrom>
+            <whereTo/>
+            <type/>
+            <distance/>
+            <outcome>Goal</outcome>
+        </event>
+        <event teamID="76" eventID="36161532">
+            <eventType>goal</eventType>
+            <matchTime>(50)</matchTime>
+            <eventTime>50</eventTime>
+            <normalTime>49:56</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="392015" teamID="76" teamName="Exeter">Josh Magennis</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom>Left 6 Yard</whereFrom>
+            <whereTo>Left Low</whereTo>
+            <type/>
+            <distance/>
+            <outcome/>
+        </event>
+        <event teamID="76" eventID="36163563">
+            <eventType>foul</eventType>
+            <matchTime>(87)</matchTime>
+            <eventTime>87</eventTime>
+            <normalTime>86:12</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="604893" teamID="76" teamName="Exeter">Ed Turns</player1>
+                <player2 playerID="577299" teamID="15" teamName="Nottm Forest">Morgan Gibbs-White</player2>
+            </players>
+            <reason/>
+            <how/>
+            <whereFrom/>
+            <whereTo/>
+            <type/>
+            <distance/>
+            <outcome>Free Kick</outcome>
+        </event>
+        <event teamID="76" eventID="36163565">
+            <eventType>dismissal</eventType>
+            <matchTime>(87)</matchTime>
+            <eventTime>87</eventTime>
+            <normalTime>86:31</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="604893" teamID="76" teamName="Exeter">Ed Turns</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason>Serious Foul Play</reason>
+            <how/>
+            <whereFrom/>
+            <whereTo/>
+            <type/>
+            <distance/>
+            <outcome/>
+        </event>
+        <event teamID="15" eventID="36163938">
+            <eventType>shot on target</eventType>
+            <matchTime>(120)</matchTime>
+            <eventTime>120</eventTime>
+            <normalTime>120:00</normalTime>
+            <addedTime>0:40</addedTime>
+            <players>
+                <player1 playerID="585774" teamID="15" teamName="Nottm Forest">Nicolas Dominguez</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Head</how>
+            <whereFrom>Centre Penalty Area</whereFrom>
+            <whereTo/>
+            <type/>
+            <distance/>
+            <outcome>Save</outcome>
+        </event>
+        <event teamID="76" eventID="36163939">
+            <eventType>save</eventType>
+            <matchTime>(120)</matchTime>
+            <eventTime>120</eventTime>
+            <normalTime>120:00</normalTime>
+            <addedTime>0:40</addedTime>
+            <players>
+                <player1 playerID="641615" teamID="76" teamName="Exeter">Joe Whitworth</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how/>
+            <whereFrom/>
+            <whereTo/>
+            <type>Other</type>
+            <distance/>
+            <outcome/>
+        </event>
+        <event teamID="76" eventID="36163940">
+            <eventType>shootoutGoal</eventType>
+            <matchTime>(122)</matchTime>
+            <eventTime>122</eventTime>
+            <normalTime>121:50</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="392015" teamID="76" teamName="Exeter">Josh Magennis</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom/>
+            <whereTo>Right High</whereTo>
+            <type/>
+            <distance/>
+            <outcome>Scored</outcome>
+        </event>
+        <event teamID="15" eventID="36163942">
+            <eventType>shootoutGoal</eventType>
+            <matchTime>(123)</matchTime>
+            <eventTime>123</eventTime>
+            <normalTime>122:43</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="412070" teamID="15" teamName="Nottm Forest">Chris Wood</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom/>
+            <whereTo>Left High</whereTo>
+            <type/>
+            <distance/>
+            <outcome>Scored</outcome>
+        </event>
+        <event teamID="76" eventID="36163944">
+            <eventType>shootoutSave</eventType>
+            <matchTime>(124)</matchTime>
+            <eventTime>124</eventTime>
+            <normalTime>123:24</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="572495" teamID="76" teamName="Exeter">Reece Cole</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom/>
+            <whereTo>Left Low</whereTo>
+            <type/>
+            <distance/>
+            <outcome>Saved</outcome>
+        </event>
+        <event teamID="15" eventID="36163946">
+            <eventType>shootoutGoal</eventType>
+            <matchTime>(125)</matchTime>
+            <eventTime>125</eventTime>
+            <normalTime>124:26</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="577299" teamID="15" teamName="Nottm Forest">Morgan Gibbs-White</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom/>
+            <whereTo>Left Low</whereTo>
+            <type/>
+            <distance/>
+            <outcome>Scored</outcome>
+        </event>
+        <event teamID="76" eventID="36163948">
+            <eventType>shootoutMiss</eventType>
+            <matchTime>(126)</matchTime>
+            <eventTime>126</eventTime>
+            <normalTime>125:07</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="473763" teamID="76" teamName="Exeter">Angus MacDonald</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom/>
+            <whereTo>Crossbar</whereTo>
+            <type/>
+            <distance/>
+            <outcome>Missed</outcome>
+        </event>
+        <event teamID="15" eventID="36163950">
+            <eventType>shootoutGoal</eventType>
+            <matchTime>(127)</matchTime>
+            <eventTime>127</eventTime>
+            <normalTime>126:05</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="619019" teamID="15" teamName="Nottm Forest">Elliot Anderson</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom/>
+            <whereTo>Left Low</whereTo>
+            <type/>
+            <distance/>
+            <outcome>Scored</outcome>
+        </event>
+        <event teamID="76" eventID="36163952">
+            <eventType>shootoutGoal</eventType>
+            <matchTime>(127)</matchTime>
+            <eventTime>127</eventTime>
+            <normalTime>126:54</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="682642" teamID="76" teamName="Exeter">Tony Yogane</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom/>
+            <whereTo>Left High</whereTo>
+            <type/>
+            <distance/>
+            <outcome>Scored</outcome>
+        </event>
+        <event teamID="15" eventID="36163954">
+            <eventType>shootoutGoal</eventType>
+            <matchTime>(128)</matchTime>
+            <eventTime>128</eventTime>
+            <normalTime>127:40</normalTime>
+            <addedTime>0:00</addedTime>
+            <players>
+                <player1 playerID="617063" teamID="15" teamName="Nottm Forest">Neco Williams</player1>
+                <player2 playerID="" teamID="" teamName=""/>
+            </players>
+            <reason/>
+            <how>Right Foot</how>
+            <whereFrom/>
+            <whereTo>Left High</whereTo>
+            <type/>
+            <distance/>
+            <outcome>Scored</outcome>
+        </event>
+    </events>
+</matchEvents>

@@ -16,6 +16,7 @@ project/boot/
 project/plugins/project/
 dynamodb-local/
 dynamodb-local-common/
+dynamodb-local-football/
 dynamodb-local-schedule-lambda/
 dynamodb-local-live-activities/
 
