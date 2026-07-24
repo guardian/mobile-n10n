@@ -83,7 +83,8 @@ class LiveActivityEventConsumer(
 
     val duplicatePhaseEventTypes =
       List(
-        "full-time", // only send "end-live-activity" synthetic event
+        "full-time",
+        "start-live-activity" // we send prematch event so this is not needed.
       )
 
     val filteredMatchData =
