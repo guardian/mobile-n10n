@@ -43,15 +43,16 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.jdk.CollectionConverters._
 
-/** End-to-end style test that drives the lambda entry point (`FootballLambda.handler`) through 20 polling cycles,
-  * simulating match progression.
+/** End-to-end style test that drives `FootballLambda.handler` through multiple polling cycles, mimicking
+ * real life PA API responses and simulating match progression.
   *
   * `FootballData` is tested; only its external boundaries are mocked:
-  *   - `PaFootballClient` : returns dummy PA feeds parsed from test resources (matchDay + matchEvents)
-  *   - `S3DataStore` : returns the dummy match's competition as a supported competition
+ *   - `PaFootballClient` : mocked to return dummy PA feeds parsed from test resources (matchDay + matchEvents)
+ *   - `ContentApiClient` : mocked to return an empty search response (no articles found)
+ *   - `S3DataStore` : mocked to returns the dummy match's competition as a supported competition
   *   - `DynamoPayloadStateCheck` : local dynamo table spun up that can be asserted against.
-  * The article searcher and the two handlers remain mocked; later steps will replace them.
-  */
+ *      `Handler` classes are tested, with LiveActivityPusher and NotificationSender mocked.
+ * */
 class LambdaIntegrationSpec(implicit ee: ExecutionEnv) extends Specification with Mockito with BeforeAfterEach {
 
   sequential
@@ -135,7 +136,8 @@ class LambdaIntegrationSpec(implicit ee: ExecutionEnv) extends Specification wit
 
     // Each cycle is (matchStatus, eventsToReveal, result, liveMatch, pollTime, expectedPayloadCount).
     // `expectedPayloadCount` is the total number of items expected in the live-activities table AFTER the
-    // cycle has run (the table accumulates across cycles). Tune these numbers to lock down behaviour.
+    // cycle has run (the table accumulates across cycles).
+    // TODO assert against last payload upserted
     val matchCycles: List[(String, Int, Boolean, Boolean, ZonedDateTime, Int, Option[String])] = List(
       ("-", 0, false, false, fixedDateTime.minusMinutes(60), 1, Some("create-channel")), // pre-kick-off
       ("-", 0, false, false, fixedDateTime.minusMinutes(15), 2, Some("pre-match")), // pre-kick-off
