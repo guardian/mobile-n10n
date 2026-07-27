@@ -760,6 +760,22 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for CODE 1`]
                     ],
                   ],
                 },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:dynamodb:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-liveactivities-payload-CODE/index/*",
+                    ],
+                  ],
+                },
               ],
             },
             {
@@ -1599,6 +1615,22 @@ exports[`The FootballNotificationsLambda stack matches the snapshot for PROD 1`]
                         "Ref": "AWS::AccountId",
                       },
                       ":table/mobile-notifications-liveactivities-payload-PROD",
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:dynamodb:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/mobile-notifications-liveactivities-payload-PROD/index/*",
                     ],
                   ],
                 },
