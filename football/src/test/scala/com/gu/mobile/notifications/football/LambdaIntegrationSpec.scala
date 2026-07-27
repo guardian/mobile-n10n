@@ -142,10 +142,10 @@ class LambdaIntegrationSpec(implicit ee: ExecutionEnv) extends Specification wit
       ("-", 0, false, false, fixedDateTime.minusMinutes(60), 1, Some("create-channel")), // pre-kick-off
       ("-", 0, false, false, fixedDateTime.minusMinutes(15), 2, Some("pre-match")), // pre-kick-off
       ("KO", 2, false, true, fixedDateTime, 3, None), // kick off
-      ("FH", 4, false, true, fixedDateTime, 4, None), // first half: Magennis opener (5')
-      ("FH", 6, false, true, fixedDateTime, 5, None), // Sosa equalises (15')
-      ("FH", 5, false, true, fixedDateTime, 6, Some("state-change")), // Sosa goal (15') overturned by VAR, no goal
-      ("FH", 8, false, true, fixedDateTime, 7, None), // Awoniyi puts Forest ahead (37')
+      ("KO", 4, false, true, fixedDateTime, 4, None), // first half: Magennis opener (5')
+      ("KO", 6, false, true, fixedDateTime, 5, None), // Sosa equalises (15')
+      ("KO", 5, false, true, fixedDateTime, 6, Some("state-change")), // Sosa goal (15') overturned by VAR, no goal
+      ("KO", 8, false, true, fixedDateTime, 7, None), // Awoniyi puts Forest ahead (37')
       ("HT", 8, false, true, fixedDateTime, 8, Some("half-time")), // half-time
       ("SHS", 8, false, true, fixedDateTime, 9, Some("second-half")), // second half kicks off
       ("SHS", 10, false, true, fixedDateTime, 10, None), // Magennis levels (50')
@@ -237,63 +237,25 @@ class LambdaIntegrationSpec(implicit ee: ExecutionEnv) extends Specification wit
         // Scan the live-activities table and assert its (accumulated) size for this cycle.
         val payloadCount = dynamoClient.scan(new ScanRequest().withTableName(liveActivitiesTestTableName)).getCount
         println(
-          Console.YELLOW + s"live-activities table size after cycle: $payloadCount vs expected: $expectedPayloads" + Console.RESET,
+          Console.YELLOW + s"live-activities table size after cycle: $payloadCount vs expected: $expectedPayloads \n" + Console.RESET,
         )
 
         handlerResult and
           (payloadCount.toInt aka s"live-activities table size after cycle status='$status'" mustEqual expectedPayloads)
 
-      // TODO add an assertion for exepected last event type once the notification handler is sorted.
+        // TODO add an assertion for expected last event type once the notification handler is sorted.
       }
 
       cycleResults.reduce(_ and _) and
         (there was exactly(matchCycles.size)(paFootballClientMock).aroundToday(any[ZonedDateTime])) and
         (there was exactly(matchCycles.size)(paFootballClientMock).eventsForMatch(any[MatchDay])(any[ExecutionContext]))
     }
+    
+    "rethrow when a downstream liveActivities handler fails" in new LambdaScope {
 
-    // TODO this requires filterOutStateChangeEventsNotReceivedInIsolatiom to be applied to NotificationsHandlerEventFilter
-//    "correctly send expected number of push notifications each polling cycle for a given match" in new LambdaScope {
-//
-//      val cycleResults = matchCycles.map {
-//        case (status, eventsToTake, result, live, pollTime, expectedPayloads, expectedEventType) =>
-//          println(
-//            Console.BLUE + s"=== POLLING CYCLE: status='$status', eventsToTake=$eventsToTake, result=$result, live=$live, pollTime=$pollTime, expectedEventType=$expectedEventType ===" + Console.RESET,
-//          )
-//
-//          currentPollTime = pollTime
-//          val eventsSoFar = rawEvents.take(eventsToTake)
-//
-//          paFootballClientMock.aroundToday(any[ZonedDateTime]) returns Future.successful(
-//            List(matchDay.copy(matchStatus = status, result = result, liveMatch = live)),
-//          )
-//          paFootballClientMock.eventsForMatch(any[MatchDay])(any[ExecutionContext]) returns Future.successful(
-//            (matchDay, eventsSoFar),
-//          )
-//
-//          val handlerResult = lambda.handler() mustEqual "done"
-//
-//          //  Scan the live-activities table and assert its (accumulated) size for this cycle.
-//          val payloadCount = dynamoClient.scan(new ScanRequest().withTableName(notificationsTestTableName)).getCount
-//          println(
-//            Console.YELLOW + s"push notifications table size after cycle: $payloadCount vs expected: $expectedPayloads" + Console.RESET,
-//          )
-//
-//          // Note: the synthetic event-type assertion lives in the live-activities test above, because the
-//          // synthetic type is only recoverable there (via the deterministic payload id). The notification
-//          // payload doesn't carry it, and types like create-channel/state-change never become notifications.
-//
-//          handlerResult and
-//            (payloadCount.toInt aka s"push notifications table size after cycle status='$status'" mustEqual expectedPayloads)
-//      }
-//
-//      cycleResults.reduce(_ and _) and
-//        (there was exactly(matchCycles.size)(paFootballClientMock).aroundToday(any[ZonedDateTime])) and
-//        (there was exactly(matchCycles.size)(paFootballClientMock).eventsForMatch(any[MatchDay])(any[ExecutionContext]))
-//    }
-
-    "rethrow when a downstream handler fails" in new LambdaScope {
-      notificationSenderMock.sendNotifications(any[List[NotificationPayload]])(any[ExecutionContext]) returns
-        Future.failed(new RuntimeException("boom"))
+      liveActivityPusherMock.pushEvents(any[List[LiveActivityPayload]], any[EventSource])(
+        any[ExecutionContext]
+      ) returns Future.failed(new RuntimeException("boom la"))
       paFootballClientMock.aroundToday(any[ZonedDateTime]) returns Future.successful(
         List(matchDay),
       )
