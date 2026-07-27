@@ -183,7 +183,7 @@ class FootballData(
       // check if the current match state is identical to the last known payload state sent.
       stateChange <- isFootballMatchStateIdentical(matchDay, events).map(!_)
       // add synthetic events to the PA events timeline, if any are generated.
-      // a state change synth even will be generated for every update, but we filter out the superfluous ones in the EventConsumer.
+      // a state change synth event will be generated for every triggering event or synth event, but we filter out the superfluous ones in the EventConsumer.
       (_, eventsWithSyntheticEvents) <- appendSyntheticEvents(matchDay, events, stateChange)(syntheticEvents)
     } yield Some(RawMatchData(matchDay, eventsWithSyntheticEvents))
 
@@ -208,8 +208,8 @@ class FootballData(
       payloadStateCheck
         .isMatchStateIdentical(matchDay.id, footballMatchState)
         .recover { case NonFatal(exception) =>
-          logger.error(s"Error checking for for identical football match state ${matchDay.id}: ${exception.getMessage}")
-          true // assume identical // todo confirm this behaviour is desired.
+          logger.error(s"Error checking for identical football match state ${matchDay.id}: ${exception.getMessage}: ${exception}")
+          true // on failure, suppress creation of synthetic state-change event rather than risk emitting a spurious update every poll.
         }
     }
   }
