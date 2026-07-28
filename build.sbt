@@ -45,9 +45,8 @@ val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.12"
 val apacheThrift: String = "0.15.0"
-val jacksonDatabind: String = "2.19.4"
-val jacksonCbor: String = "2.19.4"
-val jacksonScalaModule: String = "2.19.4"
+val jacksonDatabind: String = "2.21.5"
+val jacksonScalaModule: String = "2.21.5"
 val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.39.0"
 val nettyVersion: String = "4.2.2.Final"
@@ -81,7 +80,6 @@ lazy val commoneventconsumer = project
       "org.playframework" %% "play-json" % playJsonVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
-      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
     ),
   ))
@@ -92,7 +90,6 @@ lazy val commontest = project
       specs2,
       playCore,
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
-      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
     ),
   ))
@@ -141,7 +138,6 @@ lazy val commonscheduledynamodb = project
     libraryDependencies ++= List(
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
-      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule,
       specs2 % Test
 
@@ -237,7 +233,6 @@ lazy val apiModels = {
       "org.specs2" %% "specs2-core" % specsVersion % "test",
       "org.specs2" %% "specs2-mock" % specsVersion % "test",
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
-      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonCbor,
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule
     ),
     organization := "com.gu",
