@@ -1,18 +1,18 @@
 package com.gu.mobile.notifications.football.lib
 
+import com.gu.mobile.notifications.client.models.liveActitivites.LiveActivityPayload
+
 import java.time.{LocalDate, LocalTime, ZonedDateTime}
-import com.gu.mobile.notifications.football.{Configuration, Logging}
-import com.gu.mobile.notifications.football.models.RawMatchData
-import org.joda.time.DateTime
-import pa.MatchDay
+import com.gu.mobile.notifications.football.Logging
+import com.gu.mobile.notifications.football.models.{FootballMatchEvent, RawMatchData}
+import com.gu.mobile.notifications.football.notificationbuilders.MatchStatusLiveActivityPayloadBuilder
+import pa.{MatchDay, MatchEvent}
 import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
-
-case class EndedMatch(matchId: String, startTime: DateTime)
 
 case class PACompetition(
     id: String,
@@ -31,6 +31,7 @@ class FootballData(
     paClient: PaFootballClient,
     syntheticEvents: SyntheticMatchEventGenerator,
     competitionsDataStore: S3DataStore[PACompetition],
+    payloadStateCheck: DynamoPayloadStateCheck,
     stage: String,
 ) extends Logging {
 
@@ -169,10 +170,22 @@ class FootballData(
     }
   }
 
-  private def processMatch(matchDay: MatchDay): Future[Option[RawMatchData]] = {
+  private def appendSyntheticEvents(matchDay: MatchDay, events: List[MatchEvent], stateChange: Boolean)(syntheticMatchEventGenerator: SyntheticMatchEventGenerator): Future[(MatchDay, List[MatchEvent])] = {
+    val eventsWithSyntheticEvents = syntheticMatchEventGenerator.generate(events, matchDay.id, matchDay, stateChange )
+    Future.successful((matchDay, eventsWithSyntheticEvents))
+  }
+
+  // Process individual match
+  private[lib] def processMatch(matchDay: MatchDay): Future[Option[RawMatchData]] = {
     val matchData = for {
-      (matchDay, events) <- paClient.eventsForMatch(matchDay, syntheticEvents)
-    } yield Some(RawMatchData(matchDay, events))
+      // fetch current PA events timeline for match
+      (_, events) <- paClient.eventsForMatch(matchDay)
+      // check if the current match state is identical to the last known payload state sent.
+      stateChange <- isFootballMatchStateIdentical(matchDay, events).map(!_)
+      // add synthetic events to the PA events timeline, if any are generated.
+      // a state change synth even will be generated for every update, but we filter out the superfluous ones in the EventConsumer.
+      (_, eventsWithSyntheticEvents) <- appendSyntheticEvents(matchDay, events, stateChange)(syntheticEvents)
+    } yield Some(RawMatchData(matchDay, eventsWithSyntheticEvents))
 
     matchData.recover { case NonFatal(exception) =>
       logger.error(s"Failed to process match ${matchDay.id}: ${exception.getMessage}", exception)
@@ -180,4 +193,24 @@ class FootballData(
     }
   }
 
+  private[lib] def isFootballMatchStateIdentical(matchDay: MatchDay, events: List[pa.MatchEvent]): Future[Boolean] = {
+    val payloadBuilder = new MatchStatusLiveActivityPayloadBuilder()
+    val toFootballEvent = FootballMatchEvent.fromPaMatchEvent(matchDay.homeTeam, matchDay.awayTeam) _
+
+    if (events.isEmpty) Future.successful(true) // no stage change before a match has started.
+    else {
+      val footballMatchState = payloadBuilder.buildFootballContentState(
+        currentMinute = None,
+        matchInfo = matchDay,
+        allEvents = events.flatMap(toFootballEvent),
+        articleId = None,
+      )
+      payloadStateCheck
+        .isMatchStateIdentical(matchDay.id, footballMatchState)
+        .recover { case NonFatal(exception) =>
+          logger.error(s"Error checking for for identical football match state ${matchDay.id}: ${exception.getMessage}")
+          true // assume identical // todo confirm this behaviour is desired.
+        }
+    }
+  }
 }

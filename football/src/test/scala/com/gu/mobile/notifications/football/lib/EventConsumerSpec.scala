@@ -707,7 +707,8 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       new SyntheticMatchEventGenerator(() => ZonedDateTime.now()).generate(
         rawEvents,
         "4011135",
-        matchDay
+        matchDay,
+        false
       )
 
     def matchData = MatchDataWithArticle(
@@ -729,7 +730,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
     def eventsLA: List[MatchEvent] =
       new SyntheticMatchEventGenerator(() => ZonedDateTime.now())
-        .generate(rawEventsLA, "4484328", matchDayLA)
+        .generate(rawEventsLA, "4484328", matchDayLA, false)
 
     def matchDataLA = MatchDataWithArticle(
       matchDayLA,

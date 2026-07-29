@@ -24,7 +24,6 @@ class EventConsumer(
     /** We have added synthetic events for live activities which we don't want
       * to generate push notifications for, so we filter those out here.
       */
-    // todo can we capture these strings in union type?
     val liveActivityEventTypes =
       List(
         // additional synthetic live activity life cycle events
@@ -35,7 +34,8 @@ class EventConsumer(
         "resumed",
         "abandoned",
         "cancelled",
-        "postponed"
+        "postponed",
+        "state-change" // todo
       )
 
     val filteredMatchData = matchData.copy(allEvents =
@@ -84,6 +84,7 @@ class LiveActivityEventConsumer(
     val duplicatePhaseEventTypes =
       List(
         "full-time", // only send "end-live-activity" synthetic event
+        "state-change" // todo
       )
 
     val filteredMatchData =
