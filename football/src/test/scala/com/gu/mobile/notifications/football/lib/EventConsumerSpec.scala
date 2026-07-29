@@ -407,6 +407,26 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         payload.eventType == UpdateLiveActivityEvent
       )
     }
+
+    "generate a state-change UPDATE payload when a state change has occurred" in new MatchEventsContext {
+      override def stateChange: Boolean = true
+
+      val result: List[LiveActivityPayload] =
+        eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must contain((payload: LiveActivityPayload) =>
+        payload.eventType == UpdateStateChangeLiveActivityEvent
+      )
+    }
+
+    "NOT generate a state-change payload when no state change has occurred" in new MatchEventsContext {
+      override def stateChange: Boolean = false
+
+      val result: List[LiveActivityPayload] =
+        eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+      result must not(contain((payload: LiveActivityPayload) =>
+        payload.eventType == UpdateStateChangeLiveActivityEvent
+      ))
+    }
   }
 
   "A LiveActivity EventConsumer handles synthetic events for match phases and" should {
@@ -609,7 +629,6 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       )
     }
 
-    // todo - check end broadcast states are shown
     "generate a abandoned live activity END payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "Abandoned", result = false)
@@ -703,12 +722,15 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
     def matchDay: MatchDay = Parser.parseMatchDay(loadFile("20170811.xml")).head
 
+    // Whether the synthetic event generator should emit a state-change event (VAR overturn etc.).
+    def stateChange: Boolean = false
+
     def events: List[MatchEvent] =
       new SyntheticMatchEventGenerator(() => ZonedDateTime.now()).generate(
         rawEvents,
         "4011135",
         matchDay,
-        false
+        stateChange
       )
 
     def matchData = MatchDataWithArticle(
@@ -730,7 +752,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
     def eventsLA: List[MatchEvent] =
       new SyntheticMatchEventGenerator(() => ZonedDateTime.now())
-        .generate(rawEventsLA, "4484328", matchDayLA, false)
+        .generate(rawEventsLA, "4484328", matchDayLA, stateChange)
 
     def matchDataLA = MatchDataWithArticle(
       matchDayLA,

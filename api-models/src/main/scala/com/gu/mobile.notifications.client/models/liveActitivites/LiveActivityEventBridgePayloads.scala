@@ -40,6 +40,11 @@ sealed trait LiveActivityEventType {
 case object CreateChannelEvent extends LiveActivityEventType { val asString = "channel-create" }
 case object StartLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-start" }
 case object UpdateLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-update" }
+
+// Required for deduping, but string value allows processing as standard update event once pushed via eventbus to live activities service.
+case object UpdateStateChangeLiveActivityEvent extends LiveActivityEventType {
+  val asString = "broadcast-update"
+}
 case object EndLiveActivityEvent extends LiveActivityEventType { val asString = "broadcast-end" }
 case object DeleteChannelEvent extends LiveActivityEventType { val asString = "channel-delete" }
 
@@ -48,6 +53,7 @@ object LiveActivityEventType {
     CreateChannelEvent,
     StartLiveActivityEvent,
     UpdateLiveActivityEvent,
+    UpdateStateChangeLiveActivityEvent,
     EndLiveActivityEvent,
     DeleteChannelEvent
   )

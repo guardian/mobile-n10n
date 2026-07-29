@@ -1,6 +1,6 @@
 package com.gu.mobile.notifications.football.notificationbuilders
 
-import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, CreateChannelEvent, EndLiveActivityEvent, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, MatchStatus, TeamState, UpdateLiveActivityEvent}
+import com.gu.mobile.notifications.client.models.liveActitivites.{Competition, CreateChannelEvent, EndLiveActivityEvent, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, MatchStatus, TeamState, UpdateLiveActivityEvent, UpdateStateChangeLiveActivityEvent}
 import com.gu.mobile.notifications.football.models._
 import pa.MatchDay
 
@@ -11,9 +11,9 @@ class MatchStatusLiveActivityPayloadBuilder {
 
   def buildFootballContentState(
                                  currentMinute: Option[Int],
-      matchInfo: MatchDay,
+                                 matchInfo: MatchDay,
                                  allEvents: List[FootballMatchEvent],
-      articleId: Option[String]
+                                 articleId: Option[String]
   ): FootballMatchContentState = {
 
     val goals = allEvents.collect { case g: Goal => g }
@@ -86,6 +86,7 @@ class MatchStatusLiveActivityPayloadBuilder {
       case Cancelled(_) => EndLiveActivityEvent
       case CreateChannel(_) => CreateChannelEvent
       case EndLiveActivity(_) => EndLiveActivityEvent
+      case MatchStateChangeEvent(_) => UpdateStateChangeLiveActivityEvent // Json writer should encode this as "broadcast-update" for APNS compatibility
       case _ => UpdateLiveActivityEvent
     }
 

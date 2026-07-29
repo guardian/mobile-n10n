@@ -84,7 +84,6 @@ class LiveActivityEventConsumer(
     val duplicatePhaseEventTypes =
       List(
         "full-time", // only send "end-live-activity" synthetic event
-        "state-change" // todo
       )
 
     val filteredMatchData =

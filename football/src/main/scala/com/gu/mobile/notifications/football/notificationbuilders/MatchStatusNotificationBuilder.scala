@@ -5,7 +5,7 @@ import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.{Importance, Major, Minor}
 import com.gu.mobile.notifications.client.models._
 import com.gu.mobile.notifications.client.models.liveActitivites.MatchStatus
-import com.gu.mobile.notifications.football.models.{Dismissal, ExtraTimeFirstHalf, ExtraTimeHalfTime, ExtraTimeSecondHalf, ExtraTimeToBePlayed, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, Penalties, PenaltiesToBePlayed, PenaltyShootoutKick, PenaltyShootoutScore, PreMatch, RedCards, Score, SecondHalf, StartLiveActivity}
+import com.gu.mobile.notifications.football.models.{Dismissal, ExtraTimeFirstHalf, ExtraTimeHalfTime, ExtraTimeSecondHalf, ExtraTimeToBePlayed, FootballMatchEvent, FullTime, Goal, HalfTime, KickOff, MatchStateChangeEvent, Penalties, PenaltiesToBePlayed, PenaltyShootoutKick, PenaltyShootoutScore, PreMatch, RedCards, Score, SecondHalf, StartLiveActivity}
 import pa.{MatchDay, MatchDayTeam}
 
 import scala.PartialFunction.condOpt
@@ -207,6 +207,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case _: ExtraTimeSecondHalf => "Extra time: second half"
     case _: PenaltiesToBePlayed => "Penalties to follow"
     case _: Penalties => "Penalties"
+    case _: MatchStateChangeEvent => "Match update"
     case _ => "The Guardian"
   }
 

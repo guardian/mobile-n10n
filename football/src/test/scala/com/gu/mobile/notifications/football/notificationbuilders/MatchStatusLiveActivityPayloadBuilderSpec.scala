@@ -1,8 +1,8 @@
 package com.gu.mobile.notifications.football.notificationbuilders
 
 import com.gu.mobile.notifications.client.models.{DefaultGoalType, ScoredShootoutResult}
-import com.gu.mobile.notifications.client.models.liveActitivites.{CreateChannelEvent, EndLiveActivityEvent, FirstHalf, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, TeamState, UpdateLiveActivityEvent, Competition => LACompetition}
-import com.gu.mobile.notifications.football.models.{Abandoned, Cancelled, CreateChannel, Dismissal, EndLiveActivity, Goal, HalfTime, PenaltyShootoutKick}
+import com.gu.mobile.notifications.client.models.liveActitivites.{CreateChannelEvent, EndLiveActivityEvent, FirstHalf, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, TeamState, UpdateLiveActivityEvent, UpdateStateChangeLiveActivityEvent, Competition => LACompetition}
+import com.gu.mobile.notifications.football.models.{Abandoned, Cancelled, CreateChannel, Dismissal, EndLiveActivity, Goal, HalfTime, MatchStateChangeEvent, PenaltyShootoutKick}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
@@ -69,6 +69,12 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
 
     "map an EndLiveActivity trigger to an EndLiveActivityEvent" in new MatchEventsContext {
       builder.build(EndLiveActivity("e1"), matchInfo, List.empty, None).eventType mustEqual EndLiveActivityEvent
+    }
+
+    "map a MatchStateChangeEvent trigger to an UpdateStateChangeLiveActivityEvent" in new MatchEventsContext {
+      val stateChangePayload = builder.build(MatchStateChangeEvent("e1"), matchInfo, List.empty, None)
+      stateChangePayload.eventType mustEqual UpdateStateChangeLiveActivityEvent
+      stateChangePayload.eventType.asString mustEqual "broadcast-update"
     }
 
     "map any other trigger (e.g. a goal) to an UpdateLiveActivityEvent" in new MatchEventsContext {
