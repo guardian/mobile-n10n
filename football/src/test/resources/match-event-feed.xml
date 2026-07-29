@@ -3607,7 +3607,7 @@
             <distance>6</distance>
             <outcome>Goal</outcome>
         </event>
-        <event teamID="26291" eventID="23572413">
+        <event teamID="26291" eventID="23572413" deleted="false">
             <eventType>goal</eventType>
             <matchTime>(32)</matchTime>
             <eventTime>32</eventTime>
@@ -6379,7 +6379,7 @@
             <distance />
             <outcome>Pass</outcome>
         </event>
-        <event teamID="1006" eventID="25990905">
+        <event teamID="1006" eventID="259909059" deleted="true">
             <eventType>dismissal</eventType>
             <matchTime>(106)</matchTime>
             <eventTime>106</eventTime>
@@ -6415,7 +6415,7 @@
             <distance>12</distance>
             <outcome>Goal</outcome>
         </event>
-        <event teamID="12" eventID="23573118">
+        <event teamID="12" eventID="23573118" deleted="true">
             <eventType>goal</eventType>
             <matchTime>(107)</matchTime>
             <eventTime>107</eventTime>

@@ -25,6 +25,7 @@ import org.specs2.specification.Scope
 import pa.{MatchDay, MatchEvent, Parser}
 
 import java.time.ZonedDateTime
+import java.util.UUID
 import scala.io.Source
 
 class EventConsumerSpec(implicit ev: ExecutionEnv)
@@ -71,7 +72,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "1st",
-        eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
+        eventId = s"${UUID.nameUUIDFromBytes("football-match/4011135/timeline/00:00".getBytes)}/false",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("FIRST_HALF"),
@@ -90,7 +91,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
       val expectedNotification = FootballMatchStatusPayload(
         title = Some("Half-time"),
-        message = Some("Arsenal 3-0 Leicester (HT)"),
+        message = Some("Arsenal 2-0 Leicester (HT)"),
         thumbnailUrl = None,
         sender = "mobile-notifications-football-lambda",
         awayTeamName = "Leicester",
@@ -99,11 +100,11 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamId = "29",
         awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
-        homeTeamScore = 3,
+        homeTeamScore = 2,
         homeTeamMessage =
           "Henrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'\nRed card: Henrikh Mkhitaryan 114'",
         homeTeamId = "1006",
-        homeTeamRedCards = 2,
+        homeTeamRedCards = 1,
         competitionName = Some("Premier League 17/18"),
         roundName = Some("League"),
         venue = Some("Emirates Stadium"),
@@ -123,7 +124,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "HT",
-        eventId = "bb346058-64d0-3ab1-9016-ea19d90837f0",
+        eventId = s"${UUID.nameUUIDFromBytes("football-match/4011135/half-time".getBytes)}/false",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("HALF_TIME"),
@@ -177,8 +178,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "2nd",
-        eventId = "a45dfca1-ead9-3d8c-bf83-c4966a737b05",
-        kickOffTimestamp = Some(1502477100L),
+        eventId = s"${UUID.nameUUIDFromBytes("football-match/4011135/second-half".getBytes)}/false", kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("SECOND_HALF"),
         debug = false,
@@ -197,7 +197,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
       val expectedNotification = FootballMatchStatusPayload(
         title = Some("Full-Time"),
-        message = Some("Arsenal 3-0 Leicester (FT)"),
+        message = Some("Arsenal 2-0 Leicester (FT)"),
         thumbnailUrl = None,
         sender = "mobile-notifications-football-lambda",
         awayTeamName = "Leicester",
@@ -206,11 +206,11 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamId = "29",
         awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
-        homeTeamScore = 3,
+        homeTeamScore = 2,
         homeTeamMessage =
           "Henrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'\nRed card: Henrikh Mkhitaryan 114'",
         homeTeamId = "1006",
-        homeTeamRedCards = 2,
+        homeTeamRedCards = 1,
         competitionName = Some("Premier League 17/18"),
         roundName = Some("League"),
         venue = Some("Emirates Stadium"),
@@ -230,8 +230,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "FT",
-        eventId = "d59c9939-8199-3b8b-ad63-16aa020c1a73",
-        kickOffTimestamp = Some(1502477100L),
+        eventId = s"${UUID.nameUUIDFromBytes("football-match/4011135/full-time".getBytes)}/false", kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("FULL_TIME"),
         debug = false,
@@ -282,7 +281,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "1st",
-        eventId = "1c8d67f9-0f32-342a-8543-aa3e21ee7da4",
+        eventId = "23572205/false",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("FIRST_HALF"),
@@ -300,7 +299,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
       val expectedNotification = FootballMatchStatusPayload(
         title = Some("Red card"),
-        message = Some("Arsenal 3-0 Leicester (1st)\nHenrikh Mkhitaryan (Arsenal) 114min"),
+        message = Some("Arsenal 2-0 Leicester (1st)\nHenrikh Mkhitaryan (Arsenal) 114min"),
         thumbnailUrl = None,
         sender = "mobile-notifications-football-lambda",
         awayTeamName = "Leicester",
@@ -309,10 +308,10 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
         awayTeamId = "29",
         awayTeamRedCards = 0,
         homeTeamName = "Arsenal",
-        homeTeamScore = 3,
+        homeTeamScore = 2,
         homeTeamMessage = "Red card: Henrikh Mkhitaryan 114'\nHenrikh Mkhitaryan 10'\nSofiane Hanni 32'\nRed card: Carl Jenkinson 106'\nMarcus Rashford 107'",
         homeTeamId = "1006",
-        homeTeamRedCards = 2,
+        homeTeamRedCards = 1,
         competitionName = Some("Premier League 17/18"),
         roundName = Some("League"),
         venue = Some("Emirates Stadium"),
@@ -326,7 +325,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "1st",
-        eventId = "7c92d6ca-9f20-398f-9510-eb4c179fb5ae",
+        eventId = "25990905/false",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("FIRST_HALF"),
@@ -346,9 +345,9 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       val result: List[NotificationPayload] =
         eventConsumer.eventsToNotifications(matchDataLA)
 
-      result must not contain((payload: NotificationPayload) =>
+      result must not contain ((payload: NotificationPayload) =>
         payload.isInstanceOf[FootballMatchStatusPayload] && payload.title.contains("Penalty Kick")
-      )
+        )
     }
 
     "generate FootballPenaltyShootoutPayload for shootout events" in new MatchEventsContext {
@@ -380,6 +379,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a CREATE CHANNEL payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1), liveMatch = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -391,6 +391,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a END live activity payload when result is true and liveMatch is false" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "FT", result = true, liveMatch = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -401,6 +402,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "NOT generate a END live activity payload when result is true and liveMatch is true" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "FT", result = true, liveMatch = true)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -642,10 +644,52 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       result must contain((payload: LiveActivityPayload) =>
         payload.broadcastContentStateData.get
           .asInstanceOf[FootballMatchContentState]
-          .awayTeam.score mustEqual(1)
+          .awayTeam.score mustEqual (1)
       )
     }
 
+    "generate a goal reversal payload" in new MatchEventsContext {
+      override def matchDayLA: MatchDay =
+        super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
+
+      val result: List[LiveActivityPayload] =
+        eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
+
+      result must contain((payload: LiveActivityPayload) =>
+        payload.eventType == UpdateLiveActivityEvent
+      )
+
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .homeTeam.score mustEqual (1)
+      )
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .awayTeam.score mustEqual (1)
+      )
+      result must contain((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .homeTeam.score mustEqual (2)
+      )
+      // Ensure second away goal not present in the payload, as it was reversed/deleted
+      result must not contain ((payload: LiveActivityPayload) =>
+        payload.broadcastContentStateData.get
+          .asInstanceOf[FootballMatchContentState]
+          .awayTeam.score mustEqual (2)
+        )
+
+      // Check a payload is generated for the specific deleted goal event id.
+      val derivedId = s"football-match-status/${matchDayLA.id}/${"36159360"}/${true}"
+      result must contain((payload: LiveActivityPayload) =>
+        payload.id mustEqual (UUID.nameUUIDFromBytes(derivedId.getBytes))
+      )
+    }
+
+
+    // TODO add reversal tests for red cards and for penalty kick goals
     "generate a red card payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1))
@@ -658,7 +702,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       result must contain((payload: LiveActivityPayload) =>
         payload.broadcastContentStateData.get
           .asInstanceOf[FootballMatchContentState]
-          .homeTeam.redCards mustEqual(1)
+          .homeTeam.redCards mustEqual (1)
       )
     }
 

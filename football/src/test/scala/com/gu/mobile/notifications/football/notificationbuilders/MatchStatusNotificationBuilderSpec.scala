@@ -39,7 +39,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         articleUri = Some(new URI("http://localhost/items/football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")),
         importance = Major,
         topic = List(Topic(TopicTypes.FootballTeam, "1"), Topic(TopicTypes.FootballTeam, "2"), Topic(TopicTypes.FootballMatch, "some-match-id")),
-        eventId = UUID.nameUUIDFromBytes("".getBytes).toString,
+        eventId = s"event-id/false",
         matchStatus = "1st",
         kickOffTimestamp = Some(ZonedDateTime.parse("2000-01-01T00:00:00Z").toEpochSecond),
         lineupsAvailable = Some(false),
@@ -160,7 +160,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
     val builder = new MatchStatusNotificationBuilder("http://localhost")
     val home = MatchDayTeam("1", "Liverpool", None, None, None, None)
     val away = MatchDayTeam("2", "Plymouth", None, None, None, None)
-    val baseGoal = Goal(DefaultGoalType, "Steve", home, away, 5, None, "")
+    val baseGoal = Goal(DefaultGoalType, "Steve", home, away, 5, None, "event-id")
     val goalContext = GoalContext(home, away, "match-1", Score(2, 0))
     val matchInfo = MatchDay(
       id = "some-match-id",

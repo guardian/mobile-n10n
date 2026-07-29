@@ -21,7 +21,7 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       result.eventType mustEqual UpdateLiveActivityEvent
       result.liveActivityType mustEqual FootballLiveActivity
       result.liveActivityID mustEqual "some-match-id"
-      result.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id/".getBytes)
+      result.id mustEqual UUID.nameUUIDFromBytes(derivedId.getBytes)
 
       val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
       contentState.homeTeam.name mustEqual "Liverpool"
@@ -49,7 +49,7 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       result.eventType mustEqual UpdateLiveActivityEvent
       result.liveActivityType mustEqual FootballLiveActivity
       result.liveActivityID mustEqual "some-match-id"
-      result.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id/".getBytes)
+      result.id mustEqual UUID.nameUUIDFromBytes(derivedId.getBytes)
 
       val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
       contentState.competition.name mustEqual "FA Cup"
@@ -62,7 +62,7 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
     val builder = new MatchStatusLiveActivityPayloadBuilder()
     val home = MatchDayTeam("1", "Liverpool", None, None, None, None)
     val away = MatchDayTeam("2", "Plymouth", None, None, None, None)
-    val baseGoal = Goal(DefaultGoalType, "Steve", home, away, 5, None, "")
+    val baseGoal = Goal(DefaultGoalType, "Steve", home, away, 5, None, "event-id")
     val matchInfo = MatchDay(
       id = "some-match-id",
       date = ZonedDateTime.parse("2000-01-01T00:00:00Z"),
@@ -83,5 +83,6 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       venue = Some(Venue(id = "1", name = "Wembley")),
       comments = None
     )
+    val derivedId = s"football-match-status/${matchInfo.id}/${"event-id"}/false"
   }
 }
