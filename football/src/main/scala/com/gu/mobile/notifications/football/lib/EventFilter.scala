@@ -76,7 +76,7 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     // todo clean this up and change partition to filter.
     // logging to verify hypothesis of state change event for every cycle there is an update including end.
     if (superfluousStateChangeEvents.nonEmpty)
-      logger.debug("Superfluous state-change event(s) suppressed for match ids: " + superfluousStateChangeEvents.map(_.liveActivityID))
+      logger.info("Superfluous state-change event(s) suppressed for match ids: " + superfluousStateChangeEvents.map(_.liveActivityID))
 
     isolatedStateChangeEvents ++ updateEvents
   }

@@ -27,10 +27,10 @@ import pa.Competition
 
 object Lambda extends Logging {
 
-  var cachedLambda: Boolean = false
-
-  def tableName = s"mobile-notifications-football-notifications-${configuration.stage}"
+  def notificationsTableName = s"mobile-notifications-football-notifications-${configuration.stage}"
   def liveActivitiesTableName = s"mobile-notifications-liveactivities-payload-${configuration.stage}"
+
+  def liveActivitiesEventBusName = s"liveactivities-eventbus-${configuration.stage}"
   lazy val paDataBucket = "mobile-pa-football-data"
 
   lazy val configuration: Configuration = {
@@ -71,9 +71,16 @@ object Lambda extends Logging {
 
   lazy val articleSearcher = new ArticleSearcher(capiClient)
 
-  lazy val notificationHandler = new NotificationHandler(configuration, apiClient, dynamoDBClient, tableName)
+  lazy val notificationHandler = new NotificationHandler(configuration, dynamoDBClient, notificationsTableName, new NotificationSender(apiClient))
+  lazy val liveActivityHandler = new LiveActivityHandler(dynamoDBClient, liveActivitiesTableName, new LiveActivityPusher(liveActivitiesEventBusName, logger))
 
-  lazy val liveActivityHandler = new LiveActivityHandler(configuration, dynamoDBClient, liveActivitiesTableName)
+  lazy val footballLambda = new FootballLambda(
+    footballData = footballData,
+    articleSearcher = articleSearcher,
+    notificationHandler = notificationHandler,
+    liveActivityHandler = liveActivityHandler,
+    getZonedDateTime = () => getZonedDateTime(),
+  )
 
   def getZonedDateTime(): ZonedDateTime = {
     val zonedDateTime = if (configuration.stage == "CODE") {
@@ -86,6 +93,27 @@ object Lambda extends Logging {
     logger.info(s"Using date time: $zonedDateTime")
     zonedDateTime
   }
+
+  def handler(): String = footballLambda.handler()
+
+  def main(args: Array[String]): Unit = {
+    while (true) {
+      handler()
+      Thread.sleep(10000)
+    }
+  }
+}
+
+class FootballLambda(
+                      footballData: FootballData,
+                      articleSearcher: ArticleSearcher,
+                      notificationHandler: NotificationHandler,
+                      liveActivityHandler: LiveActivityHandler,
+                      getZonedDateTime: () => ZonedDateTime,
+                      timeout: Duration = Duration(40, TimeUnit.SECONDS),
+                    ) extends Logging {
+
+  var cachedLambda: Boolean = false
 
   private def logContainer() = {
     if (cachedLambda) {
@@ -109,7 +137,7 @@ object Lambda extends Logging {
     val liveActivitiesProcessing = articlesMatches.flatMap(liveActivityHandler.process)
 
     // we're in a lambda so we do need to block the main thread until processing is finished
-    val result = Await.ready(Future.sequence(List(notificationsProcessing, liveActivitiesProcessing)), Duration(40, TimeUnit.SECONDS))
+    val result = Await.ready(Future.sequence(List(notificationsProcessing, liveActivitiesProcessing)), timeout)
 
     result.value match {
       case Some(Failure(e: TimeoutException)) => logger.error("Task timed out", e)
@@ -122,19 +150,10 @@ object Lambda extends Logging {
     logger.info("Finished processing")
     "done"
   }
-
-  def main(args: Array[String]): Unit = {
-    while (true) {
-      handler()
-      Thread.sleep(10000)
-    }
-  }
 }
 
 // TODO handle match state changes
-class NotificationHandler(configuration: Configuration, apiClient: NotificationsApiClient, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
-
-  lazy val notificationSender = new NotificationSender(apiClient)
+class NotificationHandler(configuration: Configuration, dynamoDBClient: AmazonDynamoDBAsync, tableName: String, notificationSender: NotificationSender) extends Logging {
 
   lazy val matchStatusNotificationBuilder = new MatchStatusNotificationBuilder(configuration.mapiHost)
 
@@ -157,12 +176,7 @@ class NotificationHandler(configuration: Configuration, apiClient: Notifications
   }
 }
 
-class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
-
-  private val eventBusName =
-    s"liveactivities-eventbus-${configuration.stage}"
-
-  lazy val liveActivityPusher = new LiveActivityPusher(eventBusName, logger)
+class LiveActivityHandler(dynamoDBClient: AmazonDynamoDBAsync, tableName: String, liveActivityPusher: LiveActivityPusher) extends Logging {
 
   lazy val matchStatusLiveActivityPayloadBuilder = new MatchStatusLiveActivityPayloadBuilder()
 

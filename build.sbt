@@ -311,6 +311,14 @@ lazy val commonEventBusPusher = project
 
 lazy val football = lambda("football", "football")
   .dependsOn(commonEventBusPusher)
+  .settings(LocalDynamoDBFootball.settings)
+  .settings(
+    startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
+    Test / test := (Test / test).dependsOn(startDynamoDBLocal).value,
+    Test / testOnly := (Test / testOnly).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testQuick := (Test / testQuick).dependsOn(startDynamoDBLocal).evaluated,
+    Test / testOptions += dynamoDBLocalTestCleanup.value,
+  )
   .settings(
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(

@@ -127,6 +127,7 @@ export class FootballNotificationsLambda extends GuStack {
 				resources: [
 					`arn:aws:dynamodb:${region}:${account}:table/${dynamoTableName}`,
 					`arn:aws:dynamodb:${region}:${account}:table/${liveActivitiesDynamoTableName}`,
+					`arn:aws:dynamodb:${region}:${account}:table/${liveActivitiesDynamoTableName}/index/*`,
 				],
 			}),
 		);

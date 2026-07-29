@@ -23,12 +23,10 @@ class DynamoPayloadStateCheck(client: AmazonDynamoDBAsync, tableName: String) ex
 
     val gsiQuery = lastPayloadIndex.descending.limit(1).query("liveActivityID" -> id)
 
+    // NB: we deliberately do NOT recover here. Any failure (e.g. a GSI read error) propagates to the caller
+    // so that FootballData.isFootballMatchStateIdentical owns the decision about how to treat a read failure.
     scanamoAsync.exec(gsiQuery).map { rows =>
       isIdenticalToLatest(rows.collect { case Right(row) => row }, state)
-    } recover {
-      case e =>
-        logger.error(s"Failure while checking for dynamodb GSI for match state $tableName: ${e.getMessage}.")
-        false // todo should this be true - do we want to generate a synthetic state-change event if we can't check the latest state?
     }
   }
 
