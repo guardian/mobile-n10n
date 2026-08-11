@@ -31,6 +31,9 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       "GuRiffRaffDeploymentIdParameter",
       "GuCname",
       "GuScheduledLambda",
+      "GuFastlyCustomerIdParameter",
+      "GuFastlyLogsIamRole",
+      "GuPutS3ObjectsPolicy",
       "GuScheduledLambda",
     ],
     "gu:cdk:version": "TEST",
@@ -62,6 +65,11 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
       ],
       "Default": "/account/services/artifact.bucket.n10n",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "FastlyCustomerId": {
+      "Default": "/account/external/fastly/customer.id",
+      "Description": "SSM parameter containing the Fastly Customer ID. Can be obtained from https://manage.fastly.com/account/company by an admin",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
     "LoggingStreamName": {
@@ -805,6 +813,95 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
         "Roles": [
           {
             "Ref": "InstanceRoleReport42223080",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GuFastlyLogsIamRoleE2DAFAB3": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "sts:ExternalId": {
+                    "Ref": "FastlyCustomerId",
+                  },
+                },
+              },
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::717331877981:root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "GuFastlyLogsIamRolePolicy5BF3CDCA": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:PutObject",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "EventConsumerBucketE6EE7609",
+                    },
+                    "/fastly/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GuFastlyLogsIamRolePolicy5BF3CDCA",
+        "Roles": [
+          {
+            "Ref": "GuFastlyLogsIamRoleE2DAFAB3",
           },
         ],
       },
@@ -1989,6 +2086,9 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       "GuRiffRaffDeploymentIdParameter",
       "GuCname",
       "GuScheduledLambda",
+      "GuFastlyCustomerIdParameter",
+      "GuFastlyLogsIamRole",
+      "GuPutS3ObjectsPolicy",
       "GuScheduledLambda",
     ],
     "gu:cdk:version": "TEST",
@@ -2020,6 +2120,11 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
       ],
       "Default": "/account/services/artifact.bucket.n10n",
       "Description": "SSM parameter containing the S3 bucket name holding distribution artifacts",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "FastlyCustomerId": {
+      "Default": "/account/external/fastly/customer.id",
+      "Description": "SSM parameter containing the Fastly Customer ID. Can be obtained from https://manage.fastly.com/account/company by an admin",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
     "LoggingStreamName": {
@@ -2763,6 +2868,95 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
         "Roles": [
           {
             "Ref": "InstanceRoleReport42223080",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GuFastlyLogsIamRoleE2DAFAB3": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "sts:ExternalId": {
+                    "Ref": "FastlyCustomerId",
+                  },
+                },
+              },
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::717331877981:root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "report",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "GuFastlyLogsIamRolePolicy5BF3CDCA": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:PutObject",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "EventConsumerBucketE6EE7609",
+                    },
+                    "/fastly/*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GuFastlyLogsIamRolePolicy5BF3CDCA",
+        "Roles": [
+          {
+            "Ref": "GuFastlyLogsIamRoleE2DAFAB3",
           },
         ],
       },
