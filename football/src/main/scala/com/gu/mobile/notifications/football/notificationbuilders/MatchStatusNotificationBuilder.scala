@@ -32,11 +32,11 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     )
 
     val allEvents = triggeringEvent :: previousEvents
-    val goals = allEvents.collect { case g: Goal => g }
+    val goals = allEvents.collect { case g: Goal if !g.isDeleted => g }
     val score = Score.fromGoals(matchInfo.homeTeam, matchInfo.awayTeam, goals)
-    val dismissals = allEvents.collect { case d: Dismissal => d }
+    val dismissals = allEvents.collect { case d: Dismissal if !d.isDeleted => d }
     val redCards = RedCards.fromDismissals(matchInfo.homeTeam, matchInfo.awayTeam, dismissals)
-    val penaltyShootoutKicks = allEvents.collect { case psr: PenaltyShootoutKick => psr }
+    val penaltyShootoutKicks = allEvents.collect { case psk: PenaltyShootoutKick if !psk.isDeleted => psk }
     val penaltyShootoutScore = PenaltyShootoutScore.fromPenaltyShootoutKicks(matchInfo.homeTeam, matchInfo.awayTeam, penaltyShootoutKicks)
 
     val status = statuses.getOrElse(matchInfo.matchStatus, matchInfo.matchStatus)

@@ -8,6 +8,8 @@ import scala.util.Try
 
 sealed trait FootballMatchEvent {
   def eventId: String
+
+  val isDeleted: Boolean = false
 }
 
 object FootballMatchEvent {
@@ -44,7 +46,8 @@ case class Dismissal(
   playerName: String,
   team: pa.MatchDayTeam,
   minute: Int,
-  addedTime: Option[String]
+  addedTime: Option[String],
+  override val isDeleted: Boolean = false
 ) extends FootballMatchEvent {
 }
 object Dismissal {
@@ -61,7 +64,8 @@ object Dismissal {
           player.name,
           team,
           eventMinute,
-          event.addedTime.filterNot(_ == "0:00")
+        event.addedTime.filterNot(_ == "0:00"),
+        isDeleted = event.isDeleted
       )
     }
   }.flatten
@@ -74,7 +78,8 @@ case class Goal(
   otherTeam: pa.MatchDayTeam,
   minute: Int,
   addedTime: Option[String],
-  eventId: String
+  eventId: String,
+  override val isDeleted: Boolean = false
 ) extends FootballMatchEvent
 
 object Goal {
@@ -95,7 +100,8 @@ object Goal {
       otherTeam,
       eventMinute,
       event.addedTime.filterNot(_ == "0:00"),
-      event.id.getOrElse("")
+    event.id.getOrElse(""),
+    isDeleted = event.isDeleted
   )
 
   private def goalTypeFromString(s: String): Option[GoalType] = condOpt(s) {
@@ -118,7 +124,8 @@ case class PenaltyShootoutKick(
   kickingTeam: pa.MatchDayTeam,
   otherTeam: pa.MatchDayTeam,
   minute: Int,
-  eventId: String
+  eventId: String,
+  override val isDeleted: Boolean = false
 ) extends FootballMatchEvent
 
 object PenaltyShootoutKick {
@@ -136,7 +143,8 @@ object PenaltyShootoutKick {
     kickingTeam,
     otherTeam,
     currentMinute,
-    eventId
+    eventId,
+    isDeleted = event.isDeleted
   )
 
   private def shootoutPenaltyResultFromString(s: String): Option[ShootoutResultType] = condOpt(s) {
