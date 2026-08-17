@@ -37,6 +37,7 @@ class SyntheticMatchEventGeneratorSpec extends Specification {
     val timelineEvent = pa.MatchEvent(
       id = None,
       teamID = None,
+      status = None,
       eventType = "timeline",
       matchTime = Some("0:00"),
       eventTime = None,

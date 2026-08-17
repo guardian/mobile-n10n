@@ -198,6 +198,7 @@ class SyntheticMatchEventGenerator(getCurrentTime: () => ZonedDateTime) {
   private def emptyMatchEvent = MatchEvent(
     id = None,
     teamID = None,
+    status = None,
     eventType = "",
     matchTime = None,
     eventTime = None,
