@@ -890,7 +890,7 @@ exports[`The Report stack matches the snapshot for CODE 1`] = `
                     {
                       "Ref": "EventConsumerBucketE6EE7609",
                     },
-                    "/fastly/test/*",
+                    "/fastly/role-test/*",
                   ],
                 ],
               },
@@ -2945,7 +2945,7 @@ exports[`The Report stack matches the snapshot for PROD 1`] = `
                     {
                       "Ref": "EventConsumerBucketE6EE7609",
                     },
-                    "/fastly/test/*",
+                    "/fastly/role-test/*",
                   ],
                 ],
               },

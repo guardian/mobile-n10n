@@ -216,7 +216,7 @@ export class Report extends GuStack {
 
 		new GuFastlyLogsIamRole(this, {
 			bucketName: eventLogsBucket.bucketName,
-			path: 'fastly/test/*',
+			path: 'fastly/role-test/*',
 		});
 
 		const eventConsumerApp = 'eventconsumer';
