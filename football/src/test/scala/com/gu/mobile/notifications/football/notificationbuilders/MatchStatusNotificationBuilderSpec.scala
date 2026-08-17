@@ -169,6 +169,21 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.awayTeamScore shouldEqual 0
     }
 
+    "Ensure a deleted event payload has the same UUID so is not duplicated sent" in new MatchEventsContext {
+      val result1 = builder.build(
+        baseGoal.copy(eventId = "event-1"),
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      val result2 = builder.build(
+        baseGoal.copy(eventId = "event-1", isDeleted = true),
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      result1.id mustEqual (result2.id)
+    }
 
   }
 
