@@ -101,8 +101,9 @@ class MatchStatusNotificationBuilderSpec extends Specification {
 
     "Include the correct red cards count for each team" in new MatchEventsContext {
       val firstDismissal  = Dismissal("e1", "Player A", home, 55, None)
+      val deletedDismissal = Dismissal("e1", "Player A", home, 55, None, isDeleted = true)
       val secondDismissal = Dismissal("e2", "Player B", home, 80, None)
-      val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal), None).asInstanceOf[FootballMatchStatusPayload]
+      val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal, deletedDismissal), None).asInstanceOf[FootballMatchStatusPayload]
       notification.homeTeamRedCards shouldEqual 2
       notification.awayTeamRedCards shouldEqual 0
     }
@@ -153,6 +154,22 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.matchInfoUri shouldEqual(new URI("http://localhost/sport/football/matches/some-match-id?liveactivity=true"))
       notification.topic.mustEqual(laTopics)
     }
+
+    "Ignore deleted events" in new MatchEventsContext {
+      val notification = builder.build(
+        baseGoal,
+        matchInfo,
+        List(
+          baseGoal.copy(scorerName = "Player Two", minute = 20, eventId = "event-2", isDeleted = true)
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballMatchStatusPayload]
+
+      notification.homeTeamScore shouldEqual 1
+      notification.awayTeamScore shouldEqual 0
+    }
+
+
   }
 
   trait MatchEventsContext extends Scope {

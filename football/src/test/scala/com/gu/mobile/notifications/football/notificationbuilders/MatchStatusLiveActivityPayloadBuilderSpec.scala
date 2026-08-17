@@ -56,6 +56,21 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       contentState.competition.round mustEqual None
     }
 
+    "Ignore deleted events" in new MatchEventsContext {
+
+      val result = builder.build(
+        baseGoal,
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List(
+          baseGoal.copy(scorerName = "Player Two", minute = 20, eventId = "event-2", isDeleted = true)
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
+      contentState.homeTeam.score mustEqual 1
+      contentState.awayTeam.score mustEqual 0
+    }
+
   }
 
   trait MatchEventsContext extends Scope {
