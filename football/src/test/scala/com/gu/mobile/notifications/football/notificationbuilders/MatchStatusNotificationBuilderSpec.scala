@@ -5,7 +5,8 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.Major
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.models.{Dismissal,  FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, PreMatch, Score, StartLiveActivity}
+import com.gu.mobile.notifications.client.models.liveActitivites.PenaltyShootoutState
+import com.gu.mobile.notifications.football.models.{Dismissal, FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, PreMatch, Score, StartLiveActivity}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
@@ -155,7 +156,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.topic.mustEqual(laTopics)
     }
 
-    "Ignore deleted events" in new MatchEventsContext {
+    "Ignore deleted goal events" in new MatchEventsContext {
       val notification = builder.build(
         baseGoal,
         matchInfo,
@@ -167,6 +168,34 @@ class MatchStatusNotificationBuilderSpec extends Specification {
 
       notification.homeTeamScore shouldEqual 1
       notification.awayTeamScore shouldEqual 0
+    }
+
+    "Ignore deleted dismissals events" in new MatchEventsContext {
+      val notification = builder.build(
+        Dismissal("event-1", "Player One", home, 20, None),
+        matchInfo,
+        List(
+          Dismissal("event-2", "Player Two", away, 25, None, isDeleted = true)
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballMatchStatusPayload]
+
+      notification.homeTeamRedCards shouldEqual 1
+      notification.awayTeamRedCards shouldEqual 0
+    }
+
+    "Ignore deleted penalty events" in new MatchEventsContext {
+      val notification = builder.build(
+        PenaltyShootoutKick(ScoredShootoutResult, "Player One", home, away, 90, "event-1"),
+        matchInfo.copy(matchStatus = "PT"),
+        List(
+          PenaltyShootoutKick(ScoredShootoutResult, "Player Two", away, home, 90, "event-2", isDeleted = true)
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballPenaltyShootoutPayload]
+
+      notification.homeTeamPenalties shouldEqual Some(PenaltyShootoutState(1, 0, 0))
+      notification.awayTeamPenalties shouldEqual Some(PenaltyShootoutState(0, 0, 0))
     }
 
     "Ensure a deleted event payload has the same UUID so is not duplicated sent" in new MatchEventsContext {
