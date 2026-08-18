@@ -75,8 +75,9 @@ class MatchStatusLiveActivityPayloadBuilder {
       case _ => UpdateLiveActivityEvent
     }
 
-    // Deterministic ID used for deduplicating match events (matchId + eventId)
-    val derivedId = s"football-match-status/${matchInfo.id}/${triggeringEvent.eventId}"
+    // Deterministic ID used for deduplicating match events (matchId + eventId).
+    // Include isDeleted to ensure if a goal or dismissal is deleted by PA, an updated payload can be sent for that event.
+    val derivedId = s"football-match-status/${matchInfo.id}/${triggeringEvent.eventId}/${if (triggeringEvent.isDeleted) "deleted" else "active"}"
 
     LiveActivityPayload(
       id =
