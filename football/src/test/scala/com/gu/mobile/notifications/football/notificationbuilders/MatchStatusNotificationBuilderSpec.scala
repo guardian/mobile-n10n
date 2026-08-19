@@ -193,7 +193,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.awayTeamMessage shouldEqual " "
       notification.awayTeamRedCards shouldEqual 0
     }
-
+    
     "Ignore deleted penalty events" in new MatchEventsContext {
       val notification = builder.build(
         PenaltyShootoutKick(ScoredShootoutResult, "Player One", home, away, 90, "event-1"),
@@ -202,8 +202,9 @@ class MatchStatusNotificationBuilderSpec extends Specification {
           PenaltyShootoutKick(ScoredShootoutResult, "Player Two", away, home, 90, "event-2", isDeleted = true)
         ),
         Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
-      ).asInstanceOf[FootballPenaltyShootoutPayload]
+      ).asInstanceOf[FootballMatchStatusPayload]
 
+      notification.`type` mustEqual FootballPenaltyShootout
       notification.homeTeamPenalties shouldEqual Some(PenaltyShootoutState(1, 0, 0))
       notification.awayTeamPenalties shouldEqual Some(PenaltyShootoutState(0, 0, 0))
     }
