@@ -4,7 +4,10 @@ import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuDynamoTable } from '@guardian/cdk/lib/constructs/dynamodb';
-import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
+import {
+	GuAllowPolicy,
+	GuFastlyLogsIamRole,
+} from '@guardian/cdk/lib/constructs/iam';
 import { GuEc2AppExperimental } from '@guardian/cdk/lib/experimental/patterns/ec2-app';
 import type { App } from 'aws-cdk-lib';
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
@@ -209,6 +212,11 @@ export class Report extends GuStack {
 			bucketName: `aws-mobile-event-logs-${stage.toLowerCase()}`,
 			removalPolicy: RemovalPolicy.RETAIN,
 			lifecycleRules: [{ expiration: Duration.days(21), enabled: true }],
+		});
+
+		new GuFastlyLogsIamRole(this, {
+			bucketName: eventLogsBucket.bucketName,
+			path: 'fastly/*',
 		});
 
 		const eventConsumerApp = 'eventconsumer';
