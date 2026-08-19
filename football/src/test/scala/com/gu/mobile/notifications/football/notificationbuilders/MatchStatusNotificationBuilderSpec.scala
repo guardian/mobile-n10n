@@ -161,13 +161,18 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         baseGoal,
         matchInfo,
         List(
-          baseGoal.copy(scorerName = "Player Two", minute = 20, eventId = "event-2", isDeleted = true)
+          baseGoal.copy(scorerName = "Player Two", minute = 20, eventId = "event-2", isDeleted = true),
+          baseGoal.copy(scorerName = "Player Three", minute = 25, eventId = "event-3")
         ),
         Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
       ).asInstanceOf[FootballMatchStatusPayload]
 
-      notification.homeTeamScore shouldEqual 1
+      notification.homeTeamScore shouldEqual 2
+      notification.homeTeamMessage shouldEqual "Steve 5'\nPlayer Three 25'"
+
       notification.awayTeamScore shouldEqual 0
+      notification.awayTeamMessage shouldEqual " "
+
     }
 
     "Ignore deleted dismissals events" in new MatchEventsContext {
@@ -180,7 +185,9 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
       ).asInstanceOf[FootballMatchStatusPayload]
 
+      notification.homeTeamMessage shouldEqual "Red card: Player One 20'"
       notification.homeTeamRedCards shouldEqual 1
+      notification.awayTeamMessage shouldEqual " "
       notification.awayTeamRedCards shouldEqual 0
     }
 

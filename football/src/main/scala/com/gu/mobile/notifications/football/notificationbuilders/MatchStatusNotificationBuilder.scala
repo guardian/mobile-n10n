@@ -146,8 +146,8 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
 
   private def teamMessage(team: MatchDayTeam, events: List[FootballMatchEvent]) = {
     val msg = events.collect {
-      case g: Goal if g.scoringTeam == team => goalDescription(g)
-      case d: Dismissal if d.team == team => dismissalTeamMsg(d)
+      case g: Goal if !g.isDeleted && g.scoringTeam == team => goalDescription(g)
+      case d: Dismissal if !d.isDeleted && d.team == team => dismissalTeamMsg(d)
     }.mkString("\n")
     if (msg == "") " " else msg
   }
