@@ -5,7 +5,8 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import com.gu.mobile.notifications.client.models.Importance.Major
 import com.gu.mobile.notifications.client.models._
-import com.gu.mobile.notifications.football.models.{Dismissal,  FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, PreMatch, Score, StartLiveActivity}
+import com.gu.mobile.notifications.client.models.liveActitivites.PenaltyShootoutState
+import com.gu.mobile.notifications.football.models.{Dismissal, FullTime, Goal, GoalContext, KickOff, PenaltyShootoutKick, PreMatch, Score, StartLiveActivity}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
@@ -101,8 +102,9 @@ class MatchStatusNotificationBuilderSpec extends Specification {
 
     "Include the correct red cards count for each team" in new MatchEventsContext {
       val firstDismissal  = Dismissal("e1", "Player A", home, 55, None)
+      val deletedDismissal = Dismissal("e1", "Player A", home, 55, None, isDeleted = true)
       val secondDismissal = Dismissal("e2", "Player B", home, 80, None)
-      val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal), None).asInstanceOf[FootballMatchStatusPayload]
+      val notification = builder.build(secondDismissal, matchInfo, List(firstDismissal, deletedDismissal), None).asInstanceOf[FootballMatchStatusPayload]
       notification.homeTeamRedCards shouldEqual 2
       notification.awayTeamRedCards shouldEqual 0
     }
@@ -153,6 +155,72 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.matchInfoUri shouldEqual(new URI("http://localhost/sport/football/matches/some-match-id?liveactivity=true"))
       notification.topic.mustEqual(laTopics)
     }
+
+    "Ignore deleted goal events" in new MatchEventsContext {
+      val notification = builder.build(
+        baseGoal,
+        matchInfo,
+        List(
+          baseGoal.copy(scorerName = "Player Two", minute = 20, eventId = "event-2", isDeleted = true),
+          baseGoal.copy(scorerName = "Player Three", minute = 25, eventId = "event-3")
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballMatchStatusPayload]
+
+      notification.homeTeamScore shouldEqual 2
+      notification.homeTeamMessage shouldEqual "Steve 5'\nPlayer Three 25'"
+
+      notification.awayTeamScore shouldEqual 0
+      notification.awayTeamMessage shouldEqual " "
+
+    }
+
+    "Ignore deleted dismissals events" in new MatchEventsContext {
+      val notification = builder.build(
+        Dismissal("event-1", "Player One", home, 20, None),
+        matchInfo,
+        List(
+          Dismissal("event-2", "Player Two", away, 25, None, isDeleted = true)
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballMatchStatusPayload]
+
+      notification.homeTeamMessage shouldEqual "Red card: Player One 20'"
+      notification.homeTeamRedCards shouldEqual 1
+      notification.awayTeamMessage shouldEqual " "
+      notification.awayTeamRedCards shouldEqual 0
+    }
+
+    "Ignore deleted penalty events" in new MatchEventsContext {
+      val notification = builder.build(
+        PenaltyShootoutKick(ScoredShootoutResult, "Player One", home, away, 90, "event-1"),
+        matchInfo.copy(matchStatus = "PT"),
+        List(
+          PenaltyShootoutKick(ScoredShootoutResult, "Player Two", away, home, 90, "event-2", isDeleted = true)
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballPenaltyShootoutPayload]
+
+      notification.homeTeamPenalties shouldEqual Some(PenaltyShootoutState(1, 0, 0))
+      notification.awayTeamPenalties shouldEqual Some(PenaltyShootoutState(0, 0, 0))
+    }
+
+    "Ensure a deleted event payload has the same UUID so is not duplicated sent" in new MatchEventsContext {
+      val result1 = builder.build(
+        baseGoal.copy(eventId = "event-1"),
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      val result2 = builder.build(
+        baseGoal.copy(eventId = "event-1", isDeleted = true),
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      result1.id mustEqual (result2.id)
+    }
+
   }
 
   trait MatchEventsContext extends Scope {

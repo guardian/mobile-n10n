@@ -17,6 +17,7 @@ class PenaltyShootoutKickSpec extends Specification {
     def shootoutEvent(eventType: String, player: Player, id: String = "evt-1") = MatchEvent(
       id = Some(id),
       teamID = Some(player.teamID),
+      status = None,
       eventType = eventType,
       matchTime = Some("90"),
       eventTime = Some("90"),

@@ -1,8 +1,8 @@
 package com.gu.mobile.notifications.football.notificationbuilders
 
-import com.gu.mobile.notifications.client.models.DefaultGoalType
-import com.gu.mobile.notifications.client.models.liveActitivites.{FirstHalf, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, TeamState, UpdateLiveActivityEvent, Competition => LACompetition}
-import com.gu.mobile.notifications.football.models.Goal
+import com.gu.mobile.notifications.client.models.{DefaultGoalType, ScoredShootoutResult}
+import com.gu.mobile.notifications.client.models.liveActitivites.{FirstHalf, FootballLiveActivity, FootballMatchContentState, LiveActivityPayload, PenaltyShootoutState, TeamState, UpdateLiveActivityEvent, Competition => LACompetition}
+import com.gu.mobile.notifications.football.models.{Dismissal, Goal, PenaltyShootoutKick}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
@@ -54,6 +54,64 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
       contentState.competition.name mustEqual "FA Cup"
       contentState.competition.round mustEqual None
+    }
+
+    "Ignore deleted goal events" in new MatchEventsContext {
+      val result = builder.build(
+        baseGoal,
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List(
+          baseGoal.copy(scorerName = "Player Two", minute = 20, eventId = "event-2", isDeleted = true)
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
+      contentState.homeTeam.score mustEqual 1
+      contentState.awayTeam.score mustEqual 0
+    }
+
+    "Ignore deleted dismissals events" in new MatchEventsContext {
+      val result = builder.build(
+        Dismissal("event-1", "Player One", home, 20, None),
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List(
+          Dismissal("event-2", "Player Two", away, 25, None, isDeleted = true)
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
+      contentState.homeTeam.redCards mustEqual 1
+      contentState.awayTeam.redCards mustEqual 0
+    }
+
+    "Ignore deleted penalty events" in new MatchEventsContext {
+      val result = builder.build(
+        PenaltyShootoutKick(ScoredShootoutResult, "Player One", home, away, 90, "event-1"),
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List(
+          PenaltyShootoutKick(ScoredShootoutResult, "Player Two", away, home, 90, "event-2", isDeleted = true)
+        ),
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
+      contentState.homeTeam.penaltyScore mustEqual Some(PenaltyShootoutState(1, 0, 0))
+      contentState.awayTeam.penaltyScore mustEqual Some(PenaltyShootoutState(0, 0, 0))
+    }
+
+    "Ensure a deleted event payload has the same UUID so is not duplicated sent" in new MatchEventsContext {
+      val result1 = builder.build(
+        baseGoal.copy(eventId = "event-1"),
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      val result2 = builder.build(
+        baseGoal.copy(eventId = "event-1", isDeleted = true),
+        matchInfo.copy(round = Round("1", Some("League"))),
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      )
+      result1.id mustEqual (result2.id)
     }
 
   }

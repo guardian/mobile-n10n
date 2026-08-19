@@ -46,6 +46,7 @@ class GoalSpec extends Specification {
     val baseGoal = pa.MatchEvent(
       id = Some("1234"),
       teamID = None,
+      status = None,
       eventType = "goal",
       matchTime = None,
       eventTime = Some("5"),
