@@ -68,7 +68,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
      topic = topics,
      matchStatus = status,
      detailedMatchStatus = if (penaltyShootoutScore.isDefined) Some("PENALTIES") else Some(MatchStatus.fromString(matchInfo.matchStatus).status),
-     eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
+       eventId = s"${triggeringEvent.eventId}/${if (triggeringEvent.isDeleted) "deleted" else "active"}", // used to calculated derivedID for deduplication processing.
      kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
      lineupsAvailable = Some(matchInfo.lineupsAvailable),
      debug = false,

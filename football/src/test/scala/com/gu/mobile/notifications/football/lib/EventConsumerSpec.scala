@@ -61,7 +61,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "1st",
-        eventId = "7e730fbe-b013-3a0e-89cb-12b46260d7be",
+        eventId = "0b706f4b-a698-3314-9a94-419e42c6e610/active",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("FIRST_HALF"),
@@ -113,7 +113,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "HT",
-        eventId = "bb346058-64d0-3ab1-9016-ea19d90837f0",
+        eventId = "71356d2a-bbfa-315c-9474-5cd89620e2cd/active",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("HALF_TIME"),
@@ -167,7 +167,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "2nd",
-        eventId = "a45dfca1-ead9-3d8c-bf83-c4966a737b05",
+        eventId = "c7d9686f-c833-3d97-b73f-2ef41de359f8/active",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("SECOND_HALF"),
@@ -220,7 +220,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "FT",
-        eventId = "d59c9939-8199-3b8b-ad63-16aa020c1a73",
+        eventId = "c9fbf84c-37f6-3326-bab5-72749f354c3b/active",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("FULL_TIME"),
@@ -272,7 +272,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "1st",
-        eventId = "1c8d67f9-0f32-342a-8543-aa3e21ee7da4",
+        eventId = "23572205/active",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("FIRST_HALF"),
@@ -282,9 +282,11 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
 
       result should contain(expectedNotification)
     }
+
     "generate red card notifications from FootballMatchStatusPayload" in new MatchEventsContext {
       override def matchDay: MatchDay =
         super.matchDay.copy(matchStatus = "KO", result = true)
+
       val result: List[NotificationPayload] =
         eventConsumer.eventsToNotifications(matchData)
 
@@ -316,7 +318,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
           Topic(FootballMatch, "4011135")
         ),
         matchStatus = "1st",
-        eventId = "7c92d6ca-9f20-398f-9510-eb4c179fb5ae",
+        eventId = "25990905/active",
         kickOffTimestamp = Some(1502477100L),
         lineupsAvailable = Some(true),
         detailedMatchStatus = Some("FIRST_HALF"),
@@ -361,6 +363,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a CREATE CHANNEL payload" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDayLA.copy(date = ZonedDateTime.now().plusHours(1), liveMatch = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -372,6 +375,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "generate a END live activity payload when result is true and liveMatch is false" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "FT", result = true, liveMatch = false)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -382,6 +386,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
     "NOT generate a END live activity payload when result is true and liveMatch is true" in new MatchEventsContext {
       override def matchDayLA: MatchDay =
         super.matchDay.copy(matchStatus = "FT", result = true, liveMatch = true)
+
       val result: List[LiveActivityPayload] =
         eventConsumerLiveActivities.eventsToLiveActivityPayload(matchDataLA)
       result must contain((payload: LiveActivityPayload) =>
@@ -623,7 +628,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       result must contain((payload: LiveActivityPayload) =>
         payload.broadcastContentStateData.get
           .asInstanceOf[FootballMatchContentState]
-          .awayTeam.score mustEqual(1)
+          .awayTeam.score mustEqual (1)
       )
     }
 
@@ -639,7 +644,7 @@ class EventConsumerSpec(implicit ev: ExecutionEnv)
       result must contain((payload: LiveActivityPayload) =>
         payload.broadcastContentStateData.get
           .asInstanceOf[FootballMatchContentState]
-          .homeTeam.redCards mustEqual(1)
+          .homeTeam.redCards mustEqual (1)
       )
     }
 
