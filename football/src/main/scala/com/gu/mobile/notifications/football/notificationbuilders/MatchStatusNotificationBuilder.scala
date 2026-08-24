@@ -144,6 +144,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
       s"""${homeTeamName} ${score.home}-${score.away} ${awayTeamName} ($matchStatus)
          |${goal.scorerName} ${goal.minute}min$extraInfo""".stripMargin
     }
+
     def dismissalMsg(dismissal: Dismissal):String = {
       val extraInfo = {
         dismissal.addedTime.map("+" + _).getOrElse("")
@@ -154,7 +155,9 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     }
 
     triggeringEvent match {
+      case g: Goal if g.isDeleted => goalMsg(g) // overturned ("deleted") goals
       case g: Goal => goalMsg(g)
+      case dismissal: Dismissal if dismissal.isDeleted => dismissalMsg(dismissal) // overturned ("deleted") dismissals
       case dismissal: Dismissal => dismissalMsg(dismissal)
       case prematch: PreMatch => s"""${homeTeamName} v ${awayTeamName}"""
       case _ => s"""${homeTeamName} ${score.home}-${score.away} ${awayTeamName} ($matchStatus)"""
@@ -162,11 +165,13 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
   }
 
   private def eventTitle(fme: FootballMatchEvent): String = fme match {
+    case g: Goal if g.isDeleted => "No Goal!"
     case _: Goal => "Goal!"
     case HalfTime(_) => "Half-time"
     case KickOff(_) => "Kick-off!"
     case SecondHalf(_) => "Second-half start"
     case FullTime(_) => "Full-Time"
+    case d: Dismissal if d.isDeleted => "Red card overturned"
     case _:Dismissal => "Red card"
     case _:PenaltyShootoutKick  => "Penalty Kick"
     case _:PreMatch => "Kick off soon"

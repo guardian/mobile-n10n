@@ -209,6 +209,76 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.awayTeamPenalties shouldEqual Some(PenaltyShootoutState(0, 0, 0))
     }
 
+    "Send an appropriate payload for a Goal" in new MatchEventsContext {
+      val notification = builder.build(
+        baseGoal,
+        matchInfo,
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballMatchStatusPayload]
+
+      notification.title shouldEqual Some("Goal!")
+      notification.message shouldEqual Some("Liverpool 1-0 Plymouth (1st)\nSteve 5min")
+      notification.homeTeamScore shouldEqual 1
+      notification.homeTeamMessage shouldEqual "Steve 5'"
+      notification.awayTeamScore shouldEqual 0
+      notification.awayTeamMessage shouldEqual " "
+    }
+
+    "Send an appropriate payload for a disallowed Goal" in new MatchEventsContext {
+      val notification = builder.build(
+        baseGoal.copy(isDeleted = true),
+        matchInfo,
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballMatchStatusPayload]
+
+      notification.title shouldEqual Some("No Goal!")
+      notification.message shouldEqual Some("Liverpool 0-0 Plymouth (1st)\nSteve 5min")
+      notification.homeTeamScore shouldEqual 0
+      notification.homeTeamMessage shouldEqual " "
+      notification.awayTeamScore shouldEqual 0
+      notification.awayTeamMessage shouldEqual " "
+    }
+
+    "send and appropriate payload for a Dismissal" in new MatchEventsContext {
+      val notification = builder.build(
+        Dismissal("event-1", "Player One", home, 20, None),
+        matchInfo,
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballMatchStatusPayload]
+      
+      notification.title shouldEqual Some("Red card")
+      notification.message shouldEqual Some("Liverpool 0-0 Plymouth (1st)\nPlayer One (Liverpool) 20min")
+      notification.homeTeamScore shouldEqual 0
+      notification.homeTeamMessage shouldEqual "Red card: Player One 20'"
+      notification.homeTeamRedCards shouldEqual 1
+      notification.awayTeamScore shouldEqual 0
+      notification.awayTeamMessage shouldEqual " "
+      notification.awayTeamRedCards shouldEqual 0
+    }
+
+
+    "send and appropriate payload for a disallowed Dismissal" in new MatchEventsContext {
+      val notification = builder.build(
+        Dismissal("event-1", "Player One", home, 20, None, isDeleted = true),
+        matchInfo,
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballMatchStatusPayload]
+
+      notification.title shouldEqual Some("Red card overturned")
+      notification.message shouldEqual Some("Liverpool 0-0 Plymouth (1st)\nPlayer One (Liverpool) 20min")
+      notification.homeTeamScore shouldEqual 0
+      notification.homeTeamMessage shouldEqual " "
+      notification.homeTeamRedCards shouldEqual 0
+      notification.awayTeamScore shouldEqual 0
+      notification.awayTeamMessage shouldEqual " "
+      notification.awayTeamRedCards shouldEqual 0
+    }
+
+
     "Ensure a deleted event payload has a unique UUID so a correction push notification payload is triggered" in new MatchEventsContext {
       val result1 = builder.build(
         baseGoal.copy(eventId = "event-1"),
