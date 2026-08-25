@@ -203,6 +203,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     case FullTime(_) => "Full-Time"
     case d: Dismissal if d.isDeleted => "Red card overturned"
     case _:Dismissal => "Red card"
+    case p: PenaltyShootoutKick if p.isDeleted => "Penalty kick disallowed"
     case _:PenaltyShootoutKick  => "Penalty Kick"
     case _:PreMatch => "Kick off soon"
     case _: ExtraTimeToBePlayed => "Extra time to follow"

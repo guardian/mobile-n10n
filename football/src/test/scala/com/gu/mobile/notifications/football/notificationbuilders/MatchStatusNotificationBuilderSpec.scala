@@ -292,6 +292,24 @@ class MatchStatusNotificationBuilderSpec extends Specification {
       notification.awayTeamRedCards shouldEqual 0
     }
 
+    "send and appropriate payload for a disallowed penalty shootout kick" in new MatchEventsContext {
+      val notification = builder.build(
+        PenaltyShootoutKick(ScoredShootoutResult, "Player One", home, away, 20, "event-d", isDeleted = true),
+        matchInfo,
+        List.empty,
+        Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
+      ).asInstanceOf[FootballPenaltyShootoutPayload]
+
+      notification.title shouldEqual Some("Penalty kick disallowed")
+      notification.message shouldEqual Some("Liverpool 0-0 Plymouth (1st)")
+      notification.homeTeamScore shouldEqual 0
+      notification.homeTeamMessage shouldEqual " "
+      notification.homeTeamRedCards shouldEqual 0
+      notification.awayTeamScore shouldEqual 0
+      notification.awayTeamMessage shouldEqual " "
+      notification.awayTeamRedCards shouldEqual 0
+    }
+
   }
 
   trait MatchEventsContext extends Scope {
