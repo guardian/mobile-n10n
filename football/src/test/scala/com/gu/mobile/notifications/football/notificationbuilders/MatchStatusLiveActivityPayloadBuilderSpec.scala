@@ -97,7 +97,7 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       contentState.awayTeam.penaltyScore mustEqual Some(PenaltyShootoutState(0, 0, 0))
     }
 
-    "Ensure a deleted event payload has the same UUID so is not duplicated sent" in new MatchEventsContext {
+    "Ensure a deleted event payload has a unique UUID so a correction payload is triggered" in new MatchEventsContext {
       val resultActive = builder.build(
         baseGoal.copy(eventId = "event-id"),
         matchInfo.copy(round = Round("1", Some("League"))),
