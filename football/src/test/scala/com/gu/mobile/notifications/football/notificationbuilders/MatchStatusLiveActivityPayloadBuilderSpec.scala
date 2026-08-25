@@ -10,18 +10,17 @@ import pa.{Competition, MatchDay, MatchDayTeam, Round, Stage, Venue}
 import java.time.ZonedDateTime
 import java.util.UUID
 
-// todo add more tests
 class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
 
   "A MatchStatusLiveActivityPayloadBuilder" should {
 
     "Build a LiveActivityPayload for a goal event" in new MatchEventsContext {
-      val result = builder.build(baseGoal, matchInfo, List.empty, Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live"))
+      val result = builder.build(baseGoal.copy(eventId = "event-id"), matchInfo, List.empty, Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live"))
 
       result.eventType mustEqual UpdateLiveActivityEvent
       result.liveActivityType mustEqual FootballLiveActivity
       result.liveActivityID mustEqual "some-match-id"
-      result.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id/".getBytes)
+      result.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id/event-id/active".getBytes)
 
       val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
       contentState.homeTeam.name mustEqual "Liverpool"
@@ -49,7 +48,7 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       result.eventType mustEqual UpdateLiveActivityEvent
       result.liveActivityType mustEqual FootballLiveActivity
       result.liveActivityID mustEqual "some-match-id"
-      result.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id/".getBytes)
+      result.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id//active".getBytes)
 
       val contentState = result.broadcastContentStateData.get.asInstanceOf[FootballMatchContentState]
       contentState.competition.name mustEqual "FA Cup"
@@ -98,21 +97,24 @@ class MatchStatusLiveActivityPayloadBuilderSpec extends Specification {
       contentState.awayTeam.penaltyScore mustEqual Some(PenaltyShootoutState(0, 0, 0))
     }
 
-    "Ensure a deleted event payload has the same UUID so is not duplicated sent" in new MatchEventsContext {
-      val result1 = builder.build(
-        baseGoal.copy(eventId = "event-1"),
+    "Ensure a deleted event payload has a unique UUID so a correction payload is triggered" in new MatchEventsContext {
+      val resultActive = builder.build(
+        baseGoal.copy(eventId = "event-id"),
         matchInfo.copy(round = Round("1", Some("League"))),
         List.empty,
         Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
       )
-      val result2 = builder.build(
-        baseGoal.copy(eventId = "event-1", isDeleted = true),
+      val resultDeleted = builder.build(
+        baseGoal.copy(eventId = "event-id", isDeleted = true),
         matchInfo.copy(round = Round("1", Some("League"))),
         List.empty,
         Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
       )
-      result1.id mustEqual (result2.id)
+
+      resultActive.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id/event-id/active".getBytes)
+      resultDeleted.id mustEqual UUID.nameUUIDFromBytes("football-match-status/some-match-id/event-id/deleted".getBytes)
     }
+
 
   }
 

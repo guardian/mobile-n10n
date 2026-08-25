@@ -64,7 +64,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
      importance = importance(triggeringEvent),
      topic = topics,
      matchStatus = status,
-     eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
+     eventId = s"${triggeringEvent.eventId}/${if (triggeringEvent.isDeleted) "deleted" else "active"}", // used to calculated derivedID for deduplication processing.
      kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
      lineupsAvailable = Some(matchInfo.lineupsAvailable),
      detailedMatchStatus = Some(MatchStatus.fromString(matchInfo.matchStatus).status),
@@ -101,7 +101,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
           topic = topics,
           matchStatus = status,
           detailedMatchStatus = Some("PENALTIES"),
-          eventId = UUID.nameUUIDFromBytes(triggeringEvent.eventId.getBytes).toString,
+          eventId = s"${triggeringEvent.eventId}/${if (triggeringEvent.isDeleted) "deleted" else "active"}", // used to calculated derivedID for deduplication processing.
           kickOffTimestamp = Some(matchInfo.date.toEpochSecond),
           lineupsAvailable = Some(matchInfo.lineupsAvailable),
           debug = false,
@@ -185,7 +185,9 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
     }
 
     triggeringEvent match {
+      case g: Goal if g.isDeleted => goalMsg(g) // overturned ("deleted") goals
       case g: Goal => goalMsg(g)
+      case dismissal: Dismissal if dismissal.isDeleted => dismissalMsg(dismissal) // overturned ("deleted") dismissals
       case dismissal: Dismissal => dismissalMsg(dismissal)
       case prematch: PreMatch => s"""${homeTeamName} v ${awayTeamName}"""
       case _ => s"""${homeTeamName} ${score.home}-${score.away} ${awayTeamName} ($matchStatus)"""
@@ -193,12 +195,15 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
   }
 
   private def eventTitle(fme: FootballMatchEvent): String = fme match {
+    case g: Goal if g.isDeleted => "No goal!"
     case _: Goal => "Goal!"
     case HalfTime(_) => "Half-time"
     case KickOff(_) => "Kick-off!"
     case SecondHalf(_) => "Second-half start"
     case FullTime(_) => "Full-Time"
+    case d: Dismissal if d.isDeleted => "Red card overturned"
     case _:Dismissal => "Red card"
+    case p: PenaltyShootoutKick if p.isDeleted => "Penalty kick disallowed"
     case _:PenaltyShootoutKick  => "Penalty Kick"
     case _:PreMatch => "Kick off soon"
     case _: ExtraTimeToBePlayed => "Extra time to follow"
