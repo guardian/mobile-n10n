@@ -195,7 +195,7 @@ class MatchStatusNotificationBuilder(mapiHost: String) {
   }
 
   private def eventTitle(fme: FootballMatchEvent): String = fme match {
-    case g: Goal if g.isDeleted => "No Goal!"
+    case g: Goal if g.isDeleted => "No goal!"
     case _: Goal => "Goal!"
     case HalfTime(_) => "Half-time"
     case KickOff(_) => "Kick-off!"

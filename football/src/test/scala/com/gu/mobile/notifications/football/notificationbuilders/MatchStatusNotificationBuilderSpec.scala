@@ -247,7 +247,7 @@ class MatchStatusNotificationBuilderSpec extends Specification {
         Some("football/live/2017/aug/11/arsenal-v-leicester-city-premier-league-live")
       ).asInstanceOf[FootballMatchStatusPayload]
 
-      notification.title shouldEqual Some("No Goal!")
+      notification.title shouldEqual Some("No goal!")
       notification.message shouldEqual Some("Liverpool 0-0 Plymouth (1st)\nSteve 5min")
       notification.homeTeamScore shouldEqual 0
       notification.homeTeamMessage shouldEqual " "
