@@ -80,7 +80,7 @@ jobs:
           mv eventconsumer/target/scala-*/eventconsumer.jar dist/eventconsumer/eventconsumer.jar
 
       - name: Test Report
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@v3
         if: success() || failure()    # run this step even if previous step failed
         with:
           name: Tests
