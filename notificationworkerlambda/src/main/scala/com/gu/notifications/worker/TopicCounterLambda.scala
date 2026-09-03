@@ -2,9 +2,8 @@ package com.gu.notifications.worker
 
 import aws.TopicCountsS3
 import cats.effect.{ContextShift, IO}
-import com.amazonaws.auth.AWSCredentialsProviderChain
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
 import com.gu.notifications.worker.utils.{Aws, Logging}
 import db.{DatabaseConfig, RegistrationService}
 import doobie.util.transactor.Transactor
@@ -17,11 +16,9 @@ class TopicCounterLambda extends Logging {
 
   def env = Env()
 
-  lazy val credentials: AWSCredentialsProviderChain = Aws.credentialsProvider
-
-  lazy val s3Client: AmazonS3 = AmazonS3ClientBuilder.standard
-    .withRegion(Regions.EU_WEST_1)
-    .withCredentials(credentials)
+  lazy val s3Client: S3Client = S3Client.builder()
+    .region(Region.EU_WEST_1)
+    .credentialsProvider(Aws.credentialsProviderV2)
     .build()
 
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
@@ -41,6 +38,6 @@ class TopicCounterLambda extends Logging {
 
   def runLocally(): Unit = {
     topicCounts.handleRequest()
-    s3Client.shutdown()
+    s3Client.close()
   }
 }
