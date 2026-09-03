@@ -1,10 +1,8 @@
 package aws
 
-import java.io.{ByteArrayInputStream, InputStream}
-
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult, S3Object}
-import com.amazonaws.util.IOUtils
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest, PutObjectResponse}
 import exception.TopicCounterException
 import models.TopicCount
 import org.slf4j.{Logger, LoggerFactory}
@@ -15,18 +13,19 @@ import scala.util.{Failure, Success, Try}
 
 trait S3[T]  {
 
-  def s3Client: AmazonS3
+  def s3Client: S3Client
   def bucketName: String
   def path: String
   def logger: Logger
 
-  def put(data: Seq[T])(implicit format: Format[T]) : PutObjectResult =  {
-    val (inputStream, contentLength) = jsonInputStreamAndContentLength(data)
-    val metaData: ObjectMetadata = new ObjectMetadata()
-    metaData.setContentType("application/json")
-    metaData.setContentLength(contentLength)
-    val putObjectRequest: PutObjectRequest = new PutObjectRequest(bucketName, path, inputStream, metaData)
-    s3Client.putObject(putObjectRequest)
+  def put(data: Seq[T])(implicit format: Format[T]): PutObjectResponse = {
+    val jsonAsBytes = Json.toBytes(Json.toJson(data))
+    val putObjectRequest = PutObjectRequest.builder()
+      .bucket(bucketName)
+      .key(path)
+      .contentType("application/json")
+      .build()
+    s3Client.putObject(putObjectRequest, RequestBody.fromBytes(jsonAsBytes))
   }
 
   def fetch()(implicit format: Format[T], executionException: ExecutionContext) : Future[List[T]] = {
@@ -39,7 +38,7 @@ trait S3[T]  {
   }
 
   private def parseS3Object()(implicit format: Format[T]) : List[T] = {
-    Json.fromJson[List[T]](Json.parse(asString(s3Client.getObject(bucketName, path)))) match {
+    Json.fromJson[List[T]](Json.parse(getObjectasString())) match {
       case JsSuccess(list, __) =>
         logger.debug(s"Got ${list.length} topic counts from s3")
         list
@@ -50,23 +49,16 @@ trait S3[T]  {
     }
   }
 
-  private def asString(s3Object: S3Object): String = {
-     val s3ObjectContent = s3Object.getObjectContent
-     try {
-       IOUtils.toString(s3ObjectContent)
-     }
-     finally {
-       s3ObjectContent.close()
-     }
-  }
-
-  private def jsonInputStreamAndContentLength(data: Seq[T])(implicit format: Format[T]): (InputStream, Long) = {
-    val jsonAsBytes  = Json.toBytes(Json.toJson(data))
-    (new ByteArrayInputStream(jsonAsBytes), jsonAsBytes.length)
+  private def getObjectasString(): String = {
+    val getObjectRequest = GetObjectRequest.builder()
+      .bucket(bucketName)
+      .key(path)
+      .build()
+    s3Client.getObjectAsBytes(getObjectRequest).asUtf8String()
   }
 }
 
-class TopicCountsS3(override val s3Client: AmazonS3, override val bucketName: String, override val path: String) extends S3[TopicCount]  {
+class TopicCountsS3(override val s3Client: S3Client, override val bucketName: String, override val path: String) extends S3[TopicCount] {
   override def logger: Logger = LoggerFactory.getLogger(this.getClass)
 }
 

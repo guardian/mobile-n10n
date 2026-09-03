@@ -7,7 +7,6 @@ import com.gu.conf.{ConfigurationLoader, SSMConfigurationLocation}
 import play.api.ApplicationLoader.Context
 import play.api._
 import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain => AwsCredentialsProviderChainV2, DefaultCredentialsProvider => DefaultCredentialsProviderV2, ProfileCredentialsProvider => ProfileCredentialsProviderV2}
-import software.amazon.awssdk.regions.Region.EU_WEST_1
 
 abstract class CustomApplicationLoader extends ApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents
@@ -19,7 +18,7 @@ abstract class CustomApplicationLoader extends ApplicationLoader {
 
   lazy val credentialsv2 = AwsCredentialsProviderChainV2.of(
     ProfileCredentialsProviderV2.builder.profileName("mobile").build,
-    DefaultCredentialsProviderV2.create
+    DefaultCredentialsProviderV2.builder().build()
   )
 
   override def load(context: Context): Application = {

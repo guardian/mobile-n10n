@@ -3,10 +3,9 @@ package com.gu.notifications.worker.tokens
 import java.util.concurrent.TimeUnit
 
 import cats.effect._
-import com.amazonaws.handlers.AsyncHandler
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder
-import com.amazonaws.services.sqs.model.{SendMessageRequest, SendMessageResult}
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import com.gu.notifications.worker.utils.Aws
 import fs2.Stream
 import play.api.libs.json.Json
@@ -24,24 +23,24 @@ class SqsDeliveryServiceImpl[F[_]](queueUrl: String)(implicit ece: ExecutionCont
   F: Async[F],
   T: Timer[F]
 ) extends SqsDeliveryService[F] {
-  val amazonSQSAsyncClient = AmazonSQSAsyncClientBuilder.standard()
-    .withCredentials(Aws.credentialsProvider)
-    .withRegion(Regions.EU_WEST_1)
+  val amazonSQSAsyncClient = SqsAsyncClient.builder()
+    .credentialsProvider(Aws.credentialsProviderV2)
+    .region(Region.EU_WEST_1)
     .build()
 
   def send(chunkedTokensBatch: ChunkedTokens)(oncomplete: Either[Throwable, Unit] => Unit): Unit = {
-    val sendMessageRequest = new SendMessageRequest()
-      .withMessageBody(Json.stringify(Json.toJson(chunkedTokensBatch)))
-      .withQueueUrl(queueUrl)
+    val sendMessageRequest = SendMessageRequest.builder()
+      .messageBody(Json.stringify(Json.toJson(chunkedTokensBatch)))
+      .queueUrl(queueUrl)
+      .build()
 
-    val handler = new AsyncHandler[SendMessageRequest, SendMessageResult] {
-      override def onError(exception: Exception): Unit = oncomplete(Left(new Exception(Json.stringify(Json.toJson(chunkedTokensBatch)), exception)))
-
-      override def onSuccess(request: SendMessageRequest, result: SendMessageResult): Unit = oncomplete(Right(()))
+    amazonSQSAsyncClient.sendMessage(sendMessageRequest).whenComplete { (_, exception) =>
+      if (exception != null) {
+        oncomplete(Left(new Exception(Json.stringify(Json.toJson(chunkedTokensBatch)), exception)))
+      } else {
+        oncomplete(Right(()))
+      }
     }
-    amazonSQSAsyncClient.sendMessageAsync(
-      sendMessageRequest,
-      handler)
   }
 
 
