@@ -1,7 +1,7 @@
 package com.gu.mobile.notifications.football.lib
 
 import scala.concurrent.{ExecutionContext, Future}
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import com.gu.mobile.notifications.client.models.{FootballMatchStatusPayload, Payload}
 import org.scanamo.{DynamoFormat, ScanamoAsync, Table}
 import DynamoDistinctCheck.{Distinct, DistinctStatus, Duplicate, Unknown}
@@ -57,7 +57,7 @@ object DynamoDistinctCheck {
 }
 
 class DynamoDistinctCheck[A <: Payload, D: DynamoFormat](
-  client: AmazonDynamoDBAsync,
+  client: DynamoDbAsyncClient,
   val tableName: String,
   partitionKeyName: String,
   toDynamoModel: A => D
@@ -69,7 +69,7 @@ class DynamoDistinctCheck[A <: Payload, D: DynamoFormat](
     lazy val scanamoAsync: ScanamoAsync = ScanamoAsync(client)
     lazy val notificationsTable = Table[D](tableName)
 
-   scanamoAsync.exec(notificationsTable.get(partitionKeyName -> item.id.toString)).map {
+   scanamoAsync.exec(notificationsTable.get(partitionKeyName === item.id.toString)).map {
       case Some(Right(_)) => true
       case _ => false
     } recover {
@@ -86,7 +86,7 @@ class DynamoDistinctCheck[A <: Payload, D: DynamoFormat](
     lazy val notificationsTable = Table[D](tableName)
     val dynamoPayload = toDynamoModel(item)
 
-    val putResult = scanamoAsync.exec(notificationsTable.given(not(attributeExists(partitionKeyName))).put(dynamoPayload))
+    val putResult = scanamoAsync.exec(notificationsTable.when(attributeNotExists(partitionKeyName)).put(dynamoPayload))
     putResult map {
       case Right(_) =>
         logger.info(s"Distinct event ${item.id} written to dynamodb $tableName")

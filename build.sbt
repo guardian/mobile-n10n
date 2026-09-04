@@ -52,6 +52,7 @@ val googleOAuthClient: String = "1.39.0"
 val nettyVersion: String = "4.2.2.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.5.32"
+val scanamoVersion: String = "6.0.0"
 
 val standardSettings = Seq[Setting[_]](
   // We should remove this when all transitive dependencies use the same version of scala-xml
@@ -309,10 +310,11 @@ lazy val football = lambda("football", "football")
   .settings(
     resolvers += "Guardian GitHub Releases" at "https://guardian.github.com/maven/repo-releases",
     libraryDependencies ++= Seq(
-      "org.scanamo" %% "scanamo" % "1.0.0-M12-1",
-      "org.scanamo" %% "scanamo-testkit" % "1.0.0-M12-1" % "test",
+      "org.scanamo" %% "scanamo" % scanamoVersion,
+      "org.scanamo" %% "scanamo-testkit" % scanamoVersion % "test",
       "com.gu" %% "content-api-client-default" % "35.0.0",
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+      "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
+      "software.amazon.awssdk" % "s3" % awsSdk2Version,
       "com.gu" %% "pa-client" % paClientVersion,
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "org.specs2" %% "specs2-core" % specsVersion % "test",
@@ -474,8 +476,8 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       "software.amazon.awssdk" % "eventbridge" % "2.20.162",
       "software.amazon.awssdk" % "cloudwatch" % awsSdk2Version,
       "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
-      "org.scanamo" %% "scanamo" % "6.0.0",
-      "org.scanamo" %% "scanamo-testkit" % "6.0.0" % "test"
+      "org.scanamo" %% "scanamo" % scanamoVersion,
+      "org.scanamo" %% "scanamo-testkit" % scanamoVersion % "test"
     ),
     excludeDependencies ++= Seq(
       ExclusionRule("org.playframework", "play-ahc-ws_2.13"),
