@@ -187,7 +187,7 @@ lazy val notification = project
     ),
     libraryDependencies ++= Seq(
       logback,
-      "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
+      "software.amazon.awssdk" % "sqs" % awsSdk2Version
     ),
     excludeDependencies ++= Seq(
       // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
