@@ -7,7 +7,12 @@ import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import { Duration } from 'aws-cdk-lib';
 import type { App } from 'aws-cdk-lib';
 import {
+	Color,
 	ComparisonOperator,
+	Dashboard,
+	GraphWidget,
+	Metric,
+	SingleValueWidget,
 	TreatMissingData,
 } from 'aws-cdk-lib/aws-cloudwatch';
 import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
@@ -153,6 +158,94 @@ export class Registration extends GuStack {
 
 			alarm.addAlarmAction(snsAction);
 			alarm.addOkAction(snsAction);
+		});
+
+		const registrationMetricNamespace = `Notifications/${stage}/${app}`;
+
+		const failedInsertions = new Metric({
+			namespace: registrationMetricNamespace,
+			metricName: 'FailedRegistrationInsertion',
+			statistic: 'Sum',
+			period: Duration.minutes(1),
+			color: Color.RED,
+			label: 'Failed',
+		});
+
+		const successfulInsertions = new Metric({
+			namespace: registrationMetricNamespace,
+			metricName: 'SuccessfulRegistrationInsertion',
+			statistic: 'Sum',
+			period: Duration.minutes(1),
+			color: Color.GREEN,
+			label: 'Successful',
+		});
+
+		const insertionLatency = new Metric({
+			namespace: registrationMetricNamespace,
+			metricName: 'RegistrationInsertionLatency',
+			period: Duration.minutes(1),
+		});
+
+		const asgCpuUtilization = new Metric({
+			namespace: 'AWS/EC2',
+			metricName: 'CPUUtilization',
+			dimensionsMap: {
+				AutoScalingGroupName: autoScalingGroup.autoScalingGroupName,
+			},
+			statistic: 'Average',
+			period: Duration.minutes(5),
+		});
+
+		new Dashboard(this, 'RegistrationDashboard', {
+			dashboardName: `mobile-notifications-registration-${stage}`,
+			widgets: [
+				[
+					new GraphWidget({
+						title: 'Registration Insertions (Successful vs Failed)',
+						left: [successfulInsertions, failedInsertions],
+						width: 16,
+					}),
+					new SingleValueWidget({
+						title: 'Failed Insertions (last 1h)',
+						metrics: [failedInsertions.with({ period: Duration.hours(1) })],
+						width: 8,
+						sparkline: true,
+					}),
+				],
+				[
+					new GraphWidget({
+						title: 'Registration Insertion Latency (ms)',
+						left: [
+							insertionLatency.with({ statistic: 'Average', label: 'Average' }),
+							insertionLatency.with({ statistic: 'p99', label: 'p99' }),
+						],
+						width: 12,
+					}),
+					new GraphWidget({
+						title: 'ASG CPU Utilization (%)',
+						left: [asgCpuUtilization],
+						width: 12,
+					}),
+				],
+				[
+					new GraphWidget({
+						title: 'ALB Requests vs 5XX Errors',
+						left: [
+							loadBalancer.metrics.requestCount({
+								period: Duration.minutes(1),
+								statistic: 'Sum',
+							}),
+						],
+						right: [
+							loadBalancer.metrics.httpCodeTarget(
+								HttpCodeTarget.TARGET_5XX_COUNT,
+								{ period: Duration.minutes(1), statistic: 'Sum' },
+							),
+						],
+						width: 24,
+					}),
+				],
+			],
 		});
 
 		adjustCloudformationParameters(this);
