@@ -189,7 +189,9 @@ export class Registration extends GuStack {
 		const asgCpuUtilization = new Metric({
 			namespace: 'AWS/EC2',
 			metricName: 'CPUUtilization',
-			dimensionsMap: { AutoScalingGroupName: autoScalingGroup.autoScalingGroupName },
+			dimensionsMap: {
+				AutoScalingGroupName: autoScalingGroup.autoScalingGroupName,
+			},
 			statistic: 'Average',
 			period: Duration.minutes(5),
 		});
