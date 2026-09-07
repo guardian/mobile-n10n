@@ -3,7 +3,7 @@ package report
 import _root_.controllers.AssetsComponents
 import org.apache.pekko.actor.ActorSystem
 import aws.AsyncDynamo
-import com.amazonaws.regions.Regions.EU_WEST_1
+import software.amazon.awssdk.regions.Region
 import com.gu.AppIdentity
 import play.api.routing.Router
 import play.api._
@@ -40,10 +40,8 @@ class ReportApplicationComponents(context: Context) extends BuiltInComponentsFro
 
   lazy val reportController = wire[Report]
 
-  val credentialsProvider = new MobileAwsCredentialsProvider()
-
   lazy val notificationReportRepository: SentNotificationReportRepository =
-    new NotificationReportRepository(AsyncDynamo(regions = EU_WEST_1, credentialsProvider), appConfig.dynamoReportsTableName)
+    new NotificationReportRepository(AsyncDynamo(region = Region.EU_WEST_1, MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2), appConfig.dynamoReportsTableName)
 
   override lazy val router: Router = wire[Routes]
   lazy val prefix: String = "/"

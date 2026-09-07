@@ -1,16 +1,16 @@
 package com.gu.notifications.extractor
 
-import java.io.ByteArrayInputStream
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import aws.AsyncDynamo.{keyBetween, keyEquals}
 import aws.DynamoJsonConversions
-import com.amazonaws.regions.{RegionUtils, Regions, Region}
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
-import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import com.amazonaws.services.s3.model.{CannedAccessControlList, ObjectMetadata, PutObjectRequest}
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.dynamodb.model.{AttributeValue, QueryRequest}
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.{ObjectCannedACL, PutObjectRequest}
 import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import models.NotificationType
 import org.slf4j.{Logger, LoggerFactory}
@@ -35,8 +35,6 @@ class Lambda extends RequestHandler[DateRange, Unit] {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  val credentials = new MobileAwsCredentialsProvider()
-
   val defaultAppName = "report-extractor"
 
   val identity: AppIdentity = 
@@ -49,12 +47,19 @@ class Lambda extends RequestHandler[DateRange, Unit] {
     } 
 
   val region: Region = identity match {
-    case AwsIdentity(_, _, _, region) => RegionUtils.getRegion(region)
-    case _ => Region.getRegion(Regions.EU_WEST_1)
+    case AwsIdentity(_, _, _, region) => Region.of(region)
+    case _ => Region.EU_WEST_1
   }
 
-  val dynamoDB = AmazonDynamoDBClientBuilder.standard().withCredentials(credentials).withRegion(region.getName).build()
-  val s3 = AmazonS3ClientBuilder.standard().withCredentials(credentials).withRegion(region.getName).build()
+  val dynamoDB = DynamoDbClient.builder()
+    .credentialsProvider(MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
+    .region(region)
+    .build()
+
+  val s3 = S3Client.builder()
+    .credentialsProvider(MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
+    .region(region)
+    .build()
 
   val tableName: String = identity match {
     case AwsIdentity(_, _, stage, _) => s"mobile-notifications-reports-$stage"
@@ -96,17 +101,12 @@ class Lambda extends RequestHandler[DateRange, Unit] {
     val results = notificationTypesToExtract.flatMap(nt => extractNotifications(day, nt))
     val notificationCount = results.size
     val buffer: String = results.map(Json.stringify).mkString("\n")
-    val inputStream = new ByteArrayInputStream(buffer.getBytes)
-    val objectMetaData = new ObjectMetadata()
-    objectMetaData.setContentLength(buffer.getBytes().length)
-    val putObjectRequest = new PutObjectRequest(
-      "ophan-raw-push-notification",
-      s"$s3Path/date=$day/notifications.json",
-      inputStream,
-      objectMetaData
-    )
-    putObjectRequest.withCannedAcl(CannedAccessControlList.BucketOwnerFullControl)
-    s3.putObject(putObjectRequest)
+    val putObjectRequest = PutObjectRequest.builder()
+      .bucket("ophan-raw-push-notification")
+      .key(s"$s3Path/date=$day/notifications.json")
+      .acl(ObjectCannedACL.BUCKET_OWNER_FULL_CONTROL)
+      .build()
+    s3.putObject(putObjectRequest, RequestBody.fromBytes(buffer.getBytes))
     logger.info(s"Extracted $notificationCount notifications for $day")
   }
 
@@ -116,22 +116,24 @@ class Lambda extends RequestHandler[DateRange, Unit] {
     val from = day.atStartOfDay().toString
     val to = day.plusDays(1).atStartOfDay().toString
 
-    val query = new QueryRequest(tableName)
-      .withIndexName(sentTimeIndex)
-      .withKeyConditions(Map(
+    val query = QueryRequest.builder()
+      .tableName(tableName)
+      .indexName(sentTimeIndex)
+      .keyConditions(Map(
         "type" -> keyEquals(NotificationType.toRep(notificationType)),
         "sentTime" -> keyBetween(from, to)
       ).asJava)
-      .withFilterExpression("attribute_not_exists(notification.dryRun)")
+      .filterExpression("attribute_not_exists(notification.dryRun)")
+      .build()
 
     @tailrec
     def recursiveFetch(startKey: Option[java.util.Map[String, AttributeValue]], agg: List[Map[String, AttributeValue]]): List[Map[String, AttributeValue]] = {
-      val queryWithStartKey = startKey.fold(query)(key => query.withExclusiveStartKey(key))
+      val queryWithStartKey = startKey.fold(query)(key => query.toBuilder.exclusiveStartKey(key).build())
 
       val results = dynamoDB.query(queryWithStartKey)
-      val items = results.getItems.asScala.toList.map(item => item.asScala.toMap)
+      val items = results.items().asScala.toList.map(item => item.asScala.toMap)
 
-      val lastKey = Option(results.getLastEvaluatedKey).filter(!_.isEmpty)
+      val lastKey = if (results.hasLastEvaluatedKey && !results.lastEvaluatedKey().isEmpty) Some(results.lastEvaluatedKey()) else None
 
       lastKey match {
         case Some(key) => recursiveFetch(Some(key), items)

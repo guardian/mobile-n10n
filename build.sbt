@@ -107,8 +107,8 @@ lazy val common = project
       "org.playframework" %% "play-json" % playJsonVersion,
       "org.playframework" %% "play-json-joda" % playJsonVersion,
       "com.gu" %% "pa-client" % paClientVersion,
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
-      "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
+      "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
+      "software.amazon.awssdk" % "cloudwatch" % awsSdk2Version,
       "software.amazon.awssdk" % "s3" % awsSdk2Version,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
       "ai.x" %% "play-json-extensions" % "0.42.0",
@@ -138,7 +138,7 @@ lazy val commonscheduledynamodb = project
   .settings(LocalDynamoDBScheduleLambda.settings)
   .settings(List(
     libraryDependencies ++= List(
-      "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+      "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
       "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabind,
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.13" % jacksonScalaModule,
       specs2 % Test
@@ -279,7 +279,7 @@ lazy val schedulelambda = lambda("schedule", "schedulelambda")
     List(
       libraryDependencies ++= Seq(
         "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
-        "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
+        "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
         "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
         "org.specs2" %% "specs2-core" % specsVersion % "test",
         "org.specs2" %% "specs2-scalacheck" % specsVersion % "test",
