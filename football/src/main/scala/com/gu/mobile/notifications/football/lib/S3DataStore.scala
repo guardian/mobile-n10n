@@ -1,15 +1,14 @@
 package com.gu.mobile.notifications.football.lib
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.S3Object
-import com.amazonaws.util.IOUtils
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import com.gu.mobile.notifications.football.Logging
 import play.api.libs.json.{Format, JsError, JsSuccess, Json}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-class S3DataStore[T](s3Client: AmazonS3, bucketName: String) extends Logging {
+class S3DataStore[T](s3Client: S3Client, bucketName: String) extends Logging {
   def fetch(path: String)(implicit format: Format[T]) : Future[List[T]] = {
     Try(parseS3Object(path)) match {
       case Success(list) => Future.successful(list)
@@ -20,7 +19,7 @@ class S3DataStore[T](s3Client: AmazonS3, bucketName: String) extends Logging {
   }
 
   private def parseS3Object(path: String)(implicit format: Format[T]) : List[T] = {
-    Json.fromJson[List[T]](Json.parse(asString(s3Client.getObject(bucketName, path)))) match {
+    Json.fromJson[List[T]](Json.parse(getObjectAsString(path))) match {
       case JsSuccess(list, __) =>
         logger.debug(s"Got ${list.length} items from s3 $bucketName, path $path")
         list
@@ -31,13 +30,11 @@ class S3DataStore[T](s3Client: AmazonS3, bucketName: String) extends Logging {
     }
   }
 
-  private def asString(s3Object: S3Object): String = {
-    val s3ObjectContent = s3Object.getObjectContent
-    try {
-      IOUtils.toString(s3ObjectContent)
-    }
-    finally {
-      s3ObjectContent.close()
-    }
+  private def getObjectAsString(path: String): String = {
+    val request = GetObjectRequest.builder()
+      .bucket(bucketName)
+      .key(path)
+      .build()
+    s3Client.getObjectAsBytes(request).asUtf8String()
   }
 }

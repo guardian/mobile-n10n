@@ -3,9 +3,11 @@ package com.gu.mobile.notifications.football
 import java.net.URI
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
+import software.amazon.awssdk.services.s3.S3Client
+
+
 import com.gu.contentapi.client.GuardianContentClient
 import com.gu.mobile.liveactivities.event.bus.LiveActivityPusher
 import com.gu.mobile.notifications.football.lib.{ArticleSearcher, DynamoDistinctCheck, DynamoMatchLiveActivity, DynamoMatchNotification, EventConsumer, EventFilter, FootballData, LiveActivityEventConsumer, NotificationHttpProvider, NotificationSender, NotificationsApiClient, PACompetition, PaFootballClient, S3DataStore, SyntheticMatchEventGenerator}
@@ -23,7 +25,6 @@ import com.gu.mobile.notifications.football.models.MatchDataWithArticle
 
 import scala.concurrent.Future
 import org.scanamo.generic.auto._
-import pa.Competition
 
 object Lambda extends Logging {
 
@@ -43,11 +44,12 @@ object Lambda extends Logging {
     new PaFootballClient(configuration.paApiKey, configuration.paHost)
   }
 
-  lazy val dynamoDBClient: AmazonDynamoDBAsync = {
+  lazy val dynamoDBClient: DynamoDbAsyncClient = {
     logger.debug("Creating dynamo db client")
-    AmazonDynamoDBAsyncClientBuilder.standard()
-      .withCredentials(configuration.credentials)
-      .withRegion(Regions.EU_WEST_1)
+    DynamoDbAsyncClient
+      .builder()
+      .credentialsProvider(configuration.credentials)
+      .region(Region.EU_WEST_1)
       .build()
   }
 
@@ -59,9 +61,10 @@ object Lambda extends Logging {
 
   val apiClient = new NotificationsApiClient(configuration)
 
-  lazy val s3Client: AmazonS3 = AmazonS3ClientBuilder.standard
-    .withRegion(Regions.EU_WEST_1)
-    .withCredentials(configuration.credentials)
+  lazy val s3Client: S3Client = S3Client
+    .builder()
+    .credentialsProvider(configuration.credentials)
+    .region(Region.EU_WEST_1)
     .build()
 
   lazy val competitionsDataStore = new S3DataStore[PACompetition](s3Client, paDataBucket)
@@ -130,7 +133,7 @@ object Lambda extends Logging {
   }
 }
 
-class NotificationHandler(configuration: Configuration, apiClient: NotificationsApiClient, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
+class NotificationHandler(configuration: Configuration, apiClient: NotificationsApiClient, dynamoDBClient: DynamoDbAsyncClient, tableName: String) extends Logging {
 
   lazy val notificationSender = new NotificationSender(apiClient)
 
@@ -155,7 +158,7 @@ class NotificationHandler(configuration: Configuration, apiClient: Notifications
   }
 }
 
-class LiveActivityHandler(configuration: Configuration, dynamoDBClient: AmazonDynamoDBAsync, tableName: String) extends Logging {
+class LiveActivityHandler(configuration: Configuration, dynamoDBClient: DynamoDbAsyncClient, tableName: String) extends Logging {
 
   private val eventBusName =
     s"liveactivities-eventbus-${configuration.stage}"

@@ -3,7 +3,6 @@ package com.gu.mobile.notifications.football.lib
 import java.time.{LocalDate, LocalTime, ZonedDateTime}
 import com.gu.mobile.notifications.football.{Configuration, Logging}
 import com.gu.mobile.notifications.football.models.RawMatchData
-import org.joda.time.DateTime
 import pa.MatchDay
 import play.api.libs.json.{Format, Json}
 
@@ -12,7 +11,6 @@ import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-case class EndedMatch(matchId: String, startTime: DateTime)
 
 case class PACompetition(
     id: String,
