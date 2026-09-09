@@ -35,10 +35,9 @@ class SqsDeliveryServiceImpl[F[_]](queueUrl: String)(implicit ece: ExecutionCont
       .build()
 
     amazonSQSAsyncClient.sendMessage(sendMessageRequest).whenComplete { (_, exception) =>
-      if (exception != null) {
-        oncomplete(Left(new Exception(Json.stringify(Json.toJson(chunkedTokensBatch)), exception)))
-      } else {
-        oncomplete(Right(()))
+      Option(exception) match {
+        case Some(e) => oncomplete(Left(new Exception(Json.stringify(Json.toJson(chunkedTokensBatch)), e)))
+        case None => oncomplete(Right(()))
       }
     }
   }
