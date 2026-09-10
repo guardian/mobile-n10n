@@ -39,7 +39,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 val playJsonVersion = "3.0.6"
 val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.797"
-val awsSdk2Version: String = "2.42.34"
+val awsSdk2Version: String = "2.54.13"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
@@ -49,7 +49,7 @@ val jacksonDatabind: String = "2.21.5"
 val jacksonScalaModule: String = "2.21.5"
 val simpleConfigurationVersion: String = "14.0.1"
 val googleOAuthClient: String = "1.39.0"
-val nettyVersion: String = "4.2.2.Final"
+val nettyVersion: String = "4.2.17.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.5.32"
 val scanamoVersion: String = "6.0.0"
@@ -302,7 +302,7 @@ lazy val commonEventBusPusher = project
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(Seq(
     libraryDependencies ++= Seq(
-      "software.amazon.awssdk" % "eventbridge" % "2.20.162"
+      "software.amazon.awssdk" % "eventbridge" % awsSdk2Version
     ),
   ))
 
