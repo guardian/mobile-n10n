@@ -44,7 +44,7 @@ val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.19"
-val apacheThrift: String = "0.15.0"
+val apacheThrift: String = "0.24.0"
 val jacksonDatabind: String = "2.21.5"
 val jacksonScalaModule: String = "2.21.5"
 val simpleConfigurationVersion: String = "14.0.1"
@@ -119,7 +119,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "org.postgresql" % "postgresql" % "42.7.11",
+      "org.postgresql" % "postgresql" % "42.7.12",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
       "net.logstash.logback" % "logstash-logback-encoder" % "8.1"
