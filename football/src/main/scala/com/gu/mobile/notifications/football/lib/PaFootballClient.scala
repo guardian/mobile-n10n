@@ -55,6 +55,18 @@ class PaFootballClient(override val apiKey: String, apiBase: String) extends PaC
   def eventsForMatch(matchDay: MatchDay, syntheticMatchEventGenerator: SyntheticMatchEventGenerator)(implicit ec: ExecutionContext): Future[(MatchDay, List[MatchEvent])] =
     for {
       events <- matchEvents(matchDay.id).map(_.toList.flatMap(_.events))
+      _ = {
+        val deletedEventTypes = events.collect { case e if e.isDeleted => e.eventType }
+        if (deletedEventTypes.nonEmpty) {
+          logger.debug(
+            s"Match ${matchDay.id} @ current minute " +
+              s"${events.lastOption.map(_.matchTime).getOrElse("unknown")}. " +
+              s"Deleted event types: $deletedEventTypes.")
+        } else {
+          logger.debug(s"Match ${matchDay.id} @ current minute " +
+            s"${events.lastOption.map(_.matchTime).getOrElse("unknown")}. No deleted events.")
+        }
+      }
     } yield {
       (matchDay, syntheticMatchEventGenerator.generate(events, matchDay.id, matchDay))
     }

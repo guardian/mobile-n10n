@@ -172,6 +172,9 @@ class FootballData(
       (matchDay, events) <- paClient.eventsForMatch(matchDay, syntheticEvents)
     } yield Some(RawMatchData(matchDay, events))
 
+    logger.debug(s"Processing match ${matchDay.id} ${matchDay.homeTeam.name} v ${matchDay.awayTeam.name} " +
+      s"with match status: ${matchDay.matchStatus}, result: ${matchDay.result}, live: ${matchDay.liveMatch}.")
+
     matchData.recover { case NonFatal(exception) =>
       logger.error(s"Failed to process match ${matchDay.id}: ${exception.getMessage}", exception)
       None
