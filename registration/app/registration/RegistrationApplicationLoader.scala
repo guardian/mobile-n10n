@@ -21,7 +21,7 @@ import registration.controllers.Main
 import registration.services._
 import registration.services.topic.{AuditorTopicValidator, TopicValidator}
 import router.Routes
-import utils.{CustomApplicationLoader, MobileAwsCredentialsProvider}
+import utils.CustomApplicationLoader
 
 class RegistrationApplicationLoader extends CustomApplicationLoader {
   def buildComponents(identity: AppIdentity, context: Context): BuiltInComponents = new RegistrationApplicationComponents(identity, context)
@@ -41,7 +41,7 @@ class RegistrationApplicationComponents(identity: AppIdentity, context: Context)
   lazy val appConfig = new Configuration(configuration)
   lazy val metrics: Metrics = new CloudWatchMetrics(applicationLifecycle, environment, identity)
 
-  val credentialsProvider = new MobileAwsCredentialsProvider()
+  //  val credentialsProvider = new MobileAwsCredentialsProvider()
 
   lazy val auditorGroup: AuditorGroup = {
     AuditorGroup(Set(

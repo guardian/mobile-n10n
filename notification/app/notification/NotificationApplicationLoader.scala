@@ -4,10 +4,9 @@ import _root_.controllers.AssetsComponents
 import _root_.models.{NewsstandShardConfig, TopicCount}
 import org.apache.pekko.actor.ActorSystem
 import aws.{AsyncDynamo, TopicCountsS3}
-import com.amazonaws.regions.Regions.EU_WEST_1
-import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import com.gu.AppIdentity
 import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceAsync, NotificationSchedulePersistenceImpl}
 import com.softwaremill.macwire._
@@ -50,9 +49,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   lazy val authAction = wire[NotificationAuthAction]
 
-  val credentialsProvider = new MobileAwsCredentialsProvider()
-
-  val asyncDynamo: AsyncDynamo = AsyncDynamo(EU_WEST_1, credentialsProvider)
+  val asyncDynamo: AsyncDynamo = AsyncDynamo(Region.EU_WEST_1, MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
 
   lazy val notificationReportRepository = new NotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
 
@@ -79,9 +76,9 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   lazy val topicRegistrationCounter: TopicRegistrationCounter = new ReportTopicRegistrationCounter(topicCountCacheingDataStore)
 
-  lazy val sqsClient: AmazonSQSAsync = AmazonSQSAsyncClientBuilder.standard()
-    .withCredentials(credentialsProvider)
-    .withRegion(EU_WEST_1)
+  lazy val sqsClient: SqsAsyncClient = SqsAsyncClient.builder()
+    .region(Region.EU_WEST_1)
+    .credentialsProvider(MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
     .build()
 
   lazy val notificationSender: NotificationSender = new GuardianNotificationSender(

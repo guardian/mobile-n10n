@@ -1,44 +1,47 @@
 package aws
 
-import com.amazonaws.auth.AWSCredentialsProvider
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
-import com.amazonaws.services.dynamodbv2.model._
+import aws.AWSAsync.wrapCompletableFuture
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
+import software.amazon.awssdk.services.dynamodb.model._
 
 import scala.concurrent.Future
 
 object AsyncDynamo {
-  def keyEquals(s: String): Condition = new Condition()
-    .withComparisonOperator(ComparisonOperator.EQ)
-    .withAttributeValueList(new AttributeValue(s))
+  def keyEquals(s: String): Condition = Condition.builder()
+    .comparisonOperator(ComparisonOperator.EQ)
+    .attributeValueList(AttributeValue.builder().s(s).build())
+    .build()
 
-  def keyGE(s: String): Condition = new Condition()
-    .withComparisonOperator(ComparisonOperator.GE)
-    .withAttributeValueList(new AttributeValue(s))
+  def keyGE(s: String): Condition = Condition.builder()
+    .comparisonOperator(ComparisonOperator.GE)
+    .attributeValueList(AttributeValue.builder().s(s).build())
+    .build()
 
-  def keyLT(s: String): Condition = new Condition()
-    .withComparisonOperator(ComparisonOperator.LT)
-    .withAttributeValueList(new AttributeValue(s))
+  def keyLT(s: String): Condition = Condition.builder()
+    .comparisonOperator(ComparisonOperator.LT)
+    .attributeValueList(AttributeValue.builder().s(s).build())
+    .build()
 
-  def keyBetween(a: String, b: String): Condition = new Condition()
-    .withComparisonOperator(ComparisonOperator.BETWEEN)
-    .withAttributeValueList(new AttributeValue(a), new AttributeValue(b))
+  def keyBetween(a: String, b: String): Condition = Condition.builder()
+    .comparisonOperator(ComparisonOperator.BETWEEN)
+    .attributeValueList(AttributeValue.builder().s(a).build(), AttributeValue.builder().s(b).build())
+    .build()
 
-  def apply(regions: Regions, credentialsProvider: AWSCredentialsProvider): AsyncDynamo = {
-    val dynamoClient: AmazonDynamoDBAsync = AmazonDynamoDBAsyncClientBuilder.standard()
-      .withCredentials(credentialsProvider)
-      .withRegion(regions.getName)
+  def apply(region: Region, credentialsProvider: AwsCredentialsProvider): AsyncDynamo = {
+    val dynamoClient: DynamoDbAsyncClient = DynamoDbAsyncClient.builder()
+      .credentialsProvider(credentialsProvider)
+      .region(region)
       .build()
 
     new AsyncDynamo(dynamoClient)
   }
 }
 
-class AsyncDynamo(val client: AmazonDynamoDBAsync) {
-  import AWSAsync._
-  // These work but are red because Intellij is broken
-  def putItem(request: PutItemRequest): Future[PutItemResult] = wrapAsyncMethod(client.putItemAsync, request)
-  def query(request: QueryRequest): Future[QueryResult] = wrapAsyncMethod(client.queryAsync, request)
-  def get(request: GetItemRequest): Future[GetItemResult] = wrapAsyncMethod(client.getItemAsync, request)
-  def updateItem(request: UpdateItemRequest): Future[UpdateItemResult] = wrapAsyncMethod(client.updateItemAsync, request)
+class AsyncDynamo(val client: DynamoDbAsyncClient) {
+  def putItem(request: PutItemRequest): Future[PutItemResponse] = wrapCompletableFuture(client.putItem(request))
+  def query(request: QueryRequest): Future[QueryResponse] = wrapCompletableFuture(client.query(request))
+  def get(request: GetItemRequest): Future[GetItemResponse] = wrapCompletableFuture(client.getItem(request))
+  def updateItem(request: UpdateItemRequest): Future[UpdateItemResponse] = wrapCompletableFuture(client.updateItem(request))
 }

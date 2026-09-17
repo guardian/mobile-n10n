@@ -2,9 +2,9 @@ package notification.services.guardian
 
 import java.net.URI
 import java.util.UUID
-import com.amazonaws.handlers.AsyncHandler
-import com.amazonaws.services.sqs.AmazonSQSAsync
-import com.amazonaws.services.sqs.model.{BatchResultErrorEntry, SendMessageBatchRequest, SendMessageBatchResult}
+import java.util.concurrent.CompletableFuture
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import software.amazon.awssdk.services.sqs.model.{BatchResultErrorEntry, SendMessageBatchRequest, SendMessageBatchResponse}
 import models.Importance.Major
 import models.Link.Internal
 import models.TopicTypes.Breaking
@@ -18,7 +18,6 @@ import models.TopicCount.topicCountJF
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
-import org.apache.commons.lang3.concurrent.ConcurrentUtils
 import play.api.libs.json.Format
 
 import java.time.Instant
@@ -53,7 +52,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       val futureResult = notificationSender.sendNotification(notification, Instant.now())
       val result = Await.result(futureResult, 10.seconds)
 
-      there was one(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
+      there was one(sqsClient).sendMessageBatch(any[SendMessageBatchRequest])
 
       result should beRight.which { senderReport =>
         senderReport.senderName shouldEqual "Guardian"
@@ -66,7 +65,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       val futureResult = notificationSender.sendNotification(notification, Instant.now())
       val result = Await.result(futureResult, 10.seconds)
 
-      there was exactly(30)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
+      there was exactly(30)(sqsClient).sendMessageBatch(any[SendMessageBatchRequest])
 
       result should beRight.which { senderReport =>
         senderReport.senderName shouldEqual "Guardian"
@@ -88,7 +87,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
       val futureResult = notificationSender.sendNotification(notification, Instant.now())
       val result = Await.result(futureResult, 10.seconds)
 
-      there was atLeast(1)(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
+      there was atLeast(1)(sqsClient).sendMessageBatch(any[SendMessageBatchRequest])
 
       result should beRight.which { senderReport =>
         senderReport.senderName shouldEqual "Guardian"
@@ -97,14 +96,14 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
     }
 
     "return an error if one of the batches couldn't be pushed to the queue" in new GuardianNotificationSenderScope(
-      sendMessageBatchResult = new SendMessageBatchResult().withFailed(
-        new BatchResultErrorEntry().withCode("123").withId("456").withMessage("error")
-      )
+      sendMessageBatchResult = SendMessageBatchResponse.builder().failed(
+        BatchResultErrorEntry.builder().code("123").id("456").message("error").build()
+      ).build()
     ) {
       val futureResult = notificationSender.sendNotification(notification, Instant.now())
       val result = Await.result(futureResult, 10.seconds)
 
-      there was one(sqsClient).sendMessageBatchAsync(any[SendMessageBatchRequest], any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]])
+      there was one(sqsClient).sendMessageBatch(any[SendMessageBatchRequest])
 
       result should beLeft(GuardianFailedToQueueShard(
         senderName = s"Guardian",
@@ -115,7 +114,7 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
 
   class GuardianNotificationSenderScope(
     registrationCountPerPlatform: Int = 1,
-    sendMessageBatchResult: SendMessageBatchResult = new SendMessageBatchResult()
+    sendMessageBatchResult: SendMessageBatchResponse = SendMessageBatchResponse.builder().build()
   ) extends Scope {
 
     val notification = BreakingNewsNotification(
@@ -132,15 +131,8 @@ class GuardianNotificationSenderSpec(implicit ee: ExecutionEnv) extends Specific
     )
 
     val sqsClient = {
-      val s = mock[AmazonSQSAsync]
-      s.sendMessageBatchAsync(
-        any[SendMessageBatchRequest],
-        any[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]]
-      ) answers { params: Array[AnyRef] =>
-        val handler = params(1).asInstanceOf[AsyncHandler[SendMessageBatchRequest, SendMessageBatchResult]]
-        handler.onSuccess(params(0).asInstanceOf[SendMessageBatchRequest], sendMessageBatchResult)
-        ConcurrentUtils.constantFuture(sendMessageBatchResult)
-      }
+      val s = mock[SqsAsyncClient]
+      s.sendMessageBatch(any[SendMessageBatchRequest]) returns CompletableFuture.completedFuture(sendMessageBatchResult)
       s
     }
 
