@@ -22,19 +22,13 @@ object AWSAsync {
     f(request, promiseToAsyncHandler(p))
     p.future
   }
-
+  
   @inline
   def wrapCompletableFuture[T](cf: CompletableFuture[T]): Future[T] = {
     val p = Promise[T]()
     cf.whenComplete { (result, exception) =>
-      if (exception != null) {
-        p.failure(exception)
-        ()
-      }
-      else {
-        p.success(result);
-        ()
-      }
+      if (exception != null) p.failure(exception)
+      else p.success(result)
     }
     p.future
   }
