@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery
 import _root_.models.Notification
 import cats.effect._
 import cats.syntax.either._
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, GenericFailure, InvalidPayload, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, GenericFailure, InvalidPayload, InvalidToken}
 import fs2.Stream
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -58,6 +58,7 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           maxAttempts = 3,
           retriable = {
             case NonFatal(e: FailedDelivery) => true
+            case NonFatal(e: FailedRequest) => true
             case NonFatal(e: InvalidToken) => false
             case NonFatal(exception: Exception) =>
               logger.error("Encountered an error, will retry", exception)
