@@ -58,6 +58,7 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           maxAttempts = 3,
           retriable = {
             case NonFatal(e: FailedDelivery) => true
+            case NonFatal(e: FailedRequest) if e.errorCode.contains("ClientTimeout") => false
             case NonFatal(e: FailedRequest) => true
             case NonFatal(e: InvalidToken) => false
             case NonFatal(exception: Exception) =>

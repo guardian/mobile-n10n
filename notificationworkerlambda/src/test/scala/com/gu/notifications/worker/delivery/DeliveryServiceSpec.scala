@@ -29,6 +29,22 @@ class DeliveryServiceSpec extends Specification {
       client.attempts.get shouldEqual 2
       result.count(_.isRight) shouldEqual 1
     }
+
+    "not retry a failed request caused by a client timeout" in {
+      implicit val executionContext: ExecutionContextExecutor = ExecutionContext.global
+      implicit val contextShift: ContextShift[IO] = IO.contextShift(executionContext)
+      implicit val timer: Timer[IO] = IO.timer(executionContext)
+
+      val client = new ClientTimeoutFailureClient
+      val service = new DeliveryServiceImpl[IO, ClientTimeoutFailureClient](client)
+
+      val result = service.send(notification, "token").compile.toList.unsafeRunSync()
+
+      client.attempts.get shouldEqual 1
+      result must contain(beLeft[DeliveryException].like {
+        case failure: FailedRequest => failure.errorCode shouldEqual Some("ClientTimeout")
+      })
+    }
   }
 
   private val notification = BreakingNewsNotification(
@@ -62,6 +78,23 @@ class DeliveryServiceSpec extends Specification {
       } else {
         onComplete(Right(ApnsDeliverySuccess(token, Instant.now())))
       }
+    }
+  }
+
+  private class ClientTimeoutFailureClient extends DeliveryClient {
+    type Success = ApnsDeliverySuccess
+    type Payload = ApnsPayload
+
+    val attempts = new AtomicInteger(0)
+    val dryRun = false
+    val payloadBuilder: Notification => Option[ApnsPayload] =
+      _ => Some(ApnsPayload("{}", None, None, PushType.ALERT))
+
+    def sendNotification(notificationId: UUID, token: String, payload: ApnsPayload, dryRun: Boolean)
+      (onComplete: Either[DeliveryException, ApnsDeliverySuccess] => Unit)
+      (implicit executionContext: ExecutionContextExecutor): Unit = {
+      attempts.incrementAndGet()
+      onComplete(Left(FailedRequest(notificationId, token, new RuntimeException("request timed out"), Some("ClientTimeout"))))
     }
   }
 }
