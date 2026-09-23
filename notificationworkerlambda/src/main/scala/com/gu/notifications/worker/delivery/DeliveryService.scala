@@ -52,9 +52,7 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
       }
 
       val retriableApnsCauses = List(
-        "Stream closed before write could take place",
-        "Connection reset by peer",
-        "Broken pipe"
+        "Stream closed before write could take place"
       )
 
       def hasRetriableCause(e: FailedAPNSRequest): Boolean =
