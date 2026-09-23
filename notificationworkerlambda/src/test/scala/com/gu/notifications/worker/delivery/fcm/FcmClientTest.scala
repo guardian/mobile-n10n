@@ -7,7 +7,7 @@ import _root_.models.TopicTypes._
 import com.google.api.core.ApiFuture
 import com.google.firebase.{ErrorCode, FirebaseApp}
 import com.google.firebase.messaging.{FirebaseMessaging, FirebaseMessagingException, SendResponse}
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken, UnknownReasonFailedRequest}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedFCMRequest, InvalidToken, UnknownReasonFailedRequest}
 import com.gu.notifications.worker.delivery.{DeliveryException, FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import models.FcmConfig

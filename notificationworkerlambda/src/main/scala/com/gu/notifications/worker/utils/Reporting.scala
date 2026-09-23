@@ -1,7 +1,7 @@
 package com.gu.notifications.worker.utils
 
 import cats.effect.IO
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedAPNSRequest, FailedRequest, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedAPNSRequest, FailedFCMRequest, InvalidToken}
 import com.gu.notifications.worker.delivery.{DeliveryClient, DeliveryException, DeliverySuccess}
 import models.{Notification, NotificationType}
 import org.slf4j.Logger
@@ -15,7 +15,7 @@ object Reporting {
 
   private def logMatchCase(response: Either[DeliveryException, DeliverySuccess], prefix: String)(implicit logger: Logger): Unit = response match {
     case Left(e: InvalidToken) => logger.warn(s"$prefix $e")
-    case Left(e: FailedRequest) => logger.warn(s"$prefix $e", e.cause)
+    case Left(e: FailedFCMRequest) => logger.warn(s"$prefix $e", e.cause)
     case Left(e: FailedAPNSRequest) => logger.warn(s"$prefix $e", e.cause)
     case Left(e) => logger.error(prefix, e)
     case Right(_) => () // doing nothing when success

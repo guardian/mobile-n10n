@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 class DeliveryServiceSpec extends Specification {
   "DeliveryService" should {
-    "not retry a plain failed request (e.g. FCM server error)" in {
+    "not retry a FCM failed request (e.g. FCM server error)" in {
       implicit val executionContext: ExecutionContextExecutor = ExecutionContext.global
       implicit val contextShift: ContextShift[IO] = IO.contextShift(executionContext)
       implicit val timer: Timer[IO] = IO.timer(executionContext)
@@ -29,7 +29,7 @@ class DeliveryServiceSpec extends Specification {
 
       client.attempts.get shouldEqual 1
       result must contain(beLeft[DeliveryException].like {
-        case _: FailedRequest => ok
+        case _: FailedFCMRequest => ok
       })
     }
 
@@ -107,7 +107,7 @@ class DeliveryServiceSpec extends Specification {
                         (onComplete: Either[DeliveryException, FcmDeliverySuccess] => Unit)
                         (implicit executionContext: ExecutionContextExecutor): Unit = {
       attempts.incrementAndGet()
-      onComplete(Left(FailedRequest(notificationId, token, new RuntimeException("server error"))))
+      onComplete(Left(FailedFCMRequest(notificationId, token, new RuntimeException("server error"))))
     }
   }
 
