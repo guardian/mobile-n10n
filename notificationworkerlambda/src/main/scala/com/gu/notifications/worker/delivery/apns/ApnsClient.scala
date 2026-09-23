@@ -89,7 +89,8 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
           }
         } else {
           val debug =
-            s"""Failed Request
+            s"""Failed APNS Request
+               |notificationId: $notificationId, token: $token
                |isSuccess: ${feedback.isSuccess}, isDone: ${feedback.isDone}, isCancelled: ${feedback.isCancelled}
                |getNow: ${Option(feedback.getNow)}
                |cause: ${feedback.cause()}
