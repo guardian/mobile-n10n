@@ -1,12 +1,12 @@
 package tracking
 
+import java.net.URI
+
 import aws.AsyncDynamo
-import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider, AWSCredentialsProviderChain}
-import com.amazonaws.client.builder.AwsAsyncClientBuilder
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsyncClient, AmazonDynamoDBAsyncClientBuilder}
-import com.amazonaws.services.dynamodbv2.model.{CreateTableRequest, DeleteTableRequest}
+import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
+import software.amazon.awssdk.services.dynamodb.model.{CreateTableRequest, DeleteTableRequest}
 import org.specs2.mutable.Specification
 import org.specs2.specification.{Scope, BeforeAfterAll}
 
@@ -21,30 +21,21 @@ trait DynamodbSpecification extends Specification with BeforeAfterAll {
   val TestEndpoint = "http://localhost:8000"
 
   override def beforeAll(): Unit = {
-    awsClient.createTable(createTableRequest)
+    awsClient.createTable(createTableRequest).join()
+    ()
   }
 
   override def afterAll(): Unit = {
-    awsClient.deleteTable(new DeleteTableRequest(TableName))
+    awsClient.deleteTable(DeleteTableRequest.builder().tableName(TableName).build()).join()
+    ()
   }
 
   private def awsClient = {
-    val chain = new AWSCredentialsProviderChain(new AWSCredentialsProvider {
-      override def refresh(): Unit = {}
-
-      override def getCredentials: AWSCredentials = new AWSCredentials {
-        override def getAWSAccessKeyId: String = ""
-
-        override def getAWSSecretKey: String = ""
-      }
-    })
-
-    val client = AmazonDynamoDBAsyncClientBuilder.standard()
-      .withCredentials(chain)
-      .withEndpointConfiguration( new EndpointConfiguration(TestEndpoint, Regions.EU_WEST_1.getName) )
-      .build
-
-    client
+    DynamoDbAsyncClient.builder()
+      .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("DUMMY", "DUMMY")))
+      .endpointOverride(URI.create(TestEndpoint))
+      .region(Region.EU_WEST_1)
+      .build()
   }
 
   trait AsyncDynamoScope extends Scope {

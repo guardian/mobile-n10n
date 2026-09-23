@@ -1,14 +1,17 @@
 package metrics
 
 import org.apache.pekko.actor.{ActorSystem, Props}
-import com.amazonaws.regions.{Region, Regions}
-import com.amazonaws.services.cloudwatch.{AmazonCloudWatch, AmazonCloudWatchClientBuilder}
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain
+import software.amazon.awssdk.services.cloudwatch.CloudWatchClient
 import play.api.Environment
 import play.api.inject.ApplicationLifecycle
+import utils.MobileAwsCredentialsProvider
 import com.gu.AppIdentity
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.util.Try
 
 trait Metrics {
   def send(mdp: MetricDataPoint): Unit
@@ -28,9 +31,12 @@ class CloudWatchMetrics(applicationLifecycle: ApplicationLifecycle, env: Environ
 
   implicit val executionContext: ExecutionContext = actorSystem.dispatcher
 
-  private val cloudWatchClient: AmazonCloudWatch = {
-    val region = Option(Regions.getCurrentRegion).getOrElse(Region.getRegion(Regions.EU_WEST_1)).getName
-    AmazonCloudWatchClientBuilder.standard().withRegion(region).build
+  private val cloudWatchClient: CloudWatchClient = {
+    val region = Try(DefaultAwsRegionProviderChain.builder().build().getRegion).getOrElse(Region.EU_WEST_1)
+    CloudWatchClient.builder()
+      .region(region)
+      .credentialsProvider(MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
+      .build()
   }
 
   private val metricActor = actorSystem.actorOf(Props(classOf[MetricActor], cloudWatchClient, identity, env))

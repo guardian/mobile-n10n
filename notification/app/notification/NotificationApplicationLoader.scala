@@ -4,7 +4,6 @@ import _root_.controllers.AssetsComponents
 import _root_.models.{NewsstandShardConfig, TopicCount}
 import org.apache.pekko.actor.ActorSystem
 import aws.{AsyncDynamo, TopicCountsS3}
-import com.amazonaws.regions.Regions.EU_WEST_1
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -50,10 +49,7 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   lazy val authAction = wire[NotificationAuthAction]
 
-  val credentialsProvider = new MobileAwsCredentialsProvider()
-
-  // todo aws sdk v1
-  val asyncDynamo: AsyncDynamo = AsyncDynamo(EU_WEST_1, credentialsProvider)
+  val asyncDynamo: AsyncDynamo = AsyncDynamo(Region.EU_WEST_1, MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
 
   lazy val notificationReportRepository = new NotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
 
