@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery
 import _root_.models.Notification
 import cats.effect._
 import cats.syntax.either._
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, GenericFailure, InvalidPayload, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedAPNSRequest, FailedAPNSDelivery, GenericFailure, InvalidPayload, InvalidToken}
 import fs2.Stream
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -57,9 +57,8 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           nextDelay = _.mul(2),
           maxAttempts = 3,
           retriable = {
-            case NonFatal(e: FailedDelivery) => true
-            case NonFatal(e: FailedRequest) if e.errorCode.contains("ClientTimeout") => false
-            case NonFatal(e: FailedRequest) => true
+            case NonFatal(e: FailedAPNSDelivery) => true
+            case NonFatal(e: FailedAPNSRequest) if !e.errorCode.contains("ClientTimeout") => true
             case NonFatal(e: InvalidToken) => false
             case NonFatal(exception: Exception) =>
               logger.error("Encountered an error, will retry", exception)

@@ -6,7 +6,7 @@ import java.sql.Timestamp
 import java.util.{Timer, UUID}
 import java.util.concurrent.{TimeUnit, TimeoutException}
 import com.gu.notifications.worker.delivery._
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedAPNSDelivery, FailedAPNSRequest, InvalidToken}
 import models.ApnsConfig
 import _root_.models.Notification
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayloadBuilder
@@ -64,7 +64,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
           "worker.individualRequestLatency" -> Duration.between(start, Instant.now).toMillis,
           "notificationId" -> notificationId,
         ), "Individual send request timed out")
-        onComplete(Left(FailedRequest(notificationId, token, new TimeoutException("No APNs response received in time"), Some("ClientTimeout"))))
+        onComplete(Left(FailedAPNSRequest(notificationId, token, new TimeoutException("No APNs response received in time"), Some("ClientTimeout"))))
       }
 
       override def operationCompleteWithoutTimeout(feedback: Feedback): Unit = {
@@ -83,7 +83,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
             val error = if (invalidationTimestamp.isDefined || invalidTokenErrorCodes.contains(response.getRejectionReason)) {
               InvalidToken(notificationId, token, response.getRejectionReason, invalidationTimestamp)
             } else {
-              FailedDelivery(notificationId, token, response.getRejectionReason)
+              FailedAPNSDelivery(notificationId, token, response.getRejectionReason)
             }
             onComplete(Left(error))
           }
@@ -95,7 +95,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
                |cause: ${feedback.cause()}
                |""".stripMargin
           logger.error(debug)
-          onComplete(Left(FailedRequest(notificationId, token, feedback.cause())))
+          onComplete(Left(FailedAPNSRequest(notificationId, token, feedback.cause())))
         }
       }
     }

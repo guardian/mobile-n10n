@@ -18,7 +18,7 @@ object DeliveryException {
     override def getMessage: String = s"Error (Notification: $notificationId, Token: $token, Underlying: $underlying)"
   }
 
-  case class FailedDelivery(
+  case class FailedAPNSDelivery(
     notificationId: UUID,
     token: String,
     reason: String
@@ -38,6 +38,10 @@ object DeliveryException {
   }
 
   case class FailedRequest(notificationId: UUID, token: String, cause: Throwable, errorCode: Option[String] = None) extends DeliveryException {
+    override def getMessage = s"Request failed (Notification: $notificationId, Token: $token). Cause: ${cause.getMessage}. ErrorCode: $errorCode}."
+  }
+
+  case class FailedAPNSRequest(notificationId: UUID, token: String, cause: Throwable, errorCode: Option[String] = None) extends DeliveryException {
     override def getMessage = s"Request failed (Notification: $notificationId, Token: $token). Cause: ${cause.getMessage}. ErrorCode: $errorCode}."
   }
 
