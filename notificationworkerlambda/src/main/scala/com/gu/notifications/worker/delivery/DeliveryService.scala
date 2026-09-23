@@ -50,6 +50,7 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
         val rangeInMs = Range(1000, 3000)
         rangeInMs.min + Random.nextInt(rangeInMs.length)
       }
+
       Stream
         .retry(
           sendAsync(client)(token, payload),
@@ -58,7 +59,10 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           maxAttempts = 3,
           retriable = {
             case NonFatal(e: FailedAPNSDelivery) => true
-            case NonFatal(e: FailedAPNSRequest) if !e.errorCode.contains("ClientTimeout") => true
+            case NonFatal(e: FailedAPNSRequest) if !e.errorCode.contains("ClientTimeout") => {
+              logger.info(s"Retrying failed APNS request for token $token, notification ${notification.id}", e)
+              true
+            }
             case NonFatal(e: InvalidToken) => false
             case NonFatal(exception: Exception) =>
               logger.error("Encountered an error, will retry", exception)

@@ -90,12 +90,14 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
         } else {
           val debug =
             s"""Failed APNS Request
-               |notificationId: $notificationId, token: $token
                |isSuccess: ${feedback.isSuccess}, isDone: ${feedback.isDone}, isCancelled: ${feedback.isCancelled}
                |getNow: ${Option(feedback.getNow)}
                |cause: ${feedback.cause()}
                |""".stripMargin
-          logger.error(debug)
+          logger.error(Map(
+            "notificationId" -> notificationId,
+            "token" -> token,
+          ), debug)
           onComplete(Left(FailedAPNSRequest(notificationId, token, feedback.cause())))
         }
       }
