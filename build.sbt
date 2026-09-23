@@ -488,7 +488,7 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       ExclusionRule(organization = "com.typesafe.play")
     ),
     dependencyOverrides ++= Seq(
-        "com.google.code.gson" % "gson" % "2.10.1", // can be removed once pushy is removed.
+        "com.google.code.gson" % "gson" % "2.14.0", // can be removed once pushy is removed.
     ),
     fork := true,
     startDynamoDBLocal := startDynamoDBLocal.dependsOn(Test / compile).value,
