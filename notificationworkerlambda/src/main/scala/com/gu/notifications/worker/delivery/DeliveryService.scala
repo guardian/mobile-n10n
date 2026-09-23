@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery
 import _root_.models.Notification
 import cats.effect._
 import cats.syntax.either._
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, GenericFailure, InvalidPayload, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedAPNSRequest, FailedAPNSDelivery, GenericFailure, InvalidPayload, InvalidToken}
 import fs2.Stream
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -50,6 +50,16 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
         val rangeInMs = Range(1000, 3000)
         rangeInMs.min + Random.nextInt(rangeInMs.length)
       }
+
+      val retriableApnsCauses = List(
+        "Stream closed before write could take place"
+      )
+
+      def hasRetriableCause(e: FailedAPNSRequest): Boolean =
+        Option(e.cause)
+          .flatMap(c => Option(c.getMessage))
+          .exists(msg => retriableApnsCauses.exists(msg.contains))
+
       Stream
         .retry(
           sendAsync(client)(token, payload),
@@ -57,7 +67,11 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           nextDelay = _.mul(2),
           maxAttempts = 3,
           retriable = {
-            case NonFatal(e: FailedDelivery) => true
+            case NonFatal(e: FailedAPNSDelivery) => true
+            case NonFatal(e: FailedAPNSRequest) if hasRetriableCause(e) =>
+              logger.info(s"Retrying failed APNS request for token $token, notification ${notification.id}", e)
+              true
+            case NonFatal(e: FailedAPNSRequest) => false
             case NonFatal(e: InvalidToken) => false
             case NonFatal(exception: Exception) =>
               logger.error("Encountered an error, will retry", exception)
