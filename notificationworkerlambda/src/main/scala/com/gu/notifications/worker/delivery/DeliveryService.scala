@@ -51,6 +51,17 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
         rangeInMs.min + Random.nextInt(rangeInMs.length)
       }
 
+      val retriableApnsCauses = List(
+        "Stream closed before write could take place",
+        "Connection reset by peer",
+        "Broken pipe"
+      )
+
+      def hasRetriableCause(e: FailedAPNSRequest): Boolean =
+        Option(e.cause)
+          .flatMap(c => Option(c.getMessage))
+          .exists(msg => retriableApnsCauses.exists(msg.contains))
+
       Stream
         .retry(
           sendAsync(client)(token, payload),
@@ -59,10 +70,10 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           maxAttempts = 3,
           retriable = {
             case NonFatal(e: FailedAPNSDelivery) => true
-            case NonFatal(e: FailedAPNSRequest) if !e.errorCode.contains("ClientTimeout") => {
+            case NonFatal(e: FailedAPNSRequest) if hasRetriableCause(e) =>
               logger.info(s"Retrying failed APNS request for token $token, notification ${notification.id}", e)
               true
-            }
+            case NonFatal(e: FailedAPNSRequest) => false
             case NonFatal(e: InvalidToken) => false
             case NonFatal(exception: Exception) =>
               logger.error("Encountered an error, will retry", exception)

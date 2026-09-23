@@ -22,8 +22,8 @@ class DeliveryServiceSpec extends Specification {
       implicit val contextShift: ContextShift[IO] = IO.contextShift(executionContext)
       implicit val timer: Timer[IO] = IO.timer(executionContext)
 
-      val client = new FailedRequestClient
-      val service = new DeliveryServiceImpl[IO, FailedRequestClient](client)
+      val client = new FailedFCMRequestClient
+      val service = new DeliveryServiceImpl[IO, FailedFCMRequestClient](client)
 
       val result = service.send(notification, "token").compile.toList.unsafeRunSync()
 
@@ -94,7 +94,7 @@ class DeliveryServiceSpec extends Specification {
     dryRun = None
   )
 
-  private class FailedRequestClient extends DeliveryClient {
+  private class FailedFCMRequestClient extends DeliveryClient {
     type Success = FcmDeliverySuccess
     type Payload = FcmPayload
 
@@ -124,7 +124,7 @@ class DeliveryServiceSpec extends Specification {
                         (onComplete: Either[DeliveryException, ApnsDeliverySuccess] => Unit)
                         (implicit executionContext: ExecutionContextExecutor): Unit = {
       if (attempts.getAndIncrement() == 0) {
-        onComplete(Left(FailedAPNSRequest(notificationId, token, new RuntimeException("stream closed"))))
+        onComplete(Left(FailedAPNSRequest(notificationId, token, new RuntimeException("Stream closed before write could take place"))))
       } else {
         onComplete(Right(ApnsDeliverySuccess(token, Instant.now())))
       }
