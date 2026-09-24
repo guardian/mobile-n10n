@@ -21,6 +21,7 @@ object SendingResults {
   def aggregate(previous: SendingResults, res: Either[DeliveryException, DeliverySuccess]) = res match {
     case Right(success) if success.dryRun => previous.copy(dryRunCount = previous.dryRunCount + 1)
     case Right(_) => previous.copy(successCount = previous.successCount + 1)
+    // any delivery exception is a failure - this can be an invalid token or a failed send for another reason.
     case Left(_) => previous.copy(failureCount = previous.failureCount + 1)
   }
 }
