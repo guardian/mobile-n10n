@@ -1303,6 +1303,92 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
+    "androidbetahighSendFailureRateAlarm2571590B": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if failure rate per total sends is >2% for more than 2min on android-beta sender lambda in PROD.",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": [
+          {
+            "Expression": "(failure / total) * 100",
+            "Id": "expr_1",
+            "Label": "Failure Percentage (%)",
+            "ReturnData": true,
+          },
+          {
+            "Id": "failure",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          {
+            "Id": "total",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "android-beta",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "android-beta",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 2,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
     "androideditionExecutionRoleDEF8ADAE": {
       "Properties": {
         "AssumeRolePolicyDocument": {
@@ -1858,6 +1944,178 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
         ],
         "Threshold": 0,
         "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androideditionhighSendFailureRateAlarm98DF62A7": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if failure rate per total sends is >2% for more than 2min on android-edition sender lambda in PROD.",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": [
+          {
+            "Expression": "(failure / total) * 100",
+            "Id": "expr_1",
+            "Label": "Failure Percentage (%)",
+            "ReturnData": true,
+          },
+          {
+            "Id": "failure",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          {
+            "Id": "total",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "android-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "android-edition",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 2,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "androidhighSendFailureRateAlarm83A93C2B": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if failure rate per total sends is >2% for more than 2min on android sender lambda in PROD.",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": [
+          {
+            "Expression": "(failure / total) * 100",
+            "Id": "expr_1",
+            "Label": "Failure Percentage (%)",
+            "ReturnData": true,
+          },
+          {
+            "Id": "failure",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          {
+            "Id": "total",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "android",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "android",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 2,
+        "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
@@ -3088,6 +3346,178 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
         ],
         "Threshold": 0,
         "TreatMissingData": "breaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ioseditionhighSendFailureRateAlarm5E8867C3": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if failure rate per total sends is >2% for more than 2min on ios-edition sender lambda in PROD.",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": [
+          {
+            "Expression": "(failure / total) * 100",
+            "Id": "expr_1",
+            "Label": "Failure Percentage (%)",
+            "ReturnData": true,
+          },
+          {
+            "Id": "failure",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          {
+            "Id": "total",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "ios-edition",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "ios-edition",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 2,
+        "TreatMissingData": "notBreaching",
+      },
+      "Type": "AWS::CloudWatch::Alarm",
+    },
+    "ioshighSendFailureRateAlarm6795B643": {
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "AlarmDescription": "Triggers if failure rate per total sends is >2% for more than 2min on ios sender lambda in PROD.",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": 2,
+        "Metrics": [
+          {
+            "Expression": "(failure / total) * 100",
+            "Id": "expr_1",
+            "Label": "Failure Percentage (%)",
+            "ReturnData": true,
+          },
+          {
+            "Id": "failure",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "failure",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+          {
+            "Id": "total",
+            "MetricStat": {
+              "Metric": {
+                "Dimensions": [
+                  {
+                    "Name": "platform",
+                    "Value": "ios",
+                  },
+                ],
+                "MetricName": "total",
+                "Namespace": "Notifications/PROD/workers",
+              },
+              "Period": 60,
+              "Stat": "Sum",
+            },
+            "ReturnData": false,
+          },
+        ],
+        "OKActions": [
+          {
+            "Ref": "AlarmTopicArn",
+          },
+        ],
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "ios",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications-workers",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+        "Threshold": 2,
+        "TreatMissingData": "notBreaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
     },
