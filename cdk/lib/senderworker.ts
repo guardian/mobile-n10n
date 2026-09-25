@@ -176,7 +176,7 @@ class SenderWorker extends Construct {
 		const failureCountMetric = new Metric({
 			namespace: `Notifications/${scope.stage}/workers`,
 			metricName: 'failure',
-			period: Duration.minutes(1),
+			period: Duration.hours(1),
 			statistic: 'Sum',
 			dimensionsMap: { platform: id },
 		});
@@ -184,7 +184,7 @@ class SenderWorker extends Construct {
 		const totalCountMetric = new Metric({
 			namespace: `Notifications/${scope.stage}/workers`,
 			metricName: 'total',
-			period: Duration.minutes(1),
+			period: Duration.hours(1),
 			statistic: 'Sum',
 			dimensionsMap: { platform: id },
 		});
@@ -193,16 +193,16 @@ class SenderWorker extends Construct {
 			expression: '(failure / total) * 100',
 			usingMetrics: { failure: failureCountMetric, total: totalCountMetric },
 			label: 'Failure Percentage (%)',
-			period: Duration.minutes(1),
+			period: Duration.hours(1),
 		});
 
 		const highSendFailureRateAlarm = new Alarm(
 			this,
 			'highSendFailureRateAlarm',
 			{
-				alarmDescription: `Triggers if failure rate per total sends is >2% for more than 2min on ${id} sender lambda in ${scope.stage}.`,
+				alarmDescription: `Triggers if failure rate per total sends is >2% for over an hour on ${id} sender lambda in ${scope.stage}.`,
 				comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
-				evaluationPeriods: 2,
+				evaluationPeriods: 1,
 				threshold: 2,
 				metric: failureRateExpression,
 				treatMissingData: TreatMissingData.NOT_BREACHING,
