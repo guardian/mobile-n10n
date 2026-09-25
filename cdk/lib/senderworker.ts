@@ -11,6 +11,7 @@ import {
 import {
 	Alarm,
 	ComparisonOperator,
+	MathExpression,
 	Metric,
 	TreatMissingData,
 } from 'aws-cdk-lib/aws-cloudwatch';
@@ -169,6 +170,46 @@ class SenderWorker extends Construct {
 		);
 		senderSqsEventSourceMapping.node.addDependency(this.senderSqs);
 		senderSqsEventSourceMapping.node.addDependency(senderLambdaCtr);
+
+		//// ALARMS ///
+
+		const failureCountMetric = new Metric({
+			namespace: `Notifications/${scope.stage}/workers`,
+			metricName: 'failure',
+			period: Duration.hours(1),
+			statistic: 'Sum',
+			dimensionsMap: { platform: id },
+		});
+
+		const totalCountMetric = new Metric({
+			namespace: `Notifications/${scope.stage}/workers`,
+			metricName: 'total',
+			period: Duration.hours(1),
+			statistic: 'Sum',
+			dimensionsMap: { platform: id },
+		});
+
+		const failureRateExpression = new MathExpression({
+			expression: '(failure / total) * 100',
+			usingMetrics: { failure: failureCountMetric, total: totalCountMetric },
+			label: 'Failure Percentage (%)',
+			period: Duration.hours(1),
+		});
+
+		const highSendFailureRateAlarm = new Alarm(
+			this,
+			'highSendFailureRateAlarm',
+			{
+				alarmDescription: `Triggers if failure rate per total sends is >2% for over an hour on ${id} sender lambda in ${scope.stage}.`,
+				comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
+				evaluationPeriods: 1,
+				threshold: 2,
+				metric: failureRateExpression,
+				treatMissingData: TreatMissingData.NOT_BREACHING,
+			},
+		);
+		highSendFailureRateAlarm.addAlarmAction(snsTopicAction);
+		highSendFailureRateAlarm.addOkAction(snsTopicAction);
 
 		const senderThrottleAlarm = new Alarm(this, 'SenderThrottleAlarm', {
 			alarmDescription: `Triggers if the ${id} sender lambda is throttled in ${scope.stage}.`,

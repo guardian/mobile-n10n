@@ -53,6 +53,7 @@ object DeliveryException {
     override def getMessage = s"Cannot generate payload (Notification: $notificationId)"
   }
 
+  // not counted as a send failure metric
   case class InvalidTopics(notificationId: UUID) extends DeliveryException {
     override def getMessage = s"No topic (Notification: $notificationId)"
   }

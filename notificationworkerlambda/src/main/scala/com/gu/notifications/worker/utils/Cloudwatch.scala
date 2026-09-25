@@ -58,7 +58,7 @@ class CloudwatchImpl(val senderMetricNs: String) extends Cloudwatch {
       val dimension = Dimension.builder().name("platform").value(platform.map(_.toString).getOrElse("unknown")).build()
       val metrics: Seq[MetricDatum] = Seq(
         countDatum("success", results.successCount, dimension),
-        countDatum("failure", results.failureCount, dimension),
+        countDatum("failure", results.failureCount, dimension), // invalid token or failed send for another reason
         countDatum("dryrun", results.dryRunCount, dimension),
         countDatum("total", results.total, dimension)
       )
