@@ -1312,7 +1312,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
         ],
         "AlarmDescription": "Triggers if failure rate per total sends is >2% for over an hour on android-beta sender lambda in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
-        "EvaluationPeriods": 1,
+        "EvaluationPeriods": 2,
         "Metrics": [
           {
             "Expression": "(failure / total) * 100",
@@ -1956,7 +1956,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
         ],
         "AlarmDescription": "Triggers if failure rate per total sends is >2% for over an hour on android-edition sender lambda in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
-        "EvaluationPeriods": 1,
+        "EvaluationPeriods": 2,
         "Metrics": [
           {
             "Expression": "(failure / total) * 100",
@@ -2042,7 +2042,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
         ],
         "AlarmDescription": "Triggers if failure rate per total sends is >2% for over an hour on android sender lambda in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
-        "EvaluationPeriods": 1,
+        "EvaluationPeriods": 2,
         "Metrics": [
           {
             "Expression": "(failure / total) * 100",
@@ -3358,7 +3358,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
         ],
         "AlarmDescription": "Triggers if failure rate per total sends is >2% for over an hour on ios-edition sender lambda in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
-        "EvaluationPeriods": 1,
+        "EvaluationPeriods": 2,
         "Metrics": [
           {
             "Expression": "(failure / total) * 100",
@@ -3444,7 +3444,7 @@ exports[`The Sender Worker stack matches the snapshot 1`] = `
         ],
         "AlarmDescription": "Triggers if failure rate per total sends is >2% for over an hour on ios sender lambda in PROD.",
         "ComparisonOperator": "GreaterThanThreshold",
-        "EvaluationPeriods": 1,
+        "EvaluationPeriods": 2,
         "Metrics": [
           {
             "Expression": "(failure / total) * 100",
