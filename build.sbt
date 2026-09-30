@@ -39,7 +39,7 @@ ThisBuild / scalacOptions ++= compilerOptions
 val playJsonVersion = "3.0.6"
 val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.797"
-val awsSdk2Version: String = "2.54.13"
+val awsSdk2Version: String = "2.54.20"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
@@ -477,7 +477,7 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
       "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
       "software.amazon.awssdk" % "eventbridge" % "2.20.162",
       "software.amazon.awssdk" % "cloudwatch" % awsSdk2Version,
-      "com.amazonaws" % "aws-lambda-java-events" % "3.11.0",
+      "com.amazonaws" % "aws-lambda-java-events" % "3.11.6",
       "org.scanamo" %% "scanamo" % scanamoVersion,
       "org.scanamo" %% "scanamo-testkit" % scanamoVersion % "test"
     ),
