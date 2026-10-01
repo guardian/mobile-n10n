@@ -3,7 +3,7 @@ package notification.controllers
 import java.util.UUID
 import java.time.{Duration, Instant}
 import authentication.AuthAction
-import com.amazonaws.services.cloudwatch.model.StandardUnit
+import software.amazon.awssdk.services.cloudwatch.model.StandardUnit
 import metrics.{CloudWatchMetrics, MetricDataPoint}
 import models.NotificationType.BreakingNews
 import models.{TopicTypes, _}
@@ -51,12 +51,12 @@ final class Main(
       val id = UUID.randomUUID()
       newsstandSender.sendNotification(id) map { _ =>
         logger.info("Newsstand notification sent")
-        metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 1, unit = StandardUnit.Count))
+        metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 1, unit = StandardUnit.COUNT))
         Created(toJson(PushResult(id)))
       } recover {
         case NonFatal(error) =>
           logger.error(s"Newsstand notification failed: $error")
-          metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 0, unit = StandardUnit.Count))
+          metrics.send(MetricDataPoint(name = "SuccessfulNewstandSend", value = 0, unit = StandardUnit.COUNT))
           InternalServerError(s"Newsstand notification failed: $error")
       }
     }
@@ -93,9 +93,9 @@ final class Main(
             "notificationApp.notificationReceivedTime.string" -> notificationReceivedTime.toString,
           ),
           s"Spent $durationMillis milliseconds processing notification ${notification.id}")
-        metrics.send(MetricDataPoint(name = "NotificationAppProcessingTime", value = durationMillis.toDouble, unit = StandardUnit.Milliseconds))
+        metrics.send(MetricDataPoint(name = "NotificationAppProcessingTime", value = durationMillis.toDouble, unit = StandardUnit.MILLISECONDS))
         notification.`type` match {
-          case BreakingNews => metrics.send(MetricDataPoint(name = "BreakingNewsNotificationCount", value = 1, unit = StandardUnit.Count))
+          case BreakingNews => metrics.send(MetricDataPoint(name = "BreakingNewsNotificationCount", value = 1, unit = StandardUnit.COUNT))
           case _ => {}
         }
         send

@@ -3,7 +3,7 @@ package com.gu.notificationschedule
 import java.time.{Clock, Instant}
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsyncClientBuilder
 import com.amazonaws.services.cloudwatch.model.StandardUnit
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import com.gu.{AppIdentity, AwsIdentity, DevIdentity}
 import com.gu.notificationschedule.ProcessNotificationScheduleLambda.{lambdaClock, lambdaCloudWatch, lambdaConfig, lambdaOkHttpClient}
 import com.gu.notificationschedule.cloudwatch.{CloudWatch, CloudWatchImpl}
@@ -61,7 +61,7 @@ class ProcessNotificationScheduleLambda(
   def this() = this(
     lambdaConfig,
     lambdaCloudWatch,
-    new NotificationSchedulePersistenceImpl(lambdaConfig.notificationScheduleTable, AmazonDynamoDBAsyncClientBuilder.defaultClient()),
+    new NotificationSchedulePersistenceImpl(lambdaConfig.notificationScheduleTable, DynamoDbAsyncClient.create()),
     new RequestNotificationImpl(lambdaConfig, lambdaOkHttpClient, lambdaCloudWatch),
     lambdaClock
   )
