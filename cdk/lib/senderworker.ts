@@ -1,5 +1,6 @@
 import { GuStack } from '@guardian/cdk/lib/constructs/core';
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
+import { GuRole } from '@guardian/cdk/lib/constructs/iam';
 import {
 	type App,
 	CfnOutput,
@@ -23,6 +24,7 @@ import {
 	PolicyStatement,
 	Role,
 	ServicePrincipal,
+	WebIdentityPrincipal,
 } from 'aws-cdk-lib/aws-iam';
 import {
 	DockerImageCode,
@@ -372,6 +374,8 @@ export class SenderWorkerStack extends GuStack {
 			},
 		);
 
+		/** CONTAINER DEPLOYMENT **/
+
 		const notificationEcrRepo = Repository.fromRepositoryAttributes(
 			this,
 			'NotificationLambdaRepository',
@@ -380,6 +384,50 @@ export class SenderWorkerStack extends GuStack {
 				repositoryName: Fn.importValue('NotificationLambdaRepositoryName'),
 			},
 		);
+
+		new GuRole(this, 'GithubActionsRole', {
+			roleName: `mobile-n10n-workerlambda-GithubActionsDeploymentRole-${this.stage}`,
+			assumedBy: new WebIdentityPrincipal(
+				`arn:aws:iam::${scope.account}:oidc-provider/token.actions.githubusercontent.com`,
+				{
+					StringEquals: {
+						'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
+					},
+					StringLike: {
+						'token.actions.githubusercontent.com:sub':
+							'repo:guardian@164318/mobile-n10n@42113608:*',
+					},
+				},
+			),
+			description:
+				'Assumed by GitHub Actions to push the worker lambda image to ECR',
+			inlinePolicies: {
+				EcrAuth: new PolicyDocument({
+					statements: [
+						new PolicyStatement({
+							actions: ['ecr:GetAuthorizationToken'],
+							resources: ['*'],
+						}),
+					],
+				}),
+				EcrPush: new PolicyDocument({
+					statements: [
+						new PolicyStatement({
+							actions: [
+								'ecr:BatchCheckLayerAvailability',
+								'ecr:InitiateLayerUpload',
+								'ecr:UploadLayerPart',
+								'ecr:CompleteLayerUpload',
+								'ecr:PutImage',
+								'ecr:BatchGetImage',
+								// 'ecr:GetDownloadUrlForLayer',
+							],
+							resources: [notificationEcrRepo.repositoryArn],
+						}),
+					],
+				}),
+			},
+		});
 
 		const sharedOpts = {
 			imageRepo: notificationEcrRepo,
