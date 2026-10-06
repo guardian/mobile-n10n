@@ -1,9 +1,9 @@
 package com.gu.notifications.worker.delivery
 
 import _root_.models.Notification
-import cats.effect._
+import cats.effect.{Async, Concurrent, Timer}
 import cats.syntax.either._
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedAPNSRequest, FailedAPNSDelivery, GenericFailure, InvalidPayload, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedAPNSDelivery, FailedAPNSRequest, GenericFailure, InvalidPayload, InvalidToken}
 import fs2.Stream
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -34,15 +34,22 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
     token: String
   ): Stream[F, Either[DeliveryException, C#Success]] = {
 
-    def sendAsync(client: C)(token: String, payload: client.Payload): F[C#Success] =
+    def sendAsync(client: C)(token: String, payload: client.Payload): F[C#Success] = {
+      // Boundary between completableFuture and callback that must return Unit.
+      // cb is manufactured by cats.effect.Async.async, and is a callback that must return Unit.
+      // TODO migrate to cats.effect v3 for Async.fromCompletableFuture but will require wider changes and dependency upgrades.
       Async[F].async { (cb: Either[Throwable, C#Success] => Unit) =>
         client.sendNotification(
           notification.id,
           token,
           payload,
           notification.dryRun.contains(true) || client.dryRun
-        )(cb)
+        ).whenComplete((result: Either[DeliveryException, C#Success], error: Throwable) =>
+          if (error != null) cb(Left(error)) else cb(result)
+        )
+        () // explicitly discard the returned CompletableFuture, yield Unit
       }
+    }
 
     def sending(client: C)(token: String, payload: client.Payload): Stream[F, Either[DeliveryException, C#Success]] = {
 
