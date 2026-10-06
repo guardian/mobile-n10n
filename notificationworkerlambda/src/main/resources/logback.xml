@@ -7,7 +7,7 @@
 
     <logger name="io.netty" level="DEBUG"/>
 
-    <logger name="com.turo.pushy" level="DEBUG"/>
+    <logger name="com.eatthepath.pushy" level="DEBUG"/>
 
     <root level="info">
         <appender-ref ref="STDOUT" />

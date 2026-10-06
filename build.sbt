@@ -419,7 +419,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerExposedPorts := Seq(9000), // exposed by the lambda runtime api inside the image
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
-      "com.turo" % "pushy" % "0.13.10",
+      "com.eatthepath" % "pushy" % "0.14.2",
       "com.google.firebase" % "firebase-admin" % "9.2.0",
       "com.google.protobuf" % "protobuf-java" % "4.33.3",
       "com.google.protobuf" % "protobuf-java-util" % "4.33.3",
@@ -472,7 +472,7 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
   .settings(LocalDynamoDBLiveActivities.settings)
   .settings(
     libraryDependencies ++= Seq(
-      "com.turo" % "pushy" % "0.13.10",
+      "com.turo" % "pushy" % "0.13.10", // todo migrate to 15.6
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
       "software.amazon.awssdk" % "eventbridge" % "2.20.162",
