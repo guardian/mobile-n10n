@@ -78,6 +78,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
               logger.info(Map(
                 "worker.individualRequestLatency" -> latency,
                 "notificationId" -> notificationId,
+                "token" -> token,
               ), "Individual send request completed")
 
               if (response.isAccepted) {
@@ -109,6 +110,7 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
                   logger.info(Map(
                     "worker.individualRequestLatency" -> latency,
                     "notificationId" -> notificationId,
+                    "token" -> token,
                   ), s"Individual send request timed out. Cause: ${timeout.getCause}, message: ${timeout.getMessage}")
                   Left(FailedAPNSRequest(notificationId, token, new TimeoutException("No APNs response received in time"), Some("ClientTimeout")))
                 case other =>
