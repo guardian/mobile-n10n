@@ -3,7 +3,7 @@ package com.gu.notifications.worker.delivery
 import cats.effect.{ContextShift, IO, Timer}
 import com.google.firebase.messaging.AndroidConfig
 import com.gu.notifications.worker.delivery.DeliveryException._
-import com.turo.pushy.apns.PushType
+import com.eatthepath.pushy.apns.PushType
 import models.Importance.Major
 import models.Link.Internal
 import models.TopicTypes.Breaking
@@ -13,6 +13,7 @@ import org.specs2.mutable.Specification
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.CompletableFuture
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 class DeliveryServiceSpec extends Specification {
@@ -104,10 +105,12 @@ class DeliveryServiceSpec extends Specification {
       _ => Some(FcmPayload(AndroidConfig.builder().build()))
 
     def sendNotification(notificationId: UUID, token: String, payload: FcmPayload, dryRun: Boolean)
-                        (onComplete: Either[DeliveryException, FcmDeliverySuccess] => Unit)
-                        (implicit executionContext: ExecutionContextExecutor): Unit = {
+                        (implicit executionContext: ExecutionContextExecutor)
+    : CompletableFuture[Either[DeliveryException, FcmDeliverySuccess]] = {
       attempts.incrementAndGet()
-      onComplete(Left(FailedFCMRequest(notificationId, token, new RuntimeException("server error"))))
+      val result: Either[DeliveryException, FcmDeliverySuccess] =
+        Left(FailedFCMRequest(notificationId, token, new RuntimeException("server error")))
+      CompletableFuture.completedFuture(result)
     }
   }
 
@@ -121,12 +124,12 @@ class DeliveryServiceSpec extends Specification {
       _ => Some(ApnsPayload("{}", None, None, PushType.ALERT))
 
     def sendNotification(notificationId: UUID, token: String, payload: ApnsPayload, dryRun: Boolean)
-                        (onComplete: Either[DeliveryException, ApnsDeliverySuccess] => Unit)
-                        (implicit executionContext: ExecutionContextExecutor): Unit = {
+                        (implicit executionContext: ExecutionContextExecutor)
+    : CompletableFuture[Either[DeliveryException, Success]] = {
       if (attempts.getAndIncrement() == 0) {
-        onComplete(Left(FailedAPNSRequest(notificationId, token, new RuntimeException("Stream closed before write could take place"))))
+        CompletableFuture.completedFuture(Left(FailedAPNSRequest(notificationId, token, new RuntimeException("Stream closed before write could take place"))))
       } else {
-        onComplete(Right(ApnsDeliverySuccess(token, Instant.now())))
+        CompletableFuture.completedFuture(Right(ApnsDeliverySuccess(token, Instant.now())))
       }
     }
   }
@@ -141,10 +144,10 @@ class DeliveryServiceSpec extends Specification {
       _ => Some(ApnsPayload("{}", None, None, PushType.ALERT))
 
     def sendNotification(notificationId: UUID, token: String, payload: ApnsPayload, dryRun: Boolean)
-                        (onComplete: Either[DeliveryException, ApnsDeliverySuccess] => Unit)
-                        (implicit executionContext: ExecutionContextExecutor): Unit = {
+                        (implicit executionContext: ExecutionContextExecutor)
+    : CompletableFuture[Either[DeliveryException, Success]] = {
       attempts.incrementAndGet()
-      onComplete(Left(FailedAPNSRequest(notificationId, token, new RuntimeException("request timed out"), Some("ClientTimeout"))))
+      CompletableFuture.completedFuture(Left(FailedAPNSRequest(notificationId, token, new RuntimeException("request timed out"), Some("ClientTimeout"))))
     }
   }
 
@@ -158,12 +161,12 @@ class DeliveryServiceSpec extends Specification {
       _ => Some(ApnsPayload("{}", None, None, PushType.ALERT))
 
     def sendNotification(notificationId: UUID, token: String, payload: ApnsPayload, dryRun: Boolean)
-                        (onComplete: Either[DeliveryException, ApnsDeliverySuccess] => Unit)
-                        (implicit executionContext: ExecutionContextExecutor): Unit = {
+                        (implicit executionContext: ExecutionContextExecutor)
+    : CompletableFuture[Either[DeliveryException, Success]] = {
       if (attempts.getAndIncrement() == 0) {
-        onComplete(Left(FailedAPNSDelivery(notificationId, token, "TooManyRequests")))
+        CompletableFuture.completedFuture(Left(FailedAPNSDelivery(notificationId, token, "TooManyRequests")))
       } else {
-        onComplete(Right(ApnsDeliverySuccess(token, Instant.now())))
+        CompletableFuture.completedFuture(Right(ApnsDeliverySuccess(token, Instant.now())))
       }
     }
   }
