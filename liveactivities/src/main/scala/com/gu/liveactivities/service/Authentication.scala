@@ -1,9 +1,9 @@
 package com.gu.liveactivities.service
 
-import java.util.Date
+import java.time.Instant
 import java.util.concurrent.atomic._
-import com.turo.pushy.apns.auth.ApnsSigningKey
-import com.turo.pushy.apns.auth.AuthenticationToken
+import com.eatthepath.pushy.apns.auth.ApnsSigningKey
+import com.eatthepath.pushy.apns.auth.AuthenticationToken
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import com.gu.liveactivities.util.Logging
@@ -20,15 +20,15 @@ class Authentication(teamId: String, keyId: String, certificate: String) extends
 
   private def refreshToken(): String = {
     val signingKey = getSigningKey()
-    val newToken = new AuthenticationToken(signingKey, new Date())
+    val newToken = new AuthenticationToken(signingKey, Instant.now())
     this.authenticationToken.set(Some(newToken))
-    newToken.getAuthorizationHeader().toString()
+    newToken.getAuthorizationHeader.toString()
   }
 
   def getAccessToken(): String = {
     authenticationToken.get() match {
-      case Some(token) if Date.from(token.getIssuedAt().toInstant().plusSeconds(30 * 60)).after(new Date()) => 
-        token.getAuthorizationHeader().toString()
+      case Some(token) if token.getIssuedAt().plusSeconds(30 * 60).isAfter(Instant.now()) =>
+        token.getAuthorizationHeader.toString()
       case _ => refreshToken()
     }
   }
