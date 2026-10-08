@@ -889,6 +889,80 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
       },
       "Type": "AWS::IAM::Policy",
     },
+    "RegistrationDashboard6EA9DE21": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"widgets":[{"type":"metric","width":16,"height":6,"x":0,"y":0,"properties":{"view":"timeSeries","title":"Registration Insertions (Successful vs Failed)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/registration","SuccessfulRegistrationInsertion",{"color":"#2ca02c","label":"Successful","period":60,"stat":"Sum"}],["Notifications/CODE/registration","FailedRegistrationInsertion",{"color":"#d62728","label":"Failed","period":60,"stat":"Sum"}]],"yAxis":{}}},{"type":"metric","width":8,"height":3,"x":16,"y":0,"properties":{"view":"singleValue","title":"Failed Insertions (last 1h)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[["Notifications/CODE/registration","FailedRegistrationInsertion",{"color":"#d62728","label":"Failed","period":3600,"stat":"Sum"}]]}},{"type":"metric","width":12,"height":6,"x":0,"y":6,"properties":{"view":"timeSeries","title":"Registration Insertion Latency (ms)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/registration","RegistrationInsertionLatency",{"label":"Average","period":60}],["Notifications/CODE/registration","RegistrationInsertionLatency",{"label":"p99","period":60,"stat":"p99"}]],"yAxis":{}}},{"type":"metric","width":12,"height":6,"x":12,"y":6,"properties":{"view":"timeSeries","title":"ASG CPU Utilization (%)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/EC2","CPUUtilization","AutoScalingGroupName","",
+              {
+                "Ref": "AutoScalingGroupRegistrationASG07AD2A4F",
+              },
+              ""]],"yAxis":{}}},{"type":"metric","width":24,"height":6,"x":0,"y":12,"properties":{"view":"timeSeries","title":"ALB Requests vs 5XX Errors","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","RequestCount","LoadBalancer","",
+              {
+                "Fn::GetAtt": [
+                  "LoadBalancerRegistration79F7817E",
+                  "LoadBalancerFullName",
+                ],
+              },
+              "",{"period":60,"stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_5XX_Count","LoadBalancer","",
+              {
+                "Fn::GetAtt": [
+                  "LoadBalancerRegistration79F7817E",
+                  "LoadBalancerFullName",
+                ],
+              },
+              "",{"period":60,"stat":"Sum","yAxis":"right"}]],"yAxis":{}}}]}",
+            ],
+          ],
+        },
+        "DashboardName": "mobile-notifications-registration-CODE",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
     "SsmSshPolicy4CFC977E": {
       "Properties": {
         "PolicyDocument": {
@@ -2143,6 +2217,80 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         ],
       },
       "Type": "AWS::IAM::Policy",
+    },
+    "RegistrationDashboard6EA9DE21": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"widgets":[{"type":"metric","width":16,"height":6,"x":0,"y":0,"properties":{"view":"timeSeries","title":"Registration Insertions (Successful vs Failed)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/registration","SuccessfulRegistrationInsertion",{"color":"#2ca02c","label":"Successful","period":60,"stat":"Sum"}],["Notifications/PROD/registration","FailedRegistrationInsertion",{"color":"#d62728","label":"Failed","period":60,"stat":"Sum"}]],"yAxis":{}}},{"type":"metric","width":8,"height":3,"x":16,"y":0,"properties":{"view":"singleValue","title":"Failed Insertions (last 1h)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","sparkline":true,"metrics":[["Notifications/PROD/registration","FailedRegistrationInsertion",{"color":"#d62728","label":"Failed","period":3600,"stat":"Sum"}]]}},{"type":"metric","width":12,"height":6,"x":0,"y":6,"properties":{"view":"timeSeries","title":"Registration Insertion Latency (ms)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/registration","RegistrationInsertionLatency",{"label":"Average","period":60}],["Notifications/PROD/registration","RegistrationInsertionLatency",{"label":"p99","period":60,"stat":"p99"}]],"yAxis":{}}},{"type":"metric","width":12,"height":6,"x":12,"y":6,"properties":{"view":"timeSeries","title":"ASG CPU Utilization (%)","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/EC2","CPUUtilization","AutoScalingGroupName","",
+              {
+                "Ref": "AutoScalingGroupRegistrationASG07AD2A4F",
+              },
+              ""]],"yAxis":{}}},{"type":"metric","width":24,"height":6,"x":0,"y":12,"properties":{"view":"timeSeries","title":"ALB Requests vs 5XX Errors","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","RequestCount","LoadBalancer","",
+              {
+                "Fn::GetAtt": [
+                  "LoadBalancerRegistration79F7817E",
+                  "LoadBalancerFullName",
+                ],
+              },
+              "",{"period":60,"stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_5XX_Count","LoadBalancer","",
+              {
+                "Fn::GetAtt": [
+                  "LoadBalancerRegistration79F7817E",
+                  "LoadBalancerFullName",
+                ],
+              },
+              "",{"period":60,"stat":"Sum","yAxis":"right"}]],"yAxis":{}}}]}",
+            ],
+          ],
+        },
+        "DashboardName": "mobile-notifications-registration-PROD",
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
     },
     "SsmSshPolicy4CFC977E": {
       "Properties": {
