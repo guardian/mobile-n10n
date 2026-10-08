@@ -85,13 +85,15 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
                 Right(ApnsDeliverySuccess(token, Instant.now()))
               } else {
                 // APNS rejected the notification after delivery to the APNS server.
+                // todo Pushy now makes apns status code available.
+                val rejectionReason = response.getRejectionReason.toScala
                 val invalidationTimestamp = response.getTokenInvalidationTimestamp.toScala
                   .map(instant => Timestamp.from(instant).toLocalDateTime)
 
-                val ApnsDeliveryError = if (invalidationTimestamp.isDefined || invalidTokenErrorCodes.contains(response.getRejectionReason)) {
-                  InvalidToken(notificationId, token, response.getRejectionReason, invalidationTimestamp)
+                val ApnsDeliveryError = if (invalidationTimestamp.isDefined || invalidTokenErrorCodes.contains(rejectionReason.getOrElse("Unknown"))) {
+                  InvalidToken(notificationId, token, rejectionReason.getOrElse("Unknown"), invalidationTimestamp)
                 } else {
-                  FailedAPNSDelivery(notificationId, token, response.getRejectionReason)
+                  FailedAPNSDelivery(notificationId, token, rejectionReason.getOrElse("Unknown"))
                 }
                 Left(ApnsDeliveryError)
               }
