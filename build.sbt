@@ -419,7 +419,7 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
     dockerExposedPorts := Seq(9000), // exposed by the lambda runtime api inside the image
     dockerAlias := DockerAlias(registryHost = dockerRepository.value, username = None, name = (Docker / packageName).value, tag = buildNumber),
     libraryDependencies ++= Seq(
-      "com.eatthepath" % "pushy" % "0.14.2",
+      "com.eatthepath" % "pushy" % "0.15.6",
       "com.google.firebase" % "firebase-admin" % "9.2.0",
       "com.google.protobuf" % "protobuf-java" % "4.33.3",
       "com.google.protobuf" % "protobuf-java-util" % "4.33.3",
