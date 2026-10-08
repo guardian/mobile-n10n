@@ -2,7 +2,6 @@ package com.gu.notifications.worker.delivery.apns.models.payload
 
 import java.net.URI
 import java.util.UUID
-
 import _root_.models.NotificationType._
 import _root_.models._
 import com.gu.notifications.worker.delivery.ApnsPayload
@@ -12,8 +11,10 @@ import com.gu.notifications.worker.delivery.apns.models.payload.CustomProperty.K
 import com.gu.notifications.worker.delivery.apns.models.payload.PlatformUriTypes.{External, Item}
 import com.eatthepath.pushy.apns.util.SimpleApnsPayloadBuilder
 import com.eatthepath.pushy.apns.{DeliveryPriority, PushType}
+import org.slf4j.{Logger, LoggerFactory}
 
 class ApnsPayloadBuilder(config: ApnsConfig) {
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def apply(notification: Notification): Option[ApnsPayload] = notification match {
       case n: BreakingNewsNotification => Some(breakingNewsPayload(n))
@@ -56,7 +57,12 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
       /** APNS
        * You must not use a compressed JSON payload, and it’s limited to a maximum size of 4 KB (4096 bytes).
        * */
-      payloadBuilder.build()
+      val jsonPayload = payloadBuilder.build()
+      val sizeBytes = jsonPayload.getBytes(java.nio.charset.StandardCharsets.UTF_8).length
+
+      logger.debug(s"APNS payload size: $sizeBytes bytes (max 4096 bytes): title: ${alertTitle.getOrElse("")}")
+
+      jsonPayload
     }
   }
 
