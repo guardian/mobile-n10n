@@ -21,10 +21,11 @@ It has many uses:
 * [Expired Registration Cleaner](https://github.com/guardian/mobile-n10n/blob/6a6908391f0ef9130fcc59ebf778c4b97f963e28/notificationworkerlambda/src/main/scala/com/gu/notifications/worker/ExpiredRegistrationCleaner.scala) - A lambda that deletes tokens that haven't been active in 300 days.
 * [Fake Breaking News](fakebreakingnewslambda) - A lambda that periodically sends a fake ("dry run") breaking news in order to spot any potential misconfiguration, technical issue or regression. The results of the dry run are closely monitored and raise an alarm if anything goes wrong.
 * [Football](football) - A lambda that polls PA and sends football match alerts to Notification
+* [Live Activities](liveactivities) - a lambda service to sent broadcast notifications to iOS devices (currently only football matches)
 * [Report Extractor](reportextractor) - A daily lambda to export the metadata of each notification into our datalake.
 
 ## Features
-* Send push notifications to devices in timely manner (~ 3 minutes to reception on device)
+* Send push notifications to devices in timely manner (~3 minutes to reception on device)
 * Monitoring of notifications
 * Logging for diagnostics and status of each notification
 
@@ -46,7 +47,7 @@ This service receives requests to send notifications and plans the work for the 
 The chunk size is around 10,000: Not too big such that a complete failure would be a disaster if left undelivered, not too small such that the harvester can efficiently use its running time (ratio cold-start-time / work-time kept as low as possible). 
 
 ### Registration
-This service receives registrations from the devices. Upon receiving a registration the service completely replace any record present in the DB for that token.
+This service receives registrations from the devices. Upon receiving a registration the service completely replaces any record present in the DB for that token.
 The registration service also checks what topic are invalid and removes any invalid or out of date topic before inserting them in the DB.
 The response sent back to the client contains the filtered list such that the client can update the topics on their storage. Out of date topics include live blogs that aren't live anymore or finished football games.
 
@@ -93,6 +94,9 @@ The notification providers actually deliver the notification to the device
 * Apple - [APNS: Apple Push Notification Service](https://developer.apple.com/notifications/)
 * Android - [FCM: Firebase Cloud Messenger](https://firebase.google.com/docs/cloud-messaging/) (ex GCM)
 
+### Live Activities
+
+A set of lambdas to send Football live activity updates to iOS devices using Apple's APNS broadcast push notification service. 
 
 ### Topic Counter
 
