@@ -21,11 +21,11 @@ It has many uses:
 * [Expired Registration Cleaner](https://github.com/guardian/mobile-n10n/blob/6a6908391f0ef9130fcc59ebf778c4b97f963e28/notificationworkerlambda/src/main/scala/com/gu/notifications/worker/ExpiredRegistrationCleaner.scala) - A lambda that deletes tokens that haven't been active in 300 days.
 * [Fake Breaking News](fakebreakingnewslambda) - A lambda that periodically sends a fake ("dry run") breaking news in order to spot any potential misconfiguration, technical issue or regression. The results of the dry run are closely monitored and raise an alarm if anything goes wrong.
 * [Football](football) - A lambda that polls PA and sends football match alerts to Notification
-* [Live Activities](liveactivities) - a lambda service to sent broadcast notifications to iOS devices (currently only football matches)
+* [Live Activities](liveactivities) - a lambda service to send broadcast notifications to iOS devices (currently only football matches)
 * [Report Extractor](reportextractor) - A daily lambda to export the metadata of each notification into our datalake.
 
 ## Features
-* Send push notifications to devices in timely manner (~3 minutes to reception on device)
+* Send push notifications to devices in timely manner (~ 3 minutes to reception on device)
 * Monitoring of notifications
 * Logging for diagnostics and status of each notification
 
