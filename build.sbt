@@ -472,7 +472,7 @@ lazy val liveactivities = lambda("liveactivities", "liveactivities", Some("com.g
   .settings(LocalDynamoDBLiveActivities.settings)
   .settings(
     libraryDependencies ++= Seq(
-      "com.turo" % "pushy" % "0.13.10",
+      "com.eatthepath" % "pushy" % "0.15.6",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "software.amazon.awssdk" % "dynamodb" % awsSdk2Version,
       "software.amazon.awssdk" % "eventbridge" % "2.20.162",
