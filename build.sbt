@@ -21,7 +21,7 @@ releaseProcess := Seq[ReleaseStep](
   setNextVersion,
   commitNextVersion
 )
-ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / scalaVersion := "3.9.0"
 
 ThisBuild / dockerBaseImage := "eclipse-temurin:8-jdk"
 
