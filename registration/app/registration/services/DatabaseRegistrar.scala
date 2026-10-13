@@ -5,7 +5,7 @@ import db.RegistrationService
 import models._
 import registration.services.NotificationRegistrar.RegistrarResponse
 import fs2.Stream
-import com.amazonaws.services.cloudwatch.model.StandardUnit
+import software.amazon.awssdk.services.cloudwatch.model.StandardUnit
 import metrics.{MetricDataPoint, Metrics}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,10 +51,10 @@ class DatabaseRegistrar(
 
     result.onComplete {
       case Success(_) =>
-        metrics.send(MetricDataPoint(name = "SuccessfulRegistrationInsertion", value = 1d, unit = StandardUnit.Count))
-        metrics.send(MetricDataPoint(name = "RegistrationInsertionLatency", value = (System.currentTimeMillis - latencyStart).toDouble, unit = StandardUnit.Milliseconds))
+        metrics.send(MetricDataPoint(name = "SuccessfulRegistrationInsertion", value = 1d, unit = StandardUnit.COUNT))
+        metrics.send(MetricDataPoint(name = "RegistrationInsertionLatency", value = (System.currentTimeMillis - latencyStart).toDouble, unit = StandardUnit.MILLISECONDS))
       case Failure(_) =>
-        metrics.send(MetricDataPoint(name = "FailedRegistrationInsertion", value = 1d, unit = StandardUnit.Count))
+        metrics.send(MetricDataPoint(name = "FailedRegistrationInsertion", value = 1d, unit = StandardUnit.COUNT))
     }
 
     result

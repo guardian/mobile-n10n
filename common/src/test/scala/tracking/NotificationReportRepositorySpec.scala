@@ -3,7 +3,7 @@ package tracking
 import java.net.URI
 import java.util.UUID
 
-import com.amazonaws.services.dynamodbv2.model._
+import software.amazon.awssdk.services.dynamodb.model._
 import models.Link.Internal
 import models.Importance.Major
 import models.NotificationType.BreakingNews
@@ -96,23 +96,27 @@ class NotificationReportRepositorySpec(implicit ev: ExecutionEnv) extends Dynamo
     val TypeField = "type"
     val SentTimeIndex = "sentTime-index"
 
-    val sentTimeIndex = new GlobalSecondaryIndex()
-      .withIndexName(SentTimeIndex)
-      .withKeySchema(List(
-        new KeySchemaElement(TypeField, KeyType.HASH),
-        new KeySchemaElement(SentTimeField, KeyType.RANGE)
-      ).asJava)
-      .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
-      .withProjection(new Projection().withProjectionType(ProjectionType.ALL))
+    val sentTimeIndex = GlobalSecondaryIndex.builder()
+      .indexName(SentTimeIndex)
+      .keySchema(
+        KeySchemaElement.builder().attributeName(TypeField).keyType(KeyType.HASH).build(),
+        KeySchemaElement.builder().attributeName(SentTimeField).keyType(KeyType.RANGE).build()
+      )
+      .provisionedThroughput(ProvisionedThroughput.builder().readCapacityUnits(5L).writeCapacityUnits(5L).build())
+      .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
+      .build()
 
-    new CreateTableRequest(TableName, List(new KeySchemaElement(IdField, KeyType.HASH)).asJava)
-      .withAttributeDefinitions(List(
-        new AttributeDefinition(IdField, ScalarAttributeType.S),
-        new AttributeDefinition(SentTimeField, ScalarAttributeType.S),
-        new AttributeDefinition(TypeField, ScalarAttributeType.S)
-      ).asJava)
-      .withProvisionedThroughput(new ProvisionedThroughput(5L, 5L))
-      .withGlobalSecondaryIndexes(List(sentTimeIndex).asJava)
+    CreateTableRequest.builder()
+      .tableName(TableName)
+      .keySchema(KeySchemaElement.builder().attributeName(IdField).keyType(KeyType.HASH).build())
+      .attributeDefinitions(
+        AttributeDefinition.builder().attributeName(IdField).attributeType(ScalarAttributeType.S).build(),
+        AttributeDefinition.builder().attributeName(SentTimeField).attributeType(ScalarAttributeType.S).build(),
+        AttributeDefinition.builder().attributeName(TypeField).attributeType(ScalarAttributeType.S).build()
+      )
+      .provisionedThroughput(ProvisionedThroughput.builder().readCapacityUnits(5L).writeCapacityUnits(5L).build())
+      .globalSecondaryIndexes(sentTimeIndex)
+      .build()
   }
 
 }

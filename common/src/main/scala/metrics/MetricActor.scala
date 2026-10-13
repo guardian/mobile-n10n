@@ -1,8 +1,8 @@
 package metrics
 
 import org.apache.pekko.actor.Actor
-import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient
-import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest, StandardUnit, StatisticSet}
+import software.amazon.awssdk.services.cloudwatch.CloudWatchClient
+import software.amazon.awssdk.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest, StandardUnit, StatisticSet}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.jdk.CollectionConverters._
@@ -13,7 +13,7 @@ trait MetricActorLogic {
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def cloudWatchClient: AmazonCloudWatchClient
+  def cloudWatchClient: CloudWatchClient
   def stage: String
   def appName: String
 
@@ -22,20 +22,20 @@ trait MetricActorLogic {
       (aggSum + dataPoint.value, aggMin.min(dataPoint.value), aggMax.max(dataPoint.value))
     }
 
-    val stats = new StatisticSet
-    stats.setMaximum(max)
-    stats.setMinimum(min)
-    stats.setSum(sum)
-    stats.setSampleCount(metricDataPoints.size.toDouble)
+    val stats = StatisticSet.builder()
+      .maximum(max)
+      .minimum(min)
+      .sum(sum)
+      .sampleCount(metricDataPoints.size.toDouble)
+      .build()
 
-    val unit = metricDataPoints.headOption.map(_.unit).getOrElse(StandardUnit.None)
+    val unit = metricDataPoints.headOption.map(_.unit).getOrElse(StandardUnit.NONE)
 
-    val metric = new MetricDatum()
-    metric.setMetricName(metricName)
-    metric.setUnit(unit)
-    metric.setStatisticValues(stats)
-
-    metric
+    MetricDatum.builder()
+      .metricName(metricName)
+      .unit(unit)
+      .statisticValues(stats)
+      .build()
   }
 
   private def aggregatePointsPerNamespaceBatches(points: List[MetricDataPoint]): List[(String, List[MetricDatum])] = {
@@ -69,9 +69,10 @@ trait MetricActorLogic {
 
       try {
         metricsPerNamespaceBatches.foreach { case (namespace, awsMetricBatch) =>
-          val metricRequest = new PutMetricDataRequest()
-          metricRequest.setNamespace(s"$namespace/$stage/$appName")
-          metricRequest.setMetricData(awsMetricBatch.asJava)
+          val metricRequest = PutMetricDataRequest.builder()
+            .namespace(s"$namespace/$stage/$appName")
+            .metricData(awsMetricBatch.asJava)
+            .build()
 
           cloudWatchClient.putMetricData(metricRequest)
         }
@@ -87,7 +88,7 @@ trait MetricActorLogic {
   }
 }
 
-class MetricActor(val cloudWatchClient: AmazonCloudWatchClient, val identity: AppIdentity, val env: Environment) extends Actor with MetricActorLogic {
+class MetricActor(val cloudWatchClient: CloudWatchClient, val identity: AppIdentity, val env: Environment) extends Actor with MetricActorLogic {
   var dataPoints = List.empty[MetricDataPoint]
 
   override def stage: String = identity match {

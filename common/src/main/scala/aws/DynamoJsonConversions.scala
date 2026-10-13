@@ -3,9 +3,8 @@ package aws
 import java.util.Base64
 import scala.jdk.CollectionConverters._
 import play.api.libs.json._
-import com.amazonaws.services.dynamodbv2.model.AttributeValue
-
-import java.nio.ByteBuffer
+import software.amazon.awssdk.core.SdkBytes
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 
 object DynamoJsonConversions {
 
@@ -22,30 +21,26 @@ object DynamoJsonConversions {
   }
 
   private def fromAttributeValue(att: AttributeValue): JsValue = List(
-    Option(att.getS) map parseString,
-    Option(att.getN) map parseNumber,
-    Option(att.isBOOL) map parseBool,
-    Option(att.getL) map parseList,
-    Option(att.getM) map parseMap,
-    Option(att.getB) map parseBinary,
-    Option(att.getSS) map parseStringList,
-    Option(att.getNS) map parseNumberList,
-    Option(att.getBS) map parseBinaryList
+    Option(att.s) map parseString,
+    Option(att.n) map parseNumber,
+    Option(att.bool) map parseBool,
+    if (att.hasL) Some(parseList(att.l)) else None,
+    if (att.hasM) Some(parseMap(att.m)) else None,
+    Option(att.b) map parseBinary,
+    if (att.hasSs) Some(parseStringList(att.ss)) else None,
+    if (att.hasNs) Some(parseNumberList(att.ns)) else None,
+    if (att.hasBs) Some(parseBinaryList(att.bs)) else None
   ).flatten.headOption getOrElse JsNull
 
-  private def toAttributeValue(obj: JsValue): AttributeValue = {
-    val att = new AttributeValue()
-    obj match {
-      case JsString(s) => att.setS(s)
-      case JsNumber(n) => att.setN(n.toString())
-      case JsBoolean(b) => att.setBOOL(b)
-      case JsNull => att.setNULL(true)
-      case JsArray(a) => att.setL(a.map(toAttributeValue).asJava)
-      case JsObject(o) => att.setM(o.view.mapValues(toAttributeValue).toMap.asJava)
-      case JsFalse => att.setBOOL(false)
-      case JsTrue => att.setBOOL(true)
-    }
-    att
+  private def toAttributeValue(obj: JsValue): AttributeValue = obj match {
+    case JsString(s) => AttributeValue.builder().s(s).build()
+    case JsNumber(n) => AttributeValue.builder().n(n.toString()).build()
+    case JsBoolean(b) => AttributeValue.builder().bool(b).build()
+    case JsNull => AttributeValue.builder().nul(true).build()
+    case JsArray(a) => AttributeValue.builder().l(a.map(toAttributeValue).asJava).build()
+    case JsObject(o) => AttributeValue.builder().m(o.view.mapValues(toAttributeValue).toMap.asJava).build()
+    case JsFalse => AttributeValue.builder().bool(false).build()
+    case JsTrue => AttributeValue.builder().bool(true).build()
   }
 
   private def parseString(str: String) = JsString(str)
@@ -58,12 +53,12 @@ object DynamoJsonConversions {
 
   private def parseMap(m: java.util.Map[String, AttributeValue]) = JsObject(m.asScala.view.mapValues(fromAttributeValue).toMap)
 
-  private def parseBinary(bin: ByteBuffer) = JsString(Base64.getEncoder.encodeToString(bin.array))
+  private def parseBinary(bin: SdkBytes) = JsString(Base64.getEncoder.encodeToString(bin.asByteArray))
 
   private def parseStringList(ls: java.util.List[String]) = JsArray(ls.asScala map { str => JsString(str) })
 
   private def parseNumberList(ls: java.util.List[String]) = JsArray(ls.asScala map { num => JsNumber(BigDecimal(num)) })
 
-  private def parseBinaryList(ls: java.util.List[ByteBuffer]) = JsArray(ls.asScala map { bin => JsString(Base64.getEncoder.encodeToString(bin.array)) })
+  private def parseBinaryList(ls: java.util.List[SdkBytes]) = JsArray(ls.asScala map { bin => JsString(Base64.getEncoder.encodeToString(bin.asByteArray)) })
 
 }

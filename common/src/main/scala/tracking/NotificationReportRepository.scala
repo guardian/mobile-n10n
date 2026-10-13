@@ -7,7 +7,7 @@ import aws.AsyncDynamo
 import aws.AsyncDynamo.{keyBetween, keyEquals}
 import aws.DynamoJsonConversions.{fromAttributeMap, toAttributeMap}
 import cats.syntax.all._
-import com.amazonaws.services.dynamodbv2.model._
+import software.amazon.awssdk.services.dynamodb.model._
 import models.{NotificationReport, NotificationType}
 import org.joda.time.{DateTime, Days}
 import org.slf4j.{Logger, LoggerFactory}
@@ -27,7 +27,10 @@ class NotificationReportRepository(client: AsyncDynamo, tableName: String)
   private val SentTimeIndex = "sentTime-index"
 
   override def store(report: NotificationReport): Future[RepositoryResult[Unit]] = {
-    val putItemRequest = new PutItemRequest(tableName, toAttributeMap(report).asJava)
+    val putItemRequest = PutItemRequest.builder()
+      .tableName(tableName)
+      .item(toAttributeMap(report).asJava)
+      .build()
     client.putItem(putItemRequest) map { _ => Right(()) }
   }
 
@@ -36,10 +39,11 @@ class NotificationReportRepository(client: AsyncDynamo, tableName: String)
       return Future.successful(Left(RepositoryError("Date range too big to query")))
     }
 
-    def maybeStartKey(result: QueryResult): Option[util.Map[String, AttributeValue]] = Option(result.getLastEvaluatedKey).flatMap(lastKey => if (lastKey.isEmpty) None else Some(lastKey))
+    def maybeStartKey(result: QueryResponse): Option[util.Map[String, AttributeValue]] =
+      if (result.hasLastEvaluatedKey && !result.lastEvaluatedKey.isEmpty) Some(result.lastEvaluatedKey) else None
 
-    def reportsFromResult(result: QueryResult): RepositoryResult[List[NotificationReport]] = {
-      val results = result.getItems.asScala.toList.map { item =>
+    def reportsFromResult(result: QueryResponse): RepositoryResult[List[NotificationReport]] = {
+      val results = result.items.asScala.toList.map { item =>
         fromAttributeMap[NotificationReport](item.asScala.toMap)
       }
       val error = results.collectFirst {
@@ -53,13 +57,15 @@ class NotificationReportRepository(client: AsyncDynamo, tableName: String)
       error.getOrElse(Right(reports))
     }
 
-    def buildDynamoQuery(startKey: Option[util.Map[String, AttributeValue]]): QueryRequest = new QueryRequest(tableName)
-      .withIndexName(SentTimeIndex)
-      .withKeyConditions(Map(
+    def buildDynamoQuery(startKey: Option[util.Map[String, AttributeValue]]): QueryRequest = QueryRequest.builder()
+      .tableName(tableName)
+      .indexName(SentTimeIndex)
+      .keyConditions(Map(
         TypeField -> keyEquals(notificationType.value),
         SentTimeField -> keyBetween(from.toString, to.toString)
       ).asJava)
-      .withExclusiveStartKey(startKey.orNull)
+      .exclusiveStartKey(startKey.orNull)
+      .build()
 
     def fetch(
       startKey: Option[util.Map[String, AttributeValue]] = None,
@@ -81,28 +87,30 @@ class NotificationReportRepository(client: AsyncDynamo, tableName: String)
   }
 
   override def getByUuid(uuid: UUID): Future[RepositoryResult[NotificationReport]] = {
-    val getItemRequest = new GetItemRequest()
-      .withTableName(tableName)
-      .withKey(Map(IdField -> new AttributeValue().withS(uuid.toString)).asJava)
-      .withConsistentRead(true)
+    val getItemRequest = GetItemRequest.builder()
+      .tableName(tableName)
+      .key(Map(IdField -> AttributeValue.builder().s(uuid.toString).build()).asJava)
+      .consistentRead(true)
+      .build()
 
     client.get(getItemRequest) map { result =>
       for {
-        item <- Either.fromOption(Option(result.getItem), RepositoryError("UUID not found"))
+        item <- Either.fromOption(if (result.hasItem) Some(result.item) else None, RepositoryError("UUID not found"))
         parsed <- Either.fromOption(fromAttributeMap[NotificationReport](item.asScala.toMap).asOpt, RepositoryError("Unable to parse report"))
       } yield parsed
     }
   }
 
   override def update(report: NotificationReport): Future[RepositoryResult[Unit]] = {
-    val updateItemRequest = new UpdateItemRequest()
-      .withKey(Map("id" -> new AttributeValue().withS(report.id.toString)).asJava)
-      .withTableName(tableName)
-      .withAttributeUpdates(
+    val updateItemRequest = UpdateItemRequest.builder()
+      .key(Map("id" -> AttributeValue.builder().s(report.id.toString).build()).asJava)
+      .tableName(tableName)
+      .attributeUpdates(
         toAttributeMap(report)
           .filterNot { case (key, _) => key == "id" }
-          .view.mapValues(value => new AttributeValueUpdate().withAction(AttributeAction.PUT).withValue(value)).toMap.asJava
+          .view.mapValues(value => AttributeValueUpdate.builder().action(AttributeAction.PUT).value(value).build()).toMap.asJava
       )
+      .build()
     client.updateItem(updateItemRequest).map { _ => Right(()) }
   }
 }

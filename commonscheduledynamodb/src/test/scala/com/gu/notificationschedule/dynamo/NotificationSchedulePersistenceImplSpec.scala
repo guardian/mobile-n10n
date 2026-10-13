@@ -1,27 +1,17 @@
 package com.gu.notificationschedule.dynamo
 
-import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider, AWSCredentialsProviderChain}
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.dynamodbv2.model._
-import com.amazonaws.services.dynamodbv2.{AmazonDynamoDBAsync, AmazonDynamoDBAsyncClientBuilder}
+import java.net.URI
+
+import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
+import software.amazon.awssdk.services.dynamodb.model._
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeAfterEach
 
-import scala.jdk.CollectionConverters._
-
 class NotificationSchedulePersistenceImplSpec extends Specification with BeforeAfterEach {
   val tableName = "test-table"
-  val chain = new AWSCredentialsProviderChain(new AWSCredentialsProvider {
-    override def refresh(): Unit = {}
-
-    override def getCredentials: AWSCredentials = new AWSCredentials {
-      override def getAWSAccessKeyId: String = ""
-
-      override def getAWSSecretKey: String = ""
-    }
-  })
-  var maybeClient: Option[AmazonDynamoDBAsync] = None
+  var maybeClient: Option[DynamoDbAsyncClient] = None
   "NotificationSchedulePersistence" should {
     "read" in {
 
@@ -33,34 +23,37 @@ class NotificationSchedulePersistenceImplSpec extends Specification with BeforeA
   }
 
   override def after: Any = {
-    maybeClient.foreach(_.deleteTable(tableName))
+    maybeClient.foreach(_.deleteTable(DeleteTableRequest.builder().tableName(tableName).build()).join())
 
   }
 
   override def before: Any = {
-    val client = AmazonDynamoDBAsyncClientBuilder.standard()
-      .withCredentials(chain)
-      .withEndpointConfiguration(new EndpointConfiguration("http://localhost:8001", Regions.EU_WEST_1.getName))
-      .build
-    val createTableRequest = new CreateTableRequest()
-      .withTableName(tableName)
-      .withKeySchema(new KeySchemaElement("uuid", KeyType.HASH))
-      .withAttributeDefinitions(List(
-        new AttributeDefinition("uuid", ScalarAttributeType.S),
-        new AttributeDefinition("sent", ScalarAttributeType.S),
-        new AttributeDefinition("due_epoch_s", ScalarAttributeType.N)
-      ).asJava)
-      .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L))
-      .withGlobalSecondaryIndexes(new GlobalSecondaryIndex()
-        .withIndexName("due_epoch_s_and_sent")
-        .withKeySchema(List(
-          new KeySchemaElement("sent", KeyType.HASH),
-          new KeySchemaElement("due_epoch_s", KeyType.RANGE)
-        ).asJava)
-        .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L))
-        .withProjection(new Projection().withProjectionType(ProjectionType.ALL))
+    val client = DynamoDbAsyncClient.builder()
+      .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("DUMMY", "DUMMY")))
+      .endpointOverride(URI.create("http://localhost:8001"))
+      .region(Region.EU_WEST_1)
+      .build()
+    val createTableRequest = CreateTableRequest.builder()
+      .tableName(tableName)
+      .keySchema(KeySchemaElement.builder().attributeName("uuid").keyType(KeyType.HASH).build())
+      .attributeDefinitions(
+        AttributeDefinition.builder().attributeName("uuid").attributeType(ScalarAttributeType.S).build(),
+        AttributeDefinition.builder().attributeName("sent").attributeType(ScalarAttributeType.S).build(),
+        AttributeDefinition.builder().attributeName("due_epoch_s").attributeType(ScalarAttributeType.N).build()
       )
-    client.createTable(createTableRequest)
+      .provisionedThroughput(ProvisionedThroughput.builder().readCapacityUnits(1L).writeCapacityUnits(1L).build())
+      .globalSecondaryIndexes(GlobalSecondaryIndex.builder()
+        .indexName("due_epoch_s_and_sent")
+        .keySchema(
+          KeySchemaElement.builder().attributeName("sent").keyType(KeyType.HASH).build(),
+          KeySchemaElement.builder().attributeName("due_epoch_s").keyType(KeyType.RANGE).build()
+        )
+        .provisionedThroughput(ProvisionedThroughput.builder().readCapacityUnits(1L).writeCapacityUnits(1L).build())
+        .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
+        .build()
+      )
+      .build()
+    client.createTable(createTableRequest).join()
     maybeClient = Some(client)
 
 
