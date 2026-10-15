@@ -5,9 +5,8 @@ import _root_.models.{NewsstandShardConfig, TopicCount}
 import org.apache.pekko.actor.ActorSystem
 import aws.{AsyncDynamo, TopicCountsS3}
 import com.amazonaws.regions.Regions.EU_WEST_1
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.s3.S3Client
 import com.gu.AppIdentity
 import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceAsync, NotificationSchedulePersistenceImpl}
 import com.softwaremill.macwire._
@@ -64,10 +63,10 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
       notificationSchedulePersistence)
   }
 
-  lazy val s3Client: S3Client = {
-    S3Client.builder()
-      .region(Region.EU_WEST_1)
-      .credentialsProvider(MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
+  lazy val s3Client: AmazonS3 = {
+    AmazonS3ClientBuilder.standard()
+      .withRegion(EU_WEST_1)
+      .withCredentials(credentialsProvider)
       .build()
   }
 
