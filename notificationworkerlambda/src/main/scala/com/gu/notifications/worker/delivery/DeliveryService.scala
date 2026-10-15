@@ -67,12 +67,9 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           nextDelay = _.mul(2),
           maxAttempts = 3,
           retriable = {
-            case NonFatal(e: FailedAPNSDelivery) =>
-              logger.info(s"Retrying failed APNS delivery: ${e.getMessage}", e)
-
-              true
+            case NonFatal(e: FailedAPNSDelivery) => true
             case NonFatal(e: FailedAPNSRequest) if hasRetriableCause(e) =>
-              logger.info(s"Retrying failed APNS request: ${e.getMessage}", e)
+              logger.info(s"Retrying failed APNS request for token $token, notification ${notification.id}", e)
               true
             case NonFatal(e: FailedAPNSRequest) => false
             case NonFatal(e: InvalidToken) => false
