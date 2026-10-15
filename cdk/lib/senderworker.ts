@@ -202,7 +202,7 @@ class SenderWorker extends Construct {
 			{
 				alarmDescription: `Triggers if failure rate per total sends is >2% for over an hour on ${id} sender lambda in ${scope.stage}.`,
 				comparisonOperator: ComparisonOperator.GREATER_THAN_THRESHOLD,
-				evaluationPeriods: 2,
+				evaluationPeriods: 1,
 				threshold: 2,
 				metric: failureRateExpression,
 				treatMissingData: TreatMissingData.NOT_BREACHING,
