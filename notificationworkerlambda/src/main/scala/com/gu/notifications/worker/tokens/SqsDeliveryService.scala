@@ -3,9 +3,10 @@ package com.gu.notifications.worker.tokens
 import java.util.concurrent.TimeUnit
 
 import cats.effect._
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest
+import com.amazonaws.handlers.AsyncHandler
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder
+import com.amazonaws.services.sqs.model.{SendMessageRequest, SendMessageResult}
 import com.gu.notifications.worker.utils.Aws
 import fs2.Stream
 import play.api.libs.json.Json
@@ -23,23 +24,24 @@ class SqsDeliveryServiceImpl[F[_]](queueUrl: String)(implicit ece: ExecutionCont
   F: Async[F],
   T: Timer[F]
 ) extends SqsDeliveryService[F] {
-  val amazonSQSAsyncClient = SqsAsyncClient.builder()
-    .credentialsProvider(Aws.credentialsProviderV2)
-    .region(Region.EU_WEST_1)
+  val amazonSQSAsyncClient = AmazonSQSAsyncClientBuilder.standard()
+    .withCredentials(Aws.credentialsProvider)
+    .withRegion(Regions.EU_WEST_1)
     .build()
 
   def send(chunkedTokensBatch: ChunkedTokens)(oncomplete: Either[Throwable, Unit] => Unit): Unit = {
-    val sendMessageRequest = SendMessageRequest.builder()
-      .messageBody(Json.stringify(Json.toJson(chunkedTokensBatch)))
-      .queueUrl(queueUrl)
-      .build()
+    val sendMessageRequest = new SendMessageRequest()
+      .withMessageBody(Json.stringify(Json.toJson(chunkedTokensBatch)))
+      .withQueueUrl(queueUrl)
 
-    amazonSQSAsyncClient.sendMessage(sendMessageRequest).whenComplete { (_, exception) =>
-      Option(exception) match {
-        case Some(e) => oncomplete(Left(new Exception(Json.stringify(Json.toJson(chunkedTokensBatch)), e)))
-        case None => oncomplete(Right(()))
-      }
+    val handler = new AsyncHandler[SendMessageRequest, SendMessageResult] {
+      override def onError(exception: Exception): Unit = oncomplete(Left(new Exception(Json.stringify(Json.toJson(chunkedTokensBatch)), exception)))
+
+      override def onSuccess(request: SendMessageRequest, result: SendMessageResult): Unit = oncomplete(Right(()))
     }
+    amazonSQSAsyncClient.sendMessageAsync(
+      sendMessageRequest,
+      handler)
   }
 
 
