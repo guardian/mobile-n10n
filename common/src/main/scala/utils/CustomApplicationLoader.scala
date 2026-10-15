@@ -19,7 +19,7 @@ abstract class CustomApplicationLoader extends ApplicationLoader {
 
   lazy val credentialsv2 = AwsCredentialsProviderChainV2.of(
     ProfileCredentialsProviderV2.builder.profileName("mobile").build,
-    DefaultCredentialsProviderV2.builder().build()
+    DefaultCredentialsProviderV2.create
   )
 
   override def load(context: Context): Application = {
