@@ -1,9 +1,9 @@
 package notification.services.guardian
 
-import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import com.amazonaws.services.sqs.AmazonSQSAsync
 import notification.services.{NotificationSender, SenderError, SenderResult}
 import aws.AWSAsync._
-import software.amazon.awssdk.services.sqs.model.{SendMessageBatchRequest, SendMessageBatchRequestEntry, SendMessageBatchResponse}
+import com.amazonaws.services.sqs.model.{SendMessageBatchRequest, SendMessageBatchRequestEntry, SendMessageBatchResult}
 import models.Provider.Guardian
 import models._
 import org.joda.time.DateTime
@@ -23,7 +23,7 @@ case class GuardianFailedToQueueShard(
 ) extends SenderError
 
 class GuardianNotificationSender(
-  sqsClient: SqsAsyncClient,
+  sqsClient: AmazonSQSAsync,
   registrationCounter: TopicRegistrationCounter,
   harvesterSqsUrl: String,
 )(implicit ec: ExecutionContext) extends NotificationSender {
@@ -39,7 +39,7 @@ class GuardianNotificationSender(
       workerBatches = prepareBatch(notification, registrationCount, notificationReceivedTime)
       sqsBatchResults <- sendBatch(workerBatches, harvesterSqsUrl)
     } yield {
-      val failed = sqsBatchResults.flatMap(_.failed().asScala.toList)
+      val failed = sqsBatchResults.flatMap(response => Option(response.getFailed).map(_.asScala.toList).getOrElse(Nil))
       if (failed.isEmpty) {
         Right(SenderReport(
           senderName = Guardian.value,
@@ -51,7 +51,7 @@ class GuardianNotificationSender(
       } else {
         failed.foreach { failure =>
           logger.error(s"Unable to queue notification ${notification.id}: " +
-            s"${failure.id()} - ${failure.code()} - ${failure.message()}")
+            s"${failure.getId} - ${failure.getCode} - ${failure.getMessage}")
         }
         Left(GuardianFailedToQueueShard(
           senderName = s"Guardian",
@@ -79,14 +79,11 @@ class GuardianNotificationSender(
     }
   }
 
-  def sendBatch(workerBatches: List[SendMessageBatchRequestEntry], sqsUrl: String): Future[List[SendMessageBatchResponse]] = {
+  def sendBatch(workerBatches: List[SendMessageBatchRequestEntry], sqsUrl: String): Future[List[SendMessageBatchResult]] = {
     val sqsBatches = workerBatches.grouped(SQS_BATCH_SIZE).toList
     Future.traverse(sqsBatches) { sqsBatch =>
-      val request: SendMessageBatchRequest = SendMessageBatchRequest.builder()
-        .queueUrl(sqsUrl)
-        .entries(sqsBatch.asJava)
-        .build()
-      wrapCompletableFuture(sqsClient.sendMessageBatch(request))
+      val request: SendMessageBatchRequest = new SendMessageBatchRequest(sqsUrl, sqsBatch.asJava)
+      wrapAsyncMethod(sqsClient.sendMessageBatchAsync, request)
     }
   }
 
@@ -118,10 +115,7 @@ class GuardianNotificationSender(
       val shardedNotification = ShardedNotification(notification, shard, NotificationMetadata(notificationReceivedTime, registrationCount))
       val payloadJson = Json.stringify(Json.toJson(shardedNotification))
       val messageId = s"${notification.id}-${shard.start}-${shard.end}"
-      SendMessageBatchRequestEntry.builder()
-        .id(messageId)
-        .messageBody(payloadJson)
-        .build()
+      new SendMessageBatchRequestEntry(messageId, payloadJson)
     }
   }
 }
