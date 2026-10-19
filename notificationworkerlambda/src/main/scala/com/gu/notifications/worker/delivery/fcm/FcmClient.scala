@@ -6,7 +6,7 @@ import com.google.api.client.json.JsonFactory
 import com.google.auth.oauth2.{GoogleCredentials, ServiceAccountCredentials}
 import com.google.firebase.messaging._
 import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedFCMRequest, InvalidToken, UnknownReasonFailedRequest}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken, UnknownReasonFailedRequest}
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
 import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
@@ -88,15 +88,15 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     case Failure(e: InvalidTokenException) =>
       Left(InvalidToken(notificationId, token, e.getMessage()))
     case Failure(e: FcmServerException) =>
-      Left(FailedFCMRequest(notificationId, token, e, Option(e.details.status)))
+      Left(FailedRequest(notificationId, token, e, Option(e.details.status)))
     case Failure(e: UnknownException) =>
-      Left(FailedFCMRequest(notificationId, token, e, Option(e.details.status)))
+      Left(FailedRequest(notificationId, token, e, Option(e.details.status)))
     case Failure(e: InvalidResponseException) =>
-      Left(FailedFCMRequest(notificationId, token, e, None))
+      Left(FailedRequest(notificationId, token, e, None))
     case Failure(e: QuotaExceededException) =>
-      Left(FailedFCMRequest(notificationId, token, e, None))
+      Left(FailedRequest(notificationId, token, e, None))
     case Failure(e: FcmServerTransportException) =>
-      Left(FailedFCMRequest(notificationId, token, e, None))
+      Left(FailedRequest(notificationId, token, e, None))
     case Failure(_) =>
       Left(UnknownReasonFailedRequest(notificationId, token))
   }
