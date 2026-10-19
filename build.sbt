@@ -39,17 +39,17 @@ ThisBuild / scalacOptions ++= compilerOptions
 val playJsonVersion = "3.0.6"
 val specsVersion: String = "4.8.3"
 val awsSdkVersion: String = "1.12.797"
-val awsSdk2Version: String = "2.54.13"
+val awsSdk2Version: String = "2.42.34"
 val doobieVersion: String = "0.13.4"
 val catsVersion: String = "2.13.0"
 val okHttpVersion: String = "4.12.0"
 val paClientVersion: String = "7.0.19"
-val apacheThrift: String = "0.24.0"
+val apacheThrift: String = "0.15.0"
 val jacksonDatabind: String = "2.21.5"
 val jacksonScalaModule: String = "2.21.5"
-val simpleConfigurationVersion: String = "14.0.1"
+val simpleConfigurationVersion: String = "1.5.7"
 val googleOAuthClient: String = "1.39.0"
-val nettyVersion: String = "4.2.17.Final"
+val nettyVersion: String = "4.2.2.Final"
 val slf4jVersion: String = "1.7.36"
 val logbackVersion: String = "1.5.32"
 val scanamoVersion: String = "6.0.0"
@@ -109,7 +109,6 @@ lazy val common = project
       "com.gu" %% "pa-client" % paClientVersion,
       "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion,
       "com.amazonaws" % "aws-java-sdk-cloudwatch" % awsSdkVersion,
-      "software.amazon.awssdk" % "s3" % awsSdk2Version,
       "com.googlecode.concurrentlinkedhashmap" % "concurrentlinkedhashmap-lru" % "1.4.2",
       "ai.x" %% "play-json-extensions" % "0.42.0",
       "org.tpolecat" %% "doobie-core"      % doobieVersion,
@@ -119,7 +118,7 @@ lazy val common = project
       "org.tpolecat" %% "doobie-scalatest" % doobieVersion % Test,
       "org.tpolecat" %% "doobie-h2"        % doobieVersion % Test,
       "com.gu" %% "simple-configuration-ssm" % simpleConfigurationVersion,
-      "org.postgresql" % "postgresql" % "42.7.12",
+      "org.postgresql" % "postgresql" % "42.7.11",
       "ch.qos.logback" % "logback-core" % logbackVersion,
       "ch.qos.logback" % "logback-classic" % logbackVersion,
       "net.logstash.logback" % "logstash-logback-encoder" % "8.1"
@@ -188,7 +187,7 @@ lazy val notification = project
     ),
     libraryDependencies ++= Seq(
       logback,
-      "software.amazon.awssdk" % "sqs" % awsSdk2Version
+      "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion
     ),
     excludeDependencies ++= Seq(
       // As of Play 3.0, groupId has changed to org.playframework; exclude transitive dependencies to the old artifacts
@@ -302,7 +301,7 @@ lazy val commonEventBusPusher = project
   .dependsOn(apiModels  % "test->test", apiModels  % "compile->compile")
   .settings(Seq(
     libraryDependencies ++= Seq(
-      "software.amazon.awssdk" % "eventbridge" % awsSdk2Version
+      "software.amazon.awssdk" % "eventbridge" % "2.20.162"
     ),
   ))
 
@@ -424,9 +423,8 @@ lazy val notificationworkerlambda = lambda("notificationworkerlambda", "notifica
       "com.google.protobuf" % "protobuf-java" % "4.33.3",
       "com.google.protobuf" % "protobuf-java-util" % "4.33.3",
       "com.amazonaws" % "aws-lambda-java-events" % "2.2.9",
-      "software.amazon.awssdk" % "sqs" % awsSdk2Version,
-      "software.amazon.awssdk" % "s3" % awsSdk2Version,
-      "software.amazon.awssdk" % "cloudwatch" % awsSdk2Version,
+      "com.amazonaws" % "aws-java-sdk-sqs" % awsSdkVersion,
+      "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion,
       "com.amazonaws" % "amazon-sqs-java-messaging-lib" % "2.1.4",
       "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
       "org.playframework" %% "play-json" % playJsonVersion,

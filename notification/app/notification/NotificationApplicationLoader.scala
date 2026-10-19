@@ -5,9 +5,8 @@ import _root_.models.{NewsstandShardConfig, TopicCount}
 import org.apache.pekko.actor.ActorSystem
 import aws.{AsyncDynamo, TopicCountsS3}
 import com.amazonaws.regions.Regions.EU_WEST_1
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
+import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 import com.gu.AppIdentity
 import com.gu.notificationschedule.dynamo.{NotificationSchedulePersistenceAsync, NotificationSchedulePersistenceImpl}
 import com.softwaremill.macwire._
@@ -52,7 +51,6 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   val credentialsProvider = new MobileAwsCredentialsProvider()
 
-  // todo aws sdk v1
   val asyncDynamo: AsyncDynamo = AsyncDynamo(EU_WEST_1, credentialsProvider)
 
   lazy val notificationReportRepository = new NotificationReportRepository(asyncDynamo, appConfig.dynamoReportsTableName)
@@ -65,10 +63,10 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
       notificationSchedulePersistence)
   }
 
-  lazy val s3Client: S3Client = {
-    S3Client.builder()
-      .region(Region.EU_WEST_1)
-      .credentialsProvider(MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
+  lazy val s3Client: AmazonS3 = {
+    AmazonS3ClientBuilder.standard()
+      .withRegion(EU_WEST_1)
+      .withCredentials(credentialsProvider)
       .build()
   }
 
@@ -80,9 +78,9 @@ class NotificationApplicationComponents(identity: AppIdentity, context: Context)
 
   lazy val topicRegistrationCounter: TopicRegistrationCounter = new ReportTopicRegistrationCounter(topicCountCacheingDataStore)
 
-  lazy val sqsClient: SqsAsyncClient = SqsAsyncClient.builder()
-    .region(Region.EU_WEST_1)
-    .credentialsProvider(MobileAwsCredentialsProvider.mobileAwsCredentialsProviderv2)
+  lazy val sqsClient: AmazonSQSAsync = AmazonSQSAsyncClientBuilder.standard()
+    .withCredentials(credentialsProvider)
+    .withRegion(EU_WEST_1)
     .build()
 
   lazy val notificationSender: NotificationSender = new GuardianNotificationSender(

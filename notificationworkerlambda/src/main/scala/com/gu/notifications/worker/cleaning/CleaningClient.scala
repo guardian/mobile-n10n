@@ -1,9 +1,8 @@
 package com.gu.notifications.worker.cleaning
 
 import cats.effect.IO
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.sqs.SqsClient
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.sqs.{AmazonSQS, AmazonSQSClient}
 import com.gu.notifications.worker.models.InvalidTokens
 import com.gu.notifications.worker.utils.Aws
 import fs2.{Chunk, Pipe}
@@ -16,15 +15,15 @@ trait CleaningClient {
 
 class CleaningClientImpl(sqsUrl: String) extends CleaningClient {
 
-  val sqsClient: SqsClient = SqsClient
+  val sqsClient: AmazonSQS = AmazonSQSClient
     .builder()
-    .credentialsProvider(Aws.credentialsProviderV2)
-    .region(Region.EU_WEST_1)
-    .build()
+    .withCredentials(Aws.credentialsProvider)
+    .withRegion(Regions.EU_WEST_1)
+    .build
 
   private def sendTokensToQueue(tokens: List[String])(implicit logger: Logger): Unit = {
     val json = Json.stringify(Json.toJson(InvalidTokens(tokens)))
-    sqsClient.sendMessage(SendMessageRequest.builder().queueUrl(sqsUrl).messageBody(json).build())
+    sqsClient.sendMessage(sqsUrl, json)
     logger.info(s"Sent ${tokens.size} tokens for deletion via SQS")
   }
 

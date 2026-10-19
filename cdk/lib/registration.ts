@@ -7,6 +7,7 @@ import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import { Duration } from 'aws-cdk-lib';
 import type { App } from 'aws-cdk-lib';
 import {
+	CfnAlarmMuteRule,
 	ComparisonOperator,
 	TreatMissingData,
 } from 'aws-cdk-lib/aws-cloudwatch';
@@ -29,7 +30,11 @@ export interface RegistrationProps extends GuStackProps {
 	instanceMetricGranularity: '1Minute' | '5Minute';
 	minAsgSize: number;
 	maxAsgSize?: number;
-	low2xxAlarms: Array<{ period: Duration; threshold: number }>;
+	low2xxAlarms: Array<{
+		period: Duration;
+		threshold: number;
+		muteDuringQuietHours?: boolean;
+	}>;
 }
 
 export class Registration extends GuStack {
@@ -135,8 +140,11 @@ export class Registration extends GuStack {
 		);
 		const snsAction = new SnsAction(alarmTopic);
 
-		low2xxAlarms.forEach(({ period, threshold }) => {
+		low2xxAlarms.forEach(({ period, threshold, muteDuringQuietHours }) => {
 			const humanPeriod = period.toHumanString();
+			const quietHoursCopy = muteDuringQuietHours
+				? ' Muted between 00:00 and 06:00 UK time.'
+				: '';
 			const alarm = loadBalancer.metrics
 				.httpCodeTarget(HttpCodeTarget.TARGET_2XX_COUNT, {
 					period,
@@ -144,7 +152,7 @@ export class Registration extends GuStack {
 				})
 				.createAlarm(this, `Low2XXIn${humanPeriod}`, {
 					actionsEnabled: true,
-					alarmDescription: `Triggers if load balancer in ${stage} does not have enough 200s in ${humanPeriod}. ${runbookCopy}`,
+					alarmDescription: `Triggers if load balancer in ${stage} does not have enough 200s in ${humanPeriod}.${quietHoursCopy} ${runbookCopy}`,
 					comparisonOperator: ComparisonOperator.LESS_THAN_THRESHOLD,
 					evaluationPeriods: 1,
 					threshold,
@@ -153,6 +161,20 @@ export class Registration extends GuStack {
 
 			alarm.addAlarmAction(snsAction);
 			alarm.addOkAction(snsAction);
+
+			if (muteDuringQuietHours) {
+				new CfnAlarmMuteRule(this, `Low2XXIn${humanPeriod}QuietHoursMute`, {
+					description: `Mutes the low 2XX alarm for registration ${stage} during quiet hours`,
+					rule: {
+						schedule: {
+							expression: 'cron(0 0 * * *)',
+							duration: 'PT6H',
+							timezone: 'Europe/London',
+						},
+					},
+					muteTargets: { alarmNames: [alarm.alarmName] },
+				});
+			}
 		});
 
 		adjustCloudformationParameters(this);
