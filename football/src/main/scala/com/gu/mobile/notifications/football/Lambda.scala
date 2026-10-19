@@ -35,17 +35,17 @@ object Lambda extends Logging {
   lazy val paDataBucket = "mobile-pa-football-data"
 
   lazy val configuration: Configuration = {
-    logger.debug("Creating configuration")
+    logger.info("Creating configuration")
     new Configuration()
   }
 
   lazy val paFootballClient: PaFootballClient = {
-    logger.debug("Creating pa football client")
+    logger.info("Creating pa football client")
     new PaFootballClient(configuration.paApiKey, configuration.paHost)
   }
 
   lazy val dynamoDBClient: DynamoDbAsyncClient = {
-    logger.debug("Creating dynamo db client")
+    logger.info("Creating dynamo db client")
     DynamoDbAsyncClient
       .builder()
       .credentialsProvider(configuration.credentials)
