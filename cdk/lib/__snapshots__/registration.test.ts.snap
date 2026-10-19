@@ -2034,7 +2034,7 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
             ],
           },
         ],
-        "AlarmDescription": "Triggers if load balancer in PROD does not have enough 200s in 30 minutes. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
+        "AlarmDescription": "Triggers if load balancer in PROD does not have enough 200s in 30 minutes. Muted between 00:00 and 06:00 UK time. <<<Runbook|https://docs.google.com/document/d/1aJMytnPGeWH8YLpD2_66doxqyr8dPvAVonYIOG-zmOA>>>",
         "ComparisonOperator": "LessThanThreshold",
         "Dimensions": [
           {
@@ -2092,6 +2092,48 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
         "TreatMissingData": "breaching",
       },
       "Type": "AWS::CloudWatch::Alarm",
+    },
+    "Low2XXIn30minutesQuietHoursMute": {
+      "Properties": {
+        "Description": "Mutes the low 2XX alarm for registration PROD during quiet hours",
+        "MuteTargets": {
+          "AlarmNames": [
+            {
+              "Ref": "Low2XXIn30minutesE2E53BDD",
+            },
+          ],
+        },
+        "Rule": {
+          "Schedule": {
+            "Duration": "PT6H",
+            "Expression": "cron(0 0 * * *)",
+            "Timezone": "Europe/London",
+          },
+        },
+        "Tags": [
+          {
+            "Key": "App",
+            "Value": "registration",
+          },
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::CloudWatch::AlarmMuteRule",
     },
     "ParameterStoreReadRegistration056D6427": {
       "Properties": {

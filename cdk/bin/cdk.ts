@@ -65,7 +65,11 @@ export const registrationProdProps: RegistrationProps = {
 	maxAsgSize: 12,
 	minAsgSize: 3,
 	low2xxAlarms: [
-		{ period: Duration.minutes(30), threshold: 1_000 },
+		{
+			period: Duration.minutes(30),
+			threshold: 1_000,
+			muteDuringQuietHours: true,
+		},
 		{ period: Duration.hours(24), threshold: 150_000 },
 	],
 	cloudFormationStackName: 'mobile-notifications-registration-PROD',
