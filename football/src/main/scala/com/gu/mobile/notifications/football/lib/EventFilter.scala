@@ -31,7 +31,7 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
         case _ => None
       }
     } else {
-      logger.debug(s"Event ${item.id} already exists in local cache or does not have an id - discarding (dynamo table: ${distinctCheck.tableName})")
+      logger.info(s"Event ${item.id} already exists in local cache or does not have an id - discarding (dynamo table: ${distinctCheck.tableName})")
       Future.successful(None)
     }
   }
@@ -40,7 +40,7 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     if (!processedEvents.get.contains(item.id)) {
       distinctCheck.isDuplicate(item).map { isDup => !isDup }
     } else {
-      logger.debug(s"Event ${item.id} already exists in local cache - discarding (dynamo table: ${distinctCheck.tableName})")
+      logger.info(s"Event ${item.id} already exists in local cache - discarding (dynamo table: ${distinctCheck.tableName})")
       Future.successful(false)
     }
   }
@@ -60,7 +60,7 @@ class EventFilter[A <: Payload, D](distinctCheck: DynamoDistinctCheck[A, D]) ext
     val updateEventMatchIds = updateEvents.map(_.liveActivityID).toSet
     val (isolatedEndEvents, earlyEndEvents) = endEvents.partition(event => !updateEventMatchIds.contains(event.liveActivityID))
 
-    if (earlyEndEvents.nonEmpty) logger.debug("Early end event received for match ids: " + earlyEndEvents.map(_.liveActivityID))
+    if (earlyEndEvents.nonEmpty) logger.info("Early end event received for match ids: " + earlyEndEvents.map(_.liveActivityID))
 
     isolatedEndEvents ++ updateEvents
   }
