@@ -7,7 +7,7 @@ import org.apache.pekko.util.ByteString
 import cats.data.EitherT
 import error.{NotificationsError, RequestError}
 import models._
-import play.api.libs.json.{Format, Json, Writes}
+import play.api.libs.json.{Format, JsArray, Json, Reads, Writes}
 import play.api.mvc._
 import registration.models.{LegacyNewsstandRegistration, LegacyRegistration}
 import registration.services._
@@ -61,19 +61,27 @@ final class Main(
   def legacyRegister: Action[LegacyRegistration] =
     registerWithConverter(legacyRegistrationConverter)
 
-  def register: Action[Registration] = actionWithTimeout(parse.json[Registration]) { request: Request[Registration] =>
+  private val registrationWithRequestedTopicsReads: Reads[(Registration, Boolean)] = Reads { json =>
+    for {
+      requestedTopics <- (json \ "topics").validate[JsArray]
+      registration <- json.validate[Registration]
+    } yield (registration, requestedTopics.value.nonEmpty)
+  }
+
+  def register: Action[(Registration, Boolean)] = actionWithTimeout(parse.json(registrationWithRequestedTopicsReads)) { request =>
+    val (registration, requestHadTopics) = request.body
     Option(MDC.get("invalidTopics")).foreach { invalidTopics =>
       val validTopics = Option(MDC.get("validTopics")).getOrElse("")
       val userAgent = request.headers.get("User-Agent").getOrElse("unknown")
-      val deviceToken = request.body.deviceToken
+      val deviceToken = registration.deviceToken
       logger.warn(s"Request contains invalid topic type(s): [$invalidTopics]. Filtering them out. Keeping: [$validTopics]. Device token: $deviceToken. User agent: $userAgent")
       MDC.remove("invalidTopics")
       MDC.remove("validTopics")
     }
-    if (request.body.topics.isEmpty)
+    if (requestHadTopics && registration.topics.isEmpty)
       Future.successful(BadRequest("Request contains no valid topics"))
     else
-      registerCommon(request.body).map(processResponse(_))
+      registerCommon(registration).map(processResponse(_))
   }
 
   private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(parse.json[T]) { request =>
