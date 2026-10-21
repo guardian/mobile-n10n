@@ -154,7 +154,6 @@ final class Main(
 }
 
 object Main {
-  // topics stay as raw JSON so one unknown type doesn't fail the whole request
   final case class RegistrationRequest(
     deviceToken: DeviceToken,
     platform: Platform,
