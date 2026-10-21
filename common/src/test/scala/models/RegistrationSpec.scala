@@ -15,22 +15,11 @@ class RegistrationSpec extends Specification {
       result.get.topics must_== Set(Topic(Breaking, "uk"))
     }
 
-    "filter out invalid topic types and keep valid ones" in {
+    "fail for an unknown topic type" in {
       val json = Json.parse(
         """{"deviceToken":"abc","platform":"ios","topics":[{"type":"tag","name":"some-tag"},{"type":"breaking","name":"uk"}]}"""
       )
-      val result = json.validate[Registration]
-      result.isSuccess must beTrue
-      result.get.topics must_== Set(Topic(Breaking, "uk"))
-    }
-
-    "parse successfully with an empty topic set if all topics are invalid (controller will reject)" in {
-      val json = Json.parse(
-        """{"deviceToken":"abc","platform":"ios","topics":[{"type":"tag","name":"some-tag"}]}"""
-      )
-      val result = json.validate[Registration]
-      result.isSuccess must beTrue
-      result.get.topics must beEmpty
+      json.validate[Registration].isError must beTrue
     }
 
     "still fail for other invalid fields" in {
