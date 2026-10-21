@@ -74,14 +74,19 @@ final class Main(
       val validTopics = Option(MDC.get("validTopics")).getOrElse("")
       val userAgent = request.headers.get("User-Agent").getOrElse("unknown")
       val deviceToken = registration.deviceToken
-      logger.warn(s"Request contains invalid topic type(s): [$invalidTopics]. Filtering them out. Keeping: [$validTopics]. Device token: $deviceToken. User agent: $userAgent")
+      logger.warn(s"Request contains invalid topic type(s): [$invalidTopics] which will be filtered out. Device token: $deviceToken. User agent: $userAgent")
       MDC.remove("invalidTopics")
       MDC.remove("validTopics")
     }
-    if (requestHadTopics && registration.topics.isEmpty)
+    if (requestHadTopics && registration.topics.isEmpty) {
+      logger.error(s"No valid topics: registration rejected for device ${registration.deviceToken.token}")
       Future.successful(BadRequest("Request contains no valid topics"))
-    else
-      registerCommon(registration).map(processResponse(_))
+    } else
+      registerCommon(registration).map { result =>
+        if (!requestHadTopics && result.isRight)
+          logger.info(s"Empty topics: device ${registration.deviceToken.token} unsubscribed from all topics")
+        processResponse(result)
+      }
   }
 
   private def registerWithConverter[T](converter: RegistrationConverter[T])(implicit format: Format[T]): Action[T] = actionWithTimeout(parse.json[T]) { request =>
