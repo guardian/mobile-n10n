@@ -98,7 +98,8 @@ final class Main(
 
   private def registerCommon(registration: Registration): Future[Either[NotificationsError, RegistrationResponse]] = {
 
-    def validate(topics: Set[Topic]): Future[Set[Topic]] =
+    // Drops ended football matches and finished live blogs, then caps to max_topics
+    def removeExpiredTopics(topics: Set[Topic]): Future[Set[Topic]] =
       topicValidator
         .removeInvalid(topics)
         .map {
@@ -118,7 +119,7 @@ final class Main(
       case Success(Left(v)) => logger.error(s"Failed to register $registration with ${v.providerName}: ${v.reason}")
     }
 
-    validate(registration.topics).flatMap(registerWith(registrar, _).andThen(logErrors))
+    removeExpiredTopics(registration.topics).flatMap(registerWith(registrar, _).andThen(logErrors))
   }
 
   private def processResponse[T](result: Either[NotificationsError, T])(implicit writer: Writes[T]) : Result =
