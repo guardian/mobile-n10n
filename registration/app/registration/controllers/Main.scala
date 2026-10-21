@@ -76,13 +76,11 @@ final class Main(
 
   // Drops topics with an unknown type, rejecting the request if none are left
   private def toRegistration(request: Main.RegistrationRequest, userAgent: Option[String]): Either[NotificationsError, Registration] = {
-    val (invalidTopics, validTopics) = request.topics.partitionMap { json =>
-      json.validate[Topic].asEither.left.map(_ => json)
-    }
+    val (invalidTopics, validTopics) = request.topics.partitionMap(json => json.asOpt[Topic].toRight(json))
 
     if (invalidTopics.nonEmpty) {
       def summary(json: JsValue): String =
-        s"${(json \ "type").asOpt[String].getOrElse("unknown")} (id=${(json \ "name").asOpt[String].getOrElse("unknown")})"
+        s"${(json \ "type").asOpt[String].getOrElse("unknown")}/${(json \ "name").asOpt[String].getOrElse("unknown")}"
       logger.warn(s"Request contains invalid topic type(s): [${invalidTopics.map(summary).mkString(", ")}] which will be filtered out. Device token: ${request.deviceToken}. User agent: ${userAgent.getOrElse("unknown")}")
     }
 
