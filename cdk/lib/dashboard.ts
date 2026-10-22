@@ -12,6 +12,7 @@ import {
 	MathExpression,
 	Metric,
 	PeriodOverride,
+	Row,
 	SingleValueWidget,
 	Spacer,
 	TextWidget,
@@ -288,32 +289,40 @@ export class N10nServiceHealthDashboard extends GuStack {
 		);
 
 		section(
-			'How does this compare with last week?',
-			'Hourly totals. Each right-hand chart shows the previous seven-day window; it stays fixed when the dashboard range changes.',
+			'Weekly traffic comparison',
+			'Total counts for the last seven days and the preceding seven days. These rolling windows stay fixed when the dashboard time range changes. Higher or lower volume does not necessarily indicate a health problem.',
 		);
-		for (const [title, metrics] of [
-			['Sends per hour by platform', sender('success')],
-			['Registrations per hour', [registrations]],
-			['Breaking news per hour', [breakingNews]],
-		] as const) {
-			dashboard.addWidgets(
-				...[false, true].map(
-					(lastWeek) =>
-						new GraphWidget({
-							title: `${title}${lastWeek ? ' - last week' : ''}`,
-							left: metrics.map((entry) =>
-								entry.with({ period: Duration.hours(1) }),
+		dashboard.addWidgets(
+			...(
+				[
+					[
+						'Sends accepted by APNs and FCM',
+						total(sender('success'), 'Accepted sends', 'weeklySends'),
+					],
+					['Notification registration updates', registrations],
+					['Breaking news sent', breakingNews],
+				] as const
+			).map(
+				([title, count]) =>
+					new Column(
+						new TextWidget({ markdown: `## ${title}`, width: 8, height: 3 }),
+						new Row(
+							...[false, true].map(
+								(previousWeek) =>
+									new SingleValueWidget({
+										title: previousWeek ? 'Previous 7 days' : 'Last 7 days',
+										metrics: [count],
+										setPeriodToTimeRange: true,
+										width: 4,
+										height: 4,
+										start: previousWeek ? '-P14D' : '-P7D',
+										end: previousWeek ? '-P7D' : undefined,
+									}),
 							),
-							period: Duration.hours(1),
-							width: 12,
-							height: 6,
-							start: lastWeek ? '-P14D' : undefined,
-							end: lastWeek ? '-P7D' : undefined,
-							leftYAxis: { min: 0 },
-						}),
-				),
-			);
-		}
+						),
+					),
+			),
+		);
 
 		section(
 			'Where is the pipeline slowing down?',
