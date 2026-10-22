@@ -118,6 +118,34 @@ export class N10nServiceHealthDashboard extends GuStack {
 			namespace('notification'),
 			'BreakingNewsNotificationCount',
 		);
+		const failedRegistrations = metric(
+			namespace('registration'),
+			'FailedRegistrationInsertion',
+		);
+		const acceptanceRates = platforms.map((platform, index) => {
+			const successId = `success${index}`;
+			const failureId = `failure${index}`;
+			return new MathExpression({
+				expression: `IF(${successId} + ${failureId} > 0, 100 * ${successId} / (${successId} + ${failureId}))`,
+				usingMetrics: {
+					[successId]: metric(namespace('workers'), 'success', { platform }),
+					[failureId]: metric(namespace('workers'), 'failure', { platform }),
+				},
+				period,
+				label: `${platform} (%)`,
+			});
+		});
+		const total = (metrics: IMetric[], label: string, idPrefix: string) => {
+			const usingMetrics = Object.fromEntries(
+				metrics.map((entry, index) => [`${idPrefix}${index}`, entry]),
+			);
+			return new MathExpression({
+				expression: `SUM([${Object.keys(usingMetrics).join(',')}])`,
+				usingMetrics,
+				period,
+				label,
+			});
+		};
 		const dashboard = new Dashboard(this, 'Dashboard', {
 			dashboardName: `n10n-service-health-dashboard-${stage}`,
 			defaultInterval: Duration.hours(24),
@@ -139,44 +167,97 @@ export class N10nServiceHealthDashboard extends GuStack {
 				height: 6,
 				leftYAxis: { min: 0, label: axisLabel, showUnits: !axisLabel },
 			});
-		const value = (title: string, metrics: IMetric[], range = true) =>
+		const value = (
+			title: string,
+			metrics: IMetric[],
+			range = true,
+			width = 8,
+		) =>
 			new SingleValueWidget({
 				title,
 				metrics,
-				width: 4,
-				height: 5,
+				width,
+				height: 6,
+				period,
 				setPeriodToTimeRange: range,
 			});
 
 		section(
 			'Are notifications getting out?',
-			`${stage}: counts cover the selected range; queue depth and age show the latest five-minute sample. Quiet periods are normal.`,
+			`${stage} - Right now: counts and percentages cover the selected range; queue age and send time use the latest five-minute sample. Acceptance is not confirmed device delivery. Missing data is not a healthy result.`,
 		);
 		const fixedAlarms = liveActivityFunctions.flatMap((service) => [
 			`liveactivities-${service}-dlq-${stage}-alarm`,
 			`liveactivities-apns-errors-${service}-${stage}`,
 		]);
 		dashboard.addWidgets(
-			value('Breaking news sending', [breakingNews]),
-			value('Sends succeeding by platform', sender('success')),
+			value('Breaking news requests accepted', [
+				breakingNews.with({ label: 'Breaking news requests' }),
+			]),
 			value(
-				'Messages waiting in queues',
-				queueSummary('ApproximateNumberOfMessagesVisible', 'SUM'),
+				'Send time in seconds - feature flag required',
+				['ios', 'android'].map(
+					(platform) =>
+						new MathExpression({
+							expression: `MAX(SEARCH('{${namespace('workers')},platform,audienceSize} platform="${platform}" MetricName="TokenDeliveryLatency"', 'p95', 300))`,
+							period,
+							label: `${platform}: slowest audience bucket p95 (seconds)`,
+						}),
+				),
 				false,
 			),
-			value('Registrations saved', [registrations]),
-			value('Live Activities and football delivered', [
-				...apns(['2xx']),
-				metric(`${stage}/football-notifications`, 'goal-success'),
+			value(
+				'Sends accepted by Apple or Google - excluding dry runs',
+				acceptanceRates,
+			),
+			value(
+				'Queue age and harvester dead letters',
+				[
+					...queueSummary('ApproximateAgeOfOldestMessage', 'MAX')
+						.filter((entry, index) => index !== 1)
+						.map((entry) =>
+							entry.with({ label: `${entry.label} age (seconds)` }),
+						),
+					new MathExpression({
+						expression: `SUM(SEARCH('{AWS/SQS,QueueName} ${queues[1].terms} MetricName="ApproximateNumberOfMessagesVisible"', 'Maximum', 300))`,
+						period,
+						label: 'Harvester dead letters (messages)',
+					}),
+				],
+				false,
+			),
+			value('People signing up for alerts', [
+				registrations.with({ label: 'Registrations saved' }),
+				failedRegistrations.with({ label: 'Registrations failed' }),
+				new MathExpression({
+					expression: 'IF(saved + failed > 0, 100 * failed / (saved + failed))',
+					usingMetrics: { saved: registrations, failed: failedRegistrations },
+					period,
+					label: 'Registration failures (%)',
+				}),
 			]),
-			new AlarmStatusWidget({
-				title: 'Live Activities alarm status',
-				width: 4,
-				height: 5,
-				alarms: fixedAlarms.map((name) =>
-					Alarm.fromAlarmName(this, name, name),
+			value('Live Activities and football outcomes', [
+				total(apns(['2xx']), 'Live Activities requests accepted', 'accepted'),
+				total(
+					apns(['4xx', '5xx', 'NetworkError']),
+					'Live Activities requests failed',
+					'failed',
 				),
-			}),
+				metric(
+					`${stage}/football-notifications`,
+					'goal-success',
+					{},
+					'Sum',
+					'Football goal sends succeeded',
+				),
+				metric(
+					`${stage}/football-notifications`,
+					'error',
+					{},
+					'Sum',
+					'Football sends failed',
+				),
+			]),
 		);
 
 		section(
@@ -188,22 +269,23 @@ export class N10nServiceHealthDashboard extends GuStack {
 			['Registrations per hour', [registrations]],
 			['Breaking news per hour', [breakingNews]],
 		] as const) {
-			for (const lastWeek of [false, true]) {
-				dashboard.addWidgets(
-					new GraphWidget({
-						title: `${title}${lastWeek ? ' - last week' : ''}`,
-						left: metrics.map((entry) =>
-							entry.with({ period: Duration.hours(1) }),
-						),
-						period: Duration.hours(1),
-						width: 12,
-						height: 6,
-						start: lastWeek ? '-P8D' : undefined,
-						end: lastWeek ? '-P7D' : undefined,
-						leftYAxis: { min: 0 },
-					}),
-				);
-			}
+			dashboard.addWidgets(
+				...[false, true].map(
+					(lastWeek) =>
+						new GraphWidget({
+							title: `${title}${lastWeek ? ' - last week' : ''}`,
+							left: metrics.map((entry) =>
+								entry.with({ period: Duration.hours(1) }),
+							),
+							period: Duration.hours(1),
+							width: 12,
+							height: 6,
+							start: lastWeek ? '-P8D' : undefined,
+							end: lastWeek ? '-P7D' : undefined,
+							leftYAxis: { min: 0 },
+						}),
+				),
+			);
 		}
 
 		section(
@@ -231,6 +313,71 @@ export class N10nServiceHealthDashboard extends GuStack {
 					fn.label,
 				),
 			);
+		const pipeline = [
+			value('1. Notification API', [breakingNews], false, 4),
+			value(
+				'2. Harvester queue age (seconds)',
+				queueSummary('ApproximateAgeOfOldestMessage', 'MAX').slice(0, 1),
+				false,
+				4,
+			),
+			value(
+				'3. Harvester runs and errors',
+				[
+					metric(
+						'AWS/Lambda',
+						'Invocations',
+						{ FunctionName: `mobile-notifications-harvester-ctr-${stage}` },
+						'Sum',
+						'Runs',
+					),
+					metric(
+						'AWS/Lambda',
+						'Errors',
+						{ FunctionName: `mobile-notifications-harvester-ctr-${stage}` },
+						'Sum',
+						'Errors',
+					),
+				],
+				false,
+				4,
+			),
+			value(
+				'4. Sender queue age (seconds)',
+				queueSummary('ApproximateAgeOfOldestMessage', 'MAX').slice(2),
+				false,
+				4,
+			),
+			value('5. Sender errors', lambdaMetrics('Errors').slice(1, -1), false, 4),
+		];
+		dashboard.addWidgets(
+			...pipeline.flatMap((widget, index) => [
+				widget,
+				...(index < pipeline.length - 1
+					? [new TextWidget({ markdown: '## >', width: 1, height: 6 })]
+					: []),
+			]),
+		);
+
+		section(
+			'Existing alarms',
+			'Only the six fixed-name Live Activities alarms appear here. This does not represent every alarm in n10n.',
+		);
+		dashboard.addWidgets(
+			new AlarmStatusWidget({
+				title: 'Live Activities dead letters and Apple errors',
+				width: 24,
+				height: 4,
+				alarms: fixedAlarms.map((name) =>
+					Alarm.fromAlarmName(this, name, name),
+				),
+			}),
+		);
+
+		section(
+			'Pipeline detail',
+			'Five-minute activity and outcomes. Queue receives can include retries; successful sends mean provider acceptance, not confirmed arrival on a device.',
+		);
 		dashboard.addWidgets(
 			graph('API requests accepted', [
 				breakingNews,
