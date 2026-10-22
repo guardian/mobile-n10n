@@ -1,7 +1,7 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App, Duration } from 'aws-cdk-lib';
 import 'source-map-support/register';
-import { ServiceHealthDashboard } from '../lib/dashboard';
+import { N10nServiceHealthDashboard } from '../lib/dashboard';
 import { FakeBreakingNewsLambda } from '../lib/fakebreakingnewslambda';
 import { FootballNotificationsLambda } from '../lib/footballnotificationslambda';
 import { LiveActivities } from '../lib/liveactivities';
@@ -107,9 +107,9 @@ for (const [notificationProps, dbProps] of [
 	[notificationCodeProps, dbProxyCodeProps],
 	[notificationProdProps, dbProxyProdProps],
 ] as const) {
-	new ServiceHealthDashboard(
+	new N10nServiceHealthDashboard(
 		app,
-		`ServiceHealthDashboard-${notificationProps.stage}`,
+		`N10nServiceHealthDashboard-${notificationProps.stage}`,
 		{
 			stack: 'mobile-notifications',
 			stage: notificationProps.stage,

@@ -1,14 +1,14 @@
 import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
-import { ServiceHealthDashboard } from './dashboard';
+import { N10nServiceHealthDashboard } from './dashboard';
 
-describe('The ServiceHealthDashboard stack', () => {
+describe('The N10nServiceHealthDashboard stack', () => {
 	it.each(['CODE', 'PROD'])(
 		'matches the %s snapshot without adding alarms',
 		(stage) => {
-			const stack = new ServiceHealthDashboard(
+			const stack = new N10nServiceHealthDashboard(
 				new App(),
-				`ServiceHealthDashboard-${stage}`,
+				`N10nServiceHealthDashboard-${stage}`,
 				{
 					stack: 'mobile-notifications',
 					stage,

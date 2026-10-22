@@ -15,7 +15,7 @@ import {
 	TextWidget,
 } from 'aws-cdk-lib/aws-cloudwatch';
 
-export interface ServiceHealthDashboardProps extends GuStackProps {
+export interface N10nServiceHealthDashboardProps extends GuStackProps {
 	workerSqsQueueName: string;
 	dbInstanceId: string;
 }
@@ -33,8 +33,8 @@ const liveActivityFunctions = [
 	'channel-cleaner',
 ];
 
-export class ServiceHealthDashboard extends GuStack {
-	constructor(scope: App, id: string, props: ServiceHealthDashboardProps) {
+export class N10nServiceHealthDashboard extends GuStack {
+	constructor(scope: App, id: string, props: N10nServiceHealthDashboardProps) {
 		super(scope, id, props);
 		const { stage, workerSqsQueueName, dbInstanceId } = props;
 		const period = Duration.minutes(5);
@@ -119,7 +119,7 @@ export class ServiceHealthDashboard extends GuStack {
 			'BreakingNewsNotificationCount',
 		);
 		const dashboard = new Dashboard(this, 'Dashboard', {
-			dashboardName: `notifications-${stage}`,
+			dashboardName: `n10n-service-health-dashboard-${stage}`,
 			defaultInterval: Duration.hours(24),
 			periodOverride: PeriodOverride.INHERIT,
 		});

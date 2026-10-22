@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`The ServiceHealthDashboard stack matches the CODE snapshot without adding alarms 1`] = `
+exports[`The N10nServiceHealthDashboard stack matches the CODE snapshot without adding alarms 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [],
@@ -261,7 +261,7 @@ exports[`The ServiceHealthDashboard stack matches the CODE snapshot without addi
             ],
           ],
         },
-        "DashboardName": "notifications-CODE",
+        "DashboardName": "n10n-service-health-dashboard-CODE",
         "Tags": [
           {
             "Key": "gu:cdk:version",
@@ -287,7 +287,7 @@ exports[`The ServiceHealthDashboard stack matches the CODE snapshot without addi
 }
 `;
 
-exports[`The ServiceHealthDashboard stack matches the PROD snapshot without adding alarms 1`] = `
+exports[`The N10nServiceHealthDashboard stack matches the PROD snapshot without adding alarms 1`] = `
 {
   "Metadata": {
     "gu:cdk:constructs": [],
@@ -548,7 +548,7 @@ exports[`The ServiceHealthDashboard stack matches the PROD snapshot without addi
             ],
           ],
         },
-        "DashboardName": "notifications-PROD",
+        "DashboardName": "n10n-service-health-dashboard-PROD",
         "Tags": [
           {
             "Key": "gu:cdk:version",
