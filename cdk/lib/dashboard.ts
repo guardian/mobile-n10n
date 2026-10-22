@@ -197,7 +197,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 
 		section(
 			'Service overview',
-			`${stage} - Right now: counts and percentages cover the selected range; queue age and send time use the latest five-minute sample. Acceptance is not confirmed device delivery. Missing data is not a healthy result.`,
+			`${stage} - Right now: counts and percentages cover the selected range; queue age and send time use the latest five-minute sample. Acceptance is not confirmed device delivery. Missing data is not a healthy result.\n\nNotification registration updates: Includes new registrations and changes to existing registrations.`,
 		);
 		const fixedAlarms = liveActivityFunctions.flatMap((service) => [
 			`liveactivities-${service}-dlq-${stage}-alarm`,
@@ -223,9 +223,9 @@ export class N10nServiceHealthDashboard extends GuStack {
 				'Sends accepted by APNs or FCM - excluding dry runs',
 				acceptanceRates,
 			),
-			value('Notification sign ups', [
-				registrations.with({ label: 'Updates' }),
-				failedRegistrations.with({ label: 'Failures' }),
+			value('Notification registration updates', [
+				registrations.with({ label: 'Updates saved' }),
+				failedRegistrations.with({ label: 'Failed updates' }),
 				new MathExpression({
 					expression: 'IF(saved + failed > 0, 100 * failed / (saved + failed))',
 					usingMetrics: { saved: registrations, failed: failedRegistrations },
@@ -234,7 +234,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 				}),
 			]),
 			value(
-				'Processing Backlog',
+				'Notification queues',
 				[
 					...queueSummary('ApproximateAgeOfOldestMessage', 'MAX')
 						.filter((entry, index) => index !== 1)
@@ -242,14 +242,14 @@ export class N10nServiceHealthDashboard extends GuStack {
 							entry.with({
 								label:
 									index === 0
-										? 'Waiting to prepare (Harvester queue age)'
-										: 'Waiting to send (Sender queue age)',
+										? 'Harvester queue age'
+										: 'Sender queue age',
 							}),
 						),
 					new MathExpression({
 						expression: `SUM(SEARCH('{AWS/SQS,QueueName} ${queues[1].terms} MetricName="ApproximateNumberOfMessagesVisible"', 'Maximum', 300))`,
 						period,
-						label: 'Failed processing messages (Harvester DLQ)',
+						label: 'Harvester DLQ',
 					}),
 				],
 				false,
