@@ -102,9 +102,27 @@ export class N10nServiceHealthDashboard extends GuStack {
 					),
 				),
 			);
-		const football = ['goal-success', 'error'].map((name) =>
-			metric(`${stage}/football-notifications`, name),
+		const footballSent = metric(
+			`${stage}/football-notifications`,
+			'goal-success',
+			{},
+			'Sum',
+			'Football notifications sent',
 		);
+		const footballFailures = metric(
+			`${stage}/football-notifications`,
+			'error',
+			{},
+			'Sum',
+			'Send failures',
+		);
+		const football = [footballSent, footballFailures];
+		const footballFailureRate = new MathExpression({
+			expression: 'IF(sent + failed > 0, 100 * failed / (sent + failed))',
+			usingMetrics: { sent: footballSent, failed: footballFailures },
+			period,
+			label: 'Send failures (%)',
+		});
 		const registrations = metric(
 			namespace('registration'),
 			'SuccessfulRegistrationInsertion',
@@ -149,9 +167,9 @@ export class N10nServiceHealthDashboard extends GuStack {
 		const section = (title: string, text: string) =>
 			dashboard.addWidgets(
 				new TextWidget({
-					markdown: `## ${title}\n${text}`,
+					markdown: `# ${title}\n\n${text}`,
 					width: 24,
-					height: 2,
+					height: 3,
 				}),
 			);
 		const graph = (title: string, metrics: IMetric[], axisLabel?: string) =>
@@ -186,11 +204,11 @@ export class N10nServiceHealthDashboard extends GuStack {
 			`liveactivities-apns-errors-${service}-${stage}`,
 		]);
 		dashboard.addWidgets(
-			value('Editorial notifications', [
-				breakingNews.with({ label: 'Editorial notifications' }),
+			value('Breaking news sent', [
+				breakingNews.with({ label: 'Breaking news sent' }),
 			]),
 			value(
-				'Send time to Apple and Firebase',
+				'Send time to APNs and FCM (p95)',
 				platforms.map(
 					(platform) =>
 						new MathExpression({
@@ -202,7 +220,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 				false,
 			),
 			value(
-				'Sends accepted by Apple or Google - excluding dry runs',
+				'Sends accepted by APNs or FCM - excluding dry runs',
 				acceptanceRates,
 			),
 			value(
@@ -245,23 +263,8 @@ export class N10nServiceHealthDashboard extends GuStack {
 				4,
 			),
 			value(
-				'Football notifications sent and errors',
-				[
-					metric(
-						`${stage}/football-notifications`,
-						'goal-success',
-						{},
-						'Sum',
-						'Football goal sends succeeded',
-					),
-					metric(
-						`${stage}/football-notifications`,
-						'error',
-						{},
-						'Sum',
-						'Football sends failed',
-					),
-				],
+				'Football send failures',
+				[footballFailures, footballFailureRate],
 				true,
 				4,
 			),
@@ -372,7 +375,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 		);
 		dashboard.addWidgets(
 			new AlarmStatusWidget({
-				title: 'Live Activities dead letters and Apple errors',
+				title: 'Live Activities dead letters and APNs errors',
 				width: 24,
 				height: 4,
 				alarms: fixedAlarms.map((name) =>
@@ -458,11 +461,11 @@ export class N10nServiceHealthDashboard extends GuStack {
 
 		section(
 			'How long does delivery take?',
-			'Sender metrics exclude dry runs. Send time measures the time from receipt by the notification API to a successful handoff to Apple or Firebase, not arrival on a device. It may be empty when there are no successful sends.',
+			'Sender metrics exclude dry runs. Send time measures the time from receipt by the notification API to a successful handoff to APNs or FCM, not arrival on a device. It may be empty when there are no successful sends.',
 		);
 		dashboard.addWidgets(
 			graph(
-				'Send time to Apple and Firebase by audience size',
+				'Send time to APNs and FCM by audience size',
 				[
 					search(
 						`${namespace('workers')},platform,audienceSize`,
