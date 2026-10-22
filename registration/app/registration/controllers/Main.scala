@@ -74,7 +74,6 @@ final class Main(
     result.value.map(processResponse(_))
   }
 
-  // Drops topics with an unknown type, rejecting the request if none are left
   private def toRegistration(request: Main.RegistrationRequest, userAgent: Option[String]): Either[NotificationsError, Registration] = {
     val (invalidTopics, validTopics) = request.topics.partitionMap(json => json.asOpt[Topic].toRight(json))
 
