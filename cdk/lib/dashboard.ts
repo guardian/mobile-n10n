@@ -6,12 +6,14 @@ import type { IMetric } from 'aws-cdk-lib/aws-cloudwatch';
 import {
 	Alarm,
 	AlarmStatusWidget,
+	Column,
 	Dashboard,
 	GraphWidget,
 	MathExpression,
 	Metric,
 	PeriodOverride,
 	SingleValueWidget,
+	Spacer,
 	TextWidget,
 } from 'aws-cdk-lib/aws-cloudwatch';
 
@@ -339,7 +341,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 				),
 			);
 		const pipeline = [
-			value('1. Notification API', [breakingNews], false, 4),
+			value('1. Notification API', [breakingNews], true, 4),
 			value(
 				'2. Harvester queue age (seconds)',
 				queueSummary('ApproximateAgeOfOldestMessage', 'MAX').slice(0, 1),
@@ -379,7 +381,13 @@ export class N10nServiceHealthDashboard extends GuStack {
 			...pipeline.flatMap((widget, index) => [
 				widget,
 				...(index < pipeline.length - 1
-					? [new TextWidget({ markdown: '## >', width: 1, height: 6 })]
+					? [
+							new Column(
+								new Spacer({ width: 1, height: 2 }),
+								new TextWidget({ markdown: '## >', width: 1, height: 2 }),
+								new Spacer({ width: 1, height: 2 }),
+							),
+						]
 					: []),
 			]),
 		);
