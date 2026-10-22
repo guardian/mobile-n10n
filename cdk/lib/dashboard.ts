@@ -223,32 +223,37 @@ export class N10nServiceHealthDashboard extends GuStack {
 				'Sends accepted by APNs or FCM - excluding dry runs',
 				acceptanceRates,
 			),
-			value(
-				'Queue age and harvester dead letters',
-				[
-					...queueSummary('ApproximateAgeOfOldestMessage', 'MAX')
-						.filter((entry, index) => index !== 1)
-						.map((entry) =>
-							entry.with({ label: `${entry.label} age (seconds)` }),
-						),
-					new MathExpression({
-						expression: `SUM(SEARCH('{AWS/SQS,QueueName} ${queues[1].terms} MetricName="ApproximateNumberOfMessagesVisible"', 'Maximum', 300))`,
-						period,
-						label: 'Harvester dead letters (messages)',
-					}),
-				],
-				false,
-			),
 			value('Notification sign ups', [
-				registrations.with({ label: 'Registrations saved' }),
-				failedRegistrations.with({ label: 'Registrations failed' }),
+				registrations.with({ label: 'Updates' }),
+				failedRegistrations.with({ label: 'Failures' }),
 				new MathExpression({
 					expression: 'IF(saved + failed > 0, 100 * failed / (saved + failed))',
 					usingMetrics: { saved: registrations, failed: failedRegistrations },
 					period,
-					label: 'Registration failures (%)',
+					label: 'Failures %',
 				}),
 			]),
+			value(
+				'Processing Backlog',
+				[
+					...queueSummary('ApproximateAgeOfOldestMessage', 'MAX')
+						.filter((entry, index) => index !== 1)
+						.map((entry, index) =>
+							entry.with({
+								label:
+									index === 0
+										? 'Waiting to prepare (Harvester queue age)'
+										: 'Waiting to send (Sender queue age)',
+							}),
+						),
+					new MathExpression({
+						expression: `SUM(SEARCH('{AWS/SQS,QueueName} ${queues[1].terms} MetricName="ApproximateNumberOfMessagesVisible"', 'Maximum', 300))`,
+						period,
+						label: 'Failed processing messages (Harvester DLQ)',
+					}),
+				],
+				false,
+			),
 			value(
 				'Live Activities requests and errors',
 				[
