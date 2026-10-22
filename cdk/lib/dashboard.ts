@@ -6,7 +6,6 @@ import type { IMetric } from 'aws-cdk-lib/aws-cloudwatch';
 import {
 	Alarm,
 	AlarmStatusWidget,
-	Column,
 	Dashboard,
 	GraphWidget,
 	MathExpression,
@@ -146,7 +145,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 					[failureId]: metric(namespace('workers'), 'failure', { platform }),
 				},
 				period,
-				label: `${platform} (%)`,
+				label: platform === 'ios' ? 'APNs (iOS) %' : 'FCM (Android) %',
 			});
 		});
 		const total = (metrics: IMetric[], label: string, idPrefix: string) => {
@@ -183,7 +182,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 					'Maximum',
 				),
 			),
-			'Messages awaiting recovery',
+			'DLQ messages',
 			'recovery',
 		);
 		const dashboard = new Dashboard(this, 'Dashboard', {
@@ -212,20 +211,19 @@ export class N10nServiceHealthDashboard extends GuStack {
 			metrics: IMetric[],
 			range = true,
 			width = 8,
-			height = 6,
 		) =>
 			new SingleValueWidget({
 				title,
 				metrics,
 				width,
-				height,
+				height: 6,
 				period,
 				setPeriodToTimeRange: range,
 			});
 
 		section(
 			'Service overview',
-			`${stage} - Right now: counts and percentages cover the selected range; queue age, recovery messages and send time use the latest five-minute sample. Acceptance is not confirmed device delivery. Missing data is not a healthy result.\n\nNotification registration updates: Includes new registrations and changes to existing registrations.`,
+			`${stage} - Right now: counts and percentages cover the selected range; APNs failure rate, queue age, DLQ messages and send time use the latest five-minute sample. Acceptance is not confirmed device delivery. Missing data is not a healthy result.\n\nNotification registration updates: Includes new registrations and changes to existing registrations.`,
 		);
 		const fixedAlarms = liveActivityFunctions.flatMap((service) => [
 			`liveactivities-${service}-dlq-${stage}-alarm`,
@@ -242,13 +240,13 @@ export class N10nServiceHealthDashboard extends GuStack {
 						new MathExpression({
 							expression: `MAX(SEARCH('{${namespace('workers')},platform,audienceSize} platform="${platform}" MetricName="TokenDeliveryLatency"', 'p95', 300))`,
 							period,
-							label: `${platform}: slowest audience bucket p95 (seconds)`,
+							label: platform === 'ios' ? 'APNs (iOS)' : 'FCM (Android)',
 						}),
 				),
 				false,
 			),
 			value(
-				'Sends accepted by APNs or FCM - excluding dry runs',
+				'Sends accepted by APNs or FCM (excluding dry runs)',
 				acceptanceRates,
 			),
 			value('Notification registration updates', [
@@ -280,15 +278,10 @@ export class N10nServiceHealthDashboard extends GuStack {
 				],
 				false,
 			),
-			new Column(
-				value('Live Activities health', [liveActivityFailureRate], true, 8, 3),
-				value(
-					'Messages awaiting recovery',
-					[liveActivityRecoveryMessages],
-					false,
-					8,
-					3,
-				),
+			value(
+				'Live Activities',
+				[liveActivityFailureRate, liveActivityRecoveryMessages],
+				false,
 			),
 		);
 
