@@ -103,22 +103,13 @@ export const dbProxyProdProps = {
 new RegistrationsDbProxy(app, 'RegistrationsDbProxy-CODE', dbProxyCodeProps);
 new RegistrationsDbProxy(app, 'RegistrationsDbProxy-PROD', dbProxyProdProps);
 
-for (const [notificationProps, dbProps] of [
-	[notificationCodeProps, dbProxyCodeProps],
-	[notificationProdProps, dbProxyProdProps],
-] as const) {
-	new N10nServiceHealthDashboard(
-		app,
-		`N10nServiceHealthDashboard-${notificationProps.stage}`,
-		{
-			stack: 'mobile-notifications',
-			stage: notificationProps.stage,
-			env: notificationProps.env,
-			workerSqsQueueName: notificationProps.workerSqsQueueName,
-			dbInstanceId: dbProps.dbInstanceId,
-		},
-	);
-}
+new N10nServiceHealthDashboard(app, 'N10nServiceHealthDashboard-CODE', {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+	env: notificationCodeProps.env,
+	workerSqsQueueName: notificationCodeProps.workerSqsQueueName,
+	dbInstanceId: dbProxyCodeProps.dbInstanceId,
+});
 
 new SloMonitoring(app, 'SloMonitor-CODE', {
 	stack: 'mobile-notifications',

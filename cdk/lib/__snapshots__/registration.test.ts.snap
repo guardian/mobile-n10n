@@ -606,6 +606,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
             "Value": "guardian/mobile-n10n",
           },
           {
+            "Key": "ServiceHealthDashboard",
+            "Value": "n10n-service-health-dashboard-CODE",
+          },
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
@@ -1870,6 +1874,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "ServiceHealthDashboard",
+            "Value": "n10n-service-health-dashboard-PROD",
           },
           {
             "Key": "Stack",
