@@ -20,13 +20,7 @@ export interface N10nServiceHealthDashboardProps extends GuStackProps {
 	dbInstanceId: string;
 }
 
-const platforms = [
-	'ios',
-	'android',
-	'ios-edition',
-	'android-edition',
-	'android-beta',
-];
+const platforms = ['ios', 'android'];
 const liveActivityFunctions = [
 	'broadcast',
 	'channel-manager',
@@ -58,6 +52,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 			platforms.map((platform) =>
 				metric(namespace('workers'), name, { platform }, 'Sum', platform),
 			);
+		const platformFilter = `(${platforms.map((platform) => `platform="${platform}"`).join(' OR ')})`;
 		const search = (
 			schema: string,
 			terms: string,
@@ -79,7 +74,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 			},
 			{
 				label: 'Sender queues',
-				terms: `QueueName: SenderSqs AND QueueName: ${stage}`,
+				terms: `QueueName: SenderSqs AND QueueName: ${stage} AND (${platforms.map((platform) => `QueueName: ${platform}SenderSqs`).join(' OR ')})`,
 			},
 		] as const;
 		const queueMetrics = (name: string, statistic = 'Maximum') =>
@@ -148,7 +143,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 		};
 		const dashboard = new Dashboard(this, 'Dashboard', {
 			dashboardName: `n10n-service-health-dashboard-${stage}`,
-			defaultInterval: Duration.hours(24),
+			defaultInterval: Duration.days(7),
 			periodOverride: PeriodOverride.INHERIT,
 		});
 		const section = (title: string, text: string) =>
@@ -183,7 +178,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 			});
 
 		section(
-			'Are notifications getting out?',
+			'Service overview',
 			`${stage} - Right now: counts and percentages cover the selected range; queue age and send time use the latest five-minute sample. Acceptance is not confirmed device delivery. Missing data is not a healthy result.`,
 		);
 		const fixedAlarms = liveActivityFunctions.flatMap((service) => [
@@ -191,12 +186,12 @@ export class N10nServiceHealthDashboard extends GuStack {
 			`liveactivities-apns-errors-${service}-${stage}`,
 		]);
 		dashboard.addWidgets(
-			value('Breaking news requests accepted', [
-				breakingNews.with({ label: 'Breaking news requests' }),
+			value('Editorial notifications', [
+				breakingNews.with({ label: 'Editorial notifications' }),
 			]),
 			value(
-				'Send time in seconds - feature flag required',
-				['ios', 'android'].map(
+				'Send time to Apple and Firebase',
+				platforms.map(
 					(platform) =>
 						new MathExpression({
 							expression: `MAX(SEARCH('{${namespace('workers')},platform,audienceSize} platform="${platform}" MetricName="TokenDeliveryLatency"', 'p95', 300))`,
@@ -226,7 +221,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 				],
 				false,
 			),
-			value('People signing up for alerts', [
+			value('Notification sign ups', [
 				registrations.with({ label: 'Registrations saved' }),
 				failedRegistrations.with({ label: 'Registrations failed' }),
 				new MathExpression({
@@ -236,33 +231,45 @@ export class N10nServiceHealthDashboard extends GuStack {
 					label: 'Registration failures (%)',
 				}),
 			]),
-			value('Live Activities and football outcomes', [
-				total(apns(['2xx']), 'Live Activities requests accepted', 'accepted'),
-				total(
-					apns(['4xx', '5xx', 'NetworkError']),
-					'Live Activities requests failed',
-					'failed',
-				),
-				metric(
-					`${stage}/football-notifications`,
-					'goal-success',
-					{},
-					'Sum',
-					'Football goal sends succeeded',
-				),
-				metric(
-					`${stage}/football-notifications`,
-					'error',
-					{},
-					'Sum',
-					'Football sends failed',
-				),
-			]),
+			value(
+				'Live Activities requests and errors',
+				[
+					total(apns(['2xx']), 'Live Activities requests accepted', 'accepted'),
+					total(
+						apns(['4xx', '5xx', 'NetworkError']),
+						'Live Activities requests failed',
+						'failed',
+					),
+				],
+				true,
+				4,
+			),
+			value(
+				'Football notifications sent and errors',
+				[
+					metric(
+						`${stage}/football-notifications`,
+						'goal-success',
+						{},
+						'Sum',
+						'Football goal sends succeeded',
+					),
+					metric(
+						`${stage}/football-notifications`,
+						'error',
+						{},
+						'Sum',
+						'Football sends failed',
+					),
+				],
+				true,
+				4,
+			),
 		);
 
 		section(
 			'How does this compare with last week?',
-			'Hourly totals. Each right-hand chart shows the same 24-hour window seven days earlier; it stays fixed when the dashboard range changes.',
+			'Hourly totals. Each right-hand chart shows the previous seven-day window; it stays fixed when the dashboard range changes.',
 		);
 		for (const [title, metrics] of [
 			['Sends per hour by platform', sender('success')],
@@ -280,7 +287,7 @@ export class N10nServiceHealthDashboard extends GuStack {
 							period: Duration.hours(1),
 							width: 12,
 							height: 6,
-							start: lastWeek ? '-P8D' : undefined,
+							start: lastWeek ? '-P14D' : undefined,
 							end: lastWeek ? '-P7D' : undefined,
 							leftYAxis: { min: 0 },
 						}),
@@ -442,23 +449,24 @@ export class N10nServiceHealthDashboard extends GuStack {
 					),
 				),
 			),
-			graph('Live Activities responses and football outcomes', [
-				...apns(['2xx', '4xx', '5xx', 'NetworkError']),
-				...football,
-			]),
+			graph(
+				'Live Activities requests and errors',
+				apns(['2xx', '4xx', '5xx', 'NetworkError']),
+			),
+			graph('Football notifications sent and errors', football),
 		);
 
 		section(
 			'How long does delivery take?',
-			'Sender token-delivery and processing metrics depend on feature flags being enabled and may be empty. API and registration latency do not depend on those flags.',
+			'Sender metrics exclude dry runs. Send time measures the time from receipt by the notification API to a successful handoff to Apple or Firebase, not arrival on a device. It may be empty when there are no successful sends.',
 		);
 		dashboard.addWidgets(
 			graph(
-				'Token delivery time - feature flag required',
+				'Send time to Apple and Firebase by audience size',
 				[
 					search(
 						`${namespace('workers')},platform,audienceSize`,
-						'',
+						platformFilter,
 						'TokenDeliveryLatency',
 						'Average',
 						'By platform and audience size',
@@ -467,11 +475,11 @@ export class N10nServiceHealthDashboard extends GuStack {
 				'Seconds',
 			),
 			graph(
-				'Sender processing time - feature flag required',
+				'Sender processing time',
 				[
 					search(
 						`${namespace('workers')},platform,type`,
-						'',
+						platformFilter,
 						'worker.notificationProcessingTime',
 						'Average',
 						'By platform and notification type',
