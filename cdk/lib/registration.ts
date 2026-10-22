@@ -4,7 +4,7 @@ import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { GuParameter, GuStack } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
-import { Duration } from 'aws-cdk-lib';
+import { CfnOutput, Duration } from 'aws-cdk-lib';
 import type { App } from 'aws-cdk-lib';
 import {
 	CfnAlarmMuteRule,
@@ -102,6 +102,11 @@ export class Registration extends GuStack {
 					}),
 				],
 			},
+		});
+
+		new CfnOutput(this, 'LoadBalancerFullName', {
+			value: loadBalancer.loadBalancerFullName,
+			exportName: `RegistrationLoadBalancerFullName-${stage}`,
 		});
 
 		const databaseAccessParamPath = `/${stage}/${stack}/registrations-db/postgres-access-security-group`;

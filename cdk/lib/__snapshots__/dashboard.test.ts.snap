@@ -1,0 +1,575 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`The ServiceHealthDashboard stack matches the CODE snapshot without adding alarms 1`] = `
+{
+  "Metadata": {
+    "gu:cdk:constructs": [],
+    "gu:cdk:version": "TEST",
+  },
+  "Resources": {
+    "Dashboard9E4231ED": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"start":"-P1D","periodOverride":"inherit","widgets":[{"type":"text","width":24,"height":2,"x":0,"y":0,"properties":{"markdown":"## Are notifications getting out?\\nCODE: counts cover the selected range; queue depth and age show the latest five-minute sample. Quiet periods are normal."}},{"type":"metric","width":4,"height":5,"x":0,"y":2,"properties":{"view":"singleValue","title":"Breaking news sending","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/notification","BreakingNewsNotificationCount",{"label":"BreakingNewsNotificationCount","stat":"Sum"}]],"setPeriodToTimeRange":true}},{"type":"metric","width":4,"height":5,"x":4,"y":2,"properties":{"view":"singleValue","title":"Sends succeeding by platform","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/workers","success","platform","ios",{"label":"ios","stat":"Sum"}],["Notifications/CODE/workers","success","platform","android",{"label":"android","stat":"Sum"}],["Notifications/CODE/workers","success","platform","ios-edition",{"label":"ios-edition","stat":"Sum"}],["Notifications/CODE/workers","success","platform","android-edition",{"label":"android-edition","stat":"Sum"}],["Notifications/CODE/workers","success","platform","android-beta",{"label":"android-beta","stat":"Sum"}]],"setPeriodToTimeRange":true}},{"type":"metric","width":4,"height":5,"x":8,"y":2,"properties":{"view":"singleValue","title":"Messages waiting in queues","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"Harvester queue","expression":"SUM(SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-CODE-Sqs-example\\" MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300))"}],[{"label":"Harvester dead letters","expression":"SUM(SEARCH('{AWS/SQS,QueueName} QueueName: mobile-notifications-harvester-CODE-Dlq MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300))"}],[{"label":"Sender queues","expression":"SUM(SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: CODE MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300))"}]],"setPeriodToTimeRange":false}},{"type":"metric","width":4,"height":5,"x":12,"y":2,"properties":{"view":"singleValue","title":"Registrations saved","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/registration","SuccessfulRegistrationInsertion",{"label":"SuccessfulRegistrationInsertion","stat":"Sum"}]],"setPeriodToTimeRange":true}},{"type":"metric","width":4,"height":5,"x":16,"y":2,"properties":{"view":"singleValue","title":"Live Activities and football delivered","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/liveactivities-broadcast","ApnsResponse","Outcome","2xx",{"label":"broadcast: 2xx","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-manager","ApnsResponse","Outcome","2xx",{"label":"channel-manager: 2xx","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-cleaner","ApnsResponse","Outcome","2xx",{"label":"channel-cleaner: 2xx","stat":"Sum"}],["CODE/football-notifications","goal-success",{"label":"goal-success","stat":"Sum"}]],"setPeriodToTimeRange":true}},{"type":"alarm","width":4,"height":5,"x":20,"y":2,"properties":{"title":"Live Activities alarm status","alarms":["arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-broadcast-dlq-CODE-alarm","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-apns-errors-broadcast-CODE","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-channel-manager-dlq-CODE-alarm","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-apns-errors-channel-manager-CODE","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-channel-cleaner-dlq-CODE-alarm","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-apns-errors-channel-cleaner-CODE"]}},{"type":"text","width":24,"height":2,"x":0,"y":7,"properties":{"markdown":"## How does this compare with last week?\\nHourly totals. Each right-hand chart shows the same 24-hour window seven days earlier; it stays fixed when the dashboard range changes."}},{"type":"metric","width":12,"height":6,"x":0,"y":9,"properties":{"view":"timeSeries","title":"Sends per hour by platform","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/workers","success","platform","ios",{"label":"ios","period":3600,"stat":"Sum"}],["Notifications/CODE/workers","success","platform","android",{"label":"android","period":3600,"stat":"Sum"}],["Notifications/CODE/workers","success","platform","ios-edition",{"label":"ios-edition","period":3600,"stat":"Sum"}],["Notifications/CODE/workers","success","platform","android-edition",{"label":"android-edition","period":3600,"stat":"Sum"}],["Notifications/CODE/workers","success","platform","android-beta",{"label":"android-beta","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600}},{"type":"metric","width":12,"height":6,"x":0,"y":15,"properties":{"view":"timeSeries","title":"Sends per hour by platform - last week","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/workers","success","platform","ios",{"label":"ios","period":3600,"stat":"Sum"}],["Notifications/CODE/workers","success","platform","android",{"label":"android","period":3600,"stat":"Sum"}],["Notifications/CODE/workers","success","platform","ios-edition",{"label":"ios-edition","period":3600,"stat":"Sum"}],["Notifications/CODE/workers","success","platform","android-edition",{"label":"android-edition","period":3600,"stat":"Sum"}],["Notifications/CODE/workers","success","platform","android-beta",{"label":"android-beta","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600,"start":"-P8D","end":"-P7D"}},{"type":"metric","width":12,"height":6,"x":0,"y":21,"properties":{"view":"timeSeries","title":"Registrations per hour","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/registration","SuccessfulRegistrationInsertion",{"label":"SuccessfulRegistrationInsertion","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600}},{"type":"metric","width":12,"height":6,"x":0,"y":27,"properties":{"view":"timeSeries","title":"Registrations per hour - last week","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/registration","SuccessfulRegistrationInsertion",{"label":"SuccessfulRegistrationInsertion","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600,"start":"-P8D","end":"-P7D"}},{"type":"metric","width":12,"height":6,"x":0,"y":33,"properties":{"view":"timeSeries","title":"Breaking news per hour","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/notification","BreakingNewsNotificationCount",{"label":"BreakingNewsNotificationCount","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600}},{"type":"metric","width":12,"height":6,"x":0,"y":39,"properties":{"view":"timeSeries","title":"Breaking news per hour - last week","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/notification","BreakingNewsNotificationCount",{"label":"BreakingNewsNotificationCount","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600,"start":"-P8D","end":"-P7D"}},{"type":"text","width":24,"height":2,"x":0,"y":45,"properties":{"markdown":"## Where is the pipeline slowing down?\\nFollow requests from the API through the harvester queue, harvester, sender queues and senders. Queue age is in seconds; dead letters need investigation."}},{"type":"metric","width":8,"height":6,"x":0,"y":47,"properties":{"view":"timeSeries","title":"API requests accepted","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/notification","BreakingNewsNotificationCount",{"label":"BreakingNewsNotificationCount","stat":"Sum"}],["Notifications/CODE/notification","SuccessfulNewstandSend",{"label":"SuccessfulNewstandSend","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":47,"properties":{"view":"timeSeries","title":"Harvester queue activity","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"NumberOfMessagesSent","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-CODE-Sqs-example\\" MetricName=\\"NumberOfMessagesSent\\"', 'Sum', 300)"}],[{"label":"NumberOfMessagesReceived","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-CODE-Sqs-example\\" MetricName=\\"NumberOfMessagesReceived\\"', 'Sum', 300)"}],[{"label":"NumberOfMessagesDeleted","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-CODE-Sqs-example\\" MetricName=\\"NumberOfMessagesDeleted\\"', 'Sum', 300)"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":47,"properties":{"view":"timeSeries","title":"Harvester runs and failures","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Invocations","FunctionName","mobile-notifications-harvester-ctr-CODE",{"label":"Harvester runs","stat":"Sum"}],["Notifications/CODE/harvester","failure","platform","ios",{"label":"ios failures","stat":"Sum"}],["Notifications/CODE/harvester","failure","platform","android",{"label":"android failures","stat":"Sum"}],["Notifications/CODE/harvester","failure","platform","ios-edition",{"label":"ios-edition failures","stat":"Sum"}],["Notifications/CODE/harvester","failure","platform","android-edition",{"label":"android-edition failures","stat":"Sum"}],["Notifications/CODE/harvester","failure","platform","android-beta",{"label":"android-beta failures","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":0,"y":53,"properties":{"view":"timeSeries","title":"Sender queue activity","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"NumberOfMessagesSent","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: CODE MetricName=\\"NumberOfMessagesSent\\"', 'Sum', 300)"}],[{"label":"NumberOfMessagesReceived","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: CODE MetricName=\\"NumberOfMessagesReceived\\"', 'Sum', 300)"}],[{"label":"NumberOfMessagesDeleted","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: CODE MetricName=\\"NumberOfMessagesDeleted\\"', 'Sum', 300)"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":53,"properties":{"view":"timeSeries","title":"Sender runs by platform","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-ios-sender-ctr-CODE",{"label":"ios","stat":"Sum"}],["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-android-sender-ctr-CODE",{"label":"android","stat":"Sum"}],["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-ios-edition-sender-ctr-CODE",{"label":"ios-edition","stat":"Sum"}],["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-android-edition-sender-ctr-CODE",{"label":"android-edition","stat":"Sum"}],["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-android-beta-sender-ctr-CODE",{"label":"android-beta","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":53,"properties":{"view":"timeSeries","title":"Messages waiting or being processed","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"Harvester queue","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-CODE-Sqs-example\\" MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300)"}],[{"label":"Harvester dead letters","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: mobile-notifications-harvester-CODE-Dlq MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300)"}],[{"label":"Sender queues","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: CODE MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300)"}],[{"label":"Harvester queue","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-CODE-Sqs-example\\" MetricName=\\"ApproximateNumberOfMessagesNotVisible\\"', 'Maximum', 300)"}],[{"label":"Harvester dead letters","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: mobile-notifications-harvester-CODE-Dlq MetricName=\\"ApproximateNumberOfMessagesNotVisible\\"', 'Maximum', 300)"}],[{"label":"Sender queues","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: CODE MetricName=\\"ApproximateNumberOfMessagesNotVisible\\"', 'Maximum', 300)"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":0,"y":59,"properties":{"view":"timeSeries","title":"Oldest message waiting","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"Harvester queue","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-CODE-Sqs-example\\" MetricName=\\"ApproximateAgeOfOldestMessage\\"', 'Maximum', 300)"}],[{"label":"Harvester dead letters","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: mobile-notifications-harvester-CODE-Dlq MetricName=\\"ApproximateAgeOfOldestMessage\\"', 'Maximum', 300)"}],[{"label":"Sender queues","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: CODE MetricName=\\"ApproximateAgeOfOldestMessage\\"', 'Maximum', 300)"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":8,"y":59,"properties":{"view":"timeSeries","title":"Send outcomes by platform","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/workers","success","platform","ios",{"label":"ios: success","stat":"Sum"}],["Notifications/CODE/workers","success","platform","android",{"label":"android: success","stat":"Sum"}],["Notifications/CODE/workers","success","platform","ios-edition",{"label":"ios-edition: success","stat":"Sum"}],["Notifications/CODE/workers","success","platform","android-edition",{"label":"android-edition: success","stat":"Sum"}],["Notifications/CODE/workers","success","platform","android-beta",{"label":"android-beta: success","stat":"Sum"}],["Notifications/CODE/workers","failure","platform","ios",{"label":"ios: failure","stat":"Sum"}],["Notifications/CODE/workers","failure","platform","android",{"label":"android: failure","stat":"Sum"}],["Notifications/CODE/workers","failure","platform","ios-edition",{"label":"ios-edition: failure","stat":"Sum"}],["Notifications/CODE/workers","failure","platform","android-edition",{"label":"android-edition: failure","stat":"Sum"}],["Notifications/CODE/workers","failure","platform","android-beta",{"label":"android-beta: failure","stat":"Sum"}],["Notifications/CODE/workers","dryrun","platform","ios",{"label":"ios: dryrun","stat":"Sum"}],["Notifications/CODE/workers","dryrun","platform","android",{"label":"android: dryrun","stat":"Sum"}],["Notifications/CODE/workers","dryrun","platform","ios-edition",{"label":"ios-edition: dryrun","stat":"Sum"}],["Notifications/CODE/workers","dryrun","platform","android-edition",{"label":"android-edition: dryrun","stat":"Sum"}],["Notifications/CODE/workers","dryrun","platform","android-beta",{"label":"android-beta: dryrun","stat":"Sum"}],["Notifications/CODE/workers","total","platform","ios",{"label":"ios: total","stat":"Sum"}],["Notifications/CODE/workers","total","platform","android",{"label":"android: total","stat":"Sum"}],["Notifications/CODE/workers","total","platform","ios-edition",{"label":"ios-edition: total","stat":"Sum"}],["Notifications/CODE/workers","total","platform","android-edition",{"label":"android-edition: total","stat":"Sum"}],["Notifications/CODE/workers","total","platform","android-beta",{"label":"android-beta: total","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":59,"properties":{"view":"timeSeries","title":"Live Activities responses and football outcomes","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/liveactivities-broadcast","ApnsResponse","Outcome","2xx",{"label":"broadcast: 2xx","stat":"Sum"}],["Notifications/CODE/liveactivities-broadcast","ApnsResponse","Outcome","4xx",{"label":"broadcast: 4xx","stat":"Sum"}],["Notifications/CODE/liveactivities-broadcast","ApnsResponse","Outcome","5xx",{"label":"broadcast: 5xx","stat":"Sum"}],["Notifications/CODE/liveactivities-broadcast","ApnsResponse","Outcome","NetworkError",{"label":"broadcast: NetworkError","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-manager","ApnsResponse","Outcome","2xx",{"label":"channel-manager: 2xx","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-manager","ApnsResponse","Outcome","4xx",{"label":"channel-manager: 4xx","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-manager","ApnsResponse","Outcome","5xx",{"label":"channel-manager: 5xx","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-manager","ApnsResponse","Outcome","NetworkError",{"label":"channel-manager: NetworkError","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-cleaner","ApnsResponse","Outcome","2xx",{"label":"channel-cleaner: 2xx","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-cleaner","ApnsResponse","Outcome","4xx",{"label":"channel-cleaner: 4xx","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-cleaner","ApnsResponse","Outcome","5xx",{"label":"channel-cleaner: 5xx","stat":"Sum"}],["Notifications/CODE/liveactivities-channel-cleaner","ApnsResponse","Outcome","NetworkError",{"label":"channel-cleaner: NetworkError","stat":"Sum"}],["CODE/football-notifications","goal-success",{"label":"goal-success","stat":"Sum"}],["CODE/football-notifications","error",{"label":"error","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"text","width":24,"height":2,"x":0,"y":65,"properties":{"markdown":"## How long does delivery take?\\nSender token-delivery and processing metrics depend on feature flags being enabled and may be empty. API and registration latency do not depend on those flags."}},{"type":"metric","width":8,"height":6,"x":0,"y":67,"properties":{"view":"timeSeries","title":"Token delivery time - feature flag required","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"By platform and audience size","expression":"SEARCH('{Notifications/CODE/workers,platform,audienceSize}  MetricName=\\"TokenDeliveryLatency\\"', 'Average', 300)"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":8,"y":67,"properties":{"view":"timeSeries","title":"Sender processing time - feature flag required","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"By platform and notification type","expression":"SEARCH('{Notifications/CODE/workers,platform,type}  MetricName=\\"worker.notificationProcessingTime\\"', 'Average', 300)"}]],"yAxis":{"left":{"min":0,"label":"Milliseconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":16,"y":67,"properties":{"view":"timeSeries","title":"API and registration processing time","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/notification","NotificationAppProcessingTime",{"label":"NotificationAppProcessingTime"}],["Notifications/CODE/registration","RegistrationInsertionLatency",{"label":"RegistrationInsertionLatency"}]],"yAxis":{"left":{"min":0,"label":"Milliseconds","showUnits":false}}}},{"type":"text","width":24,"height":2,"x":0,"y":73,"properties":{"markdown":"## What is failing?\\nLambda errors, throttles and duration help locate compute problems. Database and load balancer metrics show downstream health; application failures can occur without a Lambda error."}},{"type":"metric","width":8,"height":6,"x":0,"y":75,"properties":{"view":"timeSeries","title":"Lambda errors","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Errors","FunctionName","mobile-notifications-harvester-ctr-CODE",{"label":"Harvester","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-ios-sender-ctr-CODE",{"label":"ios","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-android-sender-ctr-CODE",{"label":"android","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-ios-edition-sender-ctr-CODE",{"label":"ios-edition","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-android-edition-sender-ctr-CODE",{"label":"android-edition","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-android-beta-sender-ctr-CODE",{"label":"android-beta","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","football-CODE",{"label":"Football","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":75,"properties":{"view":"timeSeries","title":"Lambda throttles","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Throttles","FunctionName","mobile-notifications-harvester-ctr-CODE",{"label":"Harvester","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-ios-sender-ctr-CODE",{"label":"ios","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-android-sender-ctr-CODE",{"label":"android","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-ios-edition-sender-ctr-CODE",{"label":"ios-edition","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-android-edition-sender-ctr-CODE",{"label":"android-edition","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-android-beta-sender-ctr-CODE",{"label":"android-beta","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","football-CODE",{"label":"Football","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":75,"properties":{"view":"timeSeries","title":"Lambda duration","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Duration","FunctionName","mobile-notifications-harvester-ctr-CODE",{"label":"Harvester","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-ios-sender-ctr-CODE",{"label":"ios","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-android-sender-ctr-CODE",{"label":"android","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-ios-edition-sender-ctr-CODE",{"label":"ios-edition","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-android-edition-sender-ctr-CODE",{"label":"android-edition","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-android-beta-sender-ctr-CODE",{"label":"android-beta","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","football-CODE",{"label":"Football","stat":"p95"}]],"yAxis":{"left":{"min":0,"label":"Milliseconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":0,"y":81,"properties":{"view":"timeSeries","title":"Registration writes failing","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/CODE/registration","FailedRegistrationInsertion",{"label":"FailedRegistrationInsertion","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":81,"properties":{"view":"timeSeries","title":"Database CPU use","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/RDS","CPUUtilization","DBInstanceIdentifier","notifications-registrations-db-private-code",{"label":"CPUUtilization"}]],"yAxis":{"left":{"min":0,"label":"Percent","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":16,"y":81,"properties":{"view":"timeSeries","title":"Database connections","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/RDS","DatabaseConnections","DBInstanceIdentifier","notifications-registrations-db-private-code",{"label":"DatabaseConnections","stat":"Maximum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":0,"y":87,"properties":{"view":"timeSeries","title":"Database free memory","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/RDS","FreeableMemory","DBInstanceIdentifier","notifications-registrations-db-private-code",{"label":"FreeableMemory","stat":"Minimum"}]],"yAxis":{"left":{"min":0,"label":"Bytes","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":8,"y":87,"properties":{"view":"timeSeries","title":"Database read and write latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/RDS","ReadLatency","DBInstanceIdentifier","notifications-registrations-db-private-code",{"label":"ReadLatency"}],["AWS/RDS","WriteLatency","DBInstanceIdentifier","notifications-registrations-db-private-code",{"label":"WriteLatency"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":0,"y":93,"properties":{"view":"timeSeries","title":"Notification HTTP responses","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","HTTPCode_Target_2XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_Target_2XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_4XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_Target_4XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_5XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_Target_5XX_Count","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":93,"properties":{"view":"timeSeries","title":"Notification load balancer errors","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","HTTPCode_ELB_4XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_ELB_4XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_ELB_5XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_ELB_5XX_Count","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":93,"properties":{"view":"timeSeries","title":"Notification response time","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","TargetResponseTime","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"TargetResponseTime","stat":"p95"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":0,"y":99,"properties":{"view":"timeSeries","title":"Registration HTTP responses","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","HTTPCode_Target_2XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_Target_2XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_4XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_Target_4XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_5XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_Target_5XX_Count","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":99,"properties":{"view":"timeSeries","title":"Registration load balancer errors","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","HTTPCode_ELB_4XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_ELB_4XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_ELB_5XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"HTTPCode_ELB_5XX_Count","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":99,"properties":{"view":"timeSeries","title":"Registration response time","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","TargetResponseTime","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-CODE",
+              },
+              "",{"label":"TargetResponseTime","stat":"p95"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}}]}",
+            ],
+          ],
+        },
+        "DashboardName": "notifications-CODE",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "CODE",
+          },
+        ],
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
+  },
+}
+`;
+
+exports[`The ServiceHealthDashboard stack matches the PROD snapshot without adding alarms 1`] = `
+{
+  "Metadata": {
+    "gu:cdk:constructs": [],
+    "gu:cdk:version": "TEST",
+  },
+  "Resources": {
+    "Dashboard9E4231ED": {
+      "Properties": {
+        "DashboardBody": {
+          "Fn::Join": [
+            "",
+            [
+              "{"start":"-P1D","periodOverride":"inherit","widgets":[{"type":"text","width":24,"height":2,"x":0,"y":0,"properties":{"markdown":"## Are notifications getting out?\\nPROD: counts cover the selected range; queue depth and age show the latest five-minute sample. Quiet periods are normal."}},{"type":"metric","width":4,"height":5,"x":0,"y":2,"properties":{"view":"singleValue","title":"Breaking news sending","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/notification","BreakingNewsNotificationCount",{"label":"BreakingNewsNotificationCount","stat":"Sum"}]],"setPeriodToTimeRange":true}},{"type":"metric","width":4,"height":5,"x":4,"y":2,"properties":{"view":"singleValue","title":"Sends succeeding by platform","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/workers","success","platform","ios",{"label":"ios","stat":"Sum"}],["Notifications/PROD/workers","success","platform","android",{"label":"android","stat":"Sum"}],["Notifications/PROD/workers","success","platform","ios-edition",{"label":"ios-edition","stat":"Sum"}],["Notifications/PROD/workers","success","platform","android-edition",{"label":"android-edition","stat":"Sum"}],["Notifications/PROD/workers","success","platform","android-beta",{"label":"android-beta","stat":"Sum"}]],"setPeriodToTimeRange":true}},{"type":"metric","width":4,"height":5,"x":8,"y":2,"properties":{"view":"singleValue","title":"Messages waiting in queues","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"Harvester queue","expression":"SUM(SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-PROD-Sqs-example\\" MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300))"}],[{"label":"Harvester dead letters","expression":"SUM(SEARCH('{AWS/SQS,QueueName} QueueName: mobile-notifications-harvester-PROD-Dlq MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300))"}],[{"label":"Sender queues","expression":"SUM(SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: PROD MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300))"}]],"setPeriodToTimeRange":false}},{"type":"metric","width":4,"height":5,"x":12,"y":2,"properties":{"view":"singleValue","title":"Registrations saved","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/registration","SuccessfulRegistrationInsertion",{"label":"SuccessfulRegistrationInsertion","stat":"Sum"}]],"setPeriodToTimeRange":true}},{"type":"metric","width":4,"height":5,"x":16,"y":2,"properties":{"view":"singleValue","title":"Live Activities and football delivered","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/liveactivities-broadcast","ApnsResponse","Outcome","2xx",{"label":"broadcast: 2xx","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-manager","ApnsResponse","Outcome","2xx",{"label":"channel-manager: 2xx","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-cleaner","ApnsResponse","Outcome","2xx",{"label":"channel-cleaner: 2xx","stat":"Sum"}],["PROD/football-notifications","goal-success",{"label":"goal-success","stat":"Sum"}]],"setPeriodToTimeRange":true}},{"type":"alarm","width":4,"height":5,"x":20,"y":2,"properties":{"title":"Live Activities alarm status","alarms":["arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-broadcast-dlq-PROD-alarm","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-apns-errors-broadcast-PROD","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-channel-manager-dlq-PROD-alarm","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-apns-errors-channel-manager-PROD","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-channel-cleaner-dlq-PROD-alarm","arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":cloudwatch:eu-west-1:",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":alarm:liveactivities-apns-errors-channel-cleaner-PROD"]}},{"type":"text","width":24,"height":2,"x":0,"y":7,"properties":{"markdown":"## How does this compare with last week?\\nHourly totals. Each right-hand chart shows the same 24-hour window seven days earlier; it stays fixed when the dashboard range changes."}},{"type":"metric","width":12,"height":6,"x":0,"y":9,"properties":{"view":"timeSeries","title":"Sends per hour by platform","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/workers","success","platform","ios",{"label":"ios","period":3600,"stat":"Sum"}],["Notifications/PROD/workers","success","platform","android",{"label":"android","period":3600,"stat":"Sum"}],["Notifications/PROD/workers","success","platform","ios-edition",{"label":"ios-edition","period":3600,"stat":"Sum"}],["Notifications/PROD/workers","success","platform","android-edition",{"label":"android-edition","period":3600,"stat":"Sum"}],["Notifications/PROD/workers","success","platform","android-beta",{"label":"android-beta","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600}},{"type":"metric","width":12,"height":6,"x":0,"y":15,"properties":{"view":"timeSeries","title":"Sends per hour by platform - last week","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/workers","success","platform","ios",{"label":"ios","period":3600,"stat":"Sum"}],["Notifications/PROD/workers","success","platform","android",{"label":"android","period":3600,"stat":"Sum"}],["Notifications/PROD/workers","success","platform","ios-edition",{"label":"ios-edition","period":3600,"stat":"Sum"}],["Notifications/PROD/workers","success","platform","android-edition",{"label":"android-edition","period":3600,"stat":"Sum"}],["Notifications/PROD/workers","success","platform","android-beta",{"label":"android-beta","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600,"start":"-P8D","end":"-P7D"}},{"type":"metric","width":12,"height":6,"x":0,"y":21,"properties":{"view":"timeSeries","title":"Registrations per hour","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/registration","SuccessfulRegistrationInsertion",{"label":"SuccessfulRegistrationInsertion","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600}},{"type":"metric","width":12,"height":6,"x":0,"y":27,"properties":{"view":"timeSeries","title":"Registrations per hour - last week","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/registration","SuccessfulRegistrationInsertion",{"label":"SuccessfulRegistrationInsertion","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600,"start":"-P8D","end":"-P7D"}},{"type":"metric","width":12,"height":6,"x":0,"y":33,"properties":{"view":"timeSeries","title":"Breaking news per hour","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/notification","BreakingNewsNotificationCount",{"label":"BreakingNewsNotificationCount","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600}},{"type":"metric","width":12,"height":6,"x":0,"y":39,"properties":{"view":"timeSeries","title":"Breaking news per hour - last week","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/notification","BreakingNewsNotificationCount",{"label":"BreakingNewsNotificationCount","period":3600,"stat":"Sum"}]],"yAxis":{"left":{"min":0}},"period":3600,"start":"-P8D","end":"-P7D"}},{"type":"text","width":24,"height":2,"x":0,"y":45,"properties":{"markdown":"## Where is the pipeline slowing down?\\nFollow requests from the API through the harvester queue, harvester, sender queues and senders. Queue age is in seconds; dead letters need investigation."}},{"type":"metric","width":8,"height":6,"x":0,"y":47,"properties":{"view":"timeSeries","title":"API requests accepted","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/notification","BreakingNewsNotificationCount",{"label":"BreakingNewsNotificationCount","stat":"Sum"}],["Notifications/PROD/notification","SuccessfulNewstandSend",{"label":"SuccessfulNewstandSend","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":47,"properties":{"view":"timeSeries","title":"Harvester queue activity","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"NumberOfMessagesSent","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-PROD-Sqs-example\\" MetricName=\\"NumberOfMessagesSent\\"', 'Sum', 300)"}],[{"label":"NumberOfMessagesReceived","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-PROD-Sqs-example\\" MetricName=\\"NumberOfMessagesReceived\\"', 'Sum', 300)"}],[{"label":"NumberOfMessagesDeleted","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-PROD-Sqs-example\\" MetricName=\\"NumberOfMessagesDeleted\\"', 'Sum', 300)"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":47,"properties":{"view":"timeSeries","title":"Harvester runs and failures","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Invocations","FunctionName","mobile-notifications-harvester-ctr-PROD",{"label":"Harvester runs","stat":"Sum"}],["Notifications/PROD/harvester","failure","platform","ios",{"label":"ios failures","stat":"Sum"}],["Notifications/PROD/harvester","failure","platform","android",{"label":"android failures","stat":"Sum"}],["Notifications/PROD/harvester","failure","platform","ios-edition",{"label":"ios-edition failures","stat":"Sum"}],["Notifications/PROD/harvester","failure","platform","android-edition",{"label":"android-edition failures","stat":"Sum"}],["Notifications/PROD/harvester","failure","platform","android-beta",{"label":"android-beta failures","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":0,"y":53,"properties":{"view":"timeSeries","title":"Sender queue activity","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"NumberOfMessagesSent","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: PROD MetricName=\\"NumberOfMessagesSent\\"', 'Sum', 300)"}],[{"label":"NumberOfMessagesReceived","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: PROD MetricName=\\"NumberOfMessagesReceived\\"', 'Sum', 300)"}],[{"label":"NumberOfMessagesDeleted","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: PROD MetricName=\\"NumberOfMessagesDeleted\\"', 'Sum', 300)"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":53,"properties":{"view":"timeSeries","title":"Sender runs by platform","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-ios-sender-ctr-PROD",{"label":"ios","stat":"Sum"}],["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-android-sender-ctr-PROD",{"label":"android","stat":"Sum"}],["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-ios-edition-sender-ctr-PROD",{"label":"ios-edition","stat":"Sum"}],["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-android-edition-sender-ctr-PROD",{"label":"android-edition","stat":"Sum"}],["AWS/Lambda","Invocations","FunctionName","mobile-notifications-workers-android-beta-sender-ctr-PROD",{"label":"android-beta","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":53,"properties":{"view":"timeSeries","title":"Messages waiting or being processed","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"Harvester queue","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-PROD-Sqs-example\\" MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300)"}],[{"label":"Harvester dead letters","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: mobile-notifications-harvester-PROD-Dlq MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300)"}],[{"label":"Sender queues","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: PROD MetricName=\\"ApproximateNumberOfMessagesVisible\\"', 'Maximum', 300)"}],[{"label":"Harvester queue","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-PROD-Sqs-example\\" MetricName=\\"ApproximateNumberOfMessagesNotVisible\\"', 'Maximum', 300)"}],[{"label":"Harvester dead letters","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: mobile-notifications-harvester-PROD-Dlq MetricName=\\"ApproximateNumberOfMessagesNotVisible\\"', 'Maximum', 300)"}],[{"label":"Sender queues","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: PROD MetricName=\\"ApproximateNumberOfMessagesNotVisible\\"', 'Maximum', 300)"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":0,"y":59,"properties":{"view":"timeSeries","title":"Oldest message waiting","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"Harvester queue","expression":"SEARCH('{AWS/SQS,QueueName} QueueName=\\"mobile-notifications-harvester-PROD-Sqs-example\\" MetricName=\\"ApproximateAgeOfOldestMessage\\"', 'Maximum', 300)"}],[{"label":"Harvester dead letters","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: mobile-notifications-harvester-PROD-Dlq MetricName=\\"ApproximateAgeOfOldestMessage\\"', 'Maximum', 300)"}],[{"label":"Sender queues","expression":"SEARCH('{AWS/SQS,QueueName} QueueName: SenderSqs AND QueueName: PROD MetricName=\\"ApproximateAgeOfOldestMessage\\"', 'Maximum', 300)"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":8,"y":59,"properties":{"view":"timeSeries","title":"Send outcomes by platform","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/workers","success","platform","ios",{"label":"ios: success","stat":"Sum"}],["Notifications/PROD/workers","success","platform","android",{"label":"android: success","stat":"Sum"}],["Notifications/PROD/workers","success","platform","ios-edition",{"label":"ios-edition: success","stat":"Sum"}],["Notifications/PROD/workers","success","platform","android-edition",{"label":"android-edition: success","stat":"Sum"}],["Notifications/PROD/workers","success","platform","android-beta",{"label":"android-beta: success","stat":"Sum"}],["Notifications/PROD/workers","failure","platform","ios",{"label":"ios: failure","stat":"Sum"}],["Notifications/PROD/workers","failure","platform","android",{"label":"android: failure","stat":"Sum"}],["Notifications/PROD/workers","failure","platform","ios-edition",{"label":"ios-edition: failure","stat":"Sum"}],["Notifications/PROD/workers","failure","platform","android-edition",{"label":"android-edition: failure","stat":"Sum"}],["Notifications/PROD/workers","failure","platform","android-beta",{"label":"android-beta: failure","stat":"Sum"}],["Notifications/PROD/workers","dryrun","platform","ios",{"label":"ios: dryrun","stat":"Sum"}],["Notifications/PROD/workers","dryrun","platform","android",{"label":"android: dryrun","stat":"Sum"}],["Notifications/PROD/workers","dryrun","platform","ios-edition",{"label":"ios-edition: dryrun","stat":"Sum"}],["Notifications/PROD/workers","dryrun","platform","android-edition",{"label":"android-edition: dryrun","stat":"Sum"}],["Notifications/PROD/workers","dryrun","platform","android-beta",{"label":"android-beta: dryrun","stat":"Sum"}],["Notifications/PROD/workers","total","platform","ios",{"label":"ios: total","stat":"Sum"}],["Notifications/PROD/workers","total","platform","android",{"label":"android: total","stat":"Sum"}],["Notifications/PROD/workers","total","platform","ios-edition",{"label":"ios-edition: total","stat":"Sum"}],["Notifications/PROD/workers","total","platform","android-edition",{"label":"android-edition: total","stat":"Sum"}],["Notifications/PROD/workers","total","platform","android-beta",{"label":"android-beta: total","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":59,"properties":{"view":"timeSeries","title":"Live Activities responses and football outcomes","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/liveactivities-broadcast","ApnsResponse","Outcome","2xx",{"label":"broadcast: 2xx","stat":"Sum"}],["Notifications/PROD/liveactivities-broadcast","ApnsResponse","Outcome","4xx",{"label":"broadcast: 4xx","stat":"Sum"}],["Notifications/PROD/liveactivities-broadcast","ApnsResponse","Outcome","5xx",{"label":"broadcast: 5xx","stat":"Sum"}],["Notifications/PROD/liveactivities-broadcast","ApnsResponse","Outcome","NetworkError",{"label":"broadcast: NetworkError","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-manager","ApnsResponse","Outcome","2xx",{"label":"channel-manager: 2xx","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-manager","ApnsResponse","Outcome","4xx",{"label":"channel-manager: 4xx","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-manager","ApnsResponse","Outcome","5xx",{"label":"channel-manager: 5xx","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-manager","ApnsResponse","Outcome","NetworkError",{"label":"channel-manager: NetworkError","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-cleaner","ApnsResponse","Outcome","2xx",{"label":"channel-cleaner: 2xx","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-cleaner","ApnsResponse","Outcome","4xx",{"label":"channel-cleaner: 4xx","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-cleaner","ApnsResponse","Outcome","5xx",{"label":"channel-cleaner: 5xx","stat":"Sum"}],["Notifications/PROD/liveactivities-channel-cleaner","ApnsResponse","Outcome","NetworkError",{"label":"channel-cleaner: NetworkError","stat":"Sum"}],["PROD/football-notifications","goal-success",{"label":"goal-success","stat":"Sum"}],["PROD/football-notifications","error",{"label":"error","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"text","width":24,"height":2,"x":0,"y":65,"properties":{"markdown":"## How long does delivery take?\\nSender token-delivery and processing metrics depend on feature flags being enabled and may be empty. API and registration latency do not depend on those flags."}},{"type":"metric","width":8,"height":6,"x":0,"y":67,"properties":{"view":"timeSeries","title":"Token delivery time - feature flag required","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"By platform and audience size","expression":"SEARCH('{Notifications/PROD/workers,platform,audienceSize}  MetricName=\\"TokenDeliveryLatency\\"', 'Average', 300)"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":8,"y":67,"properties":{"view":"timeSeries","title":"Sender processing time - feature flag required","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[[{"label":"By platform and notification type","expression":"SEARCH('{Notifications/PROD/workers,platform,type}  MetricName=\\"worker.notificationProcessingTime\\"', 'Average', 300)"}]],"yAxis":{"left":{"min":0,"label":"Milliseconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":16,"y":67,"properties":{"view":"timeSeries","title":"API and registration processing time","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/notification","NotificationAppProcessingTime",{"label":"NotificationAppProcessingTime"}],["Notifications/PROD/registration","RegistrationInsertionLatency",{"label":"RegistrationInsertionLatency"}]],"yAxis":{"left":{"min":0,"label":"Milliseconds","showUnits":false}}}},{"type":"text","width":24,"height":2,"x":0,"y":73,"properties":{"markdown":"## What is failing?\\nLambda errors, throttles and duration help locate compute problems. Database and load balancer metrics show downstream health; application failures can occur without a Lambda error."}},{"type":"metric","width":8,"height":6,"x":0,"y":75,"properties":{"view":"timeSeries","title":"Lambda errors","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Errors","FunctionName","mobile-notifications-harvester-ctr-PROD",{"label":"Harvester","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-ios-sender-ctr-PROD",{"label":"ios","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-android-sender-ctr-PROD",{"label":"android","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-ios-edition-sender-ctr-PROD",{"label":"ios-edition","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-android-edition-sender-ctr-PROD",{"label":"android-edition","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","mobile-notifications-workers-android-beta-sender-ctr-PROD",{"label":"android-beta","stat":"Sum"}],["AWS/Lambda","Errors","FunctionName","football-PROD",{"label":"Football","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":75,"properties":{"view":"timeSeries","title":"Lambda throttles","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Throttles","FunctionName","mobile-notifications-harvester-ctr-PROD",{"label":"Harvester","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-ios-sender-ctr-PROD",{"label":"ios","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-android-sender-ctr-PROD",{"label":"android","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-ios-edition-sender-ctr-PROD",{"label":"ios-edition","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-android-edition-sender-ctr-PROD",{"label":"android-edition","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","mobile-notifications-workers-android-beta-sender-ctr-PROD",{"label":"android-beta","stat":"Sum"}],["AWS/Lambda","Throttles","FunctionName","football-PROD",{"label":"Football","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":75,"properties":{"view":"timeSeries","title":"Lambda duration","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/Lambda","Duration","FunctionName","mobile-notifications-harvester-ctr-PROD",{"label":"Harvester","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-ios-sender-ctr-PROD",{"label":"ios","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-android-sender-ctr-PROD",{"label":"android","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-ios-edition-sender-ctr-PROD",{"label":"ios-edition","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-android-edition-sender-ctr-PROD",{"label":"android-edition","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","mobile-notifications-workers-android-beta-sender-ctr-PROD",{"label":"android-beta","stat":"p95"}],["AWS/Lambda","Duration","FunctionName","football-PROD",{"label":"Football","stat":"p95"}]],"yAxis":{"left":{"min":0,"label":"Milliseconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":0,"y":81,"properties":{"view":"timeSeries","title":"Registration writes failing","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["Notifications/PROD/registration","FailedRegistrationInsertion",{"label":"FailedRegistrationInsertion","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":81,"properties":{"view":"timeSeries","title":"Database CPU use","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/RDS","CPUUtilization","DBInstanceIdentifier","notifications-registrations-db-private-prod",{"label":"CPUUtilization"}]],"yAxis":{"left":{"min":0,"label":"Percent","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":16,"y":81,"properties":{"view":"timeSeries","title":"Database connections","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/RDS","DatabaseConnections","DBInstanceIdentifier","notifications-registrations-db-private-prod",{"label":"DatabaseConnections","stat":"Maximum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":0,"y":87,"properties":{"view":"timeSeries","title":"Database free memory","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/RDS","FreeableMemory","DBInstanceIdentifier","notifications-registrations-db-private-prod",{"label":"FreeableMemory","stat":"Minimum"}]],"yAxis":{"left":{"min":0,"label":"Bytes","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":8,"y":87,"properties":{"view":"timeSeries","title":"Database read and write latency","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/RDS","ReadLatency","DBInstanceIdentifier","notifications-registrations-db-private-prod",{"label":"ReadLatency"}],["AWS/RDS","WriteLatency","DBInstanceIdentifier","notifications-registrations-db-private-prod",{"label":"WriteLatency"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":0,"y":93,"properties":{"view":"timeSeries","title":"Notification HTTP responses","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","HTTPCode_Target_2XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_Target_2XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_4XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_Target_4XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_5XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_Target_5XX_Count","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":93,"properties":{"view":"timeSeries","title":"Notification load balancer errors","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","HTTPCode_ELB_4XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_ELB_4XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_ELB_5XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_ELB_5XX_Count","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":93,"properties":{"view":"timeSeries","title":"Notification response time","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","TargetResponseTime","LoadBalancer","",
+              {
+                "Fn::ImportValue": "NotificationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"TargetResponseTime","stat":"p95"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}},{"type":"metric","width":8,"height":6,"x":0,"y":99,"properties":{"view":"timeSeries","title":"Registration HTTP responses","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","HTTPCode_Target_2XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_Target_2XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_4XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_Target_4XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_Target_5XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_Target_5XX_Count","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":8,"y":99,"properties":{"view":"timeSeries","title":"Registration load balancer errors","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","HTTPCode_ELB_4XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_ELB_4XX_Count","stat":"Sum"}],["AWS/ApplicationELB","HTTPCode_ELB_5XX_Count","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"HTTPCode_ELB_5XX_Count","stat":"Sum"}]],"yAxis":{"left":{"min":0,"showUnits":true}}}},{"type":"metric","width":8,"height":6,"x":16,"y":99,"properties":{"view":"timeSeries","title":"Registration response time","region":"",
+              {
+                "Ref": "AWS::Region",
+              },
+              "","metrics":[["AWS/ApplicationELB","TargetResponseTime","LoadBalancer","",
+              {
+                "Fn::ImportValue": "RegistrationLoadBalancerFullName-PROD",
+              },
+              "",{"label":"TargetResponseTime","stat":"p95"}]],"yAxis":{"left":{"min":0,"label":"Seconds","showUnits":false}}}}]}",
+            ],
+          ],
+        },
+        "DashboardName": "notifications-PROD",
+        "Tags": [
+          {
+            "Key": "gu:cdk:version",
+            "Value": "TEST",
+          },
+          {
+            "Key": "gu:repo",
+            "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "Stack",
+            "Value": "mobile-notifications",
+          },
+          {
+            "Key": "Stage",
+            "Value": "PROD",
+          },
+        ],
+      },
+      "Type": "AWS::CloudWatch::Dashboard",
+    },
+  },
+}
+`;

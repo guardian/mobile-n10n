@@ -33,6 +33,17 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
     "gu:cdk:version": "TEST",
   },
   "Outputs": {
+    "LoadBalancerFullName": {
+      "Export": {
+        "Name": "RegistrationLoadBalancerFullName-CODE",
+      },
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancerRegistration79F7817E",
+          "LoadBalancerFullName",
+        ],
+      },
+    },
     "LoadBalancerRegistrationDnsName": {
       "Description": "DNS entry for LoadBalancerRegistration",
       "Value": {
@@ -1288,6 +1299,17 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
     "gu:cdk:version": "TEST",
   },
   "Outputs": {
+    "LoadBalancerFullName": {
+      "Export": {
+        "Name": "RegistrationLoadBalancerFullName-PROD",
+      },
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancerRegistration79F7817E",
+          "LoadBalancerFullName",
+        ],
+      },
+    },
     "LoadBalancerRegistrationDnsName": {
       "Description": "DNS entry for LoadBalancerRegistration",
       "Value": {
