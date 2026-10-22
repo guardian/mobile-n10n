@@ -6,6 +6,7 @@ import type { IMetric } from 'aws-cdk-lib/aws-cloudwatch';
 import {
 	Alarm,
 	AlarmStatusWidget,
+	Column,
 	Dashboard,
 	GraphWidget,
 	MathExpression,
@@ -159,6 +160,32 @@ export class N10nServiceHealthDashboard extends GuStack {
 				label,
 			});
 		};
+		const liveActivityFailureRate = new MathExpression({
+			expression:
+				'IF(accepted + failed > 0, 100 * failed / (accepted + failed))',
+			usingMetrics: {
+				accepted: total(apns(['2xx']), 'APNs accepted requests', 'accepted'),
+				failed: total(
+					apns(['4xx', '5xx', 'NetworkError']),
+					'APNs failed requests',
+					'failed',
+				),
+			},
+			period,
+			label: 'APNs failure rate (%)',
+		});
+		const liveActivityRecoveryMessages = total(
+			liveActivityFunctions.map((service) =>
+				metric(
+					'AWS/SQS',
+					'ApproximateNumberOfMessagesVisible',
+					{ QueueName: `liveactivities-${service}-dlq-${stage}` },
+					'Maximum',
+				),
+			),
+			'Messages awaiting recovery',
+			'recovery',
+		);
 		const dashboard = new Dashboard(this, 'Dashboard', {
 			dashboardName: `n10n-service-health-dashboard-${stage}`,
 			defaultInterval: Duration.days(7),
@@ -185,19 +212,20 @@ export class N10nServiceHealthDashboard extends GuStack {
 			metrics: IMetric[],
 			range = true,
 			width = 8,
+			height = 6,
 		) =>
 			new SingleValueWidget({
 				title,
 				metrics,
 				width,
-				height: 6,
+				height,
 				period,
 				setPeriodToTimeRange: range,
 			});
 
 		section(
 			'Service overview',
-			`${stage} - Right now: counts and percentages cover the selected range; queue age and send time use the latest five-minute sample. Acceptance is not confirmed device delivery. Missing data is not a healthy result.\n\nNotification registration updates: Includes new registrations and changes to existing registrations.`,
+			`${stage} - Right now: counts and percentages cover the selected range; queue age, recovery messages and send time use the latest five-minute sample. Acceptance is not confirmed device delivery. Missing data is not a healthy result.\n\nNotification registration updates: Includes new registrations and changes to existing registrations.`,
 		);
 		const fixedAlarms = liveActivityFunctions.flatMap((service) => [
 			`liveactivities-${service}-dlq-${stage}-alarm`,
@@ -240,12 +268,10 @@ export class N10nServiceHealthDashboard extends GuStack {
 						.filter((entry, index) => index !== 1)
 						.map((entry, index) =>
 							entry.with({
-								label:
-									index === 0
-										? 'Harvester queue age'
-										: 'Sender queue age',
+								label: index === 0 ? 'Harvester queue age' : 'Sender queue age',
 							}),
-						),
+						)
+						.reverse(),
 					new MathExpression({
 						expression: `SUM(SEARCH('{AWS/SQS,QueueName} ${queues[1].terms} MetricName="ApproximateNumberOfMessagesVisible"', 'Maximum', 300))`,
 						period,
@@ -254,24 +280,15 @@ export class N10nServiceHealthDashboard extends GuStack {
 				],
 				false,
 			),
-			value(
-				'Live Activities requests and errors',
-				[
-					total(apns(['2xx']), 'Live Activities requests accepted', 'accepted'),
-					total(
-						apns(['4xx', '5xx', 'NetworkError']),
-						'Live Activities requests failed',
-						'failed',
-					),
-				],
-				true,
-				4,
-			),
-			value(
-				'Football send failures',
-				[footballFailures, footballFailureRate],
-				true,
-				4,
+			new Column(
+				value('Live Activities health', [liveActivityFailureRate], true, 8, 3),
+				value(
+					'Messages awaiting recovery',
+					[liveActivityRecoveryMessages],
+					false,
+					8,
+					3,
+				),
 			),
 		);
 
@@ -527,6 +544,10 @@ export class N10nServiceHealthDashboard extends GuStack {
 				lambdaMetrics('Duration', 'p95'),
 				'Milliseconds',
 			),
+			value('Football notification submission failures', [
+				footballFailures,
+				footballFailureRate,
+			]),
 			graph('Registration writes failing', [
 				metric(namespace('registration'), 'FailedRegistrationInsertion'),
 			]),
