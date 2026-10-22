@@ -1,6 +1,7 @@
 import type { GuStackProps } from '@guardian/cdk/lib/constructs/core';
 import { App, Duration } from 'aws-cdk-lib';
 import 'source-map-support/register';
+import { N10nServiceHealthDashboard } from '../lib/dashboard';
 import { FakeBreakingNewsLambda } from '../lib/fakebreakingnewslambda';
 import { FootballNotificationsLambda } from '../lib/footballnotificationslambda';
 import { LiveActivities } from '../lib/liveactivities';
@@ -101,6 +102,14 @@ export const dbProxyProdProps = {
 
 new RegistrationsDbProxy(app, 'RegistrationsDbProxy-CODE', dbProxyCodeProps);
 new RegistrationsDbProxy(app, 'RegistrationsDbProxy-PROD', dbProxyProdProps);
+
+new N10nServiceHealthDashboard(app, 'N10nServiceHealthDashboard-CODE', {
+	stack: 'mobile-notifications',
+	stage: 'CODE',
+	env: notificationCodeProps.env,
+	workerSqsQueueName: notificationCodeProps.workerSqsQueueName,
+	dbInstanceId: dbProxyCodeProps.dbInstanceId,
+});
 
 new SloMonitoring(app, 'SloMonitor-CODE', {
 	stack: 'mobile-notifications',
