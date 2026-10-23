@@ -15,15 +15,15 @@ object DeliveryException {
     token: String,
     underlying: Throwable
   ) extends DeliveryException {
-    override def getMessage: String = s"Error (Notification: $notificationId, Token: $token, Underlying: $underlying)"
+    override def getMessage: String = s"Error (Notification: $notificationId, Underlying: $underlying)"
   }
 
-  case class FailedDelivery(
+  case class FailedAPNSDelivery(
     notificationId: UUID,
     token: String,
     reason: String
   ) extends DeliveryException {
-    override def getMessage: String = s"Delivery failed (Notification: $notificationId, Token: $token, Reason: $reason)"
+    override def getMessage: String = s"APNS Delivery failed (Notification: $notificationId, Reason: $reason)"
   }
 
   case class InvalidToken(
@@ -33,16 +33,16 @@ object DeliveryException {
     tokenInvalidationTimestamp: Option[LocalDateTime] = None
   ) extends DeliveryException {
     override def getMessage: String =
-        s"Delivery failed: Invalid token. Notification: $notificationId, Token: $token, Reason: $reason" +
-        tokenInvalidationTimestamp.map(ts => s", Token invalidation timestamp: $ts")
+      s"Delivery failed: Invalid token. Notification: $notificationId, Reason: $reason" +
+        tokenInvalidationTimestamp.map(ts => s", Token invalidation timestamp: $ts").getOrElse("")
   }
 
   case class FailedRequest(notificationId: UUID, token: String, cause: Throwable, errorCode: Option[String] = None) extends DeliveryException {
-    override def getMessage = s"Request failed (Notification: $notificationId, Token: $token). Cause: ${cause.getMessage}. ErrorCode: $errorCode}."
+    override def getMessage = s"Request failed (Notification: $notificationId). Cause: ${cause.getMessage}. ErrorCode: $errorCode}."
   }
 
   case class UnknownReasonFailedRequest(notificationId: UUID, token: String) extends DeliveryException {
-    override def getMessage = s"Request failed (Notification: $notificationId, Token: $token)"
+    override def getMessage = s"Request failed (Notification: $notificationId)"
   }
 
   case class InvalidPayload(notificationId: UUID) extends DeliveryException {

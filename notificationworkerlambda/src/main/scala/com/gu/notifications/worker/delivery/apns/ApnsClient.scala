@@ -6,7 +6,7 @@ import java.sql.Timestamp
 import java.util.{Timer, UUID}
 import java.util.concurrent.{TimeUnit, TimeoutException}
 import com.gu.notifications.worker.delivery._
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, FailedRequest, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedAPNSDelivery, FailedRequest, InvalidToken}
 import models.ApnsConfig
 import _root_.models.Notification
 import com.gu.notifications.worker.delivery.apns.models.payload.ApnsPayloadBuilder
@@ -59,43 +59,49 @@ class ApnsClient(private val underlying: PushyApnsClient, val config: ApnsConfig
 
     def responseHandler(start: Instant) = new PushNotificationResponseListenerWithTimeout[SimpleApnsPushNotification]() {
 
+      private def fields(outcome: String): Map[String, Any] = Map(
+        "worker.individualRequestLatency" -> Duration.between(start, Instant.now).toMillis,
+        "notificationId" -> notificationId,
+        "apns.outcome" -> outcome,
+      )
+
+      private def responseFields(response: PushNotificationResponse[SimpleApnsPushNotification]): Map[String, Any] =
+        Map("apns.id" -> String.valueOf(response.getApnsId)) ++
+          Option(response.getRejectionReason).map("apns.rejectionReason" -> _)
+
       def timeout(): Unit = {
-        logger.info(Map(
-          "worker.individualRequestLatency" -> Duration.between(start, Instant.now).toMillis,
-          "notificationId" -> notificationId,
-        ), "Individual send request timed out")
+        logger.info(fields("timeout"), "Individual send request timed out")
         onComplete(Left(FailedRequest(notificationId, token, new TimeoutException("No APNs response received in time"), Some("ClientTimeout"))))
       }
 
       override def operationCompleteWithoutTimeout(feedback: Feedback): Unit = {
-        logger.info(Map(
-          "worker.individualRequestLatency" -> Duration.between(start, Instant.now).toMillis,
-          "notificationId" -> notificationId,
-        ), "Individual send request completed")
         if (feedback.isSuccess) {
           val response = feedback.getNow
           if (response.isAccepted) {
+            logger.info(fields("accepted") ++ responseFields(response), "Individual send request completed")
             onComplete(Right(ApnsDeliverySuccess(token, Instant.now())))
           } else {
             val invalidationTimestamp = Option(response.getTokenInvalidationTimestamp)
               .map(d => new Timestamp(d.getTime).toLocalDateTime)
+            val isInvalidToken = invalidationTimestamp.isDefined || invalidTokenErrorCodes.contains(response.getRejectionReason)
 
-            val error = if (invalidationTimestamp.isDefined || invalidTokenErrorCodes.contains(response.getRejectionReason)) {
+            logger.info(fields(if (isInvalidToken) "invalidToken" else "rejected") ++ responseFields(response), "Individual send request completed")
+
+            val error = if (isInvalidToken) {
               InvalidToken(notificationId, token, response.getRejectionReason, invalidationTimestamp)
             } else {
-              FailedDelivery(notificationId, token, response.getRejectionReason)
+              FailedAPNSDelivery(notificationId, token, response.getRejectionReason)
             }
             onComplete(Left(error))
           }
         } else {
-          val debug =
-            s"""Failed Request
-               |isSuccess: ${feedback.isSuccess}, isDone: ${feedback.isDone}, isCancelled: ${feedback.isCancelled}
-               |getNow: ${Option(feedback.getNow)}
-               |cause: ${feedback.cause()}
-               |""".stripMargin
-          logger.error(debug)
-          onComplete(Left(FailedRequest(notificationId, token, feedback.cause())))
+          val cause = feedback.cause()
+          logger.info(fields("requestFailed") ++ Map(
+            "apns.errorType" -> Option(cause).map(_.getClass.getSimpleName).getOrElse("unknown"),
+            "apns.errorMessage" -> Option(cause).map(_.getMessage).getOrElse(""),
+            "apns.cancelled" -> feedback.isCancelled,
+          ), "Individual send request completed")
+          onComplete(Left(FailedRequest(notificationId, token, cause)))
         }
       }
     }
