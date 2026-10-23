@@ -3,7 +3,8 @@ package com.gu.notifications.worker.delivery
 import _root_.models.Notification
 import cats.effect._
 import cats.syntax.either._
-import com.gu.notifications.worker.delivery.DeliveryException.{FailedDelivery, GenericFailure, InvalidPayload, InvalidToken}
+import com.gu.notifications.worker.delivery.DeliveryException.{FailedAPNSDelivery, GenericFailure, InvalidPayload, InvalidToken}
+import com.gu.notifications.worker.utils.Logging
 import fs2.Stream
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -26,7 +27,7 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
   contextShift: Concurrent[F],
   F: Async[F],
   T: Timer[F]
-) extends DeliveryService[F, C] {
+) extends DeliveryService[F, C] with Logging {
   implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def send(
@@ -50,6 +51,9 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
         val rangeInMs = Range(1000, 3000)
         rangeInMs.min + Random.nextInt(rangeInMs.length)
       }
+
+      // Only APNS delivery failures are retried - todo
+      // No FCM or other failures are retried, as DeliveryException extends a Throwable which is not caught by the NonFatal Exception pattern match
       Stream
         .retry(
           sendAsync(client)(token, payload),
@@ -57,10 +61,19 @@ class DeliveryServiceImpl[F[_], C <: DeliveryClient] (
           nextDelay = _.mul(2),
           maxAttempts = 3,
           retriable = {
-            case NonFatal(e: FailedDelivery) => true
+            case NonFatal(e: FailedAPNSDelivery) =>
+              logger.info(Map(
+                "notificationId" -> notification.id,
+                "apns.rejectionReason" -> e.reason,
+                "token" -> token
+              ), s"Failed delivery, will retry")
+              true
             case NonFatal(e: InvalidToken) => false
             case NonFatal(exception: Exception) =>
-              logger.error("Encountered an error, will retry", exception)
+              logger.error(Map(
+                "notificationId" -> notification.id,
+                "token" -> token
+              ), "Encountered an error, will retry", exception)
               true
             case _ => false
           }
