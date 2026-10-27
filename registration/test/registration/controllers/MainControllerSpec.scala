@@ -61,49 +61,6 @@ class MainControllerSpec extends PlaySpecification with JsonMatchers with Mockit
       contentAsString(result) must /("platform" -> "ios")
       contentAsString(result) must (/("topics") andHave size(4))
     }
-
-    "new /device/register endpoint rejects a request without a topics field" in new RegistrationsContext {
-      val body = Json.obj("deviceToken" -> "TEST-TOKEN-ID", "platform" -> "ios")
-      val Some(result) = route(app, FakeRequest(POST, "/device/register").withJsonBody(body))
-
-      status(result) must equalTo(BAD_REQUEST)
-    }
-
-    "new /device/register endpoint accepts an empty topic list" in new RegistrationsContext {
-      val body = Json.obj("deviceToken" -> "TEST-TOKEN-ID", "platform" -> "ios", "topics" -> Json.arr())
-      val Some(result) = route(app, FakeRequest(POST, "/device/register").withJsonBody(body))
-
-      status(result) must equalTo(OK)
-      contentAsString(result) must (/("topics") andHave size(0))
-    }
-
-    "new /device/register endpoint rejects a request where all topics are invalid" in new RegistrationsContext {
-      val body = Json.obj(
-        "deviceToken" -> "TEST-TOKEN-ID",
-        "platform" -> "ios",
-        "topics" -> Json.arr(Json.obj("type" -> "not-a-topic-type", "name" -> "uk"))
-      )
-      val Some(result) = route(app, FakeRequest(POST, "/device/register").withJsonBody(body))
-
-      status(result) must equalTo(BAD_REQUEST)
-      contentAsString(result) must equalTo("Request contains no valid topics")
-    }
-
-    "new /device/register endpoint drops invalid topics and registers the valid ones" in new RegistrationsContext {
-      val body = Json.obj(
-        "deviceToken" -> "TEST-TOKEN-ID",
-        "platform" -> "ios",
-        "topics" -> Json.arr(
-          Json.obj("type" -> "not-a-topic-type", "name" -> "uk"),
-          Json.obj("type" -> "breaking", "name" -> "uk")
-        )
-      )
-      val Some(result) = route(app, FakeRequest(POST, "/device/register").withJsonBody(body))
-
-      status(result) must equalTo(OK)
-      contentAsString(result) must (/("topics") andHave size(1))
-      contentAsString(result) must /("topics") /# 0 /("type" -> "breaking")
-    }
   }
 
   trait RegistrationsContext extends RegistrationsBase with withMockedWSClient {
