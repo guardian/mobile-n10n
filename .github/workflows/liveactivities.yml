@@ -8,6 +8,8 @@ on:
       - api-models/**
       - project/**
       - build.sbt
+      - .tool-versions
+      - .nvmrc
       - .github/workflows/liveactivities.yml
   workflow_dispatch:
 

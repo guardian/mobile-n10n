@@ -11,6 +11,8 @@ on:
       - cdk/**
       - project/**
       - build.sbt
+      - .tool-versions
+      - .nvmrc
       - .github/workflows/registration.yml
   workflow_dispatch:
 

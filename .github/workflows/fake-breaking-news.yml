@@ -10,6 +10,8 @@ on:
       - api-models/**
       - project/**
       - build.sbt
+      - .tool-versions
+      - .nvmrc
       - .github/workflows/fake-breaking-news.yml
   workflow_dispatch:
 
