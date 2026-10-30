@@ -2,7 +2,6 @@
 
 The Reports API is used by the Ophan dashboard to show data about when notifications were sent and the number of deliveries per platform.
 
-## Notification delivery and reporting
 
 This overview follows a breaking news notification from send to delivery and explains how the registered and received counts reach the dashboard.
 
@@ -31,10 +30,6 @@ This overview follows a breaking news notification from send to delivery and exp
 
 - The Ophan notifications dashboard calls the Reports API, which reads the reports table.
 - Each notification shows its registered and received counts side by side.
-
-## Reporting Flow
-
-The existing sequence diagram below provides more detail about the interactions, including duplicate detection and report-record updates.
 
 There is more going on than just what's described in the diagram (specifically around how notification data is ingested into the ophan data lake). However, this diagram should cover the components most relevant to mobile people.
 
