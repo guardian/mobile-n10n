@@ -8,6 +8,8 @@ on:
       - api-models/**
       - project/**
       - build.sbt
+      - .tool-versions
+      - .nvmrc
       - .github/workflows/football.yml
   workflow_dispatch:
 

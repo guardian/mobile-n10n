@@ -7,6 +7,7 @@ on:
       - commonscheduledynamodb/**
       - project/**
       - build.sbt
+      - .tool-versions
       - .github/workflows/schedule-lambda.yml
   workflow_dispatch:
 

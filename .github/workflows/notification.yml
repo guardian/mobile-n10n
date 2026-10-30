@@ -10,6 +10,8 @@ on:
       - cdk/**
       - project/**
       - build.sbt
+      - .tool-versions
+      - .nvmrc
       - .github/workflows/notification.yml
   workflow_dispatch:
 

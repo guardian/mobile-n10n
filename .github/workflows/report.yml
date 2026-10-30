@@ -12,6 +12,8 @@ on:
       - commontest/**
       - project/**
       - build.sbt
+      - .tool-versions
+      - .nvmrc
       - .github/workflows/report.yml
   workflow_dispatch:
 
