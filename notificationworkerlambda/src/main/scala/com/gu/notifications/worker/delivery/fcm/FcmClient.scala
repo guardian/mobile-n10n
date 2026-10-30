@@ -8,21 +8,18 @@ import com.google.firebase.messaging._
 import com.google.firebase.{ErrorCode, FirebaseApp, FirebaseOptions}
 import com.gu.notifications.worker.delivery.DeliveryException.{FailedRequest, InvalidToken, UnknownReasonFailedRequest}
 import com.gu.notifications.worker.delivery.fcm.models.FcmConfig
-import com.gu.notifications.worker.delivery.fcm.models.payload.FcmPayloadBuilder
+import com.gu.notifications.worker.delivery.fcm.models.payload.{FcmErrorPayload, FcmPayloadBuilder}
 import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTransport
 import com.gu.notifications.worker.delivery.{DeliveryClient, DeliveryException, FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.utils.Logging
 import org.slf4j.{Logger, LoggerFactory}
-import com.gu.notifications.worker.utils.UnwrappingExecutionException
+
 
 import java.io.ByteArrayInputStream
 import java.time.{Duration, Instant}
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future, Promise}
-import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
-
-import okhttp3.{Headers, MediaType, OkHttpClient, Request, RequestBody, Response, ResponseBody}
 
 class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig, projectId: String, credential: GoogleCredentials, jsonFactory: JsonFactory)
   extends DeliveryClient with Logging {
@@ -53,6 +50,27 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     }
   }
 
+  private def errorDetailFields(details: FcmErrorPayload): Map[String, Any] = Map(
+    "fcm.errorCode" -> details.fcmErrorCode.getOrElse(details.status),
+    "fcm.errorMessage" -> details.message,
+  )
+
+  private def exceptionFields(e: Throwable): Map[String, Any] = Map(
+    "fcm.errorType" -> e.getClass.getSimpleName,
+    "fcm.errorMessage" -> Option(e.getMessage).getOrElse(""),
+  )
+
+  private def responseFields(response: Try[String]): Map[String, Any] = response match {
+    case Success(messageId) => Map("fcm.outcome" -> "accepted", "fcm.messageId" -> messageId)
+    case Failure(e: InvalidTokenException) => Map("fcm.outcome" -> "invalidToken") ++ errorDetailFields(e.details)
+    case Failure(e: FcmServerException) => Map("fcm.outcome" -> "rejected") ++ errorDetailFields(e.details)
+    case Failure(e: QuotaExceededException) => Map("fcm.outcome" -> "rejected") ++ errorDetailFields(e.details)
+    case Failure(e: UnknownException) => Map("fcm.outcome" -> "rejected") ++ errorDetailFields(e.details)
+    case Failure(e: InvalidResponseException) => Map("fcm.outcome" -> "invalidResponse") ++ exceptionFields(e)
+    case Failure(e: FcmServerTransportException) => Map("fcm.outcome" -> "requestFailed") ++ exceptionFields(Option(e.ex).getOrElse(e))
+    case Failure(e) => Map("fcm.outcome" -> "requestFailed") ++ exceptionFields(e)
+  }
+
   def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
     (onAPICallComplete: Either[DeliveryException, Success] => Unit)
     (implicit executionContext: ExecutionContextExecutor) = {
@@ -74,7 +92,8 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
           logger.info(Map(
             "worker.individualRequestLatency" -> Duration.between(start, requestCompletionTime).toMillis,
             "notificationId" -> notificationId,
-          ), s"Individual send request completed - ${this.toString()}")
+            "fcm.clientInstance" -> this.toString,
+          ) ++ responseFields(response), "Individual send request completed")
           onAPICallComplete(parseSendResponse(notificationId, token, response, requestCompletionTime))
         }
     }
@@ -86,11 +105,11 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
     case Success(messageId) =>
       Right(FcmDeliverySuccess(token, messageId, requestCompletionTime))
     case Failure(e: InvalidTokenException) =>
-      Left(InvalidToken(notificationId, token, e.getMessage()))
+      Left(InvalidToken(notificationId, token, e.details.fcmErrorCode.getOrElse(e.details.status)))
     case Failure(e: FcmServerException) =>
-      Left(FailedRequest(notificationId, token, e, Option(e.details.status)))
+      Left(FailedRequest(notificationId, token, e, Some(e.details.fcmErrorCode.getOrElse(e.details.status))))
     case Failure(e: UnknownException) =>
-      Left(FailedRequest(notificationId, token, e, Option(e.details.status)))
+      Left(FailedRequest(notificationId, token, e, Some(e.details.fcmErrorCode.getOrElse(e.details.status))))
     case Failure(e: InvalidResponseException) =>
       Left(FailedRequest(notificationId, token, e, None))
     case Failure(e: QuotaExceededException) =>
