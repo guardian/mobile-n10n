@@ -42,7 +42,7 @@ There is more going on than just what's described in the diagram (specifically a
 sequenceDiagram
     participant notif as Notification Source
     participant notification as Notification (API)
-    participant dynamo as DynamoDB (reports table)
+    participant dynamo as DynamoDB (mobile-notifications-reports)
     participant harvesterQueue as Harvester SQS
     participant harvester as Harvester (queue poller)
     participant worker as Workers (lambdas)
@@ -52,7 +52,7 @@ sequenceDiagram
     participant lambda as Event Consumer
     participant reportextractor as Report Extractor (cron lambda)
     participant report as Report (API)
-    participant dashboard as Ophan Dashboard
+    participant dashboard as Ophan Dashboard (https://dashboard.ophan.co.uk/notifications)
     notif->>notification: send push notification
     notification->>dynamo: get notification by id
     notification->>notification: check if duplicate
@@ -71,10 +71,10 @@ sequenceDiagram
     notification->>notification: Create a SenderResult (for batches successfully sent to harvester)
     notification->>dynamo: Update notification record
     note over dynamo: Updated record includes SenderResult as an item in "reports" array
-    device->>fastly: report notification receipt
+    device->>fastly: make notification/received api call
     fastly->>s3: write log data to s3 (mobile event logs fastly)
     lambda->>lambda: AthenaLambda runs on schedule
-    lambda->>s3: get number of notification receipt events
+    lambda->>s3: get number of notification/received events
     lambda->>s3: write parsed data (mobile event logs athena)
     lambda->>dynamo: update notification "events" field with platform received count
     dashboard->>dashboard: page load
