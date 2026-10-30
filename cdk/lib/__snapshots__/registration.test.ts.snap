@@ -33,6 +33,17 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
     "gu:cdk:version": "TEST",
   },
   "Outputs": {
+    "LoadBalancerFullName": {
+      "Export": {
+        "Name": "RegistrationLoadBalancerFullName-CODE",
+      },
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancerRegistration79F7817E",
+          "LoadBalancerFullName",
+        ],
+      },
+    },
     "LoadBalancerRegistrationDnsName": {
       "Description": "DNS entry for LoadBalancerRegistration",
       "Value": {
@@ -593,6 +604,10 @@ exports[`The Registration stack matches the snapshot for CODE 1`] = `
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "ServiceHealthDashboard",
+            "Value": "n10n-service-health-dashboard-CODE",
           },
           {
             "Key": "Stack",
@@ -1288,6 +1303,17 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
     "gu:cdk:version": "TEST",
   },
   "Outputs": {
+    "LoadBalancerFullName": {
+      "Export": {
+        "Name": "RegistrationLoadBalancerFullName-PROD",
+      },
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancerRegistration79F7817E",
+          "LoadBalancerFullName",
+        ],
+      },
+    },
     "LoadBalancerRegistrationDnsName": {
       "Description": "DNS entry for LoadBalancerRegistration",
       "Value": {
@@ -1848,6 +1874,10 @@ exports[`The Registration stack matches the snapshot for PROD 1`] = `
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "ServiceHealthDashboard",
+            "Value": "n10n-service-health-dashboard-PROD",
           },
           {
             "Key": "Stack",

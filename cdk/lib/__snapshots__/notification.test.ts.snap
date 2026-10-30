@@ -39,6 +39,17 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
     "gu:cdk:version": "TEST",
   },
   "Outputs": {
+    "LoadBalancerFullName": {
+      "Export": {
+        "Name": "NotificationLoadBalancerFullName-CODE",
+      },
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancerNotification8DE16E11",
+          "LoadBalancerFullName",
+        ],
+      },
+    },
     "LoadBalancerNotificationDnsName": {
       "Description": "DNS entry for LoadBalancerNotification",
       "Value": {
@@ -812,6 +823,10 @@ exports[`The Notification stack matches the snapshot for CODE 1`] = `
             "Value": "guardian/mobile-n10n",
           },
           {
+            "Key": "ServiceHealthDashboard",
+            "Value": "n10n-service-health-dashboard-CODE",
+          },
+          {
             "Key": "Stack",
             "Value": "mobile-notifications",
           },
@@ -1430,6 +1445,17 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
     "gu:cdk:version": "TEST",
   },
   "Outputs": {
+    "LoadBalancerFullName": {
+      "Export": {
+        "Name": "NotificationLoadBalancerFullName-PROD",
+      },
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancerNotification8DE16E11",
+          "LoadBalancerFullName",
+        ],
+      },
+    },
     "LoadBalancerNotificationDnsName": {
       "Description": "DNS entry for LoadBalancerNotification",
       "Value": {
@@ -2201,6 +2227,10 @@ exports[`The Notification stack matches the snapshot for PROD 1`] = `
           {
             "Key": "gu:repo",
             "Value": "guardian/mobile-n10n",
+          },
+          {
+            "Key": "ServiceHealthDashboard",
+            "Value": "n10n-service-health-dashboard-PROD",
           },
           {
             "Key": "Stack",

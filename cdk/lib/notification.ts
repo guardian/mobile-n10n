@@ -5,7 +5,7 @@ import { GuStack, GuStringParameter } from '@guardian/cdk/lib/constructs/core';
 import { GuCname } from '@guardian/cdk/lib/constructs/dns';
 import { GuAllowPolicy } from '@guardian/cdk/lib/constructs/iam';
 import type { App } from 'aws-cdk-lib';
-import { Duration } from 'aws-cdk-lib';
+import { CfnOutput, Duration, Tags } from 'aws-cdk-lib';
 import type { CfnAutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
 import { InstanceClass, InstanceSize, InstanceType } from 'aws-cdk-lib/aws-ec2';
@@ -146,6 +146,17 @@ export class Notification extends GuStack {
 				enabled: true,
 				systemdUnitName: app,
 			},
+		});
+
+		Tags.of(loadBalancer).add(
+			'ServiceHealthDashboard',
+			`n10n-service-health-dashboard-${stage}`,
+			{ includeResourceTypes: ['AWS::ElasticLoadBalancingV2::LoadBalancer'] },
+		);
+
+		new CfnOutput(this, 'LoadBalancerFullName', {
+			value: loadBalancer.loadBalancerFullName,
+			exportName: `NotificationLoadBalancerFullName-${stage}`,
 		});
 
 		new GuCname(this, 'DnsRecordForNotification', {
