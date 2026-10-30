@@ -122,14 +122,17 @@ final class Main(
       case Right(report) =>
         reportPushSent(notification, List(report)) map {
           case Right(_) =>
-            logger.info(s"Notification was sent: $notification")
+            logger.info(Map(
+              "notificationId" -> notification.id), s"Notification was sent: $notification")
             Created(toJson(PushResult(notification.id)))
           case Left(error) =>
-            logger.error(s"Notification ($notification) sent but report could not be stored ($error)")
+            logger.error(Map(
+              "notificationId" -> notification.id), s"Notification ($notification) sent but report could not be stored ($error)")
             Created(toJson(PushResult(notification.id).withReportingError(error)))
         }
       case Left(error) =>
-        logger.error(s"Notification ($notification) could not be sent: $error")
+        logger.error(Map(
+          "notificationId" -> notification.id), s"Notification ($notification) could not be sent: $error")
         Future.successful(InternalServerError)
     }
   }
@@ -139,7 +142,8 @@ final class Main(
       .map(_ => ())
       .recover {
       case NonFatal(e) =>
-        logger.warn(s"Unable to decache article for notification ${notification.id}", e)
+        logger.warn(Map(
+          "notificationId" -> notification.id), s"Unable to decache article for notification ${notification.id}", e)
         ()
     }
   }
