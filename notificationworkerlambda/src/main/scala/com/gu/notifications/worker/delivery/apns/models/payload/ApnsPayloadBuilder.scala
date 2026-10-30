@@ -10,10 +10,12 @@ import com.gu.notifications.worker.delivery.apns.models.ApnsConfig
 import com.gu.notifications.worker.delivery.utils.TimeToLive._
 import com.gu.notifications.worker.delivery.apns.models.payload.CustomProperty.Keys
 import com.gu.notifications.worker.delivery.apns.models.payload.PlatformUriTypes.{External, Item}
-import com.turo.pushy.apns.util.{ApnsPayloadBuilder => Builder}
-import com.turo.pushy.apns.{DeliveryPriority, PushType}
+import com.eatthepath.pushy.apns.util.SimpleApnsPayloadBuilder
+import com.eatthepath.pushy.apns.{DeliveryPriority, PushType}
+import org.slf4j.{Logger, LoggerFactory}
 
 class ApnsPayloadBuilder(config: ApnsConfig) {
+  implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def apply(notification: Notification): Option[ApnsPayload] = notification match {
       case n: BreakingNewsNotification => Some(breakingNewsPayload(n))
@@ -35,7 +37,7 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
     customProperties: Seq[CustomProperty] = Seq()
   ) {
     def payload: String = {
-      val payloadBuilder = new Builder()
+      val payloadBuilder = new SimpleApnsPayloadBuilder()
       alertTitle.foreach(payloadBuilder.setAlertTitle)
       alertBody.foreach(payloadBuilder.setAlertBody)
       categoryName.foreach(payloadBuilder.setCategoryName)
@@ -52,7 +54,16 @@ class ApnsPayloadBuilder(config: ApnsConfig) {
         }
         payloadBuilder.addCustomProperty(key, value)
       }
-      payloadBuilder.buildWithDefaultMaximumLength()
+      // todo create size checker and trimmer? Check if these are these limited at source? (football, breaking news, content)
+      /** APNS
+       * You must not use a compressed JSON payload, and it’s limited to a maximum size of 4 KB (4096 bytes).
+       * */
+      val jsonPayload = payloadBuilder.build()
+      val sizeBytes = jsonPayload.getBytes(java.nio.charset.StandardCharsets.UTF_8).length
+
+      logger.debug(s"APNS payload size: $sizeBytes bytes (max 4096 bytes): title: ${alertTitle.getOrElse("")}")
+
+      jsonPayload
     }
   }
 

@@ -13,16 +13,14 @@ import com.gu.notifications.worker.delivery.fcm.oktransport.OkGoogleHttpTranspor
 import com.gu.notifications.worker.delivery.{DeliveryClient, DeliveryException, FcmDeliverySuccess, FcmPayload}
 import com.gu.notifications.worker.utils.Logging
 import org.slf4j.{Logger, LoggerFactory}
-import com.gu.notifications.worker.utils.UnwrappingExecutionException
 
 import java.io.ByteArrayInputStream
 import java.time.{Duration, Instant}
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future, Promise}
-import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-import okhttp3.{Headers, MediaType, OkHttpClient, Request, RequestBody, Response, ResponseBody}
+import java.util.concurrent.CompletableFuture
 
 class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp, config: FcmConfig, projectId: String, credential: GoogleCredentials, jsonFactory: JsonFactory)
   extends DeliveryClient with Logging {
@@ -54,8 +52,7 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
   }
 
   def sendNotification(notificationId: UUID, token: String, payload: Payload, dryRun: Boolean)
-    (onAPICallComplete: Either[DeliveryException, Success] => Unit)
-    (implicit executionContext: ExecutionContextExecutor) = {
+                      (implicit executionContext: ExecutionContextExecutor): CompletableFuture[Either[DeliveryException, Success]] = {
 
     val message = Message
       .builder
@@ -64,10 +61,12 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
       .build
 
     if (dryRun) { // Firebase has a dry run mode but in order to get the same behavior for both APNS and Firebase we don't send the request
-      onAPICallComplete(Right(FcmDeliverySuccess(token, "dryrun", Instant.now(), dryRun = true)))
+      CompletableFuture.completedFuture[Either[DeliveryException, Success]](
+        Right(FcmDeliverySuccess(token, "dryrun", Instant.now(), dryRun = true))
+      )
     } else {
-      import FirebaseHelpers._
       val start = Instant.now
+      val result = new CompletableFuture[Either[DeliveryException, Success]]()
       fcmTransport.sendAsync(token, payload, dryRun)
         .onComplete { response =>
           val requestCompletionTime = Instant.now
@@ -75,8 +74,9 @@ class FcmClient (firebaseMessaging: FirebaseMessaging, firebaseApp: FirebaseApp,
             "worker.individualRequestLatency" -> Duration.between(start, requestCompletionTime).toMillis,
             "notificationId" -> notificationId,
           ), s"Individual send request completed - ${this.toString()}")
-          onAPICallComplete(parseSendResponse(notificationId, token, response, requestCompletionTime))
+          result.complete(parseSendResponse(notificationId, token, response, requestCompletionTime))
         }
+      result
     }
   }
  
